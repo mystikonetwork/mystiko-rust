@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "mystiko-abi",
+    "mystiko-abi-generate",
+    "mystiko-crypto",
+]
+
+exclude = []
