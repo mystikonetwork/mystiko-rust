@@ -20,7 +20,7 @@ fn abi_file_generation(src: &Path, dst: &String) -> Result<(), Box<dyn Error>> {
     let dst = format!("{}/{}.rs", dst, file_name_snake_case);
     Abigen::new(file_name, src.to_str().unwrap())?
         .generate()?
-        .write_to_file(&dst)?;
+        .write_to_file(dst)?;
 
     Ok(())
 }

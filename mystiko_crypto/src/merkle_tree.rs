@@ -130,7 +130,7 @@ impl MerkleTree {
             "the tree is full",
         );
 
-        for elem in elements.iter().take((elements.len() - 1) as usize) {
+        for elem in elements.iter().take(elements.len() - 1) {
             self.layers[0].push(elem.clone());
             let mut level = 0;
             let index = self.layers[0].len() - 1;
