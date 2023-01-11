@@ -1,8 +1,9 @@
 [workspace]
 members = [
-    "mystiko-abi",
-    "mystiko-abi-generate",
-    "mystiko-crypto",
+    "mystiko_abi",
+    "mystiko_abi_generate",
+    "mystiko_crypto",
+    "mystiko_utils",
 ]
 
 exclude = []

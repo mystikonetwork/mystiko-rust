@@ -1,0 +1,14 @@
+[package]
+name = "mystiko_crypto"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+num-bigint = { version = "0.4.3" }
+ethers = { version = "1.0.2" }
+poseidon-rs = { version = "0.0.8" }
+ff = {package="ff_ce" , version="0.11", features = ["derive"]}
+
+mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
