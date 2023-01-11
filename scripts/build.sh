@@ -3,4 +3,4 @@
 # Exit if any subcommand fails
 set -e
 
-cargo build --package mystiko-abi-generate
+cargo build
