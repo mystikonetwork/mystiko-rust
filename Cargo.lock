@@ -1455,6 +1455,7 @@ dependencies = [
  "num-bigint 0.4.3",
  "poseidon-rs",
  "rand 0.8.5",
+ "thiserror",
 ]
 
 [[package]]

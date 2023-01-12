@@ -1,10 +1,20 @@
 use crate::utils::poseidon_hash;
 use ethers::core::utils::keccak256;
 use ff::*;
-use mystiko_utils::check::check;
 use mystiko_utils::constants::FIELD_SIZE;
 use num_bigint::BigUint;
 use poseidon_rs::Fr;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum MerkleTreeError {
+    #[error("merkle tree is full")]
+    MerkleTreeIsFull,
+    #[error("index out of bounds")]
+    IndexOutOfBounds,
+    #[error("unknown error")]
+    Unknown,
+}
 
 pub struct MerkleTree {
     max_levels: u32,
@@ -42,7 +52,7 @@ impl MerkleTree {
         initial_elements: Vec<BigUint>,
         in_max_levels: Option<u32>,
         in_zero_element: Option<BigUint>,
-    ) -> Self {
+    ) -> Result<Self, MerkleTreeError> {
         let max_levels = match in_max_levels {
             Some(a) => a,
             _ => 20,
@@ -54,10 +64,9 @@ impl MerkleTree {
         };
 
         let capacity = 2u32.pow(max_levels);
-        check(
-            capacity >= initial_elements.len() as u32,
-            "it exceeds the maximum allowed capacity",
-        );
+        if capacity < initial_elements.len() as u32 {
+            return Err(MerkleTreeError::MerkleTreeIsFull);
+        }
 
         let zeros = calc_zeros(zero_element, &max_levels);
         let layers = vec![initial_elements];
@@ -69,7 +78,7 @@ impl MerkleTree {
             layers,
         };
         s.rebuild();
-        s
+        Ok(s)
     }
 
     fn rebuild(&mut self) {
@@ -103,20 +112,18 @@ impl MerkleTree {
         }
     }
 
-    pub fn insert(&mut self, element: BigUint) {
-        check(
-            self.layers[0].len() < self.capacity as usize,
-            "the tree is full",
-        );
+    pub fn insert(&mut self, element: BigUint) -> Result<(), MerkleTreeError> {
+        if self.layers[0].len() >= self.capacity as usize {
+            return Err(MerkleTreeError::MerkleTreeIsFull);
+        }
 
-        self.update(self.layers[0].len(), element);
+        self.update(self.layers[0].len(), element)
     }
 
-    pub fn bulk_insert(&mut self, elements: Vec<BigUint>) {
-        check(
-            self.layers[0].len() + elements.len() <= self.capacity as usize,
-            "the tree is full",
-        );
+    pub fn bulk_insert(&mut self, elements: Vec<BigUint>) -> Result<(), MerkleTreeError> {
+        if self.layers[0].len() + elements.len() <= self.capacity as usize {
+            return Err(MerkleTreeError::MerkleTreeIsFull);
+        }
 
         for element in elements.iter().take(elements.len() - 1) {
             self.layers[0].push(element.clone());
@@ -136,11 +143,11 @@ impl MerkleTree {
             }
         }
 
-        self.insert(elements[elements.len() - 1].clone());
+        self.insert(elements[elements.len() - 1].clone())
     }
 
     fn update_layers(&mut self, level: usize, index: usize, element: BigUint) {
-        debug_assert!(index <= self.layers[level].len());
+        assert!(index <= self.layers[level].len());
         if index < self.layers[level].len() {
             self.layers[level][index] = element;
         } else {
@@ -148,11 +155,10 @@ impl MerkleTree {
         }
     }
 
-    pub fn update(&mut self, index: usize, element: BigUint) {
-        check(
-            index <= self.layers[0].len() && index < self.capacity as usize,
-            "Insert index out of bounds: ${index}",
-        );
+    pub fn update(&mut self, index: usize, element: BigUint) -> Result<(), MerkleTreeError> {
+        if index > self.layers[0].len() && index >= self.capacity as usize {
+            return Err(MerkleTreeError::IndexOutOfBounds);
+        }
 
         self.update_layers(0, index, element);
         let current_index = index;
@@ -168,10 +174,14 @@ impl MerkleTree {
             let ph = hash2(first, second);
             self.update_layers(level, current_index, ph);
         }
+        Ok(())
     }
 
-    pub fn path(&self, index: usize) -> (Vec<BigUint>, Vec<usize>) {
-        check(index <= self.layers[0].len(), "index out of bounds}");
+    pub fn path(&self, index: usize) -> Result<(Vec<BigUint>, Vec<usize>), MerkleTreeError> {
+        if index > self.layers[0].len() {
+            return Err(MerkleTreeError::IndexOutOfBounds);
+        }
+
         let mut path_elements: Vec<BigUint> = Vec::new();
         let mut path_indices: Vec<usize> = Vec::new();
         let current_index = index;
@@ -186,7 +196,7 @@ impl MerkleTree {
             let _ = current_index >> 1;
         }
 
-        (path_elements, path_indices)
+        Ok((path_elements, path_indices))
     }
 
     pub fn elements(&self) -> Vec<BigUint> {
