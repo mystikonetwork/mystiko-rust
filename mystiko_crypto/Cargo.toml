@@ -6,9 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-num-bigint = { version = "0.4.3" }
+num-bigint = { version = "0.4.3" ,features = ["rand"]}
 ethers = { version = "1.0.2" }
+rand = { version = "0.8.5" }
 poseidon-rs = { version = "0.0.8" }
+babyjubjub-rs = { version = "0.0.10" }
 ff = {package="ff_ce" , version="0.11", features = ["derive"]}
 
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }

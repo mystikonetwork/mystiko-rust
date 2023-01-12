@@ -1,9 +1,10 @@
+use crate::utils::poseidon_hash;
 use ethers::core::utils::keccak256;
 use ff::*;
 use mystiko_utils::check::check;
 use mystiko_utils::constants::FIELD_SIZE;
 use num_bigint::BigUint;
-use poseidon_rs::{Fr, Poseidon};
+use poseidon_rs::Fr;
 
 pub struct MerkleTree {
     max_levels: u32,
@@ -11,12 +12,6 @@ pub struct MerkleTree {
     zeros: Vec<BigUint>,
     layers: Vec<Vec<BigUint>>,
 }
-
-// impl Default for MerkleTree {
-//     fn default() -> Self {
-//         Self::new()
-//     }
-// }
 
 fn calc_default_zero_element() -> BigUint {
     let input = b"Welcome To Mystiko's Magic World!";
@@ -30,13 +25,7 @@ fn hash2(first: &BigUint, second: &BigUint) -> BigUint {
     let b2: Fr = Fr::from_str(&second.to_string()).unwrap();
     let arr: Vec<Fr> = vec![b1, b2];
 
-    let poseidon = Poseidon::new();
-    // todo check poseidon hash result
-    let ph = poseidon.hash(arr).unwrap();
-    let ph_str = ph.into_repr().to_string();
-    let hex_string = ph_str.trim_start_matches("0x");
-    let hex_bytes = hex::decode(hex_string).unwrap();
-    BigUint::parse_bytes(&hex_bytes, 16).unwrap()
+    poseidon_hash(arr)
 }
 
 fn calc_zeros(first_zero: BigUint, levels: &u32) -> Vec<BigUint> {
@@ -93,15 +82,14 @@ impl MerkleTree {
 
             let count: usize = (len + 1) / 2;
             for i in 0..count {
-                let first = &self.layers[level - 1][i * 2];
+                let first = self.layers[level - 1][i * 2].clone();
                 let second = if i * 2 + 1 < len {
-                    &self.layers[level - 1][i * 2 + 1]
+                    self.layers[level - 1][i * 2 + 1].clone()
                 } else {
-                    &self.zeros[level - 1]
+                    self.zeros[level - 1].clone()
                 };
 
-                let ph = hash2(first, second);
-                self.layers[level].push(ph);
+                self.layers[level].push(hash2(&first, &second));
             }
         }
     }
@@ -130,23 +118,34 @@ impl MerkleTree {
             "the tree is full",
         );
 
-        for elem in elements.iter().take(elements.len() - 1) {
-            self.layers[0].push(elem.clone());
+        for element in elements.iter().take(elements.len() - 1) {
+            self.layers[0].push(element.clone());
             let mut level = 0;
             let index = self.layers[0].len() - 1;
             let mut i = index;
             while i % 2 == 1 {
                 level += 1;
                 let _ = index >> 1;
-                self.layers[level][index] = hash2(
+                let ph = hash2(
                     &self.layers[level - 1][index * 2],
                     &self.layers[level - 1][index * 2 + 1],
                 );
+
+                self.update_layers(level, index, ph);
                 i = index;
             }
         }
 
         self.insert(elements[elements.len() - 1].clone());
+    }
+
+    fn update_layers(&mut self, level: usize, index: usize, element: BigUint) {
+        debug_assert!(index <= self.layers[level].len());
+        if index < self.layers[level].len() {
+            self.layers[level][index] = element;
+        } else {
+            self.layers[level].push(element);
+        }
     }
 
     pub fn update(&mut self, index: usize, element: BigUint) {
@@ -155,8 +154,7 @@ impl MerkleTree {
             "Insert index out of bounds: ${index}",
         );
 
-        // todo push ?
-        self.layers[0][index] = element;
+        self.update_layers(0, index, element);
         let current_index = index;
         for level in 1..(self.max_levels + 1) as usize {
             let _ = current_index >> 1;
@@ -168,7 +166,7 @@ impl MerkleTree {
             };
 
             let ph = hash2(first, second);
-            self.layers[level][current_index] = ph;
+            self.update_layers(level, current_index, ph);
         }
     }
 
