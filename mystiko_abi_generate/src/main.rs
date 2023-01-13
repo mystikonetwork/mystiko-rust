@@ -17,10 +17,10 @@ fn abi_file_generation(src: &Path, dst: &String) -> Result<(), Box<dyn Error>> {
     let file_name_snake_case = re.replace_all(&file_name_snake_case, "_$1").to_lowercase();
     let file_name_snake_case = file_name_snake_case.trim_start_matches('_');
 
-    let dst = format!("{}/{}.rs", dst, file_name_snake_case);
+    let dst_file = format!("{dst}/{file_name_snake_case}.rs");
     Abigen::new(file_name, src.to_str().unwrap())?
         .generate()?
-        .write_to_file(dst)?;
+        .write_to_file(dst_file)?;
 
     Ok(())
 }
@@ -37,7 +37,7 @@ fn list_files(src: &Path, dst: &String) {
         } else {
             let file_name = path.file_name().unwrap().to_str().unwrap();
             if file_name.ends_with(".json") && !file_name.ends_with(".dbg.json") {
-                println!("generate file {}", file_name);
+                println!("generate file {file_name}");
                 let result = abi_file_generation(&path, dst);
                 if result.is_err() {
                     panic!("generate meet error 11 {:?}", result.err());

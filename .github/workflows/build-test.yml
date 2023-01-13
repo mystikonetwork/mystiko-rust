@@ -32,6 +32,8 @@ jobs:
       - name: Run clippy
         timeout-minutes: 60
         run: cargo clippy -j 4 -- -D warnings
+      - name: test
+        run: ./scripts/test.sh
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
         if: failure()
