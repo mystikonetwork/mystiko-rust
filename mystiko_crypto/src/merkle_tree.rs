@@ -33,6 +33,7 @@ fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {
     z
 }
 
+#[derive(Debug, PartialEq)]
 pub struct MerkleTree {
     max_levels: u32,
     capacity: u32,
@@ -272,13 +273,13 @@ mod tests {
             .unwrap()
         );
 
-        fn compare_big_uint(a: &BigInt, b: &BigInt) -> bool {
+        fn compare_big_int(a: &BigInt, b: &BigInt) -> bool {
             a == b
         }
 
         assert_eq!(tree2.elements(), elements);
         assert_eq!(tree2.index_of(&e1, None).unwrap(), 0);
-        assert_eq!(tree2.index_of(&e2, Some(&compare_big_uint)).unwrap(), 1);
+        assert_eq!(tree2.index_of(&e2, Some(&compare_big_int)).unwrap(), 1);
 
         let zero_element = BigInt::from(0 as u32);
         let tree3 = MerkleTree::new(None, Some(1), Some(zero_element.clone())).unwrap();
@@ -286,6 +287,10 @@ mod tests {
             tree3.root(),
             hash2(&zero_element.clone(), &zero_element.clone())
         );
+
+        let tree4 = MerkleTree::new(Some(elements.clone()), Some(0), Some(zero_element.clone()));
+        assert!(tree4.is_err());
+        assert_eq!(tree4, Err(MerkleTreeError::MerkleTreeIsFull));
     }
 
     #[test]

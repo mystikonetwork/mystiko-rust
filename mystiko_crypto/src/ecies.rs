@@ -1,4 +1,4 @@
-use crate::utils::fr_to_big_uint;
+use crate::utils::fr_to_big_int;
 use crate::utils::poseidon_hash;
 use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use mystiko_utils::constants::FIELD_SIZE;
 use num_bigint::{BigInt, RandBigInt, Sign, ToBigInt};
 use num_integer::Integer;
+use std::cmp::min;
 
 pub type Fr = poseidon_rs::Fr;
 lazy_static! {
@@ -26,9 +27,9 @@ const ECIES_KEY_LEN: usize = 32;
 pub fn generate_secret_key() -> BigInt {
     let mut rng = rand::thread_rng();
     let sk_raw = rng.gen_biguint(1024).to_bigint().unwrap();
-    let (_, sk_raw_bytes) = sk_raw.to_bytes_be();
+    let (_, sk_raw_bytes) = sk_raw.to_bytes_le();
     let sk_raw_bytes = sk_raw_bytes[..ECIES_KEY_LEN].to_vec();
-    let random_bigint = BigInt::from_bytes_be(Sign::Plus, &sk_raw_bytes);
+    let random_bigint = BigInt::from_bytes_le(Sign::Plus, &sk_raw_bytes);
 
     random_bigint.mod_floor(&FIELD_SIZE)
 }
@@ -39,22 +40,21 @@ pub fn public_key(secret_key: &BigInt) -> BigInt {
 }
 
 fn public_key_to_arr(num: &BigInt) -> [u8; ECIES_KEY_LEN] {
-    let (_, bytes) = num.to_bytes_be();
+    let (_, y_bytes) = num.to_bytes_le();
     let mut arr: [u8; ECIES_KEY_LEN] = [0; ECIES_KEY_LEN];
-    assert_eq!(bytes.len(), ECIES_KEY_LEN);
-    arr[0..].copy_from_slice(&bytes);
+    let len = min(y_bytes.len(), arr.len());
+    arr[..len].copy_from_slice(&y_bytes[..len]);
     arr
 }
 
 fn unpack_public_key_point(public_key: &BigInt) -> Point {
-    let mut arr = public_key_to_arr(public_key);
-    arr.reverse();
+    let arr = public_key_to_arr(public_key);
     decompress_point(arr).unwrap()
 }
 
 pub fn unpack_public_key(public_key: &BigInt) -> (BigInt, BigInt) {
     let point = unpack_public_key_point(public_key);
-    (fr_to_big_uint(&point.x), fr_to_big_uint(&point.y))
+    (fr_to_big_int(&point.x), fr_to_big_int(&point.y))
 }
 
 pub fn encrypt(plain: BigInt, pk: BigInt, common_sk: BigInt) -> BigInt {
@@ -123,6 +123,50 @@ mod tests {
             )
             .unwrap()
         );
+
+        let sk2 = BigInt::parse_bytes(
+            b"10159867704475093819611390305399872840803137048112391803348825378506064827917",
+            10,
+        )
+        .unwrap();
+
+        let pk2 = public_key(&sk2);
+        // let unpacked_pk = unpack_public_key(&pk);
+        assert_eq!(
+            pk2,
+            BigInt::parse_bytes(
+                b"144953317550107391240674677905376978673879922040003637731432436387597190873",
+                10
+            )
+            .unwrap()
+        );
+
+        let unpacked_pk2 = unpack_public_key(&pk2);
+        assert_eq!(
+            unpacked_pk2.0,
+            BigInt::parse_bytes(
+                b"909244511446444536038804174950319430779653247671679866159305631824459185121",
+                10
+            )
+            .unwrap()
+        );
+        assert_eq!(
+            unpacked_pk2.1,
+            BigInt::parse_bytes(
+                b"144953317550107391240674677905376978673879922040003637731432436387597190873",
+                10
+            )
+            .unwrap()
+        );
+    }
+
+    #[test]
+    fn test_unpack_public_key() {
+        for i in 0..10 {
+            let common_sk = generate_secret_key();
+            let common_pk = public_key(&common_sk);
+            let (_, _) = unpack_public_key(&common_pk);
+        }
     }
 
     #[test]
