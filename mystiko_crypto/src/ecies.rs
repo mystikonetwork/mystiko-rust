@@ -84,7 +84,7 @@ mod tests {
     #[test]
     fn test_mod() {
         let field = FIELD_SIZE.clone();
-        assert_eq!(calc_mod(BigInt::from(-1)), field - 1);
+        assert_eq!(calc_mod(BigInt::from(-1)), field - 2);
     }
 
     #[test]

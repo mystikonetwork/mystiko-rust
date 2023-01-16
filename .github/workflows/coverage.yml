@@ -1,0 +1,74 @@
+name: Coverage
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.rs'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - 'codecov.yml'
+      - '.github/workflows/coverage.yml'
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - 'codecov.yml'
+      - '.github/workflows/coverage.yml'
+
+jobs:
+  coverage:
+    name: Coverage on stable
+    timeout-minutes: 140
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3.3.0
+        with:
+          persist-credentials: false
+
+      - uses: actions-rs/toolchain@v1.0.7
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+          components: llvm-tools-preview
+
+      - name: Install cargo-llvm-cov cargo command
+        run: cargo install cargo-llvm-cov
+
+      - name: Run tests
+        run: cargo llvm-cov --lcov --no-report
+
+      - name: Generate coverage report
+        run: cargo llvm-cov --lcov --no-run --output-path lcov.info
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+      
+      - name: Telegram Failure Notification
+        uses: appleboy/telegram-action@master
+        if: failure()
+        with:
+          message: ❗ Build failed for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions) because of ${{ github.actor }}
+          format: markdown
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      - name: Telegram Success Notification
+        uses: appleboy/telegram-action@master
+        if: success()
+        with:
+          message: Build succeeded for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions)
+          format: markdown
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
