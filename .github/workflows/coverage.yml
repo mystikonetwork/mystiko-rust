@@ -44,6 +44,17 @@ jobs:
       - name: Install cargo-llvm-cov cargo command
         run: cargo install cargo-llvm-cov
 
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Run tests
         run: cargo llvm-cov --lcov --no-report
 
@@ -55,12 +66,12 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-      
+
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
         if: failure()
         with:
-          message: ❗ Build failed for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions) because of ${{ github.actor }}
+          message: ❗ Run coverage failed for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions) because of ${{ github.actor }}
           format: markdown
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -68,7 +79,7 @@ jobs:
         uses: appleboy/telegram-action@master
         if: success()
         with:
-          message: Build succeeded for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions)
+          message: Run coverage succeeded for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions)
           format: markdown
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
