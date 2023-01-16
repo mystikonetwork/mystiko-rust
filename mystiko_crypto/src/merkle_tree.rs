@@ -12,8 +12,8 @@ type CompareFn = dyn Fn(&BigInt, &BigInt) -> bool;
 fn calc_default_zero_element() -> BigInt {
     let input = b"Welcome To Mystiko's Magic World!";
     let seed_hash = keccak256(input);
-    let seed_uint = BigInt::from_bytes_be(Sign::Plus, &seed_hash);
-    seed_uint.mod_floor(&FIELD_SIZE)
+    let seed_bigint = BigInt::from_bytes_be(Sign::Plus, &seed_hash);
+    seed_bigint.mod_floor(&FIELD_SIZE)
 }
 
 fn hash2(first: &BigInt, second: &BigInt) -> BigInt {

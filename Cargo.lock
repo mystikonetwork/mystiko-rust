@@ -1460,6 +1460,7 @@ dependencies = [
  "lazy_static",
  "mystiko_utils",
  "num-bigint 0.4.3",
+ "num-integer",
  "poseidon-rs",
  "rand 0.8.5",
  "thiserror",

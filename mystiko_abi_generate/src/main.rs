@@ -57,3 +57,13 @@ fn main() {
     env::set_var("CARGO_MANIFEST_DIR", &args[1]);
     list_files(Path::new(&args[1]), &args[2]);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_list_files() {
+        list_files(Path::new("./tests"), &String::from("./tests"));
+    }
+}
