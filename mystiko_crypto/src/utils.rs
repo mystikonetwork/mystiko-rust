@@ -1,12 +1,12 @@
 use ff::*;
-use num_bigint::BigUint;
+use num_bigint::BigInt;
 use poseidon_rs::{Fr, Poseidon};
 
-pub fn fr_to_big_uint(fr: &Fr) -> BigUint {
-    BigUint::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
+pub fn fr_to_big_uint(fr: &Fr) -> BigInt {
+    BigInt::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
 }
 
-pub fn poseidon_hash(arr: Vec<Fr>) -> BigUint {
+pub fn poseidon_hash(arr: Vec<Fr>) -> BigInt {
     let poseidon = Poseidon::new();
     let ph = poseidon.hash(arr).unwrap();
     fr_to_big_uint(&ph)

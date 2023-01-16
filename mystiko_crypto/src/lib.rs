@@ -3,6 +3,7 @@ extern crate ethers;
 extern crate ff;
 extern crate lazy_static;
 extern crate num_bigint;
+extern crate num_integer;
 extern crate poseidon_rs;
 extern crate rand;
 

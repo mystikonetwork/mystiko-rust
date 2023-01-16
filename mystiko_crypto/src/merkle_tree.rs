@@ -3,19 +3,20 @@ use crate::utils::poseidon_hash;
 use ethers::core::utils::keccak256;
 use ff::*;
 use mystiko_utils::constants::FIELD_SIZE;
-use num_bigint::BigUint;
+use num_bigint::{BigInt, Sign};
+use num_integer::Integer;
 use poseidon_rs::Fr;
 
-type CompareFn = dyn Fn(&BigUint, &BigUint) -> bool;
+type CompareFn = dyn Fn(&BigInt, &BigInt) -> bool;
 
-fn calc_default_zero_element() -> BigUint {
+fn calc_default_zero_element() -> BigInt {
     let input = b"Welcome To Mystiko's Magic World!";
     let seed_hash = keccak256(input);
-    let seed_uint = BigUint::from_bytes_be(&seed_hash);
-    seed_uint.modpow(&BigUint::from(1u32), &FIELD_SIZE)
+    let seed_uint = BigInt::from_bytes_be(Sign::Plus, &seed_hash);
+    seed_uint.mod_floor(&FIELD_SIZE)
 }
 
-fn hash2(first: &BigUint, second: &BigUint) -> BigUint {
+fn hash2(first: &BigInt, second: &BigInt) -> BigInt {
     let b1: Fr = Fr::from_str(&first.to_string()).unwrap();
     let b2: Fr = Fr::from_str(&second.to_string()).unwrap();
     let arr: Vec<Fr> = vec![b1, b2];
@@ -23,8 +24,8 @@ fn hash2(first: &BigUint, second: &BigUint) -> BigUint {
     poseidon_hash(arr)
 }
 
-fn calc_zeros(first_zero: BigUint, levels: &u32) -> Vec<BigUint> {
-    let mut z: Vec<BigUint> = vec![];
+fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {
+    let mut z: Vec<BigInt> = vec![];
     z.push(first_zero);
     for i in 1..(levels + 1) as usize {
         z.push(hash2(&z[i - 1], &z[i - 1]));
@@ -35,15 +36,15 @@ fn calc_zeros(first_zero: BigUint, levels: &u32) -> Vec<BigUint> {
 pub struct MerkleTree {
     max_levels: u32,
     capacity: u32,
-    zeros: Vec<BigUint>,
-    layers: Vec<Vec<BigUint>>,
+    zeros: Vec<BigInt>,
+    layers: Vec<Vec<BigInt>>,
 }
 
 impl MerkleTree {
     pub fn new(
-        in_initial_elements: Option<Vec<BigUint>>,
+        in_initial_elements: Option<Vec<BigInt>>,
         in_max_levels: Option<u32>,
-        in_zero_element: Option<BigUint>,
+        in_zero_element: Option<BigInt>,
     ) -> Result<Self, MerkleTreeError> {
         let initial_elements = match in_initial_elements {
             Some(a) => a,
@@ -66,7 +67,7 @@ impl MerkleTree {
         }
 
         let zeros = calc_zeros(zero_element, &max_levels);
-        let layers: Vec<Vec<BigUint>> = vec![initial_elements];
+        let layers: Vec<Vec<BigInt>> = vec![initial_elements];
 
         let mut s = Self {
             max_levels,
@@ -100,7 +101,7 @@ impl MerkleTree {
         }
     }
 
-    pub fn root(&self) -> BigUint {
+    pub fn root(&self) -> BigInt {
         let levels = self.max_levels as usize;
         if self.layers[levels].is_empty() {
             self.zeros[levels].clone()
@@ -109,7 +110,7 @@ impl MerkleTree {
         }
     }
 
-    pub fn insert(&mut self, element: BigUint) -> Result<(), MerkleTreeError> {
+    pub fn insert(&mut self, element: BigInt) -> Result<(), MerkleTreeError> {
         if self.layers[0].len() >= self.capacity as usize {
             return Err(MerkleTreeError::MerkleTreeIsFull);
         }
@@ -117,7 +118,7 @@ impl MerkleTree {
         self.update(self.layers[0].len(), element)
     }
 
-    pub fn bulk_insert(&mut self, elements: Vec<BigUint>) -> Result<(), MerkleTreeError> {
+    pub fn bulk_insert(&mut self, elements: Vec<BigInt>) -> Result<(), MerkleTreeError> {
         if self.layers[0].len() + elements.len() > self.capacity as usize {
             return Err(MerkleTreeError::MerkleTreeIsFull);
         }
@@ -143,7 +144,7 @@ impl MerkleTree {
         self.insert(elements[elements.len() - 1].clone())
     }
 
-    fn update_layers(&mut self, level: usize, index: usize, element: BigUint) {
+    fn update_layers(&mut self, level: usize, index: usize, element: BigInt) {
         assert!(index <= self.layers[level].len());
         if index < self.layers[level].len() {
             self.layers[level][index] = element;
@@ -152,7 +153,7 @@ impl MerkleTree {
         }
     }
 
-    pub fn update(&mut self, index: usize, element: BigUint) -> Result<(), MerkleTreeError> {
+    pub fn update(&mut self, index: usize, element: BigInt) -> Result<(), MerkleTreeError> {
         if index > self.layers[0].len() || index >= self.capacity as usize {
             return Err(MerkleTreeError::IndexOutOfBounds);
         }
@@ -174,12 +175,12 @@ impl MerkleTree {
         Ok(())
     }
 
-    pub fn path(&self, index: usize) -> Result<(Vec<BigUint>, Vec<usize>), MerkleTreeError> {
+    pub fn path(&self, index: usize) -> Result<(Vec<BigInt>, Vec<usize>), MerkleTreeError> {
         if index > self.layers[0].len() {
             return Err(MerkleTreeError::IndexOutOfBounds);
         }
 
-        let mut path_elements: Vec<BigUint> = vec![];
+        let mut path_elements: Vec<BigInt> = vec![];
         let mut path_indices: Vec<usize> = vec![];
         let mut current_index = index;
         for level in 0..self.max_levels as usize {
@@ -196,11 +197,11 @@ impl MerkleTree {
         Ok((path_elements, path_indices))
     }
 
-    pub fn elements(&self) -> Vec<BigUint> {
+    pub fn elements(&self) -> Vec<BigInt> {
         self.layers[0].clone()
     }
 
-    pub fn index_of(&self, element: &BigUint, comparator: Option<&CompareFn>) -> Option<usize> {
+    pub fn index_of(&self, element: &BigInt, comparator: Option<&CompareFn>) -> Option<usize> {
         match comparator {
             Some(cmp) => self.layers[0].iter().position(|el| cmp(element, el)),
             None => self.layers[0].iter().position(|value| value.eq(element)),
@@ -217,7 +218,7 @@ mod tests {
         let fist_zero = calc_default_zero_element();
         assert_eq!(
             fist_zero,
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"4506069241680023110764189603658664710592327039412547147745745078424755206435",
                 10
             )
@@ -227,7 +228,7 @@ mod tests {
         let zeros = calc_zeros(fist_zero, &(32 as u32));
         assert_eq!(
             zeros[31],
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"13202030544264649816737469308990869537826379298057211734249690002947353708909",
                 10
             )
@@ -240,7 +241,7 @@ mod tests {
         let tree1 = MerkleTree::new(None, None, None).unwrap();
         assert_eq!(
             tree1.root(),
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"17749238747541177922260023106539184144732198174810064796938596694265936155259",
                 10
             )
@@ -249,12 +250,12 @@ mod tests {
 
         assert_eq!(tree1.elements(), vec![]);
 
-        let e1 = BigUint::parse_bytes(
+        let e1 = BigInt::parse_bytes(
             b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
             16,
         )
         .unwrap();
-        let e2 = BigUint::parse_bytes(
+        let e2 = BigInt::parse_bytes(
             b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
             16,
         )
@@ -264,14 +265,14 @@ mod tests {
         let tree2 = MerkleTree::new(Some(elements.clone()), None, None).unwrap();
         assert_eq!(
             tree2.root(),
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"21205178834650720622262399337497375208854240907281368468056255721030220387133",
                 10
             )
             .unwrap()
         );
 
-        fn compare_big_uint(a: &BigUint, b: &BigUint) -> bool {
+        fn compare_big_uint(a: &BigInt, b: &BigInt) -> bool {
             a == b
         }
 
@@ -279,7 +280,7 @@ mod tests {
         assert_eq!(tree2.index_of(&e1, None).unwrap(), 0);
         assert_eq!(tree2.index_of(&e2, Some(&compare_big_uint)).unwrap(), 1);
 
-        let zero_element = BigUint::from(0 as u32);
+        let zero_element = BigInt::from(0 as u32);
         let tree3 = MerkleTree::new(None, Some(1), Some(zero_element.clone())).unwrap();
         assert_eq!(
             tree3.root(),
@@ -290,12 +291,12 @@ mod tests {
     #[test]
     fn test_insert() {
         let mut tree = MerkleTree::new(None, None, None).unwrap();
-        let e1 = BigUint::parse_bytes(
+        let e1 = BigInt::parse_bytes(
             b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
             16,
         )
         .unwrap();
-        let e2 = BigUint::parse_bytes(
+        let e2 = BigInt::parse_bytes(
             b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
             16,
         )
@@ -305,7 +306,7 @@ mod tests {
         tree.insert(e2).unwrap();
         assert_eq!(
             tree.root(),
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"21205178834650720622262399337497375208854240907281368468056255721030220387133",
                 10
             )
@@ -316,17 +317,17 @@ mod tests {
     #[test]
     fn test_bulk_insert() {
         let mut tree = MerkleTree::new(None, None, None).unwrap();
-        let e1 = BigUint::parse_bytes(
+        let e1 = BigInt::parse_bytes(
             b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
             16,
         )
         .unwrap();
-        let e2 = BigUint::parse_bytes(
+        let e2 = BigInt::parse_bytes(
             b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
             16,
         )
         .unwrap();
-        let e3 = BigUint::parse_bytes(
+        let e3 = BigInt::parse_bytes(
             b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
             16,
         )
@@ -335,7 +336,7 @@ mod tests {
         tree.bulk_insert(vec![e1, e2, e3]).unwrap();
         assert_eq!(
             tree.root(),
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"10254041194642220426314275741279894727412053938657566062675343387806484605596",
                 10
             )
@@ -345,12 +346,12 @@ mod tests {
 
     #[test]
     fn test_update() {
-        let e1 = BigUint::parse_bytes(
+        let e1 = BigInt::parse_bytes(
             b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
             16,
         )
         .unwrap();
-        let e2 = BigUint::parse_bytes(
+        let e2 = BigInt::parse_bytes(
             b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
             16,
         )
@@ -360,7 +361,7 @@ mod tests {
         tree.update(0, e2.clone()).unwrap();
         assert_eq!(
             tree.root(),
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"5919354211942147568484662594760486300826527524526112436647850872711338828514",
                 10
             )
@@ -374,17 +375,17 @@ mod tests {
 
     #[test]
     fn test_path() {
-        let e1 = BigUint::parse_bytes(
+        let e1 = BigInt::parse_bytes(
             b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
             16,
         )
         .unwrap();
-        let e2 = BigUint::parse_bytes(
+        let e2 = BigInt::parse_bytes(
             b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
             16,
         )
         .unwrap();
-        let e3 = BigUint::parse_bytes(
+        let e3 = BigInt::parse_bytes(
             b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
             16,
         )

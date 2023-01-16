@@ -4,7 +4,8 @@ use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
 use lazy_static::lazy_static;
 use mystiko_utils::constants::FIELD_SIZE;
-use num_bigint::{BigInt, BigUint, RandBigInt, ToBigInt, ToBigUint};
+use num_bigint::{BigInt, RandBigInt, Sign, ToBigInt};
+use num_integer::Integer;
 
 pub type Fr = poseidon_rs::Fr;
 lazy_static! {
@@ -22,62 +23,58 @@ lazy_static! {
 
 const ECIES_KEY_LEN: usize = 32;
 
-fn big_uint_to_arr(num: &BigUint) -> [u8; ECIES_KEY_LEN] {
-    let bytes = num.to_bytes_be();
+pub fn generate_secret_key() -> BigInt {
+    let mut rng = rand::thread_rng();
+    let sk_raw = rng.gen_biguint(1024).to_bigint().unwrap();
+    let (_, sk_raw_bytes) = sk_raw.to_bytes_be();
+    let sk_raw_bytes = sk_raw_bytes[..ECIES_KEY_LEN].to_vec();
+    let random_bigint = BigInt::from_bytes_be(Sign::Plus, &sk_raw_bytes);
+
+    random_bigint.mod_floor(&FIELD_SIZE)
+}
+
+pub fn public_key(secret_key: &BigInt) -> BigInt {
+    let pk = B8.mul_scalar(secret_key).compress();
+    BigInt::from_bytes_le(Sign::Plus, &pk)
+}
+
+fn public_key_to_arr(num: &BigInt) -> [u8; ECIES_KEY_LEN] {
+    let (_, bytes) = num.to_bytes_be();
     let mut arr: [u8; ECIES_KEY_LEN] = [0; ECIES_KEY_LEN];
-    arr[ECIES_KEY_LEN - bytes.len()..].copy_from_slice(&bytes);
+    assert_eq!(bytes.len(), ECIES_KEY_LEN);
+    arr[0..].copy_from_slice(&bytes);
     arr
 }
 
-pub fn generate_secret_key() -> BigUint {
-    let mut rng = rand::thread_rng();
-    let sk_raw = rng.gen_biguint(1024).to_biguint().unwrap();
-    let sk_raw_bytes = sk_raw.to_bytes_be()[..ECIES_KEY_LEN].to_vec();
-    let random_uint = BigUint::from_bytes_be(&sk_raw_bytes);
-
-    random_uint.modpow(&BigUint::from(1u32), &FIELD_SIZE);
-    random_uint
-}
-
-pub fn public_key(secret_key: &BigUint) -> BigUint {
-    let pk = B8.mul_scalar(&secret_key.to_bigint().unwrap()).compress();
-    BigUint::from_bytes_le(&pk)
-}
-
-fn unpack_public_key_point(public_key: &BigUint) -> Point {
-    let mut arr = big_uint_to_arr(public_key);
+fn unpack_public_key_point(public_key: &BigInt) -> Point {
+    let mut arr = public_key_to_arr(public_key);
     arr.reverse();
     decompress_point(arr).unwrap()
 }
 
-pub fn unpack_public_key(public_key: &BigUint) -> (BigUint, BigUint) {
+pub fn unpack_public_key(public_key: &BigInt) -> (BigInt, BigInt) {
     let point = unpack_public_key_point(public_key);
     (fr_to_big_uint(&point.x), fr_to_big_uint(&point.y))
 }
 
-pub fn encrypt(plain: BigUint, pk: BigUint, common_sk: BigUint) -> BigUint {
+pub fn encrypt(plain: BigInt, pk: BigInt, common_sk: BigInt) -> BigInt {
     let point_pk = unpack_public_key_point(&pk);
-    let k = point_pk.mul_scalar(&common_sk.to_bigint().unwrap());
+    let k = point_pk.mul_scalar(&common_sk);
     let hm = poseidon_hash(vec![k.x, k.y]);
 
-    (plain + hm).modpow(&BigUint::from(1u32), &FIELD_SIZE)
+    calc_mod(plain + hm)
 }
 
-pub fn decrypt(encrypted: BigUint, sk: BigUint, common_pk: BigUint) -> BigUint {
+pub fn decrypt(encrypted: BigInt, sk: BigInt, common_pk: BigInt) -> BigInt {
     let point_pk = unpack_public_key_point(&common_pk);
-    let k = point_pk.mul_scalar(&sk.to_bigint().unwrap());
+    let k = point_pk.mul_scalar(&sk);
     let hm = poseidon_hash(vec![k.x, k.y]);
 
-    let a = encrypted.to_bigint().unwrap() - hm.to_bigint().unwrap();
-    calc_mod(a).to_biguint().unwrap()
+    calc_mod(encrypted - hm)
 }
 
-fn calc_mod(a_number: BigInt) -> BigUint {
-    let field_size = FIELD_SIZE.clone().to_bigint().unwrap();
-    a_number
-        .modpow(&BigInt::from(1u32), &field_size)
-        .to_biguint()
-        .unwrap()
+fn calc_mod(a_number: BigInt) -> BigInt {
+    a_number.mod_floor(&FIELD_SIZE)
 }
 
 #[cfg(test)]
@@ -85,8 +82,14 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_mod() {
+        let field = FIELD_SIZE.clone();
+        assert_eq!(calc_mod(BigInt::from(-1)), field - 1);
+    }
+
+    #[test]
     fn test_secret_key() {
-        let sk = BigUint::parse_bytes(
+        let sk = BigInt::parse_bytes(
             b"17271648533819761767633660408073145085934772589775836550317652488597130541763",
             10,
         )
@@ -96,7 +99,7 @@ mod tests {
         // let unpacked_pk = unpack_public_key(&pk);
         assert_eq!(
             pk,
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"72444700469954344414033902054315551824029723235242170438854670892932808883061",
                 10
             )
@@ -106,7 +109,7 @@ mod tests {
         let unpacked_pk = unpack_public_key(&pk);
         assert_eq!(
             unpacked_pk.0,
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"17698851190026478217268086792453479467089177242109235834022425894878167006166",
                 10
             )
@@ -114,7 +117,7 @@ mod tests {
         );
         assert_eq!(
             unpacked_pk.1,
-            BigUint::parse_bytes(
+            BigInt::parse_bytes(
                 b"14548655851296246702248409549971597897394730902421888419125878888976244063093",
                 10
             )
@@ -129,7 +132,7 @@ mod tests {
         let sk = generate_secret_key();
         let pk = public_key(&sk);
         let message = FIELD_SIZE.clone();
-        let message = message - BigUint::from(10u32);
+        let message = message - BigInt::from(10u32);
 
         let encrypted = encrypt(message.clone(), pk, common_sk);
         let decrypted = decrypt(encrypted.clone(), sk, common_pk);
