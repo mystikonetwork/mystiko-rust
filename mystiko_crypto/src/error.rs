@@ -9,3 +9,11 @@ pub enum MerkleTreeError {
     #[error("unknown error")]
     Unknown,
 }
+
+#[derive(Error, Debug, PartialEq)]
+pub enum SecretShareError {
+    #[error("num of shares out of range")]
+    SharesOutOfBounds,
+    #[error("threshold out of range")]
+    ThresholdOutOfBounds,
+}

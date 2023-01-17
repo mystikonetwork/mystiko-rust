@@ -238,7 +238,7 @@ mod tests {
     }
 
     #[test]
-    fn test_new_merfkle_tree() {
+    fn test_new_merkle_tree() {
         let tree1 = MerkleTree::new(None, None, None).unwrap();
         assert_eq!(
             tree1.root(),

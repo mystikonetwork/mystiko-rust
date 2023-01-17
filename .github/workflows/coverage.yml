@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - master
     paths:
       - '**/*.rs'
       - '**/Cargo.toml'
@@ -72,14 +72,6 @@ jobs:
         if: failure()
         with:
           message: ❗ Run coverage failed for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions) because of ${{ github.actor }}
-          format: markdown
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      - name: Telegram Success Notification
-        uses: appleboy/telegram-action@master
-        if: success()
-        with:
-          message: Run coverage succeeded for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions)
           format: markdown
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
