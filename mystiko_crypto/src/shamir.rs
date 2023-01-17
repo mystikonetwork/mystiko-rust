@@ -120,11 +120,13 @@ fn sum(values: Vec<BigInt>) -> BigInt {
 fn lagrange_inter_polate(x: BigInt, points: Vec<Point>, prime: BigInt) -> BigInt {
     let k = points.len();
     let mut hashset = HashSet::new();
-    let unique_points: Vec<&Point> = points
-        .iter()
-        .filter(|p| hashset.insert(p.x.clone()))
-        .collect();
-    assert_eq!(k, unique_points.len());
+    assert_eq!(
+        k,
+        points
+            .iter()
+            .filter(|p| hashset.insert(p.x.clone()))
+            .count()
+    );
 
     let mut nums: Vec<BigInt> = vec![];
     let mut dens: Vec<BigInt> = vec![];
