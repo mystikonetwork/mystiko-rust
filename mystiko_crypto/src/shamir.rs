@@ -25,7 +25,7 @@ pub fn recover(shares: Vec<Point>, in_prime: Option<BigInt>) -> BigInt {
         _ => FIELD_SIZE.clone(),
     };
 
-    lagrange_inter_polate(BigInt::zero(), shares, prime)
+    lagrange_interpolate(BigInt::zero(), shares, prime)
 }
 
 pub fn split(
