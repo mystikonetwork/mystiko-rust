@@ -117,7 +117,7 @@ fn sum(values: Vec<BigInt>) -> BigInt {
     values.iter().fold(BigInt::zero(), |acc, x| acc + x)
 }
 
-fn lagrange_inter_polate(x: BigInt, points: Vec<Point>, prime: BigInt) -> BigInt {
+fn lagrange_interpolate(x: BigInt, points: Vec<Point>, prime: BigInt) -> BigInt {
     let k = points.len();
     let mut hashset = HashSet::new();
     assert_eq!(
