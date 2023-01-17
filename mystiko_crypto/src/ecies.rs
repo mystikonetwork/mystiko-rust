@@ -1,11 +1,9 @@
-use crate::utils::fr_to_big_int;
-use crate::utils::poseidon_hash;
+use crate::utils::{calc_mod, fr_to_big_int, poseidon_hash, random};
 use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
 use lazy_static::lazy_static;
 use mystiko_utils::constants::FIELD_SIZE;
-use num_bigint::{BigInt, RandBigInt, Sign, ToBigInt};
-use num_integer::Integer;
+use num_bigint::{BigInt, Sign};
 use std::cmp::min;
 
 pub type Fr = poseidon_rs::Fr;
@@ -25,13 +23,7 @@ lazy_static! {
 const ECIES_KEY_LEN: usize = 32;
 
 pub fn generate_secret_key() -> BigInt {
-    let mut rng = rand::thread_rng();
-    let sk_raw = rng.gen_biguint(1024).to_bigint().unwrap();
-    let (_, sk_raw_bytes) = sk_raw.to_bytes_le();
-    let sk_raw_bytes = sk_raw_bytes[..ECIES_KEY_LEN].to_vec();
-    let random_bigint = BigInt::from_bytes_le(Sign::Plus, &sk_raw_bytes);
-
-    random_bigint.mod_floor(&FIELD_SIZE)
+    random(ECIES_KEY_LEN, &FIELD_SIZE)
 }
 
 pub fn public_key(secret_key: &BigInt) -> BigInt {
@@ -62,7 +54,7 @@ pub fn encrypt(plain: BigInt, pk: BigInt, common_sk: BigInt) -> BigInt {
     let k = point_pk.mul_scalar(&common_sk);
     let hm = poseidon_hash(vec![k.x, k.y]);
 
-    calc_mod(plain + hm)
+    calc_mod(plain + hm, &FIELD_SIZE)
 }
 
 pub fn decrypt(encrypted: BigInt, sk: BigInt, common_pk: BigInt) -> BigInt {
@@ -70,22 +62,12 @@ pub fn decrypt(encrypted: BigInt, sk: BigInt, common_pk: BigInt) -> BigInt {
     let k = point_pk.mul_scalar(&sk);
     let hm = poseidon_hash(vec![k.x, k.y]);
 
-    calc_mod(encrypted - hm)
-}
-
-fn calc_mod(a_number: BigInt) -> BigInt {
-    a_number.mod_floor(&FIELD_SIZE)
+    calc_mod(encrypted - hm, &FIELD_SIZE)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_mod() {
-        let field = FIELD_SIZE.clone();
-        assert_eq!(calc_mod(BigInt::from(-1)), field - 1);
-    }
 
     #[test]
     fn test_secret_key() {
@@ -162,7 +144,7 @@ mod tests {
 
     #[test]
     fn test_unpack_public_key() {
-        for i in 0..10 {
+        for _ in 0..10 {
             let common_sk = generate_secret_key();
             let common_pk = public_key(&common_sk);
             let (_, _) = unpack_public_key(&common_pk);

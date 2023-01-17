@@ -10,6 +10,7 @@ lazy_static = { version = "1.4.0" }
 thiserror = { version = "1.0.38" }
 num-bigint = { version = "0.4.3" ,features = ["rand"]}
 num-integer = { version = "0.1.45" }
+num-traits = { version = "0.2.15" }
 ethers = { version = "1.0.2" }
 rand = { version = "0.8.5" }
 poseidon-rs = { version = "0.0.8" }
