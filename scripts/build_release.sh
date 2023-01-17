@@ -4,4 +4,4 @@
 set -e
 export RUSTFLAGS="--remap-path-prefix=$PWD="
 
-cargo build --package mystiko-abi-generate
+cargo build
