@@ -17,3 +17,23 @@ pub enum SecretShareError {
     #[error("threshold out of range")]
     ThresholdOutOfBounds,
 }
+
+#[derive(Error, Debug, PartialEq)]
+pub enum ZkpError {
+    #[error("read {0} error {1}")]
+    ReadFileError(String, String),
+    #[error("parse {0} error {1}")]
+    ParseError(String, String),
+    #[error("deserialize program error {0}")]
+    DeserializeProgramError(String),
+    #[error("compute witness error {0}")]
+    ComputeWitnessError(String),
+    #[error("generate proof error {0}")]
+    GenerateProofError(String),
+    #[error("proof error: {0}")]
+    ProofError(String),
+    #[error("vk error: {0}")]
+    VKError(String),
+    #[error("{0}")]
+    Mismatch(String),
+}
