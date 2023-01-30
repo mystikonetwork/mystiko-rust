@@ -15,7 +15,7 @@ pub fn verify(proof: String, verification_key: &[u8]) -> Result<bool, ZkpError> 
         .map_err(|why| ZkpError::ParseError("verification key".to_string(), why.to_string()))?;
 
     let proof_json: serde_json::Value = serde_json::from_str(proof.as_str())
-        .map_err(|why| ZkpError::ProofError(why.to_string()))?;
+        .map_err(|why| ZkpError::ParseError("proof".to_string(), why.to_string()))?;
 
     let proof_curve = proof_json
         .get("curve")
