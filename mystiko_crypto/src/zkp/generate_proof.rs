@@ -3,13 +3,8 @@ use zokrates_ast::ir::{self, Witness};
 use zokrates_field::Field;
 use zokrates_proof_systems::*;
 
-pub fn generate_proof<
-    T: Field,
-    I: Iterator<Item = ir::Statement<T>>,
-    S: Scheme<T>,
-    B: Backend<T, S>,
->(
-    ir_prog: ir::ProgIterator<T, I>,
+pub fn generate_proof<T: Field, S: Scheme<T>, B: Backend<T, S>>(
+    ir_prog: ir::Prog<T>,
     witness: Witness<T>,
     proving_key: &[u8],
 ) -> Result<String, ZkpError> {

@@ -7,15 +7,17 @@ pub mod verify;
 
 #[cfg(test)]
 mod tests {
-    use crate::zkp::prove::prove_by_file;
-    use crate::zkp::verify::verify_by_file;
+    use crate::zkp::prove::{prove, prove_by_file};
+    use crate::zkp::utils::load_file;
+    use crate::zkp::verify::{verify, verify_by_file};
+    use std::env;
 
     #[test]
-    fn test_prove() {
+    fn test_prove_by_file() {
         let arr = ("1", "0", "1");
         let args = serde_json::to_string(&arr).unwrap();
         let witness = prove_by_file(
-            "./abc/abc/tests/files/program",
+            "./xxx/program",
             "./src/zkp/tests/files/abi.json",
             "./src/zkp/tests/files/proving.key",
             &args,
@@ -24,7 +26,23 @@ mod tests {
 
         let witness = prove_by_file(
             "./src/zkp/tests/files/program",
-            "./abc/abc/tests/files/abi.json",
+            "./xxx/abi.json",
+            "./src/zkp/tests/files/proving.key",
+            &args,
+        );
+        assert!(witness.is_err());
+
+        let witness = prove_by_file(
+            "./src/zkp/tests/files/program",
+            "./src/zkp/tests/files/abi.json",
+            "./xxx/proving.key",
+            &args,
+        );
+        assert!(witness.is_err());
+
+        let witness = prove_by_file(
+            "./src/zkp/tests/files/program_wrong",
+            "./src/zkp/tests/files/abi.json",
             "./src/zkp/tests/files/proving.key",
             &args,
         );
@@ -32,9 +50,39 @@ mod tests {
     }
 
     #[test]
-    fn test_prove_and_verify() {
-        // let arr = ('1', json!([[[false]]]), "1");
+    fn test_prove() {
+        let current_dir = env::current_dir().unwrap();
+        println!("The current directory is: {}", current_dir.display());
+
         let arr = ("1", "0", "1");
+        let args = serde_json::to_string(&arr).unwrap();
+        let prog = load_file("./src/zkp/tests/files/program_wrong").unwrap();
+        let abi_spec = load_file("./src/zkp/tests/files/abi.json").unwrap();
+        let pk = load_file("./src/zkp/tests/files/proving.key").unwrap();
+
+        let witness = prove(prog.as_slice(), abi_spec.as_slice(), pk.as_slice(), &args);
+        assert!(witness.is_err());
+    }
+
+    #[test]
+    fn test_prove_and_verify() {
+        let arr = ("1", "0", "1");
+        let args = serde_json::to_string(&arr).unwrap();
+
+        let prog = load_file("./src/zkp/tests/files/program").unwrap();
+        let abi_spec = load_file("./src/zkp/tests/files/abi.json").unwrap();
+        let pk = load_file("./src/zkp/tests/files/proving.key").unwrap();
+        let vk = load_file("./src/zkp/tests/files/verification.key").unwrap();
+
+        let proof = prove(prog.as_slice(), abi_spec.as_slice(), pk.as_slice(), &args).unwrap();
+        let result = verify(proof, vk.as_slice()).unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn test_prove_and_verify_by_file() {
+        // let arr = ('1', json!([[[false]]]), "1");
+        let arr = ("3", "2", "5");
         let args = serde_json::to_string(&arr).unwrap();
         let proof = prove_by_file(
             "./src/zkp/tests/files/program",
