@@ -8,6 +8,3 @@ edition = "2021"
 [dependencies]
 ethers = { version = "1.0.2", features = ["abigen"] }
 regex = { version = "1.7.1" }
-
-[dev-dependencies]
-assert_cli = "0.5"

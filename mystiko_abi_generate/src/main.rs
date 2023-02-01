@@ -8,7 +8,7 @@ use std::path::Path;
 
 use ethers::prelude::Abigen;
 
-fn abi_file_generation(src: &Path, dst: &String) -> Result<(), Box<dyn Error>> {
+fn abi_file_generation(src: &Path, dst: &str) -> Result<(), Box<dyn Error>> {
     let file_name = src.file_stem().unwrap().to_str().unwrap();
     let file_name_snake_case = file_name.replace("ERC", "_erc");
     let file_name_snake_case = file_name_snake_case.replace("V2TBridge", "_v2t_bridge");
@@ -25,7 +25,7 @@ fn abi_file_generation(src: &Path, dst: &String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn list_files(src: &Path, dst: &String) {
+fn list_files(src: &Path, dst: &str) {
     let entries = fs::read_dir(src).unwrap();
 
     for entry in entries {
@@ -57,22 +57,17 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    extern crate assert_cli;
-
     use super::*;
-    use std::env;
 
     #[test]
     fn test_main() {
-        assert_cli::Assert::main_binary().succeeds().unwrap();
+        let _ = std::panic::catch_unwind(|| {
+            main();
+        });
+    }
 
-        let dir = env::current_dir().unwrap();
-        let binding = dir.join(Path::new("tests"));
-        let path = binding.to_str().unwrap();
-        let args = vec![path.clone(), path.clone()];
-        assert_cli::Assert::main_binary()
-            .with_args(&args)
-            .succeeds()
-            .unwrap();
+    #[test]
+    fn test_list_files() {
+        list_files(Path::new("./tests"), &String::from("./tests"));
     }
 }

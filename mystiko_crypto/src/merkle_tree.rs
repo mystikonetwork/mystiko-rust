@@ -290,11 +290,38 @@ mod tests {
 
         let tree4 = MerkleTree::new(Some(elements.clone()), Some(0), Some(zero_element.clone()));
         assert!(tree4.is_err());
-        assert_eq!(tree4, Err(MerkleTreeError::MerkleTreeIsFull));
+        assert!(
+            if let MerkleTreeError::MerkleTreeIsFull = tree4.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
     }
 
     #[test]
     fn test_insert() {
+        let e1 = BigInt::parse_bytes(
+            b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
+            16,
+        )
+        .unwrap();
+        let e2 = BigInt::parse_bytes(
+            b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
+            16,
+        )
+        .unwrap();
+        let elements = vec![e1];
+        let mut tree = MerkleTree::new(Some(elements), Some(0), None).unwrap();
+        let result = tree.insert(e2);
+        assert!(
+            if let MerkleTreeError::MerkleTreeIsFull = result.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
+
         let mut tree = MerkleTree::new(None, None, None).unwrap();
         let e1 = BigInt::parse_bytes(
             b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
@@ -321,6 +348,27 @@ mod tests {
 
     #[test]
     fn test_bulk_insert() {
+        let e1 = BigInt::parse_bytes(
+            b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
+            16,
+        )
+        .unwrap();
+        let e2 = BigInt::parse_bytes(
+            b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
+            16,
+        )
+        .unwrap();
+        let elements = vec![e1];
+        let mut tree = MerkleTree::new(Some(elements), Some(0), None).unwrap();
+        let result = tree.bulk_insert(vec![e2]);
+        assert!(
+            if let MerkleTreeError::MerkleTreeIsFull = result.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
+
         let mut tree = MerkleTree::new(None, None, None).unwrap();
         let e1 = BigInt::parse_bytes(
             b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
@@ -375,7 +423,13 @@ mod tests {
 
         let result = tree.update(2, e2);
         assert!(result.is_err());
-        assert_eq!(result, Err(MerkleTreeError::IndexOutOfBounds));
+        assert!(
+            if let MerkleTreeError::IndexOutOfBounds = result.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
     }
 
     #[test]
@@ -417,6 +471,12 @@ mod tests {
 
         let result4 = tree.path(4);
         assert!(result4.is_err());
-        assert_eq!(result4, Err(MerkleTreeError::IndexOutOfBounds));
+        assert!(
+            if let MerkleTreeError::IndexOutOfBounds = result4.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
     }
 }

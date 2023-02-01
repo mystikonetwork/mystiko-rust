@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug)]
 pub enum MerkleTreeError {
     #[error("merkle tree is full")]
     MerkleTreeIsFull,
@@ -10,7 +10,7 @@ pub enum MerkleTreeError {
     Unknown,
 }
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug)]
 pub enum SecretShareError {
     #[error("num of shares out of range")]
     SharesOutOfBounds,
@@ -18,7 +18,7 @@ pub enum SecretShareError {
     ThresholdOutOfBounds,
 }
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug)]
 pub enum ZkpError {
     #[error("read {0} error {1}")]
     ReadFileError(String, String),
