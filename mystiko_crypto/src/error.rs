@@ -39,5 +39,22 @@ pub enum ZkpError {
     #[error("verify error {0}")]
     VerifyError(String),
     #[error("Not support")]
-    NotSupport(),
+    NotSupport,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error() {
+        let merkle_err = MerkleTreeError::Unknown;
+        format!("{:?}", merkle_err);
+
+        let share_err = SecretShareError::ThresholdOutOfBounds;
+        format!("{:?}", share_err);
+
+        let zkp_err = ZkpError::NotSupport;
+        format!("{:?}", zkp_err);
+    }
 }

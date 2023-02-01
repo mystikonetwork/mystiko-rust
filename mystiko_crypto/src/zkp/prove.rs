@@ -27,7 +27,7 @@ pub fn prove_by_file(
     let p = if let ProgEnum::Bn128Program(p) = prog {
         p
     } else {
-        return Err(ZkpError::NotSupport());
+        return Err(ZkpError::NotSupport);
     };
 
     let witness = compute_witness(p.clone(), &abi, json_args_str)?;
@@ -51,7 +51,7 @@ pub fn prove(
     let p = if let ProgEnum::Bn128Program(p) = prog {
         p
     } else {
-        return Err(ZkpError::NotSupport());
+        return Err(ZkpError::NotSupport);
     };
 
     let witness = compute_witness(p.clone(), &abi, json_args_str)?;

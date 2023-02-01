@@ -73,7 +73,7 @@ fn do_verify(proof: String, vk: serde_json::Value) -> Result<bool, ZkpError> {
         Parameters(BackendParameter::Bellman, CurveParameter::Bn128, SchemeParameter::G16) => {
             call_verify::<Bn128Field, G16, Bellman>(vk, proof_json)
         }
-        _ => Err(ZkpError::NotSupport()),
+        _ => Err(ZkpError::NotSupport),
     }
 }
 
@@ -195,7 +195,7 @@ mod tests {
             proof.to_string(),
             "./src/zkp/tests/files/wrong/verification_bls12_381.key",
         );
-        assert!(if let ZkpError::NotSupport() = result.err().unwrap() {
+        assert!(if let ZkpError::NotSupport = result.err().unwrap() {
             true
         } else {
             false
