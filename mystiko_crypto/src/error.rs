@@ -30,10 +30,14 @@ pub enum ZkpError {
     ComputeWitnessError(String),
     #[error("generate proof error {0}")]
     GenerateProofError(String),
-    #[error("proof error: {0}")]
+    #[error("proof error {0}")]
     ProofError(String),
-    #[error("vk error: {0}")]
+    #[error("vk error {0}")]
     VKError(String),
-    #[error("{0}")]
-    Mismatch(String),
+    #[error("mismatch error {0}")]
+    MismatchError(String),
+    #[error("verify error {0}")]
+    VerifyError(String),
+    #[error("Not support")]
+    NotSupport(),
 }

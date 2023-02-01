@@ -5,7 +5,6 @@ use crate::zkp::utils::{create_file_reader, load_file};
 use zokrates_ast::ir::{self, ProgEnum};
 use zokrates_ast::typed::abi::Abi;
 use zokrates_bellman::Bellman;
-use zokrates_common::helpers::*;
 use zokrates_proof_systems::*;
 
 pub fn prove_by_file(
@@ -25,24 +24,15 @@ pub fn prove_by_file(
         Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
     };
 
-    let curve_parameter = CurveParameter::try_from(prog.curve()).unwrap();
-    let parameters = Parameters(
-        BackendParameter::Bellman,
-        curve_parameter,
-        SchemeParameter::G16,
-    );
+    let p = if let ProgEnum::Bn128Program(p) = prog {
+        p
+    } else {
+        return Err(ZkpError::NotSupport());
+    };
 
-    match parameters {
-        Parameters(BackendParameter::Bellman, _, SchemeParameter::G16) => match prog {
-            ProgEnum::Bn128Program(p) => {
-                let witness = compute_witness(p.clone(), &abi, json_args_str)?;
-                let proof = generate_proof::<_, G16, Bellman>(p, witness, proving_key.as_slice())?;
-                Ok(proof)
-            }
-            _ => unreachable!(),
-        },
-        _ => unreachable!(),
-    }
+    let witness = compute_witness(p.clone(), &abi, json_args_str)?;
+    let proof = generate_proof::<_, G16, Bellman>(p, witness, proving_key.as_slice())?;
+    Ok(proof)
 }
 
 pub fn prove(
@@ -58,22 +48,99 @@ pub fn prove(
         Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
     };
 
-    let curve_parameter = CurveParameter::try_from(prog.curve()).unwrap();
-    let parameters = Parameters(
-        BackendParameter::Bellman,
-        curve_parameter,
-        SchemeParameter::G16,
-    );
+    let p = if let ProgEnum::Bn128Program(p) = prog {
+        p
+    } else {
+        return Err(ZkpError::NotSupport());
+    };
 
-    match parameters {
-        Parameters(BackendParameter::Bellman, _, SchemeParameter::G16) => match prog {
-            ProgEnum::Bn128Program(p) => {
-                let witness = compute_witness(p.clone(), &abi, json_args_str)?;
-                let proof = generate_proof::<_, G16, Bellman>(p, witness, proving_key)?;
-                Ok(proof)
+    let witness = compute_witness(p.clone(), &abi, json_args_str)?;
+    let proof = generate_proof::<_, G16, Bellman>(p, witness, proving_key)?;
+    Ok(proof)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::error::ZkpError;
+    use crate::zkp::prove::{prove, prove_by_file};
+    use crate::zkp::utils::load_file;
+
+    #[test]
+    fn test_prove_by_file() {
+        let arr = ("1", "0", "1");
+        let args = serde_json::to_string(&arr).unwrap();
+        let witness = prove_by_file(
+            "./xxx/program",
+            "./src/zkp/tests/files/abi.json",
+            "./src/zkp/tests/files/proving.key",
+            &args,
+        );
+        assert!(
+            if let ZkpError::ReadFileError(_, _) = witness.err().unwrap() {
+                true
+            } else {
+                false
             }
-            _ => unreachable!(),
-        },
-        _ => unreachable!(),
+        );
+
+        let witness = prove_by_file(
+            "./src/zkp/tests/files/program",
+            "./xxx/abi.json",
+            "./src/zkp/tests/files/proving.key",
+            &args,
+        );
+        assert!(
+            if let ZkpError::ReadFileError(_, _) = witness.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
+
+        let witness = prove_by_file(
+            "./src/zkp/tests/files/program",
+            "./src/zkp/tests/files/abi.json",
+            "./xxx/proving.key",
+            &args,
+        );
+        assert!(
+            if let ZkpError::ReadFileError(_, _) = witness.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
+
+        let witness = prove_by_file(
+            "./src/zkp/tests/files/wrong/program",
+            "./src/zkp/tests/files/abi.json",
+            "./src/zkp/tests/files/proving.key",
+            &args,
+        );
+        assert!(
+            if let ZkpError::DeserializeProgramError(_) = witness.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
+    }
+
+    #[test]
+    fn test_prove() {
+        let arr = ("1", "0", "1");
+        let args = serde_json::to_string(&arr).unwrap();
+        let prog = load_file("./src/zkp/tests/files/wrong/program").unwrap();
+        let abi_spec = load_file("./src/zkp/tests/files/abi.json").unwrap();
+        let pk = load_file("./src/zkp/tests/files/proving.key").unwrap();
+
+        let witness = prove(prog.as_slice(), abi_spec.as_slice(), pk.as_slice(), &args);
+        assert!(
+            if let ZkpError::DeserializeProgramError(_) = witness.err().unwrap() {
+                true
+            } else {
+                false
+            }
+        );
     }
 }

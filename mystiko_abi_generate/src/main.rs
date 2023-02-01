@@ -38,10 +38,7 @@ fn list_files(src: &Path, dst: &String) {
             let file_name = path.file_name().unwrap().to_str().unwrap();
             if file_name.ends_with(".json") && !file_name.ends_with(".dbg.json") {
                 println!("generate file {file_name}");
-                let result = abi_file_generation(&path, dst);
-                if result.is_err() {
-                    panic!("generate meet error 11 {:?}", result.err());
-                }
+                abi_file_generation(&path, dst).unwrap();
             }
         }
     }
@@ -60,10 +57,22 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    extern crate assert_cli;
+
     use super::*;
+    use std::env;
 
     #[test]
-    fn test_list_files() {
-        list_files(Path::new("./tests"), &String::from("./tests"));
+    fn test_main() {
+        assert_cli::Assert::main_binary().succeeds().unwrap();
+
+        let dir = env::current_dir().unwrap();
+        let binding = dir.join(Path::new("tests"));
+        let path = binding.to_str().unwrap();
+        let args = vec![path.clone(), path.clone()];
+        assert_cli::Assert::main_binary()
+            .with_args(&args)
+            .succeeds()
+            .unwrap();
     }
 }
