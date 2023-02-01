@@ -33,7 +33,6 @@ fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {
     z
 }
 
-#[derive(Debug, PartialEq)]
 pub struct MerkleTree {
     max_levels: u32,
     capacity: u32,
