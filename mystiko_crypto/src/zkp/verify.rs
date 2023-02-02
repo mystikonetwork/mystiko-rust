@@ -81,9 +81,9 @@ fn call_verify<T: Field, S: Scheme<T>, B: Backend<T, S>>(
     vk: serde_json::Value,
     proof: serde_json::Value,
 ) -> Result<bool, ZkpError> {
-    let vk = serde_json::from_value(vk).map_err(|why| ZkpError::ProofError(why.to_string()))?;
+    let vk = serde_json::from_value(vk).map_err(|why| ZkpError::VKError(why.to_string()))?;
     let proof: Proof<T, S> =
-        serde_json::from_value(proof).map_err(|why| ZkpError::VerifyError(why.to_string()))?;
+        serde_json::from_value(proof).map_err(|why| ZkpError::ProofError(why.to_string()))?;
 
     Ok(B::verify(vk, proof))
 }

@@ -28,16 +28,12 @@ pub enum ZkpError {
     DeserializeProgramError(String),
     #[error("compute witness error {0}")]
     ComputeWitnessError(String),
-    #[error("generate proof error {0}")]
-    GenerateProofError(String),
     #[error("proof error {0}")]
     ProofError(String),
     #[error("vk error {0}")]
     VKError(String),
     #[error("mismatch error {0}")]
     MismatchError(String),
-    #[error("verify error {0}")]
-    VerifyError(String),
     #[error("Not support")]
     NotSupport,
 }
@@ -50,11 +46,9 @@ impl ZkpError {
             ZkpError::ParseError(_, _) => ZkpError::ParseError(empty.clone(), empty),
             ZkpError::DeserializeProgramError(_) => ZkpError::DeserializeProgramError(empty),
             ZkpError::ComputeWitnessError(_) => ZkpError::ComputeWitnessError(empty),
-            ZkpError::GenerateProofError(_) => ZkpError::GenerateProofError(empty),
             ZkpError::ProofError(_) => ZkpError::ProofError(empty),
             ZkpError::VKError(_) => ZkpError::VKError(empty),
             ZkpError::MismatchError(_) => ZkpError::MismatchError(empty),
-            ZkpError::VerifyError(_) => ZkpError::VerifyError(empty),
             ZkpError::NotSupport => ZkpError::NotSupport,
         }
     }
