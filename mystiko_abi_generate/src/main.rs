@@ -44,7 +44,20 @@ fn list_files(src: &Path, dst: &str) {
     }
 }
 
-fn generate(src: &Path, dst: &str) {
+fn generate(args: Vec<String>) {
+    if args.len() != 3 {
+        println!("please input src dir and dst dir");
+        return;
+    }
+
+    let src = Path::new(&args[1]);
+    let dst = &args[2];
+
+    let dir = env::current_dir().unwrap();
+    let binding = dir.join(src);
+    let path = binding.to_str().unwrap();
+    env::set_var("CARGO_MANIFEST_DIR", path);
+
     let src_dir = fs::read_dir(src);
     if src_dir.is_err() {
         println!("src dir error {:?}", src_dir.err().unwrap());
@@ -62,13 +75,7 @@ fn generate(src: &Path, dst: &str) {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    if args.len() != 3 {
-        println!("please input src dir and dst dir");
-        return;
-    }
-
-    env::set_var("CARGO_MANIFEST_DIR", &args[1]);
-    generate(Path::new(&args[1]), &args[2]);
+    generate(args);
 }
 
 #[cfg(test)]
@@ -82,12 +89,28 @@ mod tests {
 
     #[test]
     fn test_wrong_path() {
-        generate(Path::new("./xxx"), &String::from("./tests"));
-        generate(Path::new("./tests"), &String::from("./xxx"));
+        let args = vec![
+            String::from("abi-generate"),
+            String::from("./xxx"),
+            String::from("./tests"),
+        ];
+        generate(args);
+
+        let args = vec![
+            String::from("abi-generate"),
+            String::from("./tests"),
+            String::from("./xxx"),
+        ];
+        generate(args);
     }
 
     #[test]
     fn test_generate() {
-        generate(Path::new("./tests"), &String::from("./tests"));
+        let args = vec![
+            String::from("abi-generate"),
+            String::from("./tests"),
+            String::from("./tests"),
+        ];
+        generate(args);
     }
 }

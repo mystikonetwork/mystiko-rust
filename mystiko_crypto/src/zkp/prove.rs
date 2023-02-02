@@ -75,12 +75,9 @@ mod tests {
             "./src/zkp/tests/files/proving.key",
             &args,
         );
-        assert!(
-            if let ZkpError::ReadFileError(_, _) = witness.err().unwrap() {
-                true
-            } else {
-                false
-            }
+        assert_eq!(
+            witness.err().unwrap().name(),
+            ZkpError::ReadFileError(String::from(""), String::from(""))
         );
 
         let witness = prove_by_file(
@@ -89,12 +86,9 @@ mod tests {
             "./src/zkp/tests/files/proving.key",
             &args,
         );
-        assert!(
-            if let ZkpError::ReadFileError(_, _) = witness.err().unwrap() {
-                true
-            } else {
-                false
-            }
+        assert_eq!(
+            witness.err().unwrap().name(),
+            ZkpError::ReadFileError(String::from(""), String::from(""))
         );
 
         let witness = prove_by_file(
@@ -103,12 +97,9 @@ mod tests {
             "./xxx/proving.key",
             &args,
         );
-        assert!(
-            if let ZkpError::ReadFileError(_, _) = witness.err().unwrap() {
-                true
-            } else {
-                false
-            }
+        assert_eq!(
+            witness.err().unwrap().name(),
+            ZkpError::ReadFileError(String::from(""), String::from(""))
         );
 
         let witness = prove_by_file(
@@ -117,12 +108,9 @@ mod tests {
             "./src/zkp/tests/files/proving.key",
             &args,
         );
-        assert!(
-            if let ZkpError::DeserializeProgramError(_) = witness.err().unwrap() {
-                true
-            } else {
-                false
-            }
+        assert_eq!(
+            witness.err().unwrap().name(),
+            ZkpError::DeserializeProgramError(String::from(""))
         );
     }
 
@@ -135,12 +123,9 @@ mod tests {
         let pk = load_file("./src/zkp/tests/files/proving.key").unwrap();
 
         let witness = prove(prog.as_slice(), abi_spec.as_slice(), pk.as_slice(), &args);
-        assert!(
-            if let ZkpError::DeserializeProgramError(_) = witness.err().unwrap() {
-                true
-            } else {
-                false
-            }
+        assert_eq!(
+            witness.err().unwrap().name(),
+            ZkpError::DeserializeProgramError(String::from(""))
         );
     }
 }

@@ -164,23 +164,12 @@ mod tests {
     fn test_secret_sharing() {
         let secret = random(32, &FIELD_SIZE.clone());
         let result = split(secret.clone(), 0, 17, None);
-        assert!(result.is_err());
-        assert!(
-            if let SecretShareError::SharesOutOfBounds = result.err().unwrap() {
-                true
-            } else {
-                false
-            }
-        );
+        assert_eq!(result.err().unwrap(), SecretShareError::SharesOutOfBounds);
 
         let result = split(secret.clone(), 5, 7, None);
-        assert!(result.is_err());
-        assert!(
-            if let SecretShareError::ThresholdOutOfBounds = result.err().unwrap() {
-                true
-            } else {
-                false
-            }
+        assert_eq!(
+            result.err().unwrap(),
+            SecretShareError::ThresholdOutOfBounds
         );
     }
 
