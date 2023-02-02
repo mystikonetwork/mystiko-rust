@@ -7,8 +7,6 @@ coverage:
     patch:
       default:
         informational: true
-  exclude:
-    - '^#\[cfg\(test\)\].*$'
 
 parsers:
   gcov:

@@ -44,6 +44,22 @@ fn list_files(src: &Path, dst: &str) {
     }
 }
 
+fn generate(src: &Path, dst: &str) {
+    let src_dir = fs::read_dir(src);
+    if src_dir.is_err() {
+        println!("src dir error {:?}", src_dir.err().unwrap());
+        return;
+    }
+
+    let dst_dir = fs::read_dir(Path::new(dst));
+    if dst_dir.is_err() {
+        println!("dst dir error {:?}", dst_dir.err().unwrap());
+        return;
+    }
+
+    list_files(src, dst);
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.len() != 3 {
@@ -52,7 +68,7 @@ fn main() {
     }
 
     env::set_var("CARGO_MANIFEST_DIR", &args[1]);
-    list_files(Path::new(&args[1]), &args[2]);
+    generate(Path::new(&args[1]), &args[2]);
 }
 
 #[cfg(test)]
@@ -61,13 +77,17 @@ mod tests {
 
     #[test]
     fn test_main() {
-        let _ = std::panic::catch_unwind(|| {
-            main();
-        });
+        main();
     }
 
     #[test]
-    fn test_list_files() {
-        list_files(Path::new("./tests"), &String::from("./tests"));
+    fn test_wrong_path() {
+        generate(Path::new("./xxx"), &String::from("./tests"));
+        generate(Path::new("./tests"), &String::from("./xxx"));
+    }
+
+    #[test]
+    fn test_generate() {
+        generate(Path::new("./tests"), &String::from("./tests"));
     }
 }
