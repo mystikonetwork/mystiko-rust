@@ -3,7 +3,7 @@ use validator::Validate;
 use crate::common::{BridgeType, ContractType};
 use crate::raw::contract::base::RawContractConfig;
 
-#[derive(Validate, Serialize, Deserialize, Debug)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawDepositContractConfig {
     contract: RawContractConfig,
     contract_type: ContractType,

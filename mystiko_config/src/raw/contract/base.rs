@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::ContractType;
 
-#[derive(Validate, Serialize, Deserialize, Debug)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawContractConfig {
     version: u32,
     name: String,
