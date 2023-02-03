@@ -38,7 +38,7 @@ impl MystikoConfig {
             default_circuit_configs,
             circuit_configs_by_name
         ) = self.init_circuit_configs();
-        return MystikoConfig {
+        let config = Self {
             base,
             default_circuit_configs: default_circuit_configs.clone(),
             circuit_configs_by_name: circuit_configs_by_name.clone(),
@@ -49,13 +49,15 @@ impl MystikoConfig {
             ),
             indexer_config: self.init_indexer_config(),
         };
+        config.validate();
+        config
     }
 
     fn get_chain_config(&self, chain_id: u32) -> Option<&ChainConfig> {
         self.chain_configs.get(&chain_id)
     }
 
-    pub fn get_deposit_contract_config_by_address(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
+    fn get_deposit_contract_config_by_address(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
         let chain_config = self.get_chain_config(chain_id).clone();
         match chain_config {
             Some(config) => {
@@ -183,5 +185,10 @@ impl MystikoConfig {
                 None
             }
         }
+    }
+
+    // TODO supplement
+    fn validate(&self) {
+        for chain_config in self.chain_configs {}
     }
 }

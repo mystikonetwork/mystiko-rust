@@ -1478,6 +1478,7 @@ name = "mystiko_config"
 version = "0.1.0"
 dependencies = [
  "mystiko_utils",
+ "num-bigint 0.4.3",
  "regex",
  "serde",
  "serde_json",

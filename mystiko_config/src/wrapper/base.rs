@@ -7,7 +7,7 @@ pub struct BaseConfig<R, A = ()>
         R: RawConfig + Serialize,
 {
     pub data: R,
-    aux_data: Option<A>,
+    pub aux_data: Option<A>,
 }
 
 impl<R, A> BaseConfig<R, A> where
@@ -21,6 +21,17 @@ impl<R, A> BaseConfig<R, A> where
 
     pub fn to_json_string(&self) -> String {
         return serde_json::to_string(&self.data).unwrap();
+    }
+
+    pub fn aux_data_not_empty(&self) -> A {
+        match &self.aux_data {
+            None => {
+                panic!("aux_data has not been specified")
+            }
+            Some(value) => {
+                A.clone()
+            }
+        }
     }
 }
 
