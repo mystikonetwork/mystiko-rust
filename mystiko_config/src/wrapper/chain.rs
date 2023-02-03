@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::hash::Hash;
+use mystiko_utils::check::check;
 use crate::common::{BridgeType, CircuitType};
 use crate::raw::base::RawConfig;
 use crate::raw::chain::RawChainConfig;
@@ -38,10 +40,13 @@ pub struct ChainConfig {
 
 impl ChainConfig {
     // TODO Supplementary constructor
-    pub fn new(data: RawChainConfig, aux_data: Option<AuxData>) -> Self {
+    pub fn new(&self, data: RawChainConfig, aux_data: Option<AuxData>) -> Self {
         Self {
             base: BaseConfig::new(data, aux_data),
-            pool_contract_configs: Default::default(),
+            pool_contract_configs: self.init_pool_contract_configs(
+                self.base.aux_data_not_empty().default_circuit_configs,
+                self.base.aux_data_not_empty().circuit_configs_by_name,
+            ),
             pool_configs_by_asset_and_bridge: Default::default(),
             deposit_contract_configs: Default::default(),
             main_asset_config: AssetConfig {},
@@ -52,6 +57,28 @@ impl ChainConfig {
 
     pub fn get_deposit_contract_by_address(&self, address: String) -> Option<&DepositContractConfig> {
         self.deposit_contract_configs.get(&address)
+    }
+
+    fn init_pool_contract_configs(
+        &self,
+        default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
+        circuit_configs_by_name: HashMap<String, CircuitConfig>,
+    ) -> HashMap<String, PoolContractConfig> {
+        let pool_contract_configs: HashMap<String, PoolContractConfig> = HashMap::new();
+        for raw in self.base.data.pool_contracts {
+            check(
+                !pool_contract_configs.contains_key(raw.base.address.as_str()),
+                format!(
+                    "duplicate pool contract={:?} definition in configuration", raw.base.address
+                ).as_str(),
+            );
+            pool_contract_configs.insert(
+                raw.base.address,
+                PoolContractConfig::new()
+            )
+        }
+
+        pool_contract_configs
     }
 }
 
