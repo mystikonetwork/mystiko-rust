@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::raw::asset::RawAssetConfig;
+use crate::raw::base::RawConfig;
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
 
-#[derive(Validate, Serialize, Deserialize, Debug)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawChainConfig {
     pub chain_id: u32,
     pub name: String,
@@ -22,3 +23,5 @@ pub struct RawChainConfig {
     pub pool_contracts: Vec<RawPoolContractConfig>,
     pub assets: Vec<RawAssetConfig>,
 }
+
+impl RawConfig for RawChainConfig {}

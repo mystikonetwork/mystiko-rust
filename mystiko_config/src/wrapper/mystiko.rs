@@ -6,16 +6,23 @@ use crate::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
 use crate::wrapper::base::BaseConfig;
 use crate::wrapper::bridge::axelar::AxelarBridgeConfig;
 use crate::wrapper::bridge::celer::CelerBridgeConfig;
-use crate::wrapper::chain::ChainConfig;
+use crate::wrapper::bridge::layer_zero::LayerZeroBridgeConfig;
+use crate::wrapper::bridge::poly::PolyBridgeConfig;
+use crate::wrapper::bridge::tbridge::TBridgeConfig;
+use crate::wrapper::chain::{AuxData, ChainConfig};
 use crate::wrapper::circuit::CircuitConfig;
+use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::indexer::IndexerConfig;
 
 pub enum BridgeConfigType {
     AxelarBridgeConfig(AxelarBridgeConfig),
     CelerBridgeConfig(CelerBridgeConfig),
+    PolyBridgeConfig(PolyBridgeConfig),
+    LayerZeroBridgeConfig(LayerZeroBridgeConfig),
+    TBridgeConfig(TBridgeConfig),
 }
 
-struct MystikoConfig {
+pub struct MystikoConfig {
     base: BaseConfig<RawMystikoConfig>,
     default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
     circuit_configs_by_name: HashMap<String, CircuitConfig>,
@@ -33,12 +40,31 @@ impl MystikoConfig {
         ) = self.init_circuit_configs();
         return MystikoConfig {
             base,
-            default_circuit_configs,
-            circuit_configs_by_name,
-            bridge_configs: Default::default(),
-            chain_configs: Default::default(),
-            indexer_config: None,
+            default_circuit_configs: default_circuit_configs.clone(),
+            circuit_configs_by_name: circuit_configs_by_name.clone(),
+            bridge_configs: self.init_bridge_configs(),
+            chain_configs: self.init_chain_configs(
+                default_circuit_configs,
+                circuit_configs_by_name,
+            ),
+            indexer_config: self.init_indexer_config(),
         };
+    }
+
+    fn get_chain_config(&self, chain_id: u32) -> Option<&ChainConfig> {
+        self.chain_configs.get(&chain_id)
+    }
+
+    pub fn get_deposit_contract_config_by_address(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
+        let chain_config = self.get_chain_config(chain_id).clone();
+        match chain_config {
+            Some(config) => {
+                config.get_deposit_contract_by_address(address)
+            }
+            None => {
+                None
+            }
+        }
     }
 
     fn init_circuit_configs(&self) -> (HashMap<CircuitType, CircuitConfig>, HashMap<String, CircuitConfig>) {
@@ -99,10 +125,63 @@ impl MystikoConfig {
                         BridgeConfigType::CelerBridgeConfig(CelerBridgeConfig::new(config.clone())),
                     );
                 }
-                _ => {}
+                RawBridgeConfigType::RawPolyBridgeConfig(config) => {
+                    bridge_configs.insert(
+                        config.bridge_type.clone(),
+                        BridgeConfigType::PolyBridgeConfig(PolyBridgeConfig::new(config.clone())),
+                    );
+                }
+                RawBridgeConfigType::RawLayerZeroBridgeConfig(config) => {
+                    bridge_configs.insert(
+                        config.bridge_type.clone(),
+                        BridgeConfigType::LayerZeroBridgeConfig(LayerZeroBridgeConfig::new(config.clone())),
+                    );
+                }
+                RawBridgeConfigType::RawTBridgeConfig(config) => {
+                    bridge_configs.insert(
+                        config.bridge_type.clone(),
+                        BridgeConfigType::TBridgeConfig(TBridgeConfig::new(config.clone())),
+                    );
+                }
             }
         }
 
         bridge_configs
+    }
+
+    fn init_chain_configs(
+        &self,
+        default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
+        circuit_configs_by_name: HashMap<String, CircuitConfig>,
+    ) -> HashMap<u32, ChainConfig> {
+        let mut chain_configs: HashMap<u32, ChainConfig> = HashMap::new();
+        for chain in &self.base.data.chains {
+            let deposit_contract_getter =
+                |mystiko_config: &MystikoConfig, chain_id: u32, address: String| -> Option<DepositContractConfig> {
+                    mystiko_config.get_deposit_contract_config_by_address(chain_id, address).cloned()
+                };
+            chain_configs.insert(
+                chain.chain_id,
+                ChainConfig::new(chain.clone(), Some(
+                    AuxData::new(
+                        default_circuit_configs.clone(),
+                        circuit_configs_by_name.clone(),
+                        deposit_contract_getter,
+                    )
+                )),
+            );
+        }
+        chain_configs
+    }
+
+    fn init_indexer_config(&self) -> Option<IndexerConfig> {
+        match &self.base.data.indexer {
+            Some(config) => {
+                Some(IndexerConfig::new(config.clone()))
+            }
+            None => {
+                None
+            }
+        }
     }
 }

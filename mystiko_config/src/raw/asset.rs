@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use crate::common::AssetType;
 use crate::raw::base::RawConfig;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RawAssetConfig {
     asset_type: AssetType,
     asset_symbol: String,
