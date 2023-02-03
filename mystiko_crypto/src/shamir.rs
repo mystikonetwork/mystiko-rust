@@ -11,12 +11,11 @@ pub struct Point {
     y: BigInt,
 }
 
-#[derive(Debug, PartialEq)]
 pub struct SecretShare {
-    num_of_shares: u32,
-    threshold: u32,
-    shares: Vec<Point>,
-    coefficients: Vec<BigInt>,
+    pub num_of_shares: u32,
+    pub threshold: u32,
+    pub shares: Vec<Point>,
+    pub coefficients: Vec<BigInt>,
 }
 
 pub fn recover(shares: Vec<Point>, in_prime: Option<BigInt>) -> BigInt {
@@ -164,13 +163,14 @@ mod tests {
     #[test]
     fn test_secret_sharing() {
         let secret = random(32, &FIELD_SIZE.clone());
-        let ss = split(secret.clone(), 0, 17, None);
-        assert!(ss.is_err());
-        assert_eq!(ss, Err(SecretShareError::SharesOutOfBounds));
+        let result = split(secret.clone(), 0, 17, None);
+        assert_eq!(result.err().unwrap(), SecretShareError::SharesOutOfBounds);
 
-        let ss2 = split(secret.clone(), 5, 7, None);
-        assert!(ss2.is_err());
-        assert_eq!(ss2, Err(SecretShareError::ThresholdOutOfBounds));
+        let result = split(secret.clone(), 5, 7, None);
+        assert_eq!(
+            result.err().unwrap(),
+            SecretShareError::ThresholdOutOfBounds
+        );
     }
 
     #[test]
