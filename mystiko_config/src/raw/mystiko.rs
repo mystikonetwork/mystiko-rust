@@ -11,7 +11,7 @@ use crate::raw::indexer::RawIndexerConfig;
 use validator::{Validate};
 use crate::raw::base::RawConfig;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum RawBridgeConfigType {
     RawAxelarBridgeConfig(RawAxelarBridgeConfig),
     RawCelerBridgeConfig(RawCelerBridgeConfig),
@@ -20,7 +20,7 @@ pub enum RawBridgeConfigType {
     RawTBridgeConfig(RawTBridgeConfig),
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawMystikoConfig {
     pub version: String,
     pub chains: Vec<RawChainConfig>,

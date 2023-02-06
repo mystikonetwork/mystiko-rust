@@ -1,36 +1,55 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 use num_bigint::BigInt;
 use crate::common::{AssetType, BridgeType, CircuitType};
+use crate::common::ContractType::Pool;
+use crate::raw::contract::base::RawContractConfigTrait;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::base::ContractConfig;
 
-struct AuxData {
+#[derive(Clone)]
+pub struct AuxData {
     default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
     circuit_configs_by_name: HashMap<String, CircuitConfig>,
     main_asset_config: AssetConfig,
     asset_configs: HashMap<String, AssetConfig>,
 }
 
+impl AuxData {
+    pub fn new(
+        default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
+        circuit_configs_by_name: HashMap<String, CircuitConfig>,
+        main_asset_config: AssetConfig,
+        asset_configs: HashMap<String, AssetConfig>,
+    ) -> Self {
+        Self { default_circuit_configs, circuit_configs_by_name, main_asset_config, asset_configs }
+    }
+}
+
+#[derive(Clone)]
 pub struct PoolContractConfig {
-    base: ContractConfig<RawPoolContractConfig, AuxData>,
-    circuit_configs: HashMap<CircuitType, CircuitConfig>,
-    main_asset_config: AssetConfig,
-    asset_config: Option<AssetConfig>,
+    pub base: ContractConfig<RawPoolContractConfig, AuxData>,
+    pub circuit_configs: HashMap<CircuitType, CircuitConfig>,
+    pub main_asset_config: AssetConfig,
+    pub asset_config: Option<AssetConfig>,
 }
 
 impl PoolContractConfig {
-    pub fn new(&self, data: RawPoolContractConfig, aux_data: Option<AuxData>) -> Self {
+    pub fn new(data: RawPoolContractConfig, aux_data: Option<AuxData>) -> Self {
+        let contract_config = ContractConfig::new(data, aux_data);
         let config = Self {
-            base: ContractConfig::new(data, aux_data),
-            circuit_configs: self.init_circuits_configs(
-                self.base.base.aux_data_not_empty().default_circuit_configs,
-                self.base.base.aux_data_not_empty().circuit_configs_by_name,
+            base: contract_config,
+            circuit_configs: PoolContractConfig::init_circuits_configs(
+                &contract_config,
+                contract_config.base.aux_data_not_empty().default_circuit_configs,
+                contract_config.base.aux_data_not_empty().circuit_configs_by_name,
             ),
-            main_asset_config: self.base.base.aux_data_not_empty().main_asset_config,
-            asset_config: self.init_asset_config(
-                self.base.base.aux_data_not_empty().asset_configs
+            main_asset_config: contract_config.base.aux_data_not_empty().main_asset_config,
+            asset_config: PoolContractConfig::init_asset_config(
+                &contract_config,
+                contract_config.base.aux_data_not_empty().asset_configs,
             ),
         };
         config.validate();
@@ -80,8 +99,38 @@ impl PoolContractConfig {
         &self.asset().recommended_amounts_number()
     }
 
+    pub fn min_rollup_fee(&self) -> BigInt {
+        BigInt::from_str(
+            &self.base.base.data.min_rollup_fee,
+        ).unwrap()
+    }
+
+    // TODO Complete this method
+    pub fn min_rollup_fee_number(&self) -> u32 {
+        return 1;
+    }
+
+    pub fn circuits(&self) -> Vec<CircuitConfig> {
+        self.circuit_configs.values().cloned().collect()
+    }
+
+    pub fn circuit_config(&self, t: CircuitType) -> Option<&CircuitConfig> {
+        self.circuit_configs.get(&t)
+    }
+
+    pub fn mutate(&self, data: Option<RawPoolContractConfig>, aux_data: Option<AuxData>) -> Self {
+        match data {
+            None => {
+                PoolContractConfig::new(self.base.base.data.clone(), aux_data)
+            }
+            Some(value) => {
+                PoolContractConfig::new(value, aux_data)
+            }
+        }
+    }
+
     fn init_circuits_configs(
-        &self,
+        base: &ContractConfig<RawPoolContractConfig, AuxData>,
         default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
         circuit_configs_by_name: HashMap<String, CircuitConfig>,
     ) -> HashMap<CircuitType, CircuitConfig> {
@@ -92,7 +141,7 @@ impl PoolContractConfig {
                 circuit_conf,
             );
         }
-        for circuit_name in &self.base.base.data.circuits {
+        for circuit_name in &base.base.data.circuits {
             let circuit_conf = circuit_configs_by_name.get(circuit_name);
             match circuit_conf {
                 None => {}
@@ -107,20 +156,24 @@ impl PoolContractConfig {
         circuit_configs
     }
 
-    fn init_asset_config(&self, asset_configs: HashMap<String, AssetConfig>) -> Option<AssetConfig> {
-        match &self.base.base.data.asset_address {
+    fn init_asset_config(
+        base: &ContractConfig<RawPoolContractConfig, AuxData>,
+        asset_configs: HashMap<String, AssetConfig>,
+    ) -> Option<AssetConfig> {
+        match &base.base.data.asset_address {
             None => {
                 None
             }
             Some(value) => {
                 let asset_config = asset_configs.get(value);
-                asset_config.expect(
-                    format!(
-                        "asset address={:?} config has not been defined " +
-                            "for pool contract address={:?}",
-                        value,
-                        self.base.base.data.base.address
-                    ).as_str()
+                Some(
+                    asset_config.expect(
+                        format!(
+                            "asset address={:?} config has not been defined for pool contract address={:?}",
+                            value,
+                            base.base.data.address()
+                        ).as_str()
+                    ).clone()
                 )
             }
         }

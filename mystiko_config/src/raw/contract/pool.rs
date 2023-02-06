@@ -3,7 +3,7 @@ use validator::Validate;
 use crate::common::{BridgeType, ContractType};
 use crate::raw::base::RawConfig;
 use crate::raw::chain::RawChainConfig;
-use crate::raw::contract::base::RawContractConfig;
+use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawPoolContractConfig {
@@ -16,4 +16,34 @@ pub struct RawPoolContractConfig {
     pub circuits: Vec<String>,
 }
 
-impl RawConfig for RawChainConfig {}
+impl RawConfig for RawPoolContractConfig {}
+
+impl RawContractConfigTrait for RawPoolContractConfig {
+    fn version(&self) -> &u32 {
+        &self.base.version
+    }
+
+    fn name(&self) -> &str {
+        &self.base.name
+    }
+
+    fn address(&self) -> &str {
+        &self.base.address
+    }
+
+    fn contract_type(&self) -> &ContractType {
+        &self.base.contract_type
+    }
+
+    fn start_block(&self) -> &u32 {
+        &self.base.start_block
+    }
+
+    fn event_filter_size(&self) -> &Option<u32> {
+        &self.base.event_filter_size
+    }
+
+    fn indexer_filter_size(&self) -> &Option<u32> {
+        &self.base.indexer_filter_size
+    }
+}

@@ -4,13 +4,16 @@ use crate::wrapper::base::BaseConfig;
 
 pub struct BridgeConfig<T, A = ()>
     where
-        T: RawBridgeConfigTrait + Serialize,
+        T: RawBridgeConfigTrait + Serialize + Clone,
+        A: Clone,
 {
     pub base: BaseConfig<T, A>,
 }
 
 impl<T, A> BridgeConfig<T, A> where
-    T: RawBridgeConfigTrait + Serialize, {
+    T: RawBridgeConfigTrait + Serialize + Clone,
+    A: Clone
+{
     pub fn new(data: T, aux_data: Option<A>) -> Self {
         Self { base: BaseConfig::new(data, aux_data) }
     }

@@ -15,13 +15,13 @@ pub trait RawContractConfigTrait: RawConfig {
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawContractConfig {
-    version: u32,
-    name: String,
+    pub version: u32,
+    pub name: String,
     pub address: String,
-    contract_type: ContractType,
-    start_block: u32,
-    event_filter_size: Option<u32>,
-    indexer_filter_size: Option<u32>,
+    pub contract_type: ContractType,
+    pub start_block: u32,
+    pub event_filter_size: Option<u32>,
+    pub indexer_filter_size: Option<u32>,
 }
 
 impl RawConfig for RawContractConfig {}

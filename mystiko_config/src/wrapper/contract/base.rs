@@ -3,14 +3,19 @@ use crate::common::ContractType;
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::wrapper::base::BaseConfig;
 
+#[derive(Clone)]
 pub struct ContractConfig<T, A = ()>
     where
-        T: RawContractConfigTrait + Serialize {
+        T: RawContractConfigTrait + Serialize + Clone,
+        A: Clone,
+{
     pub base: BaseConfig<T, A>,
 }
 
 impl<T, A> ContractConfig<T, A> where
-    T: RawContractConfigTrait + Serialize {
+    T: RawContractConfigTrait + Serialize + Clone,
+    A: Clone
+{
     pub fn new(data: T, aux_data: Option<A>) -> Self {
         Self { base: BaseConfig::new(data, aux_data) }
     }
@@ -44,24 +49,22 @@ impl<T, A> ContractConfig<T, A> where
     }
 
     pub fn mutate(&self, data: Option<T>, aux_data: Option<A>) -> Self {
-        let mut d: T;
-        let mut a: A;
-        match data {
+        let d = match data {
             None => {
-                d = self.base.data.clone();
+                self.base.data.clone()
             }
             Some(value) => {
-                d = value;
+                value
             }
-        }
-        match aux_data {
+        };
+        let a = match aux_data {
             None => {
-                a = self.base.aux_data.clone();
+                self.base.aux_data.clone()
             }
-            Some(value) => {
-                a = value;
+            Some(_) => {
+                aux_data
             }
-        }
+        };
 
         ContractConfig::new(d, a)
     }
