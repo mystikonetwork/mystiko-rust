@@ -4,9 +4,9 @@ use crate::raw::base::RawConfig;
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawProviderConfig {
-    url: String,
-    timeout_ms: u32,
-    max_try_count: u32,
+    pub url: String,
+    pub timeout_ms: u32,
+    pub max_try_count: u32,
 }
 
 impl RawConfig for RawProviderConfig {}

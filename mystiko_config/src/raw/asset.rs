@@ -14,13 +14,19 @@ pub struct RawAssetConfig {
 impl RawConfig for RawAssetConfig {}
 
 impl RawAssetConfig {
-    pub fn new() -> RawAssetConfig {
-        RawAssetConfig {
-            asset_type: AssetType::ERC20,
-            asset_symbol: "".to_string(),
-            asset_decimals: 0,
-            asset_address: "".to_string(),
-            recommended_amounts: vec![],
+    pub fn new(
+        asset_type: AssetType,
+        asset_symbol: String,
+        asset_decimals: u32,
+        asset_address: String,
+        recommended_amounts: Vec<String>,
+    ) -> RawAssetConfig {
+        Self {
+            asset_type,
+            asset_symbol,
+            asset_decimals,
+            asset_address,
+            recommended_amounts,
         }
     }
 }

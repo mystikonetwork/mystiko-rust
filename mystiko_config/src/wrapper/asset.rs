@@ -7,6 +7,7 @@ use crate::wrapper::base::BaseConfig;
 
 const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
+#[derive(Clone)]
 pub struct AssetConfig {
     base: BaseConfig<RawAssetConfig>,
 }
@@ -38,7 +39,7 @@ impl AssetConfig {
     pub fn recommended_amounts(&self) -> Vec<BigInt> {
         let mut amounts: Vec<BigInt> = vec![];
         for amount in &self.base.data.recommended_amounts {
-            let bn = BigInt::from(amount);
+            let bn = BigInt::from_str(amount).unwrap();
             amounts.push(bn);
         }
         amounts
@@ -63,8 +64,8 @@ impl AssetConfig {
 
     fn validate(&self) {
         check(
-            (self.asset_type() != AssetType::Main && self.asset_address() != MAIN_ASSET_ADDRESS) ||
-                (self.asset_type() == AssetType::Main && self.asset_address() == MAIN_ASSET_ADDRESS),
+            (self.asset_type().clone() != AssetType::Main && self.asset_address() != MAIN_ASSET_ADDRESS) ||
+                (self.asset_type().clone() == AssetType::Main && self.asset_address() == MAIN_ASSET_ADDRESS),
             format!(
                 "wrong asset address={:?} and type={:?}", self.asset_address(), self.asset_type()
             ).as_str(),
