@@ -37,17 +37,18 @@ impl MystikoConfig {
         let (
             default_circuit_configs,
             circuit_configs_by_name
-        ) = self.init_circuit_configs();
+        ) = MystikoConfig::init_circuit_configs(&base);
         let config = Self {
-            base,
+            base: base.clone(),
             default_circuit_configs: default_circuit_configs.clone(),
             circuit_configs_by_name: circuit_configs_by_name.clone(),
-            bridge_configs: self.init_bridge_configs(),
-            chain_configs: self.init_chain_configs(
+            bridge_configs: MystikoConfig::init_bridge_configs(&base),
+            chain_configs: MystikoConfig::init_chain_configs(
+                &base,
                 default_circuit_configs,
                 circuit_configs_by_name,
             ),
-            indexer_config: self.init_indexer_config(),
+            indexer_config: MystikoConfig::init_indexer_config(&base),
         };
         config.validate();
         config
@@ -69,11 +70,11 @@ impl MystikoConfig {
         }
     }
 
-    fn init_circuit_configs(&self) -> (HashMap<CircuitType, CircuitConfig>, HashMap<String, CircuitConfig>) {
+    fn init_circuit_configs(base: &BaseConfig<RawMystikoConfig>) -> (HashMap<CircuitType, CircuitConfig>, HashMap<String, CircuitConfig>) {
         let mut default_circuit_configs: HashMap<CircuitType, CircuitConfig> = HashMap::new();
         let mut circuit_config_by_names: HashMap<String, CircuitConfig> = HashMap::new();
 
-        let circuits = &self.base.data.circuits;
+        let circuits = &base.data.circuits;
         for raw in circuits {
             let circuit_config = CircuitConfig::new(
                 BaseConfig::new(raw.clone(), None),
@@ -90,7 +91,7 @@ impl MystikoConfig {
             circuit_config_by_names.insert(circuit_config.name().clone(), circuit_config.clone());
         }
         let mut has_pool_contracts = false;
-        for chain in &self.base.data.chains {
+        for chain in &base.data.chains {
             if !chain.pool_contracts.is_empty() {
                 has_pool_contracts = true;
                 break;
@@ -111,9 +112,9 @@ impl MystikoConfig {
         (default_circuit_configs, circuit_config_by_names)
     }
 
-    fn init_bridge_configs(&self) -> HashMap<BridgeType, BridgeConfigType> {
+    fn init_bridge_configs(base: &BaseConfig<RawMystikoConfig>) -> HashMap<BridgeType, BridgeConfigType> {
         let mut bridge_configs: HashMap<BridgeType, BridgeConfigType> = HashMap::new();
-        for bridge in &self.base.data.bridges {
+        for bridge in &base.data.bridges {
             match bridge {
                 RawBridgeConfigType::RawAxelarBridgeConfig(config) => {
                     bridge_configs.insert(
@@ -152,12 +153,12 @@ impl MystikoConfig {
     }
 
     fn init_chain_configs(
-        &self,
+        base: &BaseConfig<RawMystikoConfig>,
         default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
         circuit_configs_by_name: HashMap<String, CircuitConfig>,
     ) -> HashMap<u32, ChainConfig> {
         let mut chain_configs: HashMap<u32, ChainConfig> = HashMap::new();
-        for chain in &self.base.data.chains {
+        for chain in &base.data.chains {
             let deposit_contract_getter =
                 |mystiko_config: &MystikoConfig, chain_id: u32, address: String| -> Option<DepositContractConfig> {
                     mystiko_config.get_deposit_contract_config_by_address(chain_id, address).cloned()
@@ -176,8 +177,8 @@ impl MystikoConfig {
         chain_configs
     }
 
-    fn init_indexer_config(&self) -> Option<IndexerConfig> {
-        match &self.base.data.indexer {
+    fn init_indexer_config(base: &BaseConfig<RawMystikoConfig>) -> Option<IndexerConfig> {
+        match &base.data.indexer {
             Some(config) => {
                 Some(IndexerConfig::new(config.clone()))
             }
