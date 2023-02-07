@@ -2,7 +2,7 @@ use crate::common::CircuitType;
 use crate::raw::circuit::RawCircuitConfig;
 use crate::wrapper::base::BaseConfig;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CircuitConfig {
     base: BaseConfig<RawCircuitConfig>,
 }

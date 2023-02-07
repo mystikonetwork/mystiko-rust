@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+use crate::common::validate_object;
 use crate::raw::asset::RawAssetConfig;
 use crate::raw::base::RawConfig;
 use crate::raw::contract::deposit::RawDepositContractConfig;
@@ -26,4 +27,12 @@ pub struct RawChainConfig {
     pub assets: Vec<RawAssetConfig>,
 }
 
-impl RawConfig for RawChainConfig {}
+impl RawConfig for RawChainConfig {
+    fn validate(&self) -> Result<(), Vec<String>> {
+        let result = validate_object(self);
+        if result.is_err() {
+            return Err(result.unwrap_err());
+        }
+        Ok(())
+    }
+}

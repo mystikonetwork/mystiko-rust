@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::common::{BridgeType, ContractType};
+use crate::common::{BridgeType, ContractType, validate_object};
 use crate::raw::base::RawConfig;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
@@ -16,7 +16,15 @@ pub struct RawPoolContractConfig {
     pub circuits: Vec<String>,
 }
 
-impl RawConfig for RawPoolContractConfig {}
+impl RawConfig for RawPoolContractConfig {
+    fn validate(&self) -> Result<(), Vec<String>> {
+        let result = validate_object(self);
+        if result.is_err() {
+            return Err(result.unwrap_err());
+        }
+        Ok(())
+    }
+}
 
 impl RawContractConfigTrait for RawPoolContractConfig {
     fn version(&self) -> &u32 {

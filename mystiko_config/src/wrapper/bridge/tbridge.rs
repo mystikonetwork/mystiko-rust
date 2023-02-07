@@ -1,7 +1,7 @@
 use crate::raw::bridge::tbridge::RawTBridgeConfig;
 use crate::wrapper::bridge::base::BridgeConfig;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TBridgeConfig {
     base: BridgeConfig<RawTBridgeConfig>,
 }

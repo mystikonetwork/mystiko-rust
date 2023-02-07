@@ -3,8 +3,9 @@ use std::fmt::format;
 use std::hash::Hash;
 use std::io::Chain;
 use num_bigint::BigInt;
+use validator::Validate;
 use mystiko_utils::check::check;
-use crate::common::{AssetType, BridgeType, CircuitType};
+use crate::common::{AssetType, BridgeType, CircuitType, validate_object};
 use crate::raw::asset::RawAssetConfig;
 use crate::raw::base::RawConfig;
 use crate::raw::chain::{EXPLORER_TX_PLACEHOLDER, RawChainConfig};
@@ -19,7 +20,7 @@ use crate::wrapper::provider::ProviderConfig;
 
 const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AuxData {
     default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
     circuit_configs_by_name: HashMap<String, CircuitConfig>,
@@ -37,7 +38,7 @@ impl AuxData {
     }
 }
 
-#[derive(Clone)]
+#[derive(Validate, Clone, Debug)]
 pub struct ChainConfig {
     base: BaseConfig<RawChainConfig, AuxData>,
     pool_contract_configs: HashMap<String, PoolContractConfig>,
@@ -390,7 +391,7 @@ impl ChainConfig {
             all_versions.insert(pool_contract_config.base.version().clone(), pool_contract_config.clone());
             bridges.insert(pool_contract_config.bridge_type().clone(), all_versions);
             pool_configs_by_asset_and_bridge.insert(
-                pool_contract_config.asset_symbol().to_string(),
+                pool_contract_config.asset_symbol().to_owned(),
                 bridges,
             );
         }
@@ -451,4 +452,12 @@ impl ChainConfig {
     }
 }
 
-impl RawConfig for ChainConfig {}
+impl RawConfig for ChainConfig {
+    fn validate(&self) -> Result<(), Vec<String>> {
+        let result = validate_object(self);
+        if result.is_err() {
+            return Err(result.unwrap_err());
+        }
+        Ok(())
+    }
+}
