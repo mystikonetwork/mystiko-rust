@@ -129,7 +129,7 @@ impl ChainConfig {
         asset_configs: &HashMap<String, AssetConfig>,
     ) -> HashMap<String, PoolContractConfig> {
         let mut pool_contract_configs: HashMap<String, PoolContractConfig> = HashMap::new();
-        for raw in base.data.pool_contracts {
+        for raw in &base.data.pool_contracts {
             check(
                 !pool_contract_configs.contains_key(raw.base.address.as_str()),
                 format!(
@@ -137,7 +137,7 @@ impl ChainConfig {
                 ).as_str(),
             );
             pool_contract_configs.insert(
-                raw.base.address,
+                raw.base.address.clone(),
                 PoolContractConfig::new(
                     raw.clone(),
                     Some(
@@ -167,9 +167,9 @@ impl ChainConfig {
 
     fn init_asset_configs(base: &BaseConfig<RawChainConfig, AuxData>) -> HashMap<String, AssetConfig> {
         let mut asset_configs: HashMap<String, AssetConfig> = HashMap::new();
-        for asset_config in base.data.assets {
+        for asset_config in &base.data.assets {
             asset_configs.insert(
-                asset_config.asset_address,
+                asset_config.asset_address.clone(),
                 AssetConfig::new(asset_config.clone()),
             );
         }
@@ -211,7 +211,7 @@ impl ChainConfig {
                     pool_contract_config.base.version()
                 ).as_str(),
             );
-            all_versions.insert(pool_contract_config.base.version().clone(), pool_contract_config);
+            all_versions.insert(pool_contract_config.base.version().clone(), pool_contract_config.clone());
             bridges.insert(pool_contract_config.bridge_type().clone(), all_versions);
             pool_configs_by_asset_and_bridge.insert(
                 pool_contract_config.asset_symbol().to_string(),
@@ -230,7 +230,7 @@ impl ChainConfig {
         asset_configs: &HashMap<String, AssetConfig>,
     ) -> HashMap<String, DepositContractConfig> {
         let mut deposit_contract_configs: HashMap<String, DepositContractConfig> = HashMap::new();
-        for raw in base.data.deposit_contracts {
+        for raw in &base.data.deposit_contracts {
             check(
                 !deposit_contract_configs.contains_key(raw.base.address.as_str()),
                 format!(
@@ -257,7 +257,7 @@ impl ChainConfig {
                 );
             }
             deposit_contract_configs.insert(
-                raw.base.address,
+                raw.base.address.clone(),
                 DepositContractConfig::new(raw.clone(), Some(
                     contract::deposit::AuxData::new(
                         deposit_contract_getter,

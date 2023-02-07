@@ -40,7 +40,7 @@ impl PoolContractConfig {
     pub fn new(data: RawPoolContractConfig, aux_data: Option<AuxData>) -> Self {
         let contract_config = ContractConfig::new(data, aux_data);
         let config = Self {
-            base: contract_config,
+            base: contract_config.clone(),
             circuit_configs: PoolContractConfig::init_circuits_configs(
                 &contract_config,
                 contract_config.base.aux_data_not_empty().default_circuit_configs,
@@ -91,12 +91,12 @@ impl PoolContractConfig {
         &self.base.base.data.asset_address
     }
 
-    pub fn recommended_amounts(&self) -> &Vec<BigInt> {
-        &self.asset().recommended_amounts()
+    pub fn recommended_amounts(&self) -> Vec<BigInt> {
+        self.asset().recommended_amounts()
     }
 
-    pub fn recommended_amounts_number(&self) -> &Vec<u32> {
-        &self.asset().recommended_amounts_number()
+    pub fn recommended_amounts_number(&self) -> Vec<u32> {
+        self.asset().recommended_amounts_number()
     }
 
     pub fn min_rollup_fee(&self) -> BigInt {

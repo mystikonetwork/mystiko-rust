@@ -189,7 +189,7 @@ impl MystikoConfig {
 
     // TODO supplement
     fn validate(&self) {
-        for chain_config in self.chain_configs {
+        for chain_config in &self.chain_configs {
         }
     }
 }
