@@ -1,6 +1,7 @@
 use crate::raw::bridge::celer::RawCelerBridgeConfig;
 use crate::wrapper::bridge::base::BridgeConfig;
 
+#[derive(Clone)]
 pub struct CelerBridgeConfig {
     base: BridgeConfig<RawCelerBridgeConfig>,
 }

@@ -12,8 +12,10 @@ use crate::wrapper::bridge::tbridge::TBridgeConfig;
 use crate::wrapper::chain::{AuxData, ChainConfig};
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::deposit::DepositContractConfig;
+use crate::wrapper::contract::pool::PoolContractConfig;
 use crate::wrapper::indexer::IndexerConfig;
 
+#[derive(Clone)]
 pub enum BridgeConfigType {
     AxelarBridgeConfig(AxelarBridgeConfig),
     CelerBridgeConfig(CelerBridgeConfig),
@@ -32,7 +34,7 @@ pub struct MystikoConfig {
 }
 
 impl MystikoConfig {
-    pub fn new(&self, data: RawMystikoConfig) -> Self {
+    pub fn new(data: RawMystikoConfig) -> Self {
         let base = BaseConfig::new(data, None);
         let (
             default_circuit_configs,
@@ -54,18 +56,164 @@ impl MystikoConfig {
         config
     }
 
-    fn get_chain_config(&self, chain_id: u32) -> Option<&ChainConfig> {
+    pub fn version(&self) -> &str {
+        &self.base.data.version
+    }
+
+    pub fn circuits(&self) -> Vec<CircuitConfig> {
+        self.circuit_configs_by_name.values().cloned().collect()
+    }
+
+    pub fn bridges(&self) -> Vec<BridgeConfigType> {
+        self.bridge_configs.values().cloned().collect()
+    }
+
+    pub fn chains(&self) -> Vec<ChainConfig> {
+        self.chain_configs.values().cloned().collect()
+    }
+
+    pub fn indexer(&self) -> &Option<IndexerConfig> {
+        &self.indexer_config
+    }
+
+    pub fn get_chain_config(&self, chain_id: u32) -> Option<&ChainConfig> {
         self.chain_configs.get(&chain_id)
     }
 
-    fn get_deposit_contract_config_by_address(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
+    pub fn get_peer_chain_configs(&self, chain_id: u32) -> Vec<ChainConfig> {
+        let mut peer_chain_configs: Vec<ChainConfig> = Vec::new();
+        let chain_config = self.get_chain_config(chain_id);
+        if chain_config.is_some() {
+            for peer_chain_id in chain_config.unwrap().peer_chain_ids() {
+                let peer_chain_config = self.get_chain_config(peer_chain_id);
+                if peer_chain_config.is_some() {
+                    peer_chain_configs.push(peer_chain_config.unwrap().clone())
+                }
+            }
+        }
+
+        peer_chain_configs
+    }
+
+    pub fn get_asset_symbols(&self, chain_id: u32, peer_chain_id: u32) -> Vec<String> {
+        match self.get_chain_config(chain_id) {
+            None => { vec![] }
+            Some(config) => {
+                config.get_asset_symbols(peer_chain_id)
+            }
+        }
+    }
+
+    pub fn get_bridges(&self, chain_id: u32, peer_chain_id: u32, asset_symbol: &str) -> Vec<BridgeConfigType> {
+        let mut bridges: Vec<BridgeConfigType> = Vec::new();
+        let chain_config = self.get_chain_config(chain_id);
+        if chain_config.is_some() {
+            for bridge_type in chain_config.unwrap().get_bridges(peer_chain_id, asset_symbol) {
+                let bridge_config = self.get_bridge_config(bridge_type);
+                if bridge_config.is_some() {
+                    bridges.push(bridge_config.unwrap().clone());
+                }
+            }
+        }
+
+        bridges
+    }
+
+    pub fn get_deposit_contract_config(
+        &self,
+        chain_id: u32,
+        peer_chain_id: u32,
+        asset_symbol: &str,
+        bridge_type: BridgeType,
+    ) -> Option<DepositContractConfig> {
+        match self.get_chain_config(chain_id) {
+            None => { None }
+            Some(config) => {
+                config.get_deposit_contract(peer_chain_id, asset_symbol, bridge_type)
+            }
+        }
+    }
+
+    pub fn get_deposit_contract_config_by_address(
+        &self,
+        chain_id: u32,
+        address: String,
+    ) -> Option<&DepositContractConfig> {
         let chain_config = self.get_chain_config(chain_id).clone();
         match chain_config {
             Some(config) => {
                 config.get_deposit_contract_by_address(address)
             }
+            None => { None }
+        }
+    }
+
+    pub fn get_pool_contract_config(
+        &self,
+        chain_id: u32,
+        asset_symbol: &str,
+        bridge_type: BridgeType,
+        version: u32,
+    ) -> Option<&PoolContractConfig> {
+        match self.get_chain_config(chain_id) {
+            None => { None }
+            Some(config) => {
+                config.get_pool_contract(asset_symbol, bridge_type, version)
+            }
+        }
+    }
+
+    pub fn get_pool_contract_configs(
+        &self,
+        chain_id: u32,
+        asset_symbol: &str,
+        bridge_type: BridgeType,
+    ) -> Vec<PoolContractConfig> {
+        match self.get_chain_config(chain_id) {
+            None => { vec![] }
+            Some(config) => {
+                config.get_pool_contracts(asset_symbol, bridge_type)
+            }
+        }
+    }
+
+    pub fn get_pool_contract_config_by_address(&self, chain_id: u32, address: &str) -> Option<&PoolContractConfig> {
+        let chain_config = self.get_chain_config(chain_id);
+        if chain_config.is_some() {
+            return chain_config.unwrap().get_pool_contract_by_address(address);
+        }
+
+        None
+    }
+
+    pub fn get_bridge_config(&self, bridge_type: BridgeType) -> Option<&BridgeConfigType> {
+        self.bridge_configs.get(&bridge_type)
+    }
+
+    pub fn get_default_circuit_config(&self, circuit_type: CircuitType) -> Option<&CircuitConfig> {
+        self.default_circuit_configs.get(&circuit_type)
+    }
+
+    pub fn get_circuit_config_by_name(&self, name: &str) -> Option<&CircuitConfig> {
+        self.circuit_configs_by_name.get(name)
+    }
+
+    pub fn get_transaction_url(&self, chain_id: u32, transaction_hash: &str) -> Option<String> {
+        let chain_config = self.get_chain_config(chain_id);
+        if chain_config.is_some() {
+            return Some(chain_config.unwrap().get_transaction_url(transaction_hash));
+        }
+
+        None
+    }
+
+    pub fn mutate(&self, data: Option<RawMystikoConfig>) -> Self {
+        match data {
             None => {
-                None
+                MystikoConfig::new(self.base.data.clone())
+            }
+            Some(config) => {
+                MystikoConfig::new(config)
             }
         }
     }
@@ -190,7 +338,6 @@ impl MystikoConfig {
 
     // TODO supplement
     fn validate(&self) {
-        for chain_config in &self.chain_configs {
-        }
+        for chain_config in &self.chain_configs {}
     }
 }

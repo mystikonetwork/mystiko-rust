@@ -1,6 +1,7 @@
 use crate::raw::provider::RawProviderConfig;
 use crate::wrapper::base::BaseConfig;
 
+#[derive(Clone)]
 pub struct ProviderConfig {
     base: BaseConfig<RawProviderConfig>,
 }

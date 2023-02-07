@@ -1,6 +1,7 @@
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
 use crate::wrapper::bridge::base::BridgeConfig;
 
+#[derive(Clone)]
 pub struct AxelarBridgeConfig {
     base: BridgeConfig<RawAxelarBridgeConfig>,
 }
