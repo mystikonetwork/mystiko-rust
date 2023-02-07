@@ -1,6 +1,7 @@
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
 use crate::wrapper::bridge::base::BridgeConfig;
 
+#[derive(Clone)]
 pub struct LayerZeroBridgeConfig {
     base: BridgeConfig<RawLayerZeroBridgeConfig>,
 }

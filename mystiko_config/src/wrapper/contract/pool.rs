@@ -80,7 +80,7 @@ impl PoolContractConfig {
     }
 
     pub fn asset_symbol(&self) -> &str {
-        &self.asset().asset_symbol()
+        self.asset().asset_symbol()
     }
 
     pub fn asset_decimals(&self) -> &u32 {

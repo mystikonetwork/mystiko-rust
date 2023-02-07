@@ -2,6 +2,7 @@ use serde::Serialize;
 use crate::raw::bridge::base::RawBridgeConfigTrait;
 use crate::wrapper::base::BaseConfig;
 
+#[derive(Clone)]
 pub struct BridgeConfig<T, A = ()>
     where
         T: RawBridgeConfigTrait + Serialize + Clone,

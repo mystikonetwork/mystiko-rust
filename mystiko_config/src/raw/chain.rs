@@ -6,6 +6,8 @@ use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
 
+pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
+
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawChainConfig {
     pub chain_id: u32,
