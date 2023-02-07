@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
+use validator::{Validate, ValidationErrors};
 
 #[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone)]
 pub enum BridgeType {
@@ -36,4 +37,20 @@ pub enum CircuitType {
     TRANSACTION2x0,
     TRANSACTION2x1,
     TRANSACTION2x2,
+}
+
+pub fn validate_object<T>(object: T) -> Result<T, Vec<String>> where
+    T: Validate
+{
+    let result = object.validate();
+    match result {
+        Ok(_) => { Ok(object) }
+        Err(validation_errors) => {
+            let mut errors = Vec::new();
+            for (key, value) in validation_errors.errors().iter() {
+                errors.push(format!("{}: {:?}", key, value))
+            }
+            Err(errors)
+        }
+    }
 }

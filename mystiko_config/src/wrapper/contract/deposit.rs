@@ -7,7 +7,7 @@ use crate::wrapper::contract::base::ContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
 use crate::wrapper::mystiko::MystikoConfig;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AuxData {
     deposit_contract_getter: fn(&MystikoConfig, u32, String) -> Option<DepositContractConfig>,
     pool_contract_configs: HashMap<String, PoolContractConfig>,
@@ -30,7 +30,7 @@ impl AuxData {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DepositContractConfig {
     base: ContractConfig<RawDepositContractConfig, AuxData>,
     bridge_fee_asset_config: Option<AssetConfig>,
@@ -84,7 +84,7 @@ impl DepositContractConfig {
     }
 
     pub fn asset_symbol(&self) -> String {
-        self.pool_contract().asset_symbol().to_string()
+        self.pool_contract().asset_symbol().to_owned()
     }
 
     fn init_bridge_fee_asset_config(

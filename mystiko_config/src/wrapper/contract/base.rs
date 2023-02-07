@@ -3,7 +3,7 @@ use crate::common::ContractType;
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::wrapper::base::BaseConfig;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ContractConfig<T, A = ()>
     where
         T: RawContractConfigTrait + Serialize + Clone,

@@ -1,7 +1,7 @@
 use crate::raw::bridge::poly::RawPolyBridgeConfig;
 use crate::wrapper::bridge::base::BridgeConfig;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PolyBridgeConfig {
     base: BridgeConfig<RawPolyBridgeConfig>,
 }

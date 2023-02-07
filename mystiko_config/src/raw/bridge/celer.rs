@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::common::BridgeType;
+use crate::common::{BridgeType, validate_object};
 use crate::raw::base::RawConfig;
 use crate::raw::bridge::base::{RawBridgeConfig, RawBridgeConfigTrait};
 
@@ -10,7 +10,15 @@ pub struct RawCelerBridgeConfig {
     pub bridge_type: BridgeType,
 }
 
-impl RawConfig for RawCelerBridgeConfig {}
+impl RawConfig for RawCelerBridgeConfig {
+    fn validate(&self) -> Result<(), Vec<String>> {
+        let result = validate_object(self);
+        if result.is_err() {
+            return Err(result.unwrap_err());
+        }
+        Ok(())
+    }
+}
 
 impl RawBridgeConfigTrait for RawCelerBridgeConfig {
     fn name(&self) -> &String {

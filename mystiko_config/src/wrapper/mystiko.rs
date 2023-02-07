@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use strum::IntoEnumIterator;
+use validator::Validate;
 use mystiko_utils::check::check;
 use crate::common::{BridgeType, CircuitType};
 use crate::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
@@ -15,7 +16,7 @@ use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
 use crate::wrapper::indexer::IndexerConfig;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BridgeConfigType {
     AxelarBridgeConfig(AxelarBridgeConfig),
     CelerBridgeConfig(CelerBridgeConfig),
@@ -24,6 +25,7 @@ pub enum BridgeConfigType {
     TBridgeConfig(TBridgeConfig),
 }
 
+#[derive(Debug, Clone)]
 pub struct MystikoConfig {
     base: BaseConfig<RawMystikoConfig>,
     default_circuit_configs: HashMap<CircuitType, CircuitConfig>,

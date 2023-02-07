@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::common::BridgeType;
+use crate::common::{BridgeType, validate_object};
 use crate::raw::base::RawConfig;
 use crate::raw::bridge::base::{RawBridgeConfig, RawBridgeConfigTrait};
 
@@ -14,7 +14,15 @@ pub struct RawPolyBridgeConfig {
     pub api_prefix: String,
 }
 
-impl RawConfig for RawPolyBridgeConfig {}
+impl RawConfig for RawPolyBridgeConfig {
+    fn validate(&self) -> Result<(), Vec<String>> {
+        let result = validate_object(self);
+        if result.is_err() {
+            return Err(result.unwrap_err());
+        }
+        Ok(())
+    }
+}
 
 impl RawBridgeConfigTrait for RawPolyBridgeConfig {
     fn name(&self) -> &String {

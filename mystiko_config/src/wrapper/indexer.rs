@@ -1,6 +1,7 @@
 use crate::raw::indexer::RawIndexerConfig;
 use crate::wrapper::base::BaseConfig;
 
+#[derive(Clone, Debug)]
 pub struct IndexerConfig {
     base: BaseConfig<RawIndexerConfig>,
 }

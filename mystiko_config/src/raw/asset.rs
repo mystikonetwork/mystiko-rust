@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
-use crate::common::AssetType;
+use validator::Validate;
+use crate::common::{AssetType, validate_object};
 use crate::raw::base::RawConfig;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawAssetConfig {
     pub asset_type: AssetType,
     pub asset_symbol: String,
@@ -11,7 +12,15 @@ pub struct RawAssetConfig {
     pub recommended_amounts: Vec<String>,
 }
 
-impl RawConfig for RawAssetConfig {}
+impl RawConfig for RawAssetConfig {
+    fn validate(&self) -> Result<(), Vec<String>> {
+        let result = validate_object(self);
+        if result.is_err() {
+            return Err(result.unwrap_err());
+        }
+        Ok(())
+    }
+}
 
 impl RawAssetConfig {
     pub fn new(

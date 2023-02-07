@@ -9,7 +9,7 @@ use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::base::ContractConfig;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AuxData {
     default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
     circuit_configs_by_name: HashMap<String, CircuitConfig>,
@@ -28,7 +28,7 @@ impl AuxData {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PoolContractConfig {
     pub base: ContractConfig<RawPoolContractConfig, AuxData>,
     pub circuit_configs: HashMap<CircuitType, CircuitConfig>,
