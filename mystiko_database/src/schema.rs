@@ -22,9 +22,9 @@ diesel::table! {
         updated_at -> Varchar,
         chain_id -> Int4,
         name -> Varchar,
-        name_override -> Nullable<Int2>,
-        providers -> Array<Nullable<Jsonb>>,
-        provider_override -> Nullable<Int2>,
+        name_override -> Nullable<Int4>,
+        providers -> Json,
+        provider_override -> Nullable<Int4>,
         event_filter_size -> Int4,
         synced_block_number -> Int4,
     }
@@ -121,15 +121,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    posts (id) {
-        id -> Int4,
-        title -> Varchar,
-        body -> Text,
-        published -> Bool,
-    }
-}
-
-diesel::table! {
     transactions (id) {
         id -> Varchar,
         created_at -> Varchar,
@@ -141,11 +132,11 @@ diesel::table! {
         asset_address -> Nullable<Varchar>,
         proof -> Nullable<Varchar>,
         root_hash -> Nullable<Varchar>,
-        input_commitments -> Array<Nullable<Text>>,
-        output_commitments -> Nullable<Array<Nullable<Text>>>,
-        serial_numbers -> Nullable<Array<Nullable<Text>>>,
+        input_commitments -> Json,
+        output_commitments -> Nullable<Json>,
+        serial_numbers -> Nullable<Json>,
         signature_public_key -> Nullable<Varchar>,
-        signature_public_key_hashes -> Nullable<Array<Nullable<Text>>>,
+        signature_public_key_hashes -> Nullable<Json>,
         amount -> Varchar,
         public_amount -> Varchar,
         rollup_fee_amount -> Varchar,
@@ -155,7 +146,7 @@ diesel::table! {
         gas_relayer_address -> Nullable<Varchar>,
         signature -> Nullable<Varchar>,
         random_auditing_public_key -> Nullable<Varchar>,
-        encrypted_auditor_notes -> Nullable<Array<Nullable<Text>>>,
+        encrypted_auditor_notes -> Nullable<Json>,
         #[sql_name = "type"]
         type_ -> Varchar,
         status -> Varchar,
@@ -187,7 +178,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     contracts,
     deposits,
     nullifiers,
-    posts,
     transactions,
     wallets,
 );
