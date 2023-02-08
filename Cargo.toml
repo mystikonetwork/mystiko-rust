@@ -4,6 +4,7 @@ members = [
     "mystiko_abi_generate",
     "mystiko_crypto",
     "mystiko_utils",
+    "mystiko_database",
 ]
 
 exclude = []
