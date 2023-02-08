@@ -7,7 +7,7 @@ CREATE TABLE chains
     chain_id            INTEGER      NOT NULL,
     name                VARCHAR(255) NOT NULL,
     name_override       INTEGER,
-    providers           json         NOT NULL,
+    providers           text         NOT NULL,
     provider_override   INTEGER,
     event_filter_size   INTEGER      NOT NULL,
     synced_block_number INTEGER      NOT NULL

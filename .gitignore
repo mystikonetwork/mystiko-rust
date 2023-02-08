@@ -1,1 +1,3 @@
 /target
+
+mystiko_storage/sql/migrations/00000000000000_diesel_initial_setup
