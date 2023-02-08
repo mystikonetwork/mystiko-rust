@@ -9,7 +9,7 @@ use crate::wrapper::mystiko::MystikoConfig;
 
 #[derive(Clone, Debug)]
 pub struct AuxData {
-    deposit_contract_getter: fn(&MystikoConfig, u32, String) -> Option<DepositContractConfig>,
+    deposit_contract_configs: HashMap<u32, Vec<DepositContractConfig>>,
     pool_contract_configs: HashMap<String, PoolContractConfig>,
     main_asset_config: AssetConfig,
     asset_configs: HashMap<String, AssetConfig>,
@@ -17,22 +17,35 @@ pub struct AuxData {
 
 impl AuxData {
     pub fn new(
-        deposit_contract_getter: fn(&MystikoConfig, u32, String) -> Option<DepositContractConfig>,
+        deposit_contract_configs: HashMap<u32, Vec<DepositContractConfig>>,
         pool_contract_configs: HashMap<String, PoolContractConfig>,
         main_asset_config: AssetConfig,
         asset_configs: HashMap<String, AssetConfig>,
     ) -> Self {
-        Self { deposit_contract_getter, pool_contract_configs, main_asset_config, asset_configs }
+        Self { deposit_contract_configs, pool_contract_configs, main_asset_config, asset_configs }
     }
 
     fn pool_contract_getter(&self, address: &str) -> Option<&PoolContractConfig> {
         self.pool_contract_configs.get(address)
     }
+
+    fn deposit_contract_getter(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
+        let deposit_configs = self.deposit_contract_configs.get(&chain_id);
+        if deposit_configs.is_some() {
+            for config in deposit_configs.unwrap() {
+                if config.base.base.data.address() == address {
+                    return Some(config);
+                }
+            }
+        }
+
+        None
+    }
 }
 
 #[derive(Clone, Debug)]
 pub struct DepositContractConfig {
-    base: ContractConfig<RawDepositContractConfig, AuxData>,
+    pub base: ContractConfig<RawDepositContractConfig, AuxData>,
     bridge_fee_asset_config: Option<AssetConfig>,
     executor_fee_asset_config: Option<AssetConfig>,
 }
