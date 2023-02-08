@@ -9,6 +9,7 @@ use crate::common::{AssetType, BridgeType, CircuitType, validate_object};
 use crate::raw::asset::RawAssetConfig;
 use crate::raw::base::RawConfig;
 use crate::raw::chain::{EXPLORER_TX_PLACEHOLDER, RawChainConfig};
+use crate::raw::contract::base::RawContractConfigTrait;
 use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::base::BaseConfig;
 use crate::wrapper::circuit::CircuitConfig;
@@ -24,17 +25,29 @@ const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 pub struct AuxData {
     default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
     circuit_configs_by_name: HashMap<String, CircuitConfig>,
-    // TODO Optimize getter method, save data and impl this method by AuxData
-    deposit_contract_getter: fn(&MystikoConfig, u32, String) -> Option<DepositContractConfig>,
+    deposit_contract_configs: HashMap<u32, Vec<DepositContractConfig>>,
 }
 
 impl AuxData {
     pub fn new(
         default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
         circuit_configs_by_name: HashMap<String, CircuitConfig>,
-        deposit_contract_getter: fn(&MystikoConfig, u32, String) -> Option<DepositContractConfig>,
+        deposit_contract_configs: HashMap<u32, Vec<DepositContractConfig>>,
     ) -> Self {
-        Self { default_circuit_configs, circuit_configs_by_name, deposit_contract_getter }
+        Self { default_circuit_configs, circuit_configs_by_name, deposit_contract_configs }
+    }
+
+    pub fn deposit_contract_getter(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
+        let deposit_configs = self.deposit_contract_configs.get(&chain_id);
+        if deposit_configs.is_some() {
+            for config in deposit_configs.unwrap() {
+                if config.base.base.data.address() == address {
+                    return Some(config);
+                }
+            }
+        }
+
+        None
     }
 }
 
@@ -73,7 +86,7 @@ impl ChainConfig {
             ChainConfig::init_deposit_contract_configs(
                 &base_config,
                 &pool_contract_configs,
-                base_config.aux_data_not_empty().deposit_contract_getter,
+                base_config.aux_data_not_empty().deposit_contract_configs,
                 &main_asset_config,
                 &asset_configs,
             );
@@ -402,7 +415,7 @@ impl ChainConfig {
     fn init_deposit_contract_configs(
         base: &BaseConfig<RawChainConfig, AuxData>,
         pool_contract_configs: &HashMap<String, PoolContractConfig>,
-        deposit_contract_getter: fn(&MystikoConfig, chain_id: u32, address: String) -> Option<DepositContractConfig>,
+        aux_deposit_contract_configs: HashMap<u32, Vec<DepositContractConfig>>,
         main_asset_config: &AssetConfig,
         asset_configs: &HashMap<String, AssetConfig>,
     ) -> HashMap<String, DepositContractConfig> {
@@ -439,7 +452,7 @@ impl ChainConfig {
                 raw.base.address.clone(),
                 DepositContractConfig::new(raw.clone(), Some(
                     contract::deposit::AuxData::new(
-                        deposit_contract_getter,
+                        aux_deposit_contract_configs.clone(),
                         pool_contract_configs.clone(),
                         main_asset_config.clone(),
                         asset_configs.clone(),

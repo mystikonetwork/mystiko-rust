@@ -309,17 +309,18 @@ impl MystikoConfig {
     ) -> HashMap<u32, ChainConfig> {
         let mut chain_configs: HashMap<u32, ChainConfig> = HashMap::new();
         for chain in &base.data.chains {
-            let deposit_contract_getter =
-                |mystiko_config: &MystikoConfig, chain_id: u32, address: String| -> Option<DepositContractConfig> {
-                    mystiko_config.get_deposit_contract_config_by_address(chain_id, address).cloned()
-                };
+            let mut aux_chain_config = HashMap::new();
+            aux_chain_config.insert(
+                chain.chain_id,
+                ChainConfig::new(chain.clone(), None).deposit_contracts(),
+            );
             chain_configs.insert(
                 chain.chain_id,
                 ChainConfig::new(chain.clone(), Some(
                     AuxData::new(
                         default_circuit_configs.clone(),
                         circuit_configs_by_name.clone(),
-                        deposit_contract_getter,
+                        aux_chain_config,
                     )
                 )),
             );
