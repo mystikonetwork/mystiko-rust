@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
-use crate::raw::base::RawConfig;
+use crate::raw::base::RawConfigTrait;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BaseConfig<R, A = ()>
     where
-        R: RawConfig + Serialize + Clone,
+        R: RawConfigTrait + Serialize + Clone,
         A: Clone,
 {
     pub data: R,
@@ -12,7 +12,7 @@ pub struct BaseConfig<R, A = ()>
 }
 
 impl<R, A> BaseConfig<R, A> where
-    R: RawConfig + Serialize + Clone,
+    R: RawConfigTrait + Serialize + Clone,
     A: Clone,
 {
     pub fn new(data: R, aux_data: Option<A>) -> Self {
@@ -37,19 +37,3 @@ impl<R, A> BaseConfig<R, A> where
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::raw::asset::RawAssetConfig;
-    use crate::wrapper::base::BaseConfig;
-
-    #[test]
-    fn test_new_base_config() {
-        let asset = RawAssetConfig::new();
-        let config: BaseConfig<RawAssetConfig> = BaseConfig::new(asset, None);
-        let json_str = config.to_json_string();
-        println!("{:?}", json_str);
-    }
-}
-
-

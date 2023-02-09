@@ -7,7 +7,7 @@ use validator::Validate;
 use mystiko_utils::check::check;
 use crate::common::{AssetType, BridgeType, CircuitType, validate_object};
 use crate::raw::asset::RawAssetConfig;
-use crate::raw::base::RawConfig;
+use crate::raw::base::RawConfigTrait;
 use crate::raw::chain::{EXPLORER_TX_PLACEHOLDER, RawChainConfig};
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::wrapper::asset::AssetConfig;
@@ -465,7 +465,7 @@ impl ChainConfig {
     }
 }
 
-impl RawConfig for ChainConfig {
+impl RawConfigTrait for ChainConfig {
     fn validate(&self) -> Result<(), Vec<String>> {
         let result = validate_object(self);
         if result.is_err() {
