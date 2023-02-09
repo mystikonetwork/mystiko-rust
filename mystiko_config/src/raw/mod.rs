@@ -7,3 +7,4 @@ pub mod mystiko;
 pub mod circuit;
 pub mod indexer;
 pub mod contract;
+pub mod validator;

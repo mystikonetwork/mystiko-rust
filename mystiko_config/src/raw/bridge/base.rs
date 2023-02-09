@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{BridgeType, validate_object};
-use crate::raw::base::RawConfig;
+use crate::raw::base::RawConfigTrait;
 
-pub trait RawBridgeConfigTrait: RawConfig {
+pub trait RawBridgeConfigTrait: RawConfigTrait {
     fn name(&self) -> &String;
 }
 
@@ -13,7 +13,7 @@ pub struct RawBridgeConfig {
     bridge_type: BridgeType,
 }
 
-impl RawConfig for RawBridgeConfig {
+impl RawConfigTrait for RawBridgeConfig {
     fn validate(&self) -> Result<(), Vec<String>> {
         let result = validate_object(self);
         if result.is_err() {

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{BridgeType, ContractType, validate_object};
-use crate::raw::base::RawConfig;
+use crate::raw::base::RawConfigTrait;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
@@ -23,7 +23,7 @@ pub struct RawDepositContractConfig {
     pub service_fee_divider: u32,
 }
 
-impl RawConfig for RawDepositContractConfig {
+impl RawConfigTrait for RawDepositContractConfig {
     fn validate(&self) -> Result<(), Vec<String>> {
         let result = validate_object(self);
         if result.is_err() {

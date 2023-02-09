@@ -10,7 +10,7 @@ use crate::raw::indexer::RawIndexerConfig;
 
 use validator::{Validate};
 use crate::common::validate_object;
-use crate::raw::base::RawConfig;
+use crate::raw::base::RawConfigTrait;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum RawBridgeConfigType {
@@ -30,7 +30,7 @@ pub struct RawMystikoConfig {
     pub indexer: Option<RawIndexerConfig>,
 }
 
-impl RawConfig for RawMystikoConfig {
+impl RawConfigTrait for RawMystikoConfig {
     fn validate(&self) -> Result<(), Vec<String>> {
         let result = validate_object(self);
         if result.is_err() {

@@ -1,24 +1,27 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{AssetType, validate_object};
-use crate::raw::base::RawConfig;
+use crate::raw::base::{RawConfig, RawConfigTrait};
+use crate::raw::validator::{is_ethereum_address, array_unique};
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawAssetConfig {
+    #[serde(default)]
+    pub base: RawConfig,
     pub asset_type: AssetType,
+    #[validate(length(min = 1))]
     pub asset_symbol: String,
+    #[validate(range(min = 1))]
     pub asset_decimals: u32,
+    #[validate(custom = "is_ethereum_address")]
     pub asset_address: String,
+    #[validate(custom = "array_unique")]
     pub recommended_amounts: Vec<String>,
 }
 
-impl RawConfig for RawAssetConfig {
+impl RawConfigTrait for RawAssetConfig {
     fn validate(&self) -> Result<(), Vec<String>> {
-        let result = validate_object(self);
-        if result.is_err() {
-            return Err(result.unwrap_err());
-        }
-        Ok(())
+        self.base.validate_object::<&RawAssetConfig>(self)
     }
 }
 
@@ -31,6 +34,7 @@ impl RawAssetConfig {
         recommended_amounts: Vec<String>,
     ) -> RawAssetConfig {
         Self {
+            base: RawConfig::default(),
             asset_type,
             asset_symbol,
             asset_decimals,

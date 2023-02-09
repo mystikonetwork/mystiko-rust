@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{CircuitType, validate_object};
-use crate::raw::base::RawConfig;
+use crate::raw::base::RawConfigTrait;
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawCircuitConfig {
@@ -14,7 +14,7 @@ pub struct RawCircuitConfig {
     pub verifying_key_file: Vec<String>,
 }
 
-impl RawConfig for RawCircuitConfig {
+impl RawConfigTrait for RawCircuitConfig {
     fn validate(&self) -> Result<(), Vec<String>> {
         let result = validate_object(self);
         if result.is_err() {

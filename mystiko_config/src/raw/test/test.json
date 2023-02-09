@@ -1,0 +1,10 @@
+{
+  "asset_type": "ERC20",
+  "asset_symbol": "MTT",
+  "asset_decimals": 18,
+  "asset_address": "0x0000000000000000000000000000000000000000",
+  "recommended_amounts": [
+    "1290",
+    "1080"
+  ]
+}
