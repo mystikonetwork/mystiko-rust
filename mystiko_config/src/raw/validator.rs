@@ -25,30 +25,22 @@ pub fn array_unique<T>(array: &[T]) -> Result<(), ValidationError>
     Ok(())
 }
 
-pub fn is_number_string(
+/// arg[0]: no_symbols default: true
+/// arg[1]: each default: false
+pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
     object: &dyn Any,
-    no_symbols: Option<bool>,
-    each: Option<bool>,
 ) -> Result<(), ValidationError> {
-    let no_symbols = match no_symbols {
-        None => { true }
-        Some(value) => { value }
-    };
-    let each = match each {
-        None => { false }
-        Some(value) => { value }
-    };
     match object.downcast_ref::<&str>() {
         Some(s) => {
-            if !is_valid_number_string(s, no_symbols) {
+            if !is_valid_number_string(s, NO_SYMBOLS) {
                 return Err(ValidationError::new("is number string error"));
             }
         }
         None => {
             if let Some(v) = object.downcast_ref::<Vec<&str>>() {
-                if each {
+                if EACH {
                     let is_number =
-                        v.iter().all(|s| is_valid_number_string(s, no_symbols));
+                        v.iter().all(|s| is_valid_number_string(s, NO_SYMBOLS));
                     if !is_number {
                         return Err(ValidationError::new("is number string error"));
                     }
@@ -64,7 +56,6 @@ pub fn is_number_string(
 }
 
 fn is_valid_number_string(s: &str, no_symbol: bool) -> bool {
-    println!("{}", no_symbol);
     let mut seen_decimal = false;
     let mut seen_digit = false;
     let mut start = 0;
@@ -95,7 +86,7 @@ mod tests {
 
     #[test]
     fn test_is_number_string() {
-        let s: &str = "-f";
-        is_number_string(&s, Some(true), None).expect("error");
+        let s: &str = "1";
+        is_number_string::<true, false>(&s).expect("error");
     }
 }
