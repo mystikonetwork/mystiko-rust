@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
-use validator::Validate;
+use validator::{Validate, ValidationErrors};
 use crate::common::{AssetType, validate_object};
 use crate::raw::base::{RawConfig, RawConfigTrait};
-use crate::raw::validator::{is_ethereum_address, array_unique};
+use crate::raw::validator::{is_ethereum_address, array_unique, is_number_string};
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawAssetConfig {
@@ -15,7 +15,10 @@ pub struct RawAssetConfig {
     pub asset_decimals: u32,
     #[validate(custom = "is_ethereum_address")]
     pub asset_address: String,
-    #[validate(custom = "array_unique")]
+    #[validate(
+    custom(function = "array_unique"),
+    custom(function = "is_number_string::<true, true>")
+    )]
     pub recommended_amounts: Vec<String>,
 }
 
