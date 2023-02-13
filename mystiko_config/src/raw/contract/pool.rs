@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{BridgeType, ContractType, validate_object};
@@ -5,7 +6,7 @@ use crate::raw::base::RawConfigTrait;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
 pub struct RawPoolContractConfig {
     pub base: RawContractConfig,
     pub pool_name: String,
@@ -16,13 +17,21 @@ pub struct RawPoolContractConfig {
     pub circuits: Vec<String>,
 }
 
+impl Hash for RawPoolContractConfig {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.base.address.hash(state)
+    }
+}
+
+impl PartialEq for RawPoolContractConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.base.address == other.base.address
+    }
+}
+
 impl RawConfigTrait for RawPoolContractConfig {
-    fn validate(&self) -> Result<(), Vec<String>> {
-        let result = validate_object(self);
-        if result.is_err() {
-            return Err(result.unwrap_err());
-        }
-        Ok(())
+    fn validate(&self) {
+        self.base.base.validate_object(self)
     }
 }
 

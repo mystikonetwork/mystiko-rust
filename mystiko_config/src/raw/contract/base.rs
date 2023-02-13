@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{ContractType, validate_object};
-use crate::raw::base::RawConfigTrait;
+use crate::raw::base::{RawConfig, RawConfigTrait};
 
 pub trait RawContractConfigTrait: RawConfigTrait {
     fn version(&self) -> &u32;
@@ -13,8 +13,9 @@ pub trait RawContractConfigTrait: RawConfigTrait {
     fn indexer_filter_size(&self) -> &Option<u32>;
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct RawContractConfig {
+    pub base: RawConfig,
     pub version: u32,
     pub name: String,
     pub address: String,
@@ -25,12 +26,8 @@ pub struct RawContractConfig {
 }
 
 impl RawConfigTrait for RawContractConfig {
-    fn validate(&self) -> Result<(), Vec<String>> {
-        let result = validate_object(self);
-        if result.is_err() {
-            return Err(result.unwrap_err());
-        }
-        Ok(())
+    fn validate(&self) {
+        self.base.validate_object(self)
     }
 }
 

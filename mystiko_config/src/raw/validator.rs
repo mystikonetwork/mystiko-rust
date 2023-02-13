@@ -5,7 +5,7 @@ use regex::Regex;
 use validator::ValidationError;
 
 pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
-    let eth = Regex::new(r"^(0x)[0-9a-f]{40}$").unwrap();
+    let eth = Regex::new(r"^(0x)[0-9a-fA-F]{40}$").unwrap();
     if eth.is_match(address) {
         return Ok(());
     }
@@ -25,19 +25,17 @@ pub fn array_unique<T>(array: &[T]) -> Result<(), ValidationError>
     Ok(())
 }
 
-/// arg[0]: no_symbols default: true
-/// arg[1]: each default: false
 pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
     object: &dyn Any,
 ) -> Result<(), ValidationError> {
-    match object.downcast_ref::<&str>() {
+    match object.downcast_ref::<String>() {
         Some(s) => {
             if !is_valid_number_string(s, NO_SYMBOLS) {
                 return Err(ValidationError::new("is number string error"));
             }
         }
         None => {
-            if let Some(v) = object.downcast_ref::<Vec<&str>>() {
+            if let Some(v) = object.downcast_ref::<Vec<String>>() {
                 if EACH {
                     let is_number =
                         v.iter().all(|s| is_valid_number_string(s, NO_SYMBOLS));
@@ -55,7 +53,7 @@ pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
     Ok(())
 }
 
-fn is_valid_number_string(s: &str, no_symbol: bool) -> bool {
+fn is_valid_number_string(s: &String, no_symbol: bool) -> bool {
     let mut seen_decimal = false;
     let mut seen_digit = false;
     let mut start = 0;
@@ -86,7 +84,10 @@ mod tests {
 
     #[test]
     fn test_is_number_string() {
-        let s: &str = "1";
-        is_number_string::<true, false>(&s).expect("error");
+        let number_vec = vec![
+            String::from("10000000000000000"),
+            String::from("100000000000000000"),
+        ];
+        is_number_string::<true, true>(&number_vec).expect("error");
     }
 }

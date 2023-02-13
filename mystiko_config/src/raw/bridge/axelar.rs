@@ -11,12 +11,8 @@ pub struct RawAxelarBridgeConfig {
 }
 
 impl RawConfigTrait for RawAxelarBridgeConfig {
-    fn validate(&self) -> Result<(), Vec<String>> {
-        let result = validate_object(self);
-        if result.is_err() {
-            return Err(result.unwrap_err());
-        }
-        Ok(())
+    fn validate(&self) {
+        self.base.base.validate_object(self)
     }
 }
 
