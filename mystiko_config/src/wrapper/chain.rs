@@ -464,13 +464,3 @@ impl ChainConfig {
         deposit_contract_configs
     }
 }
-
-impl RawConfigTrait for ChainConfig {
-    fn validate(&self) -> Result<(), Vec<String>> {
-        let result = validate_object(self);
-        if result.is_err() {
-            return Err(result.unwrap_err());
-        }
-        Ok(())
-    }
-}

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::validate_object;
 use crate::raw::asset::RawAssetConfig;
-use crate::raw::base::RawConfigTrait;
+use crate::raw::base::{RawConfig, RawConfigTrait};
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
@@ -12,6 +12,8 @@ pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawChainConfig {
+    #[serde(default)]
+    pub base: RawConfig,
     #[validate(range(min = 1))]
     pub chain_id: u32,
     #[validate(length(min = 1))]
@@ -28,23 +30,26 @@ pub struct RawChainConfig {
     #[validate(url)]
     pub explorer_url: String,
     // TODO test this validate
-    #[validate(contains= "EXPLORER_TX_PLACEHOLDER")]
+    #[validate(contains = "EXPLORER_TX_PLACEHOLDER")]
     pub explorer_prefix: String,
+    #[validate(length(min = 1))]
     pub providers: Vec<RawProviderConfig>,
+    #[validate(url)]
     pub signer_endpoint: String,
+    #[validate(range(min = 1))]
     pub event_filter_size: u32,
+    #[validate(range(min = 1))]
     pub indexer_filter_size: u32,
+    #[validate(custom(function = "array_unique"))]
     pub deposit_contracts: Vec<RawDepositContractConfig>,
+    #[validate(custom(function = "array_unique"))]
     pub pool_contracts: Vec<RawPoolContractConfig>,
+    #[validate(custom(function = "array_unique"))]
     pub assets: Vec<RawAssetConfig>,
 }
 
 impl RawConfigTrait for RawChainConfig {
-    fn validate(&self) -> Result<(), Vec<String>> {
-        let result = validate_object(self);
-        if result.is_err() {
-            return Err(result.unwrap_err());
-        }
-        Ok(())
+    fn validate(&self) {
+        self.base.validate_object::<&RawChainConfig>(self)
     }
 }

@@ -12,15 +12,15 @@ pub enum BridgeType {
     Axelar,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum ContractType {
     Deposit,
     Pool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum AssetType {
-    ERC20,
+    erc20,
     Main,
 }
 

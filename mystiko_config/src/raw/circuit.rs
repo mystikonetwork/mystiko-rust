@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{CircuitType, validate_object};
-use crate::raw::base::RawConfigTrait;
+use crate::raw::base::{RawConfig, RawConfigTrait};
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct RawCircuitConfig {
+    pub base: RawConfig,
     pub name: String,
     pub circuit_type: CircuitType,
     pub is_default: bool,
@@ -15,11 +16,7 @@ pub struct RawCircuitConfig {
 }
 
 impl RawConfigTrait for RawCircuitConfig {
-    fn validate(&self) -> Result<(), Vec<String>> {
-        let result = validate_object(self);
-        if result.is_err() {
-            return Err(result.unwrap_err());
-        }
-        Ok(())
+    fn validate(&self) {
+        self.base.validate_object(self)
     }
 }
