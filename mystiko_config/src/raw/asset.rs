@@ -6,25 +6,28 @@ use crate::raw::base::{RawConfig, RawConfigTrait};
 use crate::raw::validator::{is_ethereum_address, array_unique, is_number_string};
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct RawAssetConfig {
     #[serde(default)]
     pub base: RawConfig,
+
     #[serde(rename = "assetType")]
     pub asset_type: AssetType,
+
     #[validate(length(min = 1))]
-    #[serde(rename = "assetSymbol")]
     pub asset_symbol: String,
+
     #[validate(range(min = 1))]
-    #[serde(rename = "assetDecimals")]
     pub asset_decimals: u32,
+
     #[validate(custom = "is_ethereum_address")]
-    #[serde(rename = "assetAddress")]
     pub asset_address: String,
+
     #[validate(
     custom(function = "array_unique"),
     custom(function = "is_number_string::<true, true>")
     )]
-    #[serde(rename = "recommendedAmounts")]
+    #[serde(default)]
     pub recommended_amounts: Vec<String>,
 }
 
@@ -71,72 +74,74 @@ mod tests {
     use crate::raw::asset::RawAssetConfig;
     use crate::raw::base::{RawConfig, RawConfigTrait};
 
-    fn default_config() -> RawAssetConfig {
-        RawAssetConfig::new(
-            AssetType::erc20,
-            String::from("MTT"),
-            16,
-            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
-            vec![
-                String::from("10000000000000000"),
-                String::from("100000000000000000"),
-            ],
-        )
+    async fn default_config() -> RawAssetConfig {
+        RawConfig::create_from_object::<RawAssetConfig>(
+            RawAssetConfig::new(
+                AssetType::Erc20,
+                String::from("MTT"),
+                16,
+                "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
+                vec![
+                    String::from("10000000000000000"),
+                    String::from("100000000000000000"),
+                ],
+            )
+        ).await
     }
 
-    #[test]
+    #[tokio::test]
     #[should_panic]
-    fn test_invalid_asset_symbol() {
-        let mut config = default_config();
+    async fn test_invalid_asset_symbol() {
+        let mut config = default_config().await;
         config.asset_symbol = "".to_string();
         config.validate();
     }
 
-    #[test]
+    #[tokio::test]
     #[should_panic]
-    fn test_invalid_asset_address_00() {
-        let mut config = default_config();
+    async fn test_invalid_asset_address_0() {
+        let mut config = default_config().await;
         config.asset_address = String::from("");
         config.validate();
     }
 
-    #[test]
+    #[tokio::test]
     #[should_panic]
-    fn test_invalid_asset_address_01() {
-        let mut config = default_config();
+    async fn test_invalid_asset_address_1() {
+        let mut config = default_config().await;
         config.asset_address = String::from("0xdeadbeef");
         config.validate();
     }
 
-    #[test]
+    #[tokio::test]
     #[should_panic]
-    fn test_invalid_recommended_amounts_00() {
-        let mut config = default_config();
+    async fn test_invalid_recommended_amounts_0() {
+        let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("")];
         config.validate();
     }
 
-    #[test]
+    #[tokio::test]
     #[should_panic]
-    fn test_invalid_recommended_amounts_01() {
-        let mut config = default_config();
+    async fn test_invalid_recommended_amounts_1() {
+        let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("abcd")];
         config.validate();
     }
 
-    #[test]
+    #[tokio::test]
     #[should_panic]
-    fn test_invalid_recommended_amounts_02() {
-        let mut config = default_config();
+    async fn test_invalid_recommended_amounts_2() {
+        let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("1"), String::from("1")];
         config.validate();
     }
 
     #[tokio::test]
-    async fn test_import_json_file() {
+    async fn test_import_valid_json_file() {
         let file_config =
             RawConfig::create_from_file::<RawAssetConfig>("src/tests/files/asset.valid.json").await;
-        assert_eq!(file_config, default_config());
+        assert_eq!(file_config, default_config().await);
     }
 
     #[tokio::test]

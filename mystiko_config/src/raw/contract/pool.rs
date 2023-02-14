@@ -1,20 +1,67 @@
 use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
-use validator::Validate;
+use validator::{Validate, ValidationError};
 use crate::common::{BridgeType, ContractType, validate_object};
 use crate::raw::base::RawConfigTrait;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
+use crate::raw::validator::{is_ethereum_address, is_number_string};
+
+fn default_contract_type() -> ContractType {
+    ContractType::Pool
+}
+
+fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
+    if *t == ContractType::Pool {
+        return Ok(());
+    }
+    Err(ValidationError::new("contract type error"))
+}
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct RawPoolContractConfig {
+    #[serde(flatten)]
     pub base: RawContractConfig,
-    pub pool_name: String,
-    pub bridge_type: BridgeType,
+
+    #[serde(default = "default_contract_type")]
+    #[validate(custom = "validate_contract_type")]
     pub contract_type: ContractType,
+
+    #[validate(length(min = 1))]
+    pub pool_name: String,
+
+    pub bridge_type: BridgeType,
+
+    #[validate(custom = "is_ethereum_address")]
     pub asset_address: Option<String>,
+
+    #[validate(custom = "is_number_string::<true,false>")]
     pub min_rollup_fee: String,
+
+    #[validate(length(min = 1))]
     pub circuits: Vec<String>,
+}
+
+impl RawPoolContractConfig {
+    pub fn new(
+        base: RawContractConfig,
+        pool_name: String,
+        bridge_type: BridgeType,
+        asset_address: Option<String>,
+        min_rollup_fee: String,
+        circuits: Vec<String>,
+    ) -> Self {
+        Self {
+            base,
+            pool_name,
+            bridge_type,
+            asset_address,
+            min_rollup_fee,
+            circuits,
+            contract_type: default_contract_type(),
+        }
+    }
 }
 
 impl Hash for RawPoolContractConfig {
@@ -49,7 +96,7 @@ impl RawContractConfigTrait for RawPoolContractConfig {
     }
 
     fn contract_type(&self) -> &ContractType {
-        &self.base.contract_type
+        &self.contract_type
     }
 
     fn start_block(&self) -> &u32 {
