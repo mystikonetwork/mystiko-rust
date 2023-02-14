@@ -1,27 +1,110 @@
 use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
-use validator::Validate;
+use validator::{Validate, ValidationError};
 use crate::common::{BridgeType, ContractType, validate_object};
 use crate::raw::base::RawConfigTrait;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
+use crate::raw::validator::{is_ethereum_address, is_number_string};
+
+fn default_contract_type() -> ContractType {
+    ContractType::Deposit
+}
+
+fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
+    if *t == ContractType::Deposit {
+        return Ok(());
+    }
+    Err(ValidationError::new("contract type error"))
+}
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct RawDepositContractConfig {
+    #[serde(flatten)]
     pub base: RawContractConfig,
-    pub contract_type: ContractType,
+
     pub bridge_type: BridgeType,
+
+    #[serde(default = "default_contract_type")]
+    #[validate(custom = "validate_contract_type")]
+    pub contract_type: ContractType,
+
+    #[validate(custom = "is_ethereum_address")]
     pub pool_address: String,
+
     pub disabled: bool,
+
+    #[validate(range(min = 1))]
     pub peer_chain_id: Option<u32>,
+
+    #[validate(custom = "is_ethereum_address")]
     pub peer_contract_address: Option<String>,
+
+    #[validate(custom = "is_number_string::<true,false>")]
     pub min_amount: String,
+
+    #[validate(custom = "is_number_string::<true,false>")]
     pub max_amount: String,
+
+    #[validate(custom = "is_number_string::<true,false>")]
     pub min_bridge_fee: String,
+
+    #[validate(custom = "is_number_string::<true,false>")]
     pub min_executor_fee: String,
-    pub bridge_fee_asset_address: String,
-    pub executor_fee_asset_address: String,
-    pub service_fee: u32,
-    pub service_fee_divider: u32,
+
+    #[validate(custom = "is_ethereum_address")]
+    pub bridge_fee_asset_address: Option<String>,
+
+    #[validate(custom = "is_ethereum_address")]
+    pub executor_fee_asset_address: Option<String>,
+
+    #[validate(range(min = 0))]
+    pub service_fee: Option<u32>,
+
+    #[validate(range(min = 1))]
+    pub service_fee_divider: Option<u32>,
+}
+
+impl RawDepositContractConfig {
+    pub fn new(
+        base: RawContractConfig,
+        bridge_type: BridgeType,
+        pool_address: String,
+        disabled: bool,
+        peer_chain_id: Option<u32>,
+        peer_contract_address: Option<String>,
+        min_amount: String, max_amount: String,
+        min_bridge_fee: String,
+        min_executor_fee: String,
+        bridge_fee_asset_address: Option<String>,
+        executor_fee_asset_address: Option<String>,
+        mut service_fee: Option<u32>,
+        mut service_fee_divider: Option<u32>,
+    ) -> Self {
+        if service_fee.is_none() {
+            service_fee = Some(0)
+        }
+        if service_fee_divider.is_none() {
+            service_fee_divider = Some(1000000)
+        }
+        Self {
+            base,
+            bridge_type,
+            pool_address,
+            disabled,
+            peer_chain_id,
+            peer_contract_address,
+            min_amount,
+            max_amount,
+            min_bridge_fee,
+            min_executor_fee,
+            bridge_fee_asset_address,
+            executor_fee_asset_address,
+            service_fee,
+            service_fee_divider,
+            contract_type: default_contract_type(),
+        }
+    }
 }
 
 impl Hash for RawDepositContractConfig {
@@ -56,7 +139,7 @@ impl RawContractConfigTrait for RawDepositContractConfig {
     }
 
     fn contract_type(&self) -> &ContractType {
-        &self.base.contract_type
+        &self.contract_type
     }
 
     fn start_block(&self) -> &u32 {

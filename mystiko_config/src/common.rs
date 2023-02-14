@@ -3,6 +3,7 @@ use strum::EnumIter;
 use validator::{Validate, ValidationErrors};
 
 #[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone)]
+#[serde(rename_all = "snake_case")]
 pub enum BridgeType {
     Loop,
     Poly,
@@ -13,14 +14,16 @@ pub enum BridgeType {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
 pub enum ContractType {
     Deposit,
     Pool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
 pub enum AssetType {
-    erc20,
+    Erc20,
     Main,
 }
 
