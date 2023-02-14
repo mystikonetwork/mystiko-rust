@@ -7,7 +7,7 @@ pub trait RawBridgeConfigTrait: RawConfigTrait {
     fn name(&self) -> &String;
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct RawBridgeConfig {
     #[serde(default)]
     pub base: RawConfig,

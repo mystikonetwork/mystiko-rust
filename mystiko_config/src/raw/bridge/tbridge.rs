@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 use crate::common::{BridgeType, validate_object};
@@ -15,7 +16,7 @@ fn validate_bridge_type(t: &BridgeType) -> Result<(), ValidationError> {
     Err(ValidationError::new("bridge type error"))
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawTBridgeConfig {
     #[serde(flatten)]
@@ -45,6 +46,12 @@ impl RawConfigTrait for RawTBridgeConfig {
 impl RawBridgeConfigTrait for RawTBridgeConfig {
     fn name(&self) -> &String {
         &self.base.name()
+    }
+}
+
+impl Hash for RawTBridgeConfig {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.bridge_type.hash(state)
     }
 }
 

@@ -1,4 +1,5 @@
 use std::borrow::ToOwned;
+use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{AssetType, validate_object};
@@ -13,7 +14,7 @@ pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
 //TODO use EXPLORER_TX_PLACEHOLDER replace %tx%
 pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawChainConfig {
     #[serde(default)]
@@ -67,6 +68,18 @@ pub struct RawChainConfig {
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
     pub assets: Vec<RawAssetConfig>,
+}
+
+impl PartialEq for RawChainConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.chain_id == other.chain_id
+    }
+}
+
+impl Hash for RawChainConfig {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.chain_id.hash(state)
+    }
 }
 
 impl RawConfigTrait for RawChainConfig {

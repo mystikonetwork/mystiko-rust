@@ -74,6 +74,14 @@ pub fn string_vec_each_not_empty(v: &Vec<String>) -> Result<(), ValidationError>
     Ok(())
 }
 
+pub fn is_sem_ver(s: &str) -> Result<(), ValidationError> {
+    let re = Regex::new(r"^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$").unwrap();
+    if re.is_match(s) {
+        return Ok(());
+    }
+    Err(ValidationError::new("SemVer is error"))
+}
+
 fn is_numeric(s: &String, no_symbol: bool) -> bool {
     let re = if no_symbol {
         Regex::new(r"^[0-9]+$").unwrap()
@@ -85,7 +93,7 @@ fn is_numeric(s: &String, no_symbol: bool) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::raw::validator::{is_number_string, is_numeric};
+    use crate::raw::validator::{is_number_string, is_numeric, is_sem_ver};
 
     #[test]
     fn test_is_number_string() {
@@ -108,5 +116,19 @@ mod tests {
         assert_eq!(is_numeric(&s, false), true);
         s = String::from("1.2");
         assert_eq!(is_numeric(&s, true), false);
+    }
+
+    #[test]
+    fn test_is_sem_ver() {
+        let mut v = String::from("1.2.3");
+        assert_eq!(is_sem_ver(&v).is_err(), false);
+        v = String::from("0.1.0");
+        assert_eq!(is_sem_ver(&v).is_err(), false);
+        v = String::from("2.0.0-alpha.1");
+        assert_eq!(is_sem_ver(&v).is_err(), false);
+        v = String::from("3.4.5-beta+20181012");
+        assert_eq!(is_sem_ver(&v).is_err(), false);
+        v = String::from("0");
+        assert_eq!(is_sem_ver(&v).is_err(), true);
     }
 }

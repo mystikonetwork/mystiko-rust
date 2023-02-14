@@ -3,7 +3,7 @@ use validator::Validate;
 use crate::common::validate_object;
 use crate::raw::base::{RawConfig, RawConfigTrait};
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawProviderConfig {
     #[serde(default)]
