@@ -31,7 +31,7 @@ pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
 ) -> Result<(), ValidationError> {
     match object.downcast_ref::<String>() {
         Some(s) => {
-            if !is_valid_number_string(s, NO_SYMBOLS) {
+            if !is_numeric(s, NO_SYMBOLS) {
                 return Err(ValidationError::new("is number string error"));
             }
         }
@@ -39,7 +39,7 @@ pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
             if let Some(v) = object.downcast_ref::<Vec<String>>() {
                 if EACH {
                     let is_number =
-                        v.iter().all(|s| is_valid_number_string(s, NO_SYMBOLS));
+                        v.iter().all(|s| is_numeric(s, NO_SYMBOLS));
                     if !is_number {
                         return Err(ValidationError::new("is number string error"));
                     }
@@ -64,34 +64,28 @@ pub fn validate_nested_vec<T>(v: &Vec<T>) -> Result<(), ValidationError>
     Ok(())
 }
 
-fn is_valid_number_string(s: &String, no_symbol: bool) -> bool {
-    let mut seen_decimal = false;
-    let mut seen_digit = false;
-    let mut start = 0;
-    if no_symbol && s.starts_with("+") || s.starts_with("-") {
-        return false;
-    }
-    if !no_symbol && s.starts_with("+") || s.starts_with("-") {
-        start = 1;
-    }
-    for (i, c) in s[start..].chars().enumerate() {
-        if c == '.' {
-            if seen_decimal || i == 0 || i == s.len() - 1 - start {
-                return false;
-            }
-            seen_decimal = true;
-        } else if !c.is_digit(10) {
-            return false;
-        } else {
-            seen_digit = true;
+pub fn string_vec_each_not_empty(v: &Vec<String>) -> Result<(), ValidationError> {
+    for s in v {
+        if s.is_empty() {
+            return Err(ValidationError::new("vec element cannot be empty"));
         }
     }
-    seen_digit
+
+    Ok(())
+}
+
+fn is_numeric(s: &String, no_symbol: bool) -> bool {
+    let re = if no_symbol {
+        Regex::new(r"^[0-9]+$").unwrap()
+    } else {
+        Regex::new(r"^[+-]?([0-9]*[.])?[0-9]+$").unwrap()
+    };
+    re.is_match(s)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::raw::validator::is_number_string;
+    use crate::raw::validator::{is_number_string, is_numeric};
 
     #[test]
     fn test_is_number_string() {
@@ -100,5 +94,19 @@ mod tests {
             String::from("100000000000000000"),
         ];
         is_number_string::<true, true>(&number_vec).expect("error");
+    }
+
+    #[test]
+    fn test_is_numeric() {
+        let mut s = String::from("100");
+        assert_eq!(is_numeric(&s, true), true);
+        s = String::from("+100");
+        assert_eq!(is_numeric(&s, true), false);
+        assert_eq!(is_numeric(&s, false), true);
+        s = String::from("-10");
+        assert_eq!(is_numeric(&s, true), false);
+        assert_eq!(is_numeric(&s, false), true);
+        s = String::from("1.2");
+        assert_eq!(is_numeric(&s, true), false);
     }
 }

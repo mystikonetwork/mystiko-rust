@@ -5,7 +5,7 @@ use crate::common::{BridgeType, ContractType, validate_object};
 use crate::raw::base::RawConfigTrait;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
-use crate::raw::validator::{is_ethereum_address, is_number_string};
+use crate::raw::validator::{is_ethereum_address, is_number_string, string_vec_each_not_empty};
 
 fn default_contract_type() -> ContractType {
     ContractType::Pool
@@ -40,7 +40,7 @@ pub struct RawPoolContractConfig {
     #[validate(custom = "is_number_string::<true,false>")]
     pub min_rollup_fee: String,
 
-    #[validate(length(min = 1))]
+    #[validate(custom = "string_vec_each_not_empty")]
     pub circuits: Vec<String>,
 }
 
@@ -110,5 +110,112 @@ impl RawContractConfigTrait for RawPoolContractConfig {
 
     fn indexer_filter_size(&self) -> &Option<u32> {
         &self.base.indexer_filter_size
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::common::{BridgeType, ContractType};
+    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::contract::base::RawContractConfig;
+    use crate::raw::contract::pool::RawPoolContractConfig;
+
+    async fn default_config() -> RawPoolContractConfig {
+        RawConfig::create_from_object::<RawPoolContractConfig>(
+            RawPoolContractConfig::new(
+                RawContractConfig::new(
+                    2,
+                    "CommitmentPool".to_string(),
+                    "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+                    1000000,
+                    None,
+                    None,
+                ),
+                "A Pool(since 07/20/2022)".to_string(),
+                BridgeType::Tbridge,
+                Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()),
+                "120000000000000000".to_string(),
+                vec![String::from("circuit-1.0")],
+            )
+        ).await
+    }
+
+    #[tokio::test]
+    async fn test_validate_success() {
+        let mut config = default_config().await;
+        config.asset_address = None;
+        config.min_rollup_fee = "0".to_string();
+        config.circuits = vec![];
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_pool_name() {
+        let mut config = default_config().await;
+        config.pool_name = "".to_string();
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_contract_type() {
+        let mut config = default_config().await;
+        config.contract_type = ContractType::Deposit;
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_rollup_fee_0() {
+        let mut config = default_config().await;
+        config.min_rollup_fee = String::from("");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_rollup_fee_1() {
+        let mut config = default_config().await;
+        config.min_rollup_fee = String::from("0xdeadbeef");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_rollup_fee_2() {
+        let mut config = default_config().await;
+        config.min_rollup_fee = String::from("-1");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_rollup_fee_3() {
+        let mut config = default_config().await;
+        config.min_rollup_fee = String::from("1.2");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_circuits() {
+        let mut config = default_config().await;
+        config.circuits = vec![String::from("")];
+        config.validate();
+    }
+
+    #[tokio::test]
+    async fn test_import_valid_json_file() {
+        let file_config =
+            RawConfig::create_from_file::<RawPoolContractConfig>("src/tests/files/contract/pool.valid.json").await;
+        assert_eq!(file_config, default_config().await)
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_import_invalid_json_file() {
+        let file_config =
+            RawConfig::create_from_file::<RawPoolContractConfig>("src/tests/files/contract/pool.invalid.json").await;
     }
 }

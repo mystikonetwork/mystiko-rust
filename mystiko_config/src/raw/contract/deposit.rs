@@ -155,3 +155,262 @@ impl RawContractConfigTrait for RawDepositContractConfig {
         &self.base.indexer_filter_size
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::common::{BridgeType, ContractType};
+    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::bridge::celer::RawCelerBridgeConfig;
+    use crate::raw::contract::base::RawContractConfig;
+    use crate::raw::contract::deposit::RawDepositContractConfig;
+
+    async fn default_config() -> RawDepositContractConfig {
+        RawConfig::create_from_object::<RawDepositContractConfig>(
+            RawDepositContractConfig::new(
+                RawContractConfig::new(
+                    2,
+                    "MystikoWithPolyERC20".to_string(),
+                    "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+                    1000000,
+                    None,
+                    None,
+                ),
+                BridgeType::Tbridge,
+                "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
+                true,
+                Some(97),
+                Some(String::from("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547")),
+                "10000000000000000".to_string(),
+                "100000000000000000".to_string(),
+                "20000000000000000".to_string(),
+                "30000000000000000".to_string(),
+                Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
+                Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
+                Some(2),
+                Some(1000),
+            )
+        ).await
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_type() {
+        let mut config = default_config().await;
+        config.contract_type = ContractType::Pool;
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_pool_address_0() {
+        let mut config = default_config().await;
+        config.pool_address = String::from("0xdeadbeef");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_pool_address_1() {
+        let mut config = default_config().await;
+        config.pool_address = String::from("");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_peer_chain_id() {
+        let mut config = default_config().await;
+        config.peer_chain_id = Some(0);
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_peer_contract_address_0() {
+        let mut config = default_config().await;
+        config.peer_contract_address = Some(String::from(""));
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_peer_contract_address_1() {
+        let mut config = default_config().await;
+        config.peer_contract_address = Some(String::from("0xdeadbeef"));
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_amount_0() {
+        let mut config = default_config().await;
+        config.min_amount = String::from("");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_amount_1() {
+        let mut config = default_config().await;
+        config.min_amount = String::from("0xdeadbeef");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_amount_2() {
+        let mut config = default_config().await;
+        config.min_amount = String::from("-1");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_amount_3() {
+        let mut config = default_config().await;
+        config.min_amount = String::from("1.2");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_max_amount_0() {
+        let mut config = default_config().await;
+        config.max_amount = String::from("");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_max_amount_1() {
+        let mut config = default_config().await;
+        config.max_amount = String::from("0xdeadbeef");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_max_amount_2() {
+        let mut config = default_config().await;
+        config.max_amount = String::from("-1");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_max_amount_3() {
+        let mut config = default_config().await;
+        config.max_amount = String::from("1.2");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_bridge_fee_0() {
+        let mut config = default_config().await;
+        config.min_bridge_fee = String::from("");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_bridge_fee_1() {
+        let mut config = default_config().await;
+        config.min_bridge_fee = String::from("0xdeadbeef");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_bridge_fee_2() {
+        let mut config = default_config().await;
+        config.min_bridge_fee = String::from("-1");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_bridge_fee_3() {
+        let mut config = default_config().await;
+        config.min_bridge_fee = String::from("1.2");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_executor_fee_0() {
+        let mut config = default_config().await;
+        config.min_executor_fee = String::from("");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_executor_fee_1() {
+        let mut config = default_config().await;
+        config.min_executor_fee = String::from("0xdeadbeef");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_executor_fee_2() {
+        let mut config = default_config().await;
+        config.min_executor_fee = String::from("-1");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_min_executor_fee_3() {
+        let mut config = default_config().await;
+        config.min_executor_fee = String::from("1.2");
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_bridge_fee_asset_address_0() {
+        let mut config = default_config().await;
+        config.bridge_fee_asset_address = Some(String::from("0xdeadbeef"));
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_bridge_fee_asset_address_1() {
+        let mut config = default_config().await;
+        config.bridge_fee_asset_address = Some(String::from(""));
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_executor_fee_asset_address_0() {
+        let mut config = default_config().await;
+        config.executor_fee_asset_address = Some(String::from("0xdeadbeef"));
+        config.validate();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_executor_fee_asset_address_1() {
+        let mut config = default_config().await;
+        config.executor_fee_asset_address = Some(String::from(""));
+        config.validate();
+    }
+
+    #[tokio::test]
+    async fn test_import_valid_json_file() {
+        let file_config =
+            RawConfig::create_from_file::<RawDepositContractConfig>("src/tests/files/contract/deposit.valid.json").await;
+        assert_eq!(file_config, default_config().await);
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_import_invalid_json_file() {
+        let file_config =
+            RawConfig::create_from_file::<RawDepositContractConfig>("src/tests/files/contract/deposit.invalid.json").await;
+    }
+}
