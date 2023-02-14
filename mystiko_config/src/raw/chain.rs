@@ -1,3 +1,4 @@
+use std::borrow::ToOwned;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{AssetType, validate_object};
@@ -9,6 +10,8 @@ use crate::raw::provider::RawProviderConfig;
 use crate::raw::validator::{array_unique, is_number_string, validate_nested_vec};
 
 pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
+//TODO use EXPLORER_TX_PLACEHOLDER replace %tx%
+pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]

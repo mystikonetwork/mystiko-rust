@@ -26,6 +26,7 @@ pub struct RawDepositContractConfig {
     pub bridge_type: BridgeType,
 
     #[serde(default = "default_contract_type")]
+    #[serde(rename = "type")]
     #[validate(custom = "validate_contract_type")]
     pub contract_type: ContractType,
 
