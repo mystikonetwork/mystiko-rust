@@ -266,31 +266,31 @@ impl MystikoConfig {
         let mut bridge_configs: HashMap<BridgeType, BridgeConfigType> = HashMap::new();
         for bridge in &base.data.bridges {
             match bridge {
-                RawBridgeConfigType::RawAxelarBridgeConfig(config) => {
+                RawBridgeConfigType::Axelar(config) => {
                     bridge_configs.insert(
                         config.bridge_type.clone(),
                         BridgeConfigType::AxelarBridgeConfig(AxelarBridgeConfig::new(config.clone())),
                     );
                 }
-                RawBridgeConfigType::RawCelerBridgeConfig(config) => {
+                RawBridgeConfigType::Celer(config) => {
                     bridge_configs.insert(
                         config.bridge_type.clone(),
                         BridgeConfigType::CelerBridgeConfig(CelerBridgeConfig::new(config.clone())),
                     );
                 }
-                RawBridgeConfigType::RawPolyBridgeConfig(config) => {
+                RawBridgeConfigType::Poly(config) => {
                     bridge_configs.insert(
                         config.bridge_type.clone(),
                         BridgeConfigType::PolyBridgeConfig(PolyBridgeConfig::new(config.clone())),
                     );
                 }
-                RawBridgeConfigType::RawLayerZeroBridgeConfig(config) => {
+                RawBridgeConfigType::LayerZero(config) => {
                     bridge_configs.insert(
                         config.bridge_type.clone(),
                         BridgeConfigType::LayerZeroBridgeConfig(LayerZeroBridgeConfig::new(config.clone())),
                     );
                 }
-                RawBridgeConfigType::RawTBridgeConfig(config) => {
+                RawBridgeConfigType::Tbridge(config) => {
                     bridge_configs.insert(
                         config.bridge_type.clone(),
                         BridgeConfigType::TBridgeConfig(TBridgeConfig::new(config.clone())),

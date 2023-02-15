@@ -13,7 +13,7 @@ pub struct RawBridgeConfig {
     pub base: RawConfig,
 
     #[validate(length(min = 1))]
-    name: String,
+    pub name: String,
 }
 
 impl RawBridgeConfig {
@@ -28,7 +28,7 @@ impl RawBridgeConfig {
 }
 
 impl RawConfigTrait for RawBridgeConfig {
-    fn validate(&self) {
+    fn validation(&self) {
         self.base.validate_object(self)
     }
 }
@@ -36,5 +36,25 @@ impl RawConfigTrait for RawBridgeConfig {
 impl RawBridgeConfigTrait for RawBridgeConfig {
     fn name(&self) -> &String {
         &self.name
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::bridge::base::RawBridgeConfig;
+
+    async fn default_config() -> RawBridgeConfig {
+        RawConfig::create_from_object::<RawBridgeConfig>(
+            RawBridgeConfig::new("TBridge config".to_string())
+        ).await
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_name() {
+        let mut config = default_config().await;
+        config.name = "".to_string();
+        config.validation();
     }
 }

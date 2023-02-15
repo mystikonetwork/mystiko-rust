@@ -1,5 +1,6 @@
 use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
 use crate::raw::bridge::celer::RawCelerBridgeConfig;
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
@@ -13,27 +14,30 @@ use crate::raw::base::{RawConfig, RawConfigTrait};
 use crate::raw::validator::{is_sem_ver, array_unique, validate_nested_vec};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[serde(tag = "type")]
+#[serde(rename_all = "camelCase")]
 pub enum RawBridgeConfigType {
-    RawAxelarBridgeConfig(RawAxelarBridgeConfig),
-    RawCelerBridgeConfig(RawCelerBridgeConfig),
-    RawLayerZeroBridgeConfig(RawLayerZeroBridgeConfig),
-    RawPolyBridgeConfig(RawPolyBridgeConfig),
-    RawTBridgeConfig(RawTBridgeConfig),
+    Axelar(RawAxelarBridgeConfig),
+    Celer(RawCelerBridgeConfig),
+    LayerZero(RawLayerZeroBridgeConfig),
+    Poly(RawPolyBridgeConfig),
+    Tbridge(RawTBridgeConfig),
 }
 
 impl RawConfigTrait for RawBridgeConfigType {
-    fn validate(&self) {
+    fn validation(&self) {
         match self {
-            RawBridgeConfigType::RawAxelarBridgeConfig(c) => { c.validate() }
-            RawBridgeConfigType::RawCelerBridgeConfig(c) => { c.validate() }
-            RawBridgeConfigType::RawLayerZeroBridgeConfig(c) => { c.validate() }
-            RawBridgeConfigType::RawPolyBridgeConfig(c) => { c.validate() }
-            RawBridgeConfigType::RawTBridgeConfig(c) => { c.validate() }
+            RawBridgeConfigType::Axelar(c) => { c.validation() }
+            RawBridgeConfigType::Celer(c) => { c.validation() }
+            RawBridgeConfigType::LayerZero(c) => { c.validation() }
+            RawBridgeConfigType::Poly(c) => { c.validation() }
+            RawBridgeConfigType::Tbridge(c) => { c.validation() }
         }
     }
 }
 
-#[derive(validator::Validate, Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct RawMystikoConfig {
     #[serde(default)]
     pub base: RawConfig,
@@ -59,19 +63,28 @@ pub struct RawMystikoConfig {
     )]
     pub circuits: Vec<RawCircuitConfig>,
 
+    #[validate]
     pub indexer: Option<RawIndexerConfig>,
 }
 
 impl RawConfigTrait for RawMystikoConfig {
-    fn validate(&self) {
-        self.base.validate_object(self)
+    fn validation(&self) {
+        self.base.validate_object(self);
+        for bridge in &self.bridges {
+            bridge.validation()
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::raw::base::{RawConfig, RawConfigTrait};
-    use crate::raw::mystiko::RawMystikoConfig;
+    use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
+    use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
+    use crate::raw::bridge::poly::RawPolyBridgeConfig;
+    use crate::raw::bridge::tbridge::RawTBridgeConfig;
+    use crate::raw::indexer::RawIndexerConfig;
+    use crate::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
 
     async fn default_config() -> RawMystikoConfig {
         RawConfig::create_from_file::<RawMystikoConfig>(
@@ -80,11 +93,17 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_valid_success() {
+        let config = default_config().await;
+        config.validation();
+    }
+
+    #[tokio::test]
     #[should_panic]
     async fn test_invalid_version_0() {
         let mut config = default_config().await;
         config.version = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -92,8 +111,65 @@ mod tests {
     async fn test_invalid_version_1() {
         let mut config = default_config().await;
         config.version = String::from("wrong version");
-        config.validate();
+        config.validation();
     }
 
-    //TODO continue impl
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_chains() {
+        let mut config = default_config().await;
+        config.chains.append(&mut config.chains.clone());
+        config.validation()
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_bridges_0() {
+        let mut config = default_config().await;
+        config.bridges.append(&mut config.bridges.clone());
+        config.validation();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_bridges_1() {
+        let mut config = default_config().await;
+        let bridge_config = RawTBridgeConfig::new("".to_string());
+        config.bridges.push(RawBridgeConfigType::Tbridge(bridge_config));
+        println!("{:?}", config.bridges);
+        config.validation();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_circuits_0() {
+        let mut config = default_config().await;
+        config.circuits.append(&mut config.circuits.clone());
+        config.validation();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_circuits_1() {
+        let mut config = default_config().await;
+        let mut circuit_configs = config.circuits;
+        circuit_configs[0].name = "".to_string();
+        config.circuits = circuit_configs;
+        config.validation();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_indexer() {
+        let mut config = default_config().await;
+        config.indexer = Some(RawIndexerConfig::new("not a url".to_string(), 1000));
+        config.validation();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_import_invalid_json_file() {
+        let file_config =
+            RawConfig::create_from_file::<RawMystikoConfig>("src/tests/files/mystiko.invalid.json").await;
+    }
 }

@@ -8,7 +8,7 @@ use validator::Validate;
 use crate::common::validate_object;
 
 pub trait RawConfigTrait {
-    fn validate(&self);
+    fn validation(&self);
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Default, PartialEq, Eq)]
@@ -27,7 +27,7 @@ impl RawConfig {
     pub async fn create_from_object<T>(plain: T) -> T
         where T: DeserializeOwned + Serialize + RawConfigTrait
     {
-        plain.validate();
+        plain.validation();
         plain
     }
 

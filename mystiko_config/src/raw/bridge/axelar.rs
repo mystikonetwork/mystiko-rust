@@ -19,6 +19,7 @@ fn validate_bridge_type(t: &BridgeType) -> Result<(), ValidationError> {
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawAxelarBridgeConfig {
+    #[validate]
     #[serde(flatten)]
     pub base: RawBridgeConfig,
 
@@ -38,7 +39,7 @@ impl RawAxelarBridgeConfig {
 }
 
 impl RawConfigTrait for RawAxelarBridgeConfig {
-    fn validate(&self) {
+    fn validation(&self) {
         self.base.base.validate_object(self)
     }
 }
@@ -57,9 +58,13 @@ impl Hash for RawAxelarBridgeConfig {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    use std::ptr::hash;
     use crate::common::BridgeType;
     use crate::raw::base::{RawConfig, RawConfigTrait};
     use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
+    use crate::raw::bridge::base::RawBridgeConfigTrait;
 
     async fn default_config() -> RawAxelarBridgeConfig {
         RawConfig::create_from_object::<RawAxelarBridgeConfig>(
@@ -68,11 +73,33 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_hash() {
+        let config1 = default_config().await;
+        let mut hasher = DefaultHasher::new();
+        config1.hash(&mut hasher);
+        let hash1 = hasher.finish();
+
+        hasher = DefaultHasher::new();
+        let mut config2 = default_config().await;
+        config2.bridge_type = BridgeType::Tbridge;
+        config2.hash(&mut hasher);
+        let hash2 = hasher.finish();
+
+        assert_ne!(hash1, hash2);
+    }
+
+    #[tokio::test]
+    async fn test_name() {
+        let config = default_config().await;
+        assert_eq!(config.name(), config.base.name());
+    }
+
+    #[tokio::test]
     #[should_panic]
     async fn test_invalid_type() {
         let mut config = default_config().await;
         config.bridge_type = BridgeType::Tbridge;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]

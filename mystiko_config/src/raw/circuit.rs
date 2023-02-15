@@ -6,6 +6,10 @@ use crate::common::{CircuitType, validate_object};
 use crate::raw::base::{RawConfig, RawConfigTrait};
 use crate::raw::validator::{string_vec_each_not_empty};
 
+fn default_is_default() -> bool {
+    false
+}
+
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawCircuitConfig {
@@ -18,6 +22,7 @@ pub struct RawCircuitConfig {
     #[serde(rename = "type")]
     pub circuit_type: CircuitType,
 
+    #[serde(default = "default_is_default")]
     pub is_default: bool,
 
     #[validate(custom = "string_vec_each_not_empty")]
@@ -57,7 +62,7 @@ impl RawCircuitConfig {
 }
 
 impl RawConfigTrait for RawCircuitConfig {
-    fn validate(&self) {
+    fn validation(&self) {
         self.base.validate_object(self)
     }
 }
@@ -70,6 +75,8 @@ impl Hash for RawCircuitConfig {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
     use serde::de::Unexpected::Str;
     use crate::common::CircuitType;
     use crate::raw::base::{RawConfig, RawConfigTrait};
@@ -90,11 +97,27 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_hash() {
+        let config1 = default_config().await;
+        let mut hasher = DefaultHasher::new();
+        config1.hash(&mut hasher);
+        let hash1 = hasher.finish();
+
+        hasher = DefaultHasher::new();
+        let mut config2 = default_config().await;
+        config2.name = "zokrates-1.1-rollup1".to_string();
+        config2.hash(&mut hasher);
+        let hash2 = hasher.finish();
+
+        assert_ne!(hash1, hash2);
+    }
+
+    #[tokio::test]
     #[should_panic]
     async fn test_invalid_name() {
         let mut config = default_config().await;
         config.name = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -102,7 +125,7 @@ mod tests {
     async fn test_invalid_program_file() {
         let mut config = default_config().await;
         config.program_file = vec![String::from("")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -110,7 +133,7 @@ mod tests {
     async fn test_invalid_abi_file() {
         let mut config = default_config().await;
         config.abi_file = vec![String::from("")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -118,7 +141,7 @@ mod tests {
     async fn test_invalid_proving_key_file() {
         let mut config = default_config().await;
         config.proving_key_file = vec![String::from("")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -126,7 +149,7 @@ mod tests {
     async fn test_invalid_verifying_key_file() {
         let mut config = default_config().await;
         config.verifying_key_file = vec![String::from("")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]

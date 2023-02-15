@@ -18,6 +18,10 @@ fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
     Err(ValidationError::new("contract type error"))
 }
 
+fn default_min_rollup_fee() -> String {
+    String::from("0")
+}
+
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawPoolContractConfig {
@@ -38,9 +42,11 @@ pub struct RawPoolContractConfig {
     pub asset_address: Option<String>,
 
     #[validate(custom = "is_number_string::<true,false>")]
+    #[serde(default = "default_min_rollup_fee")]
     pub min_rollup_fee: String,
 
     #[validate(custom = "string_vec_each_not_empty")]
+    #[serde(default)]
     pub circuits: Vec<String>,
 }
 
@@ -78,7 +84,7 @@ impl PartialEq for RawPoolContractConfig {
 }
 
 impl RawConfigTrait for RawPoolContractConfig {
-    fn validate(&self) {
+    fn validation(&self) {
         self.base.base.validate_object(self)
     }
 }
@@ -117,8 +123,13 @@ impl RawContractConfigTrait for RawPoolContractConfig {
 mod tests {
     use crate::common::{BridgeType, ContractType};
     use crate::raw::base::{RawConfig, RawConfigTrait};
-    use crate::raw::contract::base::RawContractConfig;
-    use crate::raw::contract::pool::RawPoolContractConfig;
+    use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
+    use crate::raw::contract::pool::{default_min_rollup_fee, RawPoolContractConfig};
+
+    #[test]
+    fn test_default_min_rollup_fee() {
+        assert_eq!(default_min_rollup_fee(), "0".to_string())
+    }
 
     async fn default_config() -> RawPoolContractConfig {
         RawConfig::create_from_object::<RawPoolContractConfig>(
@@ -141,12 +152,24 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_raw_contract_config_trait() {
+        let config = default_config().await;
+        assert_eq!(config.version(), &config.base.version);
+        assert_eq!(config.name(), config.base.name);
+        assert_eq!(config.address(), config.base.address);
+        assert_eq!(config.contract_type(), &config.contract_type);
+        assert_eq!(config.start_block(), &config.base.start_block);
+        assert_eq!(config.event_filter_size(), &config.base.event_filter_size);
+        assert_eq!(config.indexer_filter_size(), &config.base.indexer_filter_size);
+    }
+
+    #[tokio::test]
     async fn test_validate_success() {
         let mut config = default_config().await;
         config.asset_address = None;
         config.min_rollup_fee = "0".to_string();
         config.circuits = vec![];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -154,7 +177,7 @@ mod tests {
     async fn test_invalid_pool_name() {
         let mut config = default_config().await;
         config.pool_name = "".to_string();
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -162,7 +185,7 @@ mod tests {
     async fn test_invalid_contract_type() {
         let mut config = default_config().await;
         config.contract_type = ContractType::Deposit;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -170,7 +193,7 @@ mod tests {
     async fn test_invalid_min_rollup_fee_0() {
         let mut config = default_config().await;
         config.min_rollup_fee = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -178,7 +201,7 @@ mod tests {
     async fn test_invalid_min_rollup_fee_1() {
         let mut config = default_config().await;
         config.min_rollup_fee = String::from("0xdeadbeef");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -186,7 +209,7 @@ mod tests {
     async fn test_invalid_min_rollup_fee_2() {
         let mut config = default_config().await;
         config.min_rollup_fee = String::from("-1");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -194,7 +217,7 @@ mod tests {
     async fn test_invalid_min_rollup_fee_3() {
         let mut config = default_config().await;
         config.min_rollup_fee = String::from("1.2");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -202,7 +225,7 @@ mod tests {
     async fn test_invalid_circuits() {
         let mut config = default_config().await;
         config.circuits = vec![String::from("")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]

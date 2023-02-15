@@ -61,7 +61,7 @@ impl RawContractConfig {
 }
 
 impl RawConfigTrait for RawContractConfig {
-    fn validate(&self) {
+    fn validation(&self) {
         self.base.validate_object(self)
     }
 }
@@ -88,7 +88,7 @@ mod tests {
     async fn test_validate_success() {
         let mut config = default_config().await;
         config.event_filter_size = None;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -96,7 +96,7 @@ mod tests {
     async fn test_invalid_version() {
         let mut config = default_config().await;
         config.version = 0;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -104,7 +104,7 @@ mod tests {
     async fn test_invalid_name() {
         let mut config = default_config().await;
         config.name = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -112,7 +112,7 @@ mod tests {
     async fn test_invalid_address_0() {
         let mut config = default_config().await;
         config.address = String::from("0xdeadbeef");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -120,7 +120,7 @@ mod tests {
     async fn test_invalid_address_1() {
         let mut config = default_config().await;
         config.address = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -128,7 +128,7 @@ mod tests {
     async fn test_invalid_start_block() {
         let mut config = default_config().await;
         config.start_block = 0;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -136,7 +136,7 @@ mod tests {
     async fn test_invalid_event_filter_size() {
         let mut config = default_config().await;
         config.event_filter_size = Some(0);
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -144,7 +144,7 @@ mod tests {
     async fn test_invalid_indexer_filter_size() {
         let mut config = default_config().await;
         config.indexer_filter_size = Some(0);
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]

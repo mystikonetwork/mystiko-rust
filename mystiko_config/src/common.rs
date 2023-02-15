@@ -28,7 +28,7 @@ pub enum AssetType {
 }
 
 #[derive(Serialize, Deserialize, EnumIter, Debug, Clone, Eq, PartialEq, Hash, Copy)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "lowercase")]
 pub enum CircuitType {
     Rollup1,
     Rollup2,

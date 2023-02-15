@@ -14,6 +14,14 @@ pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
 //TODO use EXPLORER_TX_PLACEHOLDER replace %tx%
 pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
 
+fn default_event_filter_size() -> u32 {
+    200000
+}
+
+fn default_indexer_filter_size() -> u32 {
+    500000
+}
+
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawChainConfig {
@@ -36,6 +44,7 @@ pub struct RawChainConfig {
     custom(function = "array_unique"),
     custom(function = "is_number_string::<true, true>")
     )]
+    #[serde(default)]
     pub recommended_amounts: Vec<String>,
 
     #[validate(url)]
@@ -52,9 +61,11 @@ pub struct RawChainConfig {
     pub signer_endpoint: String,
 
     #[validate(range(min = 1))]
+    #[serde(default = "default_event_filter_size")]
     pub event_filter_size: u32,
 
     #[validate(range(min = 1))]
+    #[serde(default = "default_indexer_filter_size")]
     pub indexer_filter_size: u32,
 
     #[validate(custom(function = "array_unique"))]
@@ -83,7 +94,7 @@ impl Hash for RawChainConfig {
 }
 
 impl RawConfigTrait for RawChainConfig {
-    fn validate(&self) {
+    fn validation(&self) {
         self.base.validate_object::<&RawChainConfig>(self)
     }
 }
@@ -127,6 +138,8 @@ impl RawChainConfig {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
     use crate::common::{AssetType, BridgeType, ContractType};
     use crate::raw::asset::RawAssetConfig;
     use crate::raw::base::{RawConfig, RawConfigTrait};
@@ -235,11 +248,38 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_eq() {
+        let config1 = default_config().await;
+        let mut config2 = default_config().await;
+        let mut config3 = default_config().await;
+        config2.name = "new name".to_string();
+        config3.chain_id = 97;
+        assert_eq!(config1, config2);
+        assert_ne!(config1, config3);
+    }
+
+    #[tokio::test]
+    async fn test_hash() {
+        let config1 = default_config().await;
+        let mut hasher = DefaultHasher::new();
+        config1.hash(&mut hasher);
+        let hash1 = hasher.finish();
+
+        hasher = DefaultHasher::new();
+        let mut config2 = default_config().await;
+        config2.chain_id = 97;
+        config2.hash(&mut hasher);
+        let hash2 = hasher.finish();
+
+        assert_ne!(hash1, hash2);
+    }
+
+    #[tokio::test]
     #[should_panic]
     async fn test_invalid_name() {
         let mut config = default_config().await;
         config.name = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -247,7 +287,7 @@ mod tests {
     async fn test_invalid_asset_symbol() {
         let mut config = default_config().await;
         config.asset_symbol = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -255,7 +295,7 @@ mod tests {
     async fn test_invalid_asset_decimals() {
         let mut config = default_config().await;
         config.asset_decimals = 0;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -263,7 +303,7 @@ mod tests {
     async fn test_invalid_recommended_amounts_0() {
         let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -271,7 +311,7 @@ mod tests {
     async fn test_invalid_recommended_amounts_1() {
         let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("abcd")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -279,7 +319,7 @@ mod tests {
     async fn test_invalid_recommended_amounts_2() {
         let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("1"), String::from("1")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -287,7 +327,7 @@ mod tests {
     async fn test_invalid_explore_url_0() {
         let mut config = default_config().await;
         config.explorer_url = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -295,7 +335,7 @@ mod tests {
     async fn test_invalid_explore_url_1() {
         let mut config = default_config().await;
         config.explorer_url = String::from("wrong url");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -303,7 +343,7 @@ mod tests {
     async fn test_invalid_explore_prefix_0() {
         let mut config = default_config().await;
         config.explorer_prefix = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -311,7 +351,7 @@ mod tests {
     async fn test_invalid_explore_prefix_1() {
         let mut config = default_config().await;
         config.explorer_prefix = String::from("wrong prefix");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -319,7 +359,7 @@ mod tests {
     async fn test_invalid_providers_0() {
         let mut config = default_config().await;
         config.providers = vec![];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -329,7 +369,7 @@ mod tests {
         let mut provider_config = config.providers[0].clone();
         provider_config.url = String::from("wrong url");
         config.providers = vec![provider_config];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -337,7 +377,7 @@ mod tests {
     async fn test_invalid_signer_endpoint_0() {
         let mut config = default_config().await;
         config.signer_endpoint = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -345,7 +385,7 @@ mod tests {
     async fn test_invalid_signer_endpoint_1() {
         let mut config = default_config().await;
         config.signer_endpoint = String::from("wrong url");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -353,7 +393,7 @@ mod tests {
     async fn test_invalid_signer_endpoint_2() {
         let mut config = default_config().await;
         config.signer_endpoint = String::from("wrong_schema://127.0.0.1");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -361,7 +401,7 @@ mod tests {
     async fn test_invalid_event_filter_size() {
         let mut config = default_config().await;
         config.event_filter_size = 0;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -369,7 +409,7 @@ mod tests {
     async fn test_invalid_indexer_filter_size() {
         let mut config = default_config().await;
         config.indexer_filter_size = 0;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -377,7 +417,7 @@ mod tests {
     async fn test_invalid_pool_contracts_0() {
         let mut config = default_config().await;
         config.pool_contracts.push(init_pool_contract_config().await);
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -387,7 +427,7 @@ mod tests {
         let mut pool_contract = config.pool_contracts[0].clone();
         pool_contract.asset_address = Some(String::from("0xdeadbeef"));
         config.pool_contracts = vec![pool_contract];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -395,7 +435,7 @@ mod tests {
     async fn test_invalid_deposit_contracts() {
         let mut config = default_config().await;
         config.deposit_contracts.push(init_deposit_contract_config().await);
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -403,7 +443,7 @@ mod tests {
     async fn test_invalid_assets() {
         let mut config = default_config().await;
         config.assets.push(init_assets_config().await);
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]

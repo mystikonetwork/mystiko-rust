@@ -3,17 +3,22 @@ use validator::Validate;
 use crate::common::validate_object;
 use crate::raw::base::{RawConfig, RawConfigTrait};
 
+fn default_timeout_ms() -> u32 {
+    15000
+}
+
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawIndexerConfig {
     #[serde(default)]
-    base: RawConfig,
+    pub base: RawConfig,
 
     #[validate(url)]
-    url: String,
+    pub url: String,
 
     #[validate(range(min = 1))]
-    timeout_ms: u32,
+    #[serde(default = "default_timeout_ms")]
+    pub timeout_ms: u32,
 }
 
 impl RawIndexerConfig {
@@ -30,7 +35,7 @@ impl RawIndexerConfig {
 }
 
 impl RawConfigTrait for RawIndexerConfig {
-    fn validate(&self) {
+    fn validation(&self) {
         self.base.validate_object(self)
     }
 }
@@ -51,7 +56,7 @@ mod tests {
     async fn test_invalid_url() {
         let mut config = default_config().await;
         config.url = String::from("not a valid url");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -59,7 +64,7 @@ mod tests {
     async fn test_invalid_time_out_ms() {
         let mut config = default_config().await;
         config.timeout_ms = 0;
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]

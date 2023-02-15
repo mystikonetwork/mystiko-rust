@@ -44,7 +44,7 @@ impl PartialEq for RawAssetConfig {
 }
 
 impl RawConfigTrait for RawAssetConfig {
-    fn validate(&self) {
+    fn validation(&self) {
         self.base.validate_object::<&RawAssetConfig>(self)
     }
 }
@@ -94,7 +94,7 @@ mod tests {
     async fn test_invalid_asset_symbol() {
         let mut config = default_config().await;
         config.asset_symbol = "".to_string();
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -102,7 +102,7 @@ mod tests {
     async fn test_invalid_asset_address_0() {
         let mut config = default_config().await;
         config.asset_address = String::from("");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -110,7 +110,7 @@ mod tests {
     async fn test_invalid_asset_address_1() {
         let mut config = default_config().await;
         config.asset_address = String::from("0xdeadbeef");
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -118,7 +118,7 @@ mod tests {
     async fn test_invalid_recommended_amounts_0() {
         let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -126,7 +126,7 @@ mod tests {
     async fn test_invalid_recommended_amounts_1() {
         let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("abcd")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
@@ -134,7 +134,7 @@ mod tests {
     async fn test_invalid_recommended_amounts_2() {
         let mut config = default_config().await;
         config.recommended_amounts = vec![String::from("1"), String::from("1")];
-        config.validate();
+        config.validation();
     }
 
     #[tokio::test]
