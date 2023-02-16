@@ -16,7 +16,7 @@ pub mod mystiko_v2_axelar {
     use ethers::providers::Middleware;
     #[doc = "MystikoV2Axelar was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
     use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooLarge\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooSmall\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BridgeFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHashIncorrect\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"DepositsDisabled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"ExecutorFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromChainIdNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromProxyAddressNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"HashKGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MaxAmountLessThanMinAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MinAmountGreaterThanMaxAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotApprovedByGateway\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RandomSGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"peerChainName\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"CallContractMessage\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentCrossChain\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositsDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MaxAmount\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinAmount\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minBridgeFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinBridgeFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinRollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinRollupFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bridgeProxyAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"bridgeType\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct IMystikoBridge.DepositRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"hashK\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint128\",\"name\":\"randomS\",\"type\":\"uint128\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bridgeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"deposit\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"tokenSymbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"executeWithToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"gateway\",\"outputs\":[{\"internalType\":\"contract IAxelarGateway\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAssociatedCommitmentPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMaxAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinBridgeFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isDepositsDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainId\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_commitmentPoolAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAssociatedCommitmentPool\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_gasReceiver\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAxelarGasReceiver\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_bridgeProxyAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setBridgeProxyAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setDepositsDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_maxAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMaxAmount\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinAmount\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBridgeFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinBridgeFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_peerChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"_peerChainName\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_peerContract\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]" ;
+    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooLarge\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooSmall\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BridgeFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHashIncorrect\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"DepositsDisabled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"ExecutorFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromChainIdNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromProxyAddressNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"HashKGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MinAmountGreaterThanMaxAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotApprovedByGateway\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RandomSGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"peerChainName\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"CallContractMessage\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentCrossChain\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"minAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositAmountLimits\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositsDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minBridgeFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinBridgeFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinRollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinRollupFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bridgeProxyAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"bridgeType\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct IMystikoBridge.DepositRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"hashK\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint128\",\"name\":\"randomS\",\"type\":\"uint128\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bridgeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"deposit\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"tokenSymbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"executeWithToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"gateway\",\"outputs\":[{\"internalType\":\"contract IAxelarGateway\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAssociatedCommitmentPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMaxAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinBridgeFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isDepositsDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainId\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_commitmentPoolAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAssociatedCommitmentPool\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_gasReceiver\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAxelarGasReceiver\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_bridgeProxyAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setBridgeProxyAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setDepositsDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBridgeFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinBridgeFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_peerChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"_peerChainName\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_peerContract\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_maxAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_minAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateDepositAmountLimits\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]" ;
     #[doc = r" The parsed JSON-ABI of the contract."]
     pub static MYSTIKOV2AXELAR_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
@@ -281,24 +281,6 @@ pub mod mystiko_v2_axelar {
                 .method_hash([234, 12, 222, 133], state)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setMaxAmount` (0x4fe47f70) function"]
-        pub fn set_max_amount(
-            &self,
-            max_amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([79, 228, 127, 112], max_amount)
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `setMinAmount` (0x897b0637) function"]
-        pub fn set_min_amount(
-            &self,
-            min_amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([137, 123, 6, 55], min_amount)
-                .expect("method not found (this should never happen)")
-        }
         #[doc = "Calls the contract's `setMinBridgeFee` (0x19e75d6e) function"]
         pub fn set_min_bridge_fee(
             &self,
@@ -349,6 +331,16 @@ pub mod mystiko_v2_axelar {
                 .method_hash([82, 31, 240, 87], peer_min_rollup_fee)
                 .expect("method not found (this should never happen)")
         }
+        #[doc = "Calls the contract's `updateDepositAmountLimits` (0xe8183c44) function"]
+        pub fn update_deposit_amount_limits(
+            &self,
+            max_amount: ethers::core::types::U256,
+            min_amount: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([232, 24, 60, 68], (max_amount, min_amount))
+                .expect("method not found (this should never happen)")
+        }
         #[doc = "Calls the contract's `updateSanctionsListAddress` (0x30f49cac) function"]
         pub fn update_sanctions_list_address(
             &self,
@@ -370,18 +362,16 @@ pub mod mystiko_v2_axelar {
         ) -> ethers::contract::builders::Event<M, CommitmentCrossChainFilter> {
             self.0.event()
         }
+        #[doc = "Gets the contract's `DepositAmountLimits` event"]
+        pub fn deposit_amount_limits_filter(
+            &self,
+        ) -> ethers::contract::builders::Event<M, DepositAmountLimitsFilter> {
+            self.0.event()
+        }
         #[doc = "Gets the contract's `DepositsDisabled` event"]
         pub fn deposits_disabled_filter(
             &self,
         ) -> ethers::contract::builders::Event<M, DepositsDisabledFilter> {
-            self.0.event()
-        }
-        #[doc = "Gets the contract's `MaxAmount` event"]
-        pub fn max_amount_filter(&self) -> ethers::contract::builders::Event<M, MaxAmountFilter> {
-            self.0.event()
-        }
-        #[doc = "Gets the contract's `MinAmount` event"]
-        pub fn min_amount_filter(&self) -> ethers::contract::builders::Event<M, MinAmountFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `MinBridgeFee` event"]
@@ -576,21 +566,6 @@ pub mod mystiko_v2_axelar {
     pub struct Invalid {
         pub param: String,
     }
-    #[doc = "Custom Error type `MaxAmountLessThanMinAmount` with signature `MaxAmountLessThanMinAmount()` and selector `[201, 28, 83, 23]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[etherror(
-        name = "MaxAmountLessThanMinAmount",
-        abi = "MaxAmountLessThanMinAmount()"
-    )]
-    pub struct MaxAmountLessThanMinAmount;
     #[doc = "Custom Error type `MinAmountGreaterThanMaxAmount` with signature `MinAmountGreaterThanMaxAmount()` and selector `[192, 7, 208, 66]`"]
     #[derive(
         Clone,
@@ -694,7 +669,6 @@ pub mod mystiko_v2_axelar {
         FromProxyAddressNotMatched(FromProxyAddressNotMatched),
         HashKGreaterThanFieldSize(HashKGreaterThanFieldSize),
         Invalid(Invalid),
-        MaxAmountLessThanMinAmount(MaxAmountLessThanMinAmount),
         MinAmountGreaterThanMaxAmount(MinAmountGreaterThanMaxAmount),
         NotApprovedByGateway(NotApprovedByGateway),
         NotChanged(NotChanged),
@@ -761,11 +735,6 @@ pub mod mystiko_v2_axelar {
                 return Ok(MystikoV2AxelarErrors::Invalid(decoded));
             }
             if let Ok(decoded) =
-                <MaxAmountLessThanMinAmount as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::MaxAmountLessThanMinAmount(decoded));
-            }
-            if let Ok(decoded) =
                 <MinAmountGreaterThanMaxAmount as ethers::core::abi::AbiDecode>::decode(
                     data.as_ref(),
                 )
@@ -820,7 +789,6 @@ pub mod mystiko_v2_axelar {
                 MystikoV2AxelarErrors::FromProxyAddressNotMatched(element) => element.encode(),
                 MystikoV2AxelarErrors::HashKGreaterThanFieldSize(element) => element.encode(),
                 MystikoV2AxelarErrors::Invalid(element) => element.encode(),
-                MystikoV2AxelarErrors::MaxAmountLessThanMinAmount(element) => element.encode(),
                 MystikoV2AxelarErrors::MinAmountGreaterThanMaxAmount(element) => element.encode(),
                 MystikoV2AxelarErrors::NotApprovedByGateway(element) => element.encode(),
                 MystikoV2AxelarErrors::NotChanged(element) => element.encode(),
@@ -845,7 +813,6 @@ pub mod mystiko_v2_axelar {
                 MystikoV2AxelarErrors::FromProxyAddressNotMatched(element) => element.fmt(f),
                 MystikoV2AxelarErrors::HashKGreaterThanFieldSize(element) => element.fmt(f),
                 MystikoV2AxelarErrors::Invalid(element) => element.fmt(f),
-                MystikoV2AxelarErrors::MaxAmountLessThanMinAmount(element) => element.fmt(f),
                 MystikoV2AxelarErrors::MinAmountGreaterThanMaxAmount(element) => element.fmt(f),
                 MystikoV2AxelarErrors::NotApprovedByGateway(element) => element.fmt(f),
                 MystikoV2AxelarErrors::NotChanged(element) => element.fmt(f),
@@ -909,11 +876,6 @@ pub mod mystiko_v2_axelar {
     impl ::std::convert::From<Invalid> for MystikoV2AxelarErrors {
         fn from(var: Invalid) -> Self {
             MystikoV2AxelarErrors::Invalid(var)
-        }
-    }
-    impl ::std::convert::From<MaxAmountLessThanMinAmount> for MystikoV2AxelarErrors {
-        fn from(var: MaxAmountLessThanMinAmount) -> Self {
-            MystikoV2AxelarErrors::MaxAmountLessThanMinAmount(var)
         }
     }
     impl ::std::convert::From<MinAmountGreaterThanMaxAmount> for MystikoV2AxelarErrors {
@@ -991,35 +953,26 @@ pub mod mystiko_v2_axelar {
         ethers :: contract :: EthDisplay,
         Default,
     )]
+    #[ethevent(
+        name = "DepositAmountLimits",
+        abi = "DepositAmountLimits(uint256,uint256)"
+    )]
+    pub struct DepositAmountLimitsFilter {
+        pub max_amount: ethers::core::types::U256,
+        pub min_amount: ethers::core::types::U256,
+    }
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthEvent,
+        ethers :: contract :: EthDisplay,
+        Default,
+    )]
     #[ethevent(name = "DepositsDisabled", abi = "DepositsDisabled(bool)")]
     pub struct DepositsDisabledFilter {
         pub state: bool,
-    }
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethevent(name = "MaxAmount", abi = "MaxAmount(uint256)")]
-    pub struct MaxAmountFilter {
-        pub max_amount: ethers::core::types::U256,
-    }
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethevent(name = "MinAmount", abi = "MinAmount(uint256)")]
-    pub struct MinAmountFilter {
-        pub min_amount: ethers::core::types::U256,
     }
     #[derive(
         Clone,
@@ -1117,9 +1070,8 @@ pub mod mystiko_v2_axelar {
     pub enum MystikoV2AxelarEvents {
         CallContractMessageFilter(CallContractMessageFilter),
         CommitmentCrossChainFilter(CommitmentCrossChainFilter),
+        DepositAmountLimitsFilter(DepositAmountLimitsFilter),
         DepositsDisabledFilter(DepositsDisabledFilter),
-        MaxAmountFilter(MaxAmountFilter),
-        MinAmountFilter(MinAmountFilter),
         MinBridgeFeeFilter(MinBridgeFeeFilter),
         MinExecutorFeeFilter(MinExecutorFeeFilter),
         OperatorChangedFilter(OperatorChangedFilter),
@@ -1141,14 +1093,11 @@ pub mod mystiko_v2_axelar {
             if let Ok(decoded) = CommitmentCrossChainFilter::decode_log(log) {
                 return Ok(MystikoV2AxelarEvents::CommitmentCrossChainFilter(decoded));
             }
+            if let Ok(decoded) = DepositAmountLimitsFilter::decode_log(log) {
+                return Ok(MystikoV2AxelarEvents::DepositAmountLimitsFilter(decoded));
+            }
             if let Ok(decoded) = DepositsDisabledFilter::decode_log(log) {
                 return Ok(MystikoV2AxelarEvents::DepositsDisabledFilter(decoded));
-            }
-            if let Ok(decoded) = MaxAmountFilter::decode_log(log) {
-                return Ok(MystikoV2AxelarEvents::MaxAmountFilter(decoded));
-            }
-            if let Ok(decoded) = MinAmountFilter::decode_log(log) {
-                return Ok(MystikoV2AxelarEvents::MinAmountFilter(decoded));
             }
             if let Ok(decoded) = MinBridgeFeeFilter::decode_log(log) {
                 return Ok(MystikoV2AxelarEvents::MinBridgeFeeFilter(decoded));
@@ -1179,9 +1128,8 @@ pub mod mystiko_v2_axelar {
             match self {
                 MystikoV2AxelarEvents::CallContractMessageFilter(element) => element.fmt(f),
                 MystikoV2AxelarEvents::CommitmentCrossChainFilter(element) => element.fmt(f),
+                MystikoV2AxelarEvents::DepositAmountLimitsFilter(element) => element.fmt(f),
                 MystikoV2AxelarEvents::DepositsDisabledFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::MaxAmountFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::MinAmountFilter(element) => element.fmt(f),
                 MystikoV2AxelarEvents::MinBridgeFeeFilter(element) => element.fmt(f),
                 MystikoV2AxelarEvents::MinExecutorFeeFilter(element) => element.fmt(f),
                 MystikoV2AxelarEvents::OperatorChangedFilter(element) => element.fmt(f),
@@ -1552,34 +1500,6 @@ pub mod mystiko_v2_axelar {
     pub struct SetDepositsDisabledCall {
         pub state: bool,
     }
-    #[doc = "Container type for all input parameters for the `setMaxAmount` function with signature `setMaxAmount(uint256)` and selector `[79, 228, 127, 112]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "setMaxAmount", abi = "setMaxAmount(uint256)")]
-    pub struct SetMaxAmountCall {
-        pub max_amount: ethers::core::types::U256,
-    }
-    #[doc = "Container type for all input parameters for the `setMinAmount` function with signature `setMinAmount(uint256)` and selector `[137, 123, 6, 55]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "setMinAmount", abi = "setMinAmount(uint256)")]
-    pub struct SetMinAmountCall {
-        pub min_amount: ethers::core::types::U256,
-    }
     #[doc = "Container type for all input parameters for the `setMinBridgeFee` function with signature `setMinBridgeFee(uint256)` and selector `[25, 231, 93, 110]`"]
     #[derive(
         Clone,
@@ -1655,6 +1575,24 @@ pub mod mystiko_v2_axelar {
     pub struct SetPeerMinRollupFeeCall {
         pub peer_min_rollup_fee: ethers::core::types::U256,
     }
+    #[doc = "Container type for all input parameters for the `updateDepositAmountLimits` function with signature `updateDepositAmountLimits(uint256,uint256)` and selector `[232, 24, 60, 68]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+        Default,
+    )]
+    #[ethcall(
+        name = "updateDepositAmountLimits",
+        abi = "updateDepositAmountLimits(uint256,uint256)"
+    )]
+    pub struct UpdateDepositAmountLimitsCall {
+        pub max_amount: ethers::core::types::U256,
+        pub min_amount: ethers::core::types::U256,
+    }
     #[doc = "Container type for all input parameters for the `updateSanctionsListAddress` function with signature `updateSanctionsListAddress(address)` and selector `[48, 244, 156, 172]`"]
     #[derive(
         Clone,
@@ -1701,13 +1639,12 @@ pub mod mystiko_v2_axelar {
         SetAxelarGasReceiver(SetAxelarGasReceiverCall),
         SetBridgeProxyAddress(SetBridgeProxyAddressCall),
         SetDepositsDisabled(SetDepositsDisabledCall),
-        SetMaxAmount(SetMaxAmountCall),
-        SetMinAmount(SetMinAmountCall),
         SetMinBridgeFee(SetMinBridgeFeeCall),
         SetMinExecutorFee(SetMinExecutorFeeCall),
         SetPeerContract(SetPeerContractCall),
         SetPeerMinExecutorFee(SetPeerMinExecutorFeeCall),
         SetPeerMinRollupFee(SetPeerMinRollupFeeCall),
+        UpdateDepositAmountLimits(UpdateDepositAmountLimitsCall),
         UpdateSanctionsListAddress(UpdateSanctionsListAddressCall),
     }
     impl ethers::core::abi::AbiDecode for MystikoV2AxelarCalls {
@@ -1854,16 +1791,6 @@ pub mod mystiko_v2_axelar {
                 return Ok(MystikoV2AxelarCalls::SetDepositsDisabled(decoded));
             }
             if let Ok(decoded) =
-                <SetMaxAmountCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetMaxAmount(decoded));
-            }
-            if let Ok(decoded) =
-                <SetMinAmountCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetMinAmount(decoded));
-            }
-            if let Ok(decoded) =
                 <SetMinBridgeFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(MystikoV2AxelarCalls::SetMinBridgeFee(decoded));
@@ -1887,6 +1814,13 @@ pub mod mystiko_v2_axelar {
                 <SetPeerMinRollupFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(MystikoV2AxelarCalls::SetPeerMinRollupFee(decoded));
+            }
+            if let Ok(decoded) =
+                <UpdateDepositAmountLimitsCall as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(MystikoV2AxelarCalls::UpdateDepositAmountLimits(decoded));
             }
             if let Ok(decoded) =
                 <UpdateSanctionsListAddressCall as ethers::core::abi::AbiDecode>::decode(
@@ -1928,13 +1862,12 @@ pub mod mystiko_v2_axelar {
                 MystikoV2AxelarCalls::SetAxelarGasReceiver(element) => element.encode(),
                 MystikoV2AxelarCalls::SetBridgeProxyAddress(element) => element.encode(),
                 MystikoV2AxelarCalls::SetDepositsDisabled(element) => element.encode(),
-                MystikoV2AxelarCalls::SetMaxAmount(element) => element.encode(),
-                MystikoV2AxelarCalls::SetMinAmount(element) => element.encode(),
                 MystikoV2AxelarCalls::SetMinBridgeFee(element) => element.encode(),
                 MystikoV2AxelarCalls::SetMinExecutorFee(element) => element.encode(),
                 MystikoV2AxelarCalls::SetPeerContract(element) => element.encode(),
                 MystikoV2AxelarCalls::SetPeerMinExecutorFee(element) => element.encode(),
                 MystikoV2AxelarCalls::SetPeerMinRollupFee(element) => element.encode(),
+                MystikoV2AxelarCalls::UpdateDepositAmountLimits(element) => element.encode(),
                 MystikoV2AxelarCalls::UpdateSanctionsListAddress(element) => element.encode(),
             }
         }
@@ -1969,13 +1902,12 @@ pub mod mystiko_v2_axelar {
                 MystikoV2AxelarCalls::SetAxelarGasReceiver(element) => element.fmt(f),
                 MystikoV2AxelarCalls::SetBridgeProxyAddress(element) => element.fmt(f),
                 MystikoV2AxelarCalls::SetDepositsDisabled(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetMaxAmount(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetMinAmount(element) => element.fmt(f),
                 MystikoV2AxelarCalls::SetMinBridgeFee(element) => element.fmt(f),
                 MystikoV2AxelarCalls::SetMinExecutorFee(element) => element.fmt(f),
                 MystikoV2AxelarCalls::SetPeerContract(element) => element.fmt(f),
                 MystikoV2AxelarCalls::SetPeerMinExecutorFee(element) => element.fmt(f),
                 MystikoV2AxelarCalls::SetPeerMinRollupFee(element) => element.fmt(f),
+                MystikoV2AxelarCalls::UpdateDepositAmountLimits(element) => element.fmt(f),
                 MystikoV2AxelarCalls::UpdateSanctionsListAddress(element) => element.fmt(f),
             }
         }
@@ -2115,16 +2047,6 @@ pub mod mystiko_v2_axelar {
             MystikoV2AxelarCalls::SetDepositsDisabled(var)
         }
     }
-    impl ::std::convert::From<SetMaxAmountCall> for MystikoV2AxelarCalls {
-        fn from(var: SetMaxAmountCall) -> Self {
-            MystikoV2AxelarCalls::SetMaxAmount(var)
-        }
-    }
-    impl ::std::convert::From<SetMinAmountCall> for MystikoV2AxelarCalls {
-        fn from(var: SetMinAmountCall) -> Self {
-            MystikoV2AxelarCalls::SetMinAmount(var)
-        }
-    }
     impl ::std::convert::From<SetMinBridgeFeeCall> for MystikoV2AxelarCalls {
         fn from(var: SetMinBridgeFeeCall) -> Self {
             MystikoV2AxelarCalls::SetMinBridgeFee(var)
@@ -2148,6 +2070,11 @@ pub mod mystiko_v2_axelar {
     impl ::std::convert::From<SetPeerMinRollupFeeCall> for MystikoV2AxelarCalls {
         fn from(var: SetPeerMinRollupFeeCall) -> Self {
             MystikoV2AxelarCalls::SetPeerMinRollupFee(var)
+        }
+    }
+    impl ::std::convert::From<UpdateDepositAmountLimitsCall> for MystikoV2AxelarCalls {
+        fn from(var: UpdateDepositAmountLimitsCall) -> Self {
+            MystikoV2AxelarCalls::UpdateDepositAmountLimits(var)
         }
     }
     impl ::std::convert::From<UpdateSanctionsListAddressCall> for MystikoV2AxelarCalls {
