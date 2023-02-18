@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 extern crate babyjubjub_rs;
 extern crate bs58;
 extern crate ff;

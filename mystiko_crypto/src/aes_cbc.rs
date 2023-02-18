@@ -1,5 +1,5 @@
 use crate::constants::{
-    ECIES_IV_LENGTH, ECIES_KEY_LENGTH, ECIES_MAGIC_DATA, ECIES_MAGIC_DATA_LENGTH, ECIES_SALT_LENGTH,
+    ECIES_IV_LENGTH, ECIES_KEY_LENGTH, ECIES_MAGIC_DATA, KDF_MAGIC_DATA_LENGTH, KDF_SALT_LENGTH,
 };
 use crate::error::ECCryptoError;
 use crate::utils::random_bytes;
@@ -20,7 +20,7 @@ pub fn decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Vec<u8> {
 }
 
 pub fn encrypt_str(password: &str, plain_text: &str) -> Result<String, ECCryptoError> {
-    let salt = random_bytes(ECIES_SALT_LENGTH);
+    let salt = random_bytes(KDF_SALT_LENGTH);
     let (key, iv) = password_to_key(password.as_bytes(), salt.as_slice());
     let cipher_text = aes_cbc_encrypt(&iv, &key, plain_text.as_bytes());
     let full_encrypted_data = stringify_cipher_data_with_salt(&cipher_text, &salt);
@@ -97,9 +97,9 @@ fn stringify_cipher_data_with_salt(cipher_text: &Vec<u8>, salt: &Vec<u8>) -> Vec
 }
 
 fn parse_salt_from_cipher_data(cipher_data: &[u8]) -> (Vec<u8>, Vec<u8>) {
-    let (magic_data, right) = cipher_data.split_at(ECIES_MAGIC_DATA_LENGTH);
+    let (magic_data, right) = cipher_data.split_at(KDF_MAGIC_DATA_LENGTH);
     assert_eq!(magic_data.to_vec(), ECIES_MAGIC_DATA.clone());
-    let (salt, text) = right.split_at(ECIES_SALT_LENGTH);
+    let (salt, text) = right.split_at(KDF_SALT_LENGTH);
     (salt.to_vec(), text.to_vec())
 }
 

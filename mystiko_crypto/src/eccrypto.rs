@@ -1,7 +1,7 @@
 // compatible with nodejs eccrypto
 use crate::aes_cbc;
 use crate::constants::{
-    ECIES_EPHEMERAL_PK_LENGTH, ECIES_IV_LENGTH, ECIES_MAC_LENGTH, ECIES_META_LENGTH,
+    ECIES_IV_LENGTH, ECIES_MAC_LENGTH, ECIES_META_LENGTH, ECIES_UNCOMPRESSED_PK_LENGTH,
 };
 use crate::error::ECCryptoError;
 use crate::utils::random_bytes;
@@ -39,7 +39,7 @@ impl ECCryptoData {
         }
 
         let (iv, right) = v.split_at(ECIES_IV_LENGTH);
-        let (ephemeral_public_key, right) = right.split_at(ECIES_EPHEMERAL_PK_LENGTH);
+        let (ephemeral_public_key, right) = right.split_at(ECIES_UNCOMPRESSED_PK_LENGTH);
         let (mac, cipher_text) = right.split_at(ECIES_MAC_LENGTH);
 
         Ok(Self {
