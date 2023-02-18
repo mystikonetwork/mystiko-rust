@@ -1,0 +1,22 @@
+[package]
+name = "mystiko_protocol"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ff = {package="ff_ce" , version="0.11", features = ["derive"]}
+lazy_static = { version = "1.4.0" }
+num-bigint = { version = "0.4.3" }
+
+# Error
+thiserror = { version = "1.0.38" }
+
+# Encodings
+bs58 = { version = "0.4.0" }
+
+# Encryption
+babyjubjub-rs = { version = "0.0.10" }
+k256 = { version = "0.12.0" }
+
+# mystiko
+mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
