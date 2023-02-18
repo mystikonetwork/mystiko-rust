@@ -1,6 +1,6 @@
+use crate::constants::FIELD_SIZE;
 use crate::error::SecretShareError;
-use crate::utils::{calc_mod, random};
-use mystiko_utils::constants::FIELD_SIZE;
+use crate::utils::{calc_mod, random_big_int};
 use num_bigint::BigInt;
 use num_traits::identities::Zero;
 use std::collections::HashSet;
@@ -48,7 +48,7 @@ pub fn split(
 
     let mut coefficients: Vec<BigInt> = vec![secret];
     for _ in 1..threshold {
-        coefficients.push(random(32, &prime));
+        coefficients.push(random_big_int(32, &prime));
     }
 
     let mut shares: Vec<Point> = vec![];
@@ -162,7 +162,7 @@ mod tests {
 
     #[test]
     fn test_secret_sharing() {
-        let secret = random(32, &FIELD_SIZE.clone());
+        let secret = random_big_int(32, &FIELD_SIZE);
         let result = split(secret.clone(), 0, 17, None);
         assert_eq!(result.err().unwrap(), SecretShareError::SharesOutOfBounds);
 
@@ -175,7 +175,7 @@ mod tests {
 
     #[test]
     fn test_secret_sharing1() {
-        let secret = random(32, &FIELD_SIZE.clone());
+        let secret = random_big_int(32, &FIELD_SIZE);
         let ss = split(secret.clone(), 30, 17, None).unwrap();
         let mut shares = ss.shares.clone();
         shares.shuffle(&mut rand::thread_rng());
@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn test_secret_sharing2() {
-        let mut secret = random(32, &FIELD_SIZE.clone());
+        let mut secret = random_big_int(32, &FIELD_SIZE);
         let field: BigInt = BigInt::parse_bytes(b"58995116542422524421248775517049", 10).unwrap();
         secret = calc_mod(secret, &field);
 

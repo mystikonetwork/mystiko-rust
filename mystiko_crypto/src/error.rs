@@ -54,6 +54,14 @@ impl ZkpError {
     }
 }
 
+#[derive(Error, Debug, PartialEq)]
+pub enum ECCryptoError {
+    #[error("eccrypto data length error")]
+    ECCryptoDataLengthError,
+    #[error("internal error")]
+    InternalError,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -68,5 +76,8 @@ mod tests {
 
         let zkp_err = ZkpError::ReadFileError(String::from(""), String::from(""));
         assert_ne!(zkp_err.name(), ZkpError::NotSupport);
+
+        let ec_err = ECCryptoError::ECCryptoDataLengthError;
+        assert_ne!(ec_err, ECCryptoError::InternalError);
     }
 }

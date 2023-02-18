@@ -1,7 +1,10 @@
+use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
-use num_bigint::{BigInt, RandBigInt, Sign, ToBigInt};
+use num_bigint::{BigInt, RandBigInt, Sign};
 use num_integer::Integer;
 use poseidon_rs::{Fr, Poseidon};
+use rand::{distributions::Alphanumeric, Rng};
+use std::cmp::min;
 
 pub fn fr_to_big_int(fr: &Fr) -> BigInt {
     BigInt::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
@@ -13,30 +16,73 @@ pub fn poseidon_hash(arr: Vec<Fr>) -> BigInt {
     fr_to_big_int(&ph)
 }
 
+pub fn big_int_to_arr(num: &BigInt) -> [u8; 32] {
+    let (_, y_bytes) = num.to_bytes_le();
+    let mut arr: [u8; 32] = [0; 32];
+    let len = min(y_bytes.len(), arr.len());
+    arr[..len].copy_from_slice(&y_bytes[..len]);
+    arr
+}
+
+pub fn babyjubjub_unpack_point(key: &BigInt) -> Point {
+    let arr = big_int_to_arr(key);
+    decompress_point(arr).unwrap()
+}
+
 pub fn calc_mod(a_number: BigInt, prime: &BigInt) -> BigInt {
     a_number.mod_floor(prime)
 }
 
-pub fn random(size: usize, prime: &BigInt) -> BigInt {
+pub fn random_big_int(size: usize, prime: &BigInt) -> BigInt {
     assert!(size < 1024);
 
     let mut rng = rand::thread_rng();
-    let sk_raw = rng.gen_biguint(1024).to_bigint().unwrap();
-    let (_, sk_raw_bytes) = sk_raw.to_bytes_le();
-    let sk_raw_bytes = sk_raw_bytes[..size].to_vec();
+    let sk_raw = rng.gen_biguint(1024).to_bytes_le();
+    let sk_raw_bytes = sk_raw[..size].to_vec();
     let random_bigint = BigInt::from_bytes_le(Sign::Plus, &sk_raw_bytes);
 
     random_bigint.mod_floor(prime)
 }
 
+pub fn random_bytes(size: usize) -> Vec<u8> {
+    assert!(size < 1024);
+
+    let mut rng = rand::thread_rng();
+    let mut sk_raw = rng.gen_biguint(1024).to_bytes_le();
+    sk_raw.drain(size..);
+    sk_raw
+}
+
+pub fn random_utf8_string(size: usize) -> String {
+    let data: Vec<u8> = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(size)
+        .collect();
+    let utf_chars: Vec<char> = data
+        .into_iter()
+        .filter_map(|b| std::char::from_u32(b as u32))
+        .filter(|c| c.is_ascii())
+        .collect();
+    utf_chars.into_iter().collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mystiko_utils::constants::FIELD_SIZE;
+    use crate::constants::FIELD_SIZE;
 
     #[test]
     fn test_mod() {
         let field = FIELD_SIZE.clone();
         assert_eq!(calc_mod(BigInt::from(-1), &field), field - 1);
+    }
+
+    #[test]
+    fn test_random() {
+        let a = random_big_int(0, &FIELD_SIZE);
+        assert_eq!(a, BigInt::from(0));
+
+        let b = random_bytes(10);
+        assert_eq!(b.len(), 10);
     }
 }

@@ -3,21 +3,42 @@ name = "mystiko_crypto"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+#[build-dependencies]
+#cc = { version = "1.0.79" }
 
 [dependencies]
-babyjubjub-rs = { version = "0.0.10" }
-ethers = { version = "1.0.2" }
 ff = {package="ff_ce" , version="0.11", features = ["derive"]}
 lazy_static = { version = "1.4.0" }
 num-bigint = { version = "0.4.3" ,features = ["rand"]}
 num-integer = { version = "0.1.45" }
 num-traits = { version = "0.2.15" }
-poseidon-rs = { version = "0.0.8" }
+
+# utils
 rand = { version = "0.8.5" }
+rand_core = { version = "0.6.4", features = ["getrandom" ] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
+
+# error
 thiserror = { version = "1.0.38" }
 
+# Encryption
+aes = { version = "0.8.2" }
+babyjubjub-rs = { version = "0.0.10" }
+base64 = { version = "0.21.0" }
+cbc = { version = "0.1.2",features = ["std"]  }
+elliptic-curve = { version = "0.12.3", features = [ "ecdh" ]}
+generic-array = { version = "0.14.6" }
+k256 = { version = "0.12.0" }
+#ecies = {version = "0.2.3", default-features = false, features = ["pure"]}
+
+#hash
+poseidon-rs = { version = "0.0.8" }
+sha2 = { version = "0.10.6"}
+hmac= { version = "0.12.1"}
+md5= { version = "0.7.0"}
+
+#tools
+ethers = { version = "1.0.2" }
 
 zokrates_common = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
 zokrates_ast = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }

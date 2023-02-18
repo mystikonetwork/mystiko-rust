@@ -1,10 +1,11 @@
-use crate::utils::{calc_mod, fr_to_big_int, poseidon_hash, random};
-use babyjubjub_rs::{decompress_point, Point};
+use crate::constants::FIELD_SIZE;
+use crate::utils::{
+    babyjubjub_unpack_point, calc_mod, fr_to_big_int, poseidon_hash, random_big_int,
+};
+use babyjubjub_rs::Point;
 use ff::*;
 use lazy_static::lazy_static;
-use mystiko_utils::constants::FIELD_SIZE;
 use num_bigint::{BigInt, Sign};
-use std::cmp::min;
 
 pub type Fr = poseidon_rs::Fr;
 lazy_static! {
@@ -23,7 +24,7 @@ lazy_static! {
 const ECIES_KEY_LEN: usize = 32;
 
 pub fn generate_secret_key() -> BigInt {
-    random(ECIES_KEY_LEN, &FIELD_SIZE)
+    random_big_int(ECIES_KEY_LEN, &FIELD_SIZE)
 }
 
 pub fn public_key(secret_key: &BigInt) -> BigInt {
@@ -31,26 +32,13 @@ pub fn public_key(secret_key: &BigInt) -> BigInt {
     BigInt::from_bytes_le(Sign::Plus, &pk)
 }
 
-fn public_key_to_arr(num: &BigInt) -> [u8; ECIES_KEY_LEN] {
-    let (_, y_bytes) = num.to_bytes_le();
-    let mut arr: [u8; ECIES_KEY_LEN] = [0; ECIES_KEY_LEN];
-    let len = min(y_bytes.len(), arr.len());
-    arr[..len].copy_from_slice(&y_bytes[..len]);
-    arr
-}
-
-fn unpack_public_key_point(public_key: &BigInt) -> Point {
-    let arr = public_key_to_arr(public_key);
-    decompress_point(arr).unwrap()
-}
-
 pub fn unpack_public_key(public_key: &BigInt) -> (BigInt, BigInt) {
-    let point = unpack_public_key_point(public_key);
+    let point = babyjubjub_unpack_point(public_key);
     (fr_to_big_int(&point.x), fr_to_big_int(&point.y))
 }
 
 pub fn encrypt(plain: BigInt, pk: BigInt, common_sk: BigInt) -> BigInt {
-    let point_pk = unpack_public_key_point(&pk);
+    let point_pk = babyjubjub_unpack_point(&pk);
     let k = point_pk.mul_scalar(&common_sk);
     let hm = poseidon_hash(vec![k.x, k.y]);
 
@@ -58,7 +46,7 @@ pub fn encrypt(plain: BigInt, pk: BigInt, common_sk: BigInt) -> BigInt {
 }
 
 pub fn decrypt(encrypted: BigInt, sk: BigInt, common_pk: BigInt) -> BigInt {
-    let point_pk = unpack_public_key_point(&common_pk);
+    let point_pk = babyjubjub_unpack_point(&common_pk);
     let k = point_pk.mul_scalar(&sk);
     let hm = poseidon_hash(vec![k.x, k.y]);
 

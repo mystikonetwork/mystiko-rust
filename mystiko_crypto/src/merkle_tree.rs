@@ -1,8 +1,8 @@
+use crate::constants::FIELD_SIZE;
 use crate::error::MerkleTreeError;
 use crate::utils::poseidon_hash;
 use ethers::core::utils::keccak256;
 use ff::*;
-use mystiko_utils::constants::FIELD_SIZE;
 use num_bigint::{BigInt, Sign};
 use num_integer::Integer;
 use poseidon_rs::Fr;
