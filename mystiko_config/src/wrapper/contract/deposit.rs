@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::str::FromStr;
-use std::thread::sleep;
 use num_bigint::BigInt;
 use mystiko_utils::check::check;
 use mystiko_utils::convert::from_decimals;
@@ -11,7 +10,6 @@ use crate::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::base::ContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
-use crate::wrapper::mystiko::MystikoConfig;
 
 #[derive(Clone, Debug)]
 pub struct AuxData {
@@ -344,5 +342,110 @@ impl DepositContractConfig {
                 return Some(asset_config.unwrap().clone());
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use crate::common::{AssetType, BridgeType, CircuitType};
+    use crate::raw::asset::RawAssetConfig;
+    use crate::raw::base::RawConfig;
+    use crate::raw::contract::base::{RawContractConfigTrait};
+    use crate::raw::contract::deposit::RawDepositContractConfig;
+    use crate::raw::mystiko::RawMystikoConfig;
+    use crate::wrapper::asset::AssetConfig;
+    use crate::wrapper::circuit::CircuitConfig;
+    use crate::wrapper::contract::deposit::{AuxData, DepositContractConfig};
+    use crate::wrapper::contract::pool;
+    use crate::wrapper::contract::pool::PoolContractConfig;
+
+    async fn raw_mystiko_config() -> RawMystikoConfig {
+        let config =
+            RawConfig::create_from_file::<RawMystikoConfig>("src/tests/files/mystiko.valid.json").await;
+        config
+    }
+
+    async fn circuit_configs() -> (HashMap<String, CircuitConfig>, HashMap<CircuitType, CircuitConfig>) {
+        let mut circuit_configs_by_name = HashMap::new();
+        let mut default_circuit_configs = HashMap::new();
+        let raw_mystiko_config = raw_mystiko_config().await;
+        for circuit in raw_mystiko_config.circuits {
+            let circuit_config = CircuitConfig::new(circuit.clone());
+            circuit_configs_by_name.insert(circuit.name.clone(), circuit_config.clone());
+            if circuit.is_default {
+                default_circuit_configs.insert(
+                    circuit.circuit_type.clone(),
+                    circuit_config.clone(),
+                );
+            }
+        }
+        (circuit_configs_by_name, default_circuit_configs)
+    }
+
+    async fn main_asset_config() -> AssetConfig {
+        let raw_mystiko_config = raw_mystiko_config().await;
+        let asset_symbol =
+            raw_mystiko_config.chains.get(0).unwrap().clone().asset_symbol;
+        let asset_decimals =
+            raw_mystiko_config.chains.get(0).unwrap().clone().asset_decimals;
+        let recommended_amounts =
+            raw_mystiko_config.chains.get(0).unwrap().clone().recommended_amounts;
+        AssetConfig::new(
+            RawAssetConfig::new(
+                AssetType::Main,
+                asset_symbol,
+                asset_decimals,
+                "0x0000000000000000000000000000000000000000".to_string(),
+                recommended_amounts,
+            )
+        )
+    }
+
+    async fn asset_configs() -> HashMap<String, AssetConfig> {
+        let mut asset_configs = HashMap::new();
+        let raw_mystiko_config = raw_mystiko_config().await;
+        let raw_asset_config =
+            raw_mystiko_config.chains.get(0).unwrap().assets.get(0).unwrap();
+        asset_configs.insert(
+            raw_asset_config.asset_address.clone(),
+            AssetConfig::new(raw_asset_config.clone()),
+        );
+        asset_configs
+    }
+
+    async fn default_config() -> (RawDepositContractConfig, DepositContractConfig) {
+        let mut raw_config =
+            RawConfig::create_from_file::<RawDepositContractConfig>("src/tests/files/contract/deposit.valid.json").await;
+        raw_config.bridge_type = BridgeType::Loop;
+        raw_config.peer_chain_id = None;
+        raw_config.peer_contract_address = None;
+        let raw_mystiko_config = raw_mystiko_config().await;
+        let pool_contract =
+            raw_mystiko_config.chains.get(0).unwrap().pool_contracts.get(0).unwrap();
+        let mut pool_contract_configs = HashMap::new();
+        let (circuit_configs_by_name, default_circuit_configs) = circuit_configs().await;
+        pool_contract_configs.insert(
+            pool_contract.address().to_string(),
+            PoolContractConfig::new(
+                pool_contract.clone(),
+                Some(
+                    pool::AuxData::new(
+                        default_circuit_configs,
+                        circuit_configs_by_name,
+                        main_asset_config().await,
+                        asset_configs().await,
+                    )
+                ),
+            ),
+        );
+        let aux_data = Some(AuxData::new(
+            HashMap::new(),
+            pool_contract_configs,
+            main_asset_config().await,
+            asset_configs().await,
+        ));
+        let config = DepositContractConfig::new(raw_config.clone(), aux_data);
+        (raw_config, config)
     }
 }

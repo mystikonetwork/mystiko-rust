@@ -1,9 +1,9 @@
 use std::fmt::Debug;
-use std::fs::{File, read_to_string};
+use std::fs::{File};
 use std::io::Read;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
-use serde_json::{from_str, json};
+use serde_json::{from_str};
 use validator::Validate;
 use crate::common::validate_object;
 
@@ -48,6 +48,3 @@ impl RawConfig {
         RawConfig::create_from_object::<T>(object).await
     }
 }
-
-#[cfg(test)]
-mod tests {}

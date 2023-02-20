@@ -1,9 +1,8 @@
 use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Deserializer, Serialize};
 use validator::{Validate, ValidationError};
-use crate::common::{BridgeType, ContractType, validate_object};
+use crate::common::{BridgeType, ContractType};
 use crate::raw::base::Validator;
-use crate::raw::chain::RawChainConfig;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 use crate::raw::validator::{is_ethereum_address, is_number_string, string_vec_each_not_empty};
 
@@ -283,10 +282,11 @@ mod tests {
     #[tokio::test]
     #[should_panic]
     async fn test_import_invalid_json_file() {
-        let file_config =
+        let _file_config =
             RawConfig::create_from_file::<RawPoolContractConfig>("src/tests/files/contract/pool.invalid.json").await;
     }
 
+    #[tokio::test]
     async fn test_import_valid_json_str() {
         let json_str = r#"
             {

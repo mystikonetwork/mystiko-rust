@@ -1,4 +1,4 @@
-use std::hash::{Hash, Hasher};
+use std::hash::{Hash};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
@@ -9,7 +9,6 @@ use crate::raw::bridge::tbridge::RawTBridgeConfig;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
-use crate::common::validate_object;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_sem_ver, array_unique, validate_nested_vec};
 
@@ -79,9 +78,6 @@ impl Validator for RawMystikoConfig {
 #[cfg(test)]
 mod tests {
     use crate::raw::base::{RawConfig, Validator};
-    use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
-    use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
-    use crate::raw::bridge::poly::RawPolyBridgeConfig;
     use crate::raw::bridge::tbridge::RawTBridgeConfig;
     use crate::raw::indexer::RawIndexerConfig;
     use crate::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
@@ -169,7 +165,7 @@ mod tests {
     #[tokio::test]
     #[should_panic]
     async fn test_import_invalid_json_file() {
-        let file_config =
+        let _file_config =
             RawConfig::create_from_file::<RawMystikoConfig>("src/tests/files/mystiko.invalid.json").await;
     }
 }

@@ -1,8 +1,7 @@
 use std::hash::{Hash, Hasher};
-use std::os::macos::raw::stat;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::common::{CircuitType, validate_object};
+use crate::common::{CircuitType};
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{string_vec_each_not_empty};
 
@@ -77,7 +76,6 @@ impl Hash for RawCircuitConfig {
 mod tests {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
-    use serde::de::Unexpected::Str;
     use crate::common::CircuitType;
     use crate::raw::base::{RawConfig, Validator};
     use crate::raw::circuit::RawCircuitConfig;
@@ -162,7 +160,7 @@ mod tests {
     #[tokio::test]
     #[should_panic]
     async fn test_import_invalid_json_file() {
-        let file_config =
+        let _file_config =
             RawConfig::create_from_file::<RawCircuitConfig>("src/tests/files/circuit.invalid.json").await;
     }
 }

@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::common::validate_object;
 use crate::raw::base::{RawConfig, Validator};
 
 fn default_timeout_ms() -> u32 {
@@ -102,7 +101,7 @@ mod tests {
     #[tokio::test]
     #[should_panic]
     async fn test_import_invalid_json_file() {
-        let file_config =
+        let _file_config =
             RawConfig::create_from_file::<RawProviderConfig>("src/tests/files/provider.invalid.json").await;
     }
 

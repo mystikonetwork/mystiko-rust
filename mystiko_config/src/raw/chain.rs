@@ -452,12 +452,13 @@ mod tests {
     async fn test_import_valid_json_file() {
         let file_config =
             RawConfig::create_from_file::<RawChainConfig>("src/tests/files/chain.valid.json").await;
+        assert_eq!(file_config, default_config().await)
     }
 
     #[tokio::test]
     #[should_panic]
     async fn test_import_invalid_json_file() {
-        let file_config =
+        let _file_config =
             RawConfig::create_from_file::<RawChainConfig>("src/tests/files/chain.invalid.json").await;
     }
 }

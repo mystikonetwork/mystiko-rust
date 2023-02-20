@@ -43,7 +43,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_copy() {
-        let (raw_config, config) = default_config().await;
+        let (_raw_config, config) = default_config().await;
         let copy = TBridgeConfig::new(config.base.base.copy_data());
         assert_eq!(copy, config);
     }
@@ -61,7 +61,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_to_json_string() {
-        let (mut raw_config, config) = default_config().await;
+        let (raw_config, config) = default_config().await;
         let json_string = config.base.base.to_json_string();
         let loaded_raw_config =
             RawConfig::create_from_json_string::<RawTBridgeConfig>(&json_string).await;

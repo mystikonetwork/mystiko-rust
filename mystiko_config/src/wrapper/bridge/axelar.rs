@@ -23,10 +23,8 @@ impl AxelarBridgeConfig {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
     use crate::raw::base::RawConfig;
     use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
-    use crate::raw::bridge::base::RawBridgeConfigTrait;
     use crate::wrapper::bridge::axelar::AxelarBridgeConfig;
 
     async fn default_config() -> (RawAxelarBridgeConfig, AxelarBridgeConfig) {
@@ -45,7 +43,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_copy() {
-        let (raw_config, config) = default_config().await;
+        let (_raw_config, config) = default_config().await;
         let copy = AxelarBridgeConfig::new(config.base.base.copy_data());
         assert_eq!(copy, config);
     }
@@ -63,7 +61,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_to_json_string() {
-        let (mut raw_config, config) = default_config().await;
+        let (raw_config, config) = default_config().await;
         let json_string = config.base.base.to_json_string();
         let loaded_raw_config =
             RawConfig::create_from_json_string::<RawAxelarBridgeConfig>(&json_string).await;

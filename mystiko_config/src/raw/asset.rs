@@ -1,7 +1,7 @@
 use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidationErrors};
-use crate::common::{AssetType, validate_object};
+use validator::{Validate};
+use crate::common::{AssetType};
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_ethereum_address, array_unique, is_number_string};
 
@@ -147,7 +147,7 @@ mod tests {
     #[tokio::test]
     #[should_panic]
     async fn test_import_invalid_json_file() {
-        let file_config =
+        let _file_config =
             RawConfig::create_from_file::<RawAssetConfig>("src/tests/files/asset.invalid.json").await;
     }
 }

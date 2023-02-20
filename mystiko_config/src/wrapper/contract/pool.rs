@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use crate::common::{AssetType, BridgeType, CircuitType};
-use crate::common::ContractType::Pool;
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::wrapper::asset::AssetConfig;

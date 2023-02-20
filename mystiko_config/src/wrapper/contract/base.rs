@@ -97,7 +97,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_copy() {
-        let (raw_config, config) = default_config().await;
+        let (_raw_config, config) = default_config().await;
         let copy =
             ContractConfig::new(config.base.copy_data(), None);
         assert_eq!(copy, config);
@@ -114,8 +114,9 @@ mod tests {
         assert_eq!(new_config.name(), &"another name".to_string());
     }
 
+    #[tokio::test]
     async fn test_to_json_string() {
-        let (mut raw_config, config) = default_config().await;
+        let (raw_config, config) = default_config().await;
         let json_string = config.base.to_json_string();
         let loaded_raw_config =
             RawConfig::create_from_json_string::<RawContractConfig>(&json_string).await;

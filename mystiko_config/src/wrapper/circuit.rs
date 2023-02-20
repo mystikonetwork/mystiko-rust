@@ -8,8 +8,10 @@ pub struct CircuitConfig {
 }
 
 impl CircuitConfig {
-    pub fn new(base: BaseConfig<RawCircuitConfig>) -> Self {
-        Self { base }
+    pub fn new(data: RawCircuitConfig) -> Self {
+        Self {
+            base: BaseConfig::new(data, None)
+        }
     }
 
     pub fn name(&self) -> &String {

@@ -226,9 +226,7 @@ impl MystikoConfig {
 
         let circuits = &base.data.circuits;
         for raw in circuits {
-            let circuit_config = CircuitConfig::new(
-                BaseConfig::new(raw.clone(), None),
-            );
+            let circuit_config = CircuitConfig::new(raw.clone());
             if raw.is_default {
                 check(
                     !default_circuit_configs.contains_key(circuit_config.circuit_type()),

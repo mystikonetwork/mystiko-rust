@@ -1,9 +1,8 @@
 use std::any::Any;
 use std::collections::HashSet;
-use std::fmt::Debug;
 use std::hash::Hash;
 use regex::Regex;
-use validator::{Validate, ValidationError};
+use validator::{ValidationError};
 use crate::raw::base::Validator;
 
 pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
