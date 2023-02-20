@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{AssetType, validate_object};
 use crate::raw::asset::RawAssetConfig;
-use crate::raw::base::{RawConfig, RawConfigTrait};
+use crate::raw::base::{RawConfig, Validator};
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
@@ -93,7 +93,7 @@ impl Hash for RawChainConfig {
     }
 }
 
-impl RawConfigTrait for RawChainConfig {
+impl Validator for RawChainConfig {
     fn validation(&self) {
         self.base.validate_object::<&RawChainConfig>(self)
     }
@@ -142,7 +142,7 @@ mod tests {
     use std::hash::{Hash, Hasher};
     use crate::common::{AssetType, BridgeType, ContractType};
     use crate::raw::asset::RawAssetConfig;
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::base::{RawConfig, Validator};
     use crate::raw::chain::RawChainConfig;
     use crate::raw::contract::base::RawContractConfig;
     use crate::raw::contract::deposit::RawDepositContractConfig;
@@ -166,6 +166,7 @@ mod tests {
                     2,
                     "MystikoWithPolyERC20".to_string(),
                     "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+                    ContractType::Deposit,
                     1000000,
                     None,
                     None,
@@ -194,6 +195,7 @@ mod tests {
                     2,
                     "CommitmentPool".to_string(),
                     "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
+                    ContractType::Pool,
                     1000000,
                     None,
                     None,

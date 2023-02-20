@@ -1,15 +1,11 @@
 use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use validator::{Validate, ValidationError};
 use crate::common::{BridgeType, ContractType, validate_object};
-use crate::raw::base::RawConfigTrait;
+use crate::raw::base::Validator;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 use crate::raw::validator::{is_ethereum_address, is_number_string, string_vec_each_not_empty};
-
-fn default_contract_type() -> ContractType {
-    ContractType::Pool
-}
 
 fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
     if *t == ContractType::Pool {
@@ -22,14 +18,14 @@ fn default_min_rollup_fee() -> String {
     String::from("0")
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
+#[derive(Validate, Serialize, Debug, Clone, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawPoolContractConfig {
     #[serde(flatten)]
     pub base: RawContractConfig,
 
-    #[serde(default = "default_contract_type")]
     #[serde(rename = "type")]
+    #[serde(skip_serializing)]
     #[validate(custom = "validate_contract_type")]
     pub contract_type: ContractType,
 
@@ -66,7 +62,7 @@ impl RawPoolContractConfig {
             asset_address,
             min_rollup_fee,
             circuits,
-            contract_type: default_contract_type(),
+            contract_type: ContractType::Pool,
         }
     }
 }
@@ -83,9 +79,56 @@ impl PartialEq for RawPoolContractConfig {
     }
 }
 
-impl RawConfigTrait for RawPoolContractConfig {
+impl Validator for RawPoolContractConfig {
     fn validation(&self) {
         self.base.base.validate_object(self)
+    }
+}
+
+impl<'de> Deserialize<'de> for RawPoolContractConfig {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de>
+    {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Inner {
+            version: u32,
+            name: String,
+            address: String,
+            #[serde(rename = "type")]
+            contract_type: Option<ContractType>,
+            start_block: u32,
+            even_filter_size: Option<u32>,
+            indexer_filter_size: Option<u32>,
+            pool_name: String,
+            bridge_type: BridgeType,
+            asset_address: Option<String>,
+            min_rollup_fee: Option<String>,
+            circuits: Option<Vec<String>>,
+        }
+        let inner = Inner::deserialize(deserializer)?;
+        let contract_type = inner.contract_type.unwrap_or_else(|| ContractType::Pool);
+        let base_contract_type = contract_type.clone();
+        let min_rollup_fee = inner.min_rollup_fee.unwrap_or_else(|| String::from("0"));
+        let circuits = inner.circuits.unwrap_or_else(|| vec![]);
+        Ok(Self {
+            base: RawContractConfig {
+                base: Default::default(),
+                version: inner.version,
+                name: inner.name,
+                address: inner.address,
+                contract_type: base_contract_type,
+                start_block: inner.start_block,
+                event_filter_size: inner.even_filter_size,
+                indexer_filter_size: inner.indexer_filter_size,
+            },
+            contract_type,
+            pool_name: inner.pool_name,
+            bridge_type: inner.bridge_type,
+            asset_address: inner.asset_address,
+            min_rollup_fee,
+            circuits,
+        })
     }
 }
 
@@ -122,7 +165,7 @@ impl RawContractConfigTrait for RawPoolContractConfig {
 #[cfg(test)]
 mod tests {
     use crate::common::{BridgeType, ContractType};
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::base::{RawConfig, Validator};
     use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
     use crate::raw::contract::pool::{default_min_rollup_fee, RawPoolContractConfig};
 
@@ -138,6 +181,7 @@ mod tests {
                     2,
                     "CommitmentPool".to_string(),
                     "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+                    ContractType::Pool,
                     1000000,
                     None,
                     None,
@@ -232,7 +276,8 @@ mod tests {
     async fn test_import_valid_json_file() {
         let file_config =
             RawConfig::create_from_file::<RawPoolContractConfig>("src/tests/files/contract/pool.valid.json").await;
-        assert_eq!(file_config, default_config().await)
+        assert_eq!(file_config, default_config().await);
+        assert_eq!(file_config.contract_type, file_config.base.contract_type);
     }
 
     #[tokio::test]
@@ -240,5 +285,25 @@ mod tests {
     async fn test_import_invalid_json_file() {
         let file_config =
             RawConfig::create_from_file::<RawPoolContractConfig>("src/tests/files/contract/pool.invalid.json").await;
+    }
+
+    async fn test_import_valid_json_str() {
+        let json_str = r#"
+            {
+              "version": 2,
+              "name": "CommitmentPool",
+              "poolName": "A Pool(since 07/20/2022)",
+              "bridgeType": "tbridge",
+              "address": "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67",
+              "startBlock": 1000000,
+              "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+              "minRollupFee": "120000000000000000",
+              "circuits": ["circuit-1.0"]
+            }
+        "#;
+        let str_config =
+            RawConfig::create_from_json_string::<RawPoolContractConfig>(json_str).await;
+        assert_eq!(str_config.contract_type, ContractType::Pool);
+        assert_eq!(str_config.contract_type, str_config.base.contract_type);
     }
 }

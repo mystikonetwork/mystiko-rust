@@ -5,7 +5,7 @@ use crate::common::AssetType;
 use crate::raw::asset::RawAssetConfig;
 use crate::wrapper::base::BaseConfig;
 
-const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
+pub const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
 #[derive(Clone, Debug)]
 pub struct AssetConfig {
@@ -27,12 +27,12 @@ impl AssetConfig {
         &self.base.data.asset_type
     }
 
-    pub fn asset_symbol(&self) -> &str {
-        &self.base.data.asset_symbol
+    pub fn asset_symbol(&self) -> String {
+        self.base.data.asset_symbol.clone()
     }
 
-    pub fn asset_decimals(&self) -> &u32 {
-        &self.base.data.asset_decimals
+    pub fn asset_decimals(&self) -> u32 {
+        self.base.data.asset_decimals
     }
 
     // TODO check this method
@@ -46,8 +46,8 @@ impl AssetConfig {
     }
 
     // TODO Complete this method
-    pub fn recommended_amounts_number(&self) -> Vec<u32> {
-        let mut amounts_number: Vec<u32> = vec![];
+    pub fn recommended_amounts_number(&self) -> Vec<f64> {
+        let mut amounts_number: Vec<f64> = vec![];
         amounts_number
     }
 

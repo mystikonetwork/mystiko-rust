@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::validate_object;
-use crate::raw::base::{RawConfig, RawConfigTrait};
+use crate::raw::base::{RawConfig, Validator};
 
 fn default_timeout_ms() -> u32 {
     15000
@@ -34,7 +34,7 @@ impl RawIndexerConfig {
     }
 }
 
-impl RawConfigTrait for RawIndexerConfig {
+impl Validator for RawIndexerConfig {
     fn validation(&self) {
         self.base.validate_object(self)
     }
@@ -42,7 +42,7 @@ impl RawConfigTrait for RawIndexerConfig {
 
 #[cfg(test)]
 mod tests {
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::base::{RawConfig, Validator};
     use crate::raw::indexer::RawIndexerConfig;
 
     async fn default_config() -> RawIndexerConfig {

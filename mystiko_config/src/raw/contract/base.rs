@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::common::{ContractType, validate_object};
-use crate::raw::base::{RawConfig, RawConfigTrait};
+use crate::common::{ContractType};
+use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_ethereum_address};
 
-pub trait RawContractConfigTrait: RawConfigTrait {
+pub trait RawContractConfigTrait: Validator {
     fn version(&self) -> &u32;
     fn name(&self) -> &str;
     fn address(&self) -> &str;
@@ -29,6 +29,9 @@ pub struct RawContractConfig {
     #[validate(custom = "is_ethereum_address")]
     pub address: String,
 
+    #[serde(rename = "type")]
+    pub contract_type: ContractType,
+
     #[validate(range(min = 1))]
     pub start_block: u32,
 
@@ -44,6 +47,7 @@ impl RawContractConfig {
         version: u32,
         name: String,
         address: String,
+        contract_type: ContractType,
         start_block: u32,
         event_filter_size: Option<u32>,
         indexer_filter_size: Option<u32>,
@@ -53,6 +57,7 @@ impl RawContractConfig {
             version,
             name,
             address,
+            contract_type,
             start_block,
             event_filter_size,
             indexer_filter_size,
@@ -60,15 +65,46 @@ impl RawContractConfig {
     }
 }
 
-impl RawConfigTrait for RawContractConfig {
+impl Validator for RawContractConfig {
     fn validation(&self) {
         self.base.validate_object(self)
     }
 }
 
+impl RawContractConfigTrait for RawContractConfig {
+    fn version(&self) -> &u32 {
+        &self.version
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn address(&self) -> &str {
+        &self.address
+    }
+
+    fn contract_type(&self) -> &ContractType {
+        &self.contract_type
+    }
+
+    fn start_block(&self) -> &u32 {
+        &self.start_block
+    }
+
+    fn event_filter_size(&self) -> &Option<u32> {
+        &self.event_filter_size
+    }
+
+    fn indexer_filter_size(&self) -> &Option<u32> {
+        &self.indexer_filter_size
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::common::ContractType;
+    use crate::raw::base::{RawConfig, Validator};
     use crate::raw::contract::base::RawContractConfig;
 
     async fn default_config() -> RawContractConfig {
@@ -77,6 +113,7 @@ mod tests {
                 2,
                 "MystikoWithPolyERC20".to_string(),
                 "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+                ContractType::Deposit,
                 1000000,
                 Some(10000),
                 Some(100000),
@@ -149,15 +186,16 @@ mod tests {
 
     #[tokio::test]
     async fn test_import_valid_json_file() {
+        let default_config = default_config().await;
         let file_config =
             RawConfig::create_from_file::<RawContractConfig>("src/tests/files/contract/base.valid.json").await;
-        assert_eq!(file_config, default_config().await);
+        assert_eq!(file_config, default_config);
     }
 
     #[tokio::test]
     #[should_panic]
     async fn test_import_invalid_json_file() {
-        let file_config =
+        let _file_config =
             RawConfig::create_from_file::<RawContractConfig>("src/tests/files/contract/base.invalid.json").await;
     }
 }

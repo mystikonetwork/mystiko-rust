@@ -4,7 +4,7 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use regex::Regex;
 use validator::{Validate, ValidationError};
-use crate::raw::base::RawConfigTrait;
+use crate::raw::base::Validator;
 
 pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
     let eth = Regex::new(r"^(0x)[0-9a-fA-F]{40}$").unwrap();
@@ -56,7 +56,7 @@ pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
 }
 
 pub fn validate_nested_vec<T>(v: &Vec<T>) -> Result<(), ValidationError>
-    where T: RawConfigTrait
+    where T: Validator
 {
     for x in v {
         x.validation()

@@ -2,7 +2,7 @@ use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationErrors};
 use crate::common::{AssetType, validate_object};
-use crate::raw::base::{RawConfig, RawConfigTrait};
+use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_ethereum_address, array_unique, is_number_string};
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
@@ -43,7 +43,7 @@ impl PartialEq for RawAssetConfig {
     }
 }
 
-impl RawConfigTrait for RawAssetConfig {
+impl Validator for RawAssetConfig {
     fn validation(&self) {
         self.base.validate_object::<&RawAssetConfig>(self)
     }
@@ -72,7 +72,7 @@ impl RawAssetConfig {
 mod tests {
     use crate::common::AssetType;
     use crate::raw::asset::RawAssetConfig;
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::base::{RawConfig, Validator};
 
     async fn default_config() -> RawAssetConfig {
         RawConfig::create_from_object::<RawAssetConfig>(

@@ -3,7 +3,7 @@ use std::os::macos::raw::stat;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{CircuitType, validate_object};
-use crate::raw::base::{RawConfig, RawConfigTrait};
+use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{string_vec_each_not_empty};
 
 fn default_is_default() -> bool {
@@ -61,7 +61,7 @@ impl RawCircuitConfig {
     }
 }
 
-impl RawConfigTrait for RawCircuitConfig {
+impl Validator for RawCircuitConfig {
     fn validation(&self) {
         self.base.validate_object(self)
     }
@@ -79,7 +79,7 @@ mod tests {
     use std::hash::{Hash, Hasher};
     use serde::de::Unexpected::Str;
     use crate::common::CircuitType;
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::base::{RawConfig, Validator};
     use crate::raw::circuit::RawCircuitConfig;
 
     async fn default_config() -> RawCircuitConfig {

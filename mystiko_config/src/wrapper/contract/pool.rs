@@ -64,27 +64,27 @@ impl PoolContractConfig {
         &self.base.base.data.bridge_type
     }
 
-    pub fn asset(&self) -> &AssetConfig {
+    pub fn asset(&self) -> AssetConfig {
         match &self.asset_config {
             None => {
-                &self.main_asset_config
+                self.main_asset_config.clone()
             }
             Some(value) => {
-                value
+                value.clone()
             }
         }
     }
 
-    pub fn asset_type(&self) -> &AssetType {
-        &self.asset().asset_type()
+    pub fn asset_type(&self) -> AssetType {
+        self.asset().asset_type().clone()
     }
 
-    pub fn asset_symbol(&self) -> &str {
+    pub fn asset_symbol(&self) -> String {
         self.asset().asset_symbol()
     }
 
-    pub fn asset_decimals(&self) -> &u32 {
-        &self.asset().asset_decimals()
+    pub fn asset_decimals(&self) -> u32 {
+        self.asset().asset_decimals()
     }
 
     pub fn asset_address(&self) -> &Option<String> {
@@ -95,7 +95,7 @@ impl PoolContractConfig {
         self.asset().recommended_amounts()
     }
 
-    pub fn recommended_amounts_number(&self) -> Vec<u32> {
+    pub fn recommended_amounts_number(&self) -> Vec<f64> {
         self.asset().recommended_amounts_number()
     }
 
@@ -106,8 +106,8 @@ impl PoolContractConfig {
     }
 
     // TODO Complete this method
-    pub fn min_rollup_fee_number(&self) -> u32 {
-        return 1;
+    pub fn min_rollup_fee_number(&self) -> f64 {
+        return 1f64;
     }
 
     pub fn circuits(&self) -> Vec<CircuitConfig> {

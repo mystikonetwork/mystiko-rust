@@ -7,7 +7,7 @@ use serde_json::{from_str, json};
 use validator::Validate;
 use crate::common::validate_object;
 
-pub trait RawConfigTrait {
+pub trait Validator {
     fn validation(&self);
 }
 
@@ -25,19 +25,26 @@ impl RawConfig {
     }
 
     pub async fn create_from_object<T>(plain: T) -> T
-        where T: DeserializeOwned + Serialize + RawConfigTrait
+        where T: DeserializeOwned + Serialize + Validator
     {
         plain.validation();
         plain
     }
 
     pub async fn create_from_file<T>(json_file: &str) -> T
-        where T: DeserializeOwned + Serialize + RawConfigTrait
+        where T: DeserializeOwned + Serialize + Validator
     {
         let mut file = File::open(json_file).unwrap();
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
         let object: T = from_str(&contents).unwrap();
+        RawConfig::create_from_object::<T>(object).await
+    }
+
+    pub async fn create_from_json_string<T>(json_str: &str) -> T
+        where T: DeserializeOwned + Serialize + Validator
+    {
+        let object: T = from_str(json_str).unwrap();
         RawConfig::create_from_object::<T>(object).await
     }
 }

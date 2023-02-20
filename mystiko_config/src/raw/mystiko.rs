@@ -10,7 +10,7 @@ use crate::raw::chain::RawChainConfig;
 use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
 use crate::common::validate_object;
-use crate::raw::base::{RawConfig, RawConfigTrait};
+use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_sem_ver, array_unique, validate_nested_vec};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
@@ -24,7 +24,7 @@ pub enum RawBridgeConfigType {
     Tbridge(RawTBridgeConfig),
 }
 
-impl RawConfigTrait for RawBridgeConfigType {
+impl Validator for RawBridgeConfigType {
     fn validation(&self) {
         match self {
             RawBridgeConfigType::Axelar(c) => { c.validation() }
@@ -67,7 +67,7 @@ pub struct RawMystikoConfig {
     pub indexer: Option<RawIndexerConfig>,
 }
 
-impl RawConfigTrait for RawMystikoConfig {
+impl Validator for RawMystikoConfig {
     fn validation(&self) {
         self.base.validate_object(self);
         for bridge in &self.bridges {
@@ -78,7 +78,7 @@ impl RawConfigTrait for RawMystikoConfig {
 
 #[cfg(test)]
 mod tests {
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::base::{RawConfig, Validator};
     use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
     use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
     use crate::raw::bridge::poly::RawPolyBridgeConfig;

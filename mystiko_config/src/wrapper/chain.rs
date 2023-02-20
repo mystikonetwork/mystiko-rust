@@ -7,7 +7,7 @@ use validator::Validate;
 use mystiko_utils::check::check;
 use crate::common::{AssetType, BridgeType, CircuitType, validate_object};
 use crate::raw::asset::RawAssetConfig;
-use crate::raw::base::RawConfigTrait;
+use crate::raw::base::Validator;
 use crate::raw::chain::{EXPLORER_TX_PLACEHOLDER, RawChainConfig};
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::wrapper::asset::AssetConfig;
@@ -113,19 +113,19 @@ impl ChainConfig {
         &self.base.data.name
     }
 
-    pub fn asset_symbol(&self) -> &str {
-        &self.main_asset_config.asset_symbol()
+    pub fn asset_symbol(&self) -> String {
+        self.main_asset_config.asset_symbol()
     }
 
-    pub fn asset_decimals(&self) -> &u32 {
-        &self.main_asset_config.asset_decimals()
+    pub fn asset_decimals(&self) -> u32 {
+        self.main_asset_config.asset_decimals()
     }
 
     pub fn recommend_amounts(&self) -> Vec<BigInt> {
         self.main_asset_config.recommended_amounts()
     }
 
-    pub fn recommend_amounts_numbers(&self) -> Vec<u32> {
+    pub fn recommend_amounts_numbers(&self) -> Vec<f64> {
         self.main_asset_config.recommended_amounts_number()
     }
 
@@ -375,7 +375,7 @@ impl ChainConfig {
 
         for pool_contract_config in pool_contracts {
             let mut bridges: HashMap<BridgeType, HashMap<u32, PoolContractConfig>> =
-                match pool_configs_by_asset_and_bridge.get(pool_contract_config.asset_symbol()) {
+                match pool_configs_by_asset_and_bridge.get(&pool_contract_config.asset_symbol()) {
                     None => {
                         HashMap::new()
                     }

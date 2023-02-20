@@ -1,8 +1,8 @@
 use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use validator::{Validate, ValidationError};
-use crate::common::{BridgeType, validate_object};
-use crate::raw::base::RawConfigTrait;
+use crate::common::{BridgeType};
+use crate::raw::base::Validator;
 use crate::raw::bridge::base::{RawBridgeConfig, RawBridgeConfigTrait};
 
 fn default_bridge_type() -> BridgeType {
@@ -16,15 +16,15 @@ fn validate_bridge_type(t: &BridgeType) -> Result<(), ValidationError> {
     Err(ValidationError::new("bridge type error"))
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Validate, Serialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawPolyBridgeConfig {
     #[validate]
     #[serde(flatten)]
-    base: RawBridgeConfig,
+    pub(crate) base: RawBridgeConfig,
 
-    #[serde(default = "default_bridge_type")]
     #[serde(rename = "type")]
+    #[serde(skip_serializing)]
     #[validate(custom = "validate_bridge_type")]
     pub bridge_type: BridgeType,
 
@@ -49,9 +49,10 @@ impl RawPolyBridgeConfig {
         api_url: String,
         api_prefix: String,
     ) -> Self {
+        let bridge_type = default_bridge_type();
         Self {
-            base: RawBridgeConfig::new(name),
-            bridge_type: default_bridge_type(),
+            base: RawBridgeConfig::new(name, bridge_type.clone()),
+            bridge_type,
             explorer_url,
             explorer_prefix,
             api_url,
@@ -60,7 +61,7 @@ impl RawPolyBridgeConfig {
     }
 }
 
-impl RawConfigTrait for RawPolyBridgeConfig {
+impl Validator for RawPolyBridgeConfig {
     fn validation(&self) {
         self.base.base.validate_object(self)
     }
@@ -68,7 +69,11 @@ impl RawConfigTrait for RawPolyBridgeConfig {
 
 impl RawBridgeConfigTrait for RawPolyBridgeConfig {
     fn name(&self) -> &String {
-        &self.base.name()
+        &self.base.name
+    }
+
+    fn bridge_type(&self) -> &BridgeType {
+        &self.bridge_type
     }
 }
 
@@ -78,12 +83,45 @@ impl Hash for RawPolyBridgeConfig {
     }
 }
 
+impl<'de> Deserialize<'de> for RawPolyBridgeConfig {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de>
+    {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Inner {
+            #[serde(rename = "type")]
+            bridge_type: Option<BridgeType>,
+            name: String,
+            explorer_url: String,
+            explorer_prefix: String,
+            api_url: String,
+            api_prefix: String,
+        }
+        let inner = Inner::deserialize(deserializer)?;
+        let bridge_type = inner.bridge_type.unwrap_or_else(|| BridgeType::Poly);
+        let base_bridge_type = bridge_type.clone();
+        Ok(Self {
+            base: RawBridgeConfig {
+                base: Default::default(),
+                bridge_type: base_bridge_type,
+                name: inner.name,
+            },
+            bridge_type,
+            explorer_url: inner.explorer_url,
+            explorer_prefix: inner.explorer_prefix,
+            api_url: inner.api_url,
+            api_prefix: inner.api_prefix,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
     use crate::common::BridgeType;
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::base::{RawConfig, Validator};
     use crate::raw::bridge::base::RawBridgeConfigTrait;
     use crate::raw::bridge::poly::RawPolyBridgeConfig;
     use crate::raw::chain::{EXPLORER_DEFAULT_PREFIX};
@@ -119,7 +157,7 @@ mod tests {
     #[tokio::test]
     async fn test_name() {
         let config = default_config().await;
-        assert_eq!(config.name(), config.base.name());
+        assert_eq!(config.name(), &config.base.name);
     }
 
     #[tokio::test]
@@ -211,7 +249,22 @@ mod tests {
     #[tokio::test]
     #[should_panic]
     async fn test_import_invalid_json_file() {
-        let file_config =
+        let _file_config =
             RawConfig::create_from_file::<RawPolyBridgeConfig>("src/tests/files/bridge/poly.invalid.json").await;
+    }
+
+    #[tokio::test]
+    async fn test_import_valid_json_str() {
+        let json_str = r#"{
+            "name": "Poly Bridge",
+            "explorerUrl": "https://explorer.poly.network",
+            "explorerPrefix": "/tx/%tx%",
+            "apiUrl": "https://explorer.poly.network",
+            "apiPrefix": "/testnet/api/v1/getcrosstx?txhash=%tx%"
+        }"#;
+        let str_config =
+            RawConfig::create_from_json_string::<RawPolyBridgeConfig>(json_str).await;
+        assert_eq!(str_config.bridge_type, BridgeType::Poly);
+        assert_eq!(str_config.bridge_type, str_config.base.bridge_type)
     }
 }

@@ -1,18 +1,18 @@
 use serde::{Deserialize, Serialize};
-use crate::raw::base::RawConfigTrait;
+use crate::raw::base::Validator;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct BaseConfig<R, A = ()>
     where
-        R: RawConfigTrait + Serialize + Clone,
+        R: Validator + Serialize + Clone,
         A: Clone,
 {
-    pub data: R,
-    pub aux_data: Option<A>,
+    pub(crate) data: R,
+    pub(crate) aux_data: Option<A>,
 }
 
 impl<R, A> BaseConfig<R, A> where
-    R: RawConfigTrait + Serialize + Clone,
+    R: Validator + Serialize + Clone,
     A: Clone,
 {
     pub fn new(data: R, aux_data: Option<A>) -> Self {
@@ -22,8 +22,26 @@ impl<R, A> BaseConfig<R, A> where
         }
     }
 
+    pub fn copy_data(&self) -> R {
+        self.data.clone()
+    }
+
     pub fn to_json_string(&self) -> String {
         return serde_json::to_string(&self.data).unwrap();
+    }
+
+    pub fn mutate(&self, data: Option<R>, aux_data: Option<A>) -> BaseConfig<R, A> {
+        let data = match data {
+            None => { self.data.clone() }
+            Some(value) => { value }
+        };
+        let aux_data = match aux_data {
+            None => {
+                self.aux_data.clone()
+            }
+            Some(value) => { Some(value) }
+        };
+        BaseConfig::new(data, aux_data)
     }
 
     pub fn aux_data_not_empty(&self) -> A {

@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 num-bigint = { version = "0.4.3" }
 lazy_static = { version = "1.4.0" }
+rust_decimal = "1.28"

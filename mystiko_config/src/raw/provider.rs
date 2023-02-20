@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::validate_object;
-use crate::raw::base::{RawConfig, RawConfigTrait};
+use crate::raw::base::{RawConfig, Validator};
 
 fn default_timeout_ms() -> u32 {
     5000
@@ -35,7 +35,7 @@ impl RawProviderConfig {
     }
 }
 
-impl RawConfigTrait for RawProviderConfig {
+impl Validator for RawProviderConfig {
     fn validation(&self) {
         self.base.validate_object(self)
     }
@@ -43,7 +43,7 @@ impl RawConfigTrait for RawProviderConfig {
 
 #[cfg(test)]
 mod tests {
-    use crate::raw::base::{RawConfig, RawConfigTrait};
+    use crate::raw::base::{RawConfig, Validator};
     use crate::raw::provider::RawProviderConfig;
 
     async fn default_config() -> RawProviderConfig {
