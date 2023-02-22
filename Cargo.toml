@@ -4,6 +4,9 @@ members = [
     "mystiko_abi_generate",
     "mystiko_crypto",
     "mystiko_utils",
+    "mystiko_storage",
+    "mystiko_database",
+    "mystiko_in_memory_storage",
 ]
 
 exclude = []

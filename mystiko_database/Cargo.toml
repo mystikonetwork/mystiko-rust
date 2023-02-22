@@ -1,0 +1,10 @@
+[package]
+name = "mystiko_database"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+mystiko_in_memory_storage={ path = "../mystiko_in_memory_storage" }
+mystiko_storage={ path = "../mystiko_storage" }

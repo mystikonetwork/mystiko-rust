@@ -2146,6 +2146,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_database"
+version = "0.1.0"
+dependencies = [
+ "mystiko_in_memory_storage",
+ "mystiko_storage",
+]
+
+[[package]]
+name = "mystiko_in_memory_storage"
+version = "0.1.0"
+dependencies = [
+ "mystiko_storage",
+]
+
+[[package]]
+name = "mystiko_storage"
+version = "0.1.0"
+
+[[package]]
 name = "mystiko_utils"
 version = "0.1.0"
 dependencies = [
