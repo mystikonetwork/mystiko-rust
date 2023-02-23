@@ -329,9 +329,9 @@ checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 
 [[package]]
 name = "async-trait"
-version = "0.1.61"
+version = "0.1.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "705339e0e4a9690e2908d2b3d049d85682cf19fbd5782494498fbf7003a6a282"
+checksum = "1cd7fce9ba8c3c042128ce72d8b2ddbf3a05747efb67ea0313c635e10bda47a2"
 dependencies = [
  "proc-macro2 1.0.49",
  "quote 1.0.23",
@@ -2146,6 +2146,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_storage"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "lazy_static",
+ "ulid",
+]
+
+[[package]]
 name = "mystiko_utils"
 version = "0.1.0"
 dependencies = [
@@ -3509,6 +3518,15 @@ dependencies = [
  "crunchy",
  "hex",
  "static_assertions",
+]
+
+[[package]]
+name = "ulid"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13a3aaa69b04e5b66cc27309710a569ea23593612387d67daaf102e73aa974fd"
+dependencies = [
+ "rand 0.8.5",
 ]
 
 [[package]]

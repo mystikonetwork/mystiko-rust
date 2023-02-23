@@ -1,0 +1,9 @@
+[package]
+name = "mystiko_storage"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = { version = "0.1.64" }
+lazy_static = { version = "1.4.0" }
+ulid = { version = "1.0.0" }
