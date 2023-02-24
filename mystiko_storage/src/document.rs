@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::convert::From;
+use std::marker::{Send, Sync};
 
 pub struct DocumentSchema {
     pub collection_name: &'static str,
@@ -13,7 +14,7 @@ impl DocumentSchema {
     }
 }
 
-pub trait DocumentData: From<HashMap<String, String>> + Clone {
+pub trait DocumentData: From<HashMap<String, String>> + Clone + Send + Sync {
     fn schema(&self) -> &'static DocumentSchema;
     fn to_map(&self) -> HashMap<String, String>;
 }
@@ -26,15 +27,25 @@ pub struct Document<T: DocumentData> {
     pub data: T,
 }
 
+pub const DOCUMENT_ID_FIELD: &str = "id";
+pub const DOCUMENT_CREATED_AT_FIELD: &str = "created_at";
+pub const DOCUMENT_UPDATED_AT_FIELD: &str = "updated_at";
+
 impl<T: DocumentData> Document<T> {
     fn schema(&self) -> &'static DocumentSchema {
         self.data.schema()
     }
     fn to_map(&self) -> HashMap<String, String> {
         let mut map: HashMap<String, String> = HashMap::new();
-        map.insert("id".to_string(), self.id.clone());
-        map.insert("created_at".to_string(), self.created_at.to_string());
-        map.insert("updated_at".to_string(), self.updated_at.to_string());
+        map.insert(DOCUMENT_ID_FIELD.to_string(), self.id.clone());
+        map.insert(
+            DOCUMENT_CREATED_AT_FIELD.to_string(),
+            self.created_at.to_string(),
+        );
+        map.insert(
+            DOCUMENT_UPDATED_AT_FIELD.to_string(),
+            self.updated_at.to_string(),
+        );
         map.extend(self.data.to_map());
         map
     }
@@ -92,9 +103,9 @@ mod tests {
         assert_eq!(
             book.to_map(),
             HashMap::from([
-                ("id".to_string(), "id01".to_string()),
-                ("created_at".to_string(), 0xdead.to_string()),
-                ("updated_at".to_string(), 0xbeef.to_string()),
+                (DOCUMENT_ID_FIELD.to_string(), "id01".to_string()),
+                (DOCUMENT_CREATED_AT_FIELD.to_string(), 0xdead.to_string()),
+                (DOCUMENT_UPDATED_AT_FIELD.to_string(), 0xbeef.to_string()),
                 ("title".to_string(), "test book".to_string())
             ])
         );
