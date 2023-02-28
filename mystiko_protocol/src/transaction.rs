@@ -453,7 +453,7 @@ mod tests {
         }
     }
 
-    const FILE_PATH: &str = "./../circuits/dist/zokrates/dev";
+    const FILE_PATH: &str = "./../mystiko-circuits/dist/zokrates/dev";
 
     #[test]
     fn test_is_neg() {

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Exit if any subcommand fails
+# Exit if any sub command fails
 set -e
 
 cargo build
