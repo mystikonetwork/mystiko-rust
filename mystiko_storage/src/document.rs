@@ -109,5 +109,7 @@ mod tests {
                 ("title".to_string(), "test book".to_string())
             ])
         );
+        let book1 = Book::from(book.to_map());
+        assert_eq!(book1.title, book.data.title);
     }
 }
