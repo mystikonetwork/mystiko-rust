@@ -477,4 +477,79 @@ mod tests {
         let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x0.vkey")).unwrap();
         assert!(verify);
     }
+
+    #[test]
+    fn test_transaction1x1() {
+        let tx = generate_transaction(
+            1u32,
+            1u32,
+            (FILE_PATH.to_owned() + "/Transaction1x1.program").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction1x1.abi.json").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction1x1.pkey").to_string(),
+        );
+
+        let proof = zk_prove_transaction(&tx).unwrap();
+        let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x1.vkey")).unwrap();
+        assert!(verify);
+    }
+
+    #[test]
+    fn test_transaction1x2() {
+        let tx = generate_transaction(
+            1u32,
+            2u32,
+            (FILE_PATH.to_owned() + "/Transaction1x2.program").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction1x2.abi.json").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction1x2.pkey").to_string(),
+        );
+
+        let proof = zk_prove_transaction(&tx).unwrap();
+        let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x2.vkey")).unwrap();
+        assert!(verify);
+    }
+
+    #[test]
+    fn test_transaction2x0() {
+        let tx = generate_transaction(
+            2u32,
+            0u32,
+            (FILE_PATH.to_owned() + "/Transaction2x0.program").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction2x0.abi.json").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction2x0.pkey").to_string(),
+        );
+
+        let proof = zk_prove_transaction(&tx).unwrap();
+        let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x0.vkey")).unwrap();
+        assert!(verify);
+    }
+
+    #[test]
+    fn test_transaction2x1() {
+        let tx = generate_transaction(
+            2u32,
+            1u32,
+            (FILE_PATH.to_owned() + "/Transaction2x1.program").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction2x1.abi.json").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction2x1.pkey").to_string(),
+        );
+
+        let proof = zk_prove_transaction(&tx).unwrap();
+        let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x1.vkey")).unwrap();
+        assert!(verify);
+    }
+
+    #[test]
+    fn test_transaction2x2() {
+        let tx = generate_transaction(
+            2u32,
+            2u32,
+            (FILE_PATH.to_owned() + "/Transaction2x2.program").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction2x2.abi.json").to_string(),
+            (FILE_PATH.to_owned() + "/Transaction2x2.pkey").to_string(),
+        );
+
+        let proof = zk_prove_transaction(&tx).unwrap();
+        let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x2.vkey")).unwrap();
+        assert!(verify);
+    }
 }

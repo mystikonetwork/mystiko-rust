@@ -2,7 +2,6 @@
 
 extern crate serde;
 
-#[ignore]
 pub mod commitment_pool;
 pub mod commitment_pool_erc20;
 pub mod commitment_pool_main;
