@@ -7,8 +7,8 @@ use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Point {
-    x: BigInt,
-    y: BigInt,
+    pub x: BigInt,
+    pub y: BigInt,
 }
 
 pub struct SecretShare {

@@ -83,6 +83,8 @@ pub mod i_message_receiver_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -103,6 +105,8 @@ pub mod i_message_receiver_app {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct ExecuteMessageReturn(pub bool);

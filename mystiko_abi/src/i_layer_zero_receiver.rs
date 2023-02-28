@@ -83,6 +83,8 @@ pub mod i_layer_zero_receiver {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "lzReceive", abi = "lzReceive(uint16,bytes,uint64,bytes)")]

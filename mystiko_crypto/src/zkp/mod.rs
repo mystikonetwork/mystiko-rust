@@ -3,6 +3,7 @@ mod generate_proof;
 mod utils;
 
 pub mod prove;
+pub mod types;
 pub mod verify;
 
 #[cfg(test)]
@@ -31,6 +32,7 @@ mod tests {
         // let arr = ('1', json!([[[false]]]), "1");
         let arr = ("3", "2", "5");
         let args = serde_json::to_string(&arr).unwrap();
+        println!("args {:?}", arr);
         let proof = prove_by_file(
             "./src/zkp/tests/files/program",
             "./src/zkp/tests/files/abi.json",
@@ -43,31 +45,11 @@ mod tests {
             verify_by_file(proof.clone(), "./src/zkp/tests/files/verification.key").unwrap();
         assert!(result);
 
-        let proof_json: serde_json::Value = serde_json::from_str(proof.as_str()).unwrap();
-        let inputs = proof_json.get("inputs").unwrap();
-        let mut inputs: Vec<_> = inputs
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|v| v.as_str().unwrap())
-            .collect();
-        inputs[2] = "0x0000000000000000000000000000000000000000000000000000000000000004";
-
-        let mut proof_json: serde_json::Value = serde_json::from_str(proof.as_str()).unwrap();
-        if let Some(map) = proof_json.as_object_mut() {
-            map.insert(
-                "inputs".to_owned(),
-                serde_json::Value::Array(
-                    inputs.iter().map(|s| serde_json::Value::from(*s)).collect(),
-                ),
-            );
-        }
-
-        let result = verify_by_file(
-            proof_json.to_string(),
-            "./src/zkp/tests/files/verification.key",
-        )
-        .unwrap();
+        let mut modify_proof = proof.clone();
+        modify_proof.inputs[2] =
+            "0x0000000000000000000000000000000000000000000000000000000000000004".to_string();
+        let result =
+            verify_by_file(modify_proof, "./src/zkp/tests/files/verification.key").unwrap();
         assert!(!result);
     }
 }

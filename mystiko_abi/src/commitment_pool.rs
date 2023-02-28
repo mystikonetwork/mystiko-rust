@@ -435,6 +435,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AuditorIndexError", abi = "AuditorIndexError()")]
     pub struct AuditorIndexError;
@@ -447,6 +449,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AuditorNotesLengthError", abi = "AuditorNotesLengthError()")]
     pub struct AuditorNotesLengthError;
@@ -459,6 +463,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "AuditorPublicKeyNotChanged",
@@ -474,6 +480,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "CommitmentHasBeenSubmitted",
@@ -489,6 +497,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "Duplicated", abi = "Duplicated(string)")]
     pub struct Duplicated {
@@ -503,6 +513,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "IndexOutOfBound", abi = "IndexOutOfBound()")]
     pub struct IndexOutOfBound;
@@ -515,6 +527,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
@@ -529,6 +543,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NewRootIsDuplicated", abi = "NewRootIsDuplicated()")]
     pub struct NewRootIsDuplicated;
@@ -541,6 +557,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NotChanged", abi = "NotChanged()")]
     pub struct NotChanged;
@@ -553,6 +571,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NoteHasBeenSpent", abi = "NoteHasBeenSpent()")]
     pub struct NoteHasBeenSpent;
@@ -565,6 +585,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NumInputsGreaterThanZero", abi = "NumInputsGreaterThanZero()")]
     pub struct NumInputsGreaterThanZero;
@@ -577,6 +599,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
     pub struct OnlyOperator;
@@ -589,6 +613,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyWhitelistedRoller", abi = "OnlyWhitelistedRoller()")]
     pub struct OnlyWhitelistedRoller;
@@ -601,6 +627,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyWhitelistedSender", abi = "OnlyWhitelistedSender()")]
     pub struct OnlyWhitelistedSender;
@@ -613,6 +641,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OutputNotesLessThanThree", abi = "OutputNotesLessThanThree()")]
     pub struct OutputNotesLessThanThree;
@@ -625,6 +655,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "RollupFeeToFew", abi = "RollupFeeToFew()")]
     pub struct RollupFeeToFew;
@@ -637,6 +669,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "RollupSizeNotPowerOfTwo", abi = "RollupSizeNotPowerOfTwo()")]
     pub struct RollupSizeNotPowerOfTwo;
@@ -649,6 +683,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "SanctionedAddress", abi = "SanctionedAddress()")]
     pub struct SanctionedAddress;
@@ -661,6 +697,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "TreeHeightLessThanZero", abi = "TreeHeightLessThanZero()")]
     pub struct TreeHeightLessThanZero;
@@ -673,6 +711,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "TreeHeightOutOfBounds", abi = "TreeHeightOutOfBounds()")]
     pub struct TreeHeightOutOfBounds;
@@ -685,6 +725,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "TreeIsFull", abi = "TreeIsFull()")]
     pub struct TreeIsFull;
@@ -697,13 +739,23 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "VerifierUpdatesHasBeenDisabled",
         abi = "VerifierUpdatesHasBeenDisabled()"
     )]
     pub struct VerifierUpdatesHasBeenDisabled;
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum CommitmentPoolErrors {
         AuditorIndexError(AuditorIndexError),
         AuditorNotesLengthError(AuditorNotesLengthError),
@@ -1017,6 +1069,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "AuditorPublicKey", abi = "AuditorPublicKey(uint256,uint256)")]
@@ -1032,6 +1086,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "CommitmentIncluded", abi = "CommitmentIncluded(uint256)")]
@@ -1046,6 +1102,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -1066,6 +1124,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "CommitmentSpent", abi = "CommitmentSpent(uint256,uint256)")]
@@ -1082,6 +1142,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -1100,6 +1162,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -1116,6 +1180,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "OperatorChanged", abi = "OperatorChanged(address)")]
@@ -1130,6 +1196,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -1146,6 +1214,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
@@ -1159,6 +1229,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
@@ -1172,13 +1244,23 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "VerifierUpdateDisabled", abi = "VerifierUpdateDisabled(bool)")]
     pub struct VerifierUpdateDisabledFilter {
         pub state: bool,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum CommitmentPoolEvents {
         AuditorPublicKeyFilter(AuditorPublicKeyFilter),
         CommitmentIncludedFilter(CommitmentIncludedFilter),
@@ -1260,6 +1342,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "_pathIndices", abi = "_pathIndices(uint256,uint32)")]
@@ -1275,6 +1359,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "addEnqueueWhitelist", abi = "addEnqueueWhitelist(address)")]
@@ -1289,6 +1375,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "addRollupWhitelist", abi = "addRollupWhitelist(address)")]
@@ -1303,6 +1391,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "assetType", abi = "assetType()")]
@@ -1315,6 +1405,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "auditorCount", abi = "auditorCount()")]
@@ -1327,6 +1419,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
@@ -1341,6 +1435,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "disableRollupVerifier", abi = "disableRollupVerifier(uint32)")]
@@ -1355,6 +1451,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "disableSanctionsCheck", abi = "disableSanctionsCheck()")]
@@ -1367,6 +1465,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1385,6 +1485,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1403,6 +1505,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "enableSanctionsCheck", abi = "enableSanctionsCheck()")]
@@ -1415,6 +1519,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1434,6 +1540,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1452,6 +1560,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getAllAuditorPublicKeys", abi = "getAllAuditorPublicKeys()")]
@@ -1464,6 +1574,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getAuditorPublicKey", abi = "getAuditorPublicKey(uint256)")]
@@ -1478,6 +1590,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1493,6 +1607,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMinRollupFee", abi = "getMinRollupFee()")]
@@ -1505,6 +1621,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getTreeCapacity", abi = "getTreeCapacity()")]
@@ -1517,6 +1635,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isHistoricCommitment", abi = "isHistoricCommitment(uint256)")]
@@ -1531,6 +1651,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isKnownRoot", abi = "isKnownRoot(uint256)")]
@@ -1545,6 +1667,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1560,6 +1684,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isSpentSerialNumber", abi = "isSpentSerialNumber(uint256)")]
@@ -1574,6 +1700,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isVerifierUpdateDisabled", abi = "isVerifierUpdateDisabled()")]
@@ -1586,6 +1714,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1603,6 +1733,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "removeRollupWhitelist", abi = "removeRollupWhitelist(address)")]
@@ -1617,6 +1749,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1634,6 +1768,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
@@ -1646,6 +1782,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
@@ -1658,6 +1796,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setMinRollupFee", abi = "setMinRollupFee(uint256)")]
@@ -1672,6 +1812,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1689,6 +1831,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1706,6 +1850,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1724,6 +1870,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1742,6 +1890,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1751,7 +1901,15 @@ pub mod commitment_pool {
     pub struct UpdateSanctionsListAddressCall {
         pub sanction: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum CommitmentPoolCalls {
         PathIndices(PathIndicesCall),
         AddEnqueueWhitelist(AddEnqueueWhitelistCall),
@@ -2234,6 +2392,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct PathIndicesReturn(pub ethers::core::types::U256);
@@ -2245,6 +2405,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AssetTypeReturn(pub u8);
@@ -2256,6 +2418,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AuditorCountReturn(pub ethers::core::types::U256);
@@ -2267,6 +2431,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetAllAuditorPublicKeysReturn(pub ::std::vec::Vec<ethers::core::types::U256>);
@@ -2278,6 +2444,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetAuditorPublicKeyReturn(pub ethers::core::types::U256);
@@ -2289,6 +2457,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetCommitmentIncludedCountReturn(pub ethers::core::types::U256);
@@ -2300,6 +2470,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMinRollupFeeReturn(pub ethers::core::types::U256);
@@ -2311,6 +2483,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetTreeCapacityReturn(pub ethers::core::types::U256);
@@ -2322,6 +2496,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsHistoricCommitmentReturn(pub bool);
@@ -2333,6 +2509,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsKnownRootReturn(pub bool);
@@ -2344,6 +2522,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsRollupWhitelistDisabledReturn(pub bool);
@@ -2355,6 +2535,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsSpentSerialNumberReturn(pub bool);
@@ -2366,6 +2548,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsVerifierUpdateDisabledReturn(pub bool);
@@ -2377,6 +2561,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct SanctionsCheckReturn(pub bool);
@@ -2388,6 +2574,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct SanctionsListReturn(pub ethers::core::types::Address);
@@ -2400,6 +2588,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct AuditorNote {
         pub id: u64,
@@ -2415,6 +2605,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct CommitmentRequest {
         pub amount: ethers::core::types::U256,
@@ -2432,6 +2624,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct RollupRequest {
         pub proof: Proof,
@@ -2448,6 +2642,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct TransactRequest {
         pub proof: Proof,
@@ -2474,6 +2670,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct G1Point {
         pub x: ethers::core::types::U256,
@@ -2488,6 +2686,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct G2Point {
         pub x: [ethers::core::types::U256; 2],
@@ -2502,6 +2702,8 @@ pub mod commitment_pool {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct Proof {
         pub a: G1Point,

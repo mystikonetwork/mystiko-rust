@@ -19,6 +19,8 @@ fn abi_file_generation(src: &Path, dst: &str) -> Result<(), Box<dyn Error>> {
 
     let dst_file = format!("{dst}/{file_name_snake_case}.rs");
     Abigen::new(file_name, src.to_str().unwrap())?
+        .add_event_derive("serde::Serialize")
+        .add_event_derive("serde::Deserialize")
         .generate()?
         .write_to_file(dst_file)?;
 

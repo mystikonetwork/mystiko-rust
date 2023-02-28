@@ -2,7 +2,7 @@ use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
 use num_bigint::{BigInt, RandBigInt, Sign};
 use num_integer::Integer;
-use poseidon_rs::{Fr, Poseidon};
+use poseidon_rs::Fr;
 use rand::{distributions::Alphanumeric, Rng};
 use std::cmp::min;
 
@@ -10,23 +10,30 @@ pub fn fr_to_big_int(fr: &Fr) -> BigInt {
     BigInt::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
 }
 
-pub fn poseidon_hash(arr: Vec<Fr>) -> BigInt {
-    let poseidon = Poseidon::new();
-    let ph = poseidon.hash(arr).unwrap();
-    fr_to_big_int(&ph)
-}
-
-pub fn big_int_to_arr(num: &BigInt) -> [u8; 32] {
+fn big_int_to_le_fixed_bytes(num: &BigInt) -> [u8; 32] {
     let (_, y_bytes) = num.to_bytes_le();
-    let mut arr: [u8; 32] = [0; 32];
-    let len = min(y_bytes.len(), arr.len());
-    arr[..len].copy_from_slice(&y_bytes[..len]);
-    arr
+    if y_bytes.len() >= 32 {
+        y_bytes[..32].try_into().unwrap()
+    } else {
+        let mut arr: [u8; 32] = [0; 32];
+        let len = min(y_bytes.len(), arr.len());
+        arr[..len].copy_from_slice(&y_bytes[..len]);
+        arr
+    }
 }
 
 pub fn babyjubjub_unpack_point(key: &BigInt) -> Point {
-    let arr = big_int_to_arr(key);
+    let arr = big_int_to_le_fixed_bytes(key);
     decompress_point(arr).unwrap()
+}
+
+pub fn babyjubjub_public_key(x: &BigInt, y: &BigInt) -> BigInt {
+    let point = Point {
+        x: Fr::from_str(&x.to_string()).unwrap(),
+        y: Fr::from_str(&y.to_string()).unwrap(),
+    };
+    let pc = point.compress();
+    BigInt::from_bytes_le(Sign::Plus, &pc)
 }
 
 pub fn calc_mod(a_number: BigInt, prime: &BigInt) -> BigInt {
@@ -34,10 +41,10 @@ pub fn calc_mod(a_number: BigInt, prime: &BigInt) -> BigInt {
 }
 
 pub fn random_big_int(size: usize, prime: &BigInt) -> BigInt {
-    assert!(size < 1024);
+    assert!(size < 256);
 
     let mut rng = rand::thread_rng();
-    let sk_raw = rng.gen_biguint(1024).to_bytes_le();
+    let sk_raw = rng.gen_biguint(256 * 8).to_bytes_le();
     let sk_raw_bytes = sk_raw[..size].to_vec();
     let random_bigint = BigInt::from_bytes_le(Sign::Plus, &sk_raw_bytes);
 

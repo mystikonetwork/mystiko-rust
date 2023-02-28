@@ -7,22 +7,10 @@ use aes::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvI
 use base64::{engine::general_purpose, Engine as _};
 use generic_array::GenericArray;
 
-pub fn encrypt(iv: &[u8], key: &[u8], plain_text: &[u8]) -> Vec<u8> {
-    // todo check encrypt result
-    // openssl::symm::encrypt(Cipher::aes_256_cbc(), key, Some(iv), plain_text).unwrap()
-    aes_cbc_encrypt(iv, key, plain_text)
-}
-
-pub fn decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Vec<u8> {
-    // todo check decrypt result
-    // openssl::symm::decrypt(Cipher::aes_256_cbc(), key, Some(iv), cipher_text).unwrap()
-    aes_cbc_decrypt(iv, key, cipher_text)
-}
-
 pub fn encrypt_str(password: &str, plain_text: &str) -> Result<String, ECCryptoError> {
     let salt = random_bytes(KDF_SALT_LENGTH);
     let (key, iv) = password_to_key(password.as_bytes(), salt.as_slice());
-    let cipher_text = aes_cbc_encrypt(&iv, &key, plain_text.as_bytes());
+    let cipher_text = encrypt(&iv, &key, plain_text.as_bytes());
     let full_encrypted_data = stringify_cipher_data_with_salt(&cipher_text, &salt);
     Ok(general_purpose::STANDARD.encode(full_encrypted_data))
 }
@@ -31,12 +19,23 @@ pub fn decrypt_str(password: &str, cipher_data: &str) -> Result<String, ECCrypto
     let cipher_data_raw = general_purpose::STANDARD.decode(cipher_data).unwrap();
     let (salt, cipher_text) = parse_salt_from_cipher_data(cipher_data_raw.as_slice());
     let (key, iv) = password_to_key(password.as_bytes(), salt.as_slice());
-    let decrypted_data = aes_cbc_decrypt(iv.as_slice(), key.as_slice(), cipher_text.as_slice());
+    let decrypted_data = decrypt(iv.as_slice(), key.as_slice(), cipher_text.as_slice());
     let text = String::from_utf8(decrypted_data).unwrap();
     Ok(text)
 }
 
-fn aes_cbc_encrypt(iv: &[u8], key: &[u8], plain_text: &[u8]) -> Vec<u8> {
+//
+// pub fn encrypt(iv: &[u8], key: &[u8], plain_text: &[u8]) -> Vec<u8> {
+//     // todo check encrypt result
+//     // openssl::symm::encrypt(Cipher::aes_256_cbc(), key, Some(iv), plain_text).unwrap()
+// }
+//
+// pub fn decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Vec<u8> {
+//     // todo check decrypt result
+//     // openssl::symm::decrypt(Cipher::aes_256_cbc(), key, Some(iv), cipher_text).unwrap()
+// }
+
+pub fn encrypt(iv: &[u8], key: &[u8], plain_text: &[u8]) -> Vec<u8> {
     type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 
     let key_g = GenericArray::from_slice(key);
@@ -44,7 +43,7 @@ fn aes_cbc_encrypt(iv: &[u8], key: &[u8], plain_text: &[u8]) -> Vec<u8> {
     Aes256CbcEnc::new(key_g, iv_g).encrypt_padded_vec_mut::<Pkcs7>(plain_text)
 }
 
-fn aes_cbc_decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Vec<u8> {
+pub fn decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Vec<u8> {
     type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 
     let key = GenericArray::from_slice(key);
@@ -131,11 +130,10 @@ mod tests {
             hex::decode("fe515f9acd6711ccfc8287110296d14a739f9d6f663a923d72b281485f9cc699")
                 .unwrap();
 
-        let cipher_txt =
-            aes_cbc_encrypt(&iv.to_vec(), &key.to_vec(), plain_data.to_vec().as_slice());
+        let cipher_txt = encrypt(&iv.to_vec(), &key.to_vec(), plain_data.to_vec().as_slice());
         assert_eq!(cipher_txt.as_slice(), expect_cipher_txt);
 
-        let dec_plain_text = aes_cbc_decrypt(&iv.to_vec(), &key, cipher_txt.to_vec().as_slice());
+        let dec_plain_text = decrypt(&iv.to_vec(), &key, cipher_txt.to_vec().as_slice());
         assert_eq!(dec_plain_text, plain_data);
     }
 

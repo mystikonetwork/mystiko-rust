@@ -239,6 +239,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
@@ -251,6 +253,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -270,6 +274,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SetTrustedRemote", abi = "SetTrustedRemote(uint16,bytes)")]
@@ -277,7 +283,15 @@ pub mod lz_app {
         pub src_chain_id: u16,
         pub src_address: ethers::core::types::Bytes,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum LzAppEvents {
         OwnershipTransferredFilter(OwnershipTransferredFilter),
         SetTrustedRemoteFilter(SetTrustedRemoteFilter),
@@ -314,6 +328,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "forceResumeReceive", abi = "forceResumeReceive(uint16,bytes)")]
@@ -329,6 +345,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getConfig", abi = "getConfig(uint16,uint16,address,uint256)")]
@@ -346,6 +364,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isTrustedRemote", abi = "isTrustedRemote(uint16,bytes)")]
@@ -361,6 +381,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "localLayerZeroChainId", abi = "localLayerZeroChainId()")]
@@ -373,6 +395,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "lzEndpoint", abi = "lzEndpoint()")]
@@ -385,6 +409,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "lzReceive", abi = "lzReceive(uint16,bytes,uint64,bytes)")]
@@ -402,6 +428,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "owner", abi = "owner()")]
@@ -414,6 +442,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "peerLayerZeroChainId", abi = "peerLayerZeroChainId()")]
@@ -426,6 +456,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "renounceOwnership", abi = "renounceOwnership()")]
@@ -438,6 +470,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setConfig", abi = "setConfig(uint16,uint16,uint256,bytes)")]
@@ -455,6 +489,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setEndpoint", abi = "setEndpoint(uint16,address)")]
@@ -470,6 +506,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setReceiveVersion", abi = "setReceiveVersion(uint16)")]
@@ -484,6 +522,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setSendVersion", abi = "setSendVersion(uint16)")]
@@ -498,6 +538,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setTrustedRemote", abi = "setTrustedRemote(uint16,bytes)")]
@@ -513,6 +555,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "transferOwnership", abi = "transferOwnership(address)")]
@@ -527,11 +571,21 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "trustedRemoteLookup", abi = "trustedRemoteLookup(uint16)")]
     pub struct TrustedRemoteLookupCall(pub u16);
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum LzAppCalls {
         ForceResumeReceive(ForceResumeReceiveCall),
         GetConfig(GetConfigCall),
@@ -768,6 +822,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetConfigReturn(pub ethers::core::types::Bytes);
@@ -779,6 +835,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsTrustedRemoteReturn(pub bool);
@@ -790,6 +848,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct LocalLayerZeroChainIdReturn(pub u16);
@@ -801,6 +861,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct LzEndpointReturn(pub ethers::core::types::Address);
@@ -812,6 +874,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct OwnerReturn(pub ethers::core::types::Address);
@@ -823,6 +887,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct PeerLayerZeroChainIdReturn(pub u16);
@@ -834,6 +900,8 @@ pub mod lz_app {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct TrustedRemoteLookupReturn(pub ethers::core::types::Bytes);

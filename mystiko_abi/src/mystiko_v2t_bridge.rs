@@ -388,6 +388,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AmountLessThanZero", abi = "AmountLessThanZero()")]
     pub struct AmountLessThanZero;
@@ -400,6 +402,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AmountTooLarge", abi = "AmountTooLarge()")]
     pub struct AmountTooLarge;
@@ -412,6 +416,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AmountTooSmall", abi = "AmountTooSmall()")]
     pub struct AmountTooSmall;
@@ -424,6 +430,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "BridgeFeeTooFew", abi = "BridgeFeeTooFew()")]
     pub struct BridgeFeeTooFew;
@@ -436,6 +444,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "CommitmentHashIncorrect", abi = "CommitmentHashIncorrect()")]
     pub struct CommitmentHashIncorrect;
@@ -448,6 +458,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "DepositsDisabled", abi = "DepositsDisabled()")]
     pub struct DepositsDisabled;
@@ -460,6 +472,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "ExecutorFeeTooFew", abi = "ExecutorFeeTooFew()")]
     pub struct ExecutorFeeTooFew;
@@ -472,6 +486,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "FromChainIdNotMatched", abi = "FromChainIdNotMatched()")]
     pub struct FromChainIdNotMatched;
@@ -484,6 +500,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "FromProxyAddressNotMatched",
@@ -499,6 +517,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "HashKGreaterThanFieldSize",
@@ -514,6 +534,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
@@ -528,6 +550,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "MinAmountGreaterThanMaxAmount",
@@ -543,6 +567,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NotChanged", abi = "NotChanged()")]
     pub struct NotChanged;
@@ -555,6 +581,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
     pub struct OnlyOperator;
@@ -567,6 +595,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "RandomSGreaterThanFieldSize",
@@ -582,6 +612,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "RollupFeeToFew", abi = "RollupFeeToFew()")]
     pub struct RollupFeeToFew;
@@ -594,6 +626,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "SanctionedAddress", abi = "SanctionedAddress()")]
     pub struct SanctionedAddress;
@@ -606,10 +640,20 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "SenderIsNotBridgeProxy", abi = "SenderIsNotBridgeProxy()")]
     pub struct SenderIsNotBridgeProxy;
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2TBridgeErrors {
         AmountLessThanZero(AmountLessThanZero),
         AmountTooLarge(AmountTooLarge),
@@ -873,6 +917,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "CommitmentCrossChain", abi = "CommitmentCrossChain(uint256)")]
@@ -887,6 +933,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -904,6 +952,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "DepositsDisabled", abi = "DepositsDisabled(bool)")]
@@ -917,6 +967,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "MinBridgeFee", abi = "MinBridgeFee(uint256)")]
@@ -930,6 +982,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "MinExecutorFee", abi = "MinExecutorFee(uint256)")]
@@ -943,6 +997,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "OperatorChanged", abi = "OperatorChanged(address)")]
@@ -957,6 +1013,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "PeerMinExecutorFee", abi = "PeerMinExecutorFee(uint256)")]
@@ -970,6 +1028,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "PeerMinRollupFee", abi = "PeerMinRollupFee(uint256)")]
@@ -983,6 +1043,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
@@ -996,13 +1058,23 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
     pub struct SanctionsListFilter {
         pub sanctions: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2TBridgeEvents {
         CommitmentCrossChainFilter(CommitmentCrossChainFilter),
         DepositAmountLimitsFilter(DepositAmountLimitsFilter),
@@ -1079,6 +1151,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "assetType", abi = "assetType()")]
@@ -1091,6 +1165,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "bridgeProxyAddress", abi = "bridgeProxyAddress()")]
@@ -1103,6 +1179,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "bridgeType", abi = "bridgeType()")]
@@ -1115,6 +1193,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
@@ -1129,6 +1209,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1149,6 +1231,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1166,6 +1250,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "disableSanctionsCheck", abi = "disableSanctionsCheck()")]
@@ -1178,6 +1264,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "enableSanctionsCheck", abi = "enableSanctionsCheck()")]
@@ -1190,6 +1278,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1205,6 +1295,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMaxAmount", abi = "getMaxAmount()")]
@@ -1217,6 +1309,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMinAmount", abi = "getMinAmount()")]
@@ -1229,6 +1323,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMinBridgeFee", abi = "getMinBridgeFee()")]
@@ -1241,6 +1337,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMinExecutorFee", abi = "getMinExecutorFee()")]
@@ -1253,6 +1351,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getPeerMinExecutorFee", abi = "getPeerMinExecutorFee()")]
@@ -1265,6 +1365,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getPeerMinRollupFee", abi = "getPeerMinRollupFee()")]
@@ -1277,6 +1379,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isDepositsDisabled", abi = "isDepositsDisabled()")]
@@ -1289,6 +1393,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "peerChainId", abi = "peerChainId()")]
@@ -1301,6 +1407,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "peerChainName", abi = "peerChainName()")]
@@ -1313,6 +1421,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "peerContract", abi = "peerContract()")]
@@ -1325,6 +1435,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
@@ -1337,6 +1449,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
@@ -1349,6 +1463,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1366,6 +1482,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setBridgeProxyAddress", abi = "setBridgeProxyAddress(address)")]
@@ -1380,6 +1498,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setDepositsDisabled", abi = "setDepositsDisabled(bool)")]
@@ -1394,6 +1514,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setMinBridgeFee", abi = "setMinBridgeFee(uint256)")]
@@ -1408,6 +1530,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setMinExecutorFee", abi = "setMinExecutorFee(uint256)")]
@@ -1422,6 +1546,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1441,6 +1567,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setPeerMinExecutorFee", abi = "setPeerMinExecutorFee(uint256)")]
@@ -1455,6 +1583,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setPeerMinRollupFee", abi = "setPeerMinRollupFee(uint256)")]
@@ -1469,6 +1599,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1487,6 +1619,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1496,7 +1630,15 @@ pub mod mystiko_v2t_bridge {
     pub struct UpdateSanctionsListAddressCall {
         pub sanction: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2TBridgeCalls {
         AssetType(AssetTypeCall),
         BridgeProxyAddress(BridgeProxyAddressCall),
@@ -1937,6 +2079,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AssetTypeReturn(pub u8);
@@ -1948,6 +2092,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct BridgeProxyAddressReturn(pub ethers::core::types::Address);
@@ -1959,6 +2105,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct BridgeTypeReturn(pub String);
@@ -1970,6 +2118,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct CrossChainSyncTxReturn(pub bool);
@@ -1981,6 +2131,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetAssociatedCommitmentPoolReturn(pub ethers::core::types::Address);
@@ -1992,6 +2144,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMaxAmountReturn(pub ethers::core::types::U256);
@@ -2003,6 +2157,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMinAmountReturn(pub ethers::core::types::U256);
@@ -2014,6 +2170,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMinBridgeFeeReturn(pub ethers::core::types::U256);
@@ -2025,6 +2183,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMinExecutorFeeReturn(pub ethers::core::types::U256);
@@ -2036,6 +2196,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetPeerMinExecutorFeeReturn(pub ethers::core::types::U256);
@@ -2047,6 +2209,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetPeerMinRollupFeeReturn(pub ethers::core::types::U256);
@@ -2058,6 +2222,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsDepositsDisabledReturn(pub bool);
@@ -2069,6 +2235,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct PeerChainIdReturn(pub u64);
@@ -2080,6 +2248,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct PeerChainNameReturn(pub String);
@@ -2091,6 +2261,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct PeerContractReturn(pub ethers::core::types::Address);
@@ -2102,6 +2274,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct SanctionsCheckReturn(pub bool);
@@ -2113,6 +2287,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct SanctionsListReturn(pub ethers::core::types::Address);
@@ -2125,6 +2301,8 @@ pub mod mystiko_v2t_bridge {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct DepositRequest {
         pub amount: ethers::core::types::U256,

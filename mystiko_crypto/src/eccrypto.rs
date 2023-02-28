@@ -4,12 +4,11 @@ use crate::constants::{
     ECIES_IV_LENGTH, ECIES_MAC_LENGTH, ECIES_META_LENGTH, ECIES_UNCOMPRESSED_PK_LENGTH,
 };
 use crate::error::ECCryptoError;
+use crate::hash::{hmac_sha256, sha512};
 use crate::utils::random_bytes;
 use elliptic_curve::sec1::{FromEncodedPoint, ToEncodedPoint};
-use hmac::{Hmac, Mac};
 use k256::{AffinePoint, EncodedPoint, PublicKey, SecretKey};
 use rand_core::OsRng;
-use sha2::{Digest, Sha256, Sha512};
 use std::cmp::min;
 
 #[derive(Debug)]
@@ -93,23 +92,10 @@ fn decrypt_derive_shared_secret(pk_a: &[u8], sk_b: &[u8]) -> Vec<u8> {
     shared_bytes.to_vec()
 }
 
-pub fn sha512_hash(msg: &[u8]) -> Vec<u8> {
-    let mut hasher = Sha512::new();
-    hasher.update(msg);
-    hasher.finalize().to_vec()
-}
-
-pub fn hmac_sha256(key: &[u8], msg: &[u8]) -> Vec<u8> {
-    type HmacSha256 = Hmac<Sha256>;
-    let mut hmac = HmacSha256::new_from_slice(key).unwrap();
-    hmac.update(msg);
-    hmac.finalize().into_bytes().to_vec()
-}
-
-pub fn encrypt(public_key_bytes: &[u8], plain_data: &[u8]) -> Vec<u8> {
+pub fn encrypt(public_key_bytes: &[u8], plain_data: &[u8]) -> Result<Vec<u8>, ECCryptoError> {
     let (ephemeral_public_key, shared_bytes) = encrypt_derive_shared_secret(public_key_bytes);
 
-    let shared_hash = sha512_hash(shared_bytes.as_slice());
+    let shared_hash = sha512(shared_bytes.as_slice());
     let (encryption_key, mac_key) = shared_hash.split_at(32);
 
     let iv = random_bytes(16);
@@ -126,7 +112,7 @@ pub fn encrypt(public_key_bytes: &[u8], plain_data: &[u8]) -> Vec<u8> {
         cipher_text,
         mac,
     };
-    ec_data.to_vec()
+    Ok(ec_data.to_vec())
 }
 
 pub fn equal_const_time(b1: &Vec<u8>, b2: &Vec<u8>) -> bool {
@@ -142,21 +128,25 @@ pub fn equal_const_time(b1: &Vec<u8>, b2: &Vec<u8>) -> bool {
     res == 0
 }
 
-pub fn decrypt(secret_key_bytes: &[u8], cipher_data: &[u8]) -> Vec<u8> {
+pub fn decrypt(secret_key_bytes: &[u8], cipher_data: &[u8]) -> Result<Vec<u8>, ECCryptoError> {
     // todo check unwrap
     let ec_data = ECCryptoData::from_bytes(cipher_data).unwrap();
     let pk = uncompressed_public_key_to_compressed(ec_data.ephemeral_public_key.as_slice());
     let shared_bytes = decrypt_derive_shared_secret(pk.as_slice(), secret_key_bytes);
 
-    let shared_hash = sha512_hash(shared_bytes.as_slice());
+    let shared_hash = sha512(shared_bytes.as_slice());
     let (encryption_key, mac_key) = shared_hash.split_at(32);
     let mut data_to_mac = ec_data.iv.clone();
     data_to_mac.extend(ec_data.ephemeral_public_key.clone());
     data_to_mac.extend(ec_data.cipher_text.clone());
     let real_mac = hmac_sha256(mac_key, data_to_mac.as_slice());
     // todo change to result check
-    assert!(equal_const_time(&real_mac, &ec_data.mac));
-    aes_cbc::decrypt(&ec_data.iv, encryption_key, ec_data.cipher_text.as_slice())
+    if !equal_const_time(&real_mac, &ec_data.mac) {
+        return Err(ECCryptoError::ECCryptoMacMismatchError);
+    }
+
+    let enc = aes_cbc::decrypt(&ec_data.iv, encryption_key, ec_data.cipher_text.as_slice());
+    Ok(enc)
 }
 
 #[cfg(test)]
@@ -181,7 +171,8 @@ mod tests {
             0x68, 0x6A, 0x1C, 0xC4, 0x41, 0x3E, 0xCA, 0x2C, 0x0E, 0xDD, 0x34, 0x18, 0xAB, 0xE7,
             0x97, 0x67, 0x1B, 0x6A, 0x97,
         ];
-        let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &js_dec_data.to_vec());
+        let dec_text =
+            decrypt(sk.to_be_bytes().to_vec().as_slice(), &js_dec_data.to_vec()).unwrap();
         assert_eq!(text, dec_text.as_slice());
     }
 
@@ -192,8 +183,8 @@ mod tests {
         let pk = public_key_to_vec(&pk, true);
 
         let text = random_bytes(80);
-        let data = encrypt(pk.as_slice(), text.as_slice());
-        let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &data);
+        let data = encrypt(pk.as_slice(), text.as_slice()).unwrap();
+        let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &data).unwrap();
         assert_eq!(text, dec_text);
     }
 

@@ -1,38 +1,26 @@
 use crate::error::ZkpError;
+use crate::zkp::types::ZKProof;
 use crate::zkp::utils::create_file_reader;
 use zokrates_bellman::Bellman;
 use zokrates_common::helpers::*;
 use zokrates_field::{Bn128Field, Field};
-use zokrates_proof_systems::*;
+use zokrates_proof_systems::{Backend, Proof as ZksProof, Scheme, G16};
 
-pub fn verify_by_file(proof: String, verification_key_path_str: &str) -> Result<bool, ZkpError> {
+pub fn verify_by_file(proof: ZKProof, verification_key_path_str: &str) -> Result<bool, ZkpError> {
     let vk_reader = create_file_reader(verification_key_path_str)?;
     let vk = serde_json::from_reader(vk_reader)
         .map_err(|why| ZkpError::ParseError("verification key".to_string(), why.to_string()))?;
     do_verify(proof, vk)
 }
 
-pub fn verify(proof: String, verification_key: &[u8]) -> Result<bool, ZkpError> {
+pub fn verify(proof: ZKProof, verification_key: &[u8]) -> Result<bool, ZkpError> {
     let vk: serde_json::Value = serde_json::from_slice(verification_key)
         .map_err(|why| ZkpError::ParseError("verification key".to_string(), why.to_string()))?;
 
     do_verify(proof, vk)
 }
 
-fn do_verify(proof: String, vk: serde_json::Value) -> Result<bool, ZkpError> {
-    let proof_json: serde_json::Value = serde_json::from_str(proof.as_str())
-        .map_err(|why| ZkpError::ParseError("proof".to_string(), why.to_string()))?;
-
-    let proof_curve = proof_json
-        .get("curve")
-        .ok_or_else(|| ZkpError::ProofError("Field `curve` not found in proof".to_string()))?
-        .as_str()
-        .ok_or_else(|| ZkpError::ProofError("`curve` should be a string".to_string()))?;
-    let proof_scheme = proof_json
-        .get("scheme")
-        .ok_or_else(|| ZkpError::ProofError("Field `scheme` not found in proof".to_string()))?
-        .as_str()
-        .ok_or_else(|| ZkpError::ProofError("`scheme` should be a string".to_string()))?;
+fn do_verify(proof: ZKProof, vk: serde_json::Value) -> Result<bool, ZkpError> {
     let vk_curve = vk
         .get("curve")
         .ok_or_else(|| {
@@ -48,13 +36,13 @@ fn do_verify(proof: String, vk: serde_json::Value) -> Result<bool, ZkpError> {
         .as_str()
         .ok_or_else(|| ZkpError::VKError("`scheme` should be a string".to_string()))?;
 
-    if proof_curve != vk_curve {
+    if vk_curve != "bn128" {
         return Err(ZkpError::MismatchError(
             "curve of the proof and the verification mismatch".to_string(),
         ));
     }
 
-    if proof_scheme != vk_scheme {
+    if vk_scheme != "g16" {
         return Err(ZkpError::MismatchError(
             "scheme of the proof and the verification mismatch".to_string(),
         ));
@@ -69,9 +57,10 @@ fn do_verify(proof: String, vk: serde_json::Value) -> Result<bool, ZkpError> {
         Err(why) => return Err(ZkpError::MismatchError(why)),
     };
 
+    let zk_system_proof = proof.to_tagged_proof();
     match parameters {
         Parameters(BackendParameter::Bellman, CurveParameter::Bn128, SchemeParameter::G16) => {
-            call_verify::<Bn128Field, G16, Bellman>(vk, proof_json)
+            call_verify::<Bn128Field, G16, Bellman>(vk, zk_system_proof)
         }
         _ => Err(ZkpError::NotSupport),
     }
@@ -79,46 +68,27 @@ fn do_verify(proof: String, vk: serde_json::Value) -> Result<bool, ZkpError> {
 
 fn call_verify<T: Field, S: Scheme<T>, B: Backend<T, S>>(
     vk: serde_json::Value,
-    proof: serde_json::Value,
+    proof: ZksProof<T, S>,
 ) -> Result<bool, ZkpError> {
     let vk = serde_json::from_value(vk).map_err(|why| ZkpError::VKError(why.to_string()))?;
-    let proof: Proof<T, S> =
-        serde_json::from_value(proof).map_err(|why| ZkpError::ProofError(why.to_string()))?;
-
     Ok(B::verify(vk, proof))
 }
 
 #[cfg(test)]
 mod tests {
     use crate::error::ZkpError;
+    use crate::zkp::types::ZKProof;
     use crate::zkp::utils::create_file_reader;
     use crate::zkp::utils::load_file;
     use crate::zkp::verify::{verify, verify_by_file};
 
     #[test]
     fn test_verify_by_file() {
-        let proof =
-            create_file_reader("./src/zkp/tests/files/wrong/proof_missing_curve.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
-        let result = verify_by_file(proof.to_string(), "./src/zkp/tests/files/verification.key");
-        assert_eq!(
-            result.err().unwrap().name(),
-            ZkpError::ProofError(String::from(""))
-        );
-
-        let proof =
-            create_file_reader("./src/zkp/tests/files/wrong/proof_missing_scheme.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
-        let result = verify_by_file(proof.to_string(), "./src/zkp/tests/files/verification.key");
-        assert_eq!(
-            result.err().unwrap().name(),
-            ZkpError::ProofError(String::from(""))
-        );
-
         let proof = create_file_reader("./src/zkp/tests/files/proof.json").unwrap();
         let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
+        let proof = ZKProof::from_json_string(proof.to_string()).unwrap();
         let result = verify_by_file(
-            proof.to_string(),
+            proof.clone(),
             "./src/zkp/tests/files/wrong/verification_error.key",
         );
         assert_eq!(
@@ -126,10 +96,8 @@ mod tests {
             ZkpError::ParseError(String::from(""), String::from(""))
         );
 
-        let proof = create_file_reader("./src/zkp/tests/files/proof.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
         let result = verify_by_file(
-            proof.to_string(),
+            proof.clone(),
             "./src/zkp/tests/files/wrong/verification_missing_curve.key",
         );
         assert_eq!(
@@ -137,10 +105,8 @@ mod tests {
             ZkpError::VKError(String::from(""))
         );
 
-        let proof = create_file_reader("./src/zkp/tests/files/proof.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
         let result = verify_by_file(
-            proof.to_string(),
+            proof.clone(),
             "./src/zkp/tests/files/wrong/verification_missing_scheme.key",
         );
         assert_eq!(
@@ -148,10 +114,8 @@ mod tests {
             ZkpError::VKError(String::from(""))
         );
 
-        let proof = create_file_reader("./src/zkp/tests/files/proof.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
         let result = verify_by_file(
-            proof.to_string(),
+            proof.clone(),
             "./src/zkp/tests/files/wrong/verification_gm17.key",
         );
         assert_eq!(
@@ -159,44 +123,24 @@ mod tests {
             ZkpError::MismatchError(String::from(""))
         );
 
-        let proof = create_file_reader("./src/zkp/tests/files/proof.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
         let result = verify_by_file(
-            proof.to_string(),
+            proof.clone(),
             "./src/zkp/tests/files/wrong/verification_bls12_381.key",
         );
         assert_eq!(
             result.err().unwrap().name(),
             ZkpError::MismatchError(String::from(""))
         );
-
-        let proof = create_file_reader("./src/zkp/tests/files/wrong/proof_gm17.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
-        let result = verify_by_file(
-            proof.to_string(),
-            "./src/zkp/tests/files/wrong/verification_gm17.key",
-        );
-        assert_eq!(
-            result.err().unwrap().name(),
-            ZkpError::MismatchError(String::from(""))
-        );
-
-        let proof = create_file_reader("./src/zkp/tests/files/wrong/proof_bls12_381.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
-        let result = verify_by_file(
-            proof.to_string(),
-            "./src/zkp/tests/files/wrong/verification_bls12_381.key",
-        );
-        assert_eq!(result.err().unwrap().name(), ZkpError::NotSupport);
     }
 
     #[test]
     fn test_verify() {
         let proof = create_file_reader("./src/zkp/tests/files/proof.json").unwrap();
         let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
+        let proof = ZKProof::from_json_string(proof.to_string()).unwrap();
         let vk = load_file("./src/zkp/tests/files/wrong/verification_error.key").unwrap();
 
-        let result = verify(proof.to_string(), vk.as_slice());
+        let result = verify(proof, vk.as_slice());
         assert_eq!(
             result.err().unwrap().name(),
             ZkpError::ParseError(String::from(""), String::from(""))

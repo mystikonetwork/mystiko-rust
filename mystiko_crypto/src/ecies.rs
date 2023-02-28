@@ -1,6 +1,7 @@
-use crate::constants::FIELD_SIZE;
+use crate::constants::{ECIES_KEY_LENGTH, FIELD_SIZE};
+use crate::hash::poseidon_fr;
 use crate::utils::{
-    babyjubjub_unpack_point, calc_mod, fr_to_big_int, poseidon_hash, random_big_int,
+    babyjubjub_public_key, babyjubjub_unpack_point, calc_mod, fr_to_big_int, random_big_int,
 };
 use babyjubjub_rs::Point;
 use ff::*;
@@ -21,10 +22,8 @@ lazy_static! {
     };
 }
 
-const ECIES_KEY_LEN: usize = 32;
-
 pub fn generate_secret_key() -> BigInt {
-    random_big_int(ECIES_KEY_LEN, &FIELD_SIZE)
+    random_big_int(ECIES_KEY_LENGTH, &FIELD_SIZE)
 }
 
 pub fn public_key(secret_key: &BigInt) -> BigInt {
@@ -37,20 +36,24 @@ pub fn unpack_public_key(public_key: &BigInt) -> (BigInt, BigInt) {
     (fr_to_big_int(&point.x), fr_to_big_int(&point.y))
 }
 
-pub fn encrypt(plain: BigInt, pk: BigInt, common_sk: BigInt) -> BigInt {
-    let point_pk = babyjubjub_unpack_point(&pk);
-    let k = point_pk.mul_scalar(&common_sk);
-    let hm = poseidon_hash(vec![k.x, k.y]);
-
-    calc_mod(plain + hm, &FIELD_SIZE)
+pub fn public_key_from_unpack_point(x: &BigInt, y: &BigInt) -> BigInt {
+    babyjubjub_public_key(x, y)
 }
 
-pub fn decrypt(encrypted: BigInt, sk: BigInt, common_pk: BigInt) -> BigInt {
-    let point_pk = babyjubjub_unpack_point(&common_pk);
-    let k = point_pk.mul_scalar(&sk);
-    let hm = poseidon_hash(vec![k.x, k.y]);
+pub fn encrypt(plain: &BigInt, pk: &BigInt, common_sk: &BigInt) -> BigInt {
+    let point_pk = babyjubjub_unpack_point(pk);
+    let k = point_pk.mul_scalar(common_sk);
+    let hm = poseidon_fr(vec![k.x, k.y]);
 
-    calc_mod(encrypted - hm, &FIELD_SIZE)
+    calc_mod(plain.clone() + hm, &FIELD_SIZE)
+}
+
+pub fn decrypt(encrypted: &BigInt, sk: &BigInt, common_pk: &BigInt) -> BigInt {
+    let point_pk = babyjubjub_unpack_point(common_pk);
+    let k = point_pk.mul_scalar(sk);
+    let hm = poseidon_fr(vec![k.x, k.y]);
+
+    calc_mod(encrypted.clone() - hm, &FIELD_SIZE)
 }
 
 #[cfg(test)]
@@ -135,7 +138,9 @@ mod tests {
         for _ in 0..10 {
             let common_sk = generate_secret_key();
             let common_pk = public_key(&common_sk);
-            let (_, _) = unpack_public_key(&common_pk);
+            let (x, y) = unpack_public_key(&common_pk);
+            let pk = public_key_from_unpack_point(&x, &y);
+            assert_eq!(pk, common_pk);
         }
     }
 
@@ -148,8 +153,8 @@ mod tests {
         let message = FIELD_SIZE.clone();
         let message = message - BigInt::from(10u32);
 
-        let encrypted = encrypt(message.clone(), pk, common_sk);
-        let decrypted = decrypt(encrypted.clone(), sk, common_pk);
+        let encrypted = encrypt(&message, &pk, &common_sk);
+        let decrypted = decrypt(&encrypted, &sk, &common_pk);
         assert_eq!(message, decrypted);
     }
 }

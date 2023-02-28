@@ -16,6 +16,7 @@ num-traits = { version = "0.2.15" }
 # utils
 rand = { version = "0.8.5" }
 rand_core = { version = "0.6.4", features = ["getrandom" ] }
+serde = { version = "1.0.152" }
 serde_json = { version = "1.0", features = ["preserve_order"] }
 
 # error
@@ -34,10 +35,10 @@ k256 = { version = "0.12.0" }
 #hash
 poseidon-rs = { version = "0.0.8" }
 sha2 = { version = "0.10.6"}
-hmac= { version = "0.12.1"}
-md5= { version = "0.7.0"}
+hmac = { version = "0.12.1"}
+md5 = { version = "0.7.0"}
 
-#tools
+#web3
 ethers = { version = "1.0.2" }
 
 zokrates_common = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
@@ -48,4 +49,4 @@ zokrates_abi = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d900
 zokrates_proof_systems = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
 zokrates_bellman = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
 
-mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
+mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }

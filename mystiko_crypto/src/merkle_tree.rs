@@ -1,6 +1,6 @@
 use crate::constants::FIELD_SIZE;
 use crate::error::MerkleTreeError;
-use crate::utils::poseidon_hash;
+use crate::hash::poseidon_fr;
 use ethers::core::utils::keccak256;
 use ff::*;
 use num_bigint::{BigInt, Sign};
@@ -21,7 +21,7 @@ fn hash2(first: &BigInt, second: &BigInt) -> BigInt {
     let b2: Fr = Fr::from_str(&second.to_string()).unwrap();
     let arr: Vec<Fr> = vec![b1, b2];
 
-    poseidon_hash(arr)
+    poseidon_fr(arr)
 }
 
 fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {

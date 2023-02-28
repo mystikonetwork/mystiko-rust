@@ -2171,6 +2171,7 @@ name = "mystiko_abi"
 version = "0.1.0"
 dependencies = [
  "ethers",
+ "serde",
 ]
 
 [[package]]
@@ -2197,13 +2198,14 @@ dependencies = [
  "k256 0.12.0",
  "lazy_static",
  "md5",
- "mystiko_utils",
+ "mystiko_abi",
  "num-bigint 0.4.3",
  "num-integer",
  "num-traits 0.2.15",
  "poseidon-rs",
  "rand 0.8.5",
  "rand_core 0.6.4",
+ "serde",
  "serde_json",
  "sha2 0.10.6",
  "thiserror",
@@ -2222,11 +2224,14 @@ version = "0.1.0"
 dependencies = [
  "babyjubjub-rs",
  "bs58",
+ "ethers",
  "ff_ce 0.11.0",
  "k256 0.12.0",
  "lazy_static",
+ "mystiko_abi",
  "mystiko_crypto",
  "num-bigint 0.4.3",
+ "serde_json",
  "thiserror",
 ]
 

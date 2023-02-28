@@ -3,6 +3,7 @@ use num_bigint::BigInt;
 
 pub const KDF_MAGIC_DATA_LENGTH: usize = 8;
 pub const KDF_SALT_LENGTH: usize = 8;
+
 pub const ECIES_KEY_LENGTH: usize = 32;
 pub const ECIES_IV_LENGTH: usize = 16;
 pub const ECIES_UNCOMPRESSED_PK_LENGTH: usize = 65;

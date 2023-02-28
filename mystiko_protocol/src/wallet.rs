@@ -1,36 +1,35 @@
-use crate::constants::{ENC_PK_SIZE, ENC_SK_SIZE, VERIFY_PK_SIZE, VERIFY_SK_SIZE};
+use crate::types::{ENC_PK_SIZE, ENC_SK_SIZE, VERIFY_PK_SIZE, VERIFY_SK_SIZE};
 use babyjubjub_rs::PrivateKey;
 use bs58;
 use k256::SecretKey;
 // use elliptic_curve::SecretKey;
+use crate::utils::big_int_to_u256;
+use crate::utils::u256_to_fixed_bytes;
+use ethers::core::types::U256;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::eccrypto::public_key_to_vec;
-use mystiko_crypto::utils::{big_int_to_arr, fr_to_big_int};
+use mystiko_crypto::utils::fr_to_big_int;
 
-pub fn secret_key_for_verification(raw_secret_key: &[u8]) -> [u8; VERIFY_SK_SIZE] {
+pub fn secret_key_for_verification(raw_secret_key: &[u8]) -> U256 {
+    assert_eq!(raw_secret_key.len(), VERIFY_SK_SIZE);
     let pk = PrivateKey::import(raw_secret_key.to_vec()).unwrap();
     let sk = pk.scalar_key();
     assert!(sk < FIELD_SIZE.clone());
-    let vk = big_int_to_arr(&sk);
-    assert_eq!(vk.len(), VERIFY_SK_SIZE);
-    vk
+    big_int_to_u256(&sk)
 }
 
-pub fn public_key_for_verification(raw_secret_key: &[u8]) -> [u8; VERIFY_PK_SIZE] {
+pub fn public_key_for_verification(raw_secret_key: &[u8]) -> U256 {
+    assert_eq!(raw_secret_key.len(), VERIFY_SK_SIZE);
     let pk = PrivateKey::import(raw_secret_key.to_vec()).unwrap();
     let point = pk.public();
     let pk_x = fr_to_big_int(&point.x);
     assert!(pk_x < FIELD_SIZE.clone());
-    let vk = big_int_to_arr(&pk_x);
-    assert_eq!(vk.len(), VERIFY_PK_SIZE);
-    vk
+    big_int_to_u256(&pk_x)
 }
 
-pub fn secret_key_for_encryption(raw_secret_key: &[u8]) -> [u8; ENC_SK_SIZE] {
+pub fn secret_key_for_encryption(raw_secret_key: &[u8]) -> U256 {
     assert_eq!(raw_secret_key.len(), ENC_SK_SIZE);
-    let mut arr = [0; ENC_SK_SIZE];
-    arr[..ENC_SK_SIZE].copy_from_slice(&raw_secret_key[..ENC_SK_SIZE]);
-    arr
+    U256::from_little_endian(raw_secret_key)
 }
 
 pub fn public_key_for_encryption(raw_secret_key: &[u8]) -> [u8; ENC_PK_SIZE] {
@@ -46,34 +45,40 @@ pub fn public_key_for_encryption(raw_secret_key: &[u8]) -> [u8; ENC_PK_SIZE] {
 }
 
 pub fn full_public_key(
-    pk_verify: &[u8; VERIFY_PK_SIZE],
+    pk_verify: &U256,
     pk_enc: &[u8; ENC_PK_SIZE],
 ) -> [u8; VERIFY_PK_SIZE + ENC_PK_SIZE] {
+    let pk = u256_to_fixed_bytes(pk_verify);
     let mut combined = [0u8; VERIFY_PK_SIZE + ENC_PK_SIZE];
-    combined[..VERIFY_PK_SIZE].copy_from_slice(pk_verify);
+    combined[..VERIFY_PK_SIZE].copy_from_slice(&pk);
     combined[VERIFY_PK_SIZE..].copy_from_slice(pk_enc);
     combined
 }
 
-pub fn full_secret_key(
-    sk_verify: &[u8; VERIFY_SK_SIZE],
-    sk_enc: &[u8; ENC_SK_SIZE],
-) -> [u8; VERIFY_SK_SIZE + ENC_SK_SIZE] {
+pub fn full_secret_key(sk_verify: &U256, sk_enc: &U256) -> [u8; VERIFY_SK_SIZE + ENC_SK_SIZE] {
+    let sk_v = u256_to_fixed_bytes(sk_verify);
+    let sk_e = u256_to_fixed_bytes(sk_enc);
+
     let mut combined = [0u8; VERIFY_SK_SIZE + ENC_SK_SIZE];
-    combined[..VERIFY_SK_SIZE].copy_from_slice(sk_verify);
-    combined[VERIFY_SK_SIZE..].copy_from_slice(sk_enc);
+    combined[..VERIFY_SK_SIZE].copy_from_slice(&sk_v);
+    combined[VERIFY_SK_SIZE..].copy_from_slice(&sk_e);
     combined
 }
 
-pub fn separated_public_keys(long_pk: &[u8; VERIFY_PK_SIZE + ENC_PK_SIZE]) -> (&[u8], &[u8]) {
-    long_pk.split_at(VERIFY_PK_SIZE)
+pub fn separated_public_keys(long_pk: &[u8; VERIFY_PK_SIZE + ENC_PK_SIZE]) -> (U256, &[u8]) {
+    let (v_pk, e_pk) = long_pk.split_at(VERIFY_PK_SIZE);
+    (U256::from_little_endian(v_pk), e_pk)
 }
 
-pub fn separated_secret_keys(long_sk: &[u8; VERIFY_SK_SIZE + ENC_SK_SIZE]) -> (&[u8], &[u8]) {
-    long_sk.split_at(VERIFY_SK_SIZE)
+pub fn separated_secret_keys(long_sk: &[u8; VERIFY_SK_SIZE + ENC_SK_SIZE]) -> (U256, U256) {
+    let (v_sk, e_sk) = long_sk.split_at(VERIFY_SK_SIZE);
+    (
+        U256::from_little_endian(v_sk),
+        U256::from_little_endian(e_sk),
+    )
 }
 
-pub fn shielded_address(pk_verify: &[u8; VERIFY_PK_SIZE], pk_enc: &[u8; ENC_PK_SIZE]) -> String {
+pub fn shielded_address(pk_verify: &U256, pk_enc: &[u8; ENC_PK_SIZE]) -> String {
     bs58::encode(full_public_key(pk_verify, pk_enc)).into_string()
 }
 
@@ -84,7 +89,7 @@ pub fn is_shielded_address(addr: &str) -> bool {
     }
 }
 
-pub fn public_key_from_shielded_address(addr: String) -> ([u8; VERIFY_PK_SIZE], [u8; ENC_PK_SIZE]) {
+pub fn public_key_from_shielded_address(addr: String) -> (U256, [u8; ENC_PK_SIZE]) {
     assert!(is_shielded_address(&addr));
     let ck = bs58::decode(addr.as_str()).into_vec().unwrap();
     let ck = ck.as_slice();
@@ -92,7 +97,7 @@ pub fn public_key_from_shielded_address(addr: String) -> ([u8; VERIFY_PK_SIZE], 
     let mut ek = [0u8; ENC_PK_SIZE];
     vk.copy_from_slice(&ck[0..VERIFY_PK_SIZE]);
     ek.copy_from_slice(&ck[VERIFY_PK_SIZE..]);
-    (vk, ek)
+    (U256::from_little_endian(&vk[..]), ek)
 }
 
 #[cfg(test)]
@@ -112,6 +117,7 @@ mod tests {
         ];
 
         let vk = secret_key_for_verification(&raw_key);
+        let vk = u256_to_fixed_bytes(&vk);
         assert_eq!(vk, expect_vk);
     }
 
@@ -127,6 +133,7 @@ mod tests {
         ];
 
         let vk = public_key_for_verification(&raw_key);
+        let vk = u256_to_fixed_bytes(&vk);
         assert_eq!(vk, expect_sk);
     }
 
@@ -137,6 +144,7 @@ mod tests {
             0, 1, 2,
         ];
         let sk = secret_key_for_encryption(&raw_key);
+        let sk = u256_to_fixed_bytes(&sk);
         assert_eq!(sk, raw_key);
     }
 
@@ -171,10 +179,13 @@ mod tests {
             206, 205, 42, 100, 197, 116, 254, 254, 66, 44, 97, 16, 96, 1, 236, 88, 138, 241, 189,
             157, 117, 72, 184, 16, 100, 203,
         ];
-        let combine = full_public_key(&vk, &ek);
+
+        let vk_u256 = U256::from_little_endian(&vk);
+        let combine = full_public_key(&vk_u256, &ek);
         assert_eq!(combine, expect_combine);
 
         let (vk_s, ek_s) = separated_public_keys(&combine);
+        let vk_s = u256_to_fixed_bytes(&vk_s);
         assert_eq!(vk, vk_s);
         assert_eq!(ek, ek_s);
     }
@@ -196,10 +207,14 @@ mod tests {
             206, 205, 42, 100, 197, 116, 254, 254, 66, 44, 97, 16, 96, 1, 236, 88, 138, 241, 189,
             157, 117, 72, 184, 16, 0,
         ];
-        let combine = full_secret_key(&vk, &ek);
+        let vk_u256 = U256::from_little_endian(&vk);
+        let ek_u256 = U256::from_little_endian(&ek);
+        let combine = full_secret_key(&vk_u256, &ek_u256);
         assert_eq!(combine, expect_combine);
 
         let (vk_s, ek_s) = separated_secret_keys(&combine);
+        let vk_s = u256_to_fixed_bytes(&vk_s);
+        let ek_s = u256_to_fixed_bytes(&ek_s);
         assert_eq!(vk, vk_s);
         assert_eq!(ek, ek_s);
     }
@@ -215,7 +230,8 @@ mod tests {
             96, 1, 236, 88, 138, 241, 189, 157, 117, 72, 184, 16, 100, 203,
         ];
         let expect_address = String::from("13hMt2P6h8zp5t8Cxm5oAzTULg1boVEvzjaEPXmLtSBUmF4KKnaooWkBKBqZs9BYncvY6rA6TpCkAJ6cEXFEHWMHt");
-        let addr = shielded_address(&vk, &ek);
+        let vk_u256 = U256::from_little_endian(&vk);
+        let addr = shielded_address(&vk_u256, &ek);
         assert_eq!(addr, expect_address);
 
         assert!(is_shielded_address(&addr));
@@ -223,6 +239,7 @@ mod tests {
         assert!(!is_shielded_address(wrong_address));
 
         let (vk_f, ek_f) = public_key_from_shielded_address(addr);
+        let vk_f = u256_to_fixed_bytes(&vk_f);
         assert_eq!(vk, vk_f);
         assert_eq!(ek, ek_f);
     }

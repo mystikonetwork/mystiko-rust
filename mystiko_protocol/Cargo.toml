@@ -8,6 +8,9 @@ ff = {package="ff_ce" , version="0.11", features = ["derive"]}
 lazy_static = { version = "1.4.0" }
 num-bigint = { version = "0.4.3" }
 
+# utils
+serde_json = { version = "1.0", features = ["preserve_order"] }
+
 # Error
 thiserror = { version = "1.0.38" }
 
@@ -18,5 +21,10 @@ bs58 = { version = "0.4.0" }
 babyjubjub-rs = { version = "0.0.10" }
 k256 = { version = "0.12.0" }
 
+
+#web3
+ethers = { version = "1.0.2" }
+
 # mystiko
 mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
+mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }

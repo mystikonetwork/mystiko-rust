@@ -223,6 +223,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NothingReceived", abi = "NothingReceived()")]
     pub struct NothingReceived;
@@ -235,10 +237,20 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "TransferFailed", abi = "TransferFailed()")]
     pub struct TransferFailed;
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum IAxelarGasServiceErrors {
         NothingReceived(NothingReceived),
         TransferFailed(TransferFailed),
@@ -293,6 +305,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -317,6 +331,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -343,6 +359,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -366,6 +384,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -384,7 +404,15 @@ pub mod i_axelar_gas_service {
         pub gas_fee_amount: ethers::core::types::U256,
         pub refund_address: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum IAxelarGasServiceEvents {
         GasPaidForContractCallFilter(GasPaidForContractCallFilter),
         GasPaidForContractCallWithTokenFilter(GasPaidForContractCallWithTokenFilter),
@@ -443,6 +471,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "collectFees", abi = "collectFees(address,address[])")]
@@ -458,6 +488,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -481,6 +513,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -506,6 +540,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -527,6 +563,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -550,6 +588,8 @@ pub mod i_axelar_gas_service {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "refund", abi = "refund(address,address,uint256)")]
@@ -558,7 +598,15 @@ pub mod i_axelar_gas_service {
         pub token: ethers::core::types::Address,
         pub amount: ethers::core::types::U256,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum IAxelarGasServiceCalls {
         CollectFees(CollectFeesCall),
         PayGasForContractCall(PayGasForContractCallCall),

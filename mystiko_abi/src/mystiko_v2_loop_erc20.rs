@@ -244,6 +244,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AmountTooLarge", abi = "AmountTooLarge()")]
     pub struct AmountTooLarge;
@@ -256,6 +258,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AmountTooSmall", abi = "AmountTooSmall()")]
     pub struct AmountTooSmall;
@@ -268,6 +272,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "CommitmentHashIncorrect", abi = "CommitmentHashIncorrect()")]
     pub struct CommitmentHashIncorrect;
@@ -280,6 +286,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "DepositsDisabled", abi = "DepositsDisabled()")]
     pub struct DepositsDisabled;
@@ -292,6 +300,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "HashKGreaterThanFieldSize",
@@ -307,6 +317,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "MinAmountGreaterThanMaxAmount",
@@ -322,6 +334,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NotChanged", abi = "NotChanged()")]
     pub struct NotChanged;
@@ -334,6 +348,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
     pub struct OnlyOperator;
@@ -346,6 +362,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "RandomSGreaterThanFieldSize",
@@ -361,10 +379,20 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "SanctionedAddress", abi = "SanctionedAddress()")]
     pub struct SanctionedAddress;
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2LoopERC20Errors {
         AmountTooLarge(AmountTooLarge),
         AmountTooSmall(AmountTooSmall),
@@ -530,6 +558,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -547,6 +577,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "DepositsDisabled", abi = "DepositsDisabled(bool)")]
@@ -560,6 +592,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "OperatorChanged", abi = "OperatorChanged(address)")]
@@ -574,6 +608,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
@@ -587,13 +623,23 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
     pub struct SanctionsListFilter {
         pub sanctions: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2LoopERC20Events {
         DepositAmountLimitsFilter(DepositAmountLimitsFilter),
         DepositsDisabledFilter(DepositsDisabledFilter),
@@ -645,6 +691,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "assetDecimals", abi = "assetDecimals()")]
@@ -657,6 +705,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "assetName", abi = "assetName()")]
@@ -669,6 +719,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "assetSymbol", abi = "assetSymbol()")]
@@ -681,6 +733,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "assetType", abi = "assetType()")]
@@ -693,6 +747,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "bridgeType", abi = "bridgeType()")]
@@ -705,6 +761,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
@@ -719,6 +777,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -736,6 +796,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "disableSanctionsCheck", abi = "disableSanctionsCheck()")]
@@ -748,6 +810,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "enableSanctionsCheck", abi = "enableSanctionsCheck()")]
@@ -760,6 +824,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -775,6 +841,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMaxAmount", abi = "getMaxAmount()")]
@@ -787,6 +855,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMinAmount", abi = "getMinAmount()")]
@@ -799,6 +869,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isDepositsDisabled", abi = "isDepositsDisabled()")]
@@ -811,6 +883,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
@@ -823,6 +897,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
@@ -835,6 +911,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -852,6 +930,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setDepositsDisabled", abi = "setDepositsDisabled(bool)")]
@@ -866,6 +946,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -884,6 +966,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -893,7 +977,15 @@ pub mod mystiko_v2_loop_erc20 {
     pub struct UpdateSanctionsListAddressCall {
         pub sanction: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2LoopERC20Calls {
         AssetDecimals(AssetDecimalsCall),
         AssetName(AssetNameCall),
@@ -1182,6 +1274,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AssetDecimalsReturn(pub u8);
@@ -1193,6 +1287,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AssetNameReturn(pub String);
@@ -1204,6 +1300,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AssetSymbolReturn(pub String);
@@ -1215,6 +1313,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AssetTypeReturn(pub u8);
@@ -1226,6 +1326,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct BridgeTypeReturn(pub String);
@@ -1237,6 +1339,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetAssociatedCommitmentPoolReturn(pub ethers::core::types::Address);
@@ -1248,6 +1352,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMaxAmountReturn(pub ethers::core::types::U256);
@@ -1259,6 +1365,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMinAmountReturn(pub ethers::core::types::U256);
@@ -1270,6 +1378,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsDepositsDisabledReturn(pub bool);
@@ -1281,6 +1391,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct SanctionsCheckReturn(pub bool);
@@ -1292,6 +1404,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct SanctionsListReturn(pub ethers::core::types::Address);
@@ -1304,6 +1418,8 @@ pub mod mystiko_v2_loop_erc20 {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct DepositRequest {
         pub amount: ethers::core::types::U256,

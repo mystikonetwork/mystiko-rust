@@ -79,6 +79,8 @@ pub mod i_message_sender_app {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sendMessage", abi = "sendMessage(address,uint256,bytes)")]

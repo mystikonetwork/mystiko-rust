@@ -58,6 +58,8 @@ impl ZkpError {
 pub enum ECCryptoError {
     #[error("eccrypto data length error")]
     ECCryptoDataLengthError,
+    #[error("eccrypto mac mismatch error")]
+    ECCryptoMacMismatchError,
     #[error("internal error")]
     InternalError,
 }

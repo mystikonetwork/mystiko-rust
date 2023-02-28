@@ -115,6 +115,8 @@ pub mod i_layer_zero_user_application_config {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "forceResumeReceive", abi = "forceResumeReceive(uint16,bytes)")]
@@ -130,6 +132,8 @@ pub mod i_layer_zero_user_application_config {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setConfig", abi = "setConfig(uint16,uint16,uint256,bytes)")]
@@ -147,6 +151,8 @@ pub mod i_layer_zero_user_application_config {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setReceiveVersion", abi = "setReceiveVersion(uint16)")]
@@ -161,13 +167,23 @@ pub mod i_layer_zero_user_application_config {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setSendVersion", abi = "setSendVersion(uint16)")]
     pub struct SetSendVersionCall {
         pub version: u16,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum ILayerZeroUserApplicationConfigCalls {
         ForceResumeReceive(ForceResumeReceiveCall),
         SetConfig(SetConfigCall),
