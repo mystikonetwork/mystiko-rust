@@ -52,11 +52,11 @@ pub mod rollup {
             ethers::contract::Contract::new(address.into(), ROLLUP_ABI.clone(), client).into()
         }
         #[doc = "Gets the contract's `rollup` event"]
-        pub fn rollup_filter(&self) -> ethers::contract::builders::Event<M, RollupFilter> {
+        pub fn rollup_filter(&self) -> ethers::contract::builders::Event<M, RollupCall> {
             self.0.event()
         }
         #[doc = r" Returns an [`Event`](#ethers_contract::builders::Event) builder for all events of this contract"]
-        pub fn events(&self) -> ethers::contract::builders::Event<M, RollupFilter> {
+        pub fn events(&self) -> ethers::contract::builders::Event<M, RollupCall> {
             self.0.event_with_filter(Default::default())
         }
     }
@@ -80,7 +80,7 @@ pub mod rollup {
         name = "rollup",
         abi = "rollup(uint256,uint256,uint256,uint256,uint256[],uint256[])"
     )]
-    pub struct RollupFilter {
+    pub struct RollupCall {
         pub old_root: ethers::core::types::U256,
         pub new_root: ethers::core::types::U256,
         pub leaves_hash: ethers::core::types::U256,

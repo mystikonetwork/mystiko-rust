@@ -7,12 +7,15 @@ extern crate mystiko_abi;
 extern crate mystiko_crypto;
 extern crate num_bigint;
 extern crate serde_json;
+extern crate sha3;
 
 pub mod commitment;
 pub mod crypto;
 pub mod error;
 pub mod hash;
-pub mod transaction;
+pub mod rollup;
+pub mod transact;
 pub mod types;
 pub mod utils;
+pub mod verify;
 pub mod wallet;

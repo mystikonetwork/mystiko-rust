@@ -10,7 +10,7 @@ pub fn fr_to_big_int(fr: &Fr) -> BigInt {
     BigInt::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
 }
 
-fn big_int_to_le_fixed_bytes(num: &BigInt) -> [u8; 32] {
+fn big_int_to_fixed_bytes(num: &BigInt) -> [u8; 32] {
     let (_, y_bytes) = num.to_bytes_le();
     if y_bytes.len() >= 32 {
         y_bytes[..32].try_into().unwrap()
@@ -23,7 +23,7 @@ fn big_int_to_le_fixed_bytes(num: &BigInt) -> [u8; 32] {
 }
 
 pub fn babyjubjub_unpack_point(key: &BigInt) -> Point {
-    let arr = big_int_to_le_fixed_bytes(key);
+    let arr = big_int_to_fixed_bytes(key);
     decompress_point(arr).unwrap()
 }
 

@@ -201,6 +201,10 @@ impl MerkleTree {
         self.layers[0].clone()
     }
 
+    pub fn count(&self) -> usize {
+        self.layers[0].len()
+    }
+
     pub fn index_of(&self, element: &BigInt, comparator: Option<&CompareFn>) -> Option<usize> {
         match comparator {
             Some(cmp) => self.layers[0].iter().position(|el| cmp(element, el)),

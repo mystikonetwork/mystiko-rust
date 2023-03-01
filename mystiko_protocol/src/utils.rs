@@ -23,6 +23,12 @@ pub fn u256_to_fixed_bytes(u: &U256) -> [u8; 32] {
     arr
 }
 
+pub fn u256_to_big_endian_fixed_bytes(u: &U256) -> [u8; 32] {
+    let mut arr = [0u8; 32];
+    u.to_big_endian(&mut arr[..]);
+    arr
+}
+
 pub fn u128_to_fixed_bytes(u: &U128) -> [u8; 16] {
     let mut arr = [0u8; 16];
     u.to_little_endian(&mut arr[..]);

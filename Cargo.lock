@@ -2232,6 +2232,7 @@ dependencies = [
  "mystiko_crypto",
  "num-bigint 0.4.3",
  "serde_json",
+ "sha3",
  "thiserror",
 ]
 
