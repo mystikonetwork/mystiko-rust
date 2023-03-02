@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 extern crate async_trait;
 extern crate futures;
 extern crate num_traits;

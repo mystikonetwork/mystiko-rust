@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 use crate::document::{
     Document, DocumentData, DocumentSchema, DOCUMENT_CREATED_AT_FIELD, DOCUMENT_ID_FIELD,
     DOCUMENT_UPDATED_AT_FIELD,

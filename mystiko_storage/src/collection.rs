@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 use crate::document::{Document, DocumentData, DocumentSchema, DOCUMENT_ID_FIELD};
 use crate::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
 use crate::formatter::StatementFormatter;
