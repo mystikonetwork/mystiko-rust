@@ -1,6 +1,8 @@
-use std::collections::HashMap;
-use std::convert::From;
+#![forbid(unsafe_code)]
+use num_traits::{Float, PrimInt};
+use std::io::Error;
 use std::marker::{Send, Sync};
+use std::str::FromStr;
 
 pub struct DocumentSchema {
     pub collection_name: &'static str,
@@ -9,14 +11,21 @@ pub struct DocumentSchema {
 }
 
 impl DocumentSchema {
-    fn version(&self) -> usize {
+    pub fn version(&self) -> usize {
         self.migrations.len()
     }
 }
 
-pub trait DocumentData: From<HashMap<String, String>> + Clone + Send + Sync {
-    fn schema(&self) -> &'static DocumentSchema;
-    fn to_map(&self) -> HashMap<String, String>;
+pub trait DocumentRawData: Send + Sync {
+    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>, Error>;
+    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>, Error>;
+    fn field_string_value(&self, field: &str) -> Result<Option<String>, Error>;
+}
+
+pub trait DocumentData: Clone + Send + Sync {
+    fn schema() -> &'static DocumentSchema;
+    fn field_value_string(&self, field: &str) -> Option<String>;
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error>;
 }
 
 #[derive(Clone)]
@@ -32,84 +41,34 @@ pub const DOCUMENT_CREATED_AT_FIELD: &str = "created_at";
 pub const DOCUMENT_UPDATED_AT_FIELD: &str = "updated_at";
 
 impl<T: DocumentData> Document<T> {
-    fn schema(&self) -> &'static DocumentSchema {
-        self.data.schema()
+    pub fn field_value_string(&self, field: &str) -> Option<String> {
+        match field {
+            DOCUMENT_ID_FIELD => Some(self.id.clone()),
+            DOCUMENT_CREATED_AT_FIELD => Some(self.created_at.to_string()),
+            DOCUMENT_UPDATED_AT_FIELD => Some(self.updated_at.to_string()),
+            _ => self.data.field_value_string(field),
+        }
     }
-    fn to_map(&self) -> HashMap<String, String> {
-        let mut map: HashMap<String, String> = HashMap::new();
-        map.insert(DOCUMENT_ID_FIELD.to_string(), self.id.clone());
-        map.insert(
-            DOCUMENT_CREATED_AT_FIELD.to_string(),
-            self.created_at.to_string(),
-        );
-        map.insert(
-            DOCUMENT_UPDATED_AT_FIELD.to_string(),
-            self.updated_at.to_string(),
-        );
-        map.extend(self.data.to_map());
-        map
+    pub fn field_names() -> Vec<&'static str> {
+        let mut names = vec![
+            DOCUMENT_ID_FIELD,
+            DOCUMENT_CREATED_AT_FIELD,
+            DOCUMENT_UPDATED_AT_FIELD,
+        ];
+        names.extend(T::schema().field_names);
+        names
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_document_definition() {
-        static COLLECTION_NAME: &str = "books";
-        static MIGRATIONS: [&'static str; 1] = ["CREATE TABLE books"];
-        static FIELD_NAMES: [&'static str; 1] = ["title"];
-        static SCHEMA: DocumentSchema = DocumentSchema {
-            collection_name: COLLECTION_NAME,
-            migrations: &MIGRATIONS,
-            field_names: &FIELD_NAMES,
-        };
-        #[derive(Clone)]
-        struct Book {
-            title: String,
-        }
-        impl From<HashMap<String, String>> for Book {
-            fn from(value: HashMap<String, String>) -> Self {
-                Book {
-                    title: value.get("title").unwrap().clone(),
-                }
-            }
-        }
-        impl DocumentData for Book {
-            fn schema(&self) -> &'static DocumentSchema {
-                &SCHEMA
-            }
-            fn to_map(&self) -> HashMap<String, String> {
-                HashMap::from([("title".to_string(), self.title.clone())])
-            }
-        }
-        let book: Document<Book> = Document {
-            id: "id01".to_string(),
-            created_at: 0xdead,
-            updated_at: 0xbeef,
-            data: Book {
-                title: "test book".to_string(),
-            },
-        };
-        assert_eq!(book.id, "id01");
-        assert_eq!(book.created_at, 0xdead);
-        assert_eq!(book.updated_at, 0xbeef);
-        assert_eq!(book.data.title, "test book");
-        assert_eq!(book.schema().collection_name, COLLECTION_NAME);
-        assert_eq!(book.schema().migrations, MIGRATIONS);
-        assert_eq!(book.schema().field_names, FIELD_NAMES);
-        assert_eq!(book.schema().version(), 1);
-        assert_eq!(
-            book.to_map(),
-            HashMap::from([
-                (DOCUMENT_ID_FIELD.to_string(), "id01".to_string()),
-                (DOCUMENT_CREATED_AT_FIELD.to_string(), 0xdead.to_string()),
-                (DOCUMENT_UPDATED_AT_FIELD.to_string(), 0xbeef.to_string()),
-                ("title".to_string(), "test book".to_string())
-            ])
-        );
-        let book1 = Book::from(book.to_map());
-        assert_eq!(book1.title, book.data.title);
+    pub fn field_index(field: &str) -> Option<usize> {
+        Document::<T>::field_names()
+            .iter()
+            .position(|f| f.eq(&field))
+    }
+    pub fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+        Ok(Document {
+            id: raw.field_string_value(DOCUMENT_ID_FIELD)?.unwrap(),
+            created_at: raw.field_integer_value(DOCUMENT_CREATED_AT_FIELD)?.unwrap(),
+            updated_at: raw.field_integer_value(DOCUMENT_UPDATED_AT_FIELD)?.unwrap(),
+            data: T::deserialize(raw)?,
+        })
     }
 }

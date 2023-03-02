@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 async-trait = { version = "0.1.64" }
-lazy_static = { version = "1.4.0" }
+num-traits = { version = "0.2.15" }
 ulid = { version = "1.0.0" }
 
 [dev-dependencies]
