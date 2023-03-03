@@ -97,8 +97,8 @@ impl<'de> Deserialize<'de> for RawPoolContractConfig {
             #[serde(rename = "type")]
             contract_type: Option<ContractType>,
             start_block: u32,
-            even_filter_size: Option<u32>,
-            indexer_filter_size: Option<u32>,
+            even_filter_size: Option<u64>,
+            indexer_filter_size: Option<u64>,
             pool_name: String,
             bridge_type: BridgeType,
             asset_address: Option<String>,
@@ -152,11 +152,11 @@ impl RawContractConfigTrait for RawPoolContractConfig {
         &self.base.start_block
     }
 
-    fn event_filter_size(&self) -> &Option<u32> {
+    fn event_filter_size(&self) -> &Option<u64> {
         &self.base.event_filter_size
     }
 
-    fn indexer_filter_size(&self) -> &Option<u32> {
+    fn indexer_filter_size(&self) -> &Option<u64> {
         &self.base.indexer_filter_size
     }
 }

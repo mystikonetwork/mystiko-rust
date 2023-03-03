@@ -35,7 +35,7 @@ impl Validator for RawBridgeConfigType {
     }
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawMystikoConfig {
     #[serde(default)]

@@ -14,11 +14,11 @@ pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
 //TODO use EXPLORER_TX_PLACEHOLDER replace %tx%
 pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
 
-fn default_event_filter_size() -> u32 {
+fn default_event_filter_size() -> u64 {
     200000
 }
 
-fn default_indexer_filter_size() -> u32 {
+fn default_indexer_filter_size() -> u64 {
     500000
 }
 
@@ -62,11 +62,11 @@ pub struct RawChainConfig {
 
     #[validate(range(min = 1))]
     #[serde(default = "default_event_filter_size")]
-    pub event_filter_size: u32,
+    pub event_filter_size: u64,
 
     #[validate(range(min = 1))]
     #[serde(default = "default_indexer_filter_size")]
-    pub indexer_filter_size: u32,
+    pub indexer_filter_size: u64,
 
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
@@ -108,8 +108,8 @@ impl RawChainConfig {
         recommended_amounts: Vec<String>,
         explorer_url: String,
         explorer_prefix: String,
-        event_filter_size: u32,
-        indexer_filter_size: u32,
+        event_filter_size: u64,
+        indexer_filter_size: u64,
         providers: Vec<RawProviderConfig>,
         signer_endpoint: String,
         deposit_contracts: Vec<RawDepositContractConfig>,

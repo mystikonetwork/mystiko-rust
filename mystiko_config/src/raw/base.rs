@@ -11,7 +11,7 @@ pub trait Validator {
     fn validation(&self);
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, Default, PartialEq, Eq)]
+#[derive(Validate, Clone, Debug, Deserialize, Serialize, Default, PartialEq, Eq)]
 pub struct RawConfig;
 
 impl RawConfig {
@@ -46,5 +46,11 @@ impl RawConfig {
     {
         let object: T = from_str(json_str).unwrap();
         RawConfig::create_from_object::<T>(object).await
+    }
+}
+
+impl Validator for RawConfig {
+    fn validation(&self) {
+        self.validate_object(self)
     }
 }

@@ -137,11 +137,11 @@ impl<'de> Deserialize<'de> for RawDepositContractConfig {
             #[serde(rename = "type")]
             contract_type: Option<ContractType>,
             start_block: u32,
-            even_filter_size: Option<u32>,
-            indexer_filter_size: Option<u32>,
+            even_filter_size: Option<u64>,
+            indexer_filter_size: Option<u64>,
             bridge_type: BridgeType,
             pool_address: String,
-            disabled: bool,
+            disabled: Option<bool>,
             peer_chain_id: Option<u32>,
             peer_contract_address: Option<String>,
             min_amount: String,
@@ -158,6 +158,7 @@ impl<'de> Deserialize<'de> for RawDepositContractConfig {
         let base_contract_type = contract_type.clone();
         let service_fee = inner.service_fee.unwrap_or_else(|| 0);
         let service_fee_divider = inner.service_fee_divider.unwrap_or_else(|| 1000000);
+        let disabled = inner.disabled.unwrap_or_else(|| false);
         Ok(Self {
             base: RawContractConfig {
                 base: Default::default(),
@@ -172,7 +173,7 @@ impl<'de> Deserialize<'de> for RawDepositContractConfig {
             bridge_type: inner.bridge_type,
             contract_type,
             pool_address: inner.pool_address,
-            disabled: inner.disabled,
+            disabled,
             peer_chain_id: inner.peer_chain_id,
             peer_contract_address: inner.peer_contract_address,
             min_amount: inner.min_amount,
@@ -208,11 +209,11 @@ impl RawContractConfigTrait for RawDepositContractConfig {
         &self.base.start_block
     }
 
-    fn event_filter_size(&self) -> &Option<u32> {
+    fn event_filter_size(&self) -> &Option<u64> {
         &self.base.event_filter_size
     }
 
-    fn indexer_filter_size(&self) -> &Option<u32> {
+    fn indexer_filter_size(&self) -> &Option<u64> {
         &self.base.indexer_filter_size
     }
 }

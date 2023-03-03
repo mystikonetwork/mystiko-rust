@@ -8,7 +8,7 @@ pub trait RawBridgeConfigTrait: Validator {
     fn bridge_type(&self) -> &BridgeType;
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
 pub struct RawBridgeConfig {
     #[serde(default)]
     pub base: RawConfig,

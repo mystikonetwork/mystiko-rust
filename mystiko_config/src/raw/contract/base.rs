@@ -10,8 +10,8 @@ pub trait RawContractConfigTrait: Validator {
     fn address(&self) -> &str;
     fn contract_type(&self) -> &ContractType;
     fn start_block(&self) -> &u32;
-    fn event_filter_size(&self) -> &Option<u32>;
-    fn indexer_filter_size(&self) -> &Option<u32>;
+    fn event_filter_size(&self) -> &Option<u64>;
+    fn indexer_filter_size(&self) -> &Option<u64>;
 }
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -36,10 +36,10 @@ pub struct RawContractConfig {
     pub start_block: u32,
 
     #[validate(range(min = 1))]
-    pub event_filter_size: Option<u32>,
+    pub event_filter_size: Option<u64>,
 
     #[validate(range(min = 1))]
-    pub indexer_filter_size: Option<u32>,
+    pub indexer_filter_size: Option<u64>,
 }
 
 impl RawContractConfig {
@@ -49,8 +49,8 @@ impl RawContractConfig {
         address: String,
         contract_type: ContractType,
         start_block: u32,
-        event_filter_size: Option<u32>,
-        indexer_filter_size: Option<u32>,
+        event_filter_size: Option<u64>,
+        indexer_filter_size: Option<u64>,
     ) -> Self {
         Self {
             base: RawConfig::default(),
@@ -92,11 +92,11 @@ impl RawContractConfigTrait for RawContractConfig {
         &self.start_block
     }
 
-    fn event_filter_size(&self) -> &Option<u32> {
+    fn event_filter_size(&self) -> &Option<u64> {
         &self.event_filter_size
     }
 
-    fn indexer_filter_size(&self) -> &Option<u32> {
+    fn indexer_filter_size(&self) -> &Option<u64> {
         &self.indexer_filter_size
     }
 }

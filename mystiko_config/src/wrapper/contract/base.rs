@@ -40,11 +40,11 @@ impl<T, A> ContractConfig<T, A> where
         &self.base.data.start_block()
     }
 
-    pub fn event_filter_size(&self) -> &Option<u32> {
+    pub fn event_filter_size(&self) -> &Option<u64> {
         &self.base.data.event_filter_size()
     }
 
-    pub fn indexer_filter_size(&self) -> &Option<u32> {
+    pub fn indexer_filter_size(&self) -> &Option<u64> {
         &self.base.data.indexer_filter_size()
     }
 

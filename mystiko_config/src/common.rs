@@ -2,9 +2,10 @@ use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 use validator::{Validate, ValidationErrors};
 
-#[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum BridgeType {
+    #[default]
     Loop,
     Poly,
     Tbridge,

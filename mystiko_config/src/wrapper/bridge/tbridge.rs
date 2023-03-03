@@ -3,7 +3,7 @@ use crate::wrapper::bridge::base::BridgeConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TBridgeConfig {
-    base: BridgeConfig<RawTBridgeConfig>,
+    pub(crate) base: BridgeConfig<RawTBridgeConfig>,
 }
 
 impl TBridgeConfig {

@@ -16,7 +16,7 @@ fn validate_bridge_type(t: &BridgeType) -> Result<(), ValidationError> {
     Err(ValidationError::new("bridge type error"))
 }
 
-#[derive(Validate, Serialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Validate, Serialize, Debug, Clone, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RawTBridgeConfig {
     #[validate]

@@ -3,7 +3,7 @@ use crate::wrapper::bridge::base::BridgeConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AxelarBridgeConfig {
-    base: BridgeConfig<RawAxelarBridgeConfig>,
+    pub(crate) base: BridgeConfig<RawAxelarBridgeConfig>,
 }
 
 impl AxelarBridgeConfig {
