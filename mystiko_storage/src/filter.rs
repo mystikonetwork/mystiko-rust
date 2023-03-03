@@ -127,9 +127,9 @@ impl QueryFilter {
         }
         if let Some(limit) = self.limit {
             sqls.push(format!("LIMIT {}", limit));
-        }
-        if let Some(offset) = self.offset {
-            sqls.push(format!("OFFSET {}", offset));
+            if let Some(offset) = self.offset {
+                sqls.push(format!("OFFSET {}", offset));
+            }
         }
         sqls.join(" ")
     }

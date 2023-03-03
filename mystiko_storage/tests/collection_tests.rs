@@ -3,7 +3,7 @@ use mystiko_storage::collection::*;
 use mystiko_storage::document::{Document, DocumentData, DocumentRawData, DOCUMENT_ID_FIELD};
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::{SqlFormatter, StatementFormatter};
-use mystiko_storage::migration::MIGRATION_SCHEMA;
+use mystiko_storage::migration::{Migration, MIGRATION_SCHEMA};
 use mystiko_storage::storage::Storage;
 use mystiko_storage::testing::TestDocumentData;
 use num_traits::{Float, PrimInt};
@@ -306,9 +306,7 @@ fn test_find() {
     let d1 = block_on(collection.find::<TestDocumentData>(None)).unwrap();
     assert!(d1.is_empty());
     assert_eq!(
-        collection
-            .formatter()
-            .format_find(TestDocumentData::schema(), None),
+        collection.formatter().format_find::<TestDocumentData>(None),
         collection.storage().statements[0]
     );
     collection.mut_storage().expected_data = vec![
@@ -394,7 +392,7 @@ fn test_find_by_id() {
     assert_eq!(
         collection
             .formatter()
-            .format_find(TestDocumentData::schema(), Some(filter)),
+            .format_find::<TestDocumentData>(Some(filter)),
         collection.storage().statements[0]
     );
     collection.mut_storage().raise_error_on_query = true;
@@ -438,7 +436,7 @@ fn test_migrate_non_existing() {
     assert_eq!(
         collection
             .formatter()
-            .format_find(&MIGRATION_SCHEMA, Some(filter)),
+            .format_find::<Migration>(Some(filter)),
         collection.storage().statements[0]
     );
     assert_eq!(
@@ -479,7 +477,7 @@ fn test_migrate_existing() {
     assert_eq!(
         collection
             .formatter()
-            .format_find(&MIGRATION_SCHEMA, Some(filter)),
+            .format_find::<Migration>(Some(filter)),
         collection.storage().statements[0]
     );
     assert_eq!(
@@ -523,7 +521,7 @@ fn test_migrate_skipping() {
     assert_eq!(
         collection
             .formatter()
-            .format_find(&MIGRATION_SCHEMA, Some(filter)),
+            .format_find::<Migration>(Some(filter)),
         collection.storage().statements[0]
     );
 }

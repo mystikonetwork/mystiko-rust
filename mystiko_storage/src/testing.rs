@@ -17,7 +17,7 @@ pub static TEST_DOCUMENT_SCHEMA: DocumentSchema = DocumentSchema {
     field_names: &["field1", "field2", "field3"],
 };
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct TestDocumentData {
     pub field1: String,
     pub field2: u32,

@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
+
 use num_traits::{Float, PrimInt};
+use std::fmt::Debug;
 use std::io::Error;
 use std::marker::{Send, Sync};
 use std::str::FromStr;
@@ -22,13 +24,13 @@ pub trait DocumentRawData: Send + Sync {
     fn field_string_value(&self, field: &str) -> Result<Option<String>, Error>;
 }
 
-pub trait DocumentData: Clone + Send + Sync {
+pub trait DocumentData: Clone + PartialEq + Debug + Send + Sync {
     fn schema() -> &'static DocumentSchema;
     fn field_value_string(&self, field: &str) -> Option<String>;
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error>;
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Document<T: DocumentData> {
     pub id: String,
     pub created_at: u64,

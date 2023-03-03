@@ -57,7 +57,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         filter: Option<QueryFilter>,
     ) -> Result<Vec<Document<D>>, Error> {
         self.storage
-            .query(self.formatter.format_find(D::schema(), filter))
+            .query(self.formatter.format_find::<D>(filter))
             .await
     }
     pub async fn find_one<D: DocumentData>(
@@ -132,10 +132,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         }
     }
     pub async fn migrate(&mut self, schema: &DocumentSchema) -> Result<Document<Migration>, Error> {
-        let collection_exists = self
-            .storage
-            .collection_exists(MIGRATION_SCHEMA.collection_name)
-            .await?;
+        let collection_exists = self.collection_exists(schema).await?;
         let existing: Option<Document<Migration>> = if collection_exists {
             let query_filter = QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
@@ -194,6 +191,10 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         }
     }
 
+    pub async fn collection_exists(&mut self, schema: &DocumentSchema) -> Result<bool, Error> {
+        self.storage.collection_exists(schema.collection_name).await
+    }
+
     pub fn formatter(&self) -> &F {
         &self.formatter
     }
@@ -211,5 +212,5 @@ fn current_timestamp() -> u64 {
     SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
-        .as_secs()
+        .as_millis() as u64
 }

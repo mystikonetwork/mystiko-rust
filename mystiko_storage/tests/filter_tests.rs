@@ -97,7 +97,7 @@ fn test_query_filter() {
         .filter(Condition::FILTER(SubFilter::IsNull(String::from("c4"))))
         .offset(12)
         .build();
-    assert_eq!(qf5.to_sql(), "`c4` IS NULL OFFSET 12");
+    assert_eq!(qf5.to_sql(), "`c4` IS NULL");
     let qf6 = QueryFilterBuilder::new()
         .filter(Condition::AND(
             SubFilter::IsNull(String::from("c5")),

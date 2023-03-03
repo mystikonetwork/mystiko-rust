@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
 use crate::document::{
-    Document, DocumentData, DocumentSchema, DOCUMENT_CREATED_AT_FIELD, DOCUMENT_ID_FIELD,
-    DOCUMENT_UPDATED_AT_FIELD,
+    Document, DocumentData, DOCUMENT_CREATED_AT_FIELD, DOCUMENT_ID_FIELD, DOCUMENT_UPDATED_AT_FIELD,
 };
 use crate::filter::QueryFilter;
 
@@ -12,7 +11,12 @@ pub trait StatementFormatter: Send + Sync {
     fn format_update_batch<T: DocumentData>(&self, docs: &Vec<Document<T>>) -> String;
     fn format_delete<T: DocumentData>(&self, doc: &Document<T>) -> String;
     fn format_delete_batch<T: DocumentData>(&self, docs: &Vec<Document<T>>) -> String;
-    fn format_find(&self, schema: &DocumentSchema, filter_option: Option<QueryFilter>) -> String;
+    fn format_delete_by_filter<T: DocumentData>(
+        &self,
+        filter_option: Option<QueryFilter>,
+    ) -> String;
+    fn format_count<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
+    fn format_find<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
 }
 
 pub struct SqlFormatter {}
@@ -87,13 +91,64 @@ impl StatementFormatter for SqlFormatter {
         statements.join(";")
     }
 
-    fn format_find(&self, schema: &DocumentSchema, filter_option: Option<QueryFilter>) -> String {
+    fn format_delete_by_filter<T: DocumentData>(
+        &self,
+        filter_option: Option<QueryFilter>,
+    ) -> String {
+        match filter_option {
+            Some(filter) => {
+                let filter_sql = filter.to_sql();
+                if filter_sql.is_empty() {
+                    format!("DELETE FROM `{}`", T::schema().collection_name)
+                } else if filter.conditions.is_empty() {
+                    format!(
+                        "DELETE FROM `{}` {}",
+                        T::schema().collection_name,
+                        filter_sql
+                    )
+                } else {
+                    format!(
+                        "DELETE FROM `{}` WHERE {}",
+                        T::schema().collection_name,
+                        filter_sql
+                    )
+                }
+            }
+            None => format!("DELETE FROM `{}`", T::schema().collection_name),
+        }
+    }
+
+    fn format_count<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String {
+        match filter_option {
+            Some(filter) => {
+                let filter_sql = filter.to_sql();
+                if filter_sql.is_empty() {
+                    format!("SELECT COUNT(*) FROM `{}`", T::schema().collection_name)
+                } else if filter.conditions.is_empty() {
+                    format!(
+                        "SELECT COUNT(*) FROM `{}` {}",
+                        T::schema().collection_name,
+                        filter_sql
+                    )
+                } else {
+                    format!(
+                        "SELECT COUNT(*) FROM `{}` WHERE {}",
+                        T::schema().collection_name,
+                        filter_sql
+                    )
+                }
+            }
+            None => format!("SELECT COUNT(*) FROM `{}`", T::schema().collection_name),
+        }
+    }
+
+    fn format_find<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String {
         let mut basic_fields: Vec<String> = vec![
             format!("`{}`", DOCUMENT_ID_FIELD),
             format!("`{}`", DOCUMENT_CREATED_AT_FIELD),
             format!("`{}`", DOCUMENT_UPDATED_AT_FIELD),
         ];
-        let fields: Vec<String> = schema
+        let fields: Vec<String> = T::schema()
             .field_names
             .iter()
             .map(|f| format!("`{}`", f))
@@ -106,20 +161,20 @@ impl StatementFormatter for SqlFormatter {
                     format!(
                         "SELECT {} FROM `{}`",
                         basic_fields.join(", "),
-                        schema.collection_name
+                        T::schema().collection_name
                     )
                 } else if filter.conditions.is_empty() {
                     format!(
                         "SELECT {} FROM `{}` {}",
                         basic_fields.join(", "),
-                        schema.collection_name,
+                        T::schema().collection_name,
                         filter_sql
                     )
                 } else {
                     format!(
                         "SELECT {} FROM `{}` WHERE {}",
                         basic_fields.join(", "),
-                        schema.collection_name,
+                        T::schema().collection_name,
                         filter_sql
                     )
                 }
@@ -127,7 +182,7 @@ impl StatementFormatter for SqlFormatter {
             None => format!(
                 "SELECT {} FROM `{}`",
                 basic_fields.join(", "),
-                schema.collection_name
+                T::schema().collection_name
             ),
         }
     }

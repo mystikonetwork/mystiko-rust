@@ -16,7 +16,7 @@ pub static MIGRATION_SCHEMA: DocumentSchema = DocumentSchema {
     field_names: MIGRATION_FIELDS,
 };
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Migration {
     pub collection_name: String,
     pub version: usize,

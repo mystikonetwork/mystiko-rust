@@ -109,6 +109,8 @@ fn test_document_deserialize() {
     assert_eq!(doc2.data.field1, "field value");
     assert_eq!(doc2.data.field2, 0xbaad);
     assert_eq!(doc2.data.field3.unwrap(), std::f64::consts::PI);
+    assert_ne!(doc1, doc2);
+    assert_eq!(doc1, doc1.clone());
 }
 
 #[test]
