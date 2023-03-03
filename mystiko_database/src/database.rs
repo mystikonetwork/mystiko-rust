@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+use crate::collection::account::AccountCollection;
 use crate::collection::wallet::WalletCollection;
 use futures::lock::Mutex;
 use mystiko_storage::collection::Collection;
@@ -11,6 +12,7 @@ use std::io::Error;
 use std::sync::Arc;
 
 pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
+    pub accounts: AccountCollection<F, R, S>,
     pub wallets: WalletCollection<F, R, S>,
 }
 
@@ -18,12 +20,16 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
     pub fn new(formatter: F, storage: S) -> Self {
         let collection = Arc::new(Mutex::new(Collection::new(formatter, storage)));
         Database {
+            accounts: AccountCollection::new(collection.clone()),
             wallets: WalletCollection::new(collection),
         }
     }
 
     pub async fn migrate(&self) -> Result<Vec<Document<Migration>>, Error> {
-        let migrations: Vec<Document<Migration>> = vec![self.wallets.migrate().await?];
+        let migrations: Vec<Document<Migration>> = vec![
+            self.accounts.migrate().await?,
+            self.wallets.migrate().await?,
+        ];
         Ok(migrations)
     }
 }
