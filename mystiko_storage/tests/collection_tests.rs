@@ -43,7 +43,7 @@ impl DocumentRawData for TestDocumentRawData {
     }
 
     fn field_string_value(&self, field: &str) -> Result<Option<String>, Error> {
-        Ok(self.data.get(field).and_then(|v| Some(v.clone())))
+        Ok(self.data.get(field).map(|v| v.clone()))
     }
 }
 
@@ -546,7 +546,7 @@ fn test_migrate_skipping() {
             ),
             (
                 String::from("version"),
-                String::from(TestDocumentData::schema().version().to_string()),
+                TestDocumentData::schema().version().to_string(),
             ),
         ]),
     }];

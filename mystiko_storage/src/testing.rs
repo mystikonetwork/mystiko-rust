@@ -32,7 +32,7 @@ impl DocumentData for TestDocumentData {
         match field {
             "field1" => Some(self.field1.clone()),
             "field2" => Some(self.field2.to_string()),
-            "field3" => self.field3.and_then(|f| Some(f.to_string())),
+            "field3" => self.field3.map(|f| f.to_string()),
             _ => None,
         }
     }

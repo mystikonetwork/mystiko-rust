@@ -33,7 +33,7 @@ impl StatementFormatter for SqlFormatter {
             if value.is_some() {
                 values.push(format!("'{}'", value.unwrap()));
             } else {
-                values.push(format!("{}", "NULL"));
+                values.push("NULL".to_string());
             }
         }
         format!(

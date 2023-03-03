@@ -2,14 +2,14 @@
 use crate::document::{DocumentData, DocumentRawData, DocumentSchema};
 use std::io::Error;
 
-static MIGRATION_COLLECTION_NAME: &'static str = "__migrations__";
-static MIGRATION_SQL: &'static [&'static str; 1] = &["CREATE TABLE __migrations__ (\
+static MIGRATION_COLLECTION_NAME: &str = "__migrations__";
+static MIGRATION_SQL: &[&str; 1] = &["CREATE TABLE __migrations__ (\
     id VARCHAR(64) NOT NULL PRIMARY KEY,\
     created_at int NOT NULL,\
     updated_at int NOT NULL,\
     collection_name VARCHAR(255) NOT NULL UNIQUE, \
     version int NOT NULL)"];
-static MIGRATION_FIELDS: &'static [&'static str; 2] = &["collection_name", "version"];
+static MIGRATION_FIELDS: &[&str; 2] = &["collection_name", "version"];
 pub static MIGRATION_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: MIGRATION_COLLECTION_NAME,
     migrations: MIGRATION_SQL,
