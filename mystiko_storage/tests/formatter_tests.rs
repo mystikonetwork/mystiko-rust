@@ -222,7 +222,7 @@ fn test_sql_format_delete_by_filter() {
 }
 
 #[test]
-fn test_format_count() {
+fn test_sql_format_count() {
     let formatter = SqlFormatter {};
     assert_eq!(
         formatter.format_count::<TestDocumentData>(None),
