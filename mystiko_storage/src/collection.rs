@@ -1,20 +1,26 @@
 #![forbid(unsafe_code)]
-use crate::document::{Document, DocumentData, DocumentSchema, DOCUMENT_ID_FIELD};
+use crate::document::{Document, DocumentData, DocumentRawData, DocumentSchema, DOCUMENT_ID_FIELD};
 use crate::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
 use crate::formatter::StatementFormatter;
 use crate::migration::{Migration, MIGRATION_SCHEMA};
 use crate::storage::Storage;
 use std::io::Error;
+use std::marker::PhantomData;
 use std::time::SystemTime;
 
-pub struct Collection<F: StatementFormatter, S: Storage> {
+pub struct Collection<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     formatter: F,
     storage: S,
+    _phantom: PhantomData<R>,
 }
 
-impl<F: StatementFormatter, S: Storage> Collection<F, S> {
+impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, S> {
     pub fn new(formatter: F, storage: S) -> Self {
-        Collection { formatter, storage }
+        Collection {
+            formatter,
+            storage,
+            _phantom: Default::default(),
+        }
     }
     pub async fn insert<D: DocumentData>(&mut self, data: &D) -> Result<Document<D>, Error> {
         let now = current_timestamp();
@@ -56,9 +62,15 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         &mut self,
         filter: Option<QueryFilter>,
     ) -> Result<Vec<Document<D>>, Error> {
-        self.storage
+        let raw_documents = self
+            .storage
             .query(self.formatter.format_find::<D>(filter))
-            .await
+            .await?;
+        let mut documents: Vec<Document<D>> = Vec::new();
+        for raw_document in raw_documents.iter() {
+            documents.push(Document::<D>::deserialize(raw_document)?);
+        }
+        Ok(documents)
     }
     pub async fn find_one<D: DocumentData>(
         &mut self,
@@ -114,6 +126,22 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
             Ok(documents_new)
         }
     }
+    pub async fn count<D: DocumentData>(
+        &mut self,
+        filter: Option<QueryFilter>,
+    ) -> Result<u64, Error> {
+        let counts = self
+            .storage
+            .query(self.formatter.format_count::<D>(filter))
+            .await?;
+        if counts.is_empty() {
+            Ok(0)
+        } else {
+            Ok(counts[0]
+                .field_integer_value::<u64>("COUNT(*)")?
+                .unwrap_or(0))
+        }
+    }
     pub async fn delete<D: DocumentData>(&mut self, document: &Document<D>) -> Result<(), Error> {
         self.storage
             .execute(self.formatter.format_delete(document))
@@ -130,6 +158,14 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                 .execute(self.formatter.format_delete_batch(documents))
                 .await
         }
+    }
+    pub async fn delete_by_filter<D: DocumentData>(
+        &mut self,
+        filter: Option<QueryFilter>,
+    ) -> Result<(), Error> {
+        self.storage
+            .execute(self.formatter.format_delete_by_filter::<D>(filter))
+            .await
     }
     pub async fn migrate(&mut self, schema: &DocumentSchema) -> Result<Document<Migration>, Error> {
         let collection_exists = self.collection_exists(schema).await?;

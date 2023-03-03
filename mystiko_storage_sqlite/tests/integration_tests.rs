@@ -1,7 +1,7 @@
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::DocumentData;
 use mystiko_storage::filter::SubFilter::IsNull;
-use mystiko_storage::filter::{Condition, Order, QueryFilterBuilder};
+use mystiko_storage::filter::{Condition, Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_storage::testing::TestDocumentData;
@@ -76,14 +76,33 @@ fn test_delete() {
     let mut collection = Collection::new(SqlFormatter {}, storage);
     block_on(collection.migrate(TestDocumentData::schema())).unwrap();
     let d1 = block_on(collection.insert(&TestDocumentData {
-        field1: String::from("field1 value"),
+        field1: String::from("field1 value1"),
         field2: 0xdeadbeef,
         field3: Some(std::f64::consts::PI),
     }))
     .unwrap();
+    let d2 = block_on(collection.insert(&TestDocumentData {
+        field1: String::from("field1 value2"),
+        field2: 0xbaadbabe,
+        field3: None,
+    }))
+    .unwrap();
     block_on(collection.delete(&d1)).unwrap();
-    let d2 = block_on(collection.find_by_id::<TestDocumentData>(&d1.id)).unwrap();
-    assert!(d2.is_none());
+    let d3 = block_on(collection.find_by_id::<TestDocumentData>(&d1.id)).unwrap();
+    assert!(d3.is_none());
+    block_on(
+        collection.delete_by_filter::<TestDocumentData>(Some(
+            QueryFilterBuilder::new()
+                .filter(Condition::FILTER(SubFilter::Equal(
+                    String::from("field1"),
+                    String::from("field1 value2"),
+                )))
+                .build(),
+        )),
+    )
+    .unwrap();
+    let d4 = block_on(collection.find_by_id::<TestDocumentData>(&d2.id)).unwrap();
+    assert!(d4.is_none());
 }
 
 #[test]
@@ -109,6 +128,10 @@ fn test_find() {
         },
     ]))
     .unwrap();
+    assert_eq!(
+        block_on(collection.count::<TestDocumentData>(None)).unwrap(),
+        3
+    );
     let d1 = block_on(collection.find::<TestDocumentData>(None)).unwrap();
     assert_eq!(d1.len(), docs.len());
     for (i, doc) in d1.iter().enumerate() {
@@ -117,6 +140,10 @@ fn test_find() {
     let filter1 = QueryFilterBuilder::new()
         .filter(Condition::FILTER(IsNull(String::from("field3"))))
         .build();
+    assert_eq!(
+        block_on(collection.count::<TestDocumentData>(Some(filter1.clone()))).unwrap(),
+        1
+    );
     let d2 = block_on(collection.find::<TestDocumentData>(Some(filter1))).unwrap();
     assert_eq!(d2.len(), 1);
     assert_eq!(d2[0].id, docs[1].id);

@@ -13,7 +13,7 @@ use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 use std::sync::Arc;
 
-use mystiko_storage::document::{Document, DocumentData, DocumentRawData};
+use mystiko_storage::document::DocumentRawData;
 use mystiko_storage::storage::Storage;
 
 pub struct SqliteRawData {
@@ -59,7 +59,7 @@ impl DocumentRawData for SqliteRawData {
 }
 
 #[async_trait]
-impl Storage for SqliteStorage {
+impl Storage<SqliteRawData> for SqliteStorage {
     async fn execute(&mut self, statement: String) -> Result<(), Error> {
         let mut connection = self.connection.lock().await;
         let result = connection.execute(sqlx::query(&statement)).await;
@@ -72,20 +72,16 @@ impl Storage for SqliteStorage {
         }
     }
 
-    async fn query<T: DocumentData>(
-        &mut self,
-        statement: String,
-    ) -> Result<Vec<Document<T>>, Error> {
+    async fn query(&mut self, statement: String) -> Result<Vec<SqliteRawData>, Error> {
         let mut connection = self.connection.lock().await;
         let results = connection.fetch_all(sqlx::query(&statement)).await;
         match results {
             Ok(mut rows) => {
-                let mut documents: Vec<Document<T>> = Vec::new();
+                let mut documents: Vec<SqliteRawData> = Vec::new();
                 while !rows.is_empty() {
-                    let document = Document::<T>::deserialize(&SqliteRawData {
+                    documents.push(SqliteRawData {
                         row: rows.remove(0),
-                    })?;
-                    documents.push(document);
+                    });
                 }
                 Ok(documents)
             }

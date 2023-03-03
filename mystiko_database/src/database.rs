@@ -3,18 +3,18 @@
 use crate::collection::wallet::WalletCollection;
 use futures::lock::Mutex;
 use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
+use mystiko_storage::document::{Document, DocumentRawData};
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
 use std::io::Error;
 use std::sync::Arc;
 
-pub struct Database<F: StatementFormatter, S: Storage> {
-    pub wallets: WalletCollection<F, S>,
+pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
+    pub wallets: WalletCollection<F, R, S>,
 }
 
-impl<F: StatementFormatter, S: Storage> Database<F, S> {
+impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S> {
     pub fn new(formatter: F, storage: S) -> Self {
         let collection = Arc::new(Mutex::new(Collection::new(formatter, storage)));
         Database {

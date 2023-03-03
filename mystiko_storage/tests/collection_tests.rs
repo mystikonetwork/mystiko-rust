@@ -70,7 +70,7 @@ impl TestStorage {
 }
 
 #[async_trait]
-impl Storage for TestStorage {
+impl Storage<TestDocumentRawData> for TestStorage {
     async fn execute(&mut self, statement: String) -> Result<(), Error> {
         self.statements.push(statement);
         if self.raise_error_on_execute {
@@ -80,20 +80,12 @@ impl Storage for TestStorage {
         }
     }
 
-    async fn query<D: DocumentData>(
-        &mut self,
-        statement: String,
-    ) -> Result<Vec<Document<D>>, Error> {
+    async fn query(&mut self, statement: String) -> Result<Vec<TestDocumentRawData>, Error> {
         self.statements.push(statement);
         if self.raise_error_on_query {
             Err(Error::new(ErrorKind::Other, "expected error"))
         } else {
-            let results: Vec<Document<D>> = self
-                .expected_data
-                .iter()
-                .map(|r| Document::deserialize(r).unwrap())
-                .collect();
-            Ok(results)
+            Ok(self.expected_data.clone())
         }
     }
 
@@ -108,7 +100,7 @@ impl Storage for TestStorage {
 
 #[test]
 fn test_insert() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     let doc = block_on(collection.insert(&TestDocumentData {
         field1: String::from("field value"),
@@ -137,7 +129,7 @@ fn test_insert() {
 
 #[test]
 fn test_insert_batch() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     let d1 = block_on(collection.insert_batch::<TestDocumentData>(&vec![])).unwrap();
     assert!(d1.is_empty());
@@ -174,7 +166,7 @@ fn test_insert_batch() {
 
 #[test]
 fn test_update() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     let doc = block_on(collection.update::<TestDocumentData>(&Document {
         id: String::from("1000"),
@@ -200,7 +192,7 @@ fn test_update() {
 
 #[test]
 fn test_update_batch() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     let d1 = block_on(collection.update_batch::<TestDocumentData>(&vec![])).unwrap();
     assert!(d1.is_empty());
@@ -240,7 +232,7 @@ fn test_update_batch() {
 
 #[test]
 fn test_delete() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     let doc = Document {
         id: String::from("1000"),
@@ -264,7 +256,7 @@ fn test_delete() {
 
 #[test]
 fn test_delete_batch() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     block_on(collection.delete_batch::<TestDocumentData>(&vec![])).unwrap();
     let documents = vec![
@@ -300,8 +292,36 @@ fn test_delete_batch() {
 }
 
 #[test]
+fn test_delete_by_filter() {
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
+        Collection::new(SqlFormatter {}, TestStorage::new());
+    block_on(collection.delete_by_filter::<TestDocumentData>(None)).unwrap();
+    assert_eq!(
+        collection
+            .formatter()
+            .format_delete_by_filter::<TestDocumentData>(None),
+        collection.storage().statements[0],
+    );
+    let filter = QueryFilterBuilder::new()
+        .filter(Condition::FILTER(SubFilter::Equal(
+            String::from(DOCUMENT_ID_FIELD),
+            String::from("1000"),
+        )))
+        .build();
+    block_on(collection.delete_by_filter::<TestDocumentData>(Some(filter.clone()))).unwrap();
+    assert_eq!(
+        collection
+            .formatter()
+            .format_delete_by_filter::<TestDocumentData>(Some(filter.clone())),
+        collection.storage().statements[1],
+    );
+    collection.mut_storage().raise_error_on_execute = true;
+    assert!(block_on(collection.delete_by_filter::<TestDocumentData>(Some(filter))).is_err());
+}
+
+#[test]
 fn test_find() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     let d1 = block_on(collection.find::<TestDocumentData>(None)).unwrap();
     assert!(d1.is_empty());
@@ -351,7 +371,7 @@ fn test_find() {
 
 #[test]
 fn test_find_one() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     let d1 = block_on(collection.find_one::<TestDocumentData>(None)).unwrap();
     assert!(d1.is_none());
@@ -379,7 +399,7 @@ fn test_find_one() {
 
 #[test]
 fn test_find_by_id() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     let d1 = block_on(collection.find_by_id::<TestDocumentData>("1000")).unwrap();
     assert!(d1.is_none());
@@ -402,7 +422,7 @@ fn test_find_by_id() {
 
 #[test]
 fn test_migrate_initialization() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     collection.mut_storage().raise_error_on_collection_exists = true;
     assert!(block_on(collection.migrate(TestDocumentData::schema())).is_err());
@@ -422,8 +442,32 @@ fn test_migrate_initialization() {
 }
 
 #[test]
+fn test_count() {
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
+        Collection::new(SqlFormatter {}, TestStorage::new());
+    let mut count = block_on(collection.count::<TestDocumentData>(None)).unwrap();
+    assert_eq!(count, 0);
+    collection.mut_storage().expected_data = vec![
+        TestDocumentRawData {
+            data: HashMap::from([
+                (String::from("COUNT(*)"), 123.to_string()),
+            ]),
+        }
+    ];
+    count = block_on(collection.count::<TestDocumentData>(None)).unwrap();
+    assert_eq!(count, 123);
+    collection.mut_storage().expected_data = vec![
+        TestDocumentRawData { data: HashMap::from([]) }
+    ];
+    count = block_on(collection.count::<TestDocumentData>(None)).unwrap();
+    assert_eq!(count, 0);
+    collection.mut_storage().raise_error_on_query = true;
+    assert!(block_on(collection.count::<TestDocumentData>(None)).is_err());
+}
+
+#[test]
 fn test_migrate_non_existing() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     collection.mut_storage().collection_exists = true;
     let migration = block_on(collection.migrate(TestDocumentData::schema())).unwrap();
@@ -451,7 +495,7 @@ fn test_migrate_non_existing() {
 
 #[test]
 fn test_migrate_existing() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     collection.mut_storage().collection_exists = true;
     collection.mut_storage().expected_data = vec![TestDocumentRawData {
@@ -492,7 +536,7 @@ fn test_migrate_existing() {
 
 #[test]
 fn test_migrate_skipping() {
-    let mut collection: Collection<SqlFormatter, TestStorage> =
+    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     collection.mut_storage().collection_exists = true;
     collection.mut_storage().expected_data = vec![TestDocumentRawData {

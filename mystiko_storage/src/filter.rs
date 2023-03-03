@@ -1,4 +1,6 @@
 #![forbid(unsafe_code)]
+
+#[derive(Clone)]
 pub enum SubFilter {
     IsNull(String),
     IsNotNull(String),
@@ -12,22 +14,26 @@ pub enum SubFilter {
     IN(String, Vec<String>),
 }
 
+#[derive(Clone)]
 pub enum Condition {
     FILTER(SubFilter),
     AND(SubFilter, SubFilter),
     OR(SubFilter, SubFilter),
 }
 
+#[derive(Clone)]
 pub enum Order {
     ASC,
     DESC,
 }
 
+#[derive(Clone)]
 pub struct OrderBy {
     pub columns: Vec<String>,
     pub order: Order,
 }
 
+#[derive(Clone)]
 pub struct QueryFilter {
     pub conditions: Vec<Condition>,
     pub limit: Option<u64>,
