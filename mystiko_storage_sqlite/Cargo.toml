@@ -1,0 +1,15 @@
+[package]
+name = "mystiko_storage_sqlite"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = { version = "0.1.64" }
+futures = { version = "0.3.26" }
+num-traits = { version = "0.2.15" }
+sqlx = { version = "0.6.2", features = [ "runtime-tokio-native-tls", "sqlite" ] }
+mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+
+[dev-dependencies]
+tokio-test = { version = "0.4.2" }
+tempfile = { version = "3.4.0" }

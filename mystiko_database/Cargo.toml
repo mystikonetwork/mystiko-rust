@@ -1,0 +1,12 @@
+[package]
+name = "mystiko_database"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+futures = { version = "0.3.26" }
+mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+
+[dev-dependencies]
+tokio-test = { version = "0.4.2" }
+mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
