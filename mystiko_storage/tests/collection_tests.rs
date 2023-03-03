@@ -20,7 +20,7 @@ struct TestDocumentRawData {
 impl DocumentRawData for TestDocumentRawData {
     fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>, Error> {
         let value = self.data.get(field);
-        if value.is_some() {
+        if let Some(..) = value {
             match value.unwrap().parse() {
                 Ok(parsed) => Ok(Some(parsed)),
                 Err(_) => Err(Error::new(ErrorKind::Other, "parsed error")),
@@ -32,7 +32,7 @@ impl DocumentRawData for TestDocumentRawData {
 
     fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>, Error> {
         let value = self.data.get(field);
-        if value.is_some() {
+        if let Some(..) = value {
             match value.unwrap().parse() {
                 Ok(parsed) => Ok(Some(parsed)),
                 Err(_) => Err(Error::new(ErrorKind::Other, "parsed error")),
@@ -43,7 +43,7 @@ impl DocumentRawData for TestDocumentRawData {
     }
 
     fn field_string_value(&self, field: &str) -> Result<Option<String>, Error> {
-        Ok(self.data.get(field).map(|v| v.clone()))
+        Ok(self.data.get(field).cloned())
     }
 }
 

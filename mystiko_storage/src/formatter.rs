@@ -6,11 +6,11 @@ use crate::filter::QueryFilter;
 
 pub trait StatementFormatter: Send + Sync {
     fn format_insert<T: DocumentData>(&self, doc: &Document<T>) -> String;
-    fn format_insert_batch<T: DocumentData>(&self, docs: &Vec<Document<T>>) -> String;
+    fn format_insert_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String;
     fn format_update<T: DocumentData>(&self, doc: &Document<T>) -> String;
-    fn format_update_batch<T: DocumentData>(&self, docs: &Vec<Document<T>>) -> String;
+    fn format_update_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String;
     fn format_delete<T: DocumentData>(&self, doc: &Document<T>) -> String;
-    fn format_delete_batch<T: DocumentData>(&self, docs: &Vec<Document<T>>) -> String;
+    fn format_delete_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String;
     fn format_delete_by_filter<T: DocumentData>(
         &self,
         filter_option: Option<QueryFilter>,
@@ -44,7 +44,7 @@ impl StatementFormatter for SqlFormatter {
         )
     }
 
-    fn format_insert_batch<T: DocumentData>(&self, docs: &Vec<Document<T>>) -> String {
+    fn format_insert_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String {
         let statements: Vec<String> = docs.iter().map(|d| self.format_insert(d)).collect();
         statements.join(";")
     }
@@ -72,7 +72,7 @@ impl StatementFormatter for SqlFormatter {
         )
     }
 
-    fn format_update_batch<T: DocumentData>(&self, docs: &Vec<Document<T>>) -> String {
+    fn format_update_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String {
         let statements: Vec<String> = docs.iter().map(|d| self.format_update(d)).collect();
         statements.join(";")
     }
@@ -86,7 +86,7 @@ impl StatementFormatter for SqlFormatter {
         )
     }
 
-    fn format_delete_batch<T: DocumentData>(&self, docs: &Vec<Document<T>>) -> String {
+    fn format_delete_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String {
         let statements: Vec<String> = docs.iter().map(|d| self.format_delete(d)).collect();
         statements.join(";")
     }

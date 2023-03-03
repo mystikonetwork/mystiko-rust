@@ -112,11 +112,12 @@ impl Storage<SqliteRawData> for SqliteStorage {
     }
 }
 
+#[derive(Default)]
 pub struct SqliteStorageBuilder {
     path: String,
 }
 
-static SQLITE_MEMORY_PATH: &'static str = ":memory:";
+static SQLITE_MEMORY_PATH: &str = ":memory:";
 
 impl SqliteStorageBuilder {
     pub fn new() -> SqliteStorageBuilder {

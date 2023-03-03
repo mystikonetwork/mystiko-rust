@@ -41,6 +41,7 @@ pub struct QueryFilter {
     pub order_by: Option<OrderBy>,
 }
 
+#[derive(Default)]
 pub struct QueryFilterBuilder {
     conditions: Vec<Condition>,
     limit: Option<u64>,
