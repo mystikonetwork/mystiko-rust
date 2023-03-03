@@ -8,5 +8,6 @@ fn test_database_migration() {
     let storage = block_on(SqliteStorageBuilder::new().build()).unwrap();
     let database = Database::new(SqlFormatter {}, storage);
     block_on(database.migrate()).unwrap();
+    assert!(block_on(database.accounts.collection_exists()).unwrap());
     assert!(block_on(database.wallets.collection_exists()).unwrap());
 }

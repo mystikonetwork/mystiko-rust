@@ -168,7 +168,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             .await
     }
     pub async fn migrate(&mut self, schema: &DocumentSchema) -> Result<Document<Migration>, Error> {
-        let collection_exists = self.collection_exists(schema).await?;
+        let collection_exists = self.collection_exists(&MIGRATION_SCHEMA).await?;
         let existing: Option<Document<Migration>> = if collection_exists {
             let query_filter = QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
