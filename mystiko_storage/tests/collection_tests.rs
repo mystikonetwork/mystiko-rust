@@ -447,18 +447,14 @@ fn test_count() {
         Collection::new(SqlFormatter {}, TestStorage::new());
     let mut count = block_on(collection.count::<TestDocumentData>(None)).unwrap();
     assert_eq!(count, 0);
-    collection.mut_storage().expected_data = vec![
-        TestDocumentRawData {
-            data: HashMap::from([
-                (String::from("COUNT(*)"), 123.to_string()),
-            ]),
-        }
-    ];
+    collection.mut_storage().expected_data = vec![TestDocumentRawData {
+        data: HashMap::from([(String::from("COUNT(*)"), 123.to_string())]),
+    }];
     count = block_on(collection.count::<TestDocumentData>(None)).unwrap();
     assert_eq!(count, 123);
-    collection.mut_storage().expected_data = vec![
-        TestDocumentRawData { data: HashMap::from([]) }
-    ];
+    collection.mut_storage().expected_data = vec![TestDocumentRawData {
+        data: HashMap::from([]),
+    }];
     count = block_on(collection.count::<TestDocumentData>(None)).unwrap();
     assert_eq!(count, 0);
     collection.mut_storage().raise_error_on_query = true;
