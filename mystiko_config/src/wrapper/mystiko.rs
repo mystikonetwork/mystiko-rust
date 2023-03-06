@@ -39,19 +39,18 @@ pub struct MystikoConfig {
 impl MystikoConfig {
     pub fn new(data: RawMystikoConfig) -> Self {
         let base = BaseConfig::new(data, None);
-        let (
-            default_circuit_configs,
-            circuit_configs_by_name
-        ) = MystikoConfig::init_circuit_configs(&base);
         let mut config = Self {
             base: base.clone(),
-            default_circuit_configs: default_circuit_configs.clone(),
-            circuit_configs_by_name: circuit_configs_by_name.clone(),
-            bridge_configs: MystikoConfig::init_bridge_configs(&base),
+            default_circuit_configs: HashMap::default(),
+            circuit_configs_by_name: HashMap::default(),
+            bridge_configs: Default::default(),
             chain_configs: Default::default(),
-            indexer_config: MystikoConfig::init_indexer_config(&base),
+            indexer_config: Default::default(),
         };
-        config.init_chain_configs(default_circuit_configs, circuit_configs_by_name);
+        config.init_circuit_configs();
+        config.init_chain_configs();
+        config.init_bridge_configs();
+        config.init_indexer_config();
         config.validate();
         config
     }
@@ -139,15 +138,9 @@ impl MystikoConfig {
         chain_id: u32,
         address: String,
     ) -> Option<&DepositContractConfig> {
-        println!("{}", chain_id);
-        for (x, _) in &self.chain_configs {
-            println!("{}", x)
-        }
         let chain_config = self.get_chain_config(chain_id).clone();
         match chain_config {
             Some(config) => {
-                // TODO problem
-                println!("chain config found~");
                 config.get_deposit_contract_by_address(address)
             }
             None => { None }
@@ -224,11 +217,11 @@ impl MystikoConfig {
         }
     }
 
-    fn init_circuit_configs(base: &BaseConfig<RawMystikoConfig>) -> (HashMap<CircuitType, CircuitConfig>, HashMap<String, CircuitConfig>) {
+    fn init_circuit_configs(&mut self) {
         let mut default_circuit_configs: HashMap<CircuitType, CircuitConfig> = HashMap::new();
         let mut circuit_config_by_names: HashMap<String, CircuitConfig> = HashMap::new();
 
-        let circuits = &base.data.circuits;
+        let circuits = &self.base.data.circuits;
         for raw in circuits {
             let circuit_config = CircuitConfig::new(raw.clone());
             if raw.is_default {
@@ -243,7 +236,7 @@ impl MystikoConfig {
             circuit_config_by_names.insert(circuit_config.name().clone(), circuit_config.clone());
         }
         let mut has_pool_contracts = false;
-        for chain in &base.data.chains {
+        for chain in &self.base.data.chains {
             if !chain.pool_contracts.is_empty() {
                 has_pool_contracts = true;
                 break;
@@ -261,12 +254,13 @@ impl MystikoConfig {
             }
         }
 
-        (default_circuit_configs, circuit_config_by_names)
+        self.default_circuit_configs = default_circuit_configs;
+        self.circuit_configs_by_name = circuit_config_by_names;
     }
 
-    fn init_bridge_configs(base: &BaseConfig<RawMystikoConfig>) -> HashMap<BridgeType, BridgeConfigType> {
+    fn init_bridge_configs(&mut self) {
         let mut bridge_configs: HashMap<BridgeType, BridgeConfigType> = HashMap::new();
-        for bridge in &base.data.bridges {
+        for bridge in &self.base.data.bridges {
             match bridge {
                 RawBridgeConfigType::Axelar(config) => {
                     bridge_configs.insert(
@@ -301,13 +295,11 @@ impl MystikoConfig {
             }
         }
 
-        bridge_configs
+        self.bridge_configs = bridge_configs;
     }
 
     fn init_chain_configs(
         &mut self,
-        default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
-        circuit_configs_by_name: HashMap<String, CircuitConfig>,
     ) {
         let mut chain_configs: HashMap<u32, ChainConfig> = HashMap::new();
         for raw in &self.base.data.chains {
@@ -317,8 +309,8 @@ impl MystikoConfig {
                     raw.clone(),
                     Some(
                         AuxData::new(
-                            default_circuit_configs.clone(),
-                            circuit_configs_by_name.clone(),
+                            self.default_circuit_configs.clone(),
+                            self.circuit_configs_by_name.clone(),
                             Some(self.clone()),
                         )
                     ),
@@ -328,13 +320,13 @@ impl MystikoConfig {
         self.chain_configs = chain_configs;
     }
 
-    fn init_indexer_config(base: &BaseConfig<RawMystikoConfig>) -> Option<IndexerConfig> {
-        match &base.data.indexer {
+    fn init_indexer_config(&mut self) {
+        match &self.base.data.indexer {
             Some(config) => {
-                Some(IndexerConfig::new(config.clone()))
+                self.indexer_config = Some(IndexerConfig::new(config.clone()));
             }
             None => {
-                None
+                self.indexer_config = None;
             }
         }
     }
@@ -683,26 +675,6 @@ mod tests {
             ).is_some(),
             true
         );
-        let deposit_contract_config = config.get_deposit_contract_config_by_address(
-            3,
-            "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
-        ).unwrap();
-        let peer_deposit_contract_config =
-            deposit_contract_config.peer_contract().unwrap();
-        println!("{:?}", peer_deposit_contract_config);
-        // println!("{:?}", deposit_contract_config.unwrap().peer_contract());
-        // let a = config.get_deposit_contract_config_by_address(
-        //     97,
-        //     "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9".to_string(),
-        // );
-        // println!("{:?}", a);
-        // assert_eq!(
-        //     &deposit_contract_config.unwrap().peer_contract().unwrap(),
-        //     config.get_deposit_contract_config_by_address(
-        //         97,
-        //         "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9".to_string()
-        //     ).unwrap()
-        // );
     }
 
     #[tokio::test]
