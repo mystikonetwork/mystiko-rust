@@ -12,7 +12,7 @@ use crate::raw::indexer::RawIndexerConfig;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_sem_ver, array_unique, validate_nested_vec};
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, Hash)]
 #[serde(tag = "type")]
 #[serde(rename_all = "camelCase")]
 pub enum RawBridgeConfigType {
@@ -32,6 +32,26 @@ impl Validator for RawBridgeConfigType {
             RawBridgeConfigType::Poly(c) => { c.validation() }
             RawBridgeConfigType::Tbridge(c) => { c.validation() }
         }
+    }
+}
+
+impl PartialEq for RawBridgeConfigType {
+    fn eq(&self, other: &Self) -> bool {
+        let type1 = match self {
+            RawBridgeConfigType::Axelar(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Celer(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::LayerZero(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Poly(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Tbridge(conf) => { &conf.bridge_type }
+        };
+        let type2 = match other {
+            RawBridgeConfigType::Axelar(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Celer(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::LayerZero(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Poly(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Tbridge(conf) => { &conf.bridge_type }
+        };
+        type1 == type2
     }
 }
 

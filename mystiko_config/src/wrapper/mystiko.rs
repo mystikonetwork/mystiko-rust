@@ -809,6 +809,7 @@ mod tests {
             ]
         );
         // TODO episodic error fix
+        // error sequence problem
         // assert_eq!(
         //     config.get_pool_contract_configs(
         //         3,
@@ -1011,6 +1012,28 @@ mod tests {
                     vec!["./Transaction2x2.vkey.gz".to_string()],
                 )
             ).await
+        );
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic(expected = "missing definition of default circuit type=Rollup2")]
+    async fn test_missing_default_circuit() {
+        let mut raw_config = raw_config().await;
+        raw_config.circuits = raw_config.circuits[0..1].to_vec();
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_duplicate_bridge_type() {
+        let mut raw_config = raw_config().await;
+        raw_config.bridges.push(
+            RawBridgeConfigType::Tbridge(
+                RawConfig::create_from_object::<RawTBridgeConfig>(RawTBridgeConfig::new(
+                    "TBridge #2".to_string()
+                )).await
+            )
         );
         MystikoConfig::create_from_raw(raw_config).await;
     }
