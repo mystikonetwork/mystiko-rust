@@ -79,6 +79,10 @@ impl MystikoConfig {
         self.chain_configs.get(&chain_id)
     }
 
+    pub fn get_chain_configs(&self) -> HashMap<u32, ChainConfig> {
+        self.chain_configs.clone()
+    }
+
     pub fn get_peer_chain_configs(&self, chain_id: u32) -> Vec<ChainConfig> {
         let mut peer_chain_configs: Vec<ChainConfig> = Vec::new();
         let chain_config = self.get_chain_config(chain_id);
@@ -302,6 +306,20 @@ impl MystikoConfig {
         &mut self,
     ) {
         let mut chain_configs: HashMap<u32, ChainConfig> = HashMap::new();
+
+        let mut aux_data_chain_configs: HashMap<u32, ChainConfig> = HashMap::new();
+        for raw in &self.base.data.chains {
+            let chain_config = ChainConfig::new(
+                raw.clone(),
+                // only use for get deposit contract, circuit configs is none
+                Some(AuxData::default()),
+            );
+            aux_data_chain_configs.insert(
+                raw.chain_id,
+                chain_config,
+            );
+        }
+
         for raw in &self.base.data.chains {
             chain_configs.insert(
                 raw.chain_id,
@@ -311,7 +329,7 @@ impl MystikoConfig {
                         AuxData::new(
                             self.default_circuit_configs.clone(),
                             self.circuit_configs_by_name.clone(),
-                            Some(self.clone()),
+                            Some(aux_data_chain_configs.clone()),
                         )
                     ),
                 ),
@@ -418,6 +436,8 @@ mod tests {
     use crate::raw::chain::RawChainConfig;
     use crate::raw::circuit::RawCircuitConfig;
     use crate::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
+    use crate::wrapper::chain::AuxData;
+    use crate::wrapper::contract::deposit;
     use crate::wrapper::mystiko::{BridgeConfigType, MystikoConfig};
 
     async fn raw_config() -> RawMystikoConfig {
@@ -674,6 +694,20 @@ mod tests {
                 97, "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9".to_string(),
             ).is_some(),
             true
+        );
+        let deposit_contract_config = config.get_deposit_contract_config_by_address(
+            3,
+            "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+        ).unwrap();
+        let deposit_config1 = &deposit_contract_config.peer_contract().unwrap();
+        let deposit_config2 = config.get_deposit_contract_config_by_address(
+            97,
+            "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9".to_string(),
+        ).unwrap();
+
+        assert_eq!(
+            deposit_config1.mutate(None, Some(deposit::AuxData::default())),
+            deposit_config2.mutate(None, Some(deposit::AuxData::default())),
         );
     }
 

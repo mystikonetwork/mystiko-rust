@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use crate::raw::base::Validator;
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct BaseConfig<R, A = ()>
     where
         R: Validator + Serialize + Clone,

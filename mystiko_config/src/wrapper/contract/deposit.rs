@@ -7,17 +7,17 @@ use crate::common::{AssetType, BridgeType};
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
+use crate::wrapper::chain::ChainConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::base::ContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
-use crate::wrapper::mystiko::MystikoConfig;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct AuxData {
     pool_contract_configs: HashMap<String, PoolContractConfig>,
     main_asset_config: AssetConfig,
     asset_configs: HashMap<String, AssetConfig>,
-    mystiko_config: Option<MystikoConfig>,
+    chain_configs: Option<HashMap<u32, ChainConfig>>,
 }
 
 impl AuxData {
@@ -25,13 +25,13 @@ impl AuxData {
         pool_contract_configs: HashMap<String, PoolContractConfig>,
         main_asset_config: AssetConfig,
         asset_configs: HashMap<String, AssetConfig>,
-        mystiko_config: Option<MystikoConfig>,
+        chain_configs: Option<HashMap<u32, ChainConfig>>,
     ) -> Self {
         Self {
             pool_contract_configs,
             main_asset_config,
             asset_configs,
-            mystiko_config,
+            chain_configs,
         }
     }
 
@@ -40,10 +40,14 @@ impl AuxData {
     }
 
     fn deposit_contract_getter(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
-        match &self.mystiko_config {
+        match &self.chain_configs {
             None => { None }
-            Some(conf) => {
-                return conf.get_deposit_contract_config_by_address(chain_id, address);
+            Some(chain_configs) => {
+                let chain_config = chain_configs.get(&chain_id);
+                match chain_config {
+                    None => { None }
+                    Some(config) => { config.get_deposit_contract_by_address(address) }
+                }
             }
         }
     }
@@ -208,8 +212,6 @@ impl DepositContractConfig {
     pub fn peer_contract(&self) -> Option<DepositContractConfig> {
         let peer_chain_id = &self.peer_chain_id();
         let peer_contract_address = &self.peer_contract_address();
-        println!("{:?}", peer_chain_id);
-        println!("{:?}", peer_contract_address);
         match peer_chain_id {
             Some(peer_chain_id) => {
                 match peer_contract_address {
@@ -579,7 +581,7 @@ mod tests {
             asset_configs.clone(),
             None,
         ));
-        let peer_contract_config =
+        let _peer_contract_config =
             DepositContractConfig::new(
                 raw_mystiko_config.chains.get(1).unwrap().deposit_contracts.get(0).unwrap().clone(),
                 aux_data,
@@ -587,15 +589,13 @@ mod tests {
         raw_config.bridge_type = BridgeType::Tbridge;
         raw_config.peer_chain_id = Some(97);
         raw_config.peer_contract_address = Some(String::from("0xd791049D0a154bC7860804e1A18ACD148Eb0afD9"));
+        let mystiko_config = MystikoConfig::new(raw_mystiko_config.clone());
         let config = DepositContractConfig::new(raw_config.clone(), Some(
             AuxData::new(
                 Default::default(),
                 main_asset_config.clone(),
                 asset_configs.clone(),
-                Some(
-                    // TODO check
-                    MystikoConfig::new(raw_mystiko_config.clone())
-                ),
+                Some(mystiko_config.get_chain_configs()),
             )
         ));
         assert_eq!(

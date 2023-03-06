@@ -11,36 +11,39 @@ use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract;
 use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
-use crate::wrapper::mystiko::MystikoConfig;
 use crate::wrapper::provider::ProviderConfig;
 
 const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct AuxData {
     default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
     circuit_configs_by_name: HashMap<String, CircuitConfig>,
-    mystiko_config: Option<MystikoConfig>,
+    chain_configs: Option<HashMap<u32, ChainConfig>>,
 }
 
 impl AuxData {
     pub fn new(
         default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
         circuit_configs_by_name: HashMap<String, CircuitConfig>,
-        mystiko_config: Option<MystikoConfig>,
+        chain_configs: Option<HashMap<u32, ChainConfig>>,
     ) -> Self {
         Self {
             default_circuit_configs,
             circuit_configs_by_name,
-            mystiko_config,
+            chain_configs,
         }
     }
 
     pub fn deposit_contract_getter(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
-        match &self.mystiko_config {
+        match &self.chain_configs {
             None => { None }
-            Some(conf) => {
-                return conf.get_deposit_contract_config_by_address(chain_id, address);
+            Some(chain_configs) => {
+                let chain_config = chain_configs.get(&chain_id);
+                match chain_config {
+                    None => { None }
+                    Some(config) => { config.get_deposit_contract_by_address(address) }
+                }
             }
         }
     }
@@ -83,7 +86,7 @@ impl ChainConfig {
                 &pool_contract_configs,
                 &main_asset_config,
                 &asset_configs,
-                base_config.aux_data_not_empty().mystiko_config,
+                base_config.aux_data_not_empty().chain_configs,
             );
         let provider_configs =
             base_config.data.providers.iter().map(
@@ -464,7 +467,7 @@ impl ChainConfig {
         pool_contract_configs: &HashMap<String, PoolContractConfig>,
         main_asset_config: &AssetConfig,
         asset_configs: &HashMap<String, AssetConfig>,
-        mystiko_config: Option<MystikoConfig>,
+        chain_configs: Option<HashMap<u32, ChainConfig>>,
     ) -> HashMap<String, DepositContractConfig> {
         let mut deposit_contract_configs: HashMap<String, DepositContractConfig> = HashMap::new();
         for raw in &base.data.deposit_contracts {
@@ -502,7 +505,7 @@ impl ChainConfig {
                         pool_contract_configs.clone(),
                         main_asset_config.clone(),
                         asset_configs.clone(),
-                        mystiko_config.clone(),
+                        chain_configs.clone(),
                     )
                 )),
             );

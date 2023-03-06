@@ -8,7 +8,7 @@ use crate::wrapper::base::BaseConfig;
 
 pub const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct AssetConfig {
     base: BaseConfig<RawAssetConfig>,
 }

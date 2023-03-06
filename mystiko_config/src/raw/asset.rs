@@ -5,7 +5,7 @@ use crate::common::{AssetType};
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_ethereum_address, array_unique, is_number_string};
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RawAssetConfig {
     #[serde(default)]

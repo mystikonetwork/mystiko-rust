@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
-use validator::{Validate, ValidationErrors};
+use validator::{Validate};
 
 #[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone, Default)]
 #[serde(rename_all = "camelCase")]
@@ -21,9 +21,10 @@ pub enum ContractType {
     Pool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum AssetType {
+    #[default]
     Erc20,
     Main,
 }
