@@ -5,14 +5,22 @@ use std::io::Error;
 
 pub static NULLIFIER_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "nullifiers",
-    migrations: &["CREATE TABLE `nullifiers` (\
+    migrations: &[
+        "CREATE TABLE `nullifiers` (\
             `id` VARCHAR(64) NOT NULL PRIMARY KEY,\
             `created_at` INT NOT NULL,\
             `updated_at` INT NOT NULL,\
             `chain_id` INT NOT NULL,\
-            `contract_address` VARCHAR(255) NOT NULL,\
-            `serial_number` VARCHAR(255) NOT NULL,\
-            `transaction_hash` VARCHAR(255) NOT NULL)"],
+            `contract_address` VARCHAR(64) NOT NULL,\
+            `serial_number` VARCHAR(128) NOT NULL,\
+            `transaction_hash` VARCHAR(128) NOT NULL)",
+        "CREATE INDEX `nullifiers_created_at_index` ON `nullifiers` (`created_at`)",
+        "CREATE INDEX `nullifiers_updated_at_index` ON `nullifiers` (`updated_at`)",
+        "CREATE INDEX `nullifiers_chain_id_index` ON `nullifiers` (`chain_id`)",
+        "CREATE INDEX `nullifiers_contract_address_index` ON `nullifiers` (`contract_address`)",
+        "CREATE INDEX `nullifiers_serial_number_index` ON `nullifiers` (`serial_number`)",
+        "CREATE INDEX `nullifiers_transaction_hash_index` ON `nullifiers` (`transaction_hash`)",
+    ],
     field_names: &[
         "chain_id",
         "contract_address",
