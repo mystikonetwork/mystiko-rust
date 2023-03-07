@@ -29,9 +29,9 @@ pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum AccountStatus {
-    CREATED,
-    SCANNING,
-    SCANNED,
+    Created,
+    Scanning,
+    Scanned,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -79,9 +79,9 @@ impl DocumentData for Account {
 impl ToString for AccountStatus {
     fn to_string(&self) -> String {
         match self {
-            AccountStatus::CREATED => String::from("CREATED"),
-            AccountStatus::SCANNING => String::from("SCANNING"),
-            AccountStatus::SCANNED => String::from("SCANNED"),
+            AccountStatus::Created => String::from("Created"),
+            AccountStatus::Scanning => String::from("Scanning"),
+            AccountStatus::Scanned => String::from("Scanned"),
         }
     }
 }
@@ -90,10 +90,10 @@ impl FromStr for AccountStatus {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_uppercase().as_str() {
-            "CREATED" => Ok(AccountStatus::CREATED),
-            "SCANNING" => Ok(AccountStatus::SCANNING),
-            "SCANNED" => Ok(AccountStatus::SCANNED),
+        match s {
+            "Created" => Ok(AccountStatus::Created),
+            "Scanning" => Ok(AccountStatus::Scanning),
+            "Scanned" => Ok(AccountStatus::Scanned),
             _ => Err(Error::new(
                 ErrorKind::InvalidData,
                 format!("invalid account status string {}", s),
