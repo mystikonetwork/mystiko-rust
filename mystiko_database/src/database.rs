@@ -20,8 +20,6 @@ pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub nullifiers: NullifierCollection<F, R, S>,
     pub transactions: TransactionCollection<F, R, S>,
     pub wallets: WalletCollection<F, R, S>,
-    pub deposits: DepositCollection<F, R, S>,
-    pub transactions: TransactionCollection<F, R, S>,
 }
 
 impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S> {
@@ -43,8 +41,6 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
             self.nullifiers.migrate().await?,
             self.transactions.migrate().await?,
             self.wallets.migrate().await?,
-            self.deposits.migrate().await?,
-            self.transactions.migrate().await?,
         ];
         Ok(migrations)
     }
