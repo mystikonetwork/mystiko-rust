@@ -21,13 +21,13 @@ pub static DEPOSIT_SCHEMA: DocumentSchema = DocumentSchema {
             `asset_decimals` INT NOT NULL,\
             `asset_address` VARCHAR(64),\
             `bridge_type` VARCHAR(64) NOT NULL,\
-            `amount` VARCHAR(32) NOT NULL,\
-            `rollup_fee_amount` VARCHAR(32) NOT NULL,\
-            `bridge_fee_amount` VARCHAR(32) NOT NULL,\
+            `amount` VARCHAR(128) NOT NULL,\
+            `rollup_fee_amount` VARCHAR(128) NOT NULL,\
+            `bridge_fee_amount` VARCHAR(128) NOT NULL,\
             `bridge_fee_asset_address` VARCHAR(64),\
-            `executor_fee_amount` VARCHAR(32) NOT NULL,\
+            `executor_fee_amount` VARCHAR(128) NOT NULL,\
             `executor_fee_asset_address` VARCHAR(64),\
-            `service_fee_amount` VARCHAR(32) NOT NULL,\
+            `service_fee_amount` VARCHAR(128) NOT NULL,\
             `shielded_recipient_address` VARCHAR(128) NOT NULL,\
             `status` VARCHAR(32) NOT NULL,\
             `error_message` TEXT,\

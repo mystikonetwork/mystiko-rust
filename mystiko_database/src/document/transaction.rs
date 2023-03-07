@@ -23,10 +23,10 @@ pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
             `serial_numbers` TEXT,\
             `signature_public_key` VARCHAR(255),\
             `signature_public_key_hashes` TEXT,\
-            `amount` VARCHAR(32) NOT NULL,\
-            `public_amount` VARCHAR(32) NOT NULL,\
-            `rollup_fee_amount` VARCHAR(32) NOT NULL,\
-            `gas_relayer_fee_amount` VARCHAR(32) NOT NULL,\
+            `amount` VARCHAR(128) NOT NULL,\
+            `public_amount` VARCHAR(128) NOT NULL,\
+            `rollup_fee_amount` VARCHAR(128) NOT NULL,\
+            `gas_relayer_fee_amount` VARCHAR(128) NOT NULL,\
             `shielded_address` VARCHAR(128),\
             `public_address` VARCHAR(64),\
             `gas_relayer_address` VARCHAR(64),\
