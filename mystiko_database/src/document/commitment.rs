@@ -101,7 +101,7 @@ impl DocumentData for Commitment {
             "asset_decimals" => Some(self.asset_decimals.to_string()),
             "asset_address" => self.asset_address.clone(),
             "status" => Some(self.status.to_string()),
-            "rollup_fee_amount" => self.rollup_fee_amount.as_ref().map(|r| r.to_string()),
+            "rollup_fee_amount" => self.rollup_fee_amount.map(|r| r.clone().to_string()),
             "encrypted_note" => self.encrypted_note.clone(),
             "leaf_index" => self.leaf_index.clone(),
             "amount" => self.amount.as_ref().map(|r| r.to_string()),
