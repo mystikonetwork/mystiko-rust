@@ -1,7 +1,8 @@
 #![forbid(unsafe_code)]
 
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::io::Error;
+use std::io::{Error, ErrorKind};
+use std::str::FromStr;
 
 pub static CONTRACT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "contracts",
@@ -34,8 +35,14 @@ pub static CONTRACT_SCHEMA: DocumentSchema = DocumentSchema {
 };
 
 #[derive(Clone, PartialEq, Debug)]
+pub enum ContractType {
+    Deposit,
+    Pool,
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub struct Contract {
-    pub contract_type: String,
+    pub contract_type: ContractType,
     pub chain_id: u32,
     pub contract_address: String,
     pub disabled: u32,
@@ -52,7 +59,7 @@ impl DocumentData for Contract {
 
     fn field_value_string(&self, field: &str) -> Option<String> {
         match field {
-            "contract_type" => Some(self.contract_type.clone()),
+            "contract_type" => Some(self.contract_type.to_string()),
             "chain_id" => Some(self.chain_id.to_string()),
             "contract_address" => Some(self.contract_address.clone()),
             "disabled" => Some(self.disabled.to_string()),
@@ -66,7 +73,9 @@ impl DocumentData for Contract {
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
         Ok(Contract {
-            contract_type: raw.field_string_value("contract_type")?.unwrap(),
+            contract_type: ContractType::from_str(
+                &raw.field_string_value("contract_type")?.unwrap(),
+            )?,
             chain_id: raw.field_integer_value("chain_id")?.unwrap(),
             contract_address: raw.field_string_value("contract_address")?.unwrap(),
             disabled: raw.field_integer_value("disabled")?.unwrap(),
@@ -75,5 +84,29 @@ impl DocumentData for Contract {
             synced_block_number: raw.field_integer_value("synced_block_number")?.unwrap(),
             checked_leaf_index: raw.field_integer_value("checked_leaf_index")?,
         })
+    }
+}
+
+impl ToString for ContractType {
+    fn to_string(&self) -> String {
+        match self {
+            ContractType::Deposit => String::from("Deposit"),
+            ContractType::Pool => String::from("Pool"),
+        }
+    }
+}
+
+impl FromStr for ContractType {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Deposit" => Ok(ContractType::Deposit),
+            "Pool" => Ok(ContractType::Pool),
+            _ => Err(Error::new(
+                ErrorKind::InvalidData,
+                format!("invalid contract type string {}", s),
+            )),
+        }
     }
 }

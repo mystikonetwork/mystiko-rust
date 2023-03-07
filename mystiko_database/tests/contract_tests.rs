@@ -1,6 +1,8 @@
+extern crate mystiko_database;
+
 use futures::lock::Mutex;
 use mystiko_database::collection::contract::ContractCollection;
-use mystiko_database::document::contract::Contract;
+use mystiko_database::document::contract::{Contract, ContractType};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
@@ -28,7 +30,7 @@ fn test_contracts_crud() {
     let mut inserted_contracts: Vec<Document<Contract>> = Vec::new();
     inserted_contracts.push(
         block_on(contracts.insert(&Contract {
-            contract_type: String::from("deposit"),
+            contract_type: ContractType::Deposit,
             chain_id: 5,
             contract_address: String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
             disabled: 0,
@@ -44,7 +46,7 @@ fn test_contracts_crud() {
     inserted_contracts.extend(
         block_on(contracts.insert_batch(&vec![
             Contract {
-                contract_type: String::from("deposit"),
+                contract_type: ContractType::Deposit,
                 chain_id: 5,
                 contract_address: String::from("0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
                 disabled: 1,
@@ -54,7 +56,7 @@ fn test_contracts_crud() {
                 checked_leaf_index: Some(20),
             },
             Contract {
-                contract_type: String::from("pool"),
+                contract_type: ContractType::Pool,
                 chain_id: 5,
                 contract_address: String::from("0xEd95f2F493687dFaeefD33C00C6Bc4dF0fbB3404"),
                 disabled: 0,

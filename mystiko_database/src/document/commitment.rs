@@ -18,7 +18,7 @@ pub static COMMITMENT_SCHEMA: DocumentSchema = DocumentSchema {
             `asset_symbol`              VARCHAR(16) NOT NULL,\
             `asset_decimals`            INT          NOT NULL,\
             `asset_address`             VARCHAR(64),\
-            `status`                    VARCHAR(16) NOT NULL,\
+            `status`                    VARCHAR(32) NOT NULL,\
             `rollup_fee_amount`         VARCHAR(128),\
             `encrypted_note`            TEXT,\
             `leaf_index`                VARCHAR(64),\
