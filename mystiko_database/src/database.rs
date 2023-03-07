@@ -1,6 +1,8 @@
 #![forbid(unsafe_code)]
 
 use crate::collection::account::AccountCollection;
+use crate::collection::deposit::DepositCollection;
+use crate::collection::transaction::TransactionCollection;
 use crate::collection::wallet::WalletCollection;
 use futures::lock::Mutex;
 use mystiko_storage::collection::Collection;
@@ -14,6 +16,8 @@ use std::sync::Arc;
 pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub accounts: AccountCollection<F, R, S>,
     pub wallets: WalletCollection<F, R, S>,
+    pub deposits: DepositCollection<F, R, S>,
+    pub transactions: TransactionCollection<F, R, S>,
 }
 
 impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S> {
@@ -21,6 +25,8 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
         let collection = Arc::new(Mutex::new(Collection::new(formatter, storage)));
         Database {
             accounts: AccountCollection::new(collection.clone()),
+            deposits: DepositCollection::new(collection.clone()),
+            transactions: TransactionCollection::new(collection.clone()),
             wallets: WalletCollection::new(collection),
         }
     }
@@ -29,6 +35,8 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
         let migrations: Vec<Document<Migration>> = vec![
             self.accounts.migrate().await?,
             self.wallets.migrate().await?,
+            self.deposits.migrate().await?,
+            self.transactions.migrate().await?,
         ];
         Ok(migrations)
     }
