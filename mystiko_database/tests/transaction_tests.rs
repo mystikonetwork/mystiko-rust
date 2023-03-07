@@ -6,6 +6,7 @@ use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use num_bigint::BigInt;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio_test::block_on;
@@ -42,10 +43,10 @@ fn test_transactions_crud() {
             serial_numbers: Some(vec![String::from("sn1"), String::from("sn2")]),
             signature_public_key: Some(String::from("signature_public_key 1")),
             signature_public_key_hashes: Some(vec![String::from("spkh1"), String::from("spkh2")]),
-            amount: String::from("amount 1"),
-            public_amount: String::from("public_amount 1"),
-            rollup_fee_amount: String::from("rollup_fee_amount 1"),
-            gas_relayer_fee_amount: String::from("gas_relayer_fee_amount 1"),
+            amount: BigInt::from(101),
+            public_amount: BigInt::from(102),
+            rollup_fee_amount: BigInt::from(103),
+            gas_relayer_fee_amount: BigInt::from(104),
             shielded_address: Some(String::from("shielded_address 1")),
             public_address: Some(String::from("public_address 1")),
             gas_relayer_address: Some(String::from("gas_relayer_address 1")),
@@ -75,10 +76,10 @@ fn test_transactions_crud() {
                 serial_numbers: None,
                 signature_public_key: Some(String::from("signature_public_key 2")),
                 signature_public_key_hashes: None,
-                amount: String::from("amount 2"),
-                public_amount: String::from("public_amount 2"),
-                rollup_fee_amount: String::from("rollup_fee_amount 2"),
-                gas_relayer_fee_amount: String::from("gas_relayer_fee_amount 2"),
+                amount: BigInt::from(201),
+                public_amount: BigInt::from(202),
+                rollup_fee_amount: BigInt::from(203),
+                gas_relayer_fee_amount: BigInt::from(204),
                 shielded_address: Some(String::from("shielded_address 2")),
                 public_address: Some(String::from("public_address 2")),
                 gas_relayer_address: Some(String::from("gas_relayer_address 2")),
@@ -104,10 +105,10 @@ fn test_transactions_crud() {
                 serial_numbers: Some(vec![]),
                 signature_public_key: Some(String::from("signature_public_key 3")),
                 signature_public_key_hashes: Some(vec![]),
-                amount: String::from("amount 3"),
-                public_amount: String::from("public_amount 3"),
-                rollup_fee_amount: String::from("rollup_fee_amount 3"),
-                gas_relayer_fee_amount: String::from("gas_relayer_fee_amount 3"),
+                amount: BigInt::from(301),
+                public_amount: BigInt::from(302),
+                rollup_fee_amount: BigInt::from(303),
+                gas_relayer_fee_amount: BigInt::from(304),
                 shielded_address: Some(String::from("shielded_address 3")),
                 public_address: Some(String::from("public_address 3")),
                 gas_relayer_address: Some(String::from("gas_relayer_address 3")),
@@ -159,8 +160,8 @@ fn test_transactions_crud() {
         transactions.find_one(
             QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("gas_relayer_fee_amount"),
-                    String::from("gas_relayer_fee_amount 2"),
+                    String::from("asset_symbol"),
+                    String::from("asset_symbol 2"),
                 )))
                 .build(),
         ),

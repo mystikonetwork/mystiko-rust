@@ -2370,6 +2370,7 @@ dependencies = [
  "futures",
  "mystiko_storage",
  "mystiko_storage_sqlite",
+ "num-bigint 0.4.3",
  "serde_json",
  "tokio-test",
 ]

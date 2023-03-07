@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use num_bigint::BigInt;
 use serde_json;
 use std::io::{Error, ErrorKind};
 use std::str::FromStr;
@@ -166,10 +167,10 @@ pub struct Transaction {
     pub serial_numbers: Option<Vec<String>>,
     pub signature_public_key: Option<String>,
     pub signature_public_key_hashes: Option<Vec<String>>,
-    pub amount: String,
-    pub public_amount: String,
-    pub rollup_fee_amount: String,
-    pub gas_relayer_fee_amount: String,
+    pub amount: BigInt,
+    pub public_amount: BigInt,
+    pub rollup_fee_amount: BigInt,
+    pub gas_relayer_fee_amount: BigInt,
     pub shielded_address: Option<String>,
     pub public_address: Option<String>,
     pub gas_relayer_address: Option<String>,
@@ -208,10 +209,10 @@ impl DocumentData for Transaction {
             "signature_public_key_hashes" => {
                 Some(serde_json::to_string(&self.signature_public_key_hashes.clone()).unwrap())
             }
-            "amount" => Some(self.amount.clone()),
-            "public_amount" => Some(self.public_amount.clone()),
-            "rollup_fee_amount" => Some(self.rollup_fee_amount.clone()),
-            "gas_relayer_fee_amount" => Some(self.gas_relayer_fee_amount.clone()),
+            "amount" => Some(self.amount.to_string()),
+            "public_amount" => Some(self.public_amount.to_string()),
+            "rollup_fee_amount" => Some(self.rollup_fee_amount.to_string()),
+            "gas_relayer_fee_amount" => Some(self.gas_relayer_fee_amount.to_string()),
             "shielded_address" => self.shielded_address.clone(),
             "public_address" => self.public_address.clone(),
             "gas_relayer_address" => self.gas_relayer_address.clone(),
@@ -252,10 +253,27 @@ impl DocumentData for Transaction {
                 &raw.field_string_value("signature_public_key_hashes")?
                     .unwrap(),
             )?,
-            amount: raw.field_string_value("amount")?.unwrap(),
-            public_amount: raw.field_string_value("public_amount")?.unwrap(),
-            rollup_fee_amount: raw.field_string_value("rollup_fee_amount")?.unwrap(),
-            gas_relayer_fee_amount: raw.field_string_value("gas_relayer_fee_amount")?.unwrap(),
+            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10)
+                .unwrap(),
+            public_amount: BigInt::parse_bytes(
+                raw.field_string_value("public_amount")?.unwrap().as_bytes(),
+                10,
+            )
+            .unwrap(),
+            rollup_fee_amount: BigInt::parse_bytes(
+                raw.field_string_value("rollup_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
+                10,
+            )
+            .unwrap(),
+            gas_relayer_fee_amount: BigInt::parse_bytes(
+                raw.field_string_value("gas_relayer_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
+                10,
+            )
+            .unwrap(),
             shielded_address: raw.field_string_value("shielded_address")?,
             public_address: raw.field_string_value("public_address")?,
             gas_relayer_address: raw.field_string_value("gas_relayer_address")?,

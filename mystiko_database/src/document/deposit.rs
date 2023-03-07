@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use num_bigint::BigInt;
 use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 
@@ -145,13 +146,13 @@ pub struct Deposit {
     pub asset_decimals: u32,
     pub asset_address: Option<String>,
     pub bridge_type: String,
-    pub amount: String,
-    pub rollup_fee_amount: String,
-    pub bridge_fee_amount: String,
+    pub amount: BigInt,
+    pub rollup_fee_amount: BigInt,
+    pub bridge_fee_amount: BigInt,
     pub bridge_fee_asset_address: Option<String>,
-    pub executor_fee_amount: String,
+    pub executor_fee_amount: BigInt,
     pub executor_fee_asset_address: Option<String>,
-    pub service_fee_amount: String,
+    pub service_fee_amount: BigInt,
     pub shielded_recipient_address: String,
     pub status: DepositStatus,
     pub error_message: Option<String>,
@@ -183,13 +184,13 @@ impl DocumentData for Deposit {
             "asset_decimals" => Some(self.asset_decimals.to_string()),
             "asset_address" => self.asset_address.clone(),
             "bridge_type" => Some(self.bridge_type.clone()),
-            "amount" => Some(self.amount.clone()),
-            "rollup_fee_amount" => Some(self.rollup_fee_amount.clone()),
-            "bridge_fee_amount" => Some(self.bridge_fee_amount.clone()),
+            "amount" => Some(self.amount.to_string()),
+            "rollup_fee_amount" => Some(self.rollup_fee_amount.to_string()),
+            "bridge_fee_amount" => Some(self.bridge_fee_amount.to_string()),
             "bridge_fee_asset_address" => self.bridge_fee_asset_address.clone(),
-            "executor_fee_amount" => Some(self.executor_fee_amount.clone()),
+            "executor_fee_amount" => Some(self.executor_fee_amount.to_string()),
             "executor_fee_asset_address" => self.executor_fee_asset_address.clone(),
-            "service_fee_amount" => Some(self.service_fee_amount.clone()),
+            "service_fee_amount" => Some(self.service_fee_amount.to_string()),
             "shielded_recipient_address" => Some(self.shielded_recipient_address.clone()),
             "status" => Some(self.status.to_string()),
             "error_message" => self.error_message.clone(),
@@ -218,13 +219,38 @@ impl DocumentData for Deposit {
             asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
             asset_address: raw.field_string_value("asset_address")?,
             bridge_type: raw.field_string_value("bridge_type")?.unwrap(),
-            amount: raw.field_string_value("amount")?.unwrap(),
-            rollup_fee_amount: raw.field_string_value("rollup_fee_amount")?.unwrap(),
-            bridge_fee_amount: raw.field_string_value("bridge_fee_amount")?.unwrap(),
+            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10)
+                .unwrap(),
+            rollup_fee_amount: BigInt::parse_bytes(
+                raw.field_string_value("rollup_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
+                10,
+            )
+            .unwrap(),
+            bridge_fee_amount: BigInt::parse_bytes(
+                raw.field_string_value("bridge_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
+                10,
+            )
+            .unwrap(),
             bridge_fee_asset_address: raw.field_string_value("bridge_fee_asset_address")?,
-            executor_fee_amount: raw.field_string_value("executor_fee_amount")?.unwrap(),
+            executor_fee_amount: BigInt::parse_bytes(
+                raw.field_string_value("executor_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
+                10,
+            )
+            .unwrap(),
             executor_fee_asset_address: raw.field_string_value("executor_fee_asset_address")?,
-            service_fee_amount: raw.field_string_value("service_fee_amount")?.unwrap(),
+            service_fee_amount: BigInt::parse_bytes(
+                raw.field_string_value("service_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
+                10,
+            )
+            .unwrap(),
             shielded_recipient_address: raw
                 .field_string_value("shielded_recipient_address")?
                 .unwrap(),
