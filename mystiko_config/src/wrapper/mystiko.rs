@@ -435,9 +435,13 @@ mod tests {
     use crate::raw::bridge::tbridge::RawTBridgeConfig;
     use crate::raw::chain::RawChainConfig;
     use crate::raw::circuit::RawCircuitConfig;
+    use crate::raw::contract::base::RawContractConfigTrait;
+    use crate::raw::indexer::RawIndexerConfig;
     use crate::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
+    use crate::raw::provider::RawProviderConfig;
     use crate::wrapper::chain::AuxData;
     use crate::wrapper::contract::deposit;
+    use crate::wrapper::indexer::IndexerConfig;
     use crate::wrapper::mystiko::{BridgeConfigType, MystikoConfig};
 
     async fn raw_config() -> RawMystikoConfig {
@@ -808,25 +812,21 @@ mod tests {
                 ).unwrap().clone()
             ]
         );
-        // TODO episodic error fix
-        // error sequence problem
-        // assert_eq!(
-        //     config.get_pool_contract_configs(
-        //         3,
-        //         "MTT",
-        //         BridgeType::Tbridge,
-        //     ),
-        //     vec![
-        //         config.get_pool_contract_config_by_address(
-        //             3,
-        //             "0x9b42ec45f6fb6c7d252c66741e960585888de7b6",
-        //         ).unwrap().clone(),
-        //         config.get_pool_contract_config_by_address(
-        //             3,
-        //             "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d",
-        //         ).unwrap().clone(),
-        //     ]
-        // );
+        let pool_contract_configs = config.get_pool_contract_configs(
+            3,
+            "MTT",
+            BridgeType::Tbridge,
+        );
+        assert_eq!(pool_contract_configs.len(), 2);
+        for pool_contract_config in pool_contract_configs {
+            assert_eq!(
+                &pool_contract_config,
+                config.get_pool_contract_config_by_address(
+                    3,
+                    pool_contract_config.base.base.data.address(),
+                ).unwrap(),
+            );
+        }
         assert_eq!(
             config.get_pool_contract_configs(
                 3,
@@ -1036,5 +1036,154 @@ mod tests {
             )
         );
         MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic(expected = "bridge type = Celer definition does not exist")]
+    async fn test_missing_bridge_definition() {
+        let mut raw_config = raw_config().await;
+        raw_config.bridges = raw_config.bridges
+            .iter()
+            .filter(
+                |&raw| raw.bridge_type().ne(&BridgeType::Celer)
+            )
+            .cloned()
+            .collect();
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_duplicate_chain_config() {
+        let mut raw_config = raw_config().await;
+        raw_config.chains.push(
+            RawConfig::create_from_object::<RawChainConfig>(
+                RawChainConfig::new(
+                    3,
+                    "Ethereum Ropsten".to_string(),
+                    "ETH".to_string(),
+                    18,
+                    vec![],
+                    "https://ropsten.etherscan.io".to_string(),
+                    "/tx/%tx%".to_string(),
+                    None,
+                    None,
+                    vec![
+                        RawProviderConfig::new(
+                            "http://localhost:8545".to_string(),
+                            None,
+                            None,
+                        ),
+                    ],
+                    "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
+                    vec![],
+                    vec![],
+                    vec![],
+                )
+            ).await
+        );
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_peer_chain_id() {
+        let mut raw_config = raw_config().await;
+        raw_config.chains[0].deposit_contracts[1].peer_chain_id = Some(1024);
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_invalid_peer_chain_address() {
+        let mut raw_config = raw_config().await;
+        raw_config.chains[0].deposit_contracts[1].peer_contract_address =
+            Some("0x5c7c88e07e3899fff3cc0effe23494591dfe87b6".to_string());
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_bridge_type_mismatch() {
+        let mut raw_config = raw_config().await;
+        raw_config.chains[0].deposit_contracts[2].bridge_type = BridgeType::Poly;
+        raw_config.chains[0].pool_contracts[2].bridge_type = BridgeType::Poly;
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_peer_chain_id_mismatch() {
+        let mut raw_config = raw_config().await;
+        raw_config.chains[1].deposit_contracts[1].peer_chain_id = Some(1024);
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_peer_contract_address_mismatch() {
+        let mut raw_config = raw_config().await;
+        raw_config.chains[1].deposit_contracts[1].peer_contract_address =
+            Some("0x5c7c88e07e3899fff3cc0effe23494591dfe87b6".to_string());
+        MystikoConfig::create_from_raw(raw_config).await;
+    }
+
+    // TODO supplement
+    async fn test_create_default_testnet_config() {}
+
+    // TODO supplement
+    async fn test_create_default_mainnet_config() {}
+
+    #[tokio::test]
+    async fn test_get_transaction_url() {
+        let config = config().await;
+        assert_eq!(
+            config.get_transaction_url(
+                1024,
+                "0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e",
+            ).is_none(),
+            true
+        );
+        assert_eq!(
+            config.get_transaction_url(
+                3,
+                "0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e",
+            ).unwrap(),
+            "https://ropsten.etherscan.io/tx/0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_get_indexer_config() {
+        let mut raw_config = raw_config().await;
+        raw_config.indexer = Some(
+            RawConfig::create_from_file::<RawIndexerConfig>(
+                "src/tests/files/indexer.valid.json"
+            ).await
+        );
+        let config = MystikoConfig::create_from_raw(raw_config).await;
+        let indexer = config.indexer();
+        match indexer {
+            None => { panic!() }
+            Some(conf) => {
+                assert_eq!(conf.url(), "https://example.com");
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_mutate() {
+        let config = config().await;
+        let mut raw_config = raw_config().await;
+        assert_eq!(
+            config.mutate(None).base.copy_data(),
+            raw_config
+        );
+        raw_config.version = "1.1.1".to_string();
+        let new_config = config.mutate(Some(raw_config));
+        assert_eq!(
+            new_config.version(),
+            "1.1.1"
+        );
     }
 }

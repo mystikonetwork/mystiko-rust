@@ -1,6 +1,7 @@
 use std::hash::{Hash};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+use crate::common::BridgeType;
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
 use crate::raw::bridge::celer::RawCelerBridgeConfig;
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
@@ -21,6 +22,18 @@ pub enum RawBridgeConfigType {
     LayerZero(RawLayerZeroBridgeConfig),
     Poly(RawPolyBridgeConfig),
     Tbridge(RawTBridgeConfig),
+}
+
+impl RawBridgeConfigType {
+    pub fn bridge_type(&self) -> &BridgeType {
+        match self {
+            RawBridgeConfigType::Axelar(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Celer(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::LayerZero(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Poly(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Tbridge(conf) => { &conf.bridge_type }
+        }
+    }
 }
 
 impl Validator for RawBridgeConfigType {

@@ -29,7 +29,15 @@ pub struct RawProviderConfig {
 }
 
 impl RawProviderConfig {
-    pub fn new(url: String, timeout_ms: u32, max_try_count: u32) -> Self {
+    pub fn new(url: String, timeout_ms: Option<u32>, max_try_count: Option<u32>) -> Self {
+        let timeout_ms = match timeout_ms {
+            None => { default_timeout_ms() }
+            Some(value) => { value }
+        };
+        let max_try_count = match max_try_count {
+            None => { default_max_try_count() }
+            Some(value) => { value }
+        };
         Self { base: RawConfig::default(), url, timeout_ms, max_try_count }
     }
 }
@@ -47,7 +55,11 @@ mod tests {
 
     async fn default_config() -> RawProviderConfig {
         RawConfig::create_from_object::<RawProviderConfig>(
-            RawProviderConfig::new("http://localhost:8545".to_string(), 100000, 5)
+            RawProviderConfig::new(
+                "http://localhost:8545".to_string(),
+                Some(100000),
+                Some(5),
+            )
         ).await
     }
 
@@ -104,5 +116,4 @@ mod tests {
         let _file_config =
             RawConfig::create_from_file::<RawProviderConfig>("src/tests/files/provider.invalid.json").await;
     }
-
 }

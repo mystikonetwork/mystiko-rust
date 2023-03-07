@@ -1,8 +1,7 @@
-use std::borrow::ToOwned;
 use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::common::{AssetType, validate_object};
+use crate::common::{validate_object};
 use crate::raw::asset::RawAssetConfig;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::contract::deposit::RawDepositContractConfig;
@@ -108,14 +107,22 @@ impl RawChainConfig {
         recommended_amounts: Vec<String>,
         explorer_url: String,
         explorer_prefix: String,
-        event_filter_size: u64,
-        indexer_filter_size: u64,
+        event_filter_size: Option<u64>,
+        indexer_filter_size: Option<u64>,
         providers: Vec<RawProviderConfig>,
         signer_endpoint: String,
         deposit_contracts: Vec<RawDepositContractConfig>,
         pool_contracts: Vec<RawPoolContractConfig>,
         assets: Vec<RawAssetConfig>,
     ) -> RawChainConfig {
+        let event_filter_size = match event_filter_size {
+            None => { default_event_filter_size() }
+            Some(value) => { value }
+        };
+        let indexer_filter_size = match indexer_filter_size {
+            None => { default_indexer_filter_size() }
+            Some(value) => { value }
+        };
         Self {
             base: RawConfig::default(),
             chain_id,
@@ -153,8 +160,8 @@ mod tests {
         RawConfig::create_from_object::<RawProviderConfig>(
             RawProviderConfig::new(
                 "wss://ropsten.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
-                5000,
-                5,
+                Some(5000),
+                Some(5),
             )
         ).await
     }
@@ -238,8 +245,8 @@ mod tests {
                 ],
                 "https://ropsten.etherscan.io".to_string(),
                 "/tx/%tx%".to_string(),
-                1000,
-                10000,
+                None,
+                None,
                 vec![provider_config],
                 "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
                 vec![deposit_contract_config],
