@@ -14,14 +14,14 @@ use reqwest::Client;
 use std::env::temp_dir;
 use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
-use tokio::fs::{create_dir_all, remove_file, try_exists, File};
+use tokio::fs::{create_dir_all, read, remove_file, try_exists, File};
 use tokio::io::{copy, AsyncWriteExt, BufReader, BufWriter};
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
 
 pub struct Downloader {
     client: Client,
-    folder: PathBuf,
+    pub folder: PathBuf,
 }
 
 #[derive(Clone)]
@@ -31,6 +31,7 @@ pub struct DownloadOptions {
     pub hasher: Box<dyn DynDigest>,
 }
 
+#[derive(Default)]
 pub struct DownloaderBuilder {
     client: Client,
     folder: Option<String>,
@@ -48,7 +49,7 @@ impl Downloader {
         let file_path = self.download_raw(url, options.clone()).await?;
         if is_compressed && !options.skip_decompression {
             let decompressed_file_path =
-                PathBuf::from(format!("{}_uncompressed", file_path.to_str().unwrap()));
+                PathBuf::from(format!("{}_decompressed", file_path.to_str().unwrap()));
             if try_exists(&decompressed_file_path).await? {
                 if options.skip_cache {
                     remove_file(&decompressed_file_path).await?;
@@ -61,11 +62,43 @@ impl Downloader {
             let mut file_reader = GzipDecoder::new(BufReader::new(compressed_file));
             let mut file_writer = BufWriter::new(decompressed_file);
             copy(&mut file_reader, &mut file_writer).await?;
-            file_writer.flush().await?;
+            file_writer.shutdown().await?;
             Ok(decompressed_file_path)
         } else {
             Ok(file_path)
         }
+    }
+
+    pub async fn download_failover(
+        &mut self,
+        urls: &Vec<String>,
+        options: Option<DownloadOptions>,
+    ) -> Result<PathBuf, Error> {
+        for (index, url) in urls.iter().enumerate() {
+            let result = self.download(url, options.clone()).await;
+            if result.is_err() && index < urls.len() - 1 {
+                continue;
+            } else {
+                return result;
+            }
+        }
+        Err(Error::new(ErrorKind::InvalidInput, "urls cannot be empty"))
+    }
+
+    pub async fn read_bytes(
+        &mut self,
+        url: &str,
+        options: Option<DownloadOptions>,
+    ) -> Result<Vec<u8>, Error> {
+        read(self.download(url, options).await?).await
+    }
+
+    pub async fn read_bytes_failover(
+        &mut self,
+        urls: &Vec<String>,
+        options: Option<DownloadOptions>,
+    ) -> Result<Vec<u8>, Error> {
+        read(self.download_failover(urls, options).await?).await
     }
 
     async fn download_raw(
@@ -74,41 +107,54 @@ impl Downloader {
         mut options: DownloadOptions,
     ) -> Result<PathBuf, Error> {
         options.hasher.update(url.as_bytes());
-        let hash = hex::encode(options.hasher.finalize().to_vec());
+        let hash = hex::encode(&options.hasher.finalize());
         let file_path = self.folder.join(PathBuf::from(&hash));
         let file_exists = try_exists(&file_path).await?;
         if file_exists && !options.skip_cache {
             Ok(file_path)
         } else {
-            if file_exists {
-                remove_file(&file_path).await?;
-            }
-            let file = File::create(&file_path).await?;
             let response = self
                 .client
                 .get(url)
                 .send()
                 .await
                 .map_err(|e| Error::new(ErrorKind::Other, format!("reqwest error: {}", e)))?;
-            let stream = response
-                .bytes_stream()
-                .map(|result| result.map_err(|e| Error::new(ErrorKind::Other, e)));
-            let mut file_reader = StreamReader::new(stream);
-            let mut file_writer = BufWriter::new(file);
-            copy(&mut file_reader, &mut file_writer).await?;
-            file_writer.flush().await?;
-            Ok(file_path)
+            if response.status().is_success() {
+                if file_exists {
+                    remove_file(&file_path).await?;
+                }
+                let file = File::create(&file_path).await?;
+                let stream = response
+                    .bytes_stream()
+                    .map(|result| result.map_err(|e| Error::new(ErrorKind::Other, e)));
+                let mut file_reader = StreamReader::new(stream);
+                let mut file_writer = BufWriter::new(file);
+                copy(&mut file_reader, &mut file_writer).await?;
+                file_writer.shutdown().await?;
+                Ok(file_path)
+            } else {
+                Err(Error::new(
+                    ErrorKind::Other,
+                    format!("failed to fetch {}, status code {}", url, response.status()),
+                ))
+            }
         }
     }
 }
 
 impl DownloadOptions {
-    pub fn default() -> Self {
+    pub fn new() -> Self {
         DownloadOptions {
             skip_cache: false,
             skip_decompression: false,
             hasher: Box::new(Blake2s256::new()),
         }
+    }
+}
+
+impl Default for DownloadOptions {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
