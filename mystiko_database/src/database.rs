@@ -1,6 +1,9 @@
 #![forbid(unsafe_code)]
 
 use crate::collection::account::AccountCollection;
+use crate::collection::chain::ChainCollection;
+use crate::collection::commitment::CommitmentCollection;
+use crate::collection::contract::ContractCollection;
 use crate::collection::deposit::DepositCollection;
 use crate::collection::nullifier::NullifierCollection;
 use crate::collection::transaction::TransactionCollection;
@@ -20,6 +23,9 @@ pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub nullifiers: NullifierCollection<F, R, S>,
     pub transactions: TransactionCollection<F, R, S>,
     pub wallets: WalletCollection<F, R, S>,
+    pub chains: ChainCollection<F, R, S>,
+    pub contracts: ContractCollection<F, R, S>,
+    pub commitments: CommitmentCollection<F, R, S>,
 }
 
 impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S> {
@@ -30,7 +36,10 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
             deposits: DepositCollection::new(collection.clone()),
             nullifiers: NullifierCollection::new(collection.clone()),
             transactions: TransactionCollection::new(collection.clone()),
-            wallets: WalletCollection::new(collection),
+            wallets: WalletCollection::new(collection.clone()),
+            chains: ChainCollection::new(collection.clone()),
+            contracts: ContractCollection::new(collection.clone()),
+            commitments: CommitmentCollection::new(collection),
         }
     }
 
@@ -41,6 +50,9 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
             self.nullifiers.migrate().await?,
             self.transactions.migrate().await?,
             self.wallets.migrate().await?,
+            self.chains.migrate().await?,
+            self.contracts.migrate().await?,
+            self.commitments.migrate().await?,
         ];
         Ok(migrations)
     }
