@@ -1,6 +1,8 @@
+extern crate mystiko_database;
+
 use futures::lock::Mutex;
 use mystiko_database::collection::deposit::DepositCollection;
-use mystiko_database::document::deposit::{Deposit, DepositStatus};
+use mystiko_database::document::deposit::{BridgeType, Deposit, DepositStatus};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
@@ -40,7 +42,7 @@ fn test_deposits_crud() {
             asset_symbol: String::from("asset_symbol 1"),
             asset_decimals: 6,
             asset_address: Some(String::from("asset_address 1")),
-            bridge_type: String::from("bridge_type 1"),
+            bridge_type: BridgeType::Axelar,
             amount: BigInt::from(101),
             rollup_fee_amount: BigInt::from(102),
             bridge_fee_amount: BigInt::from(103),
@@ -75,7 +77,7 @@ fn test_deposits_crud() {
                 asset_symbol: String::from("asset_symbol 2"),
                 asset_decimals: 12,
                 asset_address: Some(String::from("asset_address 2")),
-                bridge_type: String::from("bridge_type 2"),
+                bridge_type: BridgeType::Celer,
                 amount: BigInt::from(201),
                 rollup_fee_amount: BigInt::from(202),
                 bridge_fee_amount: BigInt::from(203),
@@ -108,7 +110,7 @@ fn test_deposits_crud() {
                 asset_symbol: String::from("asset_symbol 3"),
                 asset_decimals: 18,
                 asset_address: Some(String::from("asset_address 3")),
-                bridge_type: String::from("bridge_type 3"),
+                bridge_type: BridgeType::LayerZero,
                 amount: BigInt::from(301),
                 rollup_fee_amount: BigInt::from(302),
                 bridge_fee_amount: BigInt::from(303),

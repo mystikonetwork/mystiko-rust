@@ -13,4 +13,7 @@ fn test_database_migration() {
     assert!(block_on(database.nullifiers.collection_exists()).unwrap());
     assert!(block_on(database.transactions.collection_exists()).unwrap());
     assert!(block_on(database.wallets.collection_exists()).unwrap());
+    assert!(block_on(database.chains.collection_exists()).unwrap());
+    assert!(block_on(database.contracts.collection_exists()).unwrap());
+    assert!(block_on(database.commitments.collection_exists()).unwrap());
 }
