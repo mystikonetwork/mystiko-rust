@@ -7,7 +7,6 @@ use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
-use tokio_test::block_on;
 
 async fn create_nullifiers() -> NullifierCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
@@ -20,44 +19,48 @@ async fn create_nullifiers() -> NullifierCollection<SqlFormatter, SqliteRawData,
     nullifiers
 }
 
-#[test]
-fn test_nullifiers_crud() {
-    let nullifiers = block_on(create_nullifiers());
+#[tokio::test]
+async fn test_nullifiers_crud() {
+    let nullifiers = create_nullifiers().await;
 
     // testing insert/insert_batch
     let mut inserted_nullifiers: Vec<Document<Nullifier>> = Vec::new();
     inserted_nullifiers.push(
-        block_on(nullifiers.insert(&Nullifier {
-            chain_id: 1,
-            contract_address: String::from("contract_address 1"),
-            serial_number: String::from("serial_number 1"),
-            transaction_hash: String::from("transaction_hash 1"),
-        }))
-        .unwrap(),
+        nullifiers
+            .insert(&Nullifier {
+                chain_id: 1,
+                contract_address: String::from("contract_address 1"),
+                serial_number: String::from("serial_number 1"),
+                transaction_hash: String::from("transaction_hash 1"),
+            })
+            .await
+            .unwrap(),
     );
     inserted_nullifiers.extend(
-        block_on(nullifiers.insert_batch(&vec![
-            Nullifier {
-                chain_id: 2,
-                contract_address: String::from("contract_address 2"),
-                serial_number: String::from("serial_number 2"),
-                transaction_hash: String::from("transaction_hash 2"),
-            },
-            Nullifier {
-                chain_id: 3,
-                contract_address: String::from("contract_address 3"),
-                serial_number: String::from("serial_number 3"),
-                transaction_hash: String::from("transaction_hash 3"),
-            },
-        ]))
-        .unwrap(),
+        nullifiers
+            .insert_batch(&vec![
+                Nullifier {
+                    chain_id: 2,
+                    contract_address: String::from("contract_address 2"),
+                    serial_number: String::from("serial_number 2"),
+                    transaction_hash: String::from("transaction_hash 2"),
+                },
+                Nullifier {
+                    chain_id: 3,
+                    contract_address: String::from("contract_address 3"),
+                    serial_number: String::from("serial_number 3"),
+                    transaction_hash: String::from("transaction_hash 3"),
+                },
+            ])
+            .await
+            .unwrap(),
     );
 
     // testing count/count_all
-    assert_eq!(block_on(nullifiers.count_all()).unwrap(), 3);
+    assert_eq!(nullifiers.count_all().await.unwrap(), 3);
     assert_eq!(
-        block_on(
-            nullifiers.count(
+        nullifiers
+            .count(
                 QueryFilterBuilder::new()
                     .filter(Condition::FILTER(SubFilter::Equal(
                         String::from("chain_id"),
@@ -65,66 +68,76 @@ fn test_nullifiers_crud() {
                     )))
                     .build()
             )
-        )
-        .unwrap(),
+            .await
+            .unwrap(),
         1
     );
 
     // testing find/find_all/find_one/find_by_id
-    let mut found_nullifiers = block_on(nullifiers.find_all()).unwrap();
+    let mut found_nullifiers = nullifiers.find_all().await.unwrap();
     assert_eq!(found_nullifiers, inserted_nullifiers);
-    found_nullifiers =
-        block_on(nullifiers.find(QueryFilterBuilder::new().limit(2).offset(1).build())).unwrap();
+    found_nullifiers = nullifiers
+        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .await
+        .unwrap();
     assert_eq!(found_nullifiers, inserted_nullifiers[1..]);
-    let mut found_nullifier = block_on(
-        nullifiers.find_one(
+    let mut found_nullifier = nullifiers
+        .find_one(
             QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
                     String::from("contract_address"),
                     String::from("contract_address 2"),
                 )))
                 .build(),
-        ),
-    )
-    .unwrap()
-    .unwrap();
+        )
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(found_nullifier, inserted_nullifiers[1]);
-    found_nullifier = block_on(nullifiers.find_by_id(&inserted_nullifiers[2].id))
+    found_nullifier = nullifiers
+        .find_by_id(&inserted_nullifiers[2].id)
+        .await
         .unwrap()
         .unwrap();
     assert_eq!(found_nullifier, inserted_nullifiers[2]);
 
     // testing update/update_batch
     found_nullifier.data.chain_id = 10;
-    let updated_nullifier = block_on(nullifiers.update(&found_nullifier)).unwrap();
+    let updated_nullifier = nullifiers.update(&found_nullifier).await.unwrap();
     assert_eq!(updated_nullifier.data, found_nullifier.data);
     inserted_nullifiers[0].data.chain_id = 10;
     inserted_nullifiers[1].data.chain_id = 20;
     inserted_nullifiers[2].data.chain_id = 30;
-    found_nullifiers = block_on(nullifiers.update_batch(&inserted_nullifiers)).unwrap();
+    found_nullifiers = nullifiers.update_batch(&inserted_nullifiers).await.unwrap();
     assert_eq!(found_nullifiers[0].data, inserted_nullifiers[0].data);
     assert_eq!(found_nullifiers[1].data, inserted_nullifiers[1].data);
     assert_eq!(found_nullifiers[2].data, inserted_nullifiers[2].data);
 
     // testing delete/delete_batch/delete_by_filter/delete_all
-    block_on(nullifiers.delete(&inserted_nullifiers[0])).unwrap();
-    assert_eq!(block_on(nullifiers.count_all()).unwrap(), 2);
-    block_on(nullifiers.delete_batch(&vec![inserted_nullifiers[1].clone()])).unwrap();
-    assert_eq!(block_on(nullifiers.count_all()).unwrap(), 1);
-    block_on(nullifiers.insert(&inserted_nullifiers[0].data)).unwrap();
-    assert_eq!(block_on(nullifiers.count_all()).unwrap(), 2);
-    block_on(
-        nullifiers.delete_by_filter(
+    nullifiers.delete(&inserted_nullifiers[0]).await.unwrap();
+    assert_eq!(nullifiers.count_all().await.unwrap(), 2);
+    nullifiers
+        .delete_batch(&vec![inserted_nullifiers[1].clone()])
+        .await
+        .unwrap();
+    assert_eq!(nullifiers.count_all().await.unwrap(), 1);
+    nullifiers
+        .insert(&inserted_nullifiers[0].data)
+        .await
+        .unwrap();
+    assert_eq!(nullifiers.count_all().await.unwrap(), 2);
+    nullifiers
+        .delete_by_filter(
             QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
                     String::from("serial_number"),
                     String::from("serial_number 1"),
                 )))
                 .build(),
-        ),
-    )
-    .unwrap();
-    assert_eq!(block_on(nullifiers.count_all()).unwrap(), 1);
-    block_on(nullifiers.delete_all()).unwrap();
-    assert_eq!(block_on(nullifiers.count_all()).unwrap(), 0);
+        )
+        .await
+        .unwrap();
+    assert_eq!(nullifiers.count_all().await.unwrap(), 1);
+    nullifiers.delete_all().await.unwrap();
+    assert_eq!(nullifiers.count_all().await.unwrap(), 0);
 }

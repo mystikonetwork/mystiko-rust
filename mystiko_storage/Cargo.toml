@@ -9,4 +9,4 @@ num-traits = { version = "0.2.15" }
 ulid = { version = "1.0.0" }
 
 [dev-dependencies]
-tokio-test = { version = "0.4.2" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }

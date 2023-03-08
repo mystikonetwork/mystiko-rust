@@ -10,5 +10,5 @@ num-bigint = { version = "0.4" }
 serde_json = { version = "1.0" }
 
 [dev-dependencies]
-tokio-test = { version = "0.4.2" }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }

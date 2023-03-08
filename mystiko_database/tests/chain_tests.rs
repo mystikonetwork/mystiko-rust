@@ -7,7 +7,6 @@ use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
-use tokio_test::block_on;
 
 async fn create_chains() -> ChainCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
@@ -20,18 +19,19 @@ async fn create_chains() -> ChainCollection<SqlFormatter, SqliteRawData, SqliteS
     chains
 }
 
-#[test]
-fn test_chains_crud() {
-    let chains = block_on(create_chains());
+#[tokio::test]
+async fn test_chains_crud() {
+    let chains = create_chains().await;
 
     // testing insert
     let mut inserted_chains: Vec<Document<Chain>> = Vec::new();
     inserted_chains.push(
-        block_on(chains.insert(&Chain {
-            chain_id: 5,
-            name: String::from("Ethereum Goerli"),
-            name_override: 0,
-            providers: vec![
+        chains
+            .insert(&Chain {
+                chain_id: 5,
+                name: String::from("Ethereum Goerli"),
+                name_override: 0,
+                providers: vec![
                 String::from(
                     "{\"url\": \"wss://goerli.infura.io/ws/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}",
                 ),
@@ -39,16 +39,17 @@ fn test_chains_crud() {
                     "{\"url\": \"https://goerli.infura.io/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}",
                 ),
             ],
-            provider_override: 1,
-            event_filter_size: 2000,
-            synced_block_number: 8497095,
-        }))
-        .unwrap(),
+                provider_override: 1,
+                event_filter_size: 2000,
+                synced_block_number: 8497095,
+            })
+            .await
+            .unwrap(),
     );
-    assert_eq!(block_on(chains.count_all()).unwrap(), 1);
+    assert_eq!(chains.count_all().await.unwrap(), 1);
     // testing insert_batch
     inserted_chains.extend(
-        block_on(chains.insert_batch(&vec![
+        chains.insert_batch(&vec![
             Chain {
                 chain_id:97,
                 name:String::from("BSC Testnet"),
@@ -67,15 +68,15 @@ fn test_chains_crud() {
                 event_filter_size:10000,
                 synced_block_number:32076637,
             },
-        ]))
+        ]).await
         .unwrap(),
     );
-    assert_eq!(block_on(chains.count_all()).unwrap(), 3);
+    assert_eq!(chains.count_all().await.unwrap(), 3);
 
     // testing count
     assert_eq!(
-        block_on(
-            chains.count(
+        chains
+            .count(
                 QueryFilterBuilder::new()
                     .filter(Condition::FILTER(SubFilter::Equal(
                         String::from("name_override"),
@@ -83,34 +84,38 @@ fn test_chains_crud() {
                     )))
                     .build()
             )
-        )
-        .unwrap(),
+            .await
+            .unwrap(),
         1
     );
 
     // testing find_all
-    let mut found_chains = block_on(chains.find_all()).unwrap();
+    let mut found_chains = chains.find_all().await.unwrap();
     assert_eq!(found_chains, inserted_chains);
     // testing find
-    found_chains =
-        block_on(chains.find(QueryFilterBuilder::new().limit(2).offset(1).build())).unwrap();
+    found_chains = chains
+        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .await
+        .unwrap();
     assert_eq!(found_chains, inserted_chains[1..]);
     // testing find_one
-    let mut found_chain = block_on(
-        chains.find_one(
+    let mut found_chain = chains
+        .find_one(
             QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
                     String::from("name"),
                     String::from("Polygon"),
                 )))
                 .build(),
-        ),
-    )
-    .unwrap()
-    .unwrap();
+        )
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(found_chain, inserted_chains[2]);
     // testing find_by_id
-    found_chain = block_on(chains.find_by_id(&inserted_chains[1].id))
+    found_chain = chains
+        .find_by_id(&inserted_chains[1].id)
+        .await
         .unwrap()
         .unwrap();
     assert_eq!(found_chain, inserted_chains[1]);
@@ -118,39 +123,42 @@ fn test_chains_crud() {
     // testing update
     found_chain.data.name = String::from("BSC");
     found_chain.data.name_override = 1;
-    let updated_chain = block_on(chains.update(&found_chain)).unwrap();
+    let updated_chain = chains.update(&found_chain).await.unwrap();
     assert_eq!(updated_chain.data, found_chain.data);
     // testing update_batch
     inserted_chains[0].data.event_filter_size = 10000;
     inserted_chains[1].data.event_filter_size = 20000;
     inserted_chains[2].data.event_filter_size = 30000;
-    found_chains = block_on(chains.update_batch(&inserted_chains)).unwrap();
+    found_chains = chains.update_batch(&inserted_chains).await.unwrap();
     assert_eq!(found_chains[0].data, inserted_chains[0].data);
     assert_eq!(found_chains[1].data, inserted_chains[1].data);
     assert_eq!(found_chains[2].data, inserted_chains[2].data);
 
     // testing delete
-    block_on(chains.delete(&inserted_chains[0])).unwrap();
-    assert_eq!(block_on(chains.count_all()).unwrap(), 2);
+    chains.delete(&inserted_chains[0]).await.unwrap();
+    assert_eq!(chains.count_all().await.unwrap(), 2);
     // testing delete_batch
-    block_on(chains.delete_batch(&vec![inserted_chains[1].clone()])).unwrap();
-    assert_eq!(block_on(chains.count_all()).unwrap(), 1);
+    chains
+        .delete_batch(&vec![inserted_chains[1].clone()])
+        .await
+        .unwrap();
+    assert_eq!(chains.count_all().await.unwrap(), 1);
     // testing delete_by_filter
-    block_on(chains.insert(&inserted_chains[0].data)).unwrap();
-    assert_eq!(block_on(chains.count_all()).unwrap(), 2);
-    block_on(
-        chains.delete_by_filter(
+    chains.insert(&inserted_chains[0].data).await.unwrap();
+    assert_eq!(chains.count_all().await.unwrap(), 2);
+    chains
+        .delete_by_filter(
             QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
                     String::from("name"),
                     String::from("Ethereum Goerli"),
                 )))
                 .build(),
-        ),
-    )
-    .unwrap();
-    assert_eq!(block_on(chains.count_all()).unwrap(), 1);
+        )
+        .await
+        .unwrap();
+    assert_eq!(chains.count_all().await.unwrap(), 1);
     // testing delete_all
-    block_on(chains.delete_all()).unwrap();
-    assert_eq!(block_on(chains.count_all()).unwrap(), 0);
+    chains.delete_all().await.unwrap();
+    assert_eq!(chains.count_all().await.unwrap(), 0);
 }

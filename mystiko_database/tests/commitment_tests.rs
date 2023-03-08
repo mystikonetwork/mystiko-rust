@@ -12,7 +12,6 @@ use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder}
 use num_bigint::BigInt;
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio_test::block_on;
 
 async fn create_commitments() -> CommitmentCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
@@ -25,14 +24,14 @@ async fn create_commitments() -> CommitmentCollection<SqlFormatter, SqliteRawDat
     commitments
 }
 
-#[test]
-fn test_commitments_crud() {
-    let commitments = block_on(create_commitments());
+#[tokio::test]
+async fn test_commitments_crud() {
+    let commitments = create_commitments().await;
 
     // testing insert
     let mut inserted_commitments: Vec<Document<Commitment>> = Vec::new();
     inserted_commitments.push(
-        block_on(commitments.insert(&Commitment {
+        commitments.insert(&Commitment {
             chain_id: 5,
             contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
             commitment_hash: String::from("9709495941671889428395361755215352896616366060066411186055604144562505250548"),
@@ -49,13 +48,13 @@ fn test_commitments_crud() {
             creation_transaction_hash: Some(String::from("0x81d3510c46dfe7a1fc282eb54034b848a3d83f440c551c19e4d513801be00130")),
             spending_transaction_hash: Some(String::from("")),
             rollup_transaction_hash: Some(String::from("")),
-        }))
+        }).await
             .unwrap(),
     );
-    assert_eq!(block_on(commitments.count_all()).unwrap(), 1);
+    assert_eq!(commitments.count_all().await.unwrap(), 1);
     // testing insert_batch
     inserted_commitments.extend(
-        block_on(commitments.insert_batch(&vec![
+        commitments.insert_batch(&vec![
             Commitment {
                 chain_id: 5,
                 contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
@@ -92,15 +91,15 @@ fn test_commitments_crud() {
                 spending_transaction_hash: Some(String::from("0x330687d04916477dc947196237316f1a747dde19eeaf95be65a57ce050c936b7")),
                 rollup_transaction_hash: Some(String::from("")),
             },
-        ]))
+        ]).await
             .unwrap(),
     );
-    assert_eq!(block_on(commitments.count_all()).unwrap(), 3);
+    assert_eq!(commitments.count_all().await.unwrap(), 3);
 
     // testing count
     assert_eq!(
-        block_on(
-            commitments.count(
+        commitments
+            .count(
                 QueryFilterBuilder::new()
                     .filter(Condition::FILTER(SubFilter::Equal(
                         String::from("leaf_index"),
@@ -108,79 +107,88 @@ fn test_commitments_crud() {
                     )))
                     .build()
             )
-        )
-        .unwrap(),
+            .await
+            .unwrap(),
         1
     );
 
     // // testing find_all
-    let mut found_commitments = block_on(commitments.find_all()).unwrap();
+    let mut found_commitments = commitments.find_all().await.unwrap();
     assert_eq!(found_commitments, inserted_commitments);
     //testing find
-    found_commitments =
-        block_on(commitments.find(QueryFilterBuilder::new().limit(2).offset(1).build())).unwrap();
+    found_commitments = commitments
+        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .await
+        .unwrap();
     assert_eq!(found_commitments, inserted_commitments[1..]);
     // testing find_one
-    let mut found_commitment = block_on(
-        commitments.find_one(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("commitment_hash"),
-                    String::from("9709495941671889428395361755215352896616366060066411186055604144562505250548")
-                )))
-                .build(),
-        ),
-    )
+    let mut found_commitment = commitments.find_one(
+        QueryFilterBuilder::new()
+            .filter(Condition::FILTER(SubFilter::Equal(
+                String::from("commitment_hash"),
+                String::from("9709495941671889428395361755215352896616366060066411186055604144562505250548")
+            )))
+            .build(),
+    ).await
         .unwrap()
         .unwrap();
     assert_eq!(found_commitment, inserted_commitments[0]);
     // // testing find_by_id
-    found_commitment = block_on(commitments.find_by_id(&inserted_commitments[1].id))
+    found_commitment = commitments
+        .find_by_id(&inserted_commitments[1].id)
+        .await
         .unwrap()
         .unwrap();
     assert_eq!(found_commitment, inserted_commitments[1]);
 
     // testing update
     found_commitment.data.status = CommitmentStatus::Included;
-    let updated_commitment = block_on(commitments.update(&found_commitment)).unwrap();
+    let updated_commitment = commitments.update(&found_commitment).await.unwrap();
     assert_eq!(updated_commitment.data, found_commitment.data);
     // testing update_batch
     inserted_commitments[0].data.status = CommitmentStatus::Queued;
     inserted_commitments[2].data.creation_transaction_hash = Some(String::from(
         "0xdc8208b5670c42266587330a4cfc796fa795830e73e9732da4faa884d77caeec",
     ));
-    found_commitments = block_on(commitments.update_batch(&inserted_commitments)).unwrap();
+    found_commitments = commitments
+        .update_batch(&inserted_commitments)
+        .await
+        .unwrap();
     assert_eq!(found_commitments[0].data, inserted_commitments[0].data);
     assert_eq!(found_commitments[2].data, inserted_commitments[2].data);
 
     // testing delete
-    block_on(commitments.delete(&inserted_commitments[0])).unwrap();
-    assert_eq!(block_on(commitments.count_all()).unwrap(), 2);
+    commitments.delete(&inserted_commitments[0]).await.unwrap();
+    assert_eq!(commitments.count_all().await.unwrap(), 2);
     // testing delete_batch
-    block_on(commitments.delete_batch(&vec![inserted_commitments[1].clone()])).unwrap();
-    assert_eq!(block_on(commitments.count_all()).unwrap(), 1);
-    // testing delete_by_filter
-    block_on(commitments.insert(&inserted_commitments[1].data)).unwrap();
-    assert_eq!(block_on(commitments.count_all()).unwrap(), 2);
-    block_on(
-        commitments.delete_by_filter(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("commitment_hash"),
-                    String::from("9709505941671889428395361755215352896616366060066411186055604144562505250548"),
-                )))
-                .build(),
-        ),
-    )
+    commitments
+        .delete_batch(&vec![inserted_commitments[1].clone()])
+        .await
         .unwrap();
-    assert_eq!(block_on(commitments.count_all()).unwrap(), 1);
+    assert_eq!(commitments.count_all().await.unwrap(), 1);
+    // testing delete_by_filter
+    commitments
+        .insert(&inserted_commitments[1].data)
+        .await
+        .unwrap();
+    assert_eq!(commitments.count_all().await.unwrap(), 2);
+    commitments.delete_by_filter(
+        QueryFilterBuilder::new()
+            .filter(Condition::FILTER(SubFilter::Equal(
+                String::from("commitment_hash"),
+                String::from("9709505941671889428395361755215352896616366060066411186055604144562505250548"),
+            )))
+            .build(),
+    ).await
+        .unwrap();
+    assert_eq!(commitments.count_all().await.unwrap(), 1);
     // testing delete_all
-    block_on(commitments.delete_all()).unwrap();
-    assert_eq!(block_on(commitments.count_all()).unwrap(), 0);
+    commitments.delete_all().await.unwrap();
+    assert_eq!(commitments.count_all().await.unwrap(), 0);
 }
 
-#[test]
-fn test_commitment_status_serde() {
+#[tokio::test]
+async fn test_commitment_status_serde() {
     assert!(CommitmentStatus::from_str("invalid").is_err());
     assert_eq!(
         CommitmentStatus::from_str("Queued").unwrap(),

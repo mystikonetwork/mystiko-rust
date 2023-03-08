@@ -8,39 +8,50 @@ use mystiko_storage::testing::TestDocumentData;
 use mystiko_storage_sqlite::*;
 use std::path::Path;
 use tempfile::tempdir;
-use tokio_test::block_on;
 
-#[test]
-fn test_collection_exists() {
-    let storage = block_on(SqliteStorageBuilder::new().in_memory().build()).unwrap();
+#[tokio::test]
+async fn test_collection_exists() {
+    let storage = SqliteStorageBuilder::new()
+        .in_memory()
+        .build()
+        .await
+        .unwrap();
     let mut collection = Collection::new(SqlFormatter {}, storage);
-    assert!(!block_on(
-        collection
-            .mut_storage()
-            .collection_exists(TestDocumentData::schema().collection_name)
-    )
-    .unwrap());
-    block_on(collection.migrate(TestDocumentData::schema())).unwrap();
-    assert!(block_on(
-        collection
-            .mut_storage()
-            .collection_exists(TestDocumentData::schema().collection_name)
-    )
-    .unwrap());
+    assert!(!collection
+        .mut_storage()
+        .collection_exists(TestDocumentData::schema().collection_name)
+        .await
+        .unwrap());
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
+    assert!(collection
+        .mut_storage()
+        .collection_exists(TestDocumentData::schema().collection_name)
+        .await
+        .unwrap());
 }
 
-#[test]
-fn test_insert() {
-    let storage = block_on(SqliteStorageBuilder::new().build()).unwrap();
+#[tokio::test]
+async fn test_insert() {
+    let storage = SqliteStorageBuilder::new().build().await.unwrap();
     let mut collection = Collection::new(SqlFormatter {}, storage);
-    block_on(collection.migrate(TestDocumentData::schema())).unwrap();
-    let d1 = block_on(collection.insert(&TestDocumentData {
-        field1: String::from("field1 value"),
-        field2: 0xdeadbeef,
-        field3: Some(std::f64::consts::PI),
-    }))
-    .unwrap();
-    let d2 = block_on(collection.find_by_id::<TestDocumentData>(&d1.id))
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
+    let d1 = collection
+        .insert(&TestDocumentData {
+            field1: String::from("field1 value"),
+            field2: 0xdeadbeef,
+            field3: Some(std::f64::consts::PI),
+        })
+        .await
+        .unwrap();
+    let d2 = collection
+        .find_by_id::<TestDocumentData>(&d1.id)
+        .await
         .unwrap()
         .unwrap();
     assert_eq!(d1.id, d2.id);
@@ -51,88 +62,110 @@ fn test_insert() {
     assert_eq!(d1.data.field3, d2.data.field3);
 }
 
-#[test]
-fn test_update() {
-    let storage = block_on(SqliteStorageBuilder::new().build()).unwrap();
+#[tokio::test]
+async fn test_update() {
+    let storage = SqliteStorageBuilder::new().build().await.unwrap();
     let mut collection = Collection::new(SqlFormatter {}, storage);
-    block_on(collection.migrate(TestDocumentData::schema())).unwrap();
-    let mut d1 = block_on(collection.insert(&TestDocumentData {
-        field1: String::from("field1 value"),
-        field2: 0xdeadbeef,
-        field3: Some(std::f64::consts::PI),
-    }))
-    .unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
+    let mut d1 = collection
+        .insert(&TestDocumentData {
+            field1: String::from("field1 value"),
+            field2: 0xdeadbeef,
+            field3: Some(std::f64::consts::PI),
+        })
+        .await
+        .unwrap();
     d1.data.field3 = None;
-    block_on(collection.update(&d1)).unwrap();
-    let d2 = block_on(collection.find_by_id::<TestDocumentData>(&d1.id))
+    collection.update(&d1).await.unwrap();
+    let d2 = collection
+        .find_by_id::<TestDocumentData>(&d1.id)
+        .await
         .unwrap()
         .unwrap();
     assert!(d2.data.field3.is_none());
 }
 
-#[test]
-fn test_delete() {
-    let storage = block_on(SqliteStorageBuilder::new().build()).unwrap();
+#[tokio::test]
+async fn test_delete() {
+    let storage = SqliteStorageBuilder::new().build().await.unwrap();
     let mut collection = Collection::new(SqlFormatter {}, storage);
-    block_on(collection.migrate(TestDocumentData::schema())).unwrap();
-    let d1 = block_on(collection.insert(&TestDocumentData {
-        field1: String::from("field1 value1"),
-        field2: 0xdeadbeef,
-        field3: Some(std::f64::consts::PI),
-    }))
-    .unwrap();
-    let d2 = block_on(collection.insert(&TestDocumentData {
-        field1: String::from("field1 value2"),
-        field2: 0xbaadbabe,
-        field3: None,
-    }))
-    .unwrap();
-    block_on(collection.delete(&d1)).unwrap();
-    let d3 = block_on(collection.find_by_id::<TestDocumentData>(&d1.id)).unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
+    let d1 = collection
+        .insert(&TestDocumentData {
+            field1: String::from("field1 value1"),
+            field2: 0xdeadbeef,
+            field3: Some(std::f64::consts::PI),
+        })
+        .await
+        .unwrap();
+    let d2 = collection
+        .insert(&TestDocumentData {
+            field1: String::from("field1 value2"),
+            field2: 0xbaadbabe,
+            field3: None,
+        })
+        .await
+        .unwrap();
+    collection.delete(&d1).await.unwrap();
+    let d3 = collection
+        .find_by_id::<TestDocumentData>(&d1.id)
+        .await
+        .unwrap();
     assert!(d3.is_none());
-    block_on(
-        collection.delete_by_filter::<TestDocumentData>(Some(
+    collection
+        .delete_by_filter::<TestDocumentData>(Some(
             QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
                     String::from("field1"),
                     String::from("field1 value2"),
                 )))
                 .build(),
-        )),
-    )
-    .unwrap();
-    let d4 = block_on(collection.find_by_id::<TestDocumentData>(&d2.id)).unwrap();
+        ))
+        .await
+        .unwrap();
+    let d4 = collection
+        .find_by_id::<TestDocumentData>(&d2.id)
+        .await
+        .unwrap();
     assert!(d4.is_none());
 }
 
-#[test]
-fn test_find() {
-    let storage = block_on(SqliteStorageBuilder::new().build()).unwrap();
+#[tokio::test]
+async fn test_find() {
+    let storage = SqliteStorageBuilder::new().build().await.unwrap();
     let mut collection = Collection::new(SqlFormatter {}, storage);
-    block_on(collection.migrate(TestDocumentData::schema())).unwrap();
-    let docs = block_on(collection.insert_batch(&vec![
-        TestDocumentData {
-            field1: String::from("doc1 field1"),
-            field2: 0xdeadbeef,
-            field3: Some(std::f64::consts::PI),
-        },
-        TestDocumentData {
-            field1: String::from("doc2 field1"),
-            field2: 0xbaadbabe,
-            field3: None,
-        },
-        TestDocumentData {
-            field1: String::from("doc3 field1"),
-            field2: 0xdeadbeef,
-            field3: Some(std::f64::consts::PI),
-        },
-    ]))
-    .unwrap();
-    assert_eq!(
-        block_on(collection.count::<TestDocumentData>(None)).unwrap(),
-        3
-    );
-    let d1 = block_on(collection.find::<TestDocumentData>(None)).unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
+    let docs = collection
+        .insert_batch(&vec![
+            TestDocumentData {
+                field1: String::from("doc1 field1"),
+                field2: 0xdeadbeef,
+                field3: Some(std::f64::consts::PI),
+            },
+            TestDocumentData {
+                field1: String::from("doc2 field1"),
+                field2: 0xbaadbabe,
+                field3: None,
+            },
+            TestDocumentData {
+                field1: String::from("doc3 field1"),
+                field2: 0xdeadbeef,
+                field3: Some(std::f64::consts::PI),
+            },
+        ])
+        .await
+        .unwrap();
+    assert_eq!(collection.count::<TestDocumentData>(None).await.unwrap(), 3);
+    let d1 = collection.find::<TestDocumentData>(None).await.unwrap();
     assert_eq!(d1.len(), docs.len());
     for (i, doc) in d1.iter().enumerate() {
         assert_eq!(doc.id, docs[i].id);
@@ -141,10 +174,16 @@ fn test_find() {
         .filter(Condition::FILTER(IsNull(String::from("field3"))))
         .build();
     assert_eq!(
-        block_on(collection.count::<TestDocumentData>(Some(filter1.clone()))).unwrap(),
+        collection
+            .count::<TestDocumentData>(Some(filter1.clone()))
+            .await
+            .unwrap(),
         1
     );
-    let d2 = block_on(collection.find::<TestDocumentData>(Some(filter1))).unwrap();
+    let d2 = collection
+        .find::<TestDocumentData>(Some(filter1))
+        .await
+        .unwrap();
     assert_eq!(d2.len(), 1);
     assert_eq!(d2[0].id, docs[1].id);
     let filter2 = QueryFilterBuilder::new()
@@ -152,23 +191,28 @@ fn test_find() {
         .limit(2)
         .order_by(vec![String::from("field1")], Order::DESC)
         .build();
-    let d3 = block_on(collection.find::<TestDocumentData>(Some(filter2))).unwrap();
+    let d3 = collection
+        .find::<TestDocumentData>(Some(filter2))
+        .await
+        .unwrap();
     assert_eq!(d3.len(), 2);
     assert_eq!(d3[0].id, docs[1].id);
     assert_eq!(d3[1].id, docs[0].id);
 }
 
-#[test]
-fn test_file_db() {
+#[tokio::test]
+async fn test_file_db() {
     let db_dir = tempdir().unwrap();
     let db_path = db_dir.path().join(Path::new("test.db"));
-    let storage = block_on(
-        SqliteStorageBuilder::new()
-            .path(db_path.to_str().unwrap())
-            .build(),
-    )
-    .unwrap();
+    let storage = SqliteStorageBuilder::new()
+        .path(db_path.to_str().unwrap())
+        .build()
+        .await
+        .unwrap();
     let mut collection = Collection::new(SqlFormatter {}, storage);
-    block_on(collection.migrate(TestDocumentData::schema())).unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
     std::fs::remove_dir_all(db_dir).unwrap();
 }
