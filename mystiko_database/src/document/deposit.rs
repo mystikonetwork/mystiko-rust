@@ -168,7 +168,7 @@ impl FromStr for BridgeType {
             "Axelar" => Ok(BridgeType::Axelar),
             _ => Err(Error::new(
                 ErrorKind::InvalidData,
-                format!("invalid deposit status string {}", s),
+                format!("invalid bridge type string {}", s),
             )),
         }
     }
