@@ -11,5 +11,5 @@ sqlx = { version = "0.6.2", features = [ "runtime-tokio-native-tls", "sqlite" ] 
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 
 [dev-dependencies]
-tokio-test = { version = "0.4.2" }
 tempfile = { version = "3.4.0" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
