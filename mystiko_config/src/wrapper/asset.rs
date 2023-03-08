@@ -10,7 +10,7 @@ pub const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct AssetConfig {
-    base: BaseConfig<RawAssetConfig>,
+    pub base: BaseConfig<RawAssetConfig>,
 }
 
 impl AssetConfig {
@@ -70,80 +70,5 @@ impl AssetConfig {
                 "wrong asset address={} and type={:?}", self.asset_address(), self.asset_type()
             ).as_str(),
         );
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use serde_json::json;
-    use crate::common::AssetType;
-    use crate::raw::asset::RawAssetConfig;
-    use crate::raw::base::RawConfig;
-    use crate::wrapper::asset;
-    use crate::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
-
-    async fn default_config() -> (RawAssetConfig, AssetConfig) {
-        let raw_config =
-            RawConfig::create_from_file::<RawAssetConfig>("src/tests/files/asset.valid.json").await;
-        let config = AssetConfig::new(raw_config.clone());
-        (raw_config, config)
-    }
-
-    #[tokio::test]
-    async fn test_equality() {
-        let (raw_config, config) = default_config().await;
-        assert_eq!(config.asset_address(), raw_config.asset_address);
-        assert_eq!(config.asset_type(), &raw_config.asset_type);
-        assert_eq!(config.asset_decimals(), raw_config.asset_decimals);
-        assert_eq!(config.asset_symbol(), raw_config.asset_symbol);
-        let recommended_amounts: Vec<String> =
-            config.recommended_amounts().iter().map(|a| a.to_string()).collect();
-        assert_eq!(recommended_amounts, raw_config.recommended_amounts);
-        assert_eq!(config.recommended_amounts_number(), vec![1f64, 10f64]);
-    }
-
-    #[tokio::test]
-    #[should_panic(expected = "wrong asset address=0x0000000000000000000000000000000000000000 and type=Erc20")]
-    async fn test_wrong_address_or_type_0() {
-        let (mut raw_config, _) = default_config().await;
-        raw_config.asset_address = MAIN_ASSET_ADDRESS.to_string();
-        raw_config.asset_type = AssetType::Erc20;
-        AssetConfig::new(raw_config);
-    }
-
-    #[tokio::test]
-    #[should_panic(expected = "wrong asset address=0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a and type=Main")]
-    async fn test_wrong_address_or_type_1() {
-        let (mut raw_config, _) = default_config().await;
-        raw_config.asset_address = String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a");
-        raw_config.asset_type = AssetType::Main;
-        AssetConfig::new(raw_config);
-    }
-
-    #[tokio::test]
-    async fn test_copy() {
-        let (_, config) = default_config().await;
-        assert_eq!(
-            AssetConfig::new(config.base.copy_data()),
-            config
-        );
-    }
-
-    #[tokio::test]
-    async fn test_mutate() {
-        let (mut raw_config, config) = default_config().await;
-        assert_eq!(config.mutate(None), config);
-        raw_config.asset_decimals = 6;
-        let new_config = config.mutate(Some(raw_config));
-        assert_eq!(new_config.asset_decimals(), 6);
-    }
-
-    #[tokio::test]
-    async fn test_to_json_string() {
-        let (raw_config, config) = default_config().await;
-        let json_string = config.base.to_json_string();
-        let loaded_raw_config =
-            RawConfig::create_from_json_string::<RawAssetConfig>(json_string.as_str()).await;
-        assert_eq!(loaded_raw_config, raw_config);
     }
 }

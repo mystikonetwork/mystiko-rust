@@ -7,7 +7,7 @@ pub struct BaseConfig<R, A = ()>
         R: Validator + Serialize + Clone,
         A: Clone,
 {
-    pub(crate) data: R,
+    pub data: R,
     pub(crate) aux_data: Option<A>,
 }
 

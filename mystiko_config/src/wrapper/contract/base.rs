@@ -9,7 +9,7 @@ pub struct ContractConfig<T, A = ()>
         T: RawContractConfigTrait + Serialize + Clone,
         A: Clone,
 {
-    pub(crate) base: BaseConfig<T, A>,
+    pub base: BaseConfig<T, A>,
 }
 
 impl<T, A> ContractConfig<T, A> where
