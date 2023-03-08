@@ -16,3 +16,5 @@ validator = { version = "0.15", features = ["derive"] }
 
 [dev-dependencies]
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+lazy_static = { version = "1.4.0" }
+async_once = { version = "0.2.6" }

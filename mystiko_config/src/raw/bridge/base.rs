@@ -48,24 +48,3 @@ impl RawBridgeConfigTrait for RawBridgeConfig {
         &self.bridge_type
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::common::BridgeType;
-    use crate::raw::base::{RawConfig, Validator};
-    use crate::raw::bridge::base::RawBridgeConfig;
-
-    async fn default_config() -> RawBridgeConfig {
-        RawConfig::create_from_object::<RawBridgeConfig>(
-            RawBridgeConfig::new("TBridge config".to_string(), BridgeType::Tbridge)
-        ).await
-    }
-
-    #[tokio::test]
-    #[should_panic]
-    async fn test_invalid_name() {
-        let mut config = default_config().await;
-        config.name = "".to_string();
-        config.validation();
-    }
-}
