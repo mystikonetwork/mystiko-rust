@@ -55,17 +55,3 @@ impl<R, A> BaseConfig<R, A> where
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::raw::base::RawConfig;
-    use crate::wrapper::base::BaseConfig;
-
-    #[test]
-    fn test_mutate() {
-        let raw_config = RawConfig::default();
-        let config: BaseConfig<RawConfig> = BaseConfig::new(raw_config.clone(), None);
-        assert_eq!(config.mutate(None, None), config);
-        assert_eq!(config.mutate(Some(raw_config), None), config);
-    }
-}

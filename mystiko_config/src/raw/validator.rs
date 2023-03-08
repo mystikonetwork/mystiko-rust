@@ -82,30 +82,11 @@ pub fn is_sem_ver(s: &str) -> Result<(), ValidationError> {
     Err(ValidationError::new("SemVer is error"))
 }
 
-fn is_numeric(s: &String, no_symbol: bool) -> bool {
+pub fn is_numeric(s: &String, no_symbol: bool) -> bool {
     let re = if no_symbol {
         Regex::new(r"^[0-9]+$").unwrap()
     } else {
         Regex::new(r"^[+-]?([0-9]*[.])?[0-9]+$").unwrap()
     };
     re.is_match(s)
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::raw::validator::is_numeric;
-
-    #[test]
-    fn test_is_numeric() {
-        let mut s = String::from("100");
-        assert_eq!(is_numeric(&s, true), true);
-        s = String::from("+100");
-        assert_eq!(is_numeric(&s, true), false);
-        assert_eq!(is_numeric(&s, false), true);
-        s = String::from("-10");
-        assert_eq!(is_numeric(&s, true), false);
-        assert_eq!(is_numeric(&s, false), true);
-        s = String::from("1.2");
-        assert_eq!(is_numeric(&s, true), false);
-    }
 }

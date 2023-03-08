@@ -1,3 +1,4 @@
+mod base;
 mod asset;
 mod chain;
 mod circuit;

@@ -1,4 +1,4 @@
-use mystiko_config::raw::validator::{array_unique, is_ethereum_address, is_number_string, is_sem_ver, string_vec_each_not_empty};
+use mystiko_config::raw::validator::{array_unique, is_ethereum_address, is_number_string, is_numeric, is_sem_ver, string_vec_each_not_empty};
 
 #[test]
 fn test_is_ethereum_address() {
@@ -68,4 +68,18 @@ fn test_is_sem_ver() {
     assert_eq!(is_sem_ver(&v).is_err(), false);
     v = String::from("0");
     assert_eq!(is_sem_ver(&v).is_err(), true);
+}
+
+#[test]
+fn test_is_numeric() {
+    let mut s = String::from("100");
+    assert_eq!(is_numeric(&s, true), true);
+    s = String::from("+100");
+    assert_eq!(is_numeric(&s, true), false);
+    assert_eq!(is_numeric(&s, false), true);
+    s = String::from("-10");
+    assert_eq!(is_numeric(&s, true), false);
+    assert_eq!(is_numeric(&s, false), true);
+    s = String::from("1.2");
+    assert_eq!(is_numeric(&s, true), false);
 }
