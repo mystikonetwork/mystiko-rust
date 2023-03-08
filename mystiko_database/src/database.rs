@@ -1,6 +1,9 @@
 #![forbid(unsafe_code)]
 
 use crate::collection::account::AccountCollection;
+use crate::collection::chain::ChainCollection;
+use crate::collection::commitment::CommitmentCollection;
+use crate::collection::contract::ContractCollection;
 use crate::collection::deposit::DepositCollection;
 use crate::collection::nullifier::NullifierCollection;
 use crate::collection::transaction::TransactionCollection;
@@ -16,6 +19,9 @@ use std::sync::Arc;
 
 pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub accounts: AccountCollection<F, R, S>,
+    pub chains: ChainCollection<F, R, S>,
+    pub commitments: CommitmentCollection<F, R, S>,
+    pub contracts: ContractCollection<F, R, S>,
     pub deposits: DepositCollection<F, R, S>,
     pub nullifiers: NullifierCollection<F, R, S>,
     pub transactions: TransactionCollection<F, R, S>,
@@ -27,6 +33,9 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
         let collection = Arc::new(Mutex::new(Collection::new(formatter, storage)));
         Database {
             accounts: AccountCollection::new(collection.clone()),
+            chains: ChainCollection::new(collection.clone()),
+            commitments: CommitmentCollection::new(collection.clone()),
+            contracts: ContractCollection::new(collection.clone()),
             deposits: DepositCollection::new(collection.clone()),
             nullifiers: NullifierCollection::new(collection.clone()),
             transactions: TransactionCollection::new(collection.clone()),
@@ -37,6 +46,9 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
     pub async fn migrate(&self) -> Result<Vec<Document<Migration>>, Error> {
         let migrations: Vec<Document<Migration>> = vec![
             self.accounts.migrate().await?,
+            self.chains.migrate().await?,
+            self.commitments.migrate().await?,
+            self.contracts.migrate().await?,
             self.deposits.migrate().await?,
             self.nullifiers.migrate().await?,
             self.transactions.migrate().await?,

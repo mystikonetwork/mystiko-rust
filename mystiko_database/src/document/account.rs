@@ -5,7 +5,8 @@ use std::str::FromStr;
 
 pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "accounts",
-    migrations: &["CREATE TABLE `accounts` (\
+    migrations: &[
+        "CREATE TABLE `accounts` (\
             `id` VARCHAR(64) NOT NULL PRIMARY KEY,\
             `created_at` INT NOT NULL,\
             `updated_at` INT NOT NULL,\
@@ -15,7 +16,10 @@ pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
             `encrypted_secret_key` TEXT NOT NULL,\
             `status` VARCHAR(32) NOT NULL,\
             `scan_size` INT NOT NULL,\
-            `wallet_id` VARCHAR(64) NOT NULL)"],
+            `wallet_id` VARCHAR(64) NOT NULL)",
+        "CREATE INDEX `accounts_shielded_address_index` ON `accounts` (`shielded_address`);",
+        "CREATE INDEX `accounts_public_key_index` ON `accounts` (`public_key`);",
+    ],
     field_names: &[
         "name",
         "shielded_address",

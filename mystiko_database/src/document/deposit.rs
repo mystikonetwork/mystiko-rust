@@ -134,6 +134,47 @@ impl FromStr for DepositStatus {
 }
 
 #[derive(Clone, PartialEq, Debug)]
+pub enum BridgeType {
+    Loop,
+    Poly,
+    Tbridge,
+    Celer,
+    LayerZero,
+    Axelar,
+}
+impl ToString for BridgeType {
+    fn to_string(&self) -> String {
+        match self {
+            BridgeType::Loop => String::from("Loop"),
+            BridgeType::Poly => String::from("Poly"),
+            BridgeType::Tbridge => String::from("Tbridge"),
+            BridgeType::Celer => String::from("Celer"),
+            BridgeType::LayerZero => String::from("LayerZero"),
+            BridgeType::Axelar => String::from("Axelar"),
+        }
+    }
+}
+
+impl FromStr for BridgeType {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Loop" => Ok(BridgeType::Loop),
+            "Poly" => Ok(BridgeType::Poly),
+            "Tbridge" => Ok(BridgeType::Tbridge),
+            "Celer" => Ok(BridgeType::Celer),
+            "LayerZero" => Ok(BridgeType::LayerZero),
+            "Axelar" => Ok(BridgeType::Axelar),
+            _ => Err(Error::new(
+                ErrorKind::InvalidData,
+                format!("invalid bridge type string {}", s),
+            )),
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub struct Deposit {
     pub chain_id: u32,
     pub contract_address: String,
@@ -145,7 +186,7 @@ pub struct Deposit {
     pub asset_symbol: String,
     pub asset_decimals: u32,
     pub asset_address: Option<String>,
-    pub bridge_type: String,
+    pub bridge_type: BridgeType,
     pub amount: BigInt,
     pub rollup_fee_amount: BigInt,
     pub bridge_fee_amount: BigInt,
@@ -183,7 +224,7 @@ impl DocumentData for Deposit {
             "asset_symbol" => Some(self.asset_symbol.clone()),
             "asset_decimals" => Some(self.asset_decimals.to_string()),
             "asset_address" => self.asset_address.clone(),
-            "bridge_type" => Some(self.bridge_type.clone()),
+            "bridge_type" => Some(self.bridge_type.to_string()),
             "amount" => Some(self.amount.to_string()),
             "rollup_fee_amount" => Some(self.rollup_fee_amount.to_string()),
             "bridge_fee_amount" => Some(self.bridge_fee_amount.to_string()),
@@ -218,7 +259,7 @@ impl DocumentData for Deposit {
             asset_symbol: raw.field_string_value("asset_symbol")?.unwrap(),
             asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
             asset_address: raw.field_string_value("asset_address")?,
-            bridge_type: raw.field_string_value("bridge_type")?.unwrap(),
+            bridge_type: BridgeType::from_str(&raw.field_string_value("bridge_type")?.unwrap())?,
             amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10)
                 .unwrap(),
             rollup_fee_amount: BigInt::parse_bytes(
