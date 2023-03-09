@@ -23,7 +23,7 @@ async fn default_config() -> RawPoolContractConfig {
             "120000000000000000".to_string(),
             vec![String::from("circuit-1.0")],
         )
-    ).await
+    ).await.unwrap()
 }
 
 lazy_static! {
@@ -50,78 +50,71 @@ async fn test_validate_success() {
     config.asset_address = None;
     config.min_rollup_fee = "0".to_string();
     config.circuits = vec![];
-    config.validation();
+    assert_eq!(config.validation().is_err(), false);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_pool_name() {
     let mut config = default_config().await;
     config.pool_name = "".to_string();
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_contract_type() {
     let mut config = default_config().await;
     config.contract_type = ContractType::Deposit;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_rollup_fee_0() {
     let mut config = default_config().await;
     config.min_rollup_fee = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_rollup_fee_1() {
     let mut config = default_config().await;
     config.min_rollup_fee = String::from("0xdeadbeef");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_rollup_fee_2() {
     let mut config = default_config().await;
     config.min_rollup_fee = String::from("-1");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_rollup_fee_3() {
     let mut config = default_config().await;
     config.min_rollup_fee = String::from("1.2");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_circuits() {
     let mut config = default_config().await;
     config.circuits = vec![String::from("")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawPoolContractConfig>("tests/files/contract/pool.valid.json").await;
+        RawConfig::create_from_file::<RawPoolContractConfig>("tests/files/contract/pool.valid.json").await.unwrap();
     assert_eq!(file_config, default_config().await);
     assert_eq!(file_config.contract_type, file_config.base.contract_type);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_import_invalid_json_file() {
-    let _file_config =
+    let file_config =
         RawConfig::create_from_file::<RawPoolContractConfig>("tests/files/contract/pool.invalid.json").await;
+    assert_eq!(file_config.is_err(), true);
 }
 
 #[tokio::test]
@@ -140,7 +133,7 @@ async fn test_import_valid_json_str() {
             }
         "#;
     let str_config =
-        RawConfig::create_from_json_string::<RawPoolContractConfig>(json_str).await;
+        RawConfig::create_from_json_string::<RawPoolContractConfig>(json_str).await.unwrap();
     assert_eq!(str_config.contract_type, ContractType::Pool);
     assert_eq!(str_config.contract_type, str_config.base.contract_type);
 }

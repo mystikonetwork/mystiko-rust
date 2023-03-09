@@ -2,6 +2,7 @@ use std::hash::{Hash};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::BridgeType;
+use crate::errors::ValidationError;
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
 use crate::raw::bridge::celer::RawCelerBridgeConfig;
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
@@ -27,23 +28,23 @@ pub enum RawBridgeConfigType {
 impl RawBridgeConfigType {
     pub fn bridge_type(&self) -> &BridgeType {
         match self {
-            RawBridgeConfigType::Axelar(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Celer(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::LayerZero(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Poly(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Tbridge(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Axelar(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Celer(conf) => &conf.bridge_type,
+            RawBridgeConfigType::LayerZero(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Poly(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Tbridge(conf) => &conf.bridge_type,
         }
     }
 }
 
 impl Validator for RawBridgeConfigType {
-    fn validation(&self) {
+    fn validation(&self) -> Result<(), ValidationError> {
         match self {
-            RawBridgeConfigType::Axelar(c) => { c.validation() }
-            RawBridgeConfigType::Celer(c) => { c.validation() }
-            RawBridgeConfigType::LayerZero(c) => { c.validation() }
-            RawBridgeConfigType::Poly(c) => { c.validation() }
-            RawBridgeConfigType::Tbridge(c) => { c.validation() }
+            RawBridgeConfigType::Axelar(conf) => conf.validation(),
+            RawBridgeConfigType::Celer(conf) => conf.validation(),
+            RawBridgeConfigType::LayerZero(conf) => conf.validation(),
+            RawBridgeConfigType::Poly(conf) => conf.validation(),
+            RawBridgeConfigType::Tbridge(conf) => conf.validation(),
         }
     }
 }
@@ -51,18 +52,18 @@ impl Validator for RawBridgeConfigType {
 impl PartialEq for RawBridgeConfigType {
     fn eq(&self, other: &Self) -> bool {
         let type1 = match self {
-            RawBridgeConfigType::Axelar(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Celer(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::LayerZero(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Poly(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Tbridge(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Axelar(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Celer(conf) => &conf.bridge_type,
+            RawBridgeConfigType::LayerZero(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Poly(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Tbridge(conf) => &conf.bridge_type,
         };
         let type2 = match other {
-            RawBridgeConfigType::Axelar(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Celer(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::LayerZero(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Poly(conf) => { &conf.bridge_type }
-            RawBridgeConfigType::Tbridge(conf) => { &conf.bridge_type }
+            RawBridgeConfigType::Axelar(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Celer(conf) => &conf.bridge_type,
+            RawBridgeConfigType::LayerZero(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Poly(conf) => &conf.bridge_type,
+            RawBridgeConfigType::Tbridge(conf) => &conf.bridge_type,
         };
         type1 == type2
     }
@@ -100,10 +101,18 @@ pub struct RawMystikoConfig {
 }
 
 impl Validator for RawMystikoConfig {
-    fn validation(&self) {
-        self.base.validate_object(self);
-        for bridge in &self.bridges {
-            bridge.validation()
+    fn validation(&self) -> Result<(), ValidationError> {
+        let result = self.base.validate_object(self);
+        match result {
+            Ok(_) => {
+                for bridge in &self.bridges {
+                    bridge.validation()?
+                }
+            }
+            Err(err) => {
+                return Err(err);
+            }
         }
+        Ok(())
     }
 }

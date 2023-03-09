@@ -2,6 +2,7 @@ use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::{Validate};
 use crate::common::{AssetType};
+use crate::errors::ValidationError;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_ethereum_address, array_unique, is_number_string};
 
@@ -44,7 +45,7 @@ impl PartialEq for RawAssetConfig {
 }
 
 impl Validator for RawAssetConfig {
-    fn validation(&self) {
+    fn validation(&self) -> Result<(), ValidationError> {
         self.base.validate_object::<&RawAssetConfig>(self)
     }
 }

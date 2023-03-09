@@ -14,61 +14,55 @@ async fn default_config() -> RawAssetConfig {
                 String::from("100000000000000000"),
             ],
         )
-    ).await
+    ).await.unwrap()
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_asset_symbol() {
     let mut config = default_config().await;
     config.asset_symbol = "".to_string();
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_asset_address_0() {
     let mut config = default_config().await;
     config.asset_address = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_asset_address_1() {
     let mut config = default_config().await;
     config.asset_address = String::from("0xdeadbeef");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_recommended_amounts_0() {
     let mut config = default_config().await;
     config.recommended_amounts = vec![String::from("")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_recommended_amounts_1() {
     let mut config = default_config().await;
     config.recommended_amounts = vec![String::from("abcd")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_recommended_amounts_2() {
     let mut config = default_config().await;
     config.recommended_amounts = vec![String::from("1"), String::from("1")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawAssetConfig>("tests/files/asset.valid.json").await;
+        RawConfig::create_from_file::<RawAssetConfig>("tests/files/asset.valid.json").await.unwrap();
     assert_eq!(file_config, default_config().await);
 }
 
@@ -76,5 +70,5 @@ async fn test_import_valid_json_file() {
 #[should_panic]
 async fn test_import_invalid_json_file() {
     let _file_config =
-        RawConfig::create_from_file::<RawAssetConfig>("tests/files/asset.invalid.json").await;
+        RawConfig::create_from_file::<RawAssetConfig>("tests/files/asset.invalid.json").await.unwrap();
 }

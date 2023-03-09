@@ -5,7 +5,7 @@ use mystiko_config::raw::bridge::celer::RawCelerBridgeConfig;
 use mystiko_config::wrapper::bridge::celer::CelerBridgeConfig;
 
 async fn default_raw_config() -> RawCelerBridgeConfig {
-    RawConfig::create_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer.valid.json").await
+    RawConfig::create_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer.valid.json").await.unwrap()
 }
 
 async fn default_celer_config() -> CelerBridgeConfig {
@@ -54,6 +54,6 @@ async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
     let json_string = config.base.base.to_json_string();
     let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawCelerBridgeConfig>(&json_string).await;
+        RawConfig::create_from_json_string::<RawCelerBridgeConfig>(&json_string).await.unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }

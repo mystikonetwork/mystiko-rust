@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{ContractType};
+use crate::errors;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{is_ethereum_address};
 
@@ -66,7 +67,7 @@ impl RawContractConfig {
 }
 
 impl Validator for RawContractConfig {
-    fn validation(&self) {
+    fn validation(&self) -> Result<(), errors::ValidationError> {
         self.base.validate_object(self)
     }
 }

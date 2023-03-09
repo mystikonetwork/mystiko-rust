@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt::Debug;
 use std::fs::{File};
 use std::io::Read;
@@ -6,32 +7,38 @@ use serde::de::DeserializeOwned;
 use serde_json::{from_str};
 use validator::Validate;
 use crate::common::validate_object;
+use crate::errors::ValidationError;
 
 pub trait Validator {
-    fn validation(&self);
+    fn validation(&self) -> Result<(), ValidationError>;
 }
 
 #[derive(Validate, Clone, Debug, Deserialize, Serialize, Default, PartialEq, Eq)]
 pub struct RawConfig;
 
 impl RawConfig {
-    pub fn validate_object<T>(&self, object: T) where
-        T: Validate + Debug
+    pub fn validate_object<T>(&self, object: T) -> Result<(), ValidationError>
+        where
+            T: Validate + Debug
     {
         let result = validate_object(object);
-        if result.is_err() {
-            panic!("{:?}", result.unwrap_err());
+        return if result.is_err() {
+            Err(ValidationError::new(result.unwrap_err()))
+        } else {
+            Ok(())
+        };
+    }
+
+    pub async fn create_from_object<T>(plain: T) -> Result<T, ValidationError>
+        where T: DeserializeOwned + Serialize + Validator
+    {
+        match plain.validation() {
+            Ok(_) => { Ok(plain) }
+            Err(err) => { Err(err) }
         }
     }
 
-    pub async fn create_from_object<T>(plain: T) -> T
-        where T: DeserializeOwned + Serialize + Validator
-    {
-        plain.validation();
-        plain
-    }
-
-    pub async fn create_from_file<T>(json_file: &str) -> T
+    pub async fn create_from_file<T>(json_file: &str) -> Result<T, ValidationError>
         where T: DeserializeOwned + Serialize + Validator
     {
         let mut file = File::open(json_file).unwrap();
@@ -41,7 +48,7 @@ impl RawConfig {
         RawConfig::create_from_object::<T>(object).await
     }
 
-    pub async fn create_from_json_string<T>(json_str: &str) -> T
+    pub async fn create_from_json_string<T>(json_str: &str) -> Result<T, ValidationError>
         where T: DeserializeOwned + Serialize + Validator
     {
         let object: T = from_str(json_str).unwrap();
@@ -50,7 +57,7 @@ impl RawConfig {
 }
 
 impl Validator for RawConfig {
-    fn validation(&self) {
+    fn validation(&self) -> Result<(), ValidationError> {
         self.validate_object(self)
     }
 }

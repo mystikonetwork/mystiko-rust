@@ -15,7 +15,7 @@ use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 
 async fn raw_mystiko_config() -> RawMystikoConfig {
-    RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json").await
+    RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json").await.unwrap()
 }
 
 async fn circuit_configs() -> (HashMap<String, CircuitConfig>, HashMap<CircuitType, CircuitConfig>) {
@@ -70,7 +70,7 @@ async fn default_raw_config() -> RawDepositContractConfig {
     let mut raw_config =
         RawConfig::create_from_file::<RawDepositContractConfig>(
             "tests/files/contract/deposit.valid.json"
-        ).await;
+        ).await.unwrap();
     raw_config.bridge_type = BridgeType::Loop;
     raw_config.peer_chain_id = None;
     raw_config.peer_contract_address = None;
@@ -368,6 +368,6 @@ async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
     let json_string = config.base.base.to_json_string();
     let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawDepositContractConfig>(json_string.as_str()).await;
+        RawConfig::create_from_json_string::<RawDepositContractConfig>(json_string.as_str()).await.unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }

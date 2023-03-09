@@ -8,7 +8,7 @@ use mystiko_config::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
 async fn default_config() -> RawMystikoConfig {
     RawConfig::create_from_file::<RawMystikoConfig>(
         "tests/files/mystiko.valid.json"
-    ).await
+    ).await.unwrap()
 }
 
 lazy_static! {
@@ -20,79 +20,71 @@ lazy_static! {
 #[tokio::test]
 async fn test_valid_success() {
     let config = CONFIG_CREATER.get().await;
-    config.validation();
+    assert_eq!(config.validation().is_err(), false);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_version_0() {
     let mut config = default_config().await;
     config.version = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_version_1() {
     let mut config = default_config().await;
     config.version = String::from("wrong version");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_chains() {
     let mut config = default_config().await;
     config.chains.append(&mut config.chains.clone());
-    config.validation()
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_bridges_0() {
     let mut config = default_config().await;
     config.bridges.append(&mut config.bridges.clone());
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_bridges_1() {
     let mut config = default_config().await;
     let bridge_config = RawTBridgeConfig::new("".to_string());
     config.bridges.push(RawBridgeConfigType::Tbridge(bridge_config));
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_circuits_0() {
     let mut config = default_config().await;
     config.circuits.append(&mut config.circuits.clone());
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_circuits_1() {
     let mut config = default_config().await;
     let mut circuit_configs = config.circuits;
     circuit_configs[0].name = "".to_string();
     config.circuits = circuit_configs;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_indexer() {
     let mut config = default_config().await;
     config.indexer = Some(RawIndexerConfig::new("not a url".to_string(), 1000));
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_import_invalid_json_file() {
-    let _file_config =
+    let file_config =
         RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.invalid.json").await;
+    assert_eq!(file_config.is_err(), true);
 }

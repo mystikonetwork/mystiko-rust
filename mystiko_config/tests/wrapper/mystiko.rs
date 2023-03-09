@@ -17,13 +17,13 @@ use mystiko_config::wrapper::mystiko::{BridgeConfigType, MystikoConfig};
 async fn default_raw_config() -> RawMystikoConfig {
     RawConfig::create_from_file::<RawMystikoConfig>(
         "tests/files/mystiko.valid01.json"
-    ).await
+    ).await.unwrap()
 }
 
 async fn default_mystiko_config() -> MystikoConfig {
     MystikoConfig::create_from_raw(
         default_raw_config().await
-    ).await
+    ).await.unwrap()
 }
 
 lazy_static! {
@@ -537,13 +537,12 @@ async fn test_create_from_file() {
     let new_config =
         MystikoConfig::create_from_file(
             "tests/files/mystiko.valid01.json".to_string()
-        ).await;
+        ).await.unwrap();
     let config = default_mystiko_config().await;
     assert_eq!(new_config.base.to_json_string(), config.base.to_json_string());
 }
 
 #[tokio::test]
-#[should_panic(expected = "duplicate default circuit type=TRANSACTION2x2 definition")]
 async fn test_duplicate_circuit_type_default() {
     let mut raw_config = default_raw_config().await;
     raw_config.circuits.push(
@@ -557,13 +556,19 @@ async fn test_duplicate_circuit_type_default() {
                 vec!["./Transaction2x2.pkey.gz".to_string()],
                 vec!["./Transaction2x2.vkey.gz".to_string()],
             )
-        ).await
+        ).await.unwrap()
     );
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
+    assert_eq!(
+        validate.unwrap_err().errors.contains(
+            &String::from("duplicate default circuit type=TRANSACTION2x2 definition")
+        ),
+        true
+    );
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_duplicate_circuit_name() {
     let mut raw_config = default_raw_config().await;
     raw_config.circuits.push(
@@ -577,7 +582,7 @@ async fn test_duplicate_circuit_name() {
                 vec!["./Transaction2x2.pkey.gz".to_string()],
                 vec!["./Transaction2x2.vkey.gz".to_string()],
             )
-        ).await
+        ).await.unwrap()
     );
     raw_config.circuits.push(
         RawConfig::create_from_object::<RawCircuitConfig>(
@@ -590,35 +595,41 @@ async fn test_duplicate_circuit_name() {
                 vec!["./Transaction2x2.pkey.gz".to_string()],
                 vec!["./Transaction2x2.vkey.gz".to_string()],
             )
-        ).await
+        ).await.unwrap()
     );
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic(expected = "missing definition of default circuit type=Rollup2")]
 async fn test_missing_default_circuit() {
     let mut raw_config = default_raw_config().await;
     raw_config.circuits = raw_config.circuits[0..1].to_vec();
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
+    assert_eq!(
+        validate.unwrap_err().errors.contains(
+            &String::from("missing definition of default circuit type=Rollup2")
+        ),
+        true
+    );
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_duplicate_bridge_type() {
     let mut raw_config = default_raw_config().await;
     raw_config.bridges.push(
         RawBridgeConfigType::Tbridge(
             RawConfig::create_from_object::<RawTBridgeConfig>(RawTBridgeConfig::new(
                 "TBridge #2".to_string()
-            )).await
+            )).await.unwrap()
         )
     );
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic(expected = "bridge type = Celer definition does not exist")]
 async fn test_missing_bridge_definition() {
     let mut raw_config = default_raw_config().await;
     raw_config.bridges = raw_config.bridges
@@ -628,11 +639,17 @@ async fn test_missing_bridge_definition() {
         )
         .cloned()
         .collect();
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
+    assert_eq!(
+        validate.unwrap_err().errors.contains(
+            &String::from("bridge type = Celer definition does not exist")
+        ),
+        true
+    );
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_duplicate_chain_config() {
     let mut raw_config = default_raw_config().await;
     raw_config.chains.push(
@@ -659,52 +676,53 @@ async fn test_duplicate_chain_config() {
                 vec![],
                 vec![],
             )
-        ).await
+        ).await.unwrap()
     );
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_peer_chain_id() {
     let mut raw_config = default_raw_config().await;
     raw_config.chains[0].deposit_contracts[1].peer_chain_id = Some(1024);
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_peer_chain_address() {
     let mut raw_config = default_raw_config().await;
     raw_config.chains[0].deposit_contracts[1].peer_contract_address =
         Some("0x5c7c88e07e3899fff3cc0effe23494591dfe87b6".to_string());
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_bridge_type_mismatch() {
     let mut raw_config = default_raw_config().await;
     raw_config.chains[0].deposit_contracts[2].bridge_type = BridgeType::Poly;
     raw_config.chains[0].pool_contracts[2].bridge_type = BridgeType::Poly;
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_peer_chain_id_mismatch() {
     let mut raw_config = default_raw_config().await;
     raw_config.chains[1].deposit_contracts[1].peer_chain_id = Some(1024);
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_peer_contract_address_mismatch() {
     let mut raw_config = default_raw_config().await;
     raw_config.chains[1].deposit_contracts[1].peer_contract_address =
         Some("0x5c7c88e07e3899fff3cc0effe23494591dfe87b6".to_string());
-    MystikoConfig::create_from_raw(raw_config).await;
+    let validate = MystikoConfig::create_from_raw(raw_config).await;
+    assert_eq!(validate.is_err(), true);
 }
 
 // TODO supplement
@@ -738,9 +756,9 @@ async fn test_get_indexer_config() {
     raw_config.indexer = Some(
         RawConfig::create_from_file::<RawIndexerConfig>(
             "tests/files/indexer.valid.json"
-        ).await
+        ).await.unwrap()
     );
-    let config = MystikoConfig::create_from_raw(raw_config).await;
+    let config = MystikoConfig::create_from_raw(raw_config).await.unwrap();
     let indexer = config.indexer();
     match indexer {
         None => { panic!() }

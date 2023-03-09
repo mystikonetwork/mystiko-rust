@@ -15,7 +15,7 @@ async fn default_config() -> RawCircuitConfig {
             vec![String::from("./Rollup1.pkey.gz")],
             vec![String::from("./Rollup1.vkey.gz")],
         )
-    ).await
+    ).await.unwrap()
 }
 
 #[tokio::test]
@@ -35,49 +35,44 @@ async fn test_hash() {
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_name() {
     let mut config = default_config().await;
     config.name = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_program_file() {
     let mut config = default_config().await;
     config.program_file = vec![String::from("")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_abi_file() {
     let mut config = default_config().await;
     config.abi_file = vec![String::from("")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_proving_key_file() {
     let mut config = default_config().await;
     config.proving_key_file = vec![String::from("")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_verifying_key_file() {
     let mut config = default_config().await;
     config.verifying_key_file = vec![String::from("")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawCircuitConfig>("tests/files/circuit.valid.json").await;
+        RawConfig::create_from_file::<RawCircuitConfig>("tests/files/circuit.valid.json").await.unwrap();
     assert_eq!(file_config, default_config().await);
 }
 

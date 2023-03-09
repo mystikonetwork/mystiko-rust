@@ -29,230 +29,204 @@ async fn default_config() -> RawDepositContractConfig {
             Some(2),
             Some(1000),
         )
-    ).await
+    ).await.unwrap()
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_type() {
     let mut config = default_config().await;
     config.contract_type = ContractType::Pool;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_pool_address_0() {
     let mut config = default_config().await;
     config.pool_address = String::from("0xdeadbeef");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_pool_address_1() {
     let mut config = default_config().await;
     config.pool_address = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_peer_chain_id() {
     let mut config = default_config().await;
     config.peer_chain_id = Some(0);
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_peer_contract_address_0() {
     let mut config = default_config().await;
     config.peer_contract_address = Some(String::from(""));
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_peer_contract_address_1() {
     let mut config = default_config().await;
     config.peer_contract_address = Some(String::from("0xdeadbeef"));
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_amount_0() {
     let mut config = default_config().await;
     config.min_amount = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_amount_1() {
     let mut config = default_config().await;
     config.min_amount = String::from("0xdeadbeef");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_amount_2() {
     let mut config = default_config().await;
     config.min_amount = String::from("-1");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_amount_3() {
     let mut config = default_config().await;
     config.min_amount = String::from("1.2");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_max_amount_0() {
     let mut config = default_config().await;
     config.max_amount = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_max_amount_1() {
     let mut config = default_config().await;
     config.max_amount = String::from("0xdeadbeef");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_max_amount_2() {
     let mut config = default_config().await;
     config.max_amount = String::from("-1");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_max_amount_3() {
     let mut config = default_config().await;
     config.max_amount = String::from("1.2");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_bridge_fee_0() {
     let mut config = default_config().await;
     config.min_bridge_fee = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_bridge_fee_1() {
     let mut config = default_config().await;
     config.min_bridge_fee = String::from("0xdeadbeef");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_bridge_fee_2() {
     let mut config = default_config().await;
     config.min_bridge_fee = String::from("-1");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_bridge_fee_3() {
     let mut config = default_config().await;
     config.min_bridge_fee = String::from("1.2");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_executor_fee_0() {
     let mut config = default_config().await;
     config.min_executor_fee = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_executor_fee_1() {
     let mut config = default_config().await;
     config.min_executor_fee = String::from("0xdeadbeef");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_executor_fee_2() {
     let mut config = default_config().await;
     config.min_executor_fee = String::from("-1");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_min_executor_fee_3() {
     let mut config = default_config().await;
     config.min_executor_fee = String::from("1.2");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_bridge_fee_asset_address_0() {
     let mut config = default_config().await;
     config.bridge_fee_asset_address = Some(String::from("0xdeadbeef"));
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_bridge_fee_asset_address_1() {
     let mut config = default_config().await;
     config.bridge_fee_asset_address = Some(String::from(""));
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_executor_fee_asset_address_0() {
     let mut config = default_config().await;
     config.executor_fee_asset_address = Some(String::from("0xdeadbeef"));
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_executor_fee_asset_address_1() {
     let mut config = default_config().await;
     config.executor_fee_asset_address = Some(String::from(""));
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawDepositContractConfig>("tests/files/contract/deposit.valid.json").await;
+        RawConfig::create_from_file::<RawDepositContractConfig>("tests/files/contract/deposit.valid.json").await.unwrap();
     assert_eq!(file_config, default_config().await);
     assert_eq!(file_config.contract_type, file_config.base.contract_type);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_import_invalid_json_file() {
-    let _file_config =
+    let file_config =
         RawConfig::create_from_file::<RawDepositContractConfig>("tests/files/contract/deposit.invalid.json").await;
+    assert_eq!(file_config.is_err(), true);
 }
 
 #[tokio::test]
@@ -279,7 +253,7 @@ async fn test_import_valid_json_str() {
             }
         "#;
     let str_config =
-        RawConfig::create_from_json_string::<RawDepositContractConfig>(json_str).await;
+        RawConfig::create_from_json_string::<RawDepositContractConfig>(json_str).await.unwrap();
     assert_eq!(str_config.contract_type, ContractType::Deposit);
     assert_eq!(str_config.contract_type, str_config.base.contract_type);
 }

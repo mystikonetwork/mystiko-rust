@@ -58,7 +58,10 @@ pub fn validate_nested_vec<T>(v: &Vec<T>) -> Result<(), ValidationError>
     where T: Validator
 {
     for x in v {
-        x.validation()
+        let result = x.validation();
+        if result.is_err() {
+            return Err(ValidationError::new("validate nested vec error"));
+        }
     }
 
     Ok(())

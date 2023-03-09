@@ -2,6 +2,7 @@ use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Deserializer, Serialize};
 use validator::{Validate, ValidationError};
 use crate::common::{BridgeType};
+use crate::errors;
 use crate::raw::base::Validator;
 use crate::raw::bridge::base::{RawBridgeConfig, RawBridgeConfigTrait};
 
@@ -40,8 +41,8 @@ impl RawTBridgeConfig {
 }
 
 impl Validator for RawTBridgeConfig {
-    fn validation(&self) {
-        self.base.base.validate_object(self);
+    fn validation(&self) -> Result<(), errors::ValidationError> {
+        self.base.base.validate_object(self)
     }
 }
 

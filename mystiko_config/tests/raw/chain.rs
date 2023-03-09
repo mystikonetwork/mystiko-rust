@@ -18,7 +18,7 @@ async fn init_provider_config() -> RawProviderConfig {
             Some(5000),
             Some(5),
         )
-    ).await
+    ).await.unwrap()
 }
 
 async fn init_deposit_contract_config() -> RawDepositContractConfig {
@@ -47,7 +47,7 @@ async fn init_deposit_contract_config() -> RawDepositContractConfig {
             None,
             None,
         )
-    ).await
+    ).await.unwrap()
 }
 
 async fn init_pool_contract_config() -> RawPoolContractConfig {
@@ -68,7 +68,7 @@ async fn init_pool_contract_config() -> RawPoolContractConfig {
             "40000000000000000".to_string(),
             vec![String::from("circuit-1.0")],
         )
-    ).await
+    ).await.unwrap()
 }
 
 async fn init_assets_config() -> RawAssetConfig {
@@ -80,7 +80,7 @@ async fn init_assets_config() -> RawAssetConfig {
             "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
             vec![],
         )
-    ).await
+    ).await.unwrap()
 }
 
 async fn default_config() -> RawChainConfig {
@@ -108,7 +108,7 @@ async fn default_config() -> RawChainConfig {
             vec![pool_contract_config],
             vec![asset_config],
         )
-    ).await
+    ).await.unwrap()
 }
 
 lazy_static! {
@@ -145,181 +145,160 @@ async fn test_hash() {
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_name() {
     let mut config = default_config().await;
     config.name = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_asset_symbol() {
     let mut config = default_config().await;
     config.asset_symbol = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_asset_decimals() {
     let mut config = default_config().await;
     config.asset_decimals = 0;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_recommended_amounts_0() {
     let mut config = default_config().await;
     config.recommended_amounts = vec![String::from("")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_recommended_amounts_1() {
     let mut config = default_config().await;
     config.recommended_amounts = vec![String::from("abcd")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_recommended_amounts_2() {
     let mut config = default_config().await;
     config.recommended_amounts = vec![String::from("1"), String::from("1")];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_explore_url_0() {
     let mut config = default_config().await;
     config.explorer_url = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_explore_url_1() {
     let mut config = default_config().await;
     config.explorer_url = String::from("wrong url");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_explore_prefix_0() {
     let mut config = default_config().await;
     config.explorer_prefix = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_explore_prefix_1() {
     let mut config = default_config().await;
     config.explorer_prefix = String::from("wrong prefix");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_providers_0() {
     let mut config = default_config().await;
     config.providers = vec![];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_providers_1() {
     let mut config = default_config().await;
     let mut provider_config = config.providers[0].clone();
     provider_config.url = String::from("wrong url");
     config.providers = vec![provider_config];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_signer_endpoint_0() {
     let mut config = default_config().await;
     config.signer_endpoint = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_signer_endpoint_1() {
     let mut config = default_config().await;
     config.signer_endpoint = String::from("wrong url");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_signer_endpoint_2() {
     let mut config = default_config().await;
     config.signer_endpoint = String::from("wrong_schema://127.0.0.1");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_event_filter_size() {
     let mut config = default_config().await;
     config.event_filter_size = 0;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_indexer_filter_size() {
     let mut config = default_config().await;
     config.indexer_filter_size = 0;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_pool_contracts_0() {
     let mut config = default_config().await;
     config.pool_contracts.push(init_pool_contract_config().await);
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_pool_contracts_1() {
     let mut config = default_config().await;
     let mut pool_contract = config.pool_contracts[0].clone();
     pool_contract.asset_address = Some(String::from("0xdeadbeef"));
     config.pool_contracts = vec![pool_contract];
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_deposit_contracts() {
     let mut config = default_config().await;
     config.deposit_contracts.push(init_deposit_contract_config().await);
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_assets() {
     let mut config = default_config().await;
     config.assets.push(init_assets_config().await);
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawChainConfig>("tests/files/chain.valid.json").await;
+        RawConfig::create_from_file::<RawChainConfig>("tests/files/chain.valid.json").await.unwrap();
     assert_eq!(file_config, default_config().await)
 }
 

@@ -17,7 +17,7 @@ async fn default_config() -> RawPolyBridgeConfig {
             "https://explorer.poly.network".to_string(),
             "/testnet/api/v1/getcrosstx?txhash=%tx%".to_string(),
         )
-    ).await
+    ).await.unwrap()
 }
 
 lazy_static! {
@@ -56,89 +56,80 @@ async fn test_validate_success() {
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_type() {
     let mut config = default_config().await;
     config.bridge_type = BridgeType::Tbridge;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_explorer_url_0() {
     let mut config = default_config().await;
     config.explorer_url = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_explorer_url_1() {
     let mut config = default_config().await;
     config.explorer_url = String::from("wrong url");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_explorer_prefix_0() {
     let mut config = default_config().await;
     config.explorer_prefix = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_explorer_prefix_1() {
     let mut config = default_config().await;
     config.explorer_prefix = String::from("wrong prefix");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_api_url_0() {
     let mut config = default_config().await;
     config.api_url = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_api_url_1() {
     let mut config = default_config().await;
     config.api_url = String::from("wrong url");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_api_prefix_0() {
     let mut config = default_config().await;
     config.api_prefix = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_api_prefix_1() {
     let mut config = default_config().await;
     config.api_prefix = String::from("wrong prefix");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawPolyBridgeConfig>("tests/files/bridge/poly.valid.json").await;
+        RawConfig::create_from_file::<RawPolyBridgeConfig>("tests/files/bridge/poly.valid.json").await.unwrap();
     assert_eq!(file_config, default_config().await)
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_import_invalid_json_file() {
-    let _file_config =
+    let file_config =
         RawConfig::create_from_file::<RawPolyBridgeConfig>("tests/files/bridge/poly.invalid.json").await;
+    assert_eq!(file_config.is_err(), true);
 }
 
 #[tokio::test]
@@ -151,7 +142,7 @@ async fn test_import_valid_json_str() {
             "apiPrefix": "/testnet/api/v1/getcrosstx?txhash=%tx%"
         }"#;
     let str_config =
-        RawConfig::create_from_json_string::<RawPolyBridgeConfig>(json_str).await;
+        RawConfig::create_from_json_string::<RawPolyBridgeConfig>(json_str).await.unwrap();
     assert_eq!(str_config.bridge_type, BridgeType::Poly);
     assert_eq!(str_config.bridge_type, str_config.base.bridge_type)
 }

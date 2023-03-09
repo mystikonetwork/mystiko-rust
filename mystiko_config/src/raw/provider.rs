@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+use crate::errors::ValidationError;
 use crate::raw::base::{RawConfig, Validator};
 
 fn default_timeout_ms() -> u32 {
@@ -43,7 +44,7 @@ impl RawProviderConfig {
 }
 
 impl Validator for RawProviderConfig {
-    fn validation(&self) {
+    fn validation(&self) -> Result<(), ValidationError>{
         self.base.validate_object(self)
     }
 }

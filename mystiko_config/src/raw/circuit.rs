@@ -2,6 +2,7 @@ use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{CircuitType};
+use crate::errors::ValidationError;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{string_vec_each_not_empty};
 
@@ -61,7 +62,7 @@ impl RawCircuitConfig {
 }
 
 impl Validator for RawCircuitConfig {
-    fn validation(&self) {
+    fn validation(&self) -> Result<(), ValidationError> {
         self.base.validate_object(self)
     }
 }

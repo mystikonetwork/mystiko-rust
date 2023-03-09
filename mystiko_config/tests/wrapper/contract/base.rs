@@ -5,7 +5,7 @@ use mystiko_config::raw::contract::base::RawContractConfig;
 use mystiko_config::wrapper::contract::base::ContractConfig;
 
 async fn default_raw_config() -> RawContractConfig {
-    RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.valid.json").await
+    RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.valid.json").await.unwrap()
 }
 
 async fn default_contract_config() -> ContractConfig<RawContractConfig> {
@@ -60,6 +60,6 @@ async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
     let json_string = config.base.to_json_string();
     let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawContractConfig>(&json_string).await;
+        RawConfig::create_from_json_string::<RawContractConfig>(&json_string).await.unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }

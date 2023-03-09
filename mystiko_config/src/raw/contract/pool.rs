@@ -2,6 +2,7 @@ use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Deserializer, Serialize};
 use validator::{Validate, ValidationError};
 use crate::common::{BridgeType, ContractType};
+use crate::errors;
 use crate::raw::base::Validator;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 use crate::raw::validator::{is_ethereum_address, is_number_string, string_vec_each_not_empty};
@@ -79,7 +80,7 @@ impl PartialEq for RawPoolContractConfig {
 }
 
 impl Validator for RawPoolContractConfig {
-    fn validation(&self) {
+    fn validation(&self) -> Result<(), errors::ValidationError> {
         self.base.base.validate_object(self)
     }
 }

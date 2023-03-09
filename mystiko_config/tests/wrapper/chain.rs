@@ -15,7 +15,7 @@ use mystiko_config::wrapper::circuit::CircuitConfig;
 use mystiko_config::wrapper::provider::ProviderConfig;
 
 async fn raw_mystiko_config() -> RawMystikoConfig {
-    RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json").await
+    RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json").await.unwrap()
 }
 
 async fn default_circuit_configs() -> HashMap<CircuitType, CircuitConfig> {
@@ -41,7 +41,7 @@ async fn circuit_configs_by_name() -> HashMap<String, CircuitConfig> {
 }
 
 async fn default_raw_config() -> RawChainConfig {
-    RawConfig::create_from_file::<RawChainConfig>("tests/files/chain.valid.json").await
+    RawConfig::create_from_file::<RawChainConfig>("tests/files/chain.valid.json").await.unwrap()
 }
 
 async fn default_chain_config() -> ChainConfig {
@@ -153,7 +153,7 @@ async fn test_peer_chain_ids() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     let pool_contract_config =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -170,7 +170,7 @@ async fn test_peer_chain_ids() {
             Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     raw_config.deposit_contracts.push(loop_deposit_contract_config);
     raw_config.pool_contracts.push(pool_contract_config);
     config = ChainConfig::new(raw_config, Some(
@@ -221,7 +221,7 @@ async fn test_get_asset_symbols() {
             None,
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     let pool_contract_config2 =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -238,7 +238,7 @@ async fn test_get_asset_symbols() {
             None,
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     let loop_deposit_contract_config1 =
         RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
             RawContractConfig::new(
@@ -263,7 +263,7 @@ async fn test_get_asset_symbols() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     let loop_deposit_contract_config2 =
         RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
             RawContractConfig::new(
@@ -288,7 +288,7 @@ async fn test_get_asset_symbols() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     raw_config.deposit_contracts.push(loop_deposit_contract_config1);
     raw_config.deposit_contracts.push(loop_deposit_contract_config2);
     raw_config.pool_contracts.push(pool_contract_config1);
@@ -349,7 +349,7 @@ async fn test_get_bridges() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     let pool_contract_config =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -366,7 +366,7 @@ async fn test_get_bridges() {
             Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     raw_config.deposit_contracts.push(loop_deposit_contract_config);
     raw_config.pool_contracts.push(pool_contract_config);
     config = ChainConfig::new(raw_config.clone(), Some(
@@ -401,7 +401,7 @@ async fn test_get_bridges() {
             None,
             None,
             None)
-        ).await;
+        ).await.unwrap();
     let pool_contract_config2 =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -418,7 +418,7 @@ async fn test_get_bridges() {
             Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     raw_config.deposit_contracts.push(celer_deposit_contract_config);
     raw_config.pool_contracts.push(pool_contract_config2);
     config = ChainConfig::new(raw_config.clone(), Some(
@@ -464,7 +464,7 @@ async fn test_get_deposit_contract() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     let loop_deposit_contract_config =
         RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
             RawContractConfig::new(
@@ -489,7 +489,7 @@ async fn test_get_deposit_contract() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     let pool_contract_config =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -506,7 +506,7 @@ async fn test_get_deposit_contract() {
             Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     let mut raw_config = default_raw_config().await;
     raw_config.deposit_contracts.push(tbridge_deposit_contract_config);
     raw_config.deposit_contracts.push(loop_deposit_contract_config);
@@ -576,7 +576,7 @@ async fn test_get_pool_contract() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     let loop_deposit_contract_config =
         RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
             RawContractConfig::new(
@@ -601,7 +601,7 @@ async fn test_get_pool_contract() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     let pool_contract_config1 =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -618,7 +618,7 @@ async fn test_get_pool_contract() {
             None,
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     let pool_contract_config2 =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -635,7 +635,7 @@ async fn test_get_pool_contract() {
             None,
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     let mut raw_config = default_raw_config().await;
     raw_config.pool_contracts.push(pool_contract_config1);
     raw_config.pool_contracts.push(pool_contract_config2);
@@ -915,7 +915,7 @@ async fn test_duplicate_bridge_and_asset() {
             Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
             "40000000000000000".to_string(),
             vec![],
-        )).await;
+        )).await.unwrap();
     let tbridge_deposit_contract_config =
         RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
             RawContractConfig::new(
@@ -940,7 +940,7 @@ async fn test_duplicate_bridge_and_asset() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     let mut raw_config = default_raw_config().await;
     raw_config.pool_contracts.push(pool_contract_config);
     raw_config.deposit_contracts.push(tbridge_deposit_contract_config);
@@ -998,7 +998,7 @@ async fn test_different_bridge_with_same_pool_address() {
             None,
             None,
             None,
-        )).await;
+        )).await.unwrap();
     raw_config.deposit_contracts.push(loop_deposit_contract_config);
     ChainConfig::new(raw_config.clone(), Some(
         AuxData::new(
@@ -1074,6 +1074,6 @@ async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
     let json_string = config.base.to_json_string();
     let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawChainConfig>(json_string.as_str()).await;
+        RawConfig::create_from_json_string::<RawChainConfig>(json_string.as_str()).await.unwrap();
     assert_eq!(loaded_raw_config, default_raw_config().await);
 }

@@ -15,7 +15,7 @@ async fn default_config() -> RawContractConfig {
             Some(10000),
             Some(100000),
         )
-    ).await
+    ).await.unwrap()
 }
 
 lazy_static! {
@@ -28,70 +28,63 @@ lazy_static! {
 async fn test_validate_success() {
     let mut config = default_config().await;
     config.event_filter_size = None;
-    config.validation();
+    assert_eq!(config.validation().is_err(), false);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_version() {
     let mut config = default_config().await;
     config.version = 0;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_name() {
     let mut config = default_config().await;
     config.name = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_address_0() {
     let mut config = default_config().await;
     config.address = String::from("0xdeadbeef");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_address_1() {
     let mut config = default_config().await;
     config.address = String::from("");
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_start_block() {
     let mut config = default_config().await;
     config.start_block = 0;
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_event_filter_size() {
     let mut config = default_config().await;
     config.event_filter_size = Some(0);
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_indexer_filter_size() {
     let mut config = default_config().await;
     config.indexer_filter_size = Some(0);
-    config.validation();
+    assert_eq!(config.validation().is_err(), true);
 }
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let default_config = CONFIG_CREATER.get().await;
     let file_config =
-        RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.valid.json").await;
+        RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.valid.json").await.unwrap();
     assert_eq!(&file_config, default_config);
 }
 

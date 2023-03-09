@@ -5,7 +5,7 @@ use mystiko_config::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
 use mystiko_config::wrapper::bridge::layer_zero::LayerZeroBridgeConfig;
 
 async fn default_raw_config() -> RawLayerZeroBridgeConfig {
-    RawConfig::create_from_file::<RawLayerZeroBridgeConfig>("tests/files/bridge/layerZero.valid.json").await
+    RawConfig::create_from_file::<RawLayerZeroBridgeConfig>("tests/files/bridge/layerZero.valid.json").await.unwrap()
 }
 
 async fn default_layerzero_config() -> LayerZeroBridgeConfig {
@@ -54,6 +54,6 @@ async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
     let json_string = config.base.base.to_json_string();
     let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawLayerZeroBridgeConfig>(&json_string).await;
+        RawConfig::create_from_json_string::<RawLayerZeroBridgeConfig>(&json_string).await.unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use strum::IntoEnumIterator;
 use mystiko_utils::check::check;
 use crate::common::{BridgeType, CircuitType};
+use crate::errors::ValidationError;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
@@ -408,15 +409,18 @@ impl MystikoConfig {
         }
     }
 
-    pub async fn create_from_file(json_file: String) -> MystikoConfig {
-        let raw_config =
-            RawConfig::create_from_file::<RawMystikoConfig>(json_file.as_str()).await;
-        MystikoConfig::new(raw_config)
+    pub async fn create_from_file(json_file: String) -> Result<MystikoConfig, ValidationError> {
+        match RawConfig::create_from_file::<RawMystikoConfig>(json_file.as_str()).await {
+            Ok(raw_config) => { Ok(MystikoConfig::new(raw_config)) }
+            Err(err) => { Err(err) }
+        }
     }
 
-    pub async fn create_from_raw(raw: RawMystikoConfig) -> MystikoConfig {
-        raw.validation();
-        MystikoConfig::new(raw)
+    pub async fn create_from_raw(raw: RawMystikoConfig) -> Result<MystikoConfig, ValidationError> {
+        match raw.validation() {
+            Ok(_) => { Ok(MystikoConfig::new(raw)) }
+            Err(err) => { Err(err) }
+        }
     }
 
     // TODO implement

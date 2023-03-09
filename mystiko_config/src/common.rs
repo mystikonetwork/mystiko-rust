@@ -54,7 +54,7 @@ pub fn validate_object<T>(object: T) -> Result<T, Vec<String>> where
         Err(validation_errors) => {
             let mut errors = Vec::new();
             for (key, value) in validation_errors.errors().iter() {
-                errors.push(format!("{}: {:?}", key, value))
+                errors.push(format!("{}: {:?}", key, value));
             }
             Err(errors)
         }

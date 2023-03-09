@@ -6,7 +6,7 @@ use mystiko_config::raw::base::RawConfig;
 use mystiko_config::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
 
 async fn default_raw_config() -> RawAssetConfig {
-    RawConfig::create_from_file::<RawAssetConfig>("tests/files/asset.valid.json").await
+    RawConfig::create_from_file::<RawAssetConfig>("tests/files/asset.valid.json").await.unwrap()
 }
 
 async fn default_asset_config() -> AssetConfig {
@@ -85,7 +85,7 @@ async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
     let json_string = config.base.to_json_string();
     let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawAssetConfig>(json_string.as_str()).await;
+        RawConfig::create_from_json_string::<RawAssetConfig>(json_string.as_str()).await.unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }
 

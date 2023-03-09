@@ -2,6 +2,7 @@ use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{validate_object};
+use crate::errors::ValidationError;
 use crate::raw::asset::RawAssetConfig;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::contract::deposit::RawDepositContractConfig;
@@ -93,7 +94,7 @@ impl Hash for RawChainConfig {
 }
 
 impl Validator for RawChainConfig {
-    fn validation(&self) {
+    fn validation(&self) -> Result<(), ValidationError> {
         self.base.validate_object::<&RawChainConfig>(self)
     }
 }
