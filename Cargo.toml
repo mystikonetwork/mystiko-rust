@@ -8,6 +8,7 @@ members = [
     "mystiko_storage",
     "mystiko_storage_sqlite",
     "mystiko_utils",
+    "mystiko_indexer_client"
 ]
 
 exclude = []
