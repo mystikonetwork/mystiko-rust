@@ -1,5 +1,8 @@
-pub fn check(condition: bool, message: &str) {
+use std::error::Error;
+
+pub fn check(condition: bool, message: &str) -> Result<(), Box<dyn Error>> {
     if !condition {
-        panic!("{}", message);
+        return Err(message)?;
     }
+    Ok(())
 }

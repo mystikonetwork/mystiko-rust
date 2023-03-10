@@ -71,8 +71,8 @@ impl ChainConfig {
         let pool_contract_configs =
             ChainConfig::init_pool_contract_configs(
                 &base_config,
-                &base_config.aux_data_not_empty().default_circuit_configs,
-                &base_config.aux_data_not_empty().circuit_configs_by_name,
+                &base_config.aux_data_not_empty().unwrap().default_circuit_configs,
+                &base_config.aux_data_not_empty().unwrap().circuit_configs_by_name,
                 &main_asset_config,
                 &asset_configs,
             );
@@ -86,7 +86,7 @@ impl ChainConfig {
                 &pool_contract_configs,
                 &main_asset_config,
                 &asset_configs,
-                base_config.aux_data_not_empty().chain_configs,
+                base_config.aux_data_not_empty().unwrap().chain_configs,
             );
         let provider_configs =
             base_config.data.providers.iter().map(

@@ -48,13 +48,13 @@ impl PoolContractConfig {
             base: contract_config.clone(),
             circuit_configs: PoolContractConfig::init_circuits_configs(
                 &contract_config,
-                contract_config.base.aux_data_not_empty().default_circuit_configs,
-                contract_config.base.aux_data_not_empty().circuit_configs_by_name,
+                contract_config.base.aux_data_not_empty().unwrap().default_circuit_configs,
+                contract_config.base.aux_data_not_empty().unwrap().circuit_configs_by_name,
             ),
-            main_asset_config: contract_config.base.aux_data_not_empty().main_asset_config,
+            main_asset_config: contract_config.base.aux_data_not_empty().unwrap().main_asset_config,
             asset_config: PoolContractConfig::init_asset_config(
                 &contract_config,
-                contract_config.base.aux_data_not_empty().asset_configs,
+                contract_config.base.aux_data_not_empty().unwrap().asset_configs,
             ),
         };
         config.validate();

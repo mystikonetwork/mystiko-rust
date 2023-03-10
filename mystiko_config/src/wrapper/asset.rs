@@ -1,8 +1,10 @@
+use std::error::Error;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use mystiko_utils::check::check;
 use mystiko_utils::convert::from_decimals;
 use crate::common::AssetType;
+use crate::errors::ValidationError;
 use crate::raw::asset::RawAssetConfig;
 use crate::wrapper::base::BaseConfig;
 
@@ -14,10 +16,12 @@ pub struct AssetConfig {
 }
 
 impl AssetConfig {
-    pub fn new(raw: RawAssetConfig) -> Self {
+    pub fn new(raw: RawAssetConfig) -> Result<Self, ValidationError> {
         let config = Self { base: BaseConfig::new(raw, None) };
-        config.validate();
-        config
+        match config.validate() {
+            Ok(_) => { Ok(config) }
+            Err(err) => { Err(err) }
+        }
     }
 
     pub fn asset_address(&self) -> &str {
@@ -62,13 +66,23 @@ impl AssetConfig {
         }
     }
 
-    fn validate(&self) {
-        check(
+    fn validate(&self) -> Result<(), ValidationError> {
+        let result = check(
             (self.asset_type().clone() != AssetType::Main && self.asset_address() != MAIN_ASSET_ADDRESS) ||
                 (self.asset_type().clone() == AssetType::Main && self.asset_address() == MAIN_ASSET_ADDRESS),
             format!(
                 "wrong asset address={} and type={:?}", self.asset_address(), self.asset_type()
             ).as_str(),
         );
+        match result {
+            Ok(_) => { Ok(()) }
+            Err(value) => {
+                Err(ValidationError::new(
+                    vec![
+                        value.to_string()
+                    ])
+                )
+            }
+        }
     }
 }

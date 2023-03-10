@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use crate::errors::AuxDataError;
 use crate::raw::base::Validator;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
@@ -44,13 +45,15 @@ impl<R, A> BaseConfig<R, A> where
         BaseConfig::new(data, aux_data)
     }
 
-    pub fn aux_data_not_empty(&self) -> A {
+    pub fn aux_data_not_empty(&self) -> Result<A, AuxDataError> {
         match &self.aux_data {
             None => {
-                panic!("aux_data has not been specified")
+                Err(AuxDataError::new(
+                    String::from("aux_data has not been specified")
+                ))
             }
             Some(value) => {
-                value.clone()
+                Ok(value.clone())
             }
         }
     }

@@ -65,11 +65,11 @@ impl DepositContractConfig {
         let contract_config = ContractConfig::new(data, aux_data);
         let bridge_fee_asset_config = DepositContractConfig::init_bridge_fee_asset_config(
             &contract_config,
-            contract_config.base.aux_data_not_empty().asset_configs,
+            contract_config.base.aux_data_not_empty().unwrap().asset_configs,
         );
         let executor_fee_asset_config = DepositContractConfig::init_executor_fee_asset_config(
             &contract_config,
-            contract_config.base.aux_data_not_empty().asset_configs,
+            contract_config.base.aux_data_not_empty().unwrap().asset_configs,
         );
         let instance = Self {
             base: contract_config,
@@ -89,7 +89,7 @@ impl DepositContractConfig {
     }
 
     pub fn pool_contract(&self) -> PoolContractConfig {
-        let aux_data = self.base.base.aux_data_not_empty();
+        let aux_data = self.base.base.aux_data_not_empty().unwrap();
         let pool_contract_config =
             aux_data.pool_contract_getter(self.pool_address());
         pool_contract_config.expect(
@@ -216,7 +216,7 @@ impl DepositContractConfig {
             Some(peer_chain_id) => {
                 match peer_contract_address {
                     Some(peer_contract_address) => {
-                        self.base.base.aux_data_not_empty().deposit_contract_getter(
+                        self.base.base.aux_data_not_empty().unwrap().deposit_contract_getter(
                             *peer_chain_id,
                             peer_contract_address.clone(),
                         ).cloned()
@@ -230,7 +230,7 @@ impl DepositContractConfig {
 
     pub fn bridge_fee_asset(&self) -> AssetConfig {
         match &self.bridge_fee_asset_config {
-            None => { self.base.base.aux_data_not_empty().main_asset_config }
+            None => { self.base.base.aux_data_not_empty().unwrap().main_asset_config }
             Some(value) => { value.clone() }
         }
     }
@@ -312,7 +312,7 @@ impl DepositContractConfig {
             None => { None }
             Some(address) => {
                 if address.eq(MAIN_ASSET_ADDRESS) {
-                    return Some(base.base.aux_data_not_empty().main_asset_config);
+                    return Some(base.base.aux_data_not_empty().unwrap().main_asset_config);
                 }
                 let asset_config = asset_configs.get(address);
                 check(
@@ -335,7 +335,7 @@ impl DepositContractConfig {
             None => { None }
             Some(address) => {
                 if address.eq(MAIN_ASSET_ADDRESS) {
-                    return Some(base.base.aux_data_not_empty().main_asset_config);
+                    return Some(base.base.aux_data_not_empty().unwrap().main_asset_config);
                 }
                 let asset_config = asset_configs.get(address);
                 check(
