@@ -7,13 +7,15 @@ edition = "2021"
 
 [dependencies]
 async-trait = { version = "0.1.64" }
-reqwest = { version = "0.11", features = ["json"] }
+base64 = { version = "0.21.0" }
 futures = { version = "0.3" }
 mystiko_database = { version = "0.1.0", path = "../mystiko_database" }
+reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
-mockito = { version = "0.32.4" }
-base64 = { version = "0.21.0" }
+thiserror = { version = "1.0", default-features = false }
+
 
 [dev-dependencies]
+mockito = { version = "0.32.4" }
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }

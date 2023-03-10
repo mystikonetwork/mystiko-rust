@@ -1,5 +1,5 @@
+pub mod builder;
 pub mod client;
-pub mod config;
+pub mod errors;
 pub mod response;
 pub mod types;
-pub mod v1;
