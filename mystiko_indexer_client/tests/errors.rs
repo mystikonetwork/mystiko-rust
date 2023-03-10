@@ -108,22 +108,22 @@ async fn test_with_api_response_err() {
     m.assert_async().await;
 }
 
-fn func_with_unknow_error(test_opt: Option<String>) -> Result<String, ClientError> {
+fn func_with_custom_error(test_opt: Option<String>) -> Result<String, ClientError> {
     match test_opt {
         Some(s) => Ok(s),
-        None => Err(ClientError::UnknowError(String::from("test error"))),
+        None => Err(ClientError::CustomError(String::from("test error"))),
     }
 }
 
 #[tokio::test]
-async fn test_with_unknow_err() {
-    let resp = func_with_unknow_error(None);
+async fn test_with_custom_err() {
+    let resp = func_with_custom_error(None);
     assert!(resp.is_err());
     assert_eq!(
         resp.err(),
-        Some(ClientError::UnknowError(String::from("test error")))
+        Some(ClientError::CustomError(String::from("test error")))
     );
-    let resp2 = func_with_unknow_error(Some(String::from("hello")));
+    let resp2 = func_with_custom_error(Some(String::from("hello")));
     assert!(resp2.is_ok());
     assert_eq!(resp2.unwrap(), String::from("hello"));
 }
@@ -156,6 +156,6 @@ fn test_with_api_response_error_eq() {
     assert!(resp3.is_err());
     assert_ne!(
         resp3.err(),
-        Some(ClientError::UnknowError(String::from("unknow")))
+        Some(ClientError::CustomError(String::from("unknow")))
     );
 }

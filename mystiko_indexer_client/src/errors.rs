@@ -3,17 +3,17 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ClientError {
-    #[error("Api response with exception (result_code: {code:?}, err_message: {message:?})")]
+    #[error("api response with exception (result_code: {code:?}, err_message: {message:?})")]
     ApiResponseError { code: i32, message: String },
 
-    #[error("Http response error (response_code: {code:?}, message: {message:?})")]
+    #[error("http response error (response_code: {code:?}, message: {message:?})")]
     HttpResponseError { code: u16, message: String },
 
-    #[error("Reqwest {0}")]
+    #[error(transparent)]
     ReqwestError(#[from] reqwest::Error),
 
-    #[error("An unknown error has occurred: `{0}`")]
-    UnknowError(String),
+    #[error("custom error: {0}")]
+    CustomError(String),
 }
 
 impl PartialEq for ClientError {
@@ -40,7 +40,7 @@ impl PartialEq for ClientError {
                     message: _,
                 },
             ) => l_code == r_code,
-            (Self::UnknowError(l), Self::UnknowError(r)) => l == r,
+            (Self::CustomError(l), Self::CustomError(r)) => l == r,
             _ => false,
         }
     }
