@@ -7,6 +7,7 @@ edition = "2021"
 ff = {package="ff_ce" , version="0.11", features = ["derive"]}
 lazy_static = { version = "1.4.0" }
 num-bigint = { version = "0.4.3" }
+num-traits = { version = "0.2.15" }
 
 # utils
 serde_json = { version = "1.0", features = ["preserve_order"] }
@@ -21,12 +22,9 @@ bs58 = { version = "0.4.0" }
 babyjubjub-rs = { version = "0.0.10" }
 k256 = { version = "0.12.0" }
 
-#hash
-sha3 = { version = "0.10.6" }
-
-#web3
-ethers = { version = "1.0.2" }
-
 # mystiko
 mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
-mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
+
+[dev-dependencies]
+ethers = { version = "1.0.2" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }

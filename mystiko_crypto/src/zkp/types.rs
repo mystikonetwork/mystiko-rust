@@ -1,7 +1,4 @@
 use crate::error::ZkpError;
-use ethers::core::types::U256;
-use ff::hex;
-use mystiko_abi::commitment_pool::commitment_pool::{G1Point, G2Point, Proof};
 use serde::{Deserialize, Serialize};
 use zokrates_field::Bn128Field;
 use zokrates_proof_systems::groth16::ProofPoints;
@@ -9,52 +6,48 @@ use zokrates_proof_systems::{G1Affine, G2Affine, G2AffineFq2, Proof as ZksProof,
 
 type ZokratesSystemProof = ZksProof<Bn128Field, G16>;
 
-fn u256_to_bytes(num: U256) -> [u8; 32] {
-    let mut x = [0u8; 32];
-    num.to_big_endian(&mut x);
-    x
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct G1Point {
+    pub x: String,
+    pub y: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct G2Point {
+    pub x: [String; 2],
+    pub y: [String; 2],
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Proof {
+    pub a: G1Point,
+    pub b: G2Point,
+    pub c: G1Point,
 }
 
 fn g1_point_to_affine(point: G1Point) -> G1Affine {
-    G1Affine(
-        format!("0x{}", hex::encode(u256_to_bytes(point.x))),
-        format!("0x{}", hex::encode(u256_to_bytes(point.y))),
-    )
+    G1Affine(point.x, point.y)
 }
 
 fn g1_affine_to_point(point: G1Affine) -> G1Point {
     G1Point {
-        x: U256::from_str_radix(&point.0, 16).unwrap(),
-        y: U256::from_str_radix(&point.1, 16).unwrap(),
+        x: point.0,
+        y: point.1,
     }
 }
 
 fn g2_point_to_affine(point: G2Point) -> G2Affine {
     G2Affine::Fq2(G2AffineFq2(
-        (
-            format!("0x{}", hex::encode(u256_to_bytes(point.x[0]))),
-            format!("0x{}", hex::encode(u256_to_bytes(point.y[0]))),
-        ),
-        (
-            format!("0x{}", hex::encode(u256_to_bytes(point.x[1]))),
-            format!("0x{}", hex::encode(u256_to_bytes(point.y[1]))),
-        ),
+        (point.x[0].clone(), point.y[0].clone()),
+        (point.x[1].clone(), point.y[1].clone()),
     ))
 }
 
 fn g2_affine_to_point(point: G2Affine) -> G2Point {
     if let G2Affine::Fq2(a) = point {
-        let (x0, y0) = a.0;
-        let (x1, y1) = a.1;
         G2Point {
-            x: [
-                U256::from_str_radix(&x0, 16).unwrap(),
-                U256::from_str_radix(&x1, 16).unwrap(),
-            ],
-            y: [
-                U256::from_str_radix(&y0, 16).unwrap(),
-                U256::from_str_radix(&y1, 16).unwrap(),
-            ],
+            x: [a.0 .0, a.1 .0],
+            y: [a.0 .1, a.1 .1],
         }
     } else {
         // todo return Result error
@@ -113,26 +106,5 @@ impl ZKProof {
             c: g1_point_to_affine(proof.c),
         };
         ZokratesSystemProof::new(point, inputs)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::zkp::utils::create_file_reader;
-    use zokrates_proof_systems::TaggedProof;
-
-    type ZokTaggedProof = TaggedProof<Bn128Field, G16>;
-
-    fn zks_proof_to_json(proof: ZokratesSystemProof) -> String {
-        serde_json::to_string_pretty(&ZokTaggedProof::new(proof.proof, proof.inputs)).unwrap()
-    }
-
-    #[test]
-    fn test_zks_serialize() {
-        let proof = create_file_reader("./src/zkp/tests/files/proof.zokrates.json").unwrap();
-        let proof: serde_json::Value = serde_json::from_reader(proof).unwrap();
-        let proof_zk = json_to_zks_proof(proof.to_string()).unwrap();
-        zks_proof_to_json(proof_zk);
     }
 }

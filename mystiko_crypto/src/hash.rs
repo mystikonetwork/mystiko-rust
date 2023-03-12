@@ -3,7 +3,8 @@ use ff::PrimeField;
 use hmac::{Hmac, Mac};
 use num_bigint::{BigInt, Sign};
 use poseidon_rs::{Fr, Poseidon};
-use sha2::{Digest, Sha256, Sha512};
+use sha2::{Sha256, Sha512};
+use sha3::{Digest, Keccak256};
 
 pub fn poseidon_bigint(arr: &[BigInt]) -> BigInt {
     let mut arr_fr = vec![];
@@ -46,4 +47,8 @@ pub fn hmac_sha512(key: &[u8], msg: &[u8]) -> Vec<u8> {
     let mut hmac = HmacSha512::new_from_slice(key).unwrap();
     hmac.update(msg);
     hmac.finalize().into_bytes().to_vec()
+}
+
+pub fn keccak256(msg: &[u8]) -> [u8; 32] {
+    Keccak256::digest(msg).into()
 }

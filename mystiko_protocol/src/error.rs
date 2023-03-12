@@ -13,14 +13,3 @@ pub enum ProtocolError {
     #[error("crypto error {0}")]
     CryptoError(String),
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_error() {
-        let protocol_err = CryptoError::AesCbcDecryptError;
-        assert_eq!(protocol_err, CryptoError::AesCbcDecryptError);
-    }
-}

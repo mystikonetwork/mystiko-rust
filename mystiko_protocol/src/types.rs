@@ -1,6 +1,5 @@
-use crate::utils::{u128_to_fixed_bytes, u256_to_fixed_bytes};
-use ethers::core::types::{U128, U256};
-use mystiko_crypto::utils::random_bytes;
+use mystiko_crypto::utils::{big_int_to_16_bytes, big_int_to_32_bytes, random_bytes};
+use num_bigint::{BigInt, Sign};
 
 pub const VERIFY_PK_SIZE: usize = 32;
 pub const VERIFY_SK_SIZE: usize = 32;
@@ -16,22 +15,22 @@ pub const MERKLE_TREE_LEVELS: u32 = 20;
 pub const NUM_OF_AUDITORS: u32 = 5;
 pub const AUDITING_THRESHOLD: u32 = 3;
 
-pub type VerifyPk = U256;
-pub type VerifySk = U256;
+pub type VerifyPk = BigInt;
+pub type VerifySk = BigInt;
 pub type EncPk = [u8; ENC_PK_SIZE];
-pub type EncSk = U256;
+pub type EncSk = BigInt;
 pub type SigPk = Vec<u8>;
-pub type RandomSk = U128;
-pub type TxAmount = U256;
-pub type AuditingSk = U256;
-pub type AuditingPk = U256;
-pub type EncryptedShares = Vec<U256>;
+pub type RandomSk = BigInt;
+pub type TxAmount = BigInt;
+pub type AuditingSk = BigInt;
+pub type AuditingPk = BigInt;
+pub type EncryptedShares = Vec<BigInt>;
 
 pub fn generate_random_sk() -> RandomSk {
     let sk = random_bytes(RANDOM_SK_SIZE);
     let mut bytes = [0u8; RANDOM_SK_SIZE];
     bytes.copy_from_slice(&sk[..]);
-    U128::from_little_endian(&bytes[..])
+    BigInt::from_bytes_le(Sign::Plus, &bytes[..])
 }
 
 #[derive(Debug, Clone)]
@@ -70,10 +69,10 @@ impl DecryptedNote {
     pub fn to_vec(&self) -> Vec<u8> {
         let mut n = vec![];
 
-        n.extend(u128_to_fixed_bytes(&self.random_p));
-        n.extend(u128_to_fixed_bytes(&self.random_r));
-        n.extend(u128_to_fixed_bytes(&self.random_s));
-        n.extend(u256_to_fixed_bytes(&self.amount));
+        n.extend(big_int_to_16_bytes(&self.random_p));
+        n.extend(big_int_to_16_bytes(&self.random_r));
+        n.extend(big_int_to_16_bytes(&self.random_s));
+        n.extend(big_int_to_32_bytes(&self.amount));
         n
     }
 
@@ -82,13 +81,13 @@ impl DecryptedNote {
 
         let mut chunks = n.chunks(RANDOM_SK_SIZE);
         let random_p = chunks.next().unwrap();
-        let random_p = U128::from_little_endian(random_p);
+        let random_p = BigInt::from_bytes_le(Sign::Plus, random_p);
         let random_r = chunks.next().unwrap();
-        let random_r = U128::from_little_endian(random_r);
+        let random_r = BigInt::from_bytes_le(Sign::Plus, random_r);
         let random_s = chunks.next().unwrap();
-        let random_s = U128::from_little_endian(random_s);
+        let random_s = BigInt::from_bytes_le(Sign::Plus, random_s);
         let amount = chunks.next().unwrap();
-        let amount = U256::from_little_endian(amount);
+        let amount = BigInt::from_bytes_le(Sign::Plus, amount);
 
         Self {
             random_p,
@@ -96,27 +95,5 @@ impl DecryptedNote {
             random_s,
             amount,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_decrypted_note() {
-        let r = RandomSecrets::generate();
-        let amount = U256::from(10);
-
-        let note = DecryptedNote {
-            random_p: r.random_p,
-            random_r: r.random_r,
-            random_s: r.random_s,
-            amount,
-        };
-
-        let enc_v = note.to_vec();
-        let note_s = DecryptedNote::from_vec(enc_v);
-        assert_eq!(note, note_s);
     }
 }

@@ -1,3 +1,4 @@
+use crate::error::ZkpError;
 use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
 use num_bigint::{BigInt, RandBigInt, Sign};
@@ -5,12 +6,28 @@ use num_integer::Integer;
 use poseidon_rs::Fr;
 use rand::{distributions::Alphanumeric, Rng};
 use std::cmp::min;
+use std::fs::File;
+use std::io::BufReader;
+use std::io::Read;
+use std::path::Path;
 
 pub fn fr_to_big_int(fr: &Fr) -> BigInt {
     BigInt::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
 }
 
-fn big_int_to_fixed_bytes(num: &BigInt) -> [u8; 32] {
+pub fn big_int_to_be_32_bytes(num: &BigInt) -> [u8; 32] {
+    let (_, y_bytes) = num.to_bytes_be();
+    if y_bytes.len() >= 32 {
+        y_bytes[..32].try_into().unwrap()
+    } else {
+        let mut arr: [u8; 32] = [0; 32];
+        let len = min(y_bytes.len(), arr.len());
+        arr[(32 - len)..].copy_from_slice(&y_bytes[..len]);
+        arr
+    }
+}
+
+pub fn big_int_to_32_bytes(num: &BigInt) -> [u8; 32] {
     let (_, y_bytes) = num.to_bytes_le();
     if y_bytes.len() >= 32 {
         y_bytes[..32].try_into().unwrap()
@@ -22,8 +39,20 @@ fn big_int_to_fixed_bytes(num: &BigInt) -> [u8; 32] {
     }
 }
 
+pub fn big_int_to_16_bytes(num: &BigInt) -> [u8; 16] {
+    let (_, y_bytes) = num.to_bytes_le();
+    if y_bytes.len() >= 16 {
+        y_bytes[..16].try_into().unwrap()
+    } else {
+        let mut arr: [u8; 16] = [0; 16];
+        let len = min(y_bytes.len(), arr.len());
+        arr[..len].copy_from_slice(&y_bytes[..len]);
+        arr
+    }
+}
+
 pub fn babyjubjub_unpack_point(key: &BigInt) -> Point {
-    let arr = big_int_to_fixed_bytes(key);
+    let arr = big_int_to_32_bytes(key);
     decompress_point(arr).unwrap()
 }
 
@@ -73,23 +102,19 @@ pub fn random_utf8_string(size: usize) -> String {
     utf_chars.into_iter().collect()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::constants::FIELD_SIZE;
+pub fn create_file_reader(file_path_str: &str) -> Result<BufReader<File>, ZkpError> {
+    let file_path = Path::new(file_path_str);
+    let file_handle = File::open(file_path)
+        .map_err(|why| ZkpError::ReadFileError(file_path_str.parse().unwrap(), why.to_string()))?;
+    Ok(BufReader::new(file_handle))
+}
 
-    #[test]
-    fn test_mod() {
-        let field = FIELD_SIZE.clone();
-        assert_eq!(calc_mod(BigInt::from(-1), &field), field - 1);
-    }
+pub fn load_file(file_path_str: &str) -> Result<Vec<u8>, ZkpError> {
+    let mut buffer: Vec<u8> = Vec::new();
+    let mut reader = create_file_reader(file_path_str)?;
 
-    #[test]
-    fn test_random() {
-        let a = random_big_int(0, &FIELD_SIZE);
-        assert_eq!(a, BigInt::from(0));
-
-        let b = random_bytes(10);
-        assert_eq!(b.len(), 10);
-    }
+    reader
+        .read_to_end(&mut buffer)
+        .map_err(|why| ZkpError::ReadFileError(file_path_str.parse().unwrap(), why.to_string()))?;
+    Ok(buffer)
 }
