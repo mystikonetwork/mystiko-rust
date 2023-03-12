@@ -6,7 +6,7 @@ use num_bigint::BigInt;
 use mystiko_config::common::{BridgeType, CircuitType, ContractType};
 use mystiko_config::raw::base::RawConfig;
 use mystiko_config::raw::chain::RawChainConfig;
-use mystiko_config::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
+use mystiko_config::raw::contract::base::{RawContractConfig};
 use mystiko_config::raw::contract::deposit::RawDepositContractConfig;
 use mystiko_config::raw::contract::pool::RawPoolContractConfig;
 use mystiko_config::raw::mystiko::RawMystikoConfig;
@@ -41,7 +41,9 @@ async fn circuit_configs_by_name() -> HashMap<String, CircuitConfig> {
 }
 
 async fn default_raw_config() -> RawChainConfig {
-    RawConfig::create_from_file::<RawChainConfig>("tests/files/chain.valid.json").await.unwrap()
+    RawConfig::create_from_file::<RawChainConfig>(
+        "tests/files/chain.valid.json"
+    ).await.unwrap()
 }
 
 async fn default_chain_config() -> ChainConfig {
@@ -54,7 +56,7 @@ async fn default_chain_config() -> ChainConfig {
                 None,
             )
         ),
-    )
+    ).unwrap()
 }
 
 lazy_static! {
@@ -90,7 +92,7 @@ async fn test_equality() {
             .collect::<Vec<ProviderConfig>>()
     );
     assert_eq!(config.pool_contracts().len(), raw_config.pool_contracts.len());
-    let mut a = config.pool_contracts().iter().map(|conf| conf.base.base.data.address().to_string())
+    let mut a = config.pool_contracts().iter().map(|conf| conf.address().to_string())
         .collect::<Vec<String>>();
     let mut b = raw_config.pool_contracts.iter().map(|conf| conf.base.address.clone())
         .collect::<Vec<String>>();
@@ -99,7 +101,7 @@ async fn test_equality() {
     assert_eq!(a, b);
     assert_eq!(config.deposit_contracts().len(), 0);
     assert_eq!(config.deposit_contracts_with_disabled().len(), raw_config.deposit_contracts.len());
-    let mut a = config.deposit_contracts_with_disabled().iter().map(|conf| conf.base.address().to_string())
+    let mut a = config.deposit_contracts_with_disabled().iter().map(|conf| conf.address().to_string())
         .collect::<Vec<String>>();
     let mut b = raw_config.deposit_contracts.iter().map(|conf| conf.base.address.clone())
         .collect::<Vec<String>>();
@@ -126,7 +128,7 @@ async fn test_peer_chain_ids() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
+    )).unwrap();
     assert_eq!(config.peer_chain_ids(), vec![97]);
 
     let loop_deposit_contract_config =
@@ -179,7 +181,7 @@ async fn test_peer_chain_ids() {
             circuit_configs_by_name,
             None,
         )
-    ));
+    )).unwrap();
     let mut a = config.peer_chain_ids();
     a.sort();
     assert_eq!(a, vec![3, 97]);
@@ -188,7 +190,7 @@ async fn test_peer_chain_ids() {
 #[tokio::test]
 async fn test_get_asset_symbols() {
     let mut config = default_chain_config().await;
-    assert_eq!(config.get_asset_symbols(97).len(), 0);
+    assert_eq!(config.get_asset_symbols(97).unwrap().len(), 0);
     let mut raw_config = default_raw_config().await;
     let mut deposit_contracts = raw_config.deposit_contracts;
     deposit_contracts[0].disabled = false;
@@ -202,8 +204,8 @@ async fn test_get_asset_symbols() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
-    assert_eq!(config.get_asset_symbols(97), vec!["MTT".to_string()]);
+    )).unwrap();
+    assert_eq!(config.get_asset_symbols(97).unwrap(), vec!["MTT".to_string()]);
 
     let pool_contract_config1 =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
@@ -299,18 +301,18 @@ async fn test_get_asset_symbols() {
             circuit_configs_by_name,
             None,
         )
-    ));
-    let mut a = config.get_asset_symbols(97);
+    )).unwrap();
+    let mut a = config.get_asset_symbols(97).unwrap();
     a.sort();
     assert_eq!(a, vec![String::from("ETH"), String::from("MTT")]);
-    assert_eq!(config.get_asset_symbols(3), vec![String::from("ETH")]);
+    assert_eq!(config.get_asset_symbols(3).unwrap(), vec![String::from("ETH")]);
 }
 
 #[tokio::test]
 async fn test_get_bridges() {
     let mut config = default_chain_config().await;
     let mut raw_config = default_raw_config().await;
-    assert_eq!(config.get_bridges(97, "MTT").len(), 0);
+    assert_eq!(config.get_bridges(97, "MTT").unwrap().len(), 0);
     let mut deposit_contracts = raw_config.deposit_contracts;
     deposit_contracts[0].disabled = false;
     raw_config.deposit_contracts = deposit_contracts;
@@ -323,8 +325,8 @@ async fn test_get_bridges() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
-    assert_eq!(config.get_bridges(97, "MTT"), vec![BridgeType::Tbridge]);
+    )).unwrap();
+    assert_eq!(config.get_bridges(97, "MTT").unwrap(), vec![BridgeType::Tbridge]);
     let loop_deposit_contract_config =
         RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
             RawContractConfig::new(
@@ -375,8 +377,8 @@ async fn test_get_bridges() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
-    assert_eq!(config.get_bridges(3, "MTT").len(), 0);
+    )).unwrap();
+    assert_eq!(config.get_bridges(3, "MTT").unwrap().len(), 0);
     let celer_deposit_contract_config =
         RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
             RawContractConfig::new(
@@ -427,8 +429,8 @@ async fn test_get_bridges() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
-    let a = config.get_bridges(97, "MTT");
+    )).unwrap();
+    let a = config.get_bridges(97, "MTT").unwrap();
     assert_eq!(a.contains(&BridgeType::Celer), true);
     assert_eq!(a.contains(&BridgeType::Tbridge), true);
 }
@@ -437,7 +439,7 @@ async fn test_get_bridges() {
 async fn test_get_deposit_contract() {
     let mut config = default_chain_config().await;
     assert_eq!(
-        config.get_deposit_contract(97, "MTT", BridgeType::Tbridge).is_none(),
+        config.get_deposit_contract(97, "MTT", BridgeType::Tbridge).unwrap().is_none(),
         true
     );
     let tbridge_deposit_contract_config =
@@ -519,13 +521,13 @@ async fn test_get_deposit_contract() {
             circuit_configs_by_name,
             None,
         )
-    ));
+    )).unwrap();
     assert_eq!(
         config.get_deposit_contract(
             97,
             "MTT",
             BridgeType::Tbridge,
-        ).unwrap().base.base.data.address(),
+        ).unwrap().unwrap().address(),
         "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9"
     );
     assert_eq!(
@@ -533,7 +535,7 @@ async fn test_get_deposit_contract() {
             3,
             "MTT",
             BridgeType::Loop,
-        ).unwrap().base.base.data.address(),
+        ).unwrap().unwrap().address(),
         "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1"
     );
     assert_eq!(
@@ -650,13 +652,13 @@ async fn test_get_pool_contract() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
+    )).unwrap();
     assert_eq!(
         config.get_pool_contract(
             "MTT",
             BridgeType::Tbridge,
             2,
-        ).unwrap().base.address(),
+        ).unwrap().address(),
         "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
     );
     assert_eq!(
@@ -688,7 +690,7 @@ async fn test_get_pool_contract() {
             "ETH",
             BridgeType::Loop,
             1,
-        ).unwrap().base.address(),
+        ).unwrap().address(),
         "0x81b7e08f65bdf5648606c89998a9cc8164397647"
     );
     assert_eq!(
@@ -696,7 +698,7 @@ async fn test_get_pool_contract() {
             "ETH",
             BridgeType::Loop,
             2,
-        ).unwrap().base.address(),
+        ).unwrap().address(),
         "0x954c6c78A2F93E6E19Ff1DE538F720311414530c"
     );
     assert_eq!(
@@ -717,7 +719,7 @@ async fn test_get_pool_contract() {
         config.get_pool_contracts(
             "ETH",
             BridgeType::Loop,
-        ).iter().map(|c| c.base.address()).collect::<Vec<&str>>().contains(
+        ).iter().map(|c| c.address()).collect::<Vec<&str>>().contains(
             &"0x954c6c78A2F93E6E19Ff1DE538F720311414530c"
         ),
         true
@@ -726,7 +728,7 @@ async fn test_get_pool_contract() {
         config.get_pool_contracts(
             "ETH",
             BridgeType::Loop,
-        ).iter().map(|c| c.base.address()).collect::<Vec<&str>>().contains(
+        ).iter().map(|c| c.address()).collect::<Vec<&str>>().contains(
             &"0x81b7e08f65bdf5648606c89998a9cc8164397647"
         ),
         true
@@ -735,7 +737,7 @@ async fn test_get_pool_contract() {
         config.get_pool_contracts(
             "ETH",
             BridgeType::Loop,
-        ).iter().map(|c| c.base.address()).collect::<Vec<&str>>().len(),
+        ).iter().map(|c| c.address()).collect::<Vec<&str>>().len(),
         2
     );
     assert_eq!(
@@ -781,7 +783,7 @@ async fn test_get_event_filter_size_by_address() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
+    )).unwrap();
     assert_eq!(
         config.get_event_filter_size_by_address(
             "0x5380442d3c4ec4f5777f551f5edd2fa0f691a27c"
@@ -808,7 +810,7 @@ async fn test_get_event_filter_size_by_address() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
+    )).unwrap();
     assert_eq!(
         config.get_event_filter_size_by_address(
             "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
@@ -835,7 +837,7 @@ async fn test_get_indexer_filter_size_by_address() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
+    )).unwrap();
     assert_eq!(
         config.get_indexer_filter_size_by_address(
             "0x5380442d3c4ec4f5777f551f5edd2fa0f691a27c"
@@ -862,7 +864,7 @@ async fn test_get_indexer_filter_size_by_address() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
+    )).unwrap();
     assert_eq!(
         config.get_indexer_filter_size_by_address(
             "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
@@ -878,26 +880,27 @@ async fn test_get_indexer_filter_size_by_address() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "deposit contract=\
-    0x961f315a836542e603a3df2e0dd9d4ecd06ebc67 poolAddress definition does not exist")]
 async fn test_invalid_pool_address() {
     let mut raw_config = default_raw_config().await;
     raw_config.deposit_contracts[0].pool_address =
         "0x5380442d3c4ec4f5777f551f5edd2fa0f691a27c".to_string();
     let default_circuit_configs = default_circuit_configs().await;
     let circuit_configs_by_name = circuit_configs_by_name().await;
-    ChainConfig::new(raw_config, Some(
+    let result = ChainConfig::new(raw_config, Some(
         AuxData::new(
             default_circuit_configs,
             circuit_configs_by_name,
             None,
         )
     ));
+    assert!(result.is_err());
+    assert!(result.unwrap_err().errors.contains(
+        &"deposit contract=0x961f315a836542e603a3df2e0dd9d4ecd06ebc67 \
+       poolAddress definition does not exist".to_string()
+    ));
 }
 
 #[tokio::test]
-#[should_panic(expected = "only one pool address allowed for asset MTT and \
-bridge type Tbridge and version 2")]
 async fn test_duplicate_bridge_and_asset() {
     let pool_contract_config =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
@@ -947,18 +950,21 @@ async fn test_duplicate_bridge_and_asset() {
     raw_config.deposit_contracts[0].disabled = false;
     let default_circuit_configs = default_circuit_configs().await;
     let circuit_configs_by_name = circuit_configs_by_name().await;
-    ChainConfig::new(raw_config.clone(), Some(
+    let result = ChainConfig::new(raw_config.clone(), Some(
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
             None,
         )
     ));
+    assert!(result.is_err());
+    assert!(result.unwrap_err().errors.contains(
+        &"only one pool address allowed for asset MTT \
+        and bridge type Tbridge and version 2".to_string()
+    ))
 }
 
 #[tokio::test]
-#[should_panic(expected = "deposit contract=0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1 \
-    bridgeType=Loop does not equal to pool contract bridgeType=Tbridge")]
 async fn test_different_bridge_with_same_pool_address() {
     let mut config = default_chain_config().await;
     assert_eq!(config.peer_chain_ids().len(), 0);
@@ -972,7 +978,7 @@ async fn test_different_bridge_with_same_pool_address() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
+    )).unwrap();
     assert_eq!(config.peer_chain_ids(), vec![97]);
     let loop_deposit_contract_config =
         RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
@@ -1000,12 +1006,17 @@ async fn test_different_bridge_with_same_pool_address() {
             None,
         )).await.unwrap();
     raw_config.deposit_contracts.push(loop_deposit_contract_config);
-    ChainConfig::new(raw_config.clone(), Some(
+    let result = ChainConfig::new(raw_config.clone(), Some(
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
             None,
         )
+    ));
+    assert!(result.is_err());
+    assert!(result.unwrap_err().errors.contains(
+        &"deposit contract=0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1 bridgeType=Loop does \
+        not equal to pool contract bridgeType=Tbridge".to_string()
     ));
 }
 
@@ -1043,7 +1054,7 @@ async fn test_get_transaction_url() {
 async fn test_copy() {
     let config = CONFIG_CREATER.get().await;
     let raw_config = default_raw_config().await;
-    assert_eq!(config.base.copy_data(), raw_config);
+    assert_eq!(config.copy_data(), raw_config);
 }
 
 #[tokio::test]
@@ -1051,11 +1062,11 @@ async fn test_mutate() {
     let config = CONFIG_CREATER.get().await;
     let mut raw_config = default_raw_config().await;
     assert_eq!(
-        config.mutate(None, None).base.copy_data(),
+        config.mutate(None, None).unwrap().copy_data(),
         raw_config
     );
     raw_config.name = "another name".to_string();
-    let mut new_config = config.mutate(Some(raw_config.clone()), None);
+    let mut new_config = config.mutate(Some(raw_config.clone()), None).unwrap();
     assert_eq!(new_config.name(), "another name");
     let default_circuit_configs = default_circuit_configs().await;
     let circuit_configs_by_name = circuit_configs_by_name().await;
@@ -1065,14 +1076,14 @@ async fn test_mutate() {
             circuit_configs_by_name.clone(),
             None,
         )
-    ));
-    assert_eq!(new_config.base.copy_data(), raw_config);
+    )).unwrap();
+    assert_eq!(new_config.copy_data(), raw_config);
 }
 
 #[tokio::test]
 async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
-    let json_string = config.base.to_json_string();
+    let json_string = config.to_json_string();
     let loaded_raw_config =
         RawConfig::create_from_json_string::<RawChainConfig>(json_string.as_str()).await.unwrap();
     assert_eq!(loaded_raw_config, default_raw_config().await);

@@ -3,12 +3,24 @@ use crate::wrapper::base::BaseConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct IndexerConfig {
-    pub base: BaseConfig<RawIndexerConfig>,
+    base: BaseConfig<RawIndexerConfig>,
 }
 
 impl IndexerConfig {
     pub fn new(data: RawIndexerConfig) -> Self {
         Self { base: BaseConfig::new(data, None) }
+    }
+
+    pub fn data(&self) -> &RawIndexerConfig {
+        &self.base.data
+    }
+
+    pub fn copy_data(&self) -> RawIndexerConfig {
+        self.base.copy_data()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.to_json_string()
     }
 
     pub fn url(&self) -> &str {
@@ -21,7 +33,7 @@ impl IndexerConfig {
 
     pub fn mutate(&self, data: Option<RawIndexerConfig>) -> Self {
         let data = match data {
-            None => { self.base.data.clone() }
+            None => { self.data().clone() }
             Some(value) => { value }
         };
         IndexerConfig::new(data)

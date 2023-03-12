@@ -1,8 +1,10 @@
 use std::collections::{HashMap, HashSet};
+use std::error::Error;
 use num_bigint::BigInt;
 use validator::Validate;
 use mystiko_utils::check::check;
 use crate::common::{AssetType, BridgeType, CircuitType};
+use crate::errors::ValidationError;
 use crate::raw::asset::RawAssetConfig;
 use crate::raw::chain::{EXPLORER_TX_PLACEHOLDER, RawChainConfig};
 use crate::wrapper::asset::AssetConfig;
@@ -51,7 +53,7 @@ impl AuxData {
 
 #[derive(Validate, Clone, Debug, PartialEq)]
 pub struct ChainConfig {
-    pub base: BaseConfig<RawChainConfig, AuxData>,
+    base: BaseConfig<RawChainConfig, AuxData>,
     pool_contract_configs: HashMap<String, PoolContractConfig>,
     pool_configs_by_asset_and_bridge: HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>,
     deposit_contract_configs: HashMap<String, DepositContractConfig>,
@@ -61,13 +63,13 @@ pub struct ChainConfig {
 }
 
 impl ChainConfig {
-    pub fn new(data: RawChainConfig, aux_data: Option<AuxData>) -> Self {
+    pub fn new(data: RawChainConfig, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
         let base_config =
             BaseConfig::new(data, aux_data);
         let main_asset_config =
-            ChainConfig::init_main_asset_config(&base_config);
+            ChainConfig::init_main_asset_config(&base_config)?;
         let asset_configs =
-            ChainConfig::init_asset_configs(&base_config);
+            ChainConfig::init_asset_configs(&base_config)?;
         let pool_contract_configs =
             ChainConfig::init_pool_contract_configs(
                 &base_config,
@@ -75,11 +77,11 @@ impl ChainConfig {
                 &base_config.aux_data_not_empty().unwrap().circuit_configs_by_name,
                 &main_asset_config,
                 &asset_configs,
-            );
+            )?;
         let pool_configs_by_asset_and_bridge =
             ChainConfig::init_pool_configs_by_asset_and_bridge(
                 pool_contract_configs.values().cloned().collect()
-            );
+            )?;
         let deposit_contract_configs =
             ChainConfig::init_deposit_contract_configs(
                 &base_config,
@@ -87,12 +89,12 @@ impl ChainConfig {
                 &main_asset_config,
                 &asset_configs,
                 base_config.aux_data_not_empty().unwrap().chain_configs,
-            );
+            )?;
         let provider_configs =
             base_config.data.providers.iter().map(
                 |raw| ProviderConfig::new(raw.clone())
             ).collect();
-        Self {
+        Ok(Self {
             base: base_config,
             pool_contract_configs,
             pool_configs_by_asset_and_bridge,
@@ -100,7 +102,23 @@ impl ChainConfig {
             main_asset_config,
             asset_configs,
             provider_configs,
-        }
+        })
+    }
+
+    pub fn data(&self) -> &RawChainConfig {
+        &self.base.data
+    }
+
+    pub fn aux_data(&self) -> &Option<AuxData> {
+        &self.base.aux_data
+    }
+
+    pub fn copy_data(&self) -> RawChainConfig {
+        self.base.copy_data()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.to_json_string()
     }
 
     pub fn chain_id(&self) -> &u32 {
@@ -185,43 +203,50 @@ impl ChainConfig {
         chain_ids.into_iter().collect()
     }
 
-    pub fn get_asset_symbols(&self, peer_chain_id: u32) -> Vec<String> {
+    pub fn get_asset_symbols(&self, peer_chain_id: u32) -> Result<Vec<String>, Box<dyn Error>> {
         let mut asset_symbols: HashSet<String> = HashSet::new();
         for config in self.deposit_contracts() {
             if peer_chain_id == *self.chain_id() {
                 if config.bridge_type() == BridgeType::Loop {
-                    asset_symbols.insert(config.asset_symbol());
+                    let asset_symbol = config.asset_symbol()?;
+                    asset_symbols.insert(asset_symbol);
                 }
             } else if config.bridge_type() != BridgeType::Loop {
                 if config.peer_chain_id().is_some() &&
                     peer_chain_id == config.peer_chain_id().unwrap() {
-                    asset_symbols.insert(config.asset_symbol());
+                    let asset_symbol = config.asset_symbol()?;
+                    asset_symbols.insert(asset_symbol);
                 }
             }
         }
 
-        asset_symbols.into_iter().collect()
+        Ok(asset_symbols.into_iter().collect())
     }
 
-    pub fn get_bridges(&self, peer_chain_id: u32, asset_symbol: &str) -> Vec<BridgeType> {
+    pub fn get_bridges(
+        &self,
+        peer_chain_id: u32,
+        asset_symbol: &str,
+    ) -> Result<Vec<BridgeType>, Box<dyn Error>> {
         let mut bridges: HashSet<BridgeType> = HashSet::new();
         for config in self.deposit_contracts() {
-            if peer_chain_id != *self.chain_id() && config.asset_symbol().as_str() == asset_symbol {
-                if config.peer_chain_id().is_some() &&
-                    peer_chain_id == config.peer_chain_id().unwrap() {
-                    bridges.insert(config.bridge_type());
+            if peer_chain_id != *self.chain_id() {
+                let config_asset_symbol = config.asset_symbol()?;
+                if config_asset_symbol.as_str() == asset_symbol {
+                    if config.peer_chain_id().is_some() &&
+                        peer_chain_id == config.peer_chain_id().unwrap() {
+                        bridges.insert(config.bridge_type());
+                    }
                 }
             }
         }
 
-        bridges.into_iter().collect()
+        Ok(bridges.into_iter().collect())
     }
-
 
     pub fn get_deposit_contract_by_address(&self, address: String) -> Option<&DepositContractConfig> {
         self.deposit_contract_configs.get(&address)
     }
-
 
     pub fn get_pool_contract_by_address(&self, address: &str) -> Option<&PoolContractConfig> {
         self.pool_contract_configs.get(address)
@@ -238,7 +263,7 @@ impl ChainConfig {
         let deposit_contract_config =
             self.deposit_contract_configs.get(address);
         if deposit_contract_config.is_some() {
-            let event_filter_size = deposit_contract_config.unwrap().base.event_filter_size();
+            let event_filter_size = deposit_contract_config.unwrap().event_filter_size();
             return if event_filter_size.is_some() {
                 event_filter_size.unwrap()
             } else {
@@ -248,8 +273,8 @@ impl ChainConfig {
         let pool_contract =
             self.get_pool_contract_by_address(address);
         return if pool_contract.is_some() &&
-            pool_contract.unwrap().base.event_filter_size().is_some() {
-            pool_contract.unwrap().base.event_filter_size().unwrap()
+            pool_contract.unwrap().event_filter_size().is_some() {
+            pool_contract.unwrap().event_filter_size().unwrap()
         } else {
             *self.event_filter_size()
         };
@@ -259,7 +284,7 @@ impl ChainConfig {
         let deposit_contract_config =
             self.deposit_contract_configs.get(address);
         if deposit_contract_config.is_some() {
-            let indexer_filter_size = deposit_contract_config.unwrap().base.indexer_filter_size();
+            let indexer_filter_size = deposit_contract_config.unwrap().indexer_filter_size();
             return if indexer_filter_size.is_some() {
                 indexer_filter_size.unwrap()
             } else {
@@ -268,8 +293,8 @@ impl ChainConfig {
         }
         let pool_contract = self.get_pool_contract_by_address(address);
         return if pool_contract.is_some() &&
-            pool_contract.unwrap().base.indexer_filter_size().is_some() {
-            pool_contract.unwrap().base.indexer_filter_size().unwrap()
+            pool_contract.unwrap().indexer_filter_size().is_some() {
+            pool_contract.unwrap().indexer_filter_size().unwrap()
         } else {
             *self.indexer_filter_size()
         };
@@ -284,22 +309,22 @@ impl ChainConfig {
         peer_chain_id: u32,
         asset_symbol: &str,
         bridge_type: BridgeType,
-    ) -> Option<DepositContractConfig> {
+    ) -> Result<Option<DepositContractConfig>, Box<dyn Error>> {
         for deposit_contract_config in self.deposit_contracts() {
-            if deposit_contract_config.asset_symbol().as_str() == asset_symbol &&
+            let config_asset_symbol = deposit_contract_config.asset_symbol()?;
+            if config_asset_symbol.as_str() == asset_symbol &&
                 deposit_contract_config.bridge_type() == bridge_type {
                 if peer_chain_id == *self.chain_id() && bridge_type == BridgeType::Loop {
-                    return Some(deposit_contract_config.clone());
+                    return Ok(Some(deposit_contract_config.clone()));
                 }
                 if deposit_contract_config.peer_chain_id().is_some() &&
                     peer_chain_id == deposit_contract_config.peer_chain_id().unwrap() &&
                     bridge_type != BridgeType::Loop {
-                    return Some(deposit_contract_config.clone());
+                    return Ok(Some(deposit_contract_config.clone()));
                 }
             }
         }
-
-        None
+        Ok(None)
     }
 
     pub fn get_pool_contract(
@@ -315,7 +340,6 @@ impl ChainConfig {
                 return pool_contract_config.unwrap().get(&version);
             }
         }
-
         None
     }
 
@@ -331,7 +355,6 @@ impl ChainConfig {
                 return config.unwrap().values().cloned().collect();
             }
         }
-
         vec![]
     }
 
@@ -341,10 +364,14 @@ impl ChainConfig {
         result.replace(EXPLORER_TX_PLACEHOLDER, transaction_hash)
     }
 
-    pub fn mutate(&self, data: Option<RawChainConfig>, aux_data: Option<AuxData>) -> Self {
+    pub fn mutate(
+        &self,
+        data: Option<RawChainConfig>,
+        aux_data: Option<AuxData>,
+    ) -> Result<Self, ValidationError> {
         let d: RawChainConfig = match data {
             None => {
-                self.base.data.clone()
+                self.data().clone()
             }
             Some(value) => {
                 value
@@ -352,7 +379,7 @@ impl ChainConfig {
         };
         let a = match aux_data {
             None => {
-                self.base.aux_data.clone()
+                self.aux_data().clone()
             }
             Some(_) => {
                 aux_data
@@ -367,15 +394,22 @@ impl ChainConfig {
         circuit_configs_by_name: &HashMap<String, CircuitConfig>,
         main_asset_config: &AssetConfig,
         asset_configs: &HashMap<String, AssetConfig>,
-    ) -> HashMap<String, PoolContractConfig> {
+    ) -> Result<HashMap<String, PoolContractConfig>, ValidationError> {
         let mut pool_contract_configs: HashMap<String, PoolContractConfig> = HashMap::new();
         for raw in &base.data.pool_contracts {
-            check(
+            let check_result = check(
                 !pool_contract_configs.contains_key(raw.base.address.as_str()),
                 format!(
                     "duplicate pool contract={:?} definition in configuration", raw.base.address
                 ).as_str(),
             );
+            if check_result.is_err() {
+                return Err(ValidationError::new(
+                    vec![
+                        check_result.unwrap_err().to_string()
+                    ]
+                ));
+            }
             pool_contract_configs.insert(
                 raw.base.address.clone(),
                 PoolContractConfig::new(
@@ -388,14 +422,16 @@ impl ChainConfig {
                             asset_configs.clone(),
                         )
                     ),
-                ),
+                ).unwrap(),
             );
         }
 
-        pool_contract_configs
+        Ok(pool_contract_configs)
     }
 
-    fn init_main_asset_config(base: &BaseConfig<RawChainConfig, AuxData>) -> AssetConfig {
+    fn init_main_asset_config(
+        base: &BaseConfig<RawChainConfig, AuxData>
+    ) -> Result<AssetConfig, ValidationError> {
         AssetConfig::new(RawAssetConfig::new(
             AssetType::Main,
             base.data.asset_symbol.clone(),
@@ -405,20 +441,27 @@ impl ChainConfig {
         ))
     }
 
-    fn init_asset_configs(base: &BaseConfig<RawChainConfig, AuxData>) -> HashMap<String, AssetConfig> {
+    fn init_asset_configs(
+        base: &BaseConfig<RawChainConfig, AuxData>
+    ) -> Result<HashMap<String, AssetConfig>, ValidationError> {
         let mut asset_configs: HashMap<String, AssetConfig> = HashMap::new();
-        for asset_config in &base.data.assets {
+        for raw in &base.data.assets {
+            let asset_config = AssetConfig::new(raw.clone());
+            if asset_config.is_err() {
+                return Err(asset_config.unwrap_err());
+            }
+            let asset_config = asset_config.unwrap();
             asset_configs.insert(
-                asset_config.asset_address.clone(),
-                AssetConfig::new(asset_config.clone()),
+                raw.asset_address.clone(),
+                asset_config,
             );
         }
-        asset_configs
+        Ok(asset_configs)
     }
 
     fn init_pool_configs_by_asset_and_bridge(
         pool_contracts: Vec<PoolContractConfig>,
-    ) -> HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>> {
+    ) -> Result<HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>, ValidationError> {
         let mut pool_configs_by_asset_and_bridge:
             HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>> =
             HashMap::new();
@@ -442,16 +485,23 @@ impl ChainConfig {
                         value.clone()
                     }
                 };
-            check(
-                !all_versions.contains_key(pool_contract_config.base.version()),
+            let check_result = check(
+                !all_versions.contains_key(pool_contract_config.version()),
                 format!(
                     "only one pool address allowed for asset {} and bridge type {:?} and version {:?}",
                     pool_contract_config.asset_symbol(),
                     pool_contract_config.bridge_type(),
-                    pool_contract_config.base.version()
+                    pool_contract_config.version()
                 ).as_str(),
             );
-            all_versions.insert(pool_contract_config.base.version().clone(), pool_contract_config.clone());
+            if check_result.is_err() {
+                return Err(ValidationError::new(
+                    vec![
+                        check_result.unwrap_err().to_string()
+                    ]
+                ));
+            }
+            all_versions.insert(pool_contract_config.version().clone(), pool_contract_config.clone());
             bridges.insert(pool_contract_config.bridge_type().clone(), all_versions);
             pool_configs_by_asset_and_bridge.insert(
                 pool_contract_config.asset_symbol().to_owned(),
@@ -459,7 +509,7 @@ impl ChainConfig {
             );
         }
 
-        pool_configs_by_asset_and_bridge
+        Ok(pool_configs_by_asset_and_bridge)
     }
 
     fn init_deposit_contract_configs(
@@ -468,38 +518,58 @@ impl ChainConfig {
         main_asset_config: &AssetConfig,
         asset_configs: &HashMap<String, AssetConfig>,
         chain_configs: Option<HashMap<u32, ChainConfig>>,
-    ) -> HashMap<String, DepositContractConfig> {
+    ) -> Result<HashMap<String, DepositContractConfig>, ValidationError> {
         let mut deposit_contract_configs: HashMap<String, DepositContractConfig> = HashMap::new();
         for raw in &base.data.deposit_contracts {
-            check(
+            let check_result = check(
                 !deposit_contract_configs.contains_key(raw.base.address.as_str()),
                 format!(
                     "duplicate deposit contract={} definition in configuration", raw.base.address
                 ).as_str(),
             );
+            if check_result.is_err() {
+                return Err(ValidationError::new(
+                    vec![
+                        check_result.unwrap_err().to_string()
+                    ]
+                ));
+            }
             let pool_contract_config = pool_contract_configs.get(&raw.pool_address).expect(
                 format!("deposit contract={} poolAddress definition does not exist", raw.base.address).as_str()
             );
-            check(
+            let check_result = check(
                 raw.bridge_type == pool_contract_config.bridge_type().clone(),
                 format!(
                     "deposit contract={} bridgeType={:?} does not equal to pool contract bridgeType={:?}",
                     raw.base.address, raw.bridge_type, pool_contract_config.bridge_type()
                 ).as_str(),
             );
+            if check_result.is_err() {
+                return Err(ValidationError::new(
+                    vec![
+                        check_result.unwrap_err().to_string()
+                    ]
+                ));
+            }
             if raw.bridge_type != BridgeType::Loop {
                 if raw.peer_chain_id.is_some() {
-                    check(
+                    let check_result = check(
                         base.data.chain_id != raw.peer_chain_id.unwrap(),
                         format!(
                             "current chain id should be different with peer chain id in contract={:?}",
                             raw.base.address
                         ).as_str(),
                     );
+                    if check_result.is_err() {
+                        return Err(ValidationError::new(
+                            vec![
+                                check_result.unwrap_err().to_string()
+                            ]
+                        ));
+                    }
                 }
             }
-            deposit_contract_configs.insert(
-                raw.base.address.clone(),
+            let deposit_contract_config =
                 DepositContractConfig::new(raw.clone(), Some(
                     contract::deposit::AuxData::new(
                         pool_contract_configs.clone(),
@@ -507,10 +577,13 @@ impl ChainConfig {
                         asset_configs.clone(),
                         chain_configs.clone(),
                     )
-                )),
+                ))?;
+            deposit_contract_configs.insert(
+                raw.base.address.clone(),
+                deposit_contract_config,
             );
         }
 
-        deposit_contract_configs
+        Ok(deposit_contract_configs)
     }
 }

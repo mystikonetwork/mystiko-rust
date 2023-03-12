@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::error::Error;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use mystiko_utils::check::check;
 use mystiko_utils::convert::from_decimals;
 use crate::common::{AssetType, BridgeType};
+use crate::errors::ValidationError;
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
@@ -55,29 +57,42 @@ impl AuxData {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DepositContractConfig {
-    pub base: ContractConfig<RawDepositContractConfig, AuxData>,
+    base: ContractConfig<RawDepositContractConfig, AuxData>,
     bridge_fee_asset_config: Option<AssetConfig>,
     executor_fee_asset_config: Option<AssetConfig>,
 }
 
 impl DepositContractConfig {
-    pub fn new(data: RawDepositContractConfig, aux_data: Option<AuxData>) -> Self {
+    pub fn new(data: RawDepositContractConfig, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
         let contract_config = ContractConfig::new(data, aux_data);
-        let bridge_fee_asset_config = DepositContractConfig::init_bridge_fee_asset_config(
-            &contract_config,
-            contract_config.base.aux_data_not_empty().unwrap().asset_configs,
-        );
-        let executor_fee_asset_config = DepositContractConfig::init_executor_fee_asset_config(
-            &contract_config,
-            contract_config.base.aux_data_not_empty().unwrap().asset_configs,
-        );
+        let bridge_fee_asset_config =
+            DepositContractConfig::init_bridge_fee_asset_config(
+                &contract_config,
+                contract_config.base.aux_data_not_empty().unwrap().asset_configs,
+            );
+        if bridge_fee_asset_config.is_err() {
+            return Err(bridge_fee_asset_config.unwrap_err());
+        }
+        let bridge_fee_asset_config = bridge_fee_asset_config.unwrap();
+        let executor_fee_asset_config =
+            DepositContractConfig::init_executor_fee_asset_config(
+                &contract_config,
+                contract_config.base.aux_data_not_empty().unwrap().asset_configs,
+            );
+        if executor_fee_asset_config.is_err() {
+            return Err(executor_fee_asset_config.unwrap_err());
+        }
+        let executor_fee_asset_config = executor_fee_asset_config.unwrap();
         let instance = Self {
             base: contract_config,
             bridge_fee_asset_config,
             executor_fee_asset_config,
         };
-        instance.validate();
-        instance
+        let validate = instance.validate();
+        return match validate {
+            Ok(_) => { Ok(instance) }
+            Err(err) => { Err(err) }
+        };
     }
 
     pub fn bridge_type(&self) -> BridgeType {
@@ -88,15 +103,19 @@ impl DepositContractConfig {
         &self.base.base.data.pool_address
     }
 
-    pub fn pool_contract(&self) -> PoolContractConfig {
+    pub fn pool_contract(&self) -> Result<PoolContractConfig, Box<dyn Error>> {
         let aux_data = self.base.base.aux_data_not_empty().unwrap();
         let pool_contract_config =
             aux_data.pool_contract_getter(self.pool_address());
-        pool_contract_config.expect(
-            format!(
-                "no poolContract definition found for deposit contract={:?}", self.base.base.data.address()
-            ).as_str()
-        ).clone()
+        if pool_contract_config.is_none() {
+            return Err(
+                format!(
+                    "no poolContract definition found for deposit contract={}",
+                    self.base.base.data.address()
+                )
+            )?;
+        }
+        Ok(pool_contract_config.unwrap().clone())
     }
 
     pub fn disabled(&self) -> bool {
@@ -109,10 +128,13 @@ impl DepositContractConfig {
         ).unwrap()
     }
 
-    pub fn min_amount_number(&self) -> f64 {
-        from_decimals::<&String>(
-            &self.base.base.data.min_amount,
-            Some(self.asset_decimals()),
+    pub fn min_amount_number(&self) -> Result<f64, Box<dyn Error>> {
+        let asset_decimals = self.asset_decimals()?;
+        Ok(
+            from_decimals::<&String>(
+                &self.base.base.data.min_amount,
+                Some(asset_decimals),
+            )
         )
     }
 
@@ -122,10 +144,13 @@ impl DepositContractConfig {
         ).unwrap()
     }
 
-    pub fn max_amount_number(&self) -> f64 {
-        from_decimals::<&String>(
-            &self.base.base.data.max_amount,
-            Some(self.asset_decimals()),
+    pub fn max_amount_number(&self) -> Result<f64, Box<dyn Error>> {
+        let asset_decimals = self.asset_decimals()?;
+        Ok(
+            from_decimals::<&String>(
+                &self.base.base.data.max_amount,
+                Some(asset_decimals),
+            )
         )
     }
 
@@ -148,57 +173,74 @@ impl DepositContractConfig {
         ).unwrap()
     }
 
-    pub fn min_executor_fee_number(&self) -> f64 {
-        from_decimals::<&String>(
-            &self.base.base.data.min_executor_fee,
-            Some(self.executor_fee_asset().asset_decimals()),
+    pub fn min_executor_fee_number(&self) -> Result<f64, Box<dyn Error>> {
+        let executor_fee_asset = self.executor_fee_asset()?;
+        Ok(
+            from_decimals::<&String>(
+                &self.base.base.data.min_executor_fee,
+                Some(executor_fee_asset.asset_decimals()),
+            )
         )
     }
 
-    pub fn asset(&self) -> AssetConfig {
-        self.pool_contract().asset()
+    pub fn asset(&self) -> Result<AssetConfig, Box<dyn Error>> {
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.asset())
     }
 
-    pub fn asset_type(&self) -> AssetType {
-        self.pool_contract().asset_type()
+    pub fn asset_type(&self) -> Result<AssetType, Box<dyn Error>> {
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.asset_type())
     }
 
-    pub fn asset_symbol(&self) -> String {
-        self.pool_contract().asset_symbol().to_owned()
+    pub fn asset_symbol(&self) -> Result<String, Box<dyn Error>> {
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.asset_symbol().to_owned())
     }
 
-    pub fn asset_decimals(&self) -> u32 {
-        self.pool_contract().asset_decimals()
+    pub fn asset_decimals(&self) -> Result<u32, Box<dyn Error>> {
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.asset_decimals())
     }
 
-    pub fn asset_address(&self) -> Option<String> {
-        self.pool_contract().asset_address()
+    pub fn asset_address(&self) -> Result<Option<String>, Box<dyn Error>> {
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.asset_address())
     }
 
-    pub fn recommended_amounts(&self) -> Vec<BigInt> {
-        self.pool_contract().recommended_amounts()
+    pub fn recommended_amounts(&self) -> Result<Vec<BigInt>, Box<dyn Error>> {
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.recommended_amounts())
     }
 
-    pub fn recommended_amounts_number(&self) -> Vec<f64> {
-        self.pool_contract().recommended_amounts_number()
+    pub fn recommended_amounts_number(&self) -> Result<Vec<f64>, Box<dyn Error>> {
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.recommended_amounts_number())
     }
 
-    pub fn min_rollup_fee(&self) -> BigInt {
+    pub fn min_rollup_fee(&self) -> Result<BigInt, Box<dyn Error>> {
         if self.peer_contract().is_some() {
-            return self.peer_contract().unwrap().pool_contract().min_rollup_fee();
+            let pool_contract =
+                self.peer_contract().unwrap().pool_contract()?;
+            return Ok(pool_contract.min_rollup_fee());
         }
-        self.pool_contract().min_rollup_fee()
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.min_rollup_fee())
     }
 
-    pub fn min_rollup_fee_number(&self) -> f64 {
+    pub fn min_rollup_fee_number(&self) -> Result<f64, Box<dyn Error>> {
         if self.peer_contract().is_some() {
-            return self.peer_contract().unwrap().pool_contract().min_rollup_fee_number();
+            let pool_contract =
+                self.peer_contract().unwrap().pool_contract()?;
+            return Ok(pool_contract.min_rollup_fee_number());
         }
-        self.pool_contract().min_rollup_fee_number()
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.min_rollup_fee_number())
     }
 
-    pub fn circuits(&self) -> Vec<CircuitConfig> {
-        self.pool_contract().circuits()
+    pub fn circuits(&self) -> Result<Vec<CircuitConfig>, Box<dyn Error>> {
+        let pool_contract = self.pool_contract()?;
+        Ok(pool_contract.circuits())
     }
 
     pub fn peer_chain_id(&self) -> &Option<u32> {
@@ -235,10 +277,10 @@ impl DepositContractConfig {
         }
     }
 
-    pub fn executor_fee_asset(&self) -> AssetConfig {
+    pub fn executor_fee_asset(&self) -> Result<AssetConfig, Box<dyn Error>> {
         match &self.executor_fee_asset_config {
             None => { self.asset() }
-            Some(value) => { value.clone() }
+            Some(value) => { Ok(value.clone()) }
         }
     }
 
@@ -250,79 +292,146 @@ impl DepositContractConfig {
         self.base.base.data.service_fee_divider
     }
 
-    pub fn mutate(&self, data: Option<RawDepositContractConfig>, aux_data: Option<AuxData>) -> Self {
+    pub fn address(&self) -> &str {
+        &self.base.address()
+    }
+
+    pub fn event_filter_size(&self) -> &Option<u64> {
+        self.base.event_filter_size()
+    }
+
+    pub fn indexer_filter_size(&self) -> &Option<u64> {
+        self.base.indexer_filter_size()
+    }
+
+    pub fn copy_data(&self) -> RawDepositContractConfig {
+        self.base.base.copy_data()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.base.to_json_string()
+    }
+
+    pub fn data(&self) -> &RawDepositContractConfig {
+        &self.base.base.data
+    }
+
+    pub fn aux_data(&self) -> &Option<AuxData> {
+        &self.base.base.aux_data
+    }
+
+    pub fn name(&self) -> &str {
+        &self.base.name()
+    }
+
+    pub fn mutate(&self, data: Option<RawDepositContractConfig>, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
         let data = match data {
-            None => { self.base.base.data.clone() }
+            None => { self.data().clone() }
             Some(value) => { value }
         };
         let aux_data = match aux_data {
             None => {
-                self.base.base.aux_data.clone()
+                self.aux_data().clone()
             }
             Some(_) => { aux_data }
         };
         DepositContractConfig::new(data, aux_data)
     }
 
-    fn validate(&self) {
-        check(
+    fn validate(&self) -> Result<(), ValidationError> {
+        let check_result = check(
             self.max_amount().ge(&self.min_amount()),
             format!(
                 "deposit contract={} maxAmount is less than minAmount", &self.base.base.data.address()
             ).as_str(),
         );
+        if check_result.is_err() {
+            return Err(ValidationError::new(vec![
+                check_result.unwrap_err().to_string()
+            ]));
+        }
         if self.bridge_type().eq(&BridgeType::Loop) {
-            check(
+            let check_result = check(
                 self.peer_chain_id().is_none(),
                 format!(
                     "deposit contract={} peerChainId should be undefined when bridge type={:?}",
-                    &self.base.base.data.address(), &self.bridge_type()
+                    &self.address(), &self.bridge_type()
                 ).as_str(),
             );
-            check(
+            if check_result.is_err() {
+                return Err(ValidationError::new(vec![
+                    check_result.unwrap_err().to_string()
+                ]));
+            }
+            let check_result = check(
                 self.peer_contract_address().is_none(),
                 format!(
                     "deposit contract={} peerContractAddress should be undefined when bridge type={:?}",
-                    &self.base.base.data.address(), &self.bridge_type()
+                    &self.address(), &self.bridge_type()
                 ).as_str(),
             );
+            if check_result.is_err() {
+                return Err(ValidationError::new(vec![
+                    check_result.unwrap_err().to_string()
+                ]));
+            }
         } else {
-            check(
+            let check_result = check(
                 self.peer_chain_id().is_some(),
                 format!(
                     "deposit contract={} peerChainId should not be undefined when bridge type={:?}",
-                    &self.base.base.data.address(), &self.bridge_type()
+                    &self.address(), &self.bridge_type()
                 ).as_str(),
             );
-            check(
+            if check_result.is_err() {
+                return Err(ValidationError::new(vec![
+                    check_result.unwrap_err().to_string()
+                ]));
+            }
+            let check_result = check(
                 self.peer_contract_address().is_some(),
                 format!(
                     "deposit contract={} peerContractAddress should not be undefined when bridge type={:?}",
-                    &self.base.base.data.address(), &self.bridge_type()
+                    &self.address(), &self.bridge_type()
                 ).as_str(),
             );
+            if check_result.is_err() {
+                return Err(ValidationError::new(vec![
+                    check_result.unwrap_err().to_string()
+                ]));
+            }
         }
+        Ok(())
     }
 
     fn init_bridge_fee_asset_config(
         base: &ContractConfig<RawDepositContractConfig, AuxData>,
         asset_configs: HashMap<String, AssetConfig>,
-    ) -> Option<AssetConfig> {
+    ) -> Result<Option<AssetConfig>, ValidationError> {
         match &base.base.data.bridge_fee_asset_address {
-            None => { None }
+            None => { Ok(None) }
             Some(address) => {
                 if address.eq(MAIN_ASSET_ADDRESS) {
-                    return Some(base.base.aux_data_not_empty().unwrap().main_asset_config);
+                    return Ok(
+                        Some(base.base.aux_data_not_empty().unwrap().main_asset_config)
+                    );
                 }
                 let asset_config = asset_configs.get(address);
-                check(
+                let check_result = check(
                     asset_config.is_some(),
                     format!(
                         "bridge fee asset address={} config has not been defined for deposit contract address={}",
                         address, base.base.data.address()
                     ).as_str(),
                 );
-                return Some(asset_config.unwrap().clone());
+                if check_result.is_err() {
+                    return Err(ValidationError::new(
+                        vec![
+                            check_result.unwrap_err().to_string()
+                        ]
+                    ));
+                }
+                return Ok(Some(asset_config.unwrap().clone()));
             }
         }
     }
@@ -330,22 +439,31 @@ impl DepositContractConfig {
     fn init_executor_fee_asset_config(
         base: &ContractConfig<RawDepositContractConfig, AuxData>,
         asset_configs: HashMap<String, AssetConfig>,
-    ) -> Option<AssetConfig> {
+    ) -> Result<Option<AssetConfig>, ValidationError> {
         match &base.base.data.executor_fee_asset_address {
-            None => { None }
+            None => { Ok(None) }
             Some(address) => {
                 if address.eq(MAIN_ASSET_ADDRESS) {
-                    return Some(base.base.aux_data_not_empty().unwrap().main_asset_config);
+                    return Ok(
+                        Some(base.base.aux_data_not_empty().unwrap().main_asset_config)
+                    );
                 }
                 let asset_config = asset_configs.get(address);
-                check(
+                let check_result = check(
                     asset_config.is_some(),
                     format!(
                         "executor fee asset address={} config has not been defined for deposit contract address={}",
                         address, base.base.data.address()
                     ).as_str(),
                 );
-                return Some(asset_config.unwrap().clone());
+                if check_result.is_err() {
+                    return Err(ValidationError::new(
+                        vec![
+                            check_result.unwrap_err().to_string()
+                        ]
+                    ));
+                }
+                return Ok(Some(asset_config.unwrap().clone()));
             }
         }
     }

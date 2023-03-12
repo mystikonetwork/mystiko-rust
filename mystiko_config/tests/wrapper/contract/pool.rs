@@ -46,7 +46,7 @@ async fn main_asset_config() -> AssetConfig {
         raw_mystiko_config.chains.get(0).unwrap().asset_decimals.clone(),
         "0x0000000000000000000000000000000000000000".to_string(),
         raw_mystiko_config.chains.get(0).unwrap().recommended_amounts.clone(),
-    ))
+    )).unwrap()
 }
 
 async fn asset_configs() -> HashMap<String, AssetConfig> {
@@ -54,7 +54,16 @@ async fn asset_configs() -> HashMap<String, AssetConfig> {
     HashMap::from_iter(
         [(
             raw_mystiko_config.chains.get(0).unwrap().assets.get(0).unwrap().asset_address.clone(),
-            AssetConfig::new(raw_mystiko_config.chains.get(0).unwrap().assets.get(0).unwrap().clone())
+            AssetConfig::new(
+                raw_mystiko_config
+                    .chains
+                    .get(0)
+                    .unwrap()
+                    .assets
+                    .get(0)
+                    .unwrap()
+                    .clone()
+            ).unwrap()
         )]
     )
 }
@@ -69,7 +78,7 @@ async fn default_config() -> PoolContractConfig {
             main_asset_config().await,
             asset_configs().await,
         )
-    ))
+    )).unwrap()
 }
 
 lazy_static! {
@@ -86,10 +95,6 @@ async fn test_equality() {
     let config = CONFIG_CREATER.get().await;
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let asset_configs = asset_configs().await;
-    let circuit_configs_by_name =
-        circuit_configs_by_name().await;
-    let default_circuit_configs =
-        default_circuit_configs(&circuit_configs_by_name).await;
     assert_eq!(config.pool_name(), &raw_config.pool_name);
     assert_eq!(config.bridge_type(), &raw_config.bridge_type);
     assert_eq!(&config.asset(), asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap());
@@ -120,7 +125,7 @@ async fn test_asset_address_is_none() {
             main_asset_config.clone(),
             asset_configs,
         )
-    ));
+    )).unwrap();
     assert_eq!(config.asset(), main_asset_config);
 }
 
@@ -146,7 +151,7 @@ async fn test_circuit_overwrite() {
                 asset_configs,
             ),
         ),
-    );
+    ).unwrap();
     assert_eq!(config.circuit_config(CircuitType::Rollup1).unwrap().name(), "zokrates-2.0-rollup1");
     assert_eq!(config.circuit_config(CircuitType::Rollup4).unwrap().name(), "zokrates-1.0-rollup4");
 }
@@ -169,7 +174,7 @@ async fn test_copy() {
                 main_asset_config,
                 asset_configs,
             )
-        )),
+        )).unwrap(),
         config
     )
 }
@@ -177,7 +182,7 @@ async fn test_copy() {
 #[tokio::test]
 async fn test_mutate() {
     let config = CONFIG_CREATER.get().await;
-    assert_eq!(&config.mutate(None, None), config);
+    assert_eq!(&config.mutate(None, None).unwrap(), config);
     let mut raw_config = default_raw_config().await;
     raw_config.base.name = "another name".to_string();
     let circuit_configs_by_name =
@@ -193,14 +198,14 @@ async fn test_mutate() {
             main_asset_config,
             asset_configs,
         )
-    ));
-    assert_eq!(new_config.base.base.copy_data(), raw_config);
+    )).unwrap();
+    assert_eq!(new_config.copy_data(), raw_config);
 }
 
 #[tokio::test]
 async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
-    let json_string = config.base.base.to_json_string();
+    let json_string = config.to_json_string();
     let loaded_raw_config =
         RawConfig::create_from_json_string::<RawPoolContractConfig>(json_string.as_str()).await.unwrap();
     assert_eq!(&loaded_raw_config, RAW_CONFIG_CREATER.get().await);

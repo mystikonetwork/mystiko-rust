@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use mystiko_utils::check::check;
@@ -12,7 +11,7 @@ pub const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct AssetConfig {
-    pub base: BaseConfig<RawAssetConfig>,
+    base: BaseConfig<RawAssetConfig>,
 }
 
 impl AssetConfig {
@@ -55,15 +54,27 @@ impl AssetConfig {
         ).collect()
     }
 
-    pub fn mutate(&self, data: Option<RawAssetConfig>) -> Self {
+    pub fn mutate(&self, data: Option<RawAssetConfig>) -> Result<Self, ValidationError> {
         match data {
             None => {
-                AssetConfig::new(self.base.data.clone())
+                AssetConfig::new(self.data().clone())
             }
             Some(value) => {
                 AssetConfig::new(value)
             }
         }
+    }
+
+    pub fn data(&self) -> &RawAssetConfig {
+        &self.base.data
+    }
+
+    pub fn copy_data(&self) -> RawAssetConfig {
+        self.base.copy_data()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.to_json_string()
     }
 
     fn validate(&self) -> Result<(), ValidationError> {

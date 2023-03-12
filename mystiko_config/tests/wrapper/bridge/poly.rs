@@ -25,8 +25,8 @@ lazy_static! {
 async fn test_equality() {
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let config = CONFIG_CREATER.get().await;
-    assert_eq!(&raw_config.base.name, config.base.name());
-    assert_eq!(&raw_config.bridge_type, config.base.bridge_type());
+    assert_eq!(&raw_config.base.name, config.name());
+    assert_eq!(&raw_config.bridge_type, config.bridge_type());
     assert_eq!(&raw_config.explorer_url, config.explorer_url());
     assert_eq!(&raw_config.explorer_prefix, config.explorer_prefix());
     assert_eq!(&raw_config.api_url, config.api_url());
@@ -36,7 +36,7 @@ async fn test_equality() {
 #[tokio::test]
 async fn test_copy() {
     let config = CONFIG_CREATER.get().await;
-    let copy = PolyBridgeConfig::new(config.base.base.copy_data());
+    let copy = PolyBridgeConfig::new(config.copy_data());
     assert_eq!(&copy, config);
 }
 
@@ -49,14 +49,14 @@ async fn test_mutate() {
 
     raw_config.base.name = "another name".to_string();
     let new_config = config.mutate(Some(raw_config));
-    assert_eq!(new_config.base.name(), &"another name".to_string());
+    assert_eq!(new_config.name(), &"another name".to_string());
 }
 
 #[tokio::test]
 async fn test_to_json_string() {
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let config = CONFIG_CREATER.get().await;
-    let json_string = config.base.base.to_json_string();
+    let json_string = config.to_json_string();
     let loaded_raw_config =
         RawConfig::create_from_json_string::<RawPolyBridgeConfig>(&json_string).await.unwrap();
     assert_eq!(&loaded_raw_config, raw_config);

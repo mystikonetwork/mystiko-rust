@@ -3,7 +3,7 @@ use crate::wrapper::base::BaseConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ProviderConfig {
-    pub base: BaseConfig<RawProviderConfig>,
+    base: BaseConfig<RawProviderConfig>,
 }
 
 impl ProviderConfig {
@@ -11,6 +11,18 @@ impl ProviderConfig {
         Self {
             base: BaseConfig::new(raw, None)
         }
+    }
+
+    pub fn data(&self) -> &RawProviderConfig {
+        &self.base.data
+    }
+
+    pub fn copy_data(&self) -> RawProviderConfig {
+        self.base.copy_data()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.to_json_string()
     }
 
     pub fn url(&self) -> &String {
@@ -27,7 +39,7 @@ impl ProviderConfig {
 
     pub fn mutate(&self, data: Option<RawProviderConfig>) -> Self {
         let data = match data {
-            None => { self.base.data.clone() }
+            None => { self.data().clone() }
             Some(value) => { value }
         };
         ProviderConfig::new(data)

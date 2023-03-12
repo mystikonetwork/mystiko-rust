@@ -11,7 +11,6 @@ use crate::raw::provider::RawProviderConfig;
 use crate::raw::validator::{array_unique, is_number_string, validate_nested_vec};
 
 pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
-//TODO use EXPLORER_TX_PLACEHOLDER replace %tx%
 pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
 
 fn default_event_filter_size() -> u64 {

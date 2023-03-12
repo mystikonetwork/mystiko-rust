@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 use crate::common::{BridgeType};
-use crate::errors;
 use crate::errors::ValidationError;
 use crate::raw::base::{RawConfig, Validator};
 
@@ -36,7 +35,7 @@ impl RawBridgeConfig {
 }
 
 impl Validator for RawBridgeConfig {
-    fn validation(&self) -> Result<(), errors::ValidationError> {
+    fn validation(&self) -> Result<(), ValidationError> {
         self.base.validate_object(self)
     }
 }

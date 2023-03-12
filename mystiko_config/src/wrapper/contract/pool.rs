@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 use num_bigint::BigInt;
+use mystiko_utils::check::check;
 use mystiko_utils::convert::from_decimals;
 use crate::common::{AssetType, BridgeType, CircuitType};
+use crate::errors::ValidationError;
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::wrapper::asset::AssetConfig;
@@ -35,14 +37,14 @@ impl AuxData {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PoolContractConfig {
-    pub base: ContractConfig<RawPoolContractConfig, AuxData>,
+    base: ContractConfig<RawPoolContractConfig, AuxData>,
     pub circuit_configs: HashMap<CircuitType, CircuitConfig>,
     pub main_asset_config: AssetConfig,
     pub asset_config: Option<AssetConfig>,
 }
 
 impl PoolContractConfig {
-    pub fn new(data: RawPoolContractConfig, aux_data: Option<AuxData>) -> Self {
+    pub fn new(data: RawPoolContractConfig, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
         let contract_config = ContractConfig::new(data, aux_data);
         let config = Self {
             base: contract_config.clone(),
@@ -57,8 +59,35 @@ impl PoolContractConfig {
                 contract_config.base.aux_data_not_empty().unwrap().asset_configs,
             ),
         };
-        config.validate();
-        config
+        let validate = config.validate();
+        return match validate {
+            Ok(_) => { Ok(config) }
+            Err(err) => { Err(err) }
+        };
+    }
+
+    pub fn version(&self) -> &u32 {
+        &self.base.version()
+    }
+
+    pub fn address(&self) -> &str {
+        &self.base.base.data.address()
+    }
+
+    pub fn copy_data(&self) -> RawPoolContractConfig {
+        self.base.base.copy_data()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.base.to_json_string()
+    }
+
+    pub fn indexer_filter_size(&self) -> &Option<u64> {
+        &self.base.indexer_filter_size()
+    }
+
+    pub fn event_filter_size(&self) -> &Option<u64> {
+        &self.base.event_filter_size()
     }
 
     pub fn pool_name(&self) -> &str {
@@ -122,16 +151,24 @@ impl PoolContractConfig {
         self.circuit_configs.get(&t)
     }
 
-    pub fn mutate(&self, data: Option<RawPoolContractConfig>, aux_data: Option<AuxData>) -> Self {
+    pub fn mutate(&self, data: Option<RawPoolContractConfig>, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
         let aux_data = match aux_data {
-            None => { self.base.base.aux_data.clone() }
+            None => { self.aux_data().clone() }
             Some(_) => { aux_data }
         };
         let data = match data {
-            None => { self.base.base.data.clone() }
+            None => { self.data().clone() }
             Some(value) => { value }
         };
         PoolContractConfig::new(data, aux_data)
+    }
+
+    fn data(&self) -> &RawPoolContractConfig {
+        &self.base.base.data
+    }
+
+    fn aux_data(&self) -> &Option<AuxData> {
+        &self.base.base.aux_data
     }
 
     fn init_circuits_configs(
@@ -184,5 +221,38 @@ impl PoolContractConfig {
         }
     }
 
-    fn validate(&self) {}
+    fn validate(&self) -> Result<(), ValidationError> {
+        if self.asset_type() == AssetType::Main {
+            let check_result = check(
+                self.asset_address().is_none(),
+                format!(
+                    "pool contract={} asset address should be null when asset type={:?}",
+                    self.address(), self.asset_type()
+                ).as_str(),
+            );
+            if check_result.is_err() {
+                return Err(ValidationError::new(
+                    vec![
+                        check_result.unwrap_err().to_string()
+                    ]
+                ));
+            }
+        } else {
+            let check_result = check(
+                self.asset_address().is_some(),
+                format!(
+                    "pool contract={} asset address should not be null when asset type={:?}",
+                    self.address(), self.asset_type()
+                ).as_str(),
+            );
+            if check_result.is_err() {
+                return Err(ValidationError::new(
+                    vec![
+                        check_result.unwrap_err().to_string()
+                    ]
+                ));
+            }
+        }
+        Ok(())
+    }
 }

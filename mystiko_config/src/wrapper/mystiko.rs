@@ -1,10 +1,10 @@
 use std::collections::HashMap;
+use std::error::Error;
 use strum::IntoEnumIterator;
 use mystiko_utils::check::check;
 use crate::common::{BridgeType, CircuitType};
 use crate::errors::ValidationError;
 use crate::raw::base::{RawConfig, Validator};
-use crate::raw::contract::base::RawContractConfigTrait;
 use crate::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
 use crate::wrapper::base::BaseConfig;
 use crate::wrapper::bridge::axelar::AxelarBridgeConfig;
@@ -29,7 +29,7 @@ pub enum BridgeConfigType {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MystikoConfig {
-    pub base: BaseConfig<RawMystikoConfig>,
+    base: BaseConfig<RawMystikoConfig>,
     default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
     circuit_configs_by_name: HashMap<String, CircuitConfig>,
     bridge_configs: HashMap<BridgeType, BridgeConfigType>,
@@ -38,7 +38,7 @@ pub struct MystikoConfig {
 }
 
 impl MystikoConfig {
-    pub fn new(data: RawMystikoConfig) -> Self {
+    pub fn new(data: RawMystikoConfig) -> Result<Self, ValidationError> {
         let base = BaseConfig::new(data, None);
         let mut config = Self {
             base: base.clone(),
@@ -48,12 +48,24 @@ impl MystikoConfig {
             chain_configs: Default::default(),
             indexer_config: Default::default(),
         };
-        config.init_circuit_configs();
-        config.init_chain_configs();
+        config.init_circuit_configs()?;
+        config.init_chain_configs()?;
         config.init_bridge_configs();
         config.init_indexer_config();
-        config.validate();
-        config
+        config.validate()?;
+        Ok(config)
+    }
+
+    pub fn data(&self) -> &RawMystikoConfig {
+        &self.base.data
+    }
+
+    pub fn copy_data(&self) -> RawMystikoConfig {
+        self.base.copy_data()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.to_json_string()
     }
 
     pub fn version(&self) -> &str {
@@ -99,20 +111,30 @@ impl MystikoConfig {
         peer_chain_configs
     }
 
-    pub fn get_asset_symbols(&self, chain_id: u32, peer_chain_id: u32) -> Vec<String> {
+    pub fn get_asset_symbols(
+        &self,
+        chain_id: u32,
+        peer_chain_id: u32,
+    ) -> Result<Vec<String>, Box<dyn Error>> {
         match self.get_chain_config(chain_id) {
-            None => { vec![] }
+            None => { Ok(vec![]) }
             Some(config) => {
                 config.get_asset_symbols(peer_chain_id)
             }
         }
     }
 
-    pub fn get_bridges(&self, chain_id: u32, peer_chain_id: u32, asset_symbol: &str) -> Vec<BridgeConfigType> {
+    pub fn get_bridges(
+        &self,
+        chain_id: u32,
+        peer_chain_id: u32,
+        asset_symbol: &str,
+    ) -> Result<Vec<BridgeConfigType>, Box<dyn Error>> {
         let mut bridges: Vec<BridgeConfigType> = Vec::new();
         let chain_config = self.get_chain_config(chain_id);
         if chain_config.is_some() {
-            for bridge_type in chain_config.unwrap().get_bridges(peer_chain_id, asset_symbol) {
+            let bridge_types = chain_config.unwrap().get_bridges(peer_chain_id, asset_symbol)?;
+            for bridge_type in bridge_types {
                 let bridge_config = self.get_bridge_config(bridge_type);
                 if bridge_config.is_some() {
                     bridges.push(bridge_config.unwrap().clone());
@@ -120,7 +142,7 @@ impl MystikoConfig {
             }
         }
 
-        bridges
+        Ok(bridges)
     }
 
     pub fn get_deposit_contract_config(
@@ -129,9 +151,9 @@ impl MystikoConfig {
         peer_chain_id: u32,
         asset_symbol: &str,
         bridge_type: BridgeType,
-    ) -> Option<DepositContractConfig> {
+    ) -> Result<Option<DepositContractConfig>, Box<dyn Error>> {
         match self.get_chain_config(chain_id) {
-            None => { None }
+            None => { Ok(None) }
             Some(config) => {
                 config.get_deposit_contract(peer_chain_id, asset_symbol, bridge_type)
             }
@@ -211,10 +233,10 @@ impl MystikoConfig {
         None
     }
 
-    pub fn mutate(&self, data: Option<RawMystikoConfig>) -> Self {
+    pub fn mutate(&self, data: Option<RawMystikoConfig>) -> Result<Self, ValidationError> {
         match data {
             None => {
-                MystikoConfig::new(self.base.data.clone())
+                MystikoConfig::new(self.data().clone())
             }
             Some(config) => {
                 MystikoConfig::new(config)
@@ -222,7 +244,7 @@ impl MystikoConfig {
         }
     }
 
-    fn init_circuit_configs(&mut self) {
+    fn init_circuit_configs(&mut self) -> Result<(), ValidationError> {
         let mut default_circuit_configs: HashMap<CircuitType, CircuitConfig> = HashMap::new();
         let mut circuit_config_by_names: HashMap<String, CircuitConfig> = HashMap::new();
 
@@ -230,18 +252,25 @@ impl MystikoConfig {
         for raw in circuits {
             let circuit_config = CircuitConfig::new(raw.clone());
             if raw.is_default {
-                check(
+                let check_result = check(
                     !default_circuit_configs.contains_key(circuit_config.circuit_type()),
                     format!(
                         "duplicate default circuit type={:?} definition", circuit_config.circuit_type()
                     ).as_str(),
                 );
+                if check_result.is_err() {
+                    return Err(ValidationError::new(
+                        vec![
+                            check_result.unwrap_err().to_string()
+                        ]
+                    ));
+                }
                 default_circuit_configs.insert(*circuit_config.circuit_type(), circuit_config.clone());
             }
             circuit_config_by_names.insert(circuit_config.name().clone(), circuit_config.clone());
         }
         let mut has_pool_contracts = false;
-        for chain in &self.base.data.chains {
+        for chain in &self.data().chains {
             if !chain.pool_contracts.is_empty() {
                 has_pool_contracts = true;
                 break;
@@ -250,17 +279,26 @@ impl MystikoConfig {
 
         if has_pool_contracts {
             for circuit_type in CircuitType::iter() {
-                check(
+                let check_result = check(
                     default_circuit_configs.contains_key(&circuit_type),
                     format!(
                         "missing definition of default circuit type={:?}", circuit_type
                     ).as_str(),
                 );
+                if check_result.is_err() {
+                    return Err(ValidationError::new(
+                        vec![
+                            check_result.unwrap_err().to_string()
+                        ]
+                    ));
+                }
             }
         }
 
         self.default_circuit_configs = default_circuit_configs;
         self.circuit_configs_by_name = circuit_config_by_names;
+
+        Ok(())
     }
 
     fn init_bridge_configs(&mut self) {
@@ -305,16 +343,16 @@ impl MystikoConfig {
 
     fn init_chain_configs(
         &mut self,
-    ) {
+    ) -> Result<(), ValidationError> {
         let mut chain_configs: HashMap<u32, ChainConfig> = HashMap::new();
 
         let mut aux_data_chain_configs: HashMap<u32, ChainConfig> = HashMap::new();
-        for raw in &self.base.data.chains {
+        for raw in &self.data().chains {
             let chain_config = ChainConfig::new(
                 raw.clone(),
                 // only use for get deposit contract, circuit configs is none
                 Some(AuxData::default()),
-            );
+            )?;
             aux_data_chain_configs.insert(
                 raw.chain_id,
                 chain_config,
@@ -333,14 +371,15 @@ impl MystikoConfig {
                             Some(aux_data_chain_configs.clone()),
                         )
                     ),
-                ),
+                )?,
             );
         }
         self.chain_configs = chain_configs;
+        Ok(())
     }
 
     fn init_indexer_config(&mut self) {
-        match &self.base.data.indexer {
+        match &self.data().indexer {
             Some(config) => {
                 self.indexer_config = Some(IndexerConfig::new(config.clone()));
             }
@@ -350,16 +389,23 @@ impl MystikoConfig {
         }
     }
 
-    fn validate(&self) {
+    fn validate(&self) -> Result<(), ValidationError> {
         for (_, chain_config) in &self.chain_configs {
             for deposit_contract_config in chain_config.deposit_contracts_with_disabled() {
                 if deposit_contract_config.bridge_type() != BridgeType::Loop {
-                    check(
+                    let check_result = check(
                         self.bridge_configs.contains_key(&deposit_contract_config.bridge_type()),
                         format!(
                             "bridge type = {:?} definition does not exist", deposit_contract_config.bridge_type()
                         ).as_str(),
                     );
+                    if check_result.is_err() {
+                        return Err(ValidationError::new(
+                            vec![
+                                check_result.unwrap_err().to_string()
+                            ]
+                        ));
+                    }
                     if deposit_contract_config.peer_chain_id().is_some() &&
                         deposit_contract_config.peer_contract_address().is_some() {
                         let peer_chain_id = deposit_contract_config.peer_chain_id().unwrap();
@@ -368,7 +414,7 @@ impl MystikoConfig {
                         if peer_chain_config.is_none() {
                             panic!(
                                 "no corresponding peer chain id={} definition for deposit contract {} peer chain configuration",
-                                peer_chain_id, deposit_contract_config.base.base.data.address()
+                                peer_chain_id, deposit_contract_config.address()
                             );
                         }
                         let peer_chain_config = peer_chain_config.unwrap();
@@ -378,47 +424,62 @@ impl MystikoConfig {
                             panic!(
                                 "no corresponding peer deposit contract chain id={} and address={}  \
                                 definition for deposit contract address={} peer chain configuration",
-                                peer_chain_id, peer_contract_address, deposit_contract_config.base.base.data.address()
+                                peer_chain_id, peer_contract_address, deposit_contract_config.address()
                             );
                         }
                         let peer_deposit_contract_config = peer_deposit_contract_config.unwrap();
-                        check(
+                        let check_result = check(
                             peer_deposit_contract_config.bridge_type() == deposit_contract_config.bridge_type(),
                             format!(
                                 "bridge type mismatch for chain id={} address={} vs chain id={} and address={}",
                                 peer_chain_id,
                                 peer_contract_address,
                                 chain_config.chain_id(),
-                                deposit_contract_config.base.base.data.address()
+                                deposit_contract_config.address()
                             ).as_str(),
                         );
-                        check(
+                        if check_result.is_err() {
+                            return Err(ValidationError::new(
+                                vec![
+                                    check_result.unwrap_err().to_string()
+                                ]
+                            ));
+                        }
+                        let check_result = check(
                             &peer_deposit_contract_config.peer_chain_id().unwrap() == chain_config.chain_id() &&
-                                peer_deposit_contract_config.peer_contract_address().clone().unwrap() == deposit_contract_config.base.base.data.address(),
+                                peer_deposit_contract_config.peer_contract_address().clone().unwrap() == deposit_contract_config.address(),
                             format!(
                                 "chain id={} and address={} does not match chain id={} and address={} configured",
                                 peer_deposit_contract_config.peer_chain_id().unwrap(),
                                 peer_deposit_contract_config.peer_contract_address().clone().unwrap(),
                                 chain_config.chain_id(),
-                                deposit_contract_config.base.base.data.address(),
+                                deposit_contract_config.address(),
                             ).as_str(),
                         );
+                        if check_result.is_err() {
+                            return Err(ValidationError::new(
+                                vec![
+                                    check_result.unwrap_err().to_string()
+                                ]
+                            ));
+                        }
                     }
                 }
             }
         }
+        Ok(())
     }
 
     pub async fn create_from_file(json_file: String) -> Result<MystikoConfig, ValidationError> {
         match RawConfig::create_from_file::<RawMystikoConfig>(json_file.as_str()).await {
-            Ok(raw_config) => { Ok(MystikoConfig::new(raw_config)) }
+            Ok(raw_config) => { MystikoConfig::new(raw_config) }
             Err(err) => { Err(err) }
         }
     }
 
     pub async fn create_from_raw(raw: RawMystikoConfig) -> Result<MystikoConfig, ValidationError> {
         match raw.validation() {
-            Ok(_) => { Ok(MystikoConfig::new(raw)) }
+            Ok(_) => { MystikoConfig::new(raw) }
             Err(err) => { Err(err) }
         }
     }

@@ -1,9 +1,10 @@
+use crate::common::BridgeType;
 use crate::raw::bridge::poly::RawPolyBridgeConfig;
 use crate::wrapper::bridge::base::BridgeConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PolyBridgeConfig {
-    pub base: BridgeConfig<RawPolyBridgeConfig>,
+    base: BridgeConfig<RawPolyBridgeConfig>,
 }
 
 impl PolyBridgeConfig {
@@ -11,6 +12,26 @@ impl PolyBridgeConfig {
         Self {
             base: BridgeConfig::new(data, None)
         }
+    }
+
+    pub fn data(&self) -> &RawPolyBridgeConfig {
+        &self.base.base.data
+    }
+
+    pub fn copy_data(&self) -> RawPolyBridgeConfig {
+        self.base.base.copy_data()
+    }
+
+    pub fn bridge_type(&self) -> &BridgeType {
+        &self.base.bridge_type()
+    }
+
+    pub fn name(&self) -> &String {
+        &self.base.name()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.base.to_json_string()
     }
 
     pub fn explorer_url(&self) -> &String {
@@ -32,7 +53,7 @@ impl PolyBridgeConfig {
     pub fn mutate(&self, data: Option<RawPolyBridgeConfig>) -> Self {
         match data {
             None => {
-                PolyBridgeConfig::new(self.base.base.data.clone())
+                PolyBridgeConfig::new(self.data().clone())
             }
             Some(value) => {
                 PolyBridgeConfig::new(value)

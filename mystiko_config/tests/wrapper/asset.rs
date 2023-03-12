@@ -10,7 +10,7 @@ async fn default_raw_config() -> RawAssetConfig {
 }
 
 async fn default_asset_config() -> AssetConfig {
-    AssetConfig::new(default_raw_config().await)
+    AssetConfig::new(default_raw_config().await).unwrap()
 }
 
 async fn default_config() -> (RawAssetConfig, AssetConfig) {
@@ -44,28 +44,34 @@ async fn test_equality() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "wrong asset address=0x0000000000000000000000000000000000000000 and type=Erc20")]
 async fn test_wrong_address_or_type_0() {
     let mut raw_config = default_raw_config().await;
     raw_config.asset_address = MAIN_ASSET_ADDRESS.to_string();
     raw_config.asset_type = AssetType::Erc20;
-    AssetConfig::new(raw_config);
+    let config = AssetConfig::new(raw_config);
+    assert!(config.is_err());
+    assert!(config.unwrap_err().errors.contains(
+        &"wrong asset address=0x0000000000000000000000000000000000000000 and type=Erc20".to_string()
+    ))
 }
 
 #[tokio::test]
-#[should_panic(expected = "wrong asset address=0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a and type=Main")]
 async fn test_wrong_address_or_type_1() {
     let mut raw_config = default_raw_config().await;
     raw_config.asset_address = String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a");
     raw_config.asset_type = AssetType::Main;
-    AssetConfig::new(raw_config);
+    let config = AssetConfig::new(raw_config);
+    assert!(config.is_err());
+    assert!(config.unwrap_err().errors.contains(
+        &"wrong asset address=0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a and type=Main".to_string()
+    ))
 }
 
 #[tokio::test]
 async fn test_copy() {
     let config = CONFIG_CREATER.get().await;
     assert_eq!(
-        &AssetConfig::new(config.base.copy_data()),
+        &AssetConfig::new(config.copy_data()).unwrap(),
         config
     );
 }
@@ -73,9 +79,9 @@ async fn test_copy() {
 #[tokio::test]
 async fn test_mutate() {
     let (mut raw_config, config) = default_config().await;
-    assert_eq!(config.mutate(None), config);
+    assert_eq!(config.mutate(None).unwrap(), config);
     raw_config.asset_decimals = 6;
-    let new_config = config.mutate(Some(raw_config));
+    let new_config = config.mutate(Some(raw_config)).unwrap();
     assert_eq!(new_config.asset_decimals(), 6);
 }
 
@@ -83,7 +89,7 @@ async fn test_mutate() {
 async fn test_to_json_string() {
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let config = CONFIG_CREATER.get().await;
-    let json_string = config.base.to_json_string();
+    let json_string = config.to_json_string();
     let loaded_raw_config =
         RawConfig::create_from_json_string::<RawAssetConfig>(json_string.as_str()).await.unwrap();
     assert_eq!(&loaded_raw_config, raw_config);

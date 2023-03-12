@@ -33,7 +33,7 @@ async fn test_equality() {
 async fn test_copy() {
     let config = CONFIG_CREATER.get().await;
     assert_eq!(
-        &IndexerConfig::new(config.base.copy_data()),
+        &IndexerConfig::new(config.copy_data()),
         config
     );
 }
@@ -52,7 +52,7 @@ async fn test_mutate() {
 async fn test_to_json_string() {
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let config = CONFIG_CREATER.get().await;
-    let json_string = config.base.to_json_string();
+    let json_string = config.to_json_string();
     let loaded_raw_config =
         RawConfig::create_from_json_string::<RawIndexerConfig>(json_string.as_str()).await.unwrap();
     assert_eq!(&loaded_raw_config, raw_config);

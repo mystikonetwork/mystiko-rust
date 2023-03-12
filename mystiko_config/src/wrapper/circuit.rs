@@ -4,7 +4,7 @@ use crate::wrapper::base::BaseConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CircuitConfig {
-    pub base: BaseConfig<RawCircuitConfig>,
+    base: BaseConfig<RawCircuitConfig>,
 }
 
 impl CircuitConfig {
@@ -12,6 +12,18 @@ impl CircuitConfig {
         Self {
             base: BaseConfig::new(data, None)
         }
+    }
+
+    pub fn data(&self) -> &RawCircuitConfig {
+        &self.base.data
+    }
+
+    pub fn copy_data(&self) -> RawCircuitConfig {
+        self.base.copy_data()
+    }
+
+    pub fn to_json_string(&self) -> String {
+        self.base.to_json_string()
     }
 
     pub fn name(&self) -> &String {
@@ -44,7 +56,7 @@ impl CircuitConfig {
 
     pub fn mutate(&self, data: Option<RawCircuitConfig>) -> Self {
         let data = match data {
-            None => { self.base.data.clone() }
+            None => { self.data().clone() }
             Some(value) => { value }
         };
         CircuitConfig::new(data)

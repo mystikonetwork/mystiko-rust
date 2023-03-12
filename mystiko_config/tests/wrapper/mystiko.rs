@@ -7,7 +7,6 @@ use mystiko_config::raw::bridge::poly::RawPolyBridgeConfig;
 use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
 use mystiko_config::raw::chain::RawChainConfig;
 use mystiko_config::raw::circuit::RawCircuitConfig;
-use mystiko_config::raw::contract::base::RawContractConfigTrait;
 use mystiko_config::raw::indexer::RawIndexerConfig;
 use mystiko_config::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
 use mystiko_config::raw::provider::RawProviderConfig;
@@ -42,7 +41,7 @@ async fn test_equality() {
     assert_eq!(config.version(), raw_config.version);
 
     let a =
-        config.chains().iter().map(|conf| conf.base.copy_data()).collect::<Vec<RawChainConfig>>();
+        config.chains().iter().map(|conf| conf.copy_data()).collect::<Vec<RawChainConfig>>();
     let b = raw_config.chains.clone();
     assert_eq!(a.len(), b.len());
     for x in a {
@@ -50,7 +49,7 @@ async fn test_equality() {
     }
 
     let a =
-        config.circuits().iter().map(|conf| conf.base.copy_data()).collect::<Vec<RawCircuitConfig>>();
+        config.circuits().iter().map(|conf| conf.copy_data()).collect::<Vec<RawCircuitConfig>>();
     let b = raw_config.circuits.clone();
     assert_eq!(a.len(), b.len());
     for x in a {
@@ -63,19 +62,19 @@ async fn test_equality() {
     for bridge in bridges {
         match bridge {
             BridgeConfigType::AxelarBridgeConfig(v) => {
-                a.push(RawBridgeConfigType::Axelar(v.base.base.copy_data()));
+                a.push(RawBridgeConfigType::Axelar(v.copy_data()));
             }
             BridgeConfigType::CelerBridgeConfig(v) => {
-                a.push(RawBridgeConfigType::Celer(v.base.base.copy_data()));
+                a.push(RawBridgeConfigType::Celer(v.copy_data()));
             }
             BridgeConfigType::PolyBridgeConfig(v) => {
-                a.push(RawBridgeConfigType::Poly(v.base.base.copy_data()));
+                a.push(RawBridgeConfigType::Poly(v.copy_data()));
             }
             BridgeConfigType::LayerZeroBridgeConfig(v) => {
-                a.push(RawBridgeConfigType::LayerZero(v.base.base.copy_data()));
+                a.push(RawBridgeConfigType::LayerZero(v.copy_data()));
             }
             BridgeConfigType::TBridgeConfig(v) => {
-                a.push(RawBridgeConfigType::Tbridge(v.base.base.copy_data()));
+                a.push(RawBridgeConfigType::Tbridge(v.copy_data()));
             }
         }
     }
@@ -92,11 +91,11 @@ async fn test_get_chain_config() {
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let config = CONFIG_CREATER.get().await;
     assert_eq!(
-        config.get_chain_config(3).unwrap().base.copy_data(),
+        config.get_chain_config(3).unwrap().copy_data(),
         raw_config.chains[0]
     );
     assert_eq!(
-        config.get_chain_config(97).unwrap().base.copy_data(),
+        config.get_chain_config(97).unwrap().copy_data(),
         raw_config.chains[1]
     );
     assert_eq!(
@@ -127,27 +126,27 @@ async fn test_get_peer_chain_configs() {
 async fn test_get_asset_symbols() {
     let config = CONFIG_CREATER.get().await;
     assert_eq!(
-        config.get_asset_symbols(3, 97),
+        config.get_asset_symbols(3, 97).unwrap(),
         vec!["MTT"]
     );
     assert_eq!(
-        config.get_asset_symbols(3, 3),
+        config.get_asset_symbols(3, 3).unwrap(),
         vec!["ETH"]
     );
     assert_eq!(
-        config.get_asset_symbols(97, 3),
+        config.get_asset_symbols(97, 3).unwrap(),
         vec!["MTT"]
     );
     assert_eq!(
-        config.get_asset_symbols(97, 97).len(),
+        config.get_asset_symbols(97, 97).unwrap().len(),
         0
     );
     assert_eq!(
-        config.get_asset_symbols(3, 1024).len(),
+        config.get_asset_symbols(3, 1024).unwrap().len(),
         0
     );
     assert_eq!(
-        config.get_asset_symbols(1024, 97).len(),
+        config.get_asset_symbols(1024, 97).unwrap().len(),
         0
     );
 }
@@ -156,13 +155,13 @@ async fn test_get_asset_symbols() {
 async fn test_get_bridges() {
     let config = CONFIG_CREATER.get().await;
     let a =
-        config.get_bridges(3, 97, "MTT").iter()
+        config.get_bridges(3, 97, "MTT").unwrap().iter()
             .map(|conf| match conf {
-                BridgeConfigType::AxelarBridgeConfig(v) => { v.base.bridge_type().clone() }
-                BridgeConfigType::CelerBridgeConfig(v) => { v.base.bridge_type().clone() }
-                BridgeConfigType::PolyBridgeConfig(v) => { v.base.bridge_type().clone() }
-                BridgeConfigType::LayerZeroBridgeConfig(v) => { v.base.bridge_type().clone() }
-                BridgeConfigType::TBridgeConfig(v) => { v.base.bridge_type().clone() }
+                BridgeConfigType::AxelarBridgeConfig(v) => { v.bridge_type().clone() }
+                BridgeConfigType::CelerBridgeConfig(v) => { v.bridge_type().clone() }
+                BridgeConfigType::PolyBridgeConfig(v) => { v.bridge_type().clone() }
+                BridgeConfigType::LayerZeroBridgeConfig(v) => { v.bridge_type().clone() }
+                BridgeConfigType::TBridgeConfig(v) => { v.bridge_type().clone() }
             }).collect::<Vec<BridgeType>>();
     let b = vec![
         BridgeType::Axelar,
@@ -175,15 +174,15 @@ async fn test_get_bridges() {
         assert_eq!(b.contains(&x), true);
     }
     assert_eq!(
-        config.get_bridges(1024, 97, "MTT").len(),
+        config.get_bridges(1024, 97, "MTT").unwrap().len(),
         0
     );
     assert_eq!(
-        config.get_bridges(3, 1024, "MTT").len(),
+        config.get_bridges(3, 1024, "MTT").unwrap().len(),
         0
     );
     assert_eq!(
-        config.get_bridges(3, 97, "ETH").len(),
+        config.get_bridges(3, 97, "ETH").unwrap().len(),
         0
     );
 }
@@ -197,7 +196,7 @@ async fn test_get_deposit_contract_config() {
             97,
             "MTT",
             BridgeType::Celer,
-        ).unwrap(),
+        ).unwrap().unwrap(),
         config.get_deposit_contract_config_by_address(
             3,
             "0xe6394a06905d83B19Dbd51804Ca84677a2054FA6".to_string(),
@@ -209,7 +208,7 @@ async fn test_get_deposit_contract_config() {
             97,
             "MTT",
             BridgeType::Tbridge,
-        ).unwrap(),
+        ).unwrap().unwrap(),
         config.get_deposit_contract_config_by_address(
             3,
             "0xbF5605f5Ed6d18ed957cBA80dbA8838dFcb9A69f".to_string(),
@@ -221,7 +220,7 @@ async fn test_get_deposit_contract_config() {
             3,
             "ETH",
             BridgeType::Loop,
-        ).unwrap(),
+        ).unwrap().unwrap(),
         config.get_deposit_contract_config_by_address(
             3,
             "0x390d485f4d43212d4ae8cdd967a711514ed5a54f".to_string(),
@@ -233,7 +232,7 @@ async fn test_get_deposit_contract_config() {
             3,
             "MTT",
             BridgeType::Celer,
-        ).unwrap(),
+        ).unwrap().unwrap(),
         config.get_deposit_contract_config_by_address(
             97,
             "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D".to_string(),
@@ -245,7 +244,7 @@ async fn test_get_deposit_contract_config() {
             3,
             "MTT",
             BridgeType::Tbridge,
-        ).unwrap(),
+        ).unwrap().unwrap(),
         config.get_deposit_contract_config_by_address(
             97,
             "0x9C33eaCc2F50E39940D3AfaF2c7B8246B681A374".to_string(),
@@ -257,7 +256,7 @@ async fn test_get_deposit_contract_config() {
             3,
             "MTT",
             BridgeType::Tbridge,
-        ).is_none(),
+        ).unwrap().is_none(),
         true
     );
     assert_eq!(
@@ -289,8 +288,8 @@ async fn test_get_deposit_contract_config() {
     ).unwrap();
 
     assert_eq!(
-        deposit_config1.mutate(None, Some(deposit::AuxData::default())),
-        deposit_config2.mutate(None, Some(deposit::AuxData::default())),
+        deposit_config1.mutate(None, Some(deposit::AuxData::default())).unwrap(),
+        deposit_config2.mutate(None, Some(deposit::AuxData::default())).unwrap(),
     );
 }
 
@@ -402,7 +401,7 @@ async fn test_get_pool_contract_configs() {
             &pool_contract_config,
             config.get_pool_contract_config_by_address(
                 3,
-                pool_contract_config.base.base.data.address(),
+                pool_contract_config.address(),
             ).unwrap(),
         );
     }
@@ -464,7 +463,7 @@ async fn test_get_bridge_config() {
         config.get_bridge_config(BridgeType::Poly).unwrap();
     let copy_data = match poly_bridge_config {
         BridgeConfigType::PolyBridgeConfig(conf) => {
-            conf.base.base.copy_data()
+            conf.copy_data()
         }
         _ => { RawPolyBridgeConfig::default() }
     };
@@ -478,7 +477,7 @@ async fn test_get_bridge_config() {
         config.get_bridge_config(BridgeType::Tbridge).unwrap();
     let copy_data = match tbridge_config {
         BridgeConfigType::TBridgeConfig(conf) => {
-            conf.base.base.copy_data()
+            conf.copy_data()
         }
         _ => { RawTBridgeConfig::default() }
     };
@@ -494,7 +493,7 @@ async fn test_get_bridge_config() {
         config.get_bridge_config(BridgeType::Celer).unwrap();
     let copy_data = match celer_config {
         BridgeConfigType::CelerBridgeConfig(conf) => {
-            conf.base.base.copy_data()
+            conf.copy_data()
         }
         _ => { RawCelerBridgeConfig::default() }
     };
@@ -539,7 +538,7 @@ async fn test_create_from_file() {
             "tests/files/mystiko.valid01.json".to_string()
         ).await.unwrap();
     let config = default_mystiko_config().await;
-    assert_eq!(new_config.base.to_json_string(), config.base.to_json_string());
+    assert_eq!(new_config.to_json_string(), config.to_json_string());
 }
 
 #[tokio::test]
@@ -773,11 +772,11 @@ async fn test_mutate() {
     let config = CONFIG_CREATER.get().await;
     let mut raw_config = default_raw_config().await;
     assert_eq!(
-        config.mutate(None).base.copy_data(),
+        config.mutate(None).unwrap().copy_data(),
         raw_config
     );
     raw_config.version = "1.1.1".to_string();
-    let new_config = config.mutate(Some(raw_config));
+    let new_config = config.mutate(Some(raw_config)).unwrap();
     assert_eq!(
         new_config.version(),
         "1.1.1"
