@@ -15,9 +15,9 @@ fn test_builder() {
         .auth_password(Some(String::from("test_password")));
     assert_eq!(builder.auth_username, Some(String::from("test_username")));
     assert_eq!(builder.auth_password, Some(String::from("test_password")));
-    let second_base_url = String::from("http://test_domain:test_port2");
+    let second_base_url = "http://test_domain:test_port2";
     builder = builder
-        .base_url(second_base_url.clone())
+        .base_url(second_base_url)
         .timeout(Duration::from_secs(30));
     assert_eq!(builder.timeout, Duration::from_secs(30));
     assert_eq!(builder.base_url, second_base_url);

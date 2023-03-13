@@ -20,8 +20,8 @@ impl IndexerClientBuilder {
         }
     }
 
-    pub fn base_url(mut self, base_url: String) -> Self {
-        self.base_url = base_url;
+    pub fn base_url(mut self, base_url: &str) -> Self {
+        self.base_url = base_url.to_string();
         self
     }
 
