@@ -79,6 +79,8 @@ jobs:
         run: |
           ./scripts/delete_circuits.sh
 
+      - run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
+
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
         if: failure()
