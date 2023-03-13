@@ -5,5 +5,7 @@ set -e
 
 dir_path="./mystiko-circuits/dist/zokrates/dev/"
 cd $dir_path
-find . -name '*.gz' -exec gzip -f -k -d {} \;
+find . -name '*.vkey' -exec rm {} \;
+find . -name '*.pkey' -exec rm {} \;
+find . -name '*.program' -exec rm {} \;
 cd -

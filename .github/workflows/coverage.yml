@@ -82,3 +82,10 @@ jobs:
           format: markdown
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+  always:
+    runs-on: self-hosted
+    steps:
+      - name: Delete circuits
+        run: |
+          ./scripts/delete_circuits.sh

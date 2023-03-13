@@ -48,4 +48,4 @@ zokrates_proof_systems = { git = "https://github.com/mystikonetwork/ZoKrates", r
 zokrates_bellman = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
 
 [dev-dependencies]
-tokio = { version = "1.26.0", features = ["full", "test-util"] }
+tokio = { version = "1.26.0", features = ["macros", "rt", "full", "test-util"] }
