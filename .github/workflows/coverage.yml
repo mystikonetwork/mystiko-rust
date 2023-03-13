@@ -74,6 +74,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
+      - name: Delete circuits
+        if: always()
+        run: |
+          ./scripts/delete_circuits.sh
+
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
         if: failure()
@@ -82,10 +87,3 @@ jobs:
           format: markdown
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-
-  always:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Delete circuits
-        run: |
-          ./scripts/delete_circuits.sh
