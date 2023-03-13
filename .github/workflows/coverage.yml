@@ -27,7 +27,7 @@ jobs:
   coverage:
     name: Coverage on stable
     timeout-minutes: 140
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3.3.0
@@ -84,7 +84,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
   always:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Delete circuits
         run: |
