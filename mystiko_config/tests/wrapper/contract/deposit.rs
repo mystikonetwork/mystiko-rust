@@ -297,7 +297,6 @@ async fn test_invalid_raw_config_0() {
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_raw_config_1() {
     let mut raw_config = default_raw_config().await;
     raw_config.bridge_type = BridgeType::Loop;
@@ -316,7 +315,6 @@ async fn test_invalid_raw_config_1() {
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_invalid_raw_config_2() {
     let mut raw_config = default_raw_config().await;
     raw_config.bridge_type = BridgeType::Loop;
@@ -336,7 +334,6 @@ async fn test_invalid_raw_config_2() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "")]
 async fn test_invalid_raw_config_3() {
     let mut raw_config = default_raw_config().await;
     raw_config.bridge_type = BridgeType::Loop;

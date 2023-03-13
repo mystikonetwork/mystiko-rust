@@ -412,20 +412,28 @@ impl MystikoConfig {
                         let peer_contract_address = deposit_contract_config.peer_contract_address().clone().unwrap();
                         let peer_chain_config = self.chain_configs.get(&peer_chain_id);
                         if peer_chain_config.is_none() {
-                            panic!(
-                                "no corresponding peer chain id={} definition for deposit contract {} peer chain configuration",
-                                peer_chain_id, deposit_contract_config.address()
-                            );
+                            return Err(ValidationError::new(
+                                vec![
+                                    format!(
+                                        "no corresponding peer chain id={} definition for deposit contract {} peer chain configuration",
+                                        peer_chain_id, deposit_contract_config.address()
+                                    )
+                                ]
+                            ));
                         }
                         let peer_chain_config = peer_chain_config.unwrap();
                         let peer_deposit_contract_config =
                             peer_chain_config.get_deposit_contract_by_address(peer_contract_address.clone());
                         if peer_deposit_contract_config.is_none() {
-                            panic!(
-                                "no corresponding peer deposit contract chain id={} and address={}  \
-                                definition for deposit contract address={} peer chain configuration",
-                                peer_chain_id, peer_contract_address, deposit_contract_config.address()
-                            );
+                            return Err(ValidationError::new(
+                                vec![
+                                    format!(
+                                        "no corresponding peer deposit contract chain id={} and address={}  \
+                                        definition for deposit contract address={} peer chain configuration",
+                                        peer_chain_id, peer_contract_address, deposit_contract_config.address()
+                                    )
+                                ]
+                            ));
                         }
                         let peer_deposit_contract_config = peer_deposit_contract_config.unwrap();
                         let check_result = check(

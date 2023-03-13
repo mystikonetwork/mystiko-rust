@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt::Debug;
 use std::fs::{File};
 use std::io::Read;
@@ -30,7 +29,7 @@ impl RawConfig {
     }
 
     pub async fn create_from_object<T>(plain: T) -> Result<T, ValidationError>
-        where T: DeserializeOwned + Serialize + Validator
+        where T: DeserializeOwned + Serialize + Validator + Debug
     {
         match plain.validation() {
             Ok(_) => { Ok(plain) }
@@ -39,17 +38,25 @@ impl RawConfig {
     }
 
     pub async fn create_from_file<T>(json_file: &str) -> Result<T, ValidationError>
-        where T: DeserializeOwned + Serialize + Validator
+        where T: DeserializeOwned + Serialize + Validator + Debug
     {
         let mut file = File::open(json_file).unwrap();
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
-        let object: T = from_str(&contents).unwrap();
+        let result = from_str(&contents);
+        if result.is_err() {
+            return Err(ValidationError::new(
+                vec![
+                    result.unwrap_err().to_string()
+                ]
+            ));
+        }
+        let object: T = result.unwrap();
         RawConfig::create_from_object::<T>(object).await
     }
 
     pub async fn create_from_json_string<T>(json_str: &str) -> Result<T, ValidationError>
-        where T: DeserializeOwned + Serialize + Validator
+        where T: DeserializeOwned + Serialize + Validator + Debug
     {
         let object: T = from_str(json_str).unwrap();
         RawConfig::create_from_object::<T>(object).await

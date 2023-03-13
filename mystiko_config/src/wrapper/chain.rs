@@ -534,9 +534,18 @@ impl ChainConfig {
                     ]
                 ));
             }
-            let pool_contract_config = pool_contract_configs.get(&raw.pool_address).expect(
-                format!("deposit contract={} poolAddress definition does not exist", raw.base.address).as_str()
-            );
+            let pool_contract_config = pool_contract_configs.get(&raw.pool_address);
+            if pool_contract_config.is_none() {
+                return Err(ValidationError::new(
+                    vec![
+                        format!(
+                            "deposit contract={} poolAddress definition does not exist",
+                            raw.base.address
+                        )
+                    ]
+                ));
+            }
+            let pool_contract_config = pool_contract_configs.get(&raw.pool_address).unwrap();
             let check_result = check(
                 raw.bridge_type == pool_contract_config.bridge_type().clone(),
                 format!(

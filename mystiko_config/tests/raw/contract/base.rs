@@ -89,8 +89,8 @@ async fn test_import_valid_json_file() {
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_import_invalid_json_file() {
-    let _file_config =
+    let file_config =
         RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.invalid.json").await;
+    assert!(file_config.is_err());
 }
