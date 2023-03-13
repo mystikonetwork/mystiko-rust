@@ -45,7 +45,6 @@ async fn test_rollup2() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_rollup4() {
     let in_initial_elements = [
         BigInt::from(100),
@@ -74,7 +73,6 @@ async fn test_rollup4() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_rollup8() {
     let in_initial_elements = [
         BigInt::from(100),

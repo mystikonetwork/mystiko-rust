@@ -182,7 +182,6 @@ fn generate_transaction(
 const FILE_PATH: &str = "./../mystiko-circuits/dist/zokrates/dev";
 
 #[tokio::test]
-#[ignore]
 async fn test_transaction1x0() {
     let tx = generate_transaction(
         1u32,
@@ -198,7 +197,6 @@ async fn test_transaction1x0() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_transaction1x1() {
     let tx = generate_transaction(
         1u32,
@@ -214,7 +212,6 @@ async fn test_transaction1x1() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_transaction1x2() {
     let tx = generate_transaction(
         1u32,
@@ -230,7 +227,6 @@ async fn test_transaction1x2() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_transaction2x0() {
     let tx = generate_transaction(
         2u32,
@@ -246,7 +242,6 @@ async fn test_transaction2x0() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_transaction2x1() {
     let tx = generate_transaction(
         2u32,
