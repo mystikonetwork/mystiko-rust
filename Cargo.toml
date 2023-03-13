@@ -4,6 +4,10 @@ members = [
     "mystiko_abi_generate",
     "mystiko_crypto",
     "mystiko_protocol",
+    "mystiko_database",
+    "mystiko_downloader",
+    "mystiko_storage",
+    "mystiko_storage_sqlite",
     "mystiko_utils",
 ]
 
