@@ -341,6 +341,7 @@ impl MystikoConfig {
         self.bridge_configs = bridge_configs;
     }
 
+    // TODO fix slow method
     fn init_chain_configs(
         &mut self,
     ) -> Result<(), ValidationError> {
