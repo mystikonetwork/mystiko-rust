@@ -15,7 +15,7 @@ async fn test_calc_zeros() {
             b"4506069241680023110764189603658664710592327039412547147745745078424755206435",
             10,
         )
-            .unwrap()
+        .unwrap()
     );
 
     let zeros = calc_zeros(fist_zero, &(32 as u32));
@@ -25,7 +25,7 @@ async fn test_calc_zeros() {
             b"13202030544264649816737469308990869537826379298057211734249690002947353708909",
             10,
         )
-            .unwrap()
+        .unwrap()
     );
 }
 
@@ -38,7 +38,7 @@ async fn test_new_merkle_tree() {
             b"17749238747541177922260023106539184144732198174810064796938596694265936155259",
             10,
         )
-            .unwrap()
+        .unwrap()
     );
 
     assert_eq!(tree1.elements(), vec![]);
@@ -47,12 +47,12 @@ async fn test_new_merkle_tree() {
         b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e2 = BigInt::parse_bytes(
         b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
         16,
     )
-        .unwrap();
+    .unwrap();
 
     let elements = vec![e1.clone(), e2.clone()];
     let tree2 = MerkleTree::new(Some(elements.clone()), None, None).unwrap();
@@ -62,7 +62,7 @@ async fn test_new_merkle_tree() {
             b"21205178834650720622262399337497375208854240907281368468056255721030220387133",
             10,
         )
-            .unwrap()
+        .unwrap()
     );
 
     fn compare_big_int(a: &BigInt, b: &BigInt) -> bool {
@@ -90,12 +90,12 @@ async fn test_insert() {
         b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e2 = BigInt::parse_bytes(
         b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
         16,
     )
-        .unwrap();
+    .unwrap();
     let elements = vec![e1];
     let mut tree = MerkleTree::new(Some(elements), Some(0), None).unwrap();
     let result = tree.insert(e2);
@@ -106,12 +106,12 @@ async fn test_insert() {
         b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e2 = BigInt::parse_bytes(
         b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
         16,
     )
-        .unwrap();
+    .unwrap();
 
     tree.insert(e1).unwrap();
     tree.insert(e2).unwrap();
@@ -121,7 +121,7 @@ async fn test_insert() {
             b"21205178834650720622262399337497375208854240907281368468056255721030220387133",
             10,
         )
-            .unwrap()
+        .unwrap()
     );
 }
 
@@ -131,12 +131,12 @@ async fn test_bulk_insert() {
         b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e2 = BigInt::parse_bytes(
         b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
         16,
     )
-        .unwrap();
+    .unwrap();
     let elements = vec![e1];
     let mut tree = MerkleTree::new(Some(elements), Some(0), None).unwrap();
     let result = tree.bulk_insert(vec![e2]);
@@ -147,17 +147,17 @@ async fn test_bulk_insert() {
         b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e2 = BigInt::parse_bytes(
         b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e3 = BigInt::parse_bytes(
         b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
         16,
     )
-        .unwrap();
+    .unwrap();
 
     tree.bulk_insert(vec![e1, e2, e3]).unwrap();
     assert_eq!(
@@ -166,7 +166,7 @@ async fn test_bulk_insert() {
             b"10254041194642220426314275741279894727412053938657566062675343387806484605596",
             10,
         )
-            .unwrap()
+        .unwrap()
     );
 }
 
@@ -176,12 +176,12 @@ async fn test_update() {
         b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e2 = BigInt::parse_bytes(
         b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
         16,
     )
-        .unwrap();
+    .unwrap();
 
     let mut tree = MerkleTree::new(Some(vec![e1]), None, None).unwrap();
     tree.update(0, e2.clone()).unwrap();
@@ -191,7 +191,7 @@ async fn test_update() {
             b"5919354211942147568484662594760486300826527524526112436647850872711338828514",
             10,
         )
-            .unwrap()
+        .unwrap()
     );
 
     let result = tree.update(2, e2);
@@ -204,24 +204,24 @@ async fn test_path() {
         b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e2 = BigInt::parse_bytes(
         b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
         16,
     )
-        .unwrap();
+    .unwrap();
     let e3 = BigInt::parse_bytes(
         b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
         16,
     )
-        .unwrap();
+    .unwrap();
 
     let tree = MerkleTree::new(
         Some(vec![e1.clone(), e2.clone(), e3.clone()]),
         Some(2),
         None,
     )
-        .unwrap();
+    .unwrap();
     let default_zero = calc_default_zero_element();
     let result1 = tree.path(0).unwrap();
     assert_eq!(result1.1, vec![0, 0]);

@@ -16,13 +16,13 @@ use mystiko_crypto::ecies;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_crypto::utils::random_bytes;
 use mystiko_protocol::commitment::{build_commitment, CommitmentInput, PublicKeys};
-use mystiko_protocol::transact::{Transaction, zk_prove_transaction};
+use mystiko_protocol::transact::{zk_prove_transaction, Transaction};
+use mystiko_protocol::types::RandomSecrets;
 use mystiko_protocol::types::{
-    AuditingPk, EncPk, EncryptedNote, EncSk, NUM_OF_AUDITORS, RandomSk, TxAmount, VerifyPk,
-    VerifySk,
+    AuditingPk, EncPk, EncSk, EncryptedNote, RandomSk, TxAmount, VerifyPk, VerifySk,
+    NUM_OF_AUDITORS,
 };
 use mystiko_protocol::types::{ENC_SK_SIZE, MERKLE_TREE_LEVELS, VERIFY_SK_SIZE};
-use mystiko_protocol::types::RandomSecrets;
 use mystiko_protocol::verify::zk_verify;
 use mystiko_protocol::wallet::{
     public_key_for_encryption, public_key_for_verification, secret_key_for_encryption,

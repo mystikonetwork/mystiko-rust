@@ -17,7 +17,7 @@ async fn test_mod_sha256() {
         b"21386729550194668992953605105751046526972920509576226227329140564650153218040",
         10,
     )
-        .unwrap();
+    .unwrap();
     let hash1 = sha256(data1);
     assert_eq!(hash1, hash_js);
 
@@ -38,7 +38,7 @@ async fn test_poseidon_compatible_with_js() {
         b"7853200120776062878684798364095072458815029376092732009249414926327459813530",
         10,
     )
-        .unwrap();
+    .unwrap();
     let hash = poseidon_hash(&[b1, b2]);
     assert_eq!(hash, expect_hash);
 }

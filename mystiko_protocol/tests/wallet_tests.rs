@@ -6,7 +6,11 @@ use num_bigint::{BigInt, Sign};
 
 use mystiko_crypto::utils::big_int_to_32_bytes;
 use mystiko_protocol::types::{ENC_PK_SIZE, ENC_SK_SIZE, VERIFY_PK_SIZE, VERIFY_SK_SIZE};
-use mystiko_protocol::wallet::{full_public_key, full_secret_key, is_shielded_address, public_key_for_encryption, public_key_for_verification, public_key_from_shielded_address, secret_key_for_encryption, secret_key_for_verification, separated_public_keys, separated_secret_keys, shielded_address};
+use mystiko_protocol::wallet::{
+    full_public_key, full_secret_key, is_shielded_address, public_key_for_encryption,
+    public_key_for_verification, public_key_from_shielded_address, secret_key_for_encryption,
+    secret_key_for_verification, separated_public_keys, separated_secret_keys, shielded_address,
+};
 
 #[tokio::test]
 async fn test_secret_key_for_verification() {

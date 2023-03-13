@@ -5,7 +5,9 @@ extern crate mystiko_protocol;
 use ff::hex;
 
 use mystiko_crypto::utils::{big_int_to_32_bytes, random_bytes, random_utf8_string};
-use mystiko_protocol::crypto::{decrypt_asymmetric, decrypt_symmetric, encrypt_asymmetric, encrypt_symmetric};
+use mystiko_protocol::crypto::{
+    decrypt_asymmetric, decrypt_symmetric, encrypt_asymmetric, encrypt_symmetric,
+};
 use mystiko_protocol::wallet::{public_key_for_encryption, secret_key_for_encryption};
 
 #[tokio::test]

@@ -6,8 +6,8 @@ use mystiko_crypto::zkp::prove::{prove, prove_by_file};
 use mystiko_crypto::zkp::types::{json_to_zks_proof, ZKProof};
 use mystiko_crypto::zkp::verify::{verify, verify_by_file};
 use zokrates_field::Bn128Field;
-use zokrates_proof_systems::{G16, Proof as ZksProof};
 use zokrates_proof_systems::TaggedProof;
+use zokrates_proof_systems::{Proof as ZksProof, G16};
 
 type ZokTaggedProof = TaggedProof<Bn128Field, G16>;
 type ZokratesSystemProof = ZksProof<Bn128Field, G16>;
@@ -49,7 +49,7 @@ async fn test_prove_and_verify_by_file() {
         "./tests/files/zkp/proving.key",
         &args,
     )
-        .unwrap();
+    .unwrap();
 
     let result = verify_by_file(proof.clone(), "./tests/files/zkp/verification.key").unwrap();
     assert!(result);

@@ -5,15 +5,14 @@ extern crate num_bigint;
 use num_bigint::BigInt;
 
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_protocol::rollup::{Rollup, zk_prove_rollup};
+use mystiko_protocol::rollup::{zk_prove_rollup, Rollup};
 use mystiko_protocol::verify::zk_verify;
 
 const FILE_PATH: &str = "./../mystiko-circuits/dist/zokrates/dev";
 
 #[tokio::test]
 async fn test_rollup1() {
-    let in_initial_elements =
-        [BigInt::from(100), BigInt::from(200), BigInt::from(300)].to_vec();
+    let in_initial_elements = [BigInt::from(100), BigInt::from(200), BigInt::from(300)].to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
     let mut rollup = Rollup {
@@ -27,7 +26,6 @@ async fn test_rollup1() {
     let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup1.vkey")).unwrap();
     assert!(verify);
 }
-
 
 #[tokio::test]
 async fn test_rollup2() {
@@ -54,7 +52,7 @@ async fn test_rollup4() {
         BigInt::from(300),
         BigInt::from(400),
     ]
-        .to_vec();
+    .to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
     let mut rollup = Rollup {
@@ -86,7 +84,7 @@ async fn test_rollup8() {
         BigInt::from(700),
         BigInt::from(800),
     ]
-        .to_vec();
+    .to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
     let mut rollup = Rollup {
@@ -130,7 +128,7 @@ async fn test_rollup16() {
         BigInt::from(1500),
         BigInt::from(1600),
     ]
-        .to_vec();
+    .to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
     let mut rollup = Rollup {
