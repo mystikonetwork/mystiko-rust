@@ -15,7 +15,7 @@ struct TestClientSetupData {
 }
 
 fn create_indexer_client(base_url: &str) -> IndexerClient {
-    IndexerClient::builder(base_url).build()
+    IndexerClient::builder(base_url).build().unwrap()
 }
 
 fn create_indexer_client_with_auth(base_url: &str) -> IndexerClient {
@@ -23,6 +23,7 @@ fn create_indexer_client_with_auth(base_url: &str) -> IndexerClient {
         .auth_username(Some(String::from(AUTH_USERNAME)))
         .auth_password(Some(String::from(AUTH_PASSWORD)))
         .build()
+        .unwrap()
 }
 
 async fn setup() -> Result<TestClientSetupData, Error> {
@@ -53,7 +54,7 @@ fn generate_auth_header() -> String {
 
 #[test]
 fn test_create_indexer_client() {
-    let base_url = "http://test_url:test_port";
+    let base_url = "http://test_url:3098";
     let client = create_indexer_client(base_url);
     assert_eq!(client.base_url, base_url);
 }

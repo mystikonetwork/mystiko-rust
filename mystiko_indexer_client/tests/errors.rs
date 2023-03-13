@@ -12,7 +12,7 @@ struct TestErrorSetupData {
 }
 
 fn create_indexer_client(base_url: &str) -> IndexerClient {
-    IndexerClient::builder(base_url).build()
+    IndexerClient::builder(base_url).build().unwrap()
 }
 
 async fn setup() -> Result<TestErrorSetupData, Error> {

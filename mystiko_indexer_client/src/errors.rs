@@ -1,5 +1,6 @@
 use reqwest;
 use thiserror::Error;
+use url::ParseError;
 
 #[derive(Error, Debug)]
 pub enum ClientError {
@@ -11,6 +12,9 @@ pub enum ClientError {
 
     #[error("response content-type is not supported: {0}")]
     UnsupportedContentTypeError(String),
+
+    #[error(transparent)]
+    UrlParsedError(#[from] ParseError),
 
     #[error("custom error: {0}")]
     CustomError(String),
@@ -31,6 +35,7 @@ impl PartialEq for ClientError {
                 },
             ) => l_code == r_code,
             (Self::UnsupportedContentTypeError(l), Self::UnsupportedContentTypeError(r)) => l == r,
+            (Self::UrlParsedError(l), Self::UrlParsedError(r)) => l.to_string() == r.to_string(),
             (Self::CustomError(l), Self::CustomError(r)) => l == r,
             _ => false,
         }

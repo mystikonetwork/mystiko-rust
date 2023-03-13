@@ -1,7 +1,9 @@
 use crate::client::IndexerClient;
+use crate::errors::ClientError;
 use base64::{engine::general_purpose, Engine as _};
 use reqwest::{header, Client};
 use std::time::Duration;
+use url::Url;
 
 pub struct IndexerClientBuilder {
     pub base_url: String,
@@ -44,13 +46,14 @@ impl IndexerClientBuilder {
         self
     }
 
-    pub fn build(self) -> IndexerClient {
+    pub fn build(self) -> Result<IndexerClient, ClientError> {
         let IndexerClientBuilder {
             base_url,
             auth_username: _,
             auth_password: _,
             timeout: _,
         } = self;
+        Url::parse(&base_url)?;
         let mut is_auth: Option<String> = None;
         if let (Some(auth_username), Some(auth_password)) =
             (&self.auth_username, &self.auth_password)
@@ -73,9 +76,9 @@ impl IndexerClientBuilder {
             }
             None => Client::builder().timeout(self.timeout).build().unwrap(),
         };
-        IndexerClient {
+        Ok(IndexerClient {
             base_url,
             reqwest_client,
-        }
+        })
     }
 }
