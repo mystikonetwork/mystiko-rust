@@ -1,4 +1,3 @@
-use crate::error::ZkpError;
 use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
 use num_bigint::{BigInt, RandBigInt, Sign};
@@ -6,10 +5,6 @@ use num_integer::Integer;
 use poseidon_rs::Fr;
 use rand::{distributions::Alphanumeric, Rng};
 use std::cmp::min;
-use std::fs::File;
-use std::io::BufReader;
-use std::io::Read;
-use std::path::Path;
 
 pub fn fr_to_big_int(fr: &Fr) -> BigInt {
     BigInt::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
@@ -100,21 +95,4 @@ pub fn random_utf8_string(size: usize) -> String {
         .filter(|c| c.is_ascii())
         .collect();
     utf_chars.into_iter().collect()
-}
-
-pub fn create_file_reader(file_path_str: &str) -> Result<BufReader<File>, ZkpError> {
-    let file_path = Path::new(file_path_str);
-    let file_handle = File::open(file_path)
-        .map_err(|why| ZkpError::ReadFileError(file_path_str.parse().unwrap(), why.to_string()))?;
-    Ok(BufReader::new(file_handle))
-}
-
-pub fn load_file(file_path_str: &str) -> Result<Vec<u8>, ZkpError> {
-    let mut buffer: Vec<u8> = Vec::new();
-    let mut reader = create_file_reader(file_path_str)?;
-
-    reader
-        .read_to_end(&mut buffer)
-        .map_err(|why| ZkpError::ReadFileError(file_path_str.parse().unwrap(), why.to_string()))?;
-    Ok(buffer)
 }

@@ -1,14 +1,17 @@
 use crate::error::ZkpError;
 use crate::zkp::types::ZKProof;
-use crate::zkp::utils::create_file_reader;
+use crate::zkp::utils::load_file;
 use zokrates_bellman::Bellman;
 use zokrates_common::helpers::*;
 use zokrates_field::{Bn128Field, Field};
 use zokrates_proof_systems::{Backend, Proof as ZksProof, Scheme, G16};
 
-pub fn verify_by_file(proof: ZKProof, verification_key_path_str: &str) -> Result<bool, ZkpError> {
-    let vk_reader = create_file_reader(verification_key_path_str)?;
-    let vk = serde_json::from_reader(vk_reader)
+pub async fn verify_by_file(
+    proof: ZKProof,
+    verification_key_path_str: &str,
+) -> Result<bool, ZkpError> {
+    let vk = load_file(verification_key_path_str).await?;
+    let vk = serde_json::from_reader(vk.as_slice())
         .map_err(|why| ZkpError::ParseError("verification key".to_string(), why.to_string()))?;
     do_verify(proof, vk)
 }

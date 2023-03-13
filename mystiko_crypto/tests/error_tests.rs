@@ -13,6 +13,6 @@ async fn test_error() {
     let zkp_err = ZkpError::ReadFileError(String::from(""), String::from(""));
     assert_ne!(zkp_err.name(), ZkpError::NotSupport);
 
-    // let ec_err = ECCryptoError::ECCryptoDataLengthError;
-    // assert_ne!(ec_err, ECCryptoError::InternalError);
+    let ec_err = ECCryptoError::ECCryptoDataLengthError;
+    assert_ne!(ec_err, ECCryptoError::InternalError);
 }

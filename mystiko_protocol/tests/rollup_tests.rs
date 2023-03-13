@@ -22,8 +22,10 @@ async fn test_rollup1() {
         abi_file: (FILE_PATH.to_owned() + "/Rollup1.abi.json").to_string(),
         proving_key_file: (FILE_PATH.to_owned() + "/Rollup1.pkey").to_string(),
     };
-    let proof = zk_prove_rollup(&mut rollup).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup1.vkey")).unwrap();
+    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup1.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
@@ -39,8 +41,10 @@ async fn test_rollup2() {
         abi_file: (FILE_PATH.to_owned() + "/Rollup2.abi.json").to_string(),
         proving_key_file: (FILE_PATH.to_owned() + "/Rollup2.pkey").to_string(),
     };
-    let proof = zk_prove_rollup(&mut rollup).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup2.vkey")).unwrap();
+    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup2.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
@@ -67,8 +71,10 @@ async fn test_rollup4() {
         abi_file: (FILE_PATH.to_owned() + "/Rollup4.abi.json").to_string(),
         proving_key_file: (FILE_PATH.to_owned() + "/Rollup4.pkey").to_string(),
     };
-    let proof = zk_prove_rollup(&mut rollup).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup4.vkey")).unwrap();
+    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup4.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
@@ -103,13 +109,14 @@ async fn test_rollup8() {
         abi_file: (FILE_PATH.to_owned() + "/Rollup8.abi.json").to_string(),
         proving_key_file: (FILE_PATH.to_owned() + "/Rollup8.pkey").to_string(),
     };
-    let proof = zk_prove_rollup(&mut rollup).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup8.vkey")).unwrap();
+    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup8.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_rollup16() {
     let in_initial_elements = [
         BigInt::from(100),
@@ -156,7 +163,9 @@ async fn test_rollup16() {
         abi_file: (FILE_PATH.to_owned() + "/Rollup16.abi.json").to_string(),
         proving_key_file: (FILE_PATH.to_owned() + "/Rollup16.pkey").to_string(),
     };
-    let proof = zk_prove_rollup(&mut rollup).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup16.vkey")).unwrap();
+    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup16.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }

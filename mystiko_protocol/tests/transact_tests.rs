@@ -191,8 +191,10 @@ async fn test_transaction1x0() {
         (FILE_PATH.to_owned() + "/Transaction1x0.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x0.vkey")).unwrap();
+    let proof = zk_prove_transaction(&tx).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x0.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
@@ -206,8 +208,10 @@ async fn test_transaction1x1() {
         (FILE_PATH.to_owned() + "/Transaction1x1.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x1.vkey")).unwrap();
+    let proof = zk_prove_transaction(&tx).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x1.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
@@ -221,8 +225,10 @@ async fn test_transaction1x2() {
         (FILE_PATH.to_owned() + "/Transaction1x2.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x2.vkey")).unwrap();
+    let proof = zk_prove_transaction(&tx).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x2.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
@@ -236,8 +242,10 @@ async fn test_transaction2x0() {
         (FILE_PATH.to_owned() + "/Transaction2x0.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x0.vkey")).unwrap();
+    let proof = zk_prove_transaction(&tx).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x0.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
@@ -251,8 +259,10 @@ async fn test_transaction2x1() {
         (FILE_PATH.to_owned() + "/Transaction2x1.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x1.vkey")).unwrap();
+    let proof = zk_prove_transaction(&tx).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x1.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }
 
@@ -266,7 +276,9 @@ async fn test_transaction2x2() {
         (FILE_PATH.to_owned() + "/Transaction2x2.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x2.vkey")).unwrap();
+    let proof = zk_prove_transaction(&tx).await.unwrap();
+    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x2.vkey"))
+        .await
+        .unwrap();
     assert!(verify);
 }

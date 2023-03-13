@@ -35,7 +35,7 @@ fn calc_leave_hash(leaves: &[BigInt]) -> BigInt {
     calc_mod(hash, &FIELD_SIZE)
 }
 
-pub fn zk_prove_rollup(rollup: &mut Rollup) -> Result<ZKProof, ProtocolError> {
+pub async fn zk_prove_rollup(rollup: &mut Rollup) -> Result<ZKProof, ProtocolError> {
     let new_leaves = rollup.new_leaves.clone();
     let rollup_size = new_leaves.len();
     assert!(is_power_of_two(rollup_size));
@@ -68,6 +68,7 @@ pub fn zk_prove_rollup(rollup: &mut Rollup) -> Result<ZKProof, ProtocolError> {
         &rollup.proving_key_file,
         &input,
     )
+    .await
     .unwrap();
 
     Ok(proof)

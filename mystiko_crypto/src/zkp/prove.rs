@@ -2,26 +2,26 @@ use crate::error::ZkpError;
 use crate::zkp::compute_witness::compute_witness;
 use crate::zkp::generate_proof::generate_proof;
 use crate::zkp::types::ZKProof;
-use crate::zkp::utils::{create_file_reader, load_file};
+use crate::zkp::utils::load_file;
 use zokrates_ast::ir::{self, ProgEnum};
 use zokrates_ast::typed::abi::Abi;
 use zokrates_bellman::Bellman;
 use zokrates_field::Bn128Field;
 use zokrates_proof_systems::G16;
 
-pub fn prove_by_file(
+pub async fn prove_by_file(
     program_path_str: &str,
     abi_spec_path_str: &str,
     proving_key_path_str: &str,
     json_args_str: &str,
 ) -> Result<ZKProof, ZkpError> {
-    let program_reader = create_file_reader(program_path_str)?;
-    let abi_reader = create_file_reader(abi_spec_path_str)?;
+    let program = load_file(program_path_str).await?;
+    let abi_spec = load_file(abi_spec_path_str).await?;
+    let proving_key = load_file(proving_key_path_str).await?;
 
-    let proving_key = load_file(proving_key_path_str)?;
-    let abi: Abi = serde_json::from_reader(abi_reader)
+    let abi: Abi = serde_json::from_slice(abi_spec.as_slice())
         .map_err(|why| ZkpError::ParseError("abi".to_string(), why.to_string()))?;
-    let prog = match ir::ProgEnum::deserialize(program_reader) {
+    let prog = match ir::ProgEnum::deserialize(program.as_slice()) {
         Ok(p) => p.collect(),
         Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
     };

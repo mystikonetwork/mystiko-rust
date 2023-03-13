@@ -107,7 +107,7 @@ fn check_transaction(tx: &Transaction) -> Result<(), ProtocolError> {
 //     }
 // }
 
-pub fn zk_prove_transaction(tx: &Transaction) -> Result<ZKProof, ProtocolError> {
+pub async fn zk_prove_transaction(tx: &Transaction) -> Result<ZKProof, ProtocolError> {
     // todo add logs
     check_transaction(tx)?;
 
@@ -237,6 +237,7 @@ pub fn zk_prove_transaction(tx: &Transaction) -> Result<ZKProof, ProtocolError> 
         &tx.proving_key_file,
         &tx_param,
     )
+    .await
     .unwrap();
 
     Ok(proof)

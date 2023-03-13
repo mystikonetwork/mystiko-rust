@@ -19,6 +19,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate sha2;
 extern crate sha3;
+extern crate tokio;
 extern crate zokrates_abi;
 extern crate zokrates_ast;
 extern crate zokrates_common;

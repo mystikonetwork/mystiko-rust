@@ -18,6 +18,7 @@ rand = { version = "0.8.5" }
 rand_core = { version = "0.6.4", features = ["getrandom" ] }
 serde = { version = "1.0.152" }
 serde_json = { version = "1.0", features = ["preserve_order"] }
+tokio = { version = "1.26.0", features = ["fs", "io-std"] }
 
 # error
 thiserror = { version = "1.0.38" }
@@ -47,4 +48,4 @@ zokrates_proof_systems = { git = "https://github.com/mystikonetwork/ZoKrates", r
 zokrates_bellman = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
 
 [dev-dependencies]
-tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+tokio = { version = "1.26.0", features = ["full", "test-util"] }
