@@ -1,7 +1,8 @@
 use crate::builder::IndexerClientBuilder;
 use crate::errors::ClientError;
 use crate::response::ApiResponse;
-use reqwest;
+use reqwest::header::{HeaderValue, ACCEPT};
+use serde;
 
 pub struct IndexerClient {
     pub base_url: String,
@@ -9,65 +10,61 @@ pub struct IndexerClient {
 }
 
 impl IndexerClient {
-    pub fn builder(base_url: String) -> IndexerClientBuilder {
+    pub fn builder(base_url: &str) -> IndexerClientBuilder {
         IndexerClientBuilder::new(base_url)
     }
 
-    pub async fn ping(&self, message: String) -> Result<String, ClientError> {
-        let resp = self
+    async fn get_data<T>(&self, url: &str) -> Result<T, ClientError>
+    where
+        T: serde::de::DeserializeOwned + ToString,
+    {
+        let response = self
             .reqwest_client
-            .get(self.base_url.clone() + "/ping")
-            .query(&[("message", message)])
+            .get(url)
+            .header(ACCEPT, HeaderValue::from_static("application/json"))
             .send()
             .await?;
-        let status_code = resp.status().as_u16();
-        let handled_resp = match resp.error_for_status() {
-            Ok(res) => match res.json::<ApiResponse<String>>().await {
-                Ok(resp_body) => match resp_body.code {
-                    0 => Ok(resp_body),
+        let response = response.error_for_status()?;
+        let content_type = response
+            .headers()
+            .get("content-type")
+            .and_then(|value| value.to_str().ok());
+        if let Some(s) = content_type {
+            if s.contains("application/json") {
+                let parsed_resp = response.json::<ApiResponse<T>>().await?;
+                let handled_resp = match parsed_resp.code {
+                    0 => Ok(parsed_resp),
                     _ => Err(ClientError::ApiResponseError {
-                        code: resp_body.code,
-                        message: resp_body.result,
+                        code: parsed_resp.code,
+                        message: parsed_resp.result.to_string(),
                     }),
-                },
-                Err(err) => Err(ClientError::ReqwestError(err)),
-            },
-            Err(err) => Err(ClientError::HttpResponseError {
-                code: status_code,
-                message: err.to_string(),
-            }),
-        };
-
-        let resp_body = handled_resp?;
-        Ok(resp_body.result)
+                };
+                let res_body = handled_resp?;
+                return Ok(res_body.result);
+            }
+        }
+        Err(ClientError::UnsupportedContentTypeError(
+            content_type.unwrap_or("").to_string(),
+        ))
     }
 
-    pub async fn auth_ping(&self, message: String) -> Result<String, ClientError> {
+    pub async fn ping(&self, message: &str) -> Result<String, ClientError> {
         let resp = self
-            .reqwest_client
-            .get(self.base_url.clone() + "/auth-ping")
-            .query(&[("message", message)])
-            .send()
+            .get_data::<String>(&format!(
+                "{}{}{}",
+                &self.base_url, "/ping?message=", message
+            ))
             .await?;
-        let status_code = resp.status().as_u16();
-        let handled_resp = match resp.error_for_status() {
-            Ok(res) => match res.json::<ApiResponse<String>>().await {
-                Ok(resp_body) => match resp_body.code {
-                    0 => Ok(resp_body),
-                    _ => Err(ClientError::ApiResponseError {
-                        code: resp_body.code,
-                        message: resp_body.result,
-                    }),
-                },
-                Err(err) => Err(ClientError::ReqwestError(err)),
-            },
-            Err(err) => Err(ClientError::HttpResponseError {
-                code: status_code,
-                message: err.to_string(),
-            }),
-        };
+        Ok(resp)
+    }
 
-        let resp_body = handled_resp?;
-        Ok(resp_body.result)
+    pub async fn auth_ping(&self, message: &str) -> Result<String, ClientError> {
+        let resp = self
+            .get_data::<String>(&format!(
+                "{}{}{}",
+                &self.base_url, "/auth-ping?message=", message
+            ))
+            .await?;
+        Ok(resp)
     }
 }

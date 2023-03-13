@@ -11,9 +11,9 @@ pub struct IndexerClientBuilder {
 }
 
 impl IndexerClientBuilder {
-    pub fn new(base_url: String) -> Self {
+    pub fn new(base_url: &str) -> Self {
         Self {
-            base_url,
+            base_url: base_url.to_string(),
             auth_username: None,
             auth_password: None,
             timeout: Duration::from_secs(20),
@@ -28,7 +28,7 @@ impl IndexerClientBuilder {
     pub fn auth_username(mut self, auth_username: Option<String>) -> Self {
         if let Some(auth_username) = auth_username {
             self.auth_username = Some(auth_username);
-        };
+        }
         self
     }
 

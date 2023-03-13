@@ -4,7 +4,7 @@ use std::time::Duration;
 #[test]
 fn test_builder() {
     let base_url = "http://test_domain:test_port";
-    let mut builder = IndexerClientBuilder::new(String::from(base_url));
+    let mut builder = IndexerClientBuilder::new(base_url);
     assert_eq!(builder.base_url, base_url);
     assert_eq!(builder.timeout, Duration::from_secs(20));
     assert_eq!(builder.auth_username, None);
