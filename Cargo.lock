@@ -2572,6 +2572,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_protocol"
+version = "0.1.0"
+dependencies = [
+ "babyjubjub-rs",
+ "bs58",
+ "ethers",
+ "ff_ce 0.11.0",
+ "k256 0.12.0",
+ "lazy_static",
+ "mystiko_crypto",
+ "num-bigint 0.4.3",
+ "num-traits 0.2.15",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "mystiko_storage"
 version = "0.1.0"
 dependencies = [
@@ -2597,10 +2615,6 @@ dependencies = [
 [[package]]
 name = "mystiko_utils"
 version = "0.1.0"
-dependencies = [
- "lazy_static",
- "num-bigint 0.4.3",
-]
 
 [[package]]
 name = "native-tls"
@@ -3811,6 +3825,16 @@ name = "signature"
 version = "1.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74233d3b3b2f6d4b006dc19dee745e73e2a6bfb6f93607cd3b02bd5b00797d7c"
+dependencies = [
+ "digest 0.10.6",
+ "rand_core 0.6.4",
+]
+
+[[package]]
+name = "signature"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fe458c98333f9c8152221191a77e2a44e8325d0193484af2e9421a53019e57d"
 dependencies = [
  "digest 0.10.6",
  "rand_core 0.6.4",
