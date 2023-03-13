@@ -1785,6 +1785,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "flamer"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36b732da54fd4ea34452f2431cf464ac7be94ca4b339c9cd3d3d12eb06fe7aab"
+dependencies = [
+ "flame",
+ "quote 1.0.23",
+ "syn 1.0.107",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2564,6 +2575,7 @@ version = "0.1.0"
 dependencies = [
  "async_once",
  "flame",
+ "flamer",
  "lazy_static 1.4.0",
  "mystiko_utils",
  "num-bigint 0.4.3",
