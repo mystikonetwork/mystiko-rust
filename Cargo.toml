@@ -6,6 +6,7 @@ members = [
     "mystiko_protocol",
     "mystiko_database",
     "mystiko_downloader",
+    "mystiko_indexer_client",
     "mystiko_storage",
     "mystiko_storage_sqlite",
     "mystiko_utils",
