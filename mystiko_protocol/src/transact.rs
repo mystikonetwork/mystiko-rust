@@ -144,7 +144,6 @@ pub fn zk_prove_transaction(tx: &Transaction) -> Result<ZKProof, ProtocolError> 
     };
 
     let random_auditing_pk = ecies::public_key(&random_auditing_sk);
-    // todo unpack pk from secret key
     let unpacked_random_auditing_pk = ecies::unpack_public_key(&random_auditing_pk);
     let mut auditor_public_key_x_signs = vec![];
     let mut auditor_public_key_xs = vec![];
