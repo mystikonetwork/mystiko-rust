@@ -147,8 +147,8 @@ impl<'de> Deserialize<'de> for RawDepositContractConfig {
             peer_contract_address: Option<String>,
             min_amount: String,
             max_amount: String,
-            min_bridge_fee: String,
-            min_executor_fee: String,
+            min_bridge_fee: Option<String>,
+            min_executor_fee: Option<String>,
             bridge_fee_asset_address: Option<String>,
             executor_fee_asset_address: Option<String>,
             service_fee: Option<u32>,
@@ -160,6 +160,8 @@ impl<'de> Deserialize<'de> for RawDepositContractConfig {
         let service_fee = inner.service_fee.unwrap_or_else(|| 0);
         let service_fee_divider = inner.service_fee_divider.unwrap_or_else(|| 1000000);
         let disabled = inner.disabled.unwrap_or_else(|| false);
+        let min_bridge_fee = inner.min_bridge_fee.unwrap_or_else(|| "0".to_string());
+        let min_executor_fee = inner.min_executor_fee.unwrap_or_else(|| "0".to_string());
         Ok(Self {
             base: RawContractConfig {
                 base: Default::default(),
@@ -179,8 +181,8 @@ impl<'de> Deserialize<'de> for RawDepositContractConfig {
             peer_contract_address: inner.peer_contract_address,
             min_amount: inner.min_amount,
             max_amount: inner.max_amount,
-            min_bridge_fee: inner.min_bridge_fee,
-            min_executor_fee: inner.min_executor_fee,
+            min_bridge_fee,
+            min_executor_fee,
             bridge_fee_asset_address: inner.bridge_fee_asset_address,
             executor_fee_asset_address: inner.executor_fee_asset_address,
             service_fee,

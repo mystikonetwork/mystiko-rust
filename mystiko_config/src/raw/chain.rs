@@ -21,6 +21,10 @@ fn default_indexer_filter_size() -> u64 {
     500000
 }
 
+fn default_explorer_prefix() -> String {
+    EXPLORER_DEFAULT_PREFIX.to_string()
+}
+
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawChainConfig {
@@ -50,6 +54,7 @@ pub struct RawChainConfig {
     pub explorer_url: String,
 
     #[validate(contains = "%tx%")]
+    #[serde(default = "default_explorer_prefix")]
     pub explorer_prefix: String,
 
     #[validate(length(min = 1))]

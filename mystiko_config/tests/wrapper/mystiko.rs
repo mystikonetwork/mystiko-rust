@@ -724,11 +724,19 @@ async fn test_peer_contract_address_mismatch() {
     assert_eq!(validate.is_err(), true);
 }
 
-// TODO supplement
-async fn test_create_default_testnet_config() {}
+#[tokio::test]
+async fn test_create_default_testnet_config() {
+    let result =
+        MystikoConfig::create_default_testnet_config().await;
+    assert!(!result.is_err());
+}
 
-// TODO supplement
-async fn test_create_default_mainnet_config() {}
+#[tokio::test]
+async fn test_create_default_mainnet_config() {
+    let result =
+        MystikoConfig::create_default_mainnet_config().await;
+    assert!(!result.is_err());
+}
 
 #[tokio::test]
 async fn test_get_transaction_url() {

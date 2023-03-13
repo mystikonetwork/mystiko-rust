@@ -492,9 +492,15 @@ impl MystikoConfig {
         }
     }
 
-    // TODO implement
-    pub async fn create_default_testnet_config() {}
+    pub async fn create_default_testnet_config() -> Result<MystikoConfig, ValidationError> {
+        MystikoConfig::create_from_file(
+            "src/json/client/default/testnet.json".to_string()
+        ).await
+    }
 
-    // TODO implement
-    pub async fn create_default_mainnet_config() {}
+    pub async fn create_default_mainnet_config() -> Result<MystikoConfig, ValidationError> {
+        MystikoConfig::create_from_file(
+            "src/json/client/default/mainnet.json".to_string()
+        ).await
+    }
 }

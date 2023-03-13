@@ -5,6 +5,7 @@ use crate::common::{BridgeType};
 use crate::errors;
 use crate::raw::base::Validator;
 use crate::raw::bridge::base::{RawBridgeConfig, RawBridgeConfigTrait};
+use crate::raw::chain::EXPLORER_DEFAULT_PREFIX;
 
 fn default_bridge_type() -> BridgeType {
     BridgeType::Poly
@@ -95,13 +96,14 @@ impl<'de> Deserialize<'de> for RawPolyBridgeConfig {
             bridge_type: Option<BridgeType>,
             name: String,
             explorer_url: String,
-            explorer_prefix: String,
+            explorer_prefix: Option<String>,
             api_url: String,
             api_prefix: String,
         }
         let inner = Inner::deserialize(deserializer)?;
         let bridge_type = inner.bridge_type.unwrap_or_else(|| BridgeType::Poly);
         let base_bridge_type = bridge_type.clone();
+        let explorer_prefix = inner.explorer_prefix.unwrap_or_else(|| EXPLORER_DEFAULT_PREFIX.to_string());
         Ok(Self {
             base: RawBridgeConfig {
                 base: Default::default(),
@@ -110,7 +112,7 @@ impl<'de> Deserialize<'de> for RawPolyBridgeConfig {
             },
             bridge_type,
             explorer_url: inner.explorer_url,
-            explorer_prefix: inner.explorer_prefix,
+            explorer_prefix,
             api_url: inner.api_url,
             api_prefix: inner.api_prefix,
         })
