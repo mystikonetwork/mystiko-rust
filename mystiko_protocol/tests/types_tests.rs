@@ -17,7 +17,7 @@ async fn test_decrypted_note() {
         amount,
     };
 
-    let enc_v = note.to_vec();
-    let note_s = DecryptedNote::from_vec(enc_v);
-    assert_eq!(note, note_s);
+    let enc_vec = note.to_vec();
+    let note_dec = DecryptedNote::from_vec(enc_vec);
+    assert_eq!(note, note_dec);
 }

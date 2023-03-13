@@ -43,6 +43,7 @@ async fn test_secret_sharing2() {
     let mut shares = ss.shares.clone();
     shares.shuffle(&mut rand::thread_rng());
     let es = shares[0..3].to_vec();
-    let recovered_secret = recover(es, Some(field.clone()));
+    let filed = Some(field);
+    let recovered_secret = recover(es, filed);
     assert_eq!(secret, recovered_secret);
 }
