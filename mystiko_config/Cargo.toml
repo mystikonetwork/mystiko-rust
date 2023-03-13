@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+flame = { version = "0.2.2" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 num-bigint = "0.4.3"
 regex = "1.7.1"
@@ -18,3 +19,7 @@ validator = { version = "0.15", features = ["derive"] }
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
 lazy_static = { version = "1.4.0" }
 async_once = { version = "0.2.6" }
+flame = { version = "0.2.2" }
+
+[profile.bench]
+debug = true

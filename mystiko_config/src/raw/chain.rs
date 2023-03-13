@@ -1,7 +1,6 @@
 use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::common::{validate_object};
 use crate::errors::ValidationError;
 use crate::raw::asset::RawAssetConfig;
 use crate::raw::base::{RawConfig, Validator};
