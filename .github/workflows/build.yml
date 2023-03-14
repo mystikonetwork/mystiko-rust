@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Toolchain
-        uses: actions-rs/toolchain@v1.0.7
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly-2023-02-22
           override: true
