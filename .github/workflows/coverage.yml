@@ -30,13 +30,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3
         with:
           persist-credentials: false
 
       - uses: actions-rs/toolchain@v1.0.7
         with:
-          toolchain: nightly
+          toolchain: nightly-2023-02-22
           override: true
           profile: minimal
           components: llvm-tools-preview
