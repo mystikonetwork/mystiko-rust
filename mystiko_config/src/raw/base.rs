@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use std::fs::{File};
 use std::io::Read;
+use flamer::flame;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use serde_json::{from_str};
@@ -37,6 +38,7 @@ impl RawConfig {
         }
     }
 
+    #[flame]
     pub async fn create_from_file<T>(json_file: &str) -> Result<T, ValidationError>
         where T: DeserializeOwned + Serialize + Validator + Debug
     {

@@ -1,3 +1,4 @@
+use flamer::flame;
 use serde::{Deserialize, Serialize};
 use crate::errors::AuxDataError;
 use crate::raw::base::Validator;
@@ -45,7 +46,8 @@ impl<R, A> BaseConfig<R, A> where
         BaseConfig::new(data, aux_data)
     }
 
-    pub fn aux_data_not_empty(&self) -> Result<A, AuxDataError> {
+    #[flame]
+    pub fn aux_data_not_empty(&self) -> Result<&A, AuxDataError> {
         match &self.aux_data {
             None => {
                 Err(AuxDataError::new(
@@ -53,7 +55,7 @@ impl<R, A> BaseConfig<R, A> where
                 ))
             }
             Some(value) => {
-                Ok(value.clone())
+                Ok(value)
             }
         }
     }

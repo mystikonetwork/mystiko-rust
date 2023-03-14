@@ -65,10 +65,11 @@ pub struct DepositContractConfig {
 impl DepositContractConfig {
     pub fn new(data: RawDepositContractConfig, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
         let contract_config = ContractConfig::new(data, aux_data);
+        let aux_data = contract_config.base.aux_data_not_empty().unwrap();
         let bridge_fee_asset_config =
             DepositContractConfig::init_bridge_fee_asset_config(
                 &contract_config,
-                contract_config.base.aux_data_not_empty().unwrap().asset_configs,
+                aux_data,
             );
         if bridge_fee_asset_config.is_err() {
             return Err(bridge_fee_asset_config.unwrap_err());
@@ -77,7 +78,7 @@ impl DepositContractConfig {
         let executor_fee_asset_config =
             DepositContractConfig::init_executor_fee_asset_config(
                 &contract_config,
-                contract_config.base.aux_data_not_empty().unwrap().asset_configs,
+                aux_data,
             );
         if executor_fee_asset_config.is_err() {
             return Err(executor_fee_asset_config.unwrap_err());
@@ -270,10 +271,10 @@ impl DepositContractConfig {
         }
     }
 
-    pub fn bridge_fee_asset(&self) -> AssetConfig {
+    pub fn bridge_fee_asset(&self) -> &AssetConfig {
         match &self.bridge_fee_asset_config {
-            None => { self.base.base.aux_data_not_empty().unwrap().main_asset_config }
-            Some(value) => { value.clone() }
+            None => { &self.base.base.aux_data_not_empty().unwrap().main_asset_config }
+            Some(value) => { value }
         }
     }
 
@@ -406,17 +407,17 @@ impl DepositContractConfig {
 
     fn init_bridge_fee_asset_config(
         base: &ContractConfig<RawDepositContractConfig, AuxData>,
-        asset_configs: HashMap<String, AssetConfig>,
+        aux_data: &AuxData,
     ) -> Result<Option<AssetConfig>, ValidationError> {
         match &base.base.data.bridge_fee_asset_address {
             None => { Ok(None) }
             Some(address) => {
                 if address.eq(MAIN_ASSET_ADDRESS) {
                     return Ok(
-                        Some(base.base.aux_data_not_empty().unwrap().main_asset_config)
+                        Some(aux_data.main_asset_config.clone())
                     );
                 }
-                let asset_config = asset_configs.get(address);
+                let asset_config = aux_data.asset_configs.get(address);
                 let check_result = check(
                     asset_config.is_some(),
                     format!(
@@ -438,17 +439,17 @@ impl DepositContractConfig {
 
     fn init_executor_fee_asset_config(
         base: &ContractConfig<RawDepositContractConfig, AuxData>,
-        asset_configs: HashMap<String, AssetConfig>,
+        aux_data: &AuxData,
     ) -> Result<Option<AssetConfig>, ValidationError> {
         match &base.base.data.executor_fee_asset_address {
             None => { Ok(None) }
             Some(address) => {
                 if address.eq(MAIN_ASSET_ADDRESS) {
                     return Ok(
-                        Some(base.base.aux_data_not_empty().unwrap().main_asset_config)
+                        Some(aux_data.main_asset_config.clone())
                     );
                 }
-                let asset_config = asset_configs.get(address);
+                let asset_config = aux_data.asset_configs.get(address);
                 let check_result = check(
                     asset_config.is_some(),
                     format!(

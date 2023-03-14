@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use flamer::flame;
 use strum::IntoEnumIterator;
 use mystiko_utils::check::check;
 use crate::common::{BridgeType, CircuitType};
@@ -38,6 +39,7 @@ pub struct MystikoConfig {
 }
 
 impl MystikoConfig {
+    #[flame]
     pub fn new(data: RawMystikoConfig) -> Result<Self, ValidationError> {
         let base = BaseConfig::new(data, None);
         let mut config = Self {
@@ -244,6 +246,7 @@ impl MystikoConfig {
         }
     }
 
+    #[flame]
     fn init_circuit_configs(&mut self) -> Result<(), ValidationError> {
         let mut default_circuit_configs: HashMap<CircuitType, CircuitConfig> = HashMap::new();
         let mut circuit_config_by_names: HashMap<String, CircuitConfig> = HashMap::new();
@@ -301,6 +304,7 @@ impl MystikoConfig {
         Ok(())
     }
 
+    #[flame]
     fn init_bridge_configs(&mut self) {
         let mut bridge_configs: HashMap<BridgeType, BridgeConfigType> = HashMap::new();
         for bridge in &self.base.data.bridges {
@@ -341,7 +345,7 @@ impl MystikoConfig {
         self.bridge_configs = bridge_configs;
     }
 
-    // TODO fix slow method
+    #[flame]
     fn init_chain_configs(
         &mut self,
     ) -> Result<(), ValidationError> {
@@ -379,6 +383,7 @@ impl MystikoConfig {
         Ok(())
     }
 
+    #[flame]
     fn init_indexer_config(&mut self) {
         match &self.data().indexer {
             Some(config) => {
@@ -390,6 +395,7 @@ impl MystikoConfig {
         }
     }
 
+    #[flame]
     fn validate(&self) -> Result<(), ValidationError> {
         for (_, chain_config) in &self.chain_configs {
             for deposit_contract_config in chain_config.deposit_contracts_with_disabled() {
@@ -479,6 +485,7 @@ impl MystikoConfig {
         Ok(())
     }
 
+    #[flame]
     pub async fn create_from_file(json_file: String) -> Result<MystikoConfig, ValidationError> {
         match RawConfig::create_from_file::<RawMystikoConfig>(json_file.as_str()).await {
             Ok(raw_config) => { MystikoConfig::new(raw_config) }
@@ -493,6 +500,7 @@ impl MystikoConfig {
         }
     }
 
+    #[flame]
     pub async fn create_default_testnet_config() -> Result<MystikoConfig, ValidationError> {
         MystikoConfig::create_from_file(
             "src/json/client/default/testnet.json".to_string()

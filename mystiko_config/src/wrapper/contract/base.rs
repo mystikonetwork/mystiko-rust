@@ -1,3 +1,4 @@
+use flamer::flame;
 use serde::Serialize;
 use crate::common::ContractType;
 use crate::raw::contract::base::RawContractConfigTrait;
@@ -16,6 +17,7 @@ impl<T, A> ContractConfig<T, A> where
     T: RawContractConfigTrait + Serialize + Clone,
     A: Clone
 {
+    #[flame]
     pub fn new(data: T, aux_data: Option<A>) -> Self {
         Self { base: BaseConfig::new(data, aux_data) }
     }

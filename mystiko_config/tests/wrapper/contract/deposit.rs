@@ -157,7 +157,7 @@ async fn test_equality() {
     assert_eq!(config.peer_contract().is_none(), true);
     assert_eq!(
         config.bridge_fee_asset(),
-        asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap().clone(),
+        &asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap().clone(),
     );
     assert_eq!(
         config.executor_fee_asset().unwrap(),
@@ -174,11 +174,11 @@ async fn test_bridge_fee_asset() {
     let main_asset_config = main_asset_config().await;
     raw_config.bridge_fee_asset_address = None;
     config = config.mutate(Some(raw_config.clone()), None).unwrap();
-    assert_eq!(config.bridge_fee_asset(), main_asset_config);
+    assert_eq!(config.bridge_fee_asset(), &main_asset_config);
     assert_eq!(config.min_bridge_fee_number(), 0.02f64);
     raw_config.bridge_fee_asset_address = Some(MAIN_ASSET_ADDRESS.to_string());
     config.mutate(Some(raw_config.clone()), None).unwrap();
-    assert_eq!(config.bridge_fee_asset(), main_asset_config);
+    assert_eq!(config.bridge_fee_asset(), &main_asset_config);
     raw_config.bridge_fee_asset_address =
         Some("0xBc28029D248FC60bce0bAC01cF41A53aEEaE06F9".to_string());
     let validate =

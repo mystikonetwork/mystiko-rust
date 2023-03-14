@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
+use flamer::flame;
 use num_bigint::BigInt;
 use validator::Validate;
 use mystiko_utils::check::check;
@@ -63,6 +64,7 @@ pub struct ChainConfig {
 }
 
 impl ChainConfig {
+    #[flame]
     pub fn new(data: RawChainConfig, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
         let base_config =
             BaseConfig::new(data, aux_data);
@@ -70,11 +72,12 @@ impl ChainConfig {
             ChainConfig::init_main_asset_config(&base_config)?;
         let asset_configs =
             ChainConfig::init_asset_configs(&base_config)?;
+        let aux_data = &base_config.aux_data_not_empty().unwrap();
         let pool_contract_configs =
             ChainConfig::init_pool_contract_configs(
                 &base_config,
-                &base_config.aux_data_not_empty().unwrap().default_circuit_configs,
-                &base_config.aux_data_not_empty().unwrap().circuit_configs_by_name,
+                &aux_data.default_circuit_configs,
+                &aux_data.circuit_configs_by_name,
                 &main_asset_config,
                 &asset_configs,
             )?;
@@ -88,7 +91,7 @@ impl ChainConfig {
                 &pool_contract_configs,
                 &main_asset_config,
                 &asset_configs,
-                base_config.aux_data_not_empty().unwrap().chain_configs,
+                &aux_data.chain_configs,
             )?;
         let provider_configs =
             base_config.data.providers.iter().map(
@@ -388,6 +391,7 @@ impl ChainConfig {
         ChainConfig::new(d, a)
     }
 
+    #[flame]
     fn init_pool_contract_configs(
         base: &BaseConfig<RawChainConfig, AuxData>,
         default_circuit_configs: &HashMap<CircuitType, CircuitConfig>,
@@ -429,6 +433,7 @@ impl ChainConfig {
         Ok(pool_contract_configs)
     }
 
+    #[flame]
     fn init_main_asset_config(
         base: &BaseConfig<RawChainConfig, AuxData>
     ) -> Result<AssetConfig, ValidationError> {
@@ -441,6 +446,7 @@ impl ChainConfig {
         ))
     }
 
+    #[flame]
     fn init_asset_configs(
         base: &BaseConfig<RawChainConfig, AuxData>
     ) -> Result<HashMap<String, AssetConfig>, ValidationError> {
@@ -459,6 +465,7 @@ impl ChainConfig {
         Ok(asset_configs)
     }
 
+    #[flame]
     fn init_pool_configs_by_asset_and_bridge(
         pool_contracts: Vec<PoolContractConfig>,
     ) -> Result<HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>, ValidationError> {
@@ -512,12 +519,13 @@ impl ChainConfig {
         Ok(pool_configs_by_asset_and_bridge)
     }
 
+    #[flame]
     fn init_deposit_contract_configs(
         base: &BaseConfig<RawChainConfig, AuxData>,
         pool_contract_configs: &HashMap<String, PoolContractConfig>,
         main_asset_config: &AssetConfig,
         asset_configs: &HashMap<String, AssetConfig>,
-        chain_configs: Option<HashMap<u32, ChainConfig>>,
+        chain_configs: &Option<HashMap<u32, ChainConfig>>,
     ) -> Result<HashMap<String, DepositContractConfig>, ValidationError> {
         let mut deposit_contract_configs: HashMap<String, DepositContractConfig> = HashMap::new();
         for raw in &base.data.deposit_contracts {

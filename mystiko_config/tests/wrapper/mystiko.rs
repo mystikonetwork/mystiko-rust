@@ -1,3 +1,4 @@
+use std::fs::File;
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use mystiko_config::common::{BridgeType, CircuitType};
@@ -729,6 +730,7 @@ async fn test_create_default_testnet_config() {
     let result =
         MystikoConfig::create_default_testnet_config().await;
     assert!(!result.is_err());
+    flame::dump_html(&mut File::create("flame-graph.html").unwrap()).unwrap();
 }
 
 #[tokio::test]

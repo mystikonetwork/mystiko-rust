@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::str::FromStr;
+use flamer::flame;
 use num_bigint::BigInt;
 use mystiko_utils::check::check;
 use mystiko_utils::convert::from_decimals;
@@ -44,19 +45,20 @@ pub struct PoolContractConfig {
 }
 
 impl PoolContractConfig {
+    #[flame]
     pub fn new(data: RawPoolContractConfig, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
         let contract_config = ContractConfig::new(data, aux_data);
+        let aux_data = contract_config.base.aux_data_not_empty().unwrap();
         let config = Self {
             base: contract_config.clone(),
             circuit_configs: PoolContractConfig::init_circuits_configs(
                 &contract_config,
-                contract_config.base.aux_data_not_empty().unwrap().default_circuit_configs,
-                contract_config.base.aux_data_not_empty().unwrap().circuit_configs_by_name,
+                aux_data,
             ),
-            main_asset_config: contract_config.base.aux_data_not_empty().unwrap().main_asset_config,
+            main_asset_config: aux_data.main_asset_config.clone(),
             asset_config: PoolContractConfig::init_asset_config(
                 &contract_config,
-                contract_config.base.aux_data_not_empty().unwrap().asset_configs,
+                aux_data,
             ),
         };
         let validate = config.validate();
@@ -171,20 +173,20 @@ impl PoolContractConfig {
         &self.base.base.aux_data
     }
 
+    #[flame]
     fn init_circuits_configs(
         base: &ContractConfig<RawPoolContractConfig, AuxData>,
-        default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
-        circuit_configs_by_name: HashMap<String, CircuitConfig>,
+        aux_data: &AuxData,
     ) -> HashMap<CircuitType, CircuitConfig> {
         let mut circuit_configs: HashMap<CircuitType, CircuitConfig> = HashMap::new();
-        for (_, circuit_conf) in default_circuit_configs {
+        for (_, circuit_conf) in &aux_data.default_circuit_configs {
             circuit_configs.insert(
                 circuit_conf.circuit_type().clone(),
-                circuit_conf,
+                circuit_conf.clone(),
             );
         }
         for circuit_name in &base.base.data.circuits {
-            let circuit_conf = circuit_configs_by_name.get(circuit_name);
+            let circuit_conf = aux_data.circuit_configs_by_name.get(circuit_name);
             match circuit_conf {
                 None => {}
                 Some(value) => {
@@ -198,16 +200,17 @@ impl PoolContractConfig {
         circuit_configs
     }
 
+    #[flame]
     fn init_asset_config(
         base: &ContractConfig<RawPoolContractConfig, AuxData>,
-        asset_configs: HashMap<String, AssetConfig>,
+        aux_data: &AuxData,
     ) -> Option<AssetConfig> {
         match &base.base.data.asset_address {
             None => {
                 None
             }
             Some(value) => {
-                let asset_config = asset_configs.get(value);
+                let asset_config = aux_data.asset_configs.get(value);
                 Some(
                     asset_config.expect(
                         format!(
@@ -221,6 +224,7 @@ impl PoolContractConfig {
         }
     }
 
+    #[flame]
     fn validate(&self) -> Result<(), ValidationError> {
         if self.asset_type() == AssetType::Main {
             let check_result = check(
