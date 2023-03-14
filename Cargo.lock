@@ -2642,6 +2642,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_indexer_client"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "base64 0.21.0",
+ "futures",
+ "mockito",
+ "mystiko_database",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "url",
+]
+
+[[package]]
 name = "mystiko_storage"
 version = "0.1.0"
 dependencies = [
