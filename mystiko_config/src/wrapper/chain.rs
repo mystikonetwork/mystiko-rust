@@ -176,17 +176,19 @@ impl ChainConfig {
         self.pool_contract_configs.values().cloned().collect()
     }
 
-    pub fn deposit_contracts(&self) -> Vec<DepositContractConfig> {
-        let configs = self.deposit_contracts_with_disabled();
-        configs
-            .iter()
-            .filter(|conf| !conf.disabled())
-            .cloned()
-            .collect::<Vec<DepositContractConfig>>()
+    pub fn deposit_contracts<'a>(&'a self) -> Vec<&'a DepositContractConfig> {
+        let configs: Vec<&'a DepositContractConfig> = self.deposit_contracts_with_disabled();
+        let mut result: Vec<&'a DepositContractConfig> = Vec::new();
+        for config in configs {
+            if !config.disabled() {
+                result.push(config);
+            }
+        }
+        result
     }
 
-    pub fn deposit_contracts_with_disabled(&self) -> Vec<DepositContractConfig> {
-        self.deposit_contract_configs.values().cloned().collect()
+    pub fn deposit_contracts_with_disabled(&self) -> Vec<&DepositContractConfig> {
+        self.deposit_contract_configs.values().collect()
     }
 
     pub fn assets(&self) -> Vec<AssetConfig> {
