@@ -730,7 +730,6 @@ async fn test_create_default_testnet_config() {
     let result =
         MystikoConfig::create_default_testnet_config().await;
     assert!(!result.is_err());
-    flame::dump_html(&mut File::create("flame-graph.html").unwrap()).unwrap();
 }
 
 #[tokio::test]
