@@ -8,7 +8,9 @@ pub struct IndexerConfig {
 
 impl IndexerConfig {
     pub fn new(data: RawIndexerConfig) -> Self {
-        Self { base: BaseConfig::new(data, None) }
+        Self {
+            base: BaseConfig::new(data, None),
+        }
     }
 
     pub fn data(&self) -> &RawIndexerConfig {
@@ -33,8 +35,8 @@ impl IndexerConfig {
 
     pub fn mutate(&self, data: Option<RawIndexerConfig>) -> Self {
         let data = match data {
-            None => { self.data().clone() }
-            Some(value) => { value }
+            None => self.data().clone(),
+            Some(value) => value,
         };
         IndexerConfig::new(data)
     }

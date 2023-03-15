@@ -1,8 +1,6 @@
-use std::hash::{Hash};
-use serde::{Deserialize, Serialize};
-use validator::Validate;
 use crate::common::BridgeType;
 use crate::errors::ValidationError;
+use crate::raw::base::{RawConfig, Validator};
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
 use crate::raw::bridge::celer::RawCelerBridgeConfig;
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
@@ -11,8 +9,10 @@ use crate::raw::bridge::tbridge::RawTBridgeConfig;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
-use crate::raw::base::{RawConfig, Validator};
-use crate::raw::validator::{is_sem_ver, array_unique, validate_nested_vec};
+use crate::raw::validator::{array_unique, is_sem_ver, validate_nested_vec};
+use serde::{Deserialize, Serialize};
+use std::hash::Hash;
+use validator::Validate;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, Hash)]
 #[serde(tag = "type")]
@@ -79,20 +79,20 @@ pub struct RawMystikoConfig {
     pub version: String,
 
     #[validate(
-    custom(function = "array_unique"),
-    custom(function = "validate_nested_vec")
+        custom(function = "array_unique"),
+        custom(function = "validate_nested_vec")
     )]
     pub chains: Vec<RawChainConfig>,
 
     #[validate(
-    custom(function = "array_unique"),
-    custom(function = "validate_nested_vec")
+        custom(function = "array_unique"),
+        custom(function = "validate_nested_vec")
     )]
     pub bridges: Vec<RawBridgeConfigType>,
 
     #[validate(
-    custom(function = "array_unique"),
-    custom(function = "validate_nested_vec")
+        custom(function = "array_unique"),
+        custom(function = "validate_nested_vec")
     )]
     pub circuits: Vec<RawCircuitConfig>,
 

@@ -4,32 +4,32 @@ use mystiko_config::raw::contract::base::RawContractConfig;
 use mystiko_config::raw::contract::deposit::RawDepositContractConfig;
 
 async fn default_config() -> RawDepositContractConfig {
-    RawConfig::create_from_object::<RawDepositContractConfig>(
-        RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Tbridge,
-            "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
-            true,
-            Some(97),
-            Some(String::from("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547")),
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
-            Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
-            Some(2),
-            Some(1000),
-        )
-    ).await.unwrap()
+    RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
+        RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+            ContractType::Deposit,
+            1000000,
+            None,
+            None,
+        ),
+        BridgeType::Tbridge,
+        "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
+        true,
+        Some(97),
+        Some(String::from("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547")),
+        "10000000000000000".to_string(),
+        "100000000000000000".to_string(),
+        "20000000000000000".to_string(),
+        "30000000000000000".to_string(),
+        Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
+        Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
+        Some(2),
+        Some(1000),
+    ))
+    .await
+    .unwrap()
 }
 
 #[tokio::test]
@@ -216,16 +216,21 @@ async fn test_invalid_executor_fee_asset_address_1() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config =
-        RawConfig::create_from_file::<RawDepositContractConfig>("tests/files/contract/deposit.valid.json").await.unwrap();
+    let file_config = RawConfig::create_from_file::<RawDepositContractConfig>(
+        "tests/files/contract/deposit.valid.json",
+    )
+    .await
+    .unwrap();
     assert_eq!(file_config, default_config().await);
     assert_eq!(file_config.contract_type, file_config.base.contract_type);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config =
-        RawConfig::create_from_file::<RawDepositContractConfig>("tests/files/contract/deposit.invalid.json").await;
+    let file_config = RawConfig::create_from_file::<RawDepositContractConfig>(
+        "tests/files/contract/deposit.invalid.json",
+    )
+    .await;
     assert_eq!(file_config.is_err(), true);
 }
 
@@ -252,8 +257,9 @@ async fn test_import_valid_json_str() {
               "serviceFeeDivider": 1000
             }
         "#;
-    let str_config =
-        RawConfig::create_from_json_string::<RawDepositContractConfig>(json_str).await.unwrap();
+    let str_config = RawConfig::create_from_json_string::<RawDepositContractConfig>(json_str)
+        .await
+        .unwrap();
     assert_eq!(str_config.contract_type, ContractType::Deposit);
     assert_eq!(str_config.contract_type, str_config.base.contract_type);
 }

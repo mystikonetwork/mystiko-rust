@@ -3,9 +3,12 @@ use mystiko_config::raw::base::{RawConfig, Validator};
 use mystiko_config::raw::bridge::base::RawBridgeConfig;
 
 async fn default_config() -> RawBridgeConfig {
-    RawConfig::create_from_object::<RawBridgeConfig>(
-        RawBridgeConfig::new("TBridge config".to_string(), BridgeType::Tbridge)
-    ).await.unwrap()
+    RawConfig::create_from_object::<RawBridgeConfig>(RawBridgeConfig::new(
+        "TBridge config".to_string(),
+        BridgeType::Tbridge,
+    ))
+    .await
+    .unwrap()
 }
 
 #[tokio::test]

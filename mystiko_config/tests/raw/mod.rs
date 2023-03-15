@@ -1,8 +1,8 @@
-mod bridge;
-mod contract;
 mod asset;
+mod bridge;
 mod chain;
 mod circuit;
+mod contract;
 mod indexer;
 mod mystiko;
 mod provider;

@@ -2,13 +2,13 @@ use mystiko_config::raw::base::{RawConfig, Validator};
 use mystiko_config::raw::provider::RawProviderConfig;
 
 async fn default_config() -> RawProviderConfig {
-    RawConfig::create_from_object::<RawProviderConfig>(
-        RawProviderConfig::new(
-            "http://localhost:8545".to_string(),
-            Some(100000),
-            Some(5),
-        )
-    ).await.unwrap()
+    RawConfig::create_from_object::<RawProviderConfig>(RawProviderConfig::new(
+        "http://localhost:8545".to_string(),
+        Some(100000),
+        Some(5),
+    ))
+    .await
+    .unwrap()
 }
 
 #[tokio::test]
@@ -49,7 +49,9 @@ async fn test_invalid_max_try_count() {
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawProviderConfig>("tests/files/provider.valid.json").await.unwrap();
+        RawConfig::create_from_file::<RawProviderConfig>("tests/files/provider.valid.json")
+            .await
+            .unwrap();
     assert_eq!(file_config, default_config().await);
 }
 

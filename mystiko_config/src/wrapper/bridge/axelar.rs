@@ -10,7 +10,7 @@ pub struct AxelarBridgeConfig {
 impl AxelarBridgeConfig {
     pub fn new(data: RawAxelarBridgeConfig) -> Self {
         Self {
-            base: BridgeConfig::new(data, None)
+            base: BridgeConfig::new(data, None),
         }
     }
 

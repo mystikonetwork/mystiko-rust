@@ -1,11 +1,11 @@
-use std::str::FromStr;
-use num_bigint::BigInt;
-use mystiko_utils::check::check;
-use mystiko_utils::convert::from_decimals;
 use crate::common::AssetType;
 use crate::errors::ValidationError;
 use crate::raw::asset::RawAssetConfig;
 use crate::wrapper::base::BaseConfig;
+use mystiko_utils::check::check;
+use mystiko_utils::convert::from_decimals;
+use num_bigint::BigInt;
+use std::str::FromStr;
 
 pub const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
@@ -16,10 +16,12 @@ pub struct AssetConfig {
 
 impl AssetConfig {
     pub fn new(raw: RawAssetConfig) -> Result<Self, ValidationError> {
-        let config = Self { base: BaseConfig::new(raw, None) };
+        let config = Self {
+            base: BaseConfig::new(raw, None),
+        };
         match config.validate() {
-            Ok(_) => { Ok(config) }
-            Err(err) => { Err(err) }
+            Ok(_) => Ok(config),
+            Err(err) => Err(err),
         }
     }
 
@@ -49,19 +51,18 @@ impl AssetConfig {
     }
 
     pub fn recommended_amounts_number(&self) -> Vec<f64> {
-        self.base.data.recommended_amounts.iter().map(
-            |amount| from_decimals(amount, Some(self.asset_decimals()))
-        ).collect()
+        self.base
+            .data
+            .recommended_amounts
+            .iter()
+            .map(|amount| from_decimals(amount, Some(self.asset_decimals())))
+            .collect()
     }
 
     pub fn mutate(&self, data: Option<RawAssetConfig>) -> Result<Self, ValidationError> {
         match data {
-            None => {
-                AssetConfig::new(self.data().clone())
-            }
-            Some(value) => {
-                AssetConfig::new(value)
-            }
+            None => AssetConfig::new(self.data().clone()),
+            Some(value) => AssetConfig::new(value),
         }
     }
 
@@ -79,21 +80,20 @@ impl AssetConfig {
 
     fn validate(&self) -> Result<(), ValidationError> {
         let result = check(
-            (self.asset_type().clone() != AssetType::Main && self.asset_address() != MAIN_ASSET_ADDRESS) ||
-                (self.asset_type().clone() == AssetType::Main && self.asset_address() == MAIN_ASSET_ADDRESS),
+            (self.asset_type().clone() != AssetType::Main
+                && self.asset_address() != MAIN_ASSET_ADDRESS)
+                || (self.asset_type().clone() == AssetType::Main
+                    && self.asset_address() == MAIN_ASSET_ADDRESS),
             format!(
-                "wrong asset address={} and type={:?}", self.asset_address(), self.asset_type()
-            ).as_str(),
+                "wrong asset address={} and type={:?}",
+                self.asset_address(),
+                self.asset_type()
+            )
+            .as_str(),
         );
         match result {
-            Ok(_) => { Ok(()) }
-            Err(value) => {
-                Err(ValidationError::new(
-                    vec![
-                        value.to_string()
-                    ])
-                )
-            }
+            Ok(_) => Ok(()),
+            Err(value) => Err(ValidationError::new(vec![value.to_string()])),
         }
     }
 }

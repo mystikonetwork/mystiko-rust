@@ -5,7 +5,9 @@ use mystiko_config::raw::bridge::axelar::RawAxelarBridgeConfig;
 use mystiko_config::wrapper::bridge::axelar::AxelarBridgeConfig;
 
 async fn default_raw_config() -> RawAxelarBridgeConfig {
-    RawConfig::create_from_file::<RawAxelarBridgeConfig>("tests/files/bridge/axelar.valid.json").await.unwrap()
+    RawConfig::create_from_file::<RawAxelarBridgeConfig>("tests/files/bridge/axelar.valid.json")
+        .await
+        .unwrap()
 }
 
 async fn default_axelar_config() -> AxelarBridgeConfig {
@@ -13,12 +15,10 @@ async fn default_axelar_config() -> AxelarBridgeConfig {
 }
 
 lazy_static! {
-    static ref RAW_CONFIG_CREATER: AsyncOnce<RawAxelarBridgeConfig> = AsyncOnce::new(async {
-       default_raw_config().await
-    });
-    static ref CONFIG_CREATER: AsyncOnce<AxelarBridgeConfig> = AsyncOnce::new(async {
-        default_axelar_config().await
-    });
+    static ref RAW_CONFIG_CREATER: AsyncOnce<RawAxelarBridgeConfig> =
+        AsyncOnce::new(async { default_raw_config().await });
+    static ref CONFIG_CREATER: AsyncOnce<AxelarBridgeConfig> =
+        AsyncOnce::new(async { default_axelar_config().await });
 }
 
 #[tokio::test]
@@ -54,6 +54,8 @@ async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
     let json_string = config.to_json_string();
     let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawAxelarBridgeConfig>(&json_string).await.unwrap();
+        RawConfig::create_from_json_string::<RawAxelarBridgeConfig>(&json_string)
+            .await
+            .unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }

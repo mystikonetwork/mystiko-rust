@@ -1,10 +1,10 @@
-pub mod base;
-pub mod chain;
-pub mod bridge;
-pub mod provider;
 pub mod asset;
-pub mod mystiko;
+pub mod base;
+pub mod bridge;
+pub mod chain;
 pub mod circuit;
-pub mod indexer;
 pub mod contract;
+pub mod indexer;
+pub mod mystiko;
+pub mod provider;
 pub mod validator;

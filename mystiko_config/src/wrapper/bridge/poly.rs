@@ -10,7 +10,7 @@ pub struct PolyBridgeConfig {
 impl PolyBridgeConfig {
     pub fn new(data: RawPolyBridgeConfig) -> Self {
         Self {
-            base: BridgeConfig::new(data, None)
+            base: BridgeConfig::new(data, None),
         }
     }
 
@@ -52,12 +52,8 @@ impl PolyBridgeConfig {
 
     pub fn mutate(&self, data: Option<RawPolyBridgeConfig>) -> Self {
         match data {
-            None => {
-                PolyBridgeConfig::new(self.data().clone())
-            }
-            Some(value) => {
-                PolyBridgeConfig::new(value)
-            }
+            None => PolyBridgeConfig::new(self.data().clone()),
+            Some(value) => PolyBridgeConfig::new(value),
         }
     }
 }

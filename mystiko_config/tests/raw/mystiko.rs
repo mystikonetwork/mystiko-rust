@@ -6,15 +6,14 @@ use mystiko_config::raw::indexer::RawIndexerConfig;
 use mystiko_config::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
 
 async fn default_config() -> RawMystikoConfig {
-    RawConfig::create_from_file::<RawMystikoConfig>(
-        "tests/files/mystiko.valid.json"
-    ).await.unwrap()
+    RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json")
+        .await
+        .unwrap()
 }
 
 lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<RawMystikoConfig> = AsyncOnce::new(async {
-       default_config().await
-    });
+    static ref CONFIG_CREATER: AsyncOnce<RawMystikoConfig> =
+        AsyncOnce::new(async { default_config().await });
 }
 
 #[tokio::test]
@@ -55,7 +54,9 @@ async fn test_invalid_bridges_0() {
 async fn test_invalid_bridges_1() {
     let mut config = default_config().await;
     let bridge_config = RawTBridgeConfig::new("".to_string());
-    config.bridges.push(RawBridgeConfigType::Tbridge(bridge_config));
+    config
+        .bridges
+        .push(RawBridgeConfigType::Tbridge(bridge_config));
     assert_eq!(config.validation().is_err(), true);
 }
 

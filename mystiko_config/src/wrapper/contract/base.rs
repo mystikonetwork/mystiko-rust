@@ -1,25 +1,28 @@
-use flamer::flame;
-use serde::Serialize;
 use crate::common::ContractType;
 use crate::raw::contract::base::RawContractConfigTrait;
 use crate::wrapper::base::BaseConfig;
+use flamer::flame;
+use serde::Serialize;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ContractConfig<T, A = ()>
-    where
-        T: RawContractConfigTrait + Serialize + Clone,
-        A: Clone,
+where
+    T: RawContractConfigTrait + Serialize + Clone,
+    A: Clone,
 {
     pub base: BaseConfig<T, A>,
 }
 
-impl<T, A> ContractConfig<T, A> where
+impl<T, A> ContractConfig<T, A>
+where
     T: RawContractConfigTrait + Serialize + Clone,
-    A: Clone
+    A: Clone,
 {
     #[flame]
     pub fn new(data: T, aux_data: Option<A>) -> Self {
-        Self { base: BaseConfig::new(data, aux_data) }
+        Self {
+            base: BaseConfig::new(data, aux_data),
+        }
     }
 
     pub fn version(&self) -> &u32 {
@@ -52,20 +55,12 @@ impl<T, A> ContractConfig<T, A> where
 
     pub fn mutate(&self, data: Option<T>, aux_data: Option<A>) -> Self {
         let d = match data {
-            None => {
-                self.base.data.clone()
-            }
-            Some(value) => {
-                value
-            }
+            None => self.base.data.clone(),
+            Some(value) => value,
         };
         let a = match aux_data {
-            None => {
-                self.base.aux_data.clone()
-            }
-            Some(_) => {
-                aux_data
-            }
+            None => self.base.aux_data.clone(),
+            Some(_) => aux_data,
         };
 
         ContractConfig::new(d, a)

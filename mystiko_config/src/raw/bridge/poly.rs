@@ -1,11 +1,11 @@
-use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Deserializer, Serialize};
-use validator::{Validate, ValidationError};
-use crate::common::{BridgeType};
+use crate::common::BridgeType;
 use crate::errors;
 use crate::raw::base::Validator;
 use crate::raw::bridge::base::{RawBridgeConfig, RawBridgeConfigTrait};
 use crate::raw::chain::EXPLORER_DEFAULT_PREFIX;
+use serde::{Deserialize, Deserializer, Serialize};
+use std::hash::{Hash, Hasher};
+use validator::{Validate, ValidationError};
 
 fn default_bridge_type() -> BridgeType {
     BridgeType::Poly
@@ -87,7 +87,8 @@ impl Hash for RawPolyBridgeConfig {
 
 impl<'de> Deserialize<'de> for RawPolyBridgeConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
@@ -103,7 +104,9 @@ impl<'de> Deserialize<'de> for RawPolyBridgeConfig {
         let inner = Inner::deserialize(deserializer)?;
         let bridge_type = inner.bridge_type.unwrap_or_else(|| BridgeType::Poly);
         let base_bridge_type = bridge_type.clone();
-        let explorer_prefix = inner.explorer_prefix.unwrap_or_else(|| EXPLORER_DEFAULT_PREFIX.to_string());
+        let explorer_prefix = inner
+            .explorer_prefix
+            .unwrap_or_else(|| EXPLORER_DEFAULT_PREFIX.to_string());
         Ok(Self {
             base: RawBridgeConfig {
                 base: Default::default(),

@@ -1,11 +1,11 @@
-use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Deserializer, Serialize};
-use validator::{Validate, ValidationError};
 use crate::common::{BridgeType, ContractType};
 use crate::errors;
 use crate::raw::base::Validator;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 use crate::raw::validator::{is_ethereum_address, is_number_string};
+use serde::{Deserialize, Deserializer, Serialize};
+use std::hash::{Hash, Hasher};
+use validator::{Validate, ValidationError};
 
 fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
     if *t == ContractType::Deposit {
@@ -71,7 +71,8 @@ impl RawDepositContractConfig {
         disabled: bool,
         peer_chain_id: Option<u32>,
         peer_contract_address: Option<String>,
-        min_amount: String, max_amount: String,
+        min_amount: String,
+        max_amount: String,
         min_bridge_fee: String,
         min_executor_fee: String,
         bridge_fee_asset_address: Option<String>,
@@ -80,12 +81,12 @@ impl RawDepositContractConfig {
         service_fee_divider: Option<u32>,
     ) -> Self {
         let service_fee = match service_fee {
-            None => { 0 }
-            Some(value) => { value }
+            None => 0,
+            Some(value) => value,
         };
         let service_fee_divider = match service_fee_divider {
-            None => { 1000000 }
-            Some(value) => { value }
+            None => 1000000,
+            Some(value) => value,
         };
         Self {
             base,
@@ -127,7 +128,8 @@ impl Validator for RawDepositContractConfig {
 
 impl<'de> Deserialize<'de> for RawDepositContractConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]

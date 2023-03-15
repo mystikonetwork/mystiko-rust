@@ -1,6 +1,3 @@
-use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Serialize};
-use validator::Validate;
 use crate::errors::ValidationError;
 use crate::raw::asset::RawAssetConfig;
 use crate::raw::base::{RawConfig, Validator};
@@ -8,6 +5,9 @@ use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
 use crate::raw::validator::{array_unique, is_number_string, validate_nested_vec};
+use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
+use validator::Validate;
 
 pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
 pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
@@ -43,8 +43,8 @@ pub struct RawChainConfig {
     pub asset_decimals: u32,
 
     #[validate(
-    custom(function = "array_unique"),
-    custom(function = "is_number_string::<true, true>")
+        custom(function = "array_unique"),
+        custom(function = "is_number_string::<true, true>")
     )]
     #[serde(default)]
     pub recommended_amounts: Vec<String>,
@@ -120,12 +120,12 @@ impl RawChainConfig {
         assets: Vec<RawAssetConfig>,
     ) -> RawChainConfig {
         let event_filter_size = match event_filter_size {
-            None => { default_event_filter_size() }
-            Some(value) => { value }
+            None => default_event_filter_size(),
+            Some(value) => value,
         };
         let indexer_filter_size = match indexer_filter_size {
-            None => { default_indexer_filter_size() }
-            Some(value) => { value }
+            None => default_indexer_filter_size(),
+            Some(value) => value,
         };
         Self {
             base: RawConfig::default(),

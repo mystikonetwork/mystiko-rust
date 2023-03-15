@@ -1,11 +1,11 @@
-use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Deserializer, Serialize};
-use validator::{Validate, ValidationError};
 use crate::common::{BridgeType, ContractType};
 use crate::errors;
 use crate::raw::base::Validator;
 use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 use crate::raw::validator::{is_ethereum_address, is_number_string, string_vec_each_not_empty};
+use serde::{Deserialize, Deserializer, Serialize};
+use std::hash::{Hash, Hasher};
+use validator::{Validate, ValidationError};
 
 fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
     if *t == ContractType::Pool {
@@ -87,7 +87,8 @@ impl Validator for RawPoolContractConfig {
 
 impl<'de> Deserialize<'de> for RawPoolContractConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]
@@ -109,7 +110,9 @@ impl<'de> Deserialize<'de> for RawPoolContractConfig {
         let inner = Inner::deserialize(deserializer)?;
         let contract_type = inner.contract_type.unwrap_or_else(|| ContractType::Pool);
         let base_contract_type = contract_type.clone();
-        let min_rollup_fee = inner.min_rollup_fee.unwrap_or_else(|| default_min_rollup_fee());
+        let min_rollup_fee = inner
+            .min_rollup_fee
+            .unwrap_or_else(|| default_min_rollup_fee());
         let circuits = inner.circuits.unwrap_or_else(|| vec![]);
         Ok(Self {
             base: RawContractConfig {

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
-use validator::{Validate};
+use validator::Validate;
 
 #[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone, Default)]
 #[serde(rename_all = "camelCase")]
@@ -45,12 +45,13 @@ pub enum CircuitType {
     TRANSACTION2x2,
 }
 
-pub fn validate_object<T>(object: T) -> Result<T, Vec<String>> where
-    T: Validate
+pub fn validate_object<T>(object: T) -> Result<T, Vec<String>>
+where
+    T: Validate,
 {
     let result = object.validate();
     match result {
-        Ok(_) => { Ok(object) }
+        Ok(_) => Ok(object),
         Err(validation_errors) => {
             let mut errors = Vec::new();
             for (key, value) in validation_errors.errors().iter() {

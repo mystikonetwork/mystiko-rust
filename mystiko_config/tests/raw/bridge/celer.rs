@@ -1,22 +1,23 @@
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use mystiko_config::common::BridgeType;
 use mystiko_config::raw::base::{RawConfig, Validator};
 use mystiko_config::raw::bridge::base::RawBridgeConfigTrait;
 use mystiko_config::raw::bridge::celer::RawCelerBridgeConfig;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 async fn default_config() -> RawCelerBridgeConfig {
-    RawConfig::create_from_object::<RawCelerBridgeConfig>(
-        RawCelerBridgeConfig::new(String::from("Celer Bridge"))
-    ).await.unwrap()
+    RawConfig::create_from_object::<RawCelerBridgeConfig>(RawCelerBridgeConfig::new(String::from(
+        "Celer Bridge",
+    )))
+    .await
+    .unwrap()
 }
 
 lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<RawCelerBridgeConfig> = AsyncOnce::new(async {
-        default_config().await
-    });
+    static ref CONFIG_CREATER: AsyncOnce<RawCelerBridgeConfig> =
+        AsyncOnce::new(async { default_config().await });
 }
 
 #[tokio::test]
@@ -51,15 +52,19 @@ async fn test_invalid_type() {
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer.valid.json").await.unwrap();
+        RawConfig::create_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer.valid.json")
+            .await
+            .unwrap();
     assert_eq!(file_config, default_config().await);
     assert_eq!(file_config.base.bridge_type, file_config.bridge_type);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config =
-        RawConfig::create_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer.invalid.json").await;
+    let file_config = RawConfig::create_from_file::<RawCelerBridgeConfig>(
+        "tests/files/bridge/celer.invalid.json",
+    )
+    .await;
     assert_eq!(file_config.is_err(), true);
 }
 
@@ -68,8 +73,9 @@ async fn test_import_valid_json_str() {
     let json_str = r#"{
             "name": "Celer Bridge"
         }"#;
-    let str_config =
-        RawConfig::create_from_json_string::<RawCelerBridgeConfig>(json_str).await.unwrap();
+    let str_config = RawConfig::create_from_json_string::<RawCelerBridgeConfig>(json_str)
+        .await
+        .unwrap();
     assert_eq!(str_config.bridge_type, BridgeType::Celer);
     assert_eq!(str_config.bridge_type, str_config.base.bridge_type)
 }

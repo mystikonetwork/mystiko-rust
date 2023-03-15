@@ -5,7 +5,9 @@ use mystiko_config::raw::bridge::poly::RawPolyBridgeConfig;
 use mystiko_config::wrapper::bridge::poly::PolyBridgeConfig;
 
 async fn default_raw_config() -> RawPolyBridgeConfig {
-    RawConfig::create_from_file::<RawPolyBridgeConfig>("tests/files/bridge/poly.valid.json").await.unwrap()
+    RawConfig::create_from_file::<RawPolyBridgeConfig>("tests/files/bridge/poly.valid.json")
+        .await
+        .unwrap()
 }
 
 async fn default_poly_config() -> PolyBridgeConfig {
@@ -13,12 +15,10 @@ async fn default_poly_config() -> PolyBridgeConfig {
 }
 
 lazy_static! {
-    static ref RAW_CONFIG_CREATER: AsyncOnce<RawPolyBridgeConfig> = AsyncOnce::new(async {
-        default_raw_config().await
-    });
-    static ref CONFIG_CREATER: AsyncOnce<PolyBridgeConfig> = AsyncOnce::new(async {
-        default_poly_config().await
-    });
+    static ref RAW_CONFIG_CREATER: AsyncOnce<RawPolyBridgeConfig> =
+        AsyncOnce::new(async { default_raw_config().await });
+    static ref CONFIG_CREATER: AsyncOnce<PolyBridgeConfig> =
+        AsyncOnce::new(async { default_poly_config().await });
 }
 
 #[tokio::test]
@@ -57,7 +57,8 @@ async fn test_to_json_string() {
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let config = CONFIG_CREATER.get().await;
     let json_string = config.to_json_string();
-    let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawPolyBridgeConfig>(&json_string).await.unwrap();
+    let loaded_raw_config = RawConfig::create_from_json_string::<RawPolyBridgeConfig>(&json_string)
+        .await
+        .unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }

@@ -6,7 +6,9 @@ use mystiko_config::raw::base::RawConfig;
 use mystiko_config::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
 
 async fn default_raw_config() -> RawAssetConfig {
-    RawConfig::create_from_file::<RawAssetConfig>("tests/files/asset.valid.json").await.unwrap()
+    RawConfig::create_from_file::<RawAssetConfig>("tests/files/asset.valid.json")
+        .await
+        .unwrap()
 }
 
 async fn default_asset_config() -> AssetConfig {
@@ -18,15 +20,13 @@ async fn default_config() -> (RawAssetConfig, AssetConfig) {
 }
 
 lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<AssetConfig> = AsyncOnce::new(async {
-        default_asset_config().await
-    });
+    static ref CONFIG_CREATER: AsyncOnce<AssetConfig> =
+        AsyncOnce::new(async { default_asset_config().await });
 }
 
 lazy_static! {
-    static ref RAW_CONFIG_CREATER: AsyncOnce<RawAssetConfig> = AsyncOnce::new(async {
-       default_raw_config().await
-    });
+    static ref RAW_CONFIG_CREATER: AsyncOnce<RawAssetConfig> =
+        AsyncOnce::new(async { default_raw_config().await });
 }
 
 #[tokio::test]
@@ -37,8 +37,11 @@ async fn test_equality() {
     assert_eq!(config.asset_type(), &raw_config.asset_type);
     assert_eq!(config.asset_decimals(), raw_config.asset_decimals);
     assert_eq!(config.asset_symbol(), raw_config.asset_symbol);
-    let recommended_amounts: Vec<String> =
-        config.recommended_amounts().iter().map(|a| a.to_string()).collect();
+    let recommended_amounts: Vec<String> = config
+        .recommended_amounts()
+        .iter()
+        .map(|a| a.to_string())
+        .collect();
     assert_eq!(recommended_amounts, raw_config.recommended_amounts);
     assert_eq!(config.recommended_amounts_number(), vec![1f64, 10f64]);
 }
@@ -51,7 +54,8 @@ async fn test_wrong_address_or_type_0() {
     let config = AssetConfig::new(raw_config);
     assert!(config.is_err());
     assert!(config.unwrap_err().errors.contains(
-        &"wrong asset address=0x0000000000000000000000000000000000000000 and type=Erc20".to_string()
+        &"wrong asset address=0x0000000000000000000000000000000000000000 and type=Erc20"
+            .to_string()
     ))
 }
 
@@ -70,10 +74,7 @@ async fn test_wrong_address_or_type_1() {
 #[tokio::test]
 async fn test_copy() {
     let config = CONFIG_CREATER.get().await;
-    assert_eq!(
-        &AssetConfig::new(config.copy_data()).unwrap(),
-        config
-    );
+    assert_eq!(&AssetConfig::new(config.copy_data()).unwrap(), config);
 }
 
 #[tokio::test]
@@ -91,7 +92,8 @@ async fn test_to_json_string() {
     let config = CONFIG_CREATER.get().await;
     let json_string = config.to_json_string();
     let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawAssetConfig>(json_string.as_str()).await.unwrap();
+        RawConfig::create_from_json_string::<RawAssetConfig>(json_string.as_str())
+            .await
+            .unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }
-

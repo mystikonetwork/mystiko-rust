@@ -5,7 +5,9 @@ use mystiko_config::raw::bridge::base::RawBridgeConfig;
 use mystiko_config::wrapper::bridge::base::BridgeConfig;
 
 async fn default_raw_config() -> RawBridgeConfig {
-    RawConfig::create_from_file::<RawBridgeConfig>("tests/files/bridge/base.valid.json").await.unwrap()
+    RawConfig::create_from_file::<RawBridgeConfig>("tests/files/bridge/base.valid.json")
+        .await
+        .unwrap()
 }
 
 async fn default_bridge_config() -> BridgeConfig<RawBridgeConfig> {
@@ -13,12 +15,10 @@ async fn default_bridge_config() -> BridgeConfig<RawBridgeConfig> {
 }
 
 lazy_static! {
-    static ref RAW_CONFIG_CREATER: AsyncOnce<RawBridgeConfig> = AsyncOnce::new(async {
-       default_raw_config().await
-    });
-    static ref CONFIG_CREATER: AsyncOnce<BridgeConfig<RawBridgeConfig>> = AsyncOnce::new(async {
-        default_bridge_config().await
-    });
+    static ref RAW_CONFIG_CREATER: AsyncOnce<RawBridgeConfig> =
+        AsyncOnce::new(async { default_raw_config().await });
+    static ref CONFIG_CREATER: AsyncOnce<BridgeConfig<RawBridgeConfig>> =
+        AsyncOnce::new(async { default_bridge_config().await });
 }
 
 #[tokio::test]
@@ -45,7 +45,8 @@ async fn test_to_json_string() {
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let config = CONFIG_CREATER.get().await;
     let json_string = config.base.to_json_string();
-    let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawBridgeConfig>(&json_string).await.unwrap();
+    let loaded_raw_config = RawConfig::create_from_json_string::<RawBridgeConfig>(&json_string)
+        .await
+        .unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }

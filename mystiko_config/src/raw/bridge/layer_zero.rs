@@ -1,10 +1,10 @@
-use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Deserializer, Serialize};
-use validator::{Validate, ValidationError};
-use crate::common::{BridgeType};
+use crate::common::BridgeType;
 use crate::errors;
 use crate::raw::base::Validator;
 use crate::raw::bridge::base::{RawBridgeConfig, RawBridgeConfigTrait};
+use serde::{Deserialize, Deserializer, Serialize};
+use std::hash::{Hash, Hasher};
+use validator::{Validate, ValidationError};
 
 fn default_bridge_type() -> BridgeType {
     BridgeType::LayerZero
@@ -64,7 +64,8 @@ impl Hash for RawLayerZeroBridgeConfig {
 
 impl<'de> Deserialize<'de> for RawLayerZeroBridgeConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct Inner {

@@ -5,7 +5,9 @@ use mystiko_config::raw::contract::base::RawContractConfig;
 use mystiko_config::wrapper::contract::base::ContractConfig;
 
 async fn default_raw_config() -> RawContractConfig {
-    RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.valid.json").await.unwrap()
+    RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.valid.json")
+        .await
+        .unwrap()
 }
 
 async fn default_contract_config() -> ContractConfig<RawContractConfig> {
@@ -13,12 +15,10 @@ async fn default_contract_config() -> ContractConfig<RawContractConfig> {
 }
 
 lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<ContractConfig<RawContractConfig>> = AsyncOnce::new(async {
-        default_contract_config().await
-    });
-    static ref RAW_CONFIG_CREATER: AsyncOnce<RawContractConfig> = AsyncOnce::new(async {
-        default_raw_config().await
-    });
+    static ref CONFIG_CREATER: AsyncOnce<ContractConfig<RawContractConfig>> =
+        AsyncOnce::new(async { default_contract_config().await });
+    static ref RAW_CONFIG_CREATER: AsyncOnce<RawContractConfig> =
+        AsyncOnce::new(async { default_raw_config().await });
 }
 
 #[tokio::test]
@@ -31,14 +31,16 @@ async fn test_equality() {
     assert_eq!(config.contract_type(), &raw_config.contract_type);
     assert_eq!(config.start_block(), &raw_config.start_block);
     assert_eq!(config.event_filter_size(), &raw_config.event_filter_size);
-    assert_eq!(config.indexer_filter_size(), &raw_config.indexer_filter_size);
+    assert_eq!(
+        config.indexer_filter_size(),
+        &raw_config.indexer_filter_size
+    );
 }
 
 #[tokio::test]
 async fn test_copy() {
     let config = CONFIG_CREATER.get().await;
-    let copy =
-        ContractConfig::new(config.base.copy_data(), None);
+    let copy = ContractConfig::new(config.base.copy_data(), None);
     assert_eq!(&copy, config);
 }
 
@@ -59,7 +61,8 @@ async fn test_to_json_string() {
     let raw_config = RAW_CONFIG_CREATER.get().await;
     let config = CONFIG_CREATER.get().await;
     let json_string = config.base.to_json_string();
-    let loaded_raw_config =
-        RawConfig::create_from_json_string::<RawContractConfig>(&json_string).await.unwrap();
+    let loaded_raw_config = RawConfig::create_from_json_string::<RawContractConfig>(&json_string)
+        .await
+        .unwrap();
     assert_eq!(&loaded_raw_config, raw_config);
 }

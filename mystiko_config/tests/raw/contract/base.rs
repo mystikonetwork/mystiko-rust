@@ -5,23 +5,22 @@ use mystiko_config::raw::base::{RawConfig, Validator};
 use mystiko_config::raw::contract::base::RawContractConfig;
 
 async fn default_config() -> RawContractConfig {
-    RawConfig::create_from_object::<RawContractConfig>(
-        RawContractConfig::new(
-            2,
-            "MystikoWithPolyERC20".to_string(),
-            "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
-            ContractType::Deposit,
-            1000000,
-            Some(10000),
-            Some(100000),
-        )
-    ).await.unwrap()
+    RawConfig::create_from_object::<RawContractConfig>(RawContractConfig::new(
+        2,
+        "MystikoWithPolyERC20".to_string(),
+        "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+        ContractType::Deposit,
+        1000000,
+        Some(10000),
+        Some(100000),
+    ))
+    .await
+    .unwrap()
 }
 
 lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<RawContractConfig> = AsyncOnce::new(async {
-        default_config().await
-    });
+    static ref CONFIG_CREATER: AsyncOnce<RawContractConfig> =
+        AsyncOnce::new(async { default_config().await });
 }
 
 #[tokio::test]
@@ -84,13 +83,16 @@ async fn test_invalid_indexer_filter_size() {
 async fn test_import_valid_json_file() {
     let default_config = CONFIG_CREATER.get().await;
     let file_config =
-        RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.valid.json").await.unwrap();
+        RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.valid.json")
+            .await
+            .unwrap();
     assert_eq!(&file_config, default_config);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.invalid.json").await;
+        RawConfig::create_from_file::<RawContractConfig>("tests/files/contract/base.invalid.json")
+            .await;
     assert!(file_config.is_err());
 }

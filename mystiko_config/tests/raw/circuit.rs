@@ -1,21 +1,21 @@
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use mystiko_config::common::CircuitType;
 use mystiko_config::raw::base::{RawConfig, Validator};
 use mystiko_config::raw::circuit::RawCircuitConfig;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 async fn default_config() -> RawCircuitConfig {
-    RawConfig::create_from_object::<RawCircuitConfig>(
-        RawCircuitConfig::new(
-            "zokrates-1.0-rollup1".to_string(),
-            CircuitType::Rollup1,
-            true,
-            vec![String::from("./Rollup1.program.gz")],
-            vec![String::from("./Rollup1.abi.json")],
-            vec![String::from("./Rollup1.pkey.gz")],
-            vec![String::from("./Rollup1.vkey.gz")],
-        )
-    ).await.unwrap()
+    RawConfig::create_from_object::<RawCircuitConfig>(RawCircuitConfig::new(
+        "zokrates-1.0-rollup1".to_string(),
+        CircuitType::Rollup1,
+        true,
+        vec![String::from("./Rollup1.program.gz")],
+        vec![String::from("./Rollup1.abi.json")],
+        vec![String::from("./Rollup1.pkey.gz")],
+        vec![String::from("./Rollup1.vkey.gz")],
+    ))
+    .await
+    .unwrap()
 }
 
 #[tokio::test]
@@ -72,7 +72,9 @@ async fn test_invalid_verifying_key_file() {
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config =
-        RawConfig::create_from_file::<RawCircuitConfig>("tests/files/circuit.valid.json").await.unwrap();
+        RawConfig::create_from_file::<RawCircuitConfig>("tests/files/circuit.valid.json")
+            .await
+            .unwrap();
     assert_eq!(file_config, default_config().await);
 }
 

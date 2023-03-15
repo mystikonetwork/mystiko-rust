@@ -6,30 +6,29 @@ use mystiko_config::raw::contract::base::{RawContractConfig, RawContractConfigTr
 use mystiko_config::raw::contract::pool::RawPoolContractConfig;
 
 async fn default_config() -> RawPoolContractConfig {
-    RawConfig::create_from_object::<RawPoolContractConfig>(
-        RawPoolContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "CommitmentPool".to_string(),
-                "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
-                ContractType::Pool,
-                1000000,
-                None,
-                None,
-            ),
-            "A Pool(since 07/20/2022)".to_string(),
-            BridgeType::Tbridge,
-            Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()),
-            "120000000000000000".to_string(),
-            vec![String::from("circuit-1.0")],
-        )
-    ).await.unwrap()
+    RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
+        RawContractConfig::new(
+            2,
+            "CommitmentPool".to_string(),
+            "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
+            ContractType::Pool,
+            1000000,
+            None,
+            None,
+        ),
+        "A Pool(since 07/20/2022)".to_string(),
+        BridgeType::Tbridge,
+        Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()),
+        "120000000000000000".to_string(),
+        vec![String::from("circuit-1.0")],
+    ))
+    .await
+    .unwrap()
 }
 
 lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<RawPoolContractConfig> = AsyncOnce::new(async {
-        default_config().await
-    });
+    static ref CONFIG_CREATER: AsyncOnce<RawPoolContractConfig> =
+        AsyncOnce::new(async { default_config().await });
 }
 
 #[tokio::test]
@@ -41,7 +40,10 @@ async fn test_raw_contract_config_trait() {
     assert_eq!(config.contract_type(), &config.contract_type);
     assert_eq!(config.start_block(), &config.base.start_block);
     assert_eq!(config.event_filter_size(), &config.base.event_filter_size);
-    assert_eq!(config.indexer_filter_size(), &config.base.indexer_filter_size);
+    assert_eq!(
+        config.indexer_filter_size(),
+        &config.base.indexer_filter_size
+    );
 }
 
 #[tokio::test]
@@ -104,16 +106,21 @@ async fn test_invalid_circuits() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config =
-        RawConfig::create_from_file::<RawPoolContractConfig>("tests/files/contract/pool.valid.json").await.unwrap();
+    let file_config = RawConfig::create_from_file::<RawPoolContractConfig>(
+        "tests/files/contract/pool.valid.json",
+    )
+    .await
+    .unwrap();
     assert_eq!(file_config, default_config().await);
     assert_eq!(file_config.contract_type, file_config.base.contract_type);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config =
-        RawConfig::create_from_file::<RawPoolContractConfig>("tests/files/contract/pool.invalid.json").await;
+    let file_config = RawConfig::create_from_file::<RawPoolContractConfig>(
+        "tests/files/contract/pool.invalid.json",
+    )
+    .await;
     assert_eq!(file_config.is_err(), true);
 }
 
@@ -132,8 +139,9 @@ async fn test_import_valid_json_str() {
               "circuits": ["circuit-1.0"]
             }
         "#;
-    let str_config =
-        RawConfig::create_from_json_string::<RawPoolContractConfig>(json_str).await.unwrap();
+    let str_config = RawConfig::create_from_json_string::<RawPoolContractConfig>(json_str)
+        .await
+        .unwrap();
     assert_eq!(str_config.contract_type, ContractType::Pool);
     assert_eq!(str_config.contract_type, str_config.base.contract_type);
 }

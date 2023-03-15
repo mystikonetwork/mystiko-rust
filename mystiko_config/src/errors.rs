@@ -1,5 +1,5 @@
-use std::fmt::{Debug};
-use serde::{Serialize};
+use serde::Serialize;
+use std::fmt::Debug;
 
 #[derive(Debug, Serialize)]
 pub struct ValidationError {
@@ -18,5 +18,7 @@ pub struct AuxDataError {
 }
 
 impl AuxDataError {
-    pub fn new(message: String) -> AuxDataError { Self { message } }
+    pub fn new(message: String) -> AuxDataError {
+        Self { message }
+    }
 }

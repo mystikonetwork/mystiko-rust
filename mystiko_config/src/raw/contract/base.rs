@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
-use validator::Validate;
-use crate::common::{ContractType};
+use crate::common::ContractType;
 use crate::errors;
 use crate::raw::base::{RawConfig, Validator};
-use crate::raw::validator::{is_ethereum_address};
+use crate::raw::validator::is_ethereum_address;
+use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 pub trait RawContractConfigTrait: Validator {
     fn version(&self) -> &u32;

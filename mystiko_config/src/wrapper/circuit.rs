@@ -10,7 +10,7 @@ pub struct CircuitConfig {
 impl CircuitConfig {
     pub fn new(data: RawCircuitConfig) -> Self {
         Self {
-            base: BaseConfig::new(data, None)
+            base: BaseConfig::new(data, None),
         }
     }
 
@@ -56,8 +56,8 @@ impl CircuitConfig {
 
     pub fn mutate(&self, data: Option<RawCircuitConfig>) -> Self {
         let data = match data {
-            None => { self.data().clone() }
-            Some(value) => { value }
+            None => self.data().clone(),
+            Some(value) => value,
         };
         CircuitConfig::new(data)
     }

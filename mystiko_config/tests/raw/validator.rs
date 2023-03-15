@@ -1,4 +1,7 @@
-use mystiko_config::raw::validator::{array_unique, is_ethereum_address, is_number_string, is_numeric, is_sem_ver, string_vec_each_not_empty};
+use mystiko_config::raw::validator::{
+    array_unique, is_ethereum_address, is_number_string, is_numeric, is_sem_ver,
+    string_vec_each_not_empty,
+};
 
 #[test]
 fn test_is_ethereum_address() {
@@ -40,18 +43,10 @@ fn test_is_number_string() {
 
 #[test]
 fn test_string_vec_each_not_empty() {
-    let mut v = vec![
-        "a".to_string(),
-        "b".to_string(),
-        "c".to_string(),
-    ];
+    let mut v = vec!["a".to_string(), "b".to_string(), "c".to_string()];
     let not_empty = string_vec_each_not_empty(&v);
     assert_eq!(not_empty.is_err(), false);
-    v = vec![
-        "a".to_string(),
-        "b".to_string(),
-        "".to_string(),
-    ];
+    v = vec!["a".to_string(), "b".to_string(), "".to_string()];
     let not_empty = string_vec_each_not_empty(&v);
     assert_eq!(not_empty.is_err(), true);
 }

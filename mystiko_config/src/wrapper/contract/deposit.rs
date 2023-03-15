@@ -1,10 +1,3 @@
-use std::collections::HashMap;
-use std::error::Error;
-use std::rc::Rc;
-use std::str::FromStr;
-use num_bigint::BigInt;
-use mystiko_utils::check::check;
-use mystiko_utils::convert::from_decimals;
 use crate::common::{AssetType, BridgeType};
 use crate::errors::ValidationError;
 use crate::raw::contract::base::RawContractConfigTrait;
@@ -14,6 +7,13 @@ use crate::wrapper::chain::ChainConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::base::ContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
+use mystiko_utils::check::check;
+use mystiko_utils::convert::from_decimals;
+use num_bigint::BigInt;
+use std::collections::HashMap;
+use std::error::Error;
+use std::rc::Rc;
+use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct AuxData {
@@ -42,14 +42,18 @@ impl AuxData {
         self.pool_contract_configs.get(address)
     }
 
-    fn deposit_contract_getter(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
+    fn deposit_contract_getter(
+        &self,
+        chain_id: u32,
+        address: String,
+    ) -> Option<&DepositContractConfig> {
         match &*self.chain_configs {
-            None => { None }
+            None => None,
             Some(chain_configs) => {
                 let chain_config = chain_configs.get(&chain_id);
                 match chain_config {
-                    None => { None }
-                    Some(config) => { config.get_deposit_contract_by_address(address) }
+                    None => None,
+                    Some(config) => config.get_deposit_contract_by_address(address),
                 }
             }
         }
@@ -64,23 +68,20 @@ pub struct DepositContractConfig {
 }
 
 impl DepositContractConfig {
-    pub fn new(data: RawDepositContractConfig, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
+    pub fn new(
+        data: RawDepositContractConfig,
+        aux_data: Option<AuxData>,
+    ) -> Result<Self, ValidationError> {
         let contract_config = ContractConfig::new(data, aux_data);
         let aux_data = contract_config.base.aux_data_not_empty().unwrap();
         let bridge_fee_asset_config =
-            DepositContractConfig::init_bridge_fee_asset_config(
-                &contract_config,
-                aux_data,
-            );
+            DepositContractConfig::init_bridge_fee_asset_config(&contract_config, aux_data);
         if bridge_fee_asset_config.is_err() {
             return Err(bridge_fee_asset_config.unwrap_err());
         }
         let bridge_fee_asset_config = bridge_fee_asset_config.unwrap();
         let executor_fee_asset_config =
-            DepositContractConfig::init_executor_fee_asset_config(
-                &contract_config,
-                aux_data,
-            );
+            DepositContractConfig::init_executor_fee_asset_config(&contract_config, aux_data);
         if executor_fee_asset_config.is_err() {
             return Err(executor_fee_asset_config.unwrap_err());
         }
@@ -92,8 +93,8 @@ impl DepositContractConfig {
         };
         let validate = instance.validate();
         return match validate {
-            Ok(_) => { Ok(instance) }
-            Err(err) => { Err(err) }
+            Ok(_) => Ok(instance),
+            Err(err) => Err(err),
         };
     }
 
@@ -107,15 +108,12 @@ impl DepositContractConfig {
 
     pub fn pool_contract(&self) -> Result<PoolContractConfig, Box<dyn Error>> {
         let aux_data = self.base.base.aux_data_not_empty().unwrap();
-        let pool_contract_config =
-            aux_data.pool_contract_getter(self.pool_address());
+        let pool_contract_config = aux_data.pool_contract_getter(self.pool_address());
         if pool_contract_config.is_none() {
-            return Err(
-                format!(
-                    "no poolContract definition found for deposit contract={}",
-                    self.base.base.data.address()
-                )
-            )?;
+            return Err(format!(
+                "no poolContract definition found for deposit contract={}",
+                self.base.base.data.address()
+            ))?;
         }
         Ok(pool_contract_config.unwrap().clone())
     }
@@ -125,41 +123,31 @@ impl DepositContractConfig {
     }
 
     pub fn min_amount(&self) -> BigInt {
-        BigInt::from_str(
-            &self.base.base.data.min_amount
-        ).unwrap()
+        BigInt::from_str(&self.base.base.data.min_amount).unwrap()
     }
 
     pub fn min_amount_number(&self) -> Result<f64, Box<dyn Error>> {
         let asset_decimals = self.asset_decimals()?;
-        Ok(
-            from_decimals::<&String>(
-                &self.base.base.data.min_amount,
-                Some(asset_decimals),
-            )
-        )
+        Ok(from_decimals::<&String>(
+            &self.base.base.data.min_amount,
+            Some(asset_decimals),
+        ))
     }
 
     pub fn max_amount(&self) -> BigInt {
-        BigInt::from_str(
-            &self.base.base.data.max_amount
-        ).unwrap()
+        BigInt::from_str(&self.base.base.data.max_amount).unwrap()
     }
 
     pub fn max_amount_number(&self) -> Result<f64, Box<dyn Error>> {
         let asset_decimals = self.asset_decimals()?;
-        Ok(
-            from_decimals::<&String>(
-                &self.base.base.data.max_amount,
-                Some(asset_decimals),
-            )
-        )
+        Ok(from_decimals::<&String>(
+            &self.base.base.data.max_amount,
+            Some(asset_decimals),
+        ))
     }
 
     pub fn min_bridge_fee(&self) -> BigInt {
-        BigInt::from_str(
-            &self.base.base.data.min_bridge_fee
-        ).unwrap()
+        BigInt::from_str(&self.base.base.data.min_bridge_fee).unwrap()
     }
 
     pub fn min_bridge_fee_number(&self) -> f64 {
@@ -170,19 +158,15 @@ impl DepositContractConfig {
     }
 
     pub fn min_executor_fee(&self) -> BigInt {
-        BigInt::from_str(
-            &self.base.base.data.min_executor_fee
-        ).unwrap()
+        BigInt::from_str(&self.base.base.data.min_executor_fee).unwrap()
     }
 
     pub fn min_executor_fee_number(&self) -> Result<f64, Box<dyn Error>> {
         let executor_fee_asset = self.executor_fee_asset()?;
-        Ok(
-            from_decimals::<&String>(
-                &self.base.base.data.min_executor_fee,
-                Some(executor_fee_asset.asset_decimals()),
-            )
-        )
+        Ok(from_decimals::<&String>(
+            &self.base.base.data.min_executor_fee,
+            Some(executor_fee_asset.asset_decimals()),
+        ))
     }
 
     pub fn asset(&self) -> Result<Rc<AssetConfig>, Box<dyn Error>> {
@@ -222,8 +206,7 @@ impl DepositContractConfig {
 
     pub fn min_rollup_fee(&self) -> Result<BigInt, Box<dyn Error>> {
         if self.peer_contract().is_some() {
-            let pool_contract =
-                self.peer_contract().unwrap().pool_contract()?;
+            let pool_contract = self.peer_contract().unwrap().pool_contract()?;
             return Ok(pool_contract.min_rollup_fee());
         }
         let pool_contract = self.pool_contract()?;
@@ -232,8 +215,7 @@ impl DepositContractConfig {
 
     pub fn min_rollup_fee_number(&self) -> Result<f64, Box<dyn Error>> {
         if self.peer_contract().is_some() {
-            let pool_contract =
-                self.peer_contract().unwrap().pool_contract()?;
+            let pool_contract = self.peer_contract().unwrap().pool_contract()?;
             return Ok(pool_contract.min_rollup_fee_number());
         }
         let pool_contract = self.pool_contract()?;
@@ -257,32 +239,38 @@ impl DepositContractConfig {
         let peer_chain_id = &self.peer_chain_id();
         let peer_contract_address = &self.peer_contract_address();
         match peer_chain_id {
-            Some(peer_chain_id) => {
-                match peer_contract_address {
-                    Some(peer_contract_address) => {
-                        self.base.base.aux_data_not_empty().unwrap().deposit_contract_getter(
-                            *peer_chain_id,
-                            peer_contract_address.clone(),
-                        ).cloned()
-                    }
-                    None => { None }
-                }
-            }
-            None => { None }
+            Some(peer_chain_id) => match peer_contract_address {
+                Some(peer_contract_address) => self
+                    .base
+                    .base
+                    .aux_data_not_empty()
+                    .unwrap()
+                    .deposit_contract_getter(*peer_chain_id, peer_contract_address.clone())
+                    .cloned(),
+                None => None,
+            },
+            None => None,
         }
     }
 
     pub fn bridge_fee_asset(&self) -> &AssetConfig {
         match &self.bridge_fee_asset_config {
-            None => { &self.base.base.aux_data_not_empty().unwrap().main_asset_config }
-            Some(value) => { value }
+            None => {
+                &self
+                    .base
+                    .base
+                    .aux_data_not_empty()
+                    .unwrap()
+                    .main_asset_config
+            }
+            Some(value) => value,
         }
     }
 
     pub fn executor_fee_asset(&self) -> Result<Rc<AssetConfig>, Box<dyn Error>> {
         match &self.executor_fee_asset_config {
-            None => { self.asset() }
-            Some(value) => { Ok(value.clone()) }
+            None => self.asset(),
+            Some(value) => Ok(value.clone()),
         }
     }
 
@@ -326,16 +314,18 @@ impl DepositContractConfig {
         &self.base.name()
     }
 
-    pub fn mutate(&self, data: Option<RawDepositContractConfig>, aux_data: Option<AuxData>) -> Result<Self, ValidationError> {
+    pub fn mutate(
+        &self,
+        data: Option<RawDepositContractConfig>,
+        aux_data: Option<AuxData>,
+    ) -> Result<Self, ValidationError> {
         let data = match data {
-            None => { self.data().clone() }
-            Some(value) => { value }
+            None => self.data().clone(),
+            Some(value) => value,
         };
         let aux_data = match aux_data {
-            None => {
-                self.aux_data().clone()
-            }
-            Some(_) => { aux_data }
+            None => self.aux_data().clone(),
+            Some(_) => aux_data,
         };
         DepositContractConfig::new(data, aux_data)
     }
@@ -344,26 +334,30 @@ impl DepositContractConfig {
         let check_result = check(
             self.max_amount().ge(&self.min_amount()),
             format!(
-                "deposit contract={} maxAmount is less than minAmount", &self.base.base.data.address()
-            ).as_str(),
+                "deposit contract={} maxAmount is less than minAmount",
+                &self.base.base.data.address()
+            )
+            .as_str(),
         );
         if check_result.is_err() {
-            return Err(ValidationError::new(vec![
-                check_result.unwrap_err().to_string()
-            ]));
+            return Err(ValidationError::new(vec![check_result
+                .unwrap_err()
+                .to_string()]));
         }
         if self.bridge_type().eq(&BridgeType::Loop) {
             let check_result = check(
                 self.peer_chain_id().is_none(),
                 format!(
                     "deposit contract={} peerChainId should be undefined when bridge type={:?}",
-                    &self.address(), &self.bridge_type()
-                ).as_str(),
+                    &self.address(),
+                    &self.bridge_type()
+                )
+                .as_str(),
             );
             if check_result.is_err() {
-                return Err(ValidationError::new(vec![
-                    check_result.unwrap_err().to_string()
-                ]));
+                return Err(ValidationError::new(vec![check_result
+                    .unwrap_err()
+                    .to_string()]));
             }
             let check_result = check(
                 self.peer_contract_address().is_none(),
@@ -373,22 +367,24 @@ impl DepositContractConfig {
                 ).as_str(),
             );
             if check_result.is_err() {
-                return Err(ValidationError::new(vec![
-                    check_result.unwrap_err().to_string()
-                ]));
+                return Err(ValidationError::new(vec![check_result
+                    .unwrap_err()
+                    .to_string()]));
             }
         } else {
             let check_result = check(
                 self.peer_chain_id().is_some(),
                 format!(
                     "deposit contract={} peerChainId should not be undefined when bridge type={:?}",
-                    &self.address(), &self.bridge_type()
-                ).as_str(),
+                    &self.address(),
+                    &self.bridge_type()
+                )
+                .as_str(),
             );
             if check_result.is_err() {
-                return Err(ValidationError::new(vec![
-                    check_result.unwrap_err().to_string()
-                ]));
+                return Err(ValidationError::new(vec![check_result
+                    .unwrap_err()
+                    .to_string()]));
             }
             let check_result = check(
                 self.peer_contract_address().is_some(),
@@ -398,9 +394,9 @@ impl DepositContractConfig {
                 ).as_str(),
             );
             if check_result.is_err() {
-                return Err(ValidationError::new(vec![
-                    check_result.unwrap_err().to_string()
-                ]));
+                return Err(ValidationError::new(vec![check_result
+                    .unwrap_err()
+                    .to_string()]));
             }
         }
         Ok(())
@@ -411,12 +407,10 @@ impl DepositContractConfig {
         aux_data: &AuxData,
     ) -> Result<Option<Rc<AssetConfig>>, ValidationError> {
         match &base.base.data.bridge_fee_asset_address {
-            None => { Ok(None) }
+            None => Ok(None),
             Some(address) => {
                 if address.eq(MAIN_ASSET_ADDRESS) {
-                    return Ok(
-                        Some(aux_data.main_asset_config.clone())
-                    );
+                    return Ok(Some(aux_data.main_asset_config.clone()));
                 }
                 let asset_config = aux_data.asset_configs.get(address);
                 let check_result = check(
@@ -427,17 +421,11 @@ impl DepositContractConfig {
                     ).as_str(),
                 );
                 if check_result.is_err() {
-                    return Err(ValidationError::new(
-                        vec![
-                            check_result.unwrap_err().to_string()
-                        ]
-                    ));
+                    return Err(ValidationError::new(vec![check_result
+                        .unwrap_err()
+                        .to_string()]));
                 }
-                return Ok(
-                    Some(
-                        Rc::new(asset_config.unwrap().clone())
-                    )
-                );
+                return Ok(Some(Rc::new(asset_config.unwrap().clone())));
             }
         }
     }
@@ -447,12 +435,10 @@ impl DepositContractConfig {
         aux_data: &AuxData,
     ) -> Result<Option<Rc<AssetConfig>>, ValidationError> {
         match &base.base.data.executor_fee_asset_address {
-            None => { Ok(None) }
+            None => Ok(None),
             Some(address) => {
                 if address.eq(MAIN_ASSET_ADDRESS) {
-                    return Ok(
-                        Some(aux_data.main_asset_config.clone())
-                    );
+                    return Ok(Some(aux_data.main_asset_config.clone()));
                 }
                 let asset_config = aux_data.asset_configs.get(address);
                 let check_result = check(
@@ -463,17 +449,11 @@ impl DepositContractConfig {
                     ).as_str(),
                 );
                 if check_result.is_err() {
-                    return Err(ValidationError::new(
-                        vec![
-                            check_result.unwrap_err().to_string()
-                        ]
-                    ));
+                    return Err(ValidationError::new(vec![check_result
+                        .unwrap_err()
+                        .to_string()]));
                 }
-                return Ok(
-                    Some(
-                        Rc::new(asset_config.unwrap().clone())
-                    )
-                );
+                return Ok(Some(Rc::new(asset_config.unwrap().clone())));
             }
         }
     }

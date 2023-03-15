@@ -1,10 +1,10 @@
-use std::hash::{Hash, Hasher};
-use serde::{Deserialize, Serialize};
-use validator::{Validate};
-use crate::common::{AssetType};
+use crate::common::AssetType;
 use crate::errors::ValidationError;
 use crate::raw::base::{RawConfig, Validator};
-use crate::raw::validator::{is_ethereum_address, array_unique, is_number_string};
+use crate::raw::validator::{array_unique, is_ethereum_address, is_number_string};
+use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
+use validator::Validate;
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -25,8 +25,8 @@ pub struct RawAssetConfig {
     pub asset_address: String,
 
     #[validate(
-    custom(function = "array_unique"),
-    custom(function = "is_number_string::<true, true>")
+        custom(function = "array_unique"),
+        custom(function = "is_number_string::<true, true>")
     )]
     #[serde(default)]
     pub recommended_amounts: Vec<String>,

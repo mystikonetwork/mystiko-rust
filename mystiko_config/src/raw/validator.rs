@@ -1,9 +1,9 @@
+use crate::raw::base::Validator;
+use regex::Regex;
 use std::any::Any;
 use std::collections::HashSet;
 use std::hash::Hash;
-use regex::Regex;
-use validator::{ValidationError};
-use crate::raw::base::Validator;
+use validator::ValidationError;
 
 pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
     let eth = Regex::new(r"^(0x)[0-9a-fA-F]{40}$").unwrap();
@@ -14,7 +14,8 @@ pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
 }
 
 pub fn array_unique<T>(array: &[T]) -> Result<(), ValidationError>
-    where T: Hash + PartialEq + Eq
+where
+    T: Hash + PartialEq + Eq,
 {
     let mut seen = HashSet::new();
     for item in array {
@@ -38,8 +39,7 @@ pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
         None => {
             if let Some(v) = object.downcast_ref::<Vec<String>>() {
                 if EACH {
-                    let is_number =
-                        v.iter().all(|s| is_numeric(s, NO_SYMBOLS));
+                    let is_number = v.iter().all(|s| is_numeric(s, NO_SYMBOLS));
                     if !is_number {
                         return Err(ValidationError::new("is number string error"));
                     }
@@ -55,7 +55,8 @@ pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
 }
 
 pub fn validate_nested_vec<T>(v: &Vec<T>) -> Result<(), ValidationError>
-    where T: Validator
+where
+    T: Validator,
 {
     for x in v {
         let result = x.validation();

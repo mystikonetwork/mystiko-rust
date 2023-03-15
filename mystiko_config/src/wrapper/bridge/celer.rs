@@ -10,7 +10,7 @@ pub struct CelerBridgeConfig {
 impl CelerBridgeConfig {
     pub fn new(data: RawCelerBridgeConfig) -> Self {
         Self {
-            base: BridgeConfig::new(data, None)
+            base: BridgeConfig::new(data, None),
         }
     }
 

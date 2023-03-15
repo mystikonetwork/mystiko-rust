@@ -10,7 +10,7 @@ pub struct LayerZeroBridgeConfig {
 impl LayerZeroBridgeConfig {
     pub fn new(data: RawLayerZeroBridgeConfig) -> Self {
         Self {
-            base: BridgeConfig::new(data, None)
+            base: BridgeConfig::new(data, None),
         }
     }
 
@@ -37,7 +37,7 @@ impl LayerZeroBridgeConfig {
     pub fn mutate(&self, data: Option<RawLayerZeroBridgeConfig>) -> Self {
         match data {
             Some(value) => LayerZeroBridgeConfig::new(value),
-            None => LayerZeroBridgeConfig::new(self.data().clone())
+            None => LayerZeroBridgeConfig::new(self.data().clone()),
         }
     }
 }

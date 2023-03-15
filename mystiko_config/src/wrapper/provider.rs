@@ -9,7 +9,7 @@ pub struct ProviderConfig {
 impl ProviderConfig {
     pub fn new(raw: RawProviderConfig) -> Self {
         Self {
-            base: BaseConfig::new(raw, None)
+            base: BaseConfig::new(raw, None),
         }
     }
 
@@ -39,8 +39,8 @@ impl ProviderConfig {
 
     pub fn mutate(&self, data: Option<RawProviderConfig>) -> Self {
         let data = match data {
-            None => { self.data().clone() }
-            Some(value) => { value }
+            None => self.data().clone(),
+            Some(value) => value,
         };
         ProviderConfig::new(data)
     }

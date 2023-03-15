@@ -1,22 +1,23 @@
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-use lazy_static::lazy_static;
 use async_once::AsyncOnce;
+use lazy_static::lazy_static;
 use mystiko_config::common::BridgeType;
 use mystiko_config::raw::base::{RawConfig, Validator};
 use mystiko_config::raw::bridge::base::RawBridgeConfigTrait;
 use mystiko_config::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 async fn default_config() -> RawLayerZeroBridgeConfig {
-    RawConfig::create_from_object::<RawLayerZeroBridgeConfig>(
-        RawLayerZeroBridgeConfig::new(String::from("LayerZero Bridge"))
-    ).await.unwrap()
+    RawConfig::create_from_object::<RawLayerZeroBridgeConfig>(RawLayerZeroBridgeConfig::new(
+        String::from("LayerZero Bridge"),
+    ))
+    .await
+    .unwrap()
 }
 
 lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<RawLayerZeroBridgeConfig> = AsyncOnce::new(async {
-        default_config().await
-    });
+    static ref CONFIG_CREATER: AsyncOnce<RawLayerZeroBridgeConfig> =
+        AsyncOnce::new(async { default_config().await });
 }
 
 #[tokio::test]
@@ -50,16 +51,21 @@ async fn test_invalid_type() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config =
-        RawConfig::create_from_file::<RawLayerZeroBridgeConfig>("tests/files/bridge/layerZero.valid.json").await.unwrap();
+    let file_config = RawConfig::create_from_file::<RawLayerZeroBridgeConfig>(
+        "tests/files/bridge/layerZero.valid.json",
+    )
+    .await
+    .unwrap();
     assert_eq!(file_config, default_config().await);
     assert_eq!(file_config.bridge_type, file_config.base.bridge_type);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config =
-        RawConfig::create_from_file::<RawLayerZeroBridgeConfig>("tests/files/bridge/layerZero.invalid.json").await;
+    let file_config = RawConfig::create_from_file::<RawLayerZeroBridgeConfig>(
+        "tests/files/bridge/layerZero.invalid.json",
+    )
+    .await;
     assert_eq!(file_config.is_err(), true);
 }
 
@@ -68,8 +74,9 @@ async fn test_import_valid_json_str() {
     let json_str = r#"{
             "name": "LayerZero Bridge"
         }"#;
-    let str_config =
-        RawConfig::create_from_json_string::<RawLayerZeroBridgeConfig>(json_str).await.unwrap();
+    let str_config = RawConfig::create_from_json_string::<RawLayerZeroBridgeConfig>(json_str)
+        .await
+        .unwrap();
     assert_eq!(str_config.bridge_type, BridgeType::LayerZero);
     assert_eq!(str_config.bridge_type, str_config.base.bridge_type)
 }

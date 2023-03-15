@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
-use validator::Validate;
 use crate::errors::ValidationError;
 use crate::raw::base::{RawConfig, Validator};
+use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 fn default_timeout_ms() -> u32 {
     15000
@@ -22,10 +22,7 @@ pub struct RawIndexerConfig {
 }
 
 impl RawIndexerConfig {
-    pub fn new(
-        url: String,
-        timeout_ms: u32,
-    ) -> Self {
+    pub fn new(url: String, timeout_ms: u32) -> Self {
         Self {
             base: RawConfig::default(),
             url,

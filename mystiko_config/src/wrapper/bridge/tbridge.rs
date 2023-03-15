@@ -10,7 +10,7 @@ pub struct TBridgeConfig {
 impl TBridgeConfig {
     pub fn new(data: RawTBridgeConfig) -> Self {
         Self {
-            base: BridgeConfig::new(data, None)
+            base: BridgeConfig::new(data, None),
         }
     }
 
@@ -37,7 +37,7 @@ impl TBridgeConfig {
     pub fn mutate(&self, data: Option<RawTBridgeConfig>) -> Self {
         match data {
             Some(value) => TBridgeConfig::new(value),
-            None => TBridgeConfig::new(self.data().clone())
+            None => TBridgeConfig::new(self.data().clone()),
         }
     }
 }
