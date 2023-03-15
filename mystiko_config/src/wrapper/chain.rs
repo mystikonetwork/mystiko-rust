@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
+use std::rc::Rc;
 use flamer::flame;
 use num_bigint::BigInt;
 use validator::Validate;
@@ -20,16 +21,16 @@ const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct AuxData {
-    default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
-    circuit_configs_by_name: HashMap<String, CircuitConfig>,
-    chain_configs: Option<HashMap<u32, ChainConfig>>,
+    default_circuit_configs: Rc<HashMap<CircuitType, CircuitConfig>>,
+    circuit_configs_by_name: Rc<HashMap<String, CircuitConfig>>,
+    chain_configs: Rc<Option<HashMap<u32, ChainConfig>>>,
 }
 
 impl AuxData {
     pub fn new(
-        default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
-        circuit_configs_by_name: HashMap<String, CircuitConfig>,
-        chain_configs: Option<HashMap<u32, ChainConfig>>,
+        default_circuit_configs: Rc<HashMap<CircuitType, CircuitConfig>>,
+        circuit_configs_by_name: Rc<HashMap<String, CircuitConfig>>,
+        chain_configs: Rc<Option<HashMap<u32, ChainConfig>>>,
     ) -> Self {
         Self {
             default_circuit_configs,
@@ -39,7 +40,7 @@ impl AuxData {
     }
 
     pub fn deposit_contract_getter(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
-        match &self.chain_configs {
+        match &*self.chain_configs {
             None => { None }
             Some(chain_configs) => {
                 let chain_config = chain_configs.get(&chain_id);
@@ -55,11 +56,11 @@ impl AuxData {
 #[derive(Validate, Clone, Debug, PartialEq)]
 pub struct ChainConfig {
     base: BaseConfig<RawChainConfig, AuxData>,
-    pool_contract_configs: HashMap<String, PoolContractConfig>,
-    pool_configs_by_asset_and_bridge: HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>,
-    deposit_contract_configs: HashMap<String, DepositContractConfig>,
-    main_asset_config: AssetConfig,
-    asset_configs: HashMap<String, AssetConfig>,
+    pool_contract_configs: Rc<HashMap<String, PoolContractConfig>>,
+    pool_configs_by_asset_and_bridge: Rc<HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>>,
+    deposit_contract_configs: Rc<HashMap<String, DepositContractConfig>>,
+    main_asset_config: Rc<AssetConfig>,
+    asset_configs: Rc<HashMap<String, AssetConfig>>,
     provider_configs: Vec<ProviderConfig>,
 }
 
@@ -72,7 +73,7 @@ impl ChainConfig {
             ChainConfig::init_main_asset_config(&base_config)?;
         let asset_configs =
             ChainConfig::init_asset_configs(&base_config)?;
-        let aux_data = &base_config.aux_data_not_empty().unwrap();
+        let aux_data = base_config.aux_data_not_empty().unwrap();
         let pool_contract_configs =
             ChainConfig::init_pool_contract_configs(
                 &base_config,
@@ -396,11 +397,11 @@ impl ChainConfig {
     #[flame]
     fn init_pool_contract_configs(
         base: &BaseConfig<RawChainConfig, AuxData>,
-        default_circuit_configs: &HashMap<CircuitType, CircuitConfig>,
-        circuit_configs_by_name: &HashMap<String, CircuitConfig>,
-        main_asset_config: &AssetConfig,
-        asset_configs: &HashMap<String, AssetConfig>,
-    ) -> Result<HashMap<String, PoolContractConfig>, ValidationError> {
+        default_circuit_configs: &Rc<HashMap<CircuitType, CircuitConfig>>,
+        circuit_configs_by_name: &Rc<HashMap<String, CircuitConfig>>,
+        main_asset_config: &Rc<AssetConfig>,
+        asset_configs: &Rc<HashMap<String, AssetConfig>>,
+    ) -> Result<Rc<HashMap<String, PoolContractConfig>>, ValidationError> {
         let mut pool_contract_configs: HashMap<String, PoolContractConfig> = HashMap::new();
         for raw in &base.data.pool_contracts {
             let check_result = check(
@@ -432,26 +433,35 @@ impl ChainConfig {
             );
         }
 
-        Ok(pool_contract_configs)
+        Ok(Rc::new(pool_contract_configs))
     }
 
     #[flame]
     fn init_main_asset_config(
         base: &BaseConfig<RawChainConfig, AuxData>
-    ) -> Result<AssetConfig, ValidationError> {
-        AssetConfig::new(RawAssetConfig::new(
+    ) -> Result<Rc<AssetConfig>, ValidationError> {
+        match AssetConfig::new(RawAssetConfig::new(
             AssetType::Main,
             base.data.asset_symbol.clone(),
             base.data.asset_decimals.clone(),
             MAIN_ASSET_ADDRESS.to_string(),
             base.data.recommended_amounts.clone(),
-        ))
+        )) {
+            Ok(value) => {
+                Ok(
+                    Rc::new(value)
+                )
+            }
+            Err(err) => {
+                Err(err)
+            }
+        }
     }
 
     #[flame]
     fn init_asset_configs(
         base: &BaseConfig<RawChainConfig, AuxData>
-    ) -> Result<HashMap<String, AssetConfig>, ValidationError> {
+    ) -> Result<Rc<HashMap<String, AssetConfig>>, ValidationError> {
         let mut asset_configs: HashMap<String, AssetConfig> = HashMap::new();
         for raw in &base.data.assets {
             let asset_config = AssetConfig::new(raw.clone());
@@ -464,13 +474,13 @@ impl ChainConfig {
                 asset_config,
             );
         }
-        Ok(asset_configs)
+        Ok(Rc::new(asset_configs))
     }
 
     #[flame]
     fn init_pool_configs_by_asset_and_bridge(
         pool_contracts: Vec<PoolContractConfig>,
-    ) -> Result<HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>, ValidationError> {
+    ) -> Result<Rc<HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>>, ValidationError> {
         let mut pool_configs_by_asset_and_bridge:
             HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>> =
             HashMap::new();
@@ -518,17 +528,17 @@ impl ChainConfig {
             );
         }
 
-        Ok(pool_configs_by_asset_and_bridge)
+        Ok(Rc::new(pool_configs_by_asset_and_bridge))
     }
 
     #[flame]
     fn init_deposit_contract_configs(
         base: &BaseConfig<RawChainConfig, AuxData>,
-        pool_contract_configs: &HashMap<String, PoolContractConfig>,
-        main_asset_config: &AssetConfig,
-        asset_configs: &HashMap<String, AssetConfig>,
-        chain_configs: &Option<HashMap<u32, ChainConfig>>,
-    ) -> Result<HashMap<String, DepositContractConfig>, ValidationError> {
+        pool_contract_configs: &Rc<HashMap<String, PoolContractConfig>>,
+        main_asset_config: &Rc<AssetConfig>,
+        asset_configs: &Rc<HashMap<String, AssetConfig>>,
+        chain_configs: &Rc<Option<HashMap<u32, ChainConfig>>>,
+    ) -> Result<Rc<HashMap<String, DepositContractConfig>>, ValidationError> {
         let mut deposit_contract_configs: HashMap<String, DepositContractConfig> = HashMap::new();
         for raw in &base.data.deposit_contracts {
             let check_result = check(
@@ -603,6 +613,6 @@ impl ChainConfig {
             );
         }
 
-        Ok(deposit_contract_configs)
+        Ok(Rc::new(deposit_contract_configs))
     }
 }

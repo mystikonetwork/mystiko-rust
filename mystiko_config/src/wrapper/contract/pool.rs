@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::str::FromStr;
 use flamer::flame;
 use num_bigint::BigInt;
@@ -14,18 +15,18 @@ use crate::wrapper::contract::base::ContractConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AuxData {
-    default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
-    circuit_configs_by_name: HashMap<String, CircuitConfig>,
-    main_asset_config: AssetConfig,
-    asset_configs: HashMap<String, AssetConfig>,
+    default_circuit_configs: Rc<HashMap<CircuitType, CircuitConfig>>,
+    circuit_configs_by_name: Rc<HashMap<String, CircuitConfig>>,
+    main_asset_config: Rc<AssetConfig>,
+    asset_configs: Rc<HashMap<String, AssetConfig>>,
 }
 
 impl AuxData {
     pub fn new(
-        default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
-        circuit_configs_by_name: HashMap<String, CircuitConfig>,
-        main_asset_config: AssetConfig,
-        asset_configs: HashMap<String, AssetConfig>,
+        default_circuit_configs: Rc<HashMap<CircuitType, CircuitConfig>>,
+        circuit_configs_by_name: Rc<HashMap<String, CircuitConfig>>,
+        main_asset_config: Rc<AssetConfig>,
+        asset_configs: Rc<HashMap<String, AssetConfig>>,
     ) -> Self {
         Self {
             default_circuit_configs,
@@ -40,7 +41,7 @@ impl AuxData {
 pub struct PoolContractConfig {
     base: ContractConfig<RawPoolContractConfig, AuxData>,
     pub circuit_configs: HashMap<CircuitType, CircuitConfig>,
-    pub main_asset_config: AssetConfig,
+    pub main_asset_config: Rc<AssetConfig>,
     pub asset_config: Option<AssetConfig>,
 }
 
@@ -100,13 +101,13 @@ impl PoolContractConfig {
         &self.base.base.data.bridge_type
     }
 
-    pub fn asset(&self) -> AssetConfig {
+    pub fn asset(&self) -> Rc<AssetConfig> {
         match &self.asset_config {
             None => {
                 self.main_asset_config.clone()
             }
             Some(value) => {
-                value.clone()
+                Rc::new(value.clone())
             }
         }
     }
@@ -179,7 +180,7 @@ impl PoolContractConfig {
         aux_data: &AuxData,
     ) -> HashMap<CircuitType, CircuitConfig> {
         let mut circuit_configs: HashMap<CircuitType, CircuitConfig> = HashMap::new();
-        for (_, circuit_conf) in &aux_data.default_circuit_configs {
+        for (_, circuit_conf) in &*aux_data.default_circuit_configs {
             circuit_configs.insert(
                 circuit_conf.circuit_type().clone(),
                 circuit_conf.clone(),

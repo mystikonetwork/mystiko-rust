@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::rc::Rc;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use mystiko_utils::check::check;
@@ -16,18 +17,18 @@ use crate::wrapper::contract::pool::PoolContractConfig;
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct AuxData {
-    pool_contract_configs: HashMap<String, PoolContractConfig>,
-    main_asset_config: AssetConfig,
-    asset_configs: HashMap<String, AssetConfig>,
-    chain_configs: Option<HashMap<u32, ChainConfig>>,
+    pool_contract_configs: Rc<HashMap<String, PoolContractConfig>>,
+    main_asset_config: Rc<AssetConfig>,
+    asset_configs: Rc<HashMap<String, AssetConfig>>,
+    chain_configs: Rc<Option<HashMap<u32, ChainConfig>>>,
 }
 
 impl AuxData {
     pub fn new(
-        pool_contract_configs: HashMap<String, PoolContractConfig>,
-        main_asset_config: AssetConfig,
-        asset_configs: HashMap<String, AssetConfig>,
-        chain_configs: Option<HashMap<u32, ChainConfig>>,
+        pool_contract_configs: Rc<HashMap<String, PoolContractConfig>>,
+        main_asset_config: Rc<AssetConfig>,
+        asset_configs: Rc<HashMap<String, AssetConfig>>,
+        chain_configs: Rc<Option<HashMap<u32, ChainConfig>>>,
     ) -> Self {
         Self {
             pool_contract_configs,
@@ -42,7 +43,7 @@ impl AuxData {
     }
 
     fn deposit_contract_getter(&self, chain_id: u32, address: String) -> Option<&DepositContractConfig> {
-        match &self.chain_configs {
+        match &*self.chain_configs {
             None => { None }
             Some(chain_configs) => {
                 let chain_config = chain_configs.get(&chain_id);
@@ -58,8 +59,8 @@ impl AuxData {
 #[derive(Clone, Debug, PartialEq)]
 pub struct DepositContractConfig {
     base: ContractConfig<RawDepositContractConfig, AuxData>,
-    bridge_fee_asset_config: Option<AssetConfig>,
-    executor_fee_asset_config: Option<AssetConfig>,
+    bridge_fee_asset_config: Option<Rc<AssetConfig>>,
+    executor_fee_asset_config: Option<Rc<AssetConfig>>,
 }
 
 impl DepositContractConfig {
@@ -184,7 +185,7 @@ impl DepositContractConfig {
         )
     }
 
-    pub fn asset(&self) -> Result<AssetConfig, Box<dyn Error>> {
+    pub fn asset(&self) -> Result<Rc<AssetConfig>, Box<dyn Error>> {
         let pool_contract = self.pool_contract()?;
         Ok(pool_contract.asset())
     }
@@ -278,7 +279,7 @@ impl DepositContractConfig {
         }
     }
 
-    pub fn executor_fee_asset(&self) -> Result<AssetConfig, Box<dyn Error>> {
+    pub fn executor_fee_asset(&self) -> Result<Rc<AssetConfig>, Box<dyn Error>> {
         match &self.executor_fee_asset_config {
             None => { self.asset() }
             Some(value) => { Ok(value.clone()) }
@@ -408,7 +409,7 @@ impl DepositContractConfig {
     fn init_bridge_fee_asset_config(
         base: &ContractConfig<RawDepositContractConfig, AuxData>,
         aux_data: &AuxData,
-    ) -> Result<Option<AssetConfig>, ValidationError> {
+    ) -> Result<Option<Rc<AssetConfig>>, ValidationError> {
         match &base.base.data.bridge_fee_asset_address {
             None => { Ok(None) }
             Some(address) => {
@@ -432,7 +433,11 @@ impl DepositContractConfig {
                         ]
                     ));
                 }
-                return Ok(Some(asset_config.unwrap().clone()));
+                return Ok(
+                    Some(
+                        Rc::new(asset_config.unwrap().clone())
+                    )
+                );
             }
         }
     }
@@ -440,7 +445,7 @@ impl DepositContractConfig {
     fn init_executor_fee_asset_config(
         base: &ContractConfig<RawDepositContractConfig, AuxData>,
         aux_data: &AuxData,
-    ) -> Result<Option<AssetConfig>, ValidationError> {
+    ) -> Result<Option<Rc<AssetConfig>>, ValidationError> {
         match &base.base.data.executor_fee_asset_address {
             None => { Ok(None) }
             Some(address) => {
@@ -464,7 +469,11 @@ impl DepositContractConfig {
                         ]
                     ));
                 }
-                return Ok(Some(asset_config.unwrap().clone()));
+                return Ok(
+                    Some(
+                        Rc::new(asset_config.unwrap().clone())
+                    )
+                );
             }
         }
     }

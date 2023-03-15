@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use mystiko_config::common::{AssetType, CircuitType};
@@ -14,57 +15,63 @@ async fn raw_mystiko_config() -> RawMystikoConfig {
     RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json").await.unwrap()
 }
 
-async fn circuit_configs_by_name() -> HashMap<String, CircuitConfig> {
+async fn circuit_configs_by_name() -> Rc<HashMap<String, CircuitConfig>> {
     let raw_mystiko_config = raw_mystiko_config().await;
     let mut configs = HashMap::new();
     for circuit in raw_mystiko_config.circuits {
         let circuit_config = CircuitConfig::new(circuit.clone());
         configs.insert(circuit.name.clone(), circuit_config);
     }
-    configs
+    Rc::new(configs)
 }
 
-async fn default_circuit_configs(circuit_configs_by_name: &HashMap<String, CircuitConfig>) -> HashMap<CircuitType, CircuitConfig> {
+async fn default_circuit_configs(
+    circuit_configs_by_name: &HashMap<String, CircuitConfig>
+) -> Rc<HashMap<CircuitType, CircuitConfig>> {
     let mut default_configs = HashMap::new();
     for (_, circuit_config) in circuit_configs_by_name {
         if circuit_config.is_default() {
             default_configs.insert(circuit_config.circuit_type().clone(), circuit_config.clone());
         }
     }
-    default_configs
+    Rc::new(default_configs)
 }
 
 async fn default_raw_config() -> RawPoolContractConfig {
     RawConfig::create_from_file::<RawPoolContractConfig>("tests/files/contract/pool.valid.json").await.unwrap()
 }
 
-async fn main_asset_config() -> AssetConfig {
+async fn main_asset_config() -> Rc<AssetConfig> {
     let raw_mystiko_config = raw_mystiko_config().await;
-    AssetConfig::new(RawAssetConfig::new(
-        AssetType::Main,
-        raw_mystiko_config.chains.get(0).unwrap().asset_symbol.clone(),
-        raw_mystiko_config.chains.get(0).unwrap().asset_decimals.clone(),
-        "0x0000000000000000000000000000000000000000".to_string(),
-        raw_mystiko_config.chains.get(0).unwrap().recommended_amounts.clone(),
-    )).unwrap()
+    Rc::new(
+        AssetConfig::new(RawAssetConfig::new(
+            AssetType::Main,
+            raw_mystiko_config.chains.get(0).unwrap().asset_symbol.clone(),
+            raw_mystiko_config.chains.get(0).unwrap().asset_decimals.clone(),
+            "0x0000000000000000000000000000000000000000".to_string(),
+            raw_mystiko_config.chains.get(0).unwrap().recommended_amounts.clone(),
+        )).unwrap()
+    )
 }
 
-async fn asset_configs() -> HashMap<String, AssetConfig> {
+async fn asset_configs() -> Rc<HashMap<String, AssetConfig>> {
     let raw_mystiko_config = raw_mystiko_config().await;
-    HashMap::from_iter(
-        [(
-            raw_mystiko_config.chains.get(0).unwrap().assets.get(0).unwrap().asset_address.clone(),
-            AssetConfig::new(
-                raw_mystiko_config
-                    .chains
-                    .get(0)
-                    .unwrap()
-                    .assets
-                    .get(0)
-                    .unwrap()
-                    .clone()
-            ).unwrap()
-        )]
+    Rc::new(
+        HashMap::from_iter(
+            [(
+                raw_mystiko_config.chains.get(0).unwrap().assets.get(0).unwrap().asset_address.clone(),
+                AssetConfig::new(
+                    raw_mystiko_config
+                        .chains
+                        .get(0)
+                        .unwrap()
+                        .assets
+                        .get(0)
+                        .unwrap()
+                        .clone()
+                ).unwrap()
+            )]
+        )
     )
 }
 
@@ -97,7 +104,7 @@ async fn test_equality() {
     let asset_configs = asset_configs().await;
     assert_eq!(config.pool_name(), &raw_config.pool_name);
     assert_eq!(config.bridge_type(), &raw_config.bridge_type);
-    assert_eq!(&config.asset(), asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap());
+    assert_eq!(&*config.asset(), asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap());
     assert_eq!(&config.asset_type(), config.asset().asset_type());
     assert_eq!(config.asset_symbol(), config.asset().asset_symbol());
     assert_eq!(config.asset_decimals(), config.asset().asset_decimals());

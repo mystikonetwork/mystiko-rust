@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::rc::Rc;
 use flamer::flame;
 use strum::IntoEnumIterator;
 use mystiko_utils::check::check;
@@ -31,8 +32,8 @@ pub enum BridgeConfigType {
 #[derive(Debug, Clone, PartialEq)]
 pub struct MystikoConfig {
     base: BaseConfig<RawMystikoConfig>,
-    default_circuit_configs: HashMap<CircuitType, CircuitConfig>,
-    circuit_configs_by_name: HashMap<String, CircuitConfig>,
+    default_circuit_configs: Rc<HashMap<CircuitType, CircuitConfig>>,
+    circuit_configs_by_name: Rc<HashMap<String, CircuitConfig>>,
     bridge_configs: HashMap<BridgeType, BridgeConfigType>,
     chain_configs: HashMap<u32, ChainConfig>,
     indexer_config: Option<IndexerConfig>,
@@ -44,8 +45,8 @@ impl MystikoConfig {
         let base = BaseConfig::new(data, None);
         let mut config = Self {
             base: base.clone(),
-            default_circuit_configs: HashMap::default(),
-            circuit_configs_by_name: HashMap::default(),
+            default_circuit_configs: Default::default(),
+            circuit_configs_by_name: Default::default(),
             bridge_configs: Default::default(),
             chain_configs: Default::default(),
             indexer_config: Default::default(),
@@ -298,8 +299,8 @@ impl MystikoConfig {
             }
         }
 
-        self.default_circuit_configs = default_circuit_configs;
-        self.circuit_configs_by_name = circuit_config_by_names;
+        self.default_circuit_configs = Rc::new(default_circuit_configs);
+        self.circuit_configs_by_name = Rc::new(circuit_config_by_names);
 
         Ok(())
     }
@@ -373,7 +374,9 @@ impl MystikoConfig {
                         AuxData::new(
                             self.default_circuit_configs.clone(),
                             self.circuit_configs_by_name.clone(),
-                            Some(aux_data_chain_configs.clone()),
+                            Rc::new(
+                                Some(aux_data_chain_configs.clone())
+                            ),
                         )
                     ),
                 )?,

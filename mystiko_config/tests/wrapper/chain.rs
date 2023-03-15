@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::str::FromStr;
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
@@ -18,7 +19,7 @@ async fn raw_mystiko_config() -> RawMystikoConfig {
     RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json").await.unwrap()
 }
 
-async fn default_circuit_configs() -> HashMap<CircuitType, CircuitConfig> {
+async fn default_circuit_configs() -> Rc<HashMap<CircuitType, CircuitConfig>> {
     let raw = raw_mystiko_config().await;
     let mut configs = HashMap::new();
     for circuit in raw.circuits {
@@ -27,17 +28,17 @@ async fn default_circuit_configs() -> HashMap<CircuitType, CircuitConfig> {
             configs.insert(circuit.circuit_type, circuit_config);
         }
     }
-    configs
+    Rc::new(configs)
 }
 
-async fn circuit_configs_by_name() -> HashMap<String, CircuitConfig> {
+async fn circuit_configs_by_name() -> Rc<HashMap<String, CircuitConfig>> {
     let raw = raw_mystiko_config().await;
     let mut configs = HashMap::new();
     for circuit in raw.circuits {
         let circuit_config = CircuitConfig::new(circuit.clone());
         configs.insert(circuit.name, circuit_config);
     }
-    configs
+    Rc::new(configs)
 }
 
 async fn default_raw_config() -> RawChainConfig {
@@ -53,7 +54,7 @@ async fn default_chain_config() -> ChainConfig {
             AuxData::new(
                 default_circuit_configs().await,
                 circuit_configs_by_name().await,
-                None,
+                Rc::new(None),
             )
         ),
     ).unwrap()
@@ -126,7 +127,7 @@ async fn test_peer_chain_ids() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(config.peer_chain_ids(), vec![97]);
@@ -179,7 +180,7 @@ async fn test_peer_chain_ids() {
         AuxData::new(
             default_circuit_configs,
             circuit_configs_by_name,
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     let mut a = config.peer_chain_ids();
@@ -202,7 +203,7 @@ async fn test_get_asset_symbols() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(config.get_asset_symbols(97).unwrap(), vec!["MTT".to_string()]);
@@ -299,7 +300,7 @@ async fn test_get_asset_symbols() {
         AuxData::new(
             default_circuit_configs,
             circuit_configs_by_name,
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     let mut a = config.get_asset_symbols(97).unwrap();
@@ -323,7 +324,7 @@ async fn test_get_bridges() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(config.get_bridges(97, "MTT").unwrap(), vec![BridgeType::Tbridge]);
@@ -375,7 +376,7 @@ async fn test_get_bridges() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(config.get_bridges(3, "MTT").unwrap().len(), 0);
@@ -427,7 +428,7 @@ async fn test_get_bridges() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     let a = config.get_bridges(97, "MTT").unwrap();
@@ -519,7 +520,7 @@ async fn test_get_deposit_contract() {
         AuxData::new(
             default_circuit_configs,
             circuit_configs_by_name,
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(
@@ -650,7 +651,7 @@ async fn test_get_pool_contract() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(
@@ -781,7 +782,7 @@ async fn test_get_event_filter_size_by_address() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(
@@ -808,7 +809,7 @@ async fn test_get_event_filter_size_by_address() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(
@@ -835,7 +836,7 @@ async fn test_get_indexer_filter_size_by_address() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(
@@ -862,7 +863,7 @@ async fn test_get_indexer_filter_size_by_address() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(
@@ -890,7 +891,7 @@ async fn test_invalid_pool_address() {
         AuxData::new(
             default_circuit_configs,
             circuit_configs_by_name,
-            None,
+            Rc::new(None),
         )
     ));
     assert!(result.is_err());
@@ -954,7 +955,7 @@ async fn test_duplicate_bridge_and_asset() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     ));
     assert!(result.is_err());
@@ -976,7 +977,7 @@ async fn test_different_bridge_with_same_pool_address() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(config.peer_chain_ids(), vec![97]);
@@ -1010,7 +1011,7 @@ async fn test_different_bridge_with_same_pool_address() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     ));
     assert!(result.is_err());
@@ -1074,7 +1075,7 @@ async fn test_mutate() {
         AuxData::new(
             default_circuit_configs.clone(),
             circuit_configs_by_name.clone(),
-            None,
+            Rc::new(None),
         )
     )).unwrap();
     assert_eq!(new_config.copy_data(), raw_config);

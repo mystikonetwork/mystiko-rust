@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use mystiko_config::common::{AssetType, BridgeType, CircuitType};
@@ -18,7 +19,7 @@ async fn raw_mystiko_config() -> RawMystikoConfig {
     RawConfig::create_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json").await.unwrap()
 }
 
-async fn circuit_configs() -> (HashMap<String, CircuitConfig>, HashMap<CircuitType, CircuitConfig>) {
+async fn circuit_configs() -> (Rc<HashMap<String, CircuitConfig>>, Rc<HashMap<CircuitType, CircuitConfig>>) {
     let mut circuit_configs_by_name = HashMap::new();
     let mut default_circuit_configs = HashMap::new();
     let raw_mystiko_config = raw_mystiko_config().await;
@@ -32,10 +33,10 @@ async fn circuit_configs() -> (HashMap<String, CircuitConfig>, HashMap<CircuitTy
             );
         }
     }
-    (circuit_configs_by_name, default_circuit_configs)
+    (Rc::new(circuit_configs_by_name), Rc::new(default_circuit_configs))
 }
 
-async fn main_asset_config() -> AssetConfig {
+async fn main_asset_config() -> Rc<AssetConfig> {
     let raw_mystiko_config = raw_mystiko_config().await;
     let asset_symbol =
         raw_mystiko_config.chains.get(0).unwrap().clone().asset_symbol;
@@ -43,18 +44,20 @@ async fn main_asset_config() -> AssetConfig {
         raw_mystiko_config.chains.get(0).unwrap().clone().asset_decimals;
     let recommended_amounts =
         raw_mystiko_config.chains.get(0).unwrap().clone().recommended_amounts;
-    AssetConfig::new(
-        RawAssetConfig::new(
-            AssetType::Main,
-            asset_symbol,
-            asset_decimals,
-            "0x0000000000000000000000000000000000000000".to_string(),
-            recommended_amounts,
-        )
-    ).unwrap()
+    Rc::new(
+        AssetConfig::new(
+            RawAssetConfig::new(
+                AssetType::Main,
+                asset_symbol,
+                asset_decimals,
+                "0x0000000000000000000000000000000000000000".to_string(),
+                recommended_amounts,
+            )
+        ).unwrap()
+    )
 }
 
-async fn asset_configs() -> HashMap<String, AssetConfig> {
+async fn asset_configs() -> Rc<HashMap<String, AssetConfig>> {
     let mut asset_configs = HashMap::new();
     let raw_mystiko_config = raw_mystiko_config().await;
     let raw_asset_config =
@@ -63,7 +66,7 @@ async fn asset_configs() -> HashMap<String, AssetConfig> {
         raw_asset_config.asset_address.clone(),
         AssetConfig::new(raw_asset_config.clone()).unwrap(),
     );
-    asset_configs
+    Rc::new(asset_configs)
 }
 
 async fn default_raw_config() -> RawDepositContractConfig {
@@ -101,10 +104,10 @@ async fn default_deposit_config() -> DepositContractConfig {
         ).unwrap(),
     );
     let aux_data = Some(AuxData::new(
-        pool_contract_configs,
+        Rc::new(pool_contract_configs),
         main_asset_config().await,
         asset_configs().await,
-        None,
+        Rc::new(None),
     ));
     DepositContractConfig::new(default_raw_config().await, aux_data).unwrap()
 }
@@ -134,7 +137,10 @@ async fn test_equality() {
     assert_eq!(config.min_bridge_fee_number(), 2f64);
     assert_eq!(config.min_executor_fee().to_string(), raw_config.min_executor_fee);
     assert_eq!(config.min_executor_fee_number().unwrap(), 3f64);
-    assert_eq!(config.asset().unwrap(), asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap().clone());
+    assert_eq!(
+        &*config.asset().unwrap(),
+        asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap()
+    );
     assert_eq!(config.asset_type().unwrap(), AssetType::Erc20);
     assert_eq!(config.asset_symbol().unwrap(), "MTT".to_string());
     assert_eq!(config.asset_decimals().unwrap(), 16);
@@ -160,8 +166,8 @@ async fn test_equality() {
         &asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap().clone(),
     );
     assert_eq!(
-        config.executor_fee_asset().unwrap(),
-        asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap().clone()
+        &*config.executor_fee_asset().unwrap(),
+        asset_configs.get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap()
     );
     assert_eq!(config.service_fee(), 2);
     assert_eq!(config.service_fee_divider(), 1000);
@@ -174,11 +180,11 @@ async fn test_bridge_fee_asset() {
     let main_asset_config = main_asset_config().await;
     raw_config.bridge_fee_asset_address = None;
     config = config.mutate(Some(raw_config.clone()), None).unwrap();
-    assert_eq!(config.bridge_fee_asset(), &main_asset_config);
+    assert_eq!(config.bridge_fee_asset(), &*main_asset_config);
     assert_eq!(config.min_bridge_fee_number(), 0.02f64);
     raw_config.bridge_fee_asset_address = Some(MAIN_ASSET_ADDRESS.to_string());
     config.mutate(Some(raw_config.clone()), None).unwrap();
-    assert_eq!(config.bridge_fee_asset(), &main_asset_config);
+    assert_eq!(config.bridge_fee_asset(), &*main_asset_config);
     raw_config.bridge_fee_asset_address =
         Some("0xBc28029D248FC60bce0bAC01cF41A53aEEaE06F9".to_string());
     let validate =
@@ -242,17 +248,17 @@ async fn test_peer_contract() {
                     default_circuit_configs,
                     circuit_configs_by_name,
                     main_asset_config.clone(),
-                    peer_assets_config.clone(),
+                    Rc::new(peer_assets_config.clone()),
                 )
             ),
         ).unwrap(),
     );
     let asset_configs = asset_configs().await;
     let aux_data = Some(AuxData::new(
-        pool_contract_configs,
+        Rc::new(pool_contract_configs),
         main_asset_config.clone(),
         asset_configs.clone(),
-        None,
+        Rc::new(None),
     ));
     let _peer_contract_config =
         DepositContractConfig::new(
@@ -268,7 +274,11 @@ async fn test_peer_contract() {
             Default::default(),
             main_asset_config.clone(),
             asset_configs.clone(),
-            Some(mystiko_config.get_chain_configs()),
+            Rc::new(
+                Some(
+                    mystiko_config.get_chain_configs()
+                )
+            ),
         )
     )).unwrap();
     assert_eq!(
@@ -290,7 +300,7 @@ async fn test_invalid_raw_config_0() {
                 Default::default(),
                 main_asset_config().await,
                 asset_configs().await,
-                None,
+                Rc::new(None),
             )),
         ).is_err()
     );
@@ -308,7 +318,7 @@ async fn test_invalid_raw_config_1() {
                 Default::default(),
                 main_asset_config().await,
                 asset_configs().await,
-                None,
+                Rc::new(None),
             )),
         ).is_err()
     );
@@ -327,7 +337,7 @@ async fn test_invalid_raw_config_2() {
                 Default::default(),
                 main_asset_config().await,
                 asset_configs().await,
-                None,
+                Rc::new(None),
             )),
         ).is_err()
     );
@@ -345,7 +355,7 @@ async fn test_invalid_raw_config_3() {
             Default::default(),
             main_asset_config().await,
             asset_configs().await,
-            None,
+            Rc::new(None),
         )),
     ).unwrap();
     let pool_contract = config.pool_contract();
