@@ -18,25 +18,28 @@ pub enum SecretShareError {
     ThresholdOutOfBounds,
 }
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug)]
 pub enum FileError {
     #[error("read {0} error {1}")]
     OpenFileError(String, String),
     #[error("read {0} error {1}")]
     ReadFileError(String, String),
+    #[error("internal error")]
+    InternalError,
 }
 
-impl FileError {
-    pub fn name(&self) -> FileError {
-        let empty = String::from("");
-        match self {
-            FileError::OpenFileError(_, _) => FileError::OpenFileError(empty.clone(), empty),
-            FileError::ReadFileError(_, _) => FileError::ReadFileError(empty.clone(), empty),
-        }
+impl PartialEq for FileError {
+    fn eq(&self, other: &Self) -> bool {
+        matches!(
+            (self, other),
+            (Self::OpenFileError(_, _), Self::OpenFileError(_, _))
+                | (Self::ReadFileError(_, _), Self::ReadFileError(_, _))
+                | (Self::InternalError, Self::InternalError)
+        )
     }
 }
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug)]
 pub enum ZkpError {
     #[error(transparent)]
     FileError(#[from] FileError),
@@ -56,30 +59,28 @@ pub enum ZkpError {
     NotSupport,
 }
 
-impl ZkpError {
-    pub fn name(&self) -> ZkpError {
-        let empty = String::from("");
-        match self {
-            ZkpError::FileError(_) => {
-                ZkpError::FileError(FileError::ReadFileError(empty.clone(), empty))
-            }
-            ZkpError::ParseError(_, _) => ZkpError::ParseError(empty.clone(), empty),
-            ZkpError::DeserializeProgramError(_) => ZkpError::DeserializeProgramError(empty),
-            ZkpError::ComputeWitnessError(_) => ZkpError::ComputeWitnessError(empty),
-            ZkpError::ProofError(_) => ZkpError::ProofError(empty),
-            ZkpError::VKError(_) => ZkpError::VKError(empty),
-            ZkpError::MismatchError(_) => ZkpError::MismatchError(empty),
-            ZkpError::NotSupport => ZkpError::NotSupport,
+impl PartialEq for ZkpError {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::FileError(l), Self::FileError(r)) => l == r,
+            (Self::ParseError(_, _), Self::ParseError(_, _)) => true,
+            (Self::DeserializeProgramError(_), Self::DeserializeProgramError(_)) => true,
+            (Self::ComputeWitnessError(_), Self::ComputeWitnessError(_)) => true,
+            (Self::ProofError(_), Self::ProofError(_)) => true,
+            (Self::VKError(_), Self::VKError(_)) => true,
+            (Self::MismatchError(_), Self::MismatchError(_)) => true,
+            (Self::NotSupport, Self::NotSupport) => true,
+            _ => false,
         }
     }
 }
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ECCryptoError {
-    #[error("eccrypto data length error")]
-    ECCryptoDataLengthError,
-    #[error("eccrypto mac mismatch error")]
-    ECCryptoMacMismatchError,
+    #[error("data length error")]
+    DataLengthError,
+    #[error("mac mismatch error")]
+    MacMismatchError,
     #[error("internal error")]
     InternalError,
 }

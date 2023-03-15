@@ -135,7 +135,8 @@ async fn test_build_commitment() {
         }),
     )
     .unwrap();
-
+    let _ = cm2.encrypted_note.clone();
+    let _ = cm2.clone();
     assert_eq!(cm2.commitment_hash, cm1.commitment_hash);
 
     let raw_sk_enc_3 = random_bytes(32);

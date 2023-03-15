@@ -26,6 +26,9 @@ async fn test_shielded_address() {
     let sa = ShieldedAddress::from_public_key(&vk_big, &ek_big);
     assert_eq!(sa.address(), expect_address);
 
+    let sa2 = ShieldedAddress::from_string(&expect_address);
+    assert_eq!(sa, sa2);
+
     assert!(ShieldedAddress::check(&sa.address()));
     let wrong_address =
         "*3hMt2P6h8zp5t8Cxm5oAzTULg1boVEvzjaEPXmLtSBUmF4KKnaooWkBKBqZs9BYncvY6rA6TpCkAJ6cEXFEHWMHt";

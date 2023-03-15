@@ -38,6 +38,8 @@ async fn test_prove_and_verify() {
         ZKProof::generate(prog.as_slice(), abi_spec.as_slice(), pk.as_slice(), &args).unwrap();
     let result = proof.verify(vk.as_slice()).unwrap();
     assert!(result);
+
+    let _ = proof.to_json_string();
 }
 
 #[tokio::test]
@@ -81,8 +83,8 @@ async fn test_prove_by_file() {
     )
     .await;
     let expect_err =
-        ZkpError::FileError(FileError::ReadFileError(String::from(""), String::from("")));
-    assert_eq!(proof.err().unwrap().name(), expect_err);
+        ZkpError::FileError(FileError::OpenFileError(String::from(""), String::from("")));
+    assert_eq!(proof.err().unwrap(), expect_err);
 
     let proof = ZKProof::generate_with_file(
         "./tests/files/zkp/program",
@@ -91,7 +93,7 @@ async fn test_prove_by_file() {
         &args,
     )
     .await;
-    assert_eq!(proof.err().unwrap().name(), expect_err);
+    assert_eq!(proof.err().unwrap(), expect_err);
 
     let proof = ZKProof::generate_with_file(
         "./tests/files/zkp/program",
@@ -100,7 +102,7 @@ async fn test_prove_by_file() {
         &args,
     )
     .await;
-    assert_eq!(proof.err().unwrap().name(), expect_err);
+    assert_eq!(proof.err().unwrap(), expect_err);
 
     let proof = ZKProof::generate_with_file(
         "./tests/files/zkp/wrong/program",
@@ -110,7 +112,7 @@ async fn test_prove_by_file() {
     )
     .await;
     assert_eq!(
-        proof.err().unwrap().name(),
+        proof.err().unwrap(),
         ZkpError::DeserializeProgramError(String::from(""))
     );
 }
@@ -125,7 +127,7 @@ async fn test_prove() {
 
     let proof = ZKProof::generate(prog.as_slice(), abi_spec.as_slice(), pk.as_slice(), &args);
     assert_eq!(
-        proof.err().unwrap().name(),
+        proof.err().unwrap(),
         ZkpError::DeserializeProgramError(String::from(""))
     );
 }
@@ -139,31 +141,25 @@ async fn test_verify_by_file() {
         .verify_with_file("./tests/files/zkp/wrong/verification_error.key")
         .await;
     assert_eq!(
-        result.err().unwrap().name(),
+        result.err().unwrap(),
         ZkpError::ParseError(String::from(""), String::from(""))
     );
 
     let result = proof
         .verify_with_file("./tests/files/zkp/wrong/verification_missing_curve.key")
         .await;
-    assert_eq!(
-        result.err().unwrap().name(),
-        ZkpError::VKError(String::from(""))
-    );
+    assert_eq!(result.err().unwrap(), ZkpError::VKError(String::from("")));
 
     let result = proof
         .verify_with_file("./tests/files/zkp/wrong/verification_missing_scheme.key")
         .await;
-    assert_eq!(
-        result.err().unwrap().name(),
-        ZkpError::VKError(String::from(""))
-    );
+    assert_eq!(result.err().unwrap(), ZkpError::VKError(String::from("")));
 
     let result = proof
         .verify_with_file("./tests/files/zkp/wrong/verification_gm17.key")
         .await;
     assert_eq!(
-        result.err().unwrap().name(),
+        result.err().unwrap(),
         ZkpError::MismatchError(String::from(""))
     );
 
@@ -171,7 +167,7 @@ async fn test_verify_by_file() {
         .verify_with_file("./tests/files/zkp/wrong/verification_bls12_381.key")
         .await;
     assert_eq!(
-        result.err().unwrap().name(),
+        result.err().unwrap(),
         ZkpError::MismatchError(String::from(""))
     );
 }
@@ -187,7 +183,7 @@ async fn test_verify() {
 
     let result = proof.verify(vk.as_slice());
     assert_eq!(
-        result.err().unwrap().name(),
+        result.err().unwrap(),
         ZkpError::ParseError(String::from(""), String::from(""))
     );
 }

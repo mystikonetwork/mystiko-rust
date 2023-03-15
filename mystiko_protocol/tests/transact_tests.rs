@@ -45,6 +45,7 @@ fn generate_transaction(
     program_file: String,
     abi_file: String,
     proving_key_file: String,
+    generate_auditing_key: Option<bool>,
 ) -> Transaction {
     let mut in_verify_pks: Vec<VerifyPk> = vec![];
     let mut in_verify_sks: Vec<VerifySk> = vec![];
@@ -132,7 +133,12 @@ fn generate_transaction(
         .sub(total_rollup_fee)
         .sub(relayer_fee_amount.clone());
 
-    let random_auditing_secret_key = ecies::generate_secret_key();
+    let random_auditing_secret_key = if generate_auditing_key.unwrap_or(false) {
+        Some(ecies::generate_secret_key())
+    } else {
+        None
+    };
+
     let mut auditor_public_keys: Vec<AuditingPk> = vec![];
     for _ in 0..NUM_OF_AUDITORS {
         let pk = ecies::public_key(&ecies::generate_secret_key());
@@ -164,7 +170,7 @@ fn generate_transaction(
         program_file,
         abi_file,
         proving_key_file,
-        random_auditing_secret_key: Some(random_auditing_secret_key),
+        random_auditing_secret_key,
         auditor_public_keys,
     }
 }
@@ -180,6 +186,7 @@ async fn test_transaction1x0() {
         (FILE_PATH.to_owned() + "/Transaction1x0.program").to_string(),
         (FILE_PATH.to_owned() + "/Transaction1x0.abi.json").to_string(),
         (FILE_PATH.to_owned() + "/Transaction1x0.pkey").to_string(),
+        None,
     );
 
     let proof = tx.prove().await.unwrap();
@@ -188,6 +195,7 @@ async fn test_transaction1x0() {
         .await
         .unwrap();
     assert!(verify);
+    let _ = tx.clone();
 }
 
 #[tokio::test]
@@ -199,6 +207,7 @@ async fn test_transaction1x1() {
         (FILE_PATH.to_owned() + "/Transaction1x1.program").to_string(),
         (FILE_PATH.to_owned() + "/Transaction1x1.abi.json").to_string(),
         (FILE_PATH.to_owned() + "/Transaction1x1.pkey").to_string(),
+        Some(true),
     );
 
     let proof = tx.prove().await.unwrap();
@@ -218,6 +227,7 @@ async fn test_transaction1x2() {
         (FILE_PATH.to_owned() + "/Transaction1x2.program").to_string(),
         (FILE_PATH.to_owned() + "/Transaction1x2.abi.json").to_string(),
         (FILE_PATH.to_owned() + "/Transaction1x2.pkey").to_string(),
+        Some(true),
     );
 
     let proof = tx.prove().await.unwrap();
@@ -237,6 +247,7 @@ async fn test_transaction2x0() {
         (FILE_PATH.to_owned() + "/Transaction2x0.program").to_string(),
         (FILE_PATH.to_owned() + "/Transaction2x0.abi.json").to_string(),
         (FILE_PATH.to_owned() + "/Transaction2x0.pkey").to_string(),
+        Some(true),
     );
 
     let proof = tx.prove().await.unwrap();
@@ -256,6 +267,7 @@ async fn test_transaction2x1() {
         (FILE_PATH.to_owned() + "/Transaction2x1.program").to_string(),
         (FILE_PATH.to_owned() + "/Transaction2x1.abi.json").to_string(),
         (FILE_PATH.to_owned() + "/Transaction2x1.pkey").to_string(),
+        Some(true),
     );
 
     let proof = tx.prove().await.unwrap();
@@ -274,6 +286,7 @@ async fn test_transaction2x2() {
         (FILE_PATH.to_owned() + "/Transaction2x2.program").to_string(),
         (FILE_PATH.to_owned() + "/Transaction2x2.abi.json").to_string(),
         (FILE_PATH.to_owned() + "/Transaction2x2.pkey").to_string(),
+        Some(true),
     );
 
     let proof = tx.prove().await.unwrap();

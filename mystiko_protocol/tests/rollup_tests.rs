@@ -28,6 +28,7 @@ async fn test_rollup1() {
         .await
         .unwrap();
     assert!(verify);
+    let _ = rollup.clone();
 }
 
 #[tokio::test]

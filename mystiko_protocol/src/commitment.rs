@@ -104,10 +104,9 @@ impl Commitment {
         let note = if let Some(n) = encrypted_note {
             decrypt_asymmetric(&big_int_to_32_bytes(&n.sk_enc), &n.encrypted_note)
                 .map(Note::from_vec)
-                .map_err(|e| ProtocolError::CryptoError(e.to_string()))?
         } else {
-            note.unwrap_or(Note::new(None, None))
-        };
+            Ok(note.unwrap_or(Note::new(None, None)))
+        }?;
 
         let shielded_address = ShieldedAddress::from_public_key(&pk_verify, &pk_enc);
         // todo check encrypt result

@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use zokrates_ast::ir::{self, ProgEnum};
 use zokrates_ast::typed::abi::Abi;
 use zokrates_bellman::Bellman;
-use zokrates_common::helpers::*;
 use zokrates_field::{Bn128Field, Field};
 use zokrates_proof_systems::groth16::ProofPoints;
 use zokrates_proof_systems::{Backend, G1Affine, G2Affine, G2AffineFq2, Scheme, G16};
@@ -53,7 +52,6 @@ impl G2Point {
                 y: [a.0 .1.clone(), a.1 .1.clone()],
             }
         } else {
-            // todo return Result error
             panic!("Unexpected G2Affine type");
         }
     }
@@ -145,10 +143,9 @@ impl ZKProof {
             Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
         };
 
-        let p = if let ProgEnum::Bn128Program(p) = prog {
-            p
-        } else {
-            return Err(ZkpError::NotSupport);
+        let p = match prog {
+            ProgEnum::Bn128Program(p) => p,
+            _ => return Err(ZkpError::NotSupport),
         };
 
         let witness = compute_witness(p.clone(), &abi, json_args_str)?;
@@ -169,10 +166,9 @@ impl ZKProof {
             Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
         };
 
-        let p = if let ProgEnum::Bn128Program(p) = prog {
-            p
-        } else {
-            return Err(ZkpError::NotSupport);
+        let p = match prog {
+            ProgEnum::Bn128Program(p) => p,
+            _ => return Err(ZkpError::NotSupport),
         };
 
         let witness = compute_witness(p.clone(), &abi, json_args_str)?;
@@ -225,21 +221,20 @@ impl ZKProof {
             ));
         }
 
-        let parameters = match Parameters::try_from((
-            BackendParameter::Bellman.to_string().as_str(),
-            vk_curve,
-            vk_scheme,
-        )) {
-            Ok(param) => param,
-            Err(why) => return Err(ZkpError::MismatchError(why)),
-        };
-
         let zk_system_proof = self.to_tagged_proof();
-        match parameters {
-            Parameters(BackendParameter::Bellman, CurveParameter::Bn128, SchemeParameter::G16) => {
-                call_verify::<Bn128Field, G16, Bellman>(vk, zk_system_proof)
-            }
-            _ => Err(ZkpError::NotSupport),
-        }
+        call_verify::<Bn128Field, G16, Bellman>(vk, zk_system_proof)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use zokrates_proof_systems::G2AffineFq;
+
+    #[test]
+    #[should_panic(expected = "Unexpected G2Affine type")]
+    fn test_g2_point_from_affine() {
+        let point = G2Affine::Fq(G2AffineFq("0".to_string(), "1".to_string()));
+        let _ = G2Point::from_affine(&point);
     }
 }

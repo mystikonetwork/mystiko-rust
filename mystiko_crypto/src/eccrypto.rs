@@ -28,13 +28,9 @@ impl ECCryptoData {
         v
     }
 
-    pub fn from_vec(v: &Vec<u8>) -> Result<Self, ECCryptoError> {
-        Self::from_bytes(v.as_slice())
-    }
-
     pub fn from_bytes(v: &[u8]) -> Result<Self, ECCryptoError> {
         if v.len() <= ECIES_META_LENGTH {
-            return Err(ECCryptoError::ECCryptoDataLengthError);
+            return Err(ECCryptoError::DataLengthError);
         }
 
         let (iv, right) = v.split_at(ECIES_IV_LENGTH);
@@ -142,7 +138,7 @@ pub fn decrypt(secret_key_bytes: &[u8], cipher_data: &[u8]) -> Result<Vec<u8>, E
     let real_mac = hmac_sha256(mac_key, data_to_mac.as_slice());
     // todo change to result check
     if !equal_const_time(real_mac.as_slice(), ec_data.mac.as_slice()) {
-        return Err(ECCryptoError::ECCryptoMacMismatchError);
+        return Err(ECCryptoError::MacMismatchError);
     }
 
     let enc = aes_cbc::decrypt(&ec_data.iv, encryption_key, ec_data.cipher_text.as_slice());

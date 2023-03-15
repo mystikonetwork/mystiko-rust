@@ -58,8 +58,8 @@ pub fn decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Vec<u8> {
 // compatible with crypto-js evpkdf compute
 pub fn password_to_key(password: &[u8], salt: &[u8]) -> (Vec<u8>, Vec<u8>) {
     // Initial values
-    let key_size = ECIES_KEY_LENGTH + ECIES_IV_LENGTH; // in bytes
-    let iterations = 1; // for demonstration purposes only
+    let key_size = ECIES_KEY_LENGTH + ECIES_IV_LENGTH;
+    // let iterations = 1;
 
     // Generate key
     let mut derived_key = Vec::new();
@@ -76,11 +76,11 @@ pub fn password_to_key(password: &[u8], salt: &[u8]) -> (Vec<u8>, Vec<u8>) {
         block = hasher.compute().to_vec();
 
         // Iterations
-        for _ in 1..iterations {
-            let mut hasher = md5::Context::new();
-            hasher.consume(block);
-            block = hasher.compute().to_vec();
-        }
+        // for _ in 1..iterations {
+        //     let mut hasher = md5::Context::new();
+        //     hasher.consume(block);
+        //     block = hasher.compute().to_vec();
+        // }
 
         derived_key.extend(block.clone());
     }

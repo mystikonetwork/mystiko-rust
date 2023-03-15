@@ -39,7 +39,8 @@ async fn test_secret_sharing2() {
     let field: BigInt = BigInt::parse_bytes(b"58995116542422524421248775517049", 10).unwrap();
     secret = calc_mod(&secret, &field);
 
-    let ss = split(secret.clone(), 5, 3, Some(field.clone())).unwrap();
+    let ss1 = split(secret.clone(), 5, 3, Some(field.clone())).unwrap();
+    let ss = ss1.clone();
     let mut shares = ss.shares.clone();
     shares.shuffle(&mut rand::thread_rng());
     let es = shares[0..3].to_vec();

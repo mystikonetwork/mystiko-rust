@@ -61,54 +61,6 @@ impl Transaction {
         assert_eq!(self.num_inputs as usize, self.in_enc_pks.len());
         Ok(())
     }
-    //
-    // // todo return error
-    // pub fn check_tx_call_param(&self) {
-    //     // let random_public_key =
-    //     //     public_key_from_unpack_point(&self .random_public_key_x, &self .random_public_key_y);
-    //     // assert_eq!(
-    //     //     random_public_key,
-    //     //     ecies::public_key(&u256_to_big_int(&self .random_secret_key))
-    //     // );
-    //     // assert_eq!(
-    //     //     self .random_public_key_x_sign,
-    //     //     is_neg(&u256_to_big_int(&self .random_public_key_x))
-    //     // );
-    //
-    //     for i in 0..self .in_commitments.len() {
-    //         assert_eq!(
-    //             self .auditor_public_key_x_signs[i],
-    //             is_neg(&u256_to_big_int(&self .auditor_public_key_xs[i]))
-    //         );
-    //
-    //         let mut points: Vec<shamir::Point> = vec![];
-    //
-    //         for j in 0..self .encrypted_commitment_shares[i].len() {
-    //             let share = u256_to_big_int(&self .encrypted_commitment_shares[i][j]);
-    //             let pk = public_key_from_unpack_point(
-    //                 &u256_to_big_int(&self .auditor_public_key_xs[j]),
-    //                 &u256_to_big_int(&self .auditor_public_key_ys[j]),
-    //             );
-    //
-    //             let decrypted_share =
-    //                 ecies::decrypt(&share, &u256_to_big_int(&self .random_secret_key), &pk);
-    //             assert_eq!(
-    //                 decrypted_share.clone(),
-    //                 u256_to_big_int(&self .commitment_shares[i][j])
-    //             );
-    //
-    //             points.push(shamir::Point {
-    //                 x: BigInt::from(j + 1),
-    //                 y: decrypted_share,
-    //             });
-    //         }
-    //         assert_eq!(points.len(), 5);
-    //         let (sub_points, _) = points.split_at(3);
-    //         let raw = shamir::recover(sub_points.to_vec(), None);
-    //         assert_eq!(big_int_to_u256(&raw), self .in_commitments[i]);
-    //         assert_eq!(big_int_to_u256(&raw), self .coefficients[i][0]);
-    //     }
-    // }
 
     pub async fn prove(&self) -> Result<ZKProof, ProtocolError> {
         // todo add logs

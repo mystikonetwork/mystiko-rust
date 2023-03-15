@@ -5,8 +5,18 @@ extern crate rand_core;
 use k256::SecretKey;
 use rand_core::OsRng;
 
-use mystiko_crypto::eccrypto::{decrypt, encrypt, public_key_to_vec};
+use mystiko_crypto::eccrypto::{
+    decrypt, encrypt, equal_const_time, public_key_to_vec, ECCryptoData,
+};
+use mystiko_crypto::error::ECCryptoError;
 use mystiko_crypto::utils::random_bytes;
+
+#[tokio::test]
+async fn test_equal_const_time() {
+    let b1 = [1, 2, 3];
+    let b2 = [1, 2, 3, 4, 5, 6];
+    assert!(!equal_const_time(&b1, &b2))
+}
 
 #[tokio::test]
 async fn test_decrypt_compatible_with_js() {
@@ -39,4 +49,9 @@ async fn test_random_data() {
     let data = encrypt(pk.as_slice(), text.as_slice()).unwrap();
     let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &data).unwrap();
     assert_eq!(text, dec_text);
+
+    let ec_data = ECCryptoData::from_bytes(data.as_slice()).unwrap();
+    let ec_data2 = ec_data.clone();
+    let ec_data3 = ECCryptoData::from_bytes(&ec_data2.to_vec().as_slice()[0..2]);
+    assert_eq!(ec_data3.err().unwrap(), ECCryptoError::DataLengthError);
 }
