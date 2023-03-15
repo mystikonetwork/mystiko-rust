@@ -1,0 +1,38 @@
+use serde::{Deserialize, Serialize};
+use typed_builder::TypedBuilder;
+
+#[derive(Deserialize, Serialize, TypedBuilder)]
+#[serde(rename_all = "camelCase")]
+pub struct CommitmentQueuedRequest {
+    #[builder(default=None)]
+    pub commit_hash: Option<String>,
+    #[builder(default=None)]
+    pub tx_hash: Option<String>,
+    #[builder(default=None)]
+    pub encrypted_note: Option<String>,
+    #[builder(default=None)]
+    pub leaf_index: Option<u32>,
+    #[builder(default=None)]
+    pub create_at: Option<u64>,
+    #[builder(default=None)]
+    pub status: Option<u32>,
+    #[builder(default=None)]
+    pub contract_id: Option<u64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TypedBuilder, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CommitmentQueuedResponse {
+    pub id: u64,
+    pub chain_id: u32,
+    pub contract_address: String,
+    pub commit_hash: String,
+    pub tx_hash: String,
+    pub block_num: u64,
+    pub encrypted_note: String,
+    pub rollup_fee: String,
+    pub leaf_index: u32,
+    pub create_at: Option<u64>,
+    pub status: Option<u32>,
+    pub contract_id: u64,
+}
