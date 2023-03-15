@@ -11,7 +11,7 @@ use k256::{AffinePoint, EncodedPoint, PublicKey, SecretKey};
 use rand_core::OsRng;
 use std::cmp::min;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ECCryptoData {
     iv: Vec<u8>,
     ephemeral_public_key: Vec<u8>,
@@ -115,7 +115,7 @@ pub fn encrypt(public_key_bytes: &[u8], plain_data: &[u8]) -> Result<Vec<u8>, EC
     Ok(ec_data.to_vec())
 }
 
-pub fn equal_const_time(b1: &Vec<u8>, b2: &Vec<u8>) -> bool {
+pub fn equal_const_time(b1: &[u8], b2: &[u8]) -> bool {
     if b1.len() != b2.len() {
         return false;
     }
@@ -141,7 +141,7 @@ pub fn decrypt(secret_key_bytes: &[u8], cipher_data: &[u8]) -> Result<Vec<u8>, E
     data_to_mac.extend(ec_data.cipher_text.clone());
     let real_mac = hmac_sha256(mac_key, data_to_mac.as_slice());
     // todo change to result check
-    if !equal_const_time(&real_mac, &ec_data.mac) {
+    if !equal_const_time(real_mac.as_slice(), ec_data.mac.as_slice()) {
         return Err(ECCryptoError::ECCryptoMacMismatchError);
     }
 

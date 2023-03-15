@@ -18,9 +18,7 @@ pub fn calc_default_zero_element() -> BigInt {
 pub fn hash_two(first: &BigInt, second: &BigInt) -> BigInt {
     let b1: Fr = Fr::from_str(&first.to_string()).unwrap();
     let b2: Fr = Fr::from_str(&second.to_string()).unwrap();
-    let arr: Vec<Fr> = vec![b1, b2];
-
-    poseidon_fr(arr)
+    poseidon_fr(&[b1, b2])
 }
 
 pub fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {
@@ -32,6 +30,7 @@ pub fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {
     z
 }
 
+#[derive(Debug, Clone)]
 pub struct MerkleTree {
     max_levels: u32,
     capacity: u32,

@@ -1,5 +1,5 @@
-use mystiko_crypto::error::ECCryptoError;
-use mystiko_crypto::{aes_cbc, eccrypto};
+use crate::error::ECCryptoError;
+use crate::{aes_cbc, eccrypto};
 
 pub fn encrypt_asymmetric(public_key: &[u8], plain_data: &[u8]) -> Result<Vec<u8>, ECCryptoError> {
     eccrypto::encrypt(public_key, plain_data)

@@ -34,6 +34,18 @@ pub fn big_int_to_32_bytes(num: &BigInt) -> [u8; 32] {
     }
 }
 
+pub fn big_int_to_33_bytes(num: &BigInt) -> [u8; 33] {
+    let (_, y_bytes) = num.to_bytes_le();
+    if y_bytes.len() >= 33 {
+        y_bytes[..33].try_into().unwrap()
+    } else {
+        let mut arr: [u8; 33] = [0; 33];
+        let len = min(y_bytes.len(), arr.len());
+        arr[..len].copy_from_slice(&y_bytes[..len]);
+        arr
+    }
+}
+
 pub fn big_int_to_16_bytes(num: &BigInt) -> [u8; 16] {
     let (_, y_bytes) = num.to_bytes_le();
     if y_bytes.len() >= 16 {
@@ -60,7 +72,7 @@ pub fn babyjubjub_public_key(x: &BigInt, y: &BigInt) -> BigInt {
     BigInt::from_bytes_le(Sign::Plus, &pc)
 }
 
-pub fn calc_mod(a_number: BigInt, prime: &BigInt) -> BigInt {
+pub fn calc_mod(a_number: &BigInt, prime: &BigInt) -> BigInt {
     a_number.mod_floor(prime)
 }
 

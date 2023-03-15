@@ -1,5 +1,6 @@
 extern crate mystiko_crypto;
 
+use mystiko_crypto::error::FileError;
 use mystiko_crypto::error::{ECCryptoError, MerkleTreeError, SecretShareError, ZkpError};
 
 #[tokio::test]
@@ -10,7 +11,7 @@ async fn test_error() {
     let share_err = SecretShareError::ThresholdOutOfBounds;
     assert_ne!(share_err, SecretShareError::SharesOutOfBounds);
 
-    let zkp_err = ZkpError::ReadFileError(String::from(""), String::from(""));
+    let zkp_err = ZkpError::FileError(FileError::ReadFileError(String::from(""), String::from("")));
     assert_ne!(zkp_err.name(), ZkpError::NotSupport);
 
     let ec_err = ECCryptoError::ECCryptoDataLengthError;

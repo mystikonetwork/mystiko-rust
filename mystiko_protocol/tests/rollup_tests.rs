@@ -5,8 +5,7 @@ extern crate num_bigint;
 use num_bigint::BigInt;
 
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_protocol::rollup::{zk_prove_rollup, Rollup};
-use mystiko_protocol::verify::zk_verify;
+use mystiko_protocol::rollup::Rollup;
 
 const FILE_PATH: &str = "./../mystiko-circuits/dist/zokrates/dev";
 
@@ -15,15 +14,17 @@ async fn test_rollup1() {
     let in_initial_elements = [BigInt::from(100), BigInt::from(200), BigInt::from(300)].to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
-    let mut rollup = Rollup {
+    let rollup = Rollup::new(
         tree,
-        new_leaves: vec![BigInt::from(1u32)],
-        program_file: (FILE_PATH.to_owned() + "/Rollup1.program").to_string(),
-        abi_file: (FILE_PATH.to_owned() + "/Rollup1.abi.json").to_string(),
-        proving_key_file: (FILE_PATH.to_owned() + "/Rollup1.pkey").to_string(),
-    };
-    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup1.vkey"))
+        vec![BigInt::from(1u32)],
+        FILE_PATH.to_owned() + "/Rollup1.program",
+        FILE_PATH.to_owned() + "/Rollup1.abi.json",
+        FILE_PATH.to_owned() + "/Rollup1.pkey",
+    );
+
+    let proof = rollup.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup1.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -35,15 +36,16 @@ async fn test_rollup2() {
     let in_initial_elements = [BigInt::from(100), BigInt::from(200)].to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
-    let mut rollup = Rollup {
+    let rollup = Rollup::new(
         tree,
-        new_leaves: vec![BigInt::from(1u32), BigInt::from(2u32)],
-        program_file: (FILE_PATH.to_owned() + "/Rollup2.program").to_string(),
-        abi_file: (FILE_PATH.to_owned() + "/Rollup2.abi.json").to_string(),
-        proving_key_file: (FILE_PATH.to_owned() + "/Rollup2.pkey").to_string(),
-    };
-    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup2.vkey"))
+        vec![BigInt::from(1u32), BigInt::from(2u32)],
+        FILE_PATH.to_owned() + "/Rollup2.program",
+        FILE_PATH.to_owned() + "/Rollup2.abi.json",
+        FILE_PATH.to_owned() + "/Rollup2.pkey",
+    );
+    let proof = rollup.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup2.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -61,20 +63,21 @@ async fn test_rollup4() {
     .to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
-    let mut rollup = Rollup {
+    let rollup = Rollup::new(
         tree,
-        new_leaves: vec![
+        vec![
             BigInt::from(1u32),
             BigInt::from(2u32),
             BigInt::from(3u32),
             BigInt::from(4u32),
         ],
-        program_file: (FILE_PATH.to_owned() + "/Rollup4.program").to_string(),
-        abi_file: (FILE_PATH.to_owned() + "/Rollup4.abi.json").to_string(),
-        proving_key_file: (FILE_PATH.to_owned() + "/Rollup4.pkey").to_string(),
-    };
-    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup4.vkey"))
+        FILE_PATH.to_owned() + "/Rollup4.program",
+        FILE_PATH.to_owned() + "/Rollup4.abi.json",
+        FILE_PATH.to_owned() + "/Rollup4.pkey",
+    );
+    let proof = rollup.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup4.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -96,9 +99,9 @@ async fn test_rollup8() {
     .to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
-    let mut rollup = Rollup {
+    let rollup = Rollup::new(
         tree,
-        new_leaves: vec![
+        vec![
             BigInt::from(1u32),
             BigInt::from(2u32),
             BigInt::from(3u32),
@@ -108,12 +111,13 @@ async fn test_rollup8() {
             BigInt::from(7u32),
             BigInt::from(8u32),
         ],
-        program_file: (FILE_PATH.to_owned() + "/Rollup8.program").to_string(),
-        abi_file: (FILE_PATH.to_owned() + "/Rollup8.abi.json").to_string(),
-        proving_key_file: (FILE_PATH.to_owned() + "/Rollup8.pkey").to_string(),
-    };
-    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup8.vkey"))
+        FILE_PATH.to_owned() + "/Rollup8.program",
+        FILE_PATH.to_owned() + "/Rollup8.abi.json",
+        FILE_PATH.to_owned() + "/Rollup8.pkey",
+    );
+    let proof = rollup.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup8.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -143,9 +147,9 @@ async fn test_rollup16() {
     .to_vec();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
 
-    let mut rollup = Rollup {
+    let rollup = Rollup::new(
         tree,
-        new_leaves: vec![
+        vec![
             BigInt::from(1u32),
             BigInt::from(2u32),
             BigInt::from(3u32),
@@ -163,12 +167,13 @@ async fn test_rollup16() {
             BigInt::from(15u32),
             BigInt::from(16u32),
         ],
-        program_file: (FILE_PATH.to_owned() + "/Rollup16.program").to_string(),
-        abi_file: (FILE_PATH.to_owned() + "/Rollup16.abi.json").to_string(),
-        proving_key_file: (FILE_PATH.to_owned() + "/Rollup16.pkey").to_string(),
-    };
-    let proof = zk_prove_rollup(&mut rollup).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Rollup16.vkey"))
+        FILE_PATH.to_owned() + "/Rollup16.program",
+        FILE_PATH.to_owned() + "/Rollup16.abi.json",
+        FILE_PATH.to_owned() + "/Rollup16.pkey",
+    );
+    let proof = rollup.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup16.vkey"))
         .await
         .unwrap();
     assert!(verify);

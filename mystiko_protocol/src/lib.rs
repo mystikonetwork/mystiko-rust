@@ -7,13 +7,11 @@ extern crate num_bigint;
 extern crate num_traits;
 extern crate serde_json;
 
+pub mod address;
 pub mod commitment;
-pub mod crypto;
 pub mod error;
-pub mod hash;
+pub mod key;
 pub mod rollup;
 pub mod transact;
 pub mod types;
 pub mod utils;
-pub mod verify;
-pub mod wallet;

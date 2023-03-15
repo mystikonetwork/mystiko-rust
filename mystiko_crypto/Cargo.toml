@@ -36,6 +36,7 @@ k256 = { version = "0.12.0" }
 poseidon-rs = { version = "0.0.8" }
 sha2 = { version = "0.10.6"}
 sha3 = { version = "0.10.6" }
+blake2 = { version = "0.10.6"}
 hmac = { version = "0.12.1"}
 md5 = { version = "0.7.0"}
 

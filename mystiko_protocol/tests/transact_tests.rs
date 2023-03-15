@@ -15,19 +15,17 @@ use num_traits::identities::Zero;
 use mystiko_crypto::ecies;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_crypto::utils::random_bytes;
-use mystiko_protocol::commitment::{build_commitment, CommitmentInput, PublicKeys};
-use mystiko_protocol::transact::{zk_prove_transaction, Transaction};
-use mystiko_protocol::types::RandomSecrets;
-use mystiko_protocol::types::{
-    AuditingPk, EncPk, EncSk, EncryptedNote, RandomSk, TxAmount, VerifyPk, VerifySk,
-    NUM_OF_AUDITORS,
-};
-use mystiko_protocol::types::{ENC_SK_SIZE, MERKLE_TREE_LEVELS, VERIFY_SK_SIZE};
-use mystiko_protocol::verify::zk_verify;
-use mystiko_protocol::wallet::{
+use mystiko_protocol::address::ShieldedAddress;
+use mystiko_protocol::commitment::{Commitment, EncryptedNote, Note};
+use mystiko_protocol::key::{
     public_key_for_encryption, public_key_for_verification, secret_key_for_encryption,
     secret_key_for_verification,
 };
+use mystiko_protocol::transact::Transaction;
+use mystiko_protocol::types::{
+    AuditingPk, EncPk, EncSk, RandomSk, TxAmount, VerifyPk, VerifySk, NUM_OF_AUDITORS,
+};
+use mystiko_protocol::types::{ENC_SK_SIZE, MERKLE_TREE_LEVELS, VERIFY_SK_SIZE};
 
 fn generate_eth_wallet() -> Vec<u8> {
     let wallet = LocalWallet::new(&mut thread_rng());
@@ -70,19 +68,15 @@ fn generate_transaction(
         in_enc_pks.push(public_key_for_encryption(raw_enc_sk.as_slice()));
         in_amounts.push(in_amount.clone());
 
-        let commitment_input = CommitmentInput {
-            public_keys: PublicKeys::Object {
-                pk_verify: in_verify_pks[i].clone(),
-                pk_enc: in_enc_pks[i],
-            },
-            amount: Some(in_amounts[i].clone()),
-            random_secrets: None,
-            encrypted_note: None,
-        };
+        let cm = Commitment::new(
+            ShieldedAddress::from_public_key(&in_verify_pks[i], &in_enc_pks[i]),
+            Some(Note::new(Some(in_amounts[i].clone()), None)),
+            None,
+        )
+        .unwrap();
 
-        let commitment_output = build_commitment(commitment_input).unwrap();
-        in_commitments.push(commitment_output.commitment_hash.clone());
-        in_private_notes.push(commitment_output.encrypted_note);
+        in_commitments.push(cm.commitment_hash.clone());
+        in_private_notes.push(cm.encrypted_note);
     }
 
     let merkle_tree =
@@ -114,21 +108,17 @@ fn generate_transaction(
         out_amounts.push(out_amount.clone());
         rollup_fee_amounts.push(rollup_fee_amount.clone());
 
-        let commitment_input = CommitmentInput {
-            public_keys: PublicKeys::Object {
-                pk_verify: out_verify_pks[i].clone(),
-                pk_enc: out_enc_pks[i],
-            },
-            amount: Some(out_amounts[i].clone()),
-            random_secrets: Some(RandomSecrets::generate()),
-            encrypted_note: None,
-        };
+        let cm = Commitment::new(
+            ShieldedAddress::from_public_key(&out_verify_pks[i], &out_enc_pks[i]),
+            Some(Note::new(Some(out_amounts[i].clone()), None)),
+            None,
+        )
+        .unwrap();
 
-        let commitment_output = build_commitment(commitment_input).unwrap();
-        out_commitments.push(commitment_output.commitment_hash.clone());
-        out_random_ps.push(commitment_output.random_p);
-        out_random_rs.push(commitment_output.random_r);
-        out_random_ss.push(commitment_output.random_s);
+        out_commitments.push(cm.commitment_hash.clone());
+        out_random_ps.push(cm.note.random_p);
+        out_random_rs.push(cm.note.random_r);
+        out_random_ss.push(cm.note.random_s);
     }
 
     let total_in = in_amounts.iter().fold(BigInt::zero(), |acc, x| acc + x);
@@ -163,7 +153,7 @@ fn generate_transaction(
         sig_pk,
         tree_root: merkle_tree.root(),
         public_amount,
-        relayer_fee_amount: relayer_fee_amount,
+        relayer_fee_amount,
         rollup_fee_amounts,
         out_verify_pks,
         out_amounts,
@@ -192,8 +182,9 @@ async fn test_transaction1x0() {
         (FILE_PATH.to_owned() + "/Transaction1x0.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x0.vkey"))
+    let proof = tx.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction1x0.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -210,8 +201,9 @@ async fn test_transaction1x1() {
         (FILE_PATH.to_owned() + "/Transaction1x1.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x1.vkey"))
+    let proof = tx.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction1x1.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -228,8 +220,9 @@ async fn test_transaction1x2() {
         (FILE_PATH.to_owned() + "/Transaction1x2.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction1x2.vkey"))
+    let proof = tx.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction1x2.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -246,8 +239,9 @@ async fn test_transaction2x0() {
         (FILE_PATH.to_owned() + "/Transaction2x0.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x0.vkey"))
+    let proof = tx.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction2x0.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -264,8 +258,9 @@ async fn test_transaction2x1() {
         (FILE_PATH.to_owned() + "/Transaction2x1.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x1.vkey"))
+    let proof = tx.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction2x1.vkey"))
         .await
         .unwrap();
     assert!(verify);
@@ -281,8 +276,9 @@ async fn test_transaction2x2() {
         (FILE_PATH.to_owned() + "/Transaction2x2.pkey").to_string(),
     );
 
-    let proof = zk_prove_transaction(&tx).await.unwrap();
-    let verify = zk_verify(proof, &(FILE_PATH.to_owned() + "/Transaction2x2.vkey"))
+    let proof = tx.prove().await.unwrap();
+    let verify = proof
+        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction2x2.vkey"))
         .await
         .unwrap();
     assert!(verify);

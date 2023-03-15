@@ -1,19 +1,10 @@
 use crate::error::ProtocolError;
-use crate::mystiko_crypto::zkp::types::ZKProof;
+use crate::mystiko_crypto::zkp::proof::ZKProof;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::hash::keccak256;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_crypto::utils::{big_int_to_be_32_bytes, calc_mod};
-use mystiko_crypto::zkp::prove::prove_by_file;
 use num_bigint::{BigInt, Sign};
-
-pub struct Rollup {
-    pub tree: MerkleTree,
-    pub new_leaves: Vec<BigInt>,
-    pub program_file: String,
-    pub abi_file: String,
-    pub proving_key_file: String,
-}
 
 fn is_power_of_two(a_number: usize) -> bool {
     a_number != 0 && (a_number & (a_number - 1)) == 0
@@ -32,46 +23,75 @@ fn calc_leave_hash(leaves: &[BigInt]) -> BigInt {
     let leaf_buffer: Vec<u8> = leaves.iter().flat_map(big_int_to_be_32_bytes).collect();
     let hash = keccak256(leaf_buffer.as_slice());
     let hash = BigInt::from_bytes_be(Sign::Plus, &hash);
-    calc_mod(hash, &FIELD_SIZE)
+    calc_mod(&hash, &FIELD_SIZE)
 }
 
-pub async fn zk_prove_rollup(rollup: &mut Rollup) -> Result<ZKProof, ProtocolError> {
-    let new_leaves = rollup.new_leaves.clone();
-    let rollup_size = new_leaves.len();
-    assert!(is_power_of_two(rollup_size));
-    let rollup_height = (rollup_size as f64).log2().round() as usize;
-    let current_leaf_count = rollup.tree.count();
-    assert_eq!(current_leaf_count % rollup_size, 0);
-    let current_root = rollup.tree.root();
-    // todo check insert result
-    rollup.tree.bulk_insert(new_leaves.clone()).unwrap();
-    let new_root = rollup.tree.root();
-    let leaf_path = rollup.tree.path(current_leaf_count).unwrap();
-    let (_, path_indices) = leaf_path.1.split_at(rollup_height);
-    let path_indices = path_indices_number(path_indices);
-    let (_, path_elements) = leaf_path.0.split_at(rollup_height);
-    let path_elements: Vec<String> = path_elements.iter().map(|n| n.to_string()).collect();
-    let leaves_hash = calc_leave_hash(new_leaves.as_slice());
-    let new_leaves: Vec<String> = new_leaves.iter().map(|n| n.to_string()).collect();
+#[derive(Debug, Clone)]
+pub struct Rollup {
+    tree: MerkleTree,
+    new_leaves: Vec<BigInt>,
+    program_file: String,
+    abi_file: String,
+    proving_key_file: String,
+}
 
-    let mut array: Vec<serde_json::Value> = vec![serde_json::json!(current_root.to_string())];
-    array.push(serde_json::json!(new_root.to_string()));
-    array.push(serde_json::json!(leaves_hash.to_string()));
-    array.push(serde_json::json!(path_indices.to_string()));
-    array.push(serde_json::json!(path_elements));
-    array.push(serde_json::json!(new_leaves));
-    let input = serde_json::Value::Array(array).to_string();
+impl Rollup {
+    pub fn new(
+        tree: MerkleTree,
+        new_leaves: Vec<BigInt>,
+        program_file: String,
+        abi_file: String,
+        proving_key_file: String,
+    ) -> Self {
+        Self {
+            tree,
+            new_leaves,
+            program_file,
+            abi_file,
+            proving_key_file,
+        }
+    }
 
-    let proof = prove_by_file(
-        &rollup.program_file,
-        &rollup.abi_file,
-        &rollup.proving_key_file,
-        &input,
-    )
-    .await
-    .unwrap();
+    pub async fn prove(&self) -> Result<ZKProof, ProtocolError> {
+        let new_leaves = self.new_leaves.clone();
+        let rollup_size = new_leaves.len();
+        assert!(is_power_of_two(rollup_size));
+        let rollup_height = (rollup_size as f64).log2().round() as usize;
+        let current_leaf_count = self.tree.count();
+        assert_eq!(current_leaf_count % rollup_size, 0);
+        let current_root = self.tree.root();
 
-    Ok(proof)
+        // todo check insert result
+        let mut new_tree = self.tree.clone();
+        new_tree.bulk_insert(new_leaves.clone()).unwrap();
+        let new_root = new_tree.root();
+        let leaf_path = new_tree.path(current_leaf_count).unwrap();
+        let (_, path_indices) = leaf_path.1.split_at(rollup_height);
+        let path_indices = path_indices_number(path_indices);
+        let (_, path_elements) = leaf_path.0.split_at(rollup_height);
+        let path_elements: Vec<String> = path_elements.iter().map(|n| n.to_string()).collect();
+        let leaves_hash = calc_leave_hash(new_leaves.as_slice());
+        let new_leaves: Vec<String> = new_leaves.iter().map(|n| n.to_string()).collect();
+
+        let mut array: Vec<serde_json::Value> = vec![serde_json::json!(current_root.to_string())];
+        array.push(serde_json::json!(new_root.to_string()));
+        array.push(serde_json::json!(leaves_hash.to_string()));
+        array.push(serde_json::json!(path_indices.to_string()));
+        array.push(serde_json::json!(path_elements));
+        array.push(serde_json::json!(new_leaves));
+        let input = serde_json::Value::Array(array).to_string();
+
+        let proof = ZKProof::generate_with_file(
+            &self.program_file,
+            &self.abi_file,
+            &self.proving_key_file,
+            &input,
+        )
+        .await
+        .unwrap();
+
+        Ok(proof)
+    }
 }
 
 #[cfg(test)]

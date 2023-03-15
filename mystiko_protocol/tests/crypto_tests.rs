@@ -4,11 +4,13 @@ extern crate mystiko_protocol;
 
 use ff::hex;
 
-use mystiko_crypto::utils::{big_int_to_32_bytes, random_bytes, random_utf8_string};
-use mystiko_protocol::crypto::{
+use mystiko_crypto::crypto::{
     decrypt_asymmetric, decrypt_symmetric, encrypt_asymmetric, encrypt_symmetric,
 };
-use mystiko_protocol::wallet::{public_key_for_encryption, secret_key_for_encryption};
+use mystiko_crypto::utils::{
+    big_int_to_32_bytes, big_int_to_33_bytes, random_bytes, random_utf8_string,
+};
+use mystiko_protocol::key::{public_key_for_encryption, secret_key_for_encryption};
 
 #[tokio::test]
 async fn test_decrypt_symmetric_compatible_with_js() {
@@ -48,7 +50,7 @@ async fn test_random_encrypt_asymmetric() {
     let sk = big_int_to_32_bytes(&sk);
     let pk = public_key_for_encryption(raw_sk.as_slice());
     let plain_text = random_bytes(80);
-    let enc_data = encrypt_asymmetric(&pk, plain_text.as_slice()).unwrap();
+    let enc_data = encrypt_asymmetric(&big_int_to_33_bytes(&pk), plain_text.as_slice()).unwrap();
     let dec_data = decrypt_asymmetric(&sk, enc_data.as_slice()).unwrap();
     assert_eq!(dec_data, plain_text);
 }

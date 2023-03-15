@@ -43,15 +43,15 @@ pub fn public_key_from_unpack_point(x: &BigInt, y: &BigInt) -> BigInt {
 pub fn encrypt(plain: &BigInt, pk: &BigInt, common_sk: &BigInt) -> BigInt {
     let point_pk = babyjubjub_unpack_point(pk);
     let k = point_pk.mul_scalar(common_sk);
-    let hm = poseidon_fr(vec![k.x, k.y]);
+    let hm = poseidon_fr(&[k.x, k.y]);
 
-    calc_mod(plain.clone() + hm, &FIELD_SIZE)
+    calc_mod(&(plain.clone() + hm), &FIELD_SIZE)
 }
 
 pub fn decrypt(encrypted: &BigInt, sk: &BigInt, common_pk: &BigInt) -> BigInt {
     let point_pk = babyjubjub_unpack_point(common_pk);
     let k = point_pk.mul_scalar(sk);
-    let hm = poseidon_fr(vec![k.x, k.y]);
+    let hm = poseidon_fr(&[k.x, k.y]);
 
-    calc_mod(encrypted.clone() - hm, &FIELD_SIZE)
+    calc_mod(&(encrypted.clone() - hm), &FIELD_SIZE)
 }

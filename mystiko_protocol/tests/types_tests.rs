@@ -3,21 +3,12 @@ extern crate num_bigint;
 
 use num_bigint::BigInt;
 
-use mystiko_protocol::types::{DecryptedNote, RandomSecrets};
+use mystiko_protocol::commitment::Note;
 
 #[tokio::test]
 async fn test_decrypted_note() {
-    let r = RandomSecrets::generate();
-    let amount = BigInt::from(10u32);
-
-    let note = DecryptedNote {
-        random_p: r.random_p,
-        random_r: r.random_r,
-        random_s: r.random_s,
-        amount,
-    };
-
+    let note = Note::new(Some(BigInt::from(10u32)),None) ;
     let enc_vec = note.to_vec();
-    let note_dec = DecryptedNote::from_vec(enc_vec);
+    let note_dec = Note::from_vec(enc_vec);
     assert_eq!(note, note_dec);
 }

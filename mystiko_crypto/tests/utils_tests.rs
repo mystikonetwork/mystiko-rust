@@ -9,7 +9,7 @@ use mystiko_crypto::utils::{calc_mod, random_big_int, random_bytes};
 #[tokio::test]
 async fn test_mod() {
     let field = FIELD_SIZE.clone();
-    assert_eq!(calc_mod(BigInt::from(-1), &field), field - 1);
+    assert_eq!(calc_mod(&BigInt::from(-1), &field), field - 1);
 }
 
 #[tokio::test]

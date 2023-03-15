@@ -2513,6 +2513,7 @@ dependencies = [
  "aes",
  "babyjubjub-rs",
  "base64 0.21.0",
+ "blake2 0.10.6",
  "cbc",
  "elliptic-curve",
  "ff_ce 0.11.0",

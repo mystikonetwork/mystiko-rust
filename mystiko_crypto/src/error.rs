@@ -19,9 +19,27 @@ pub enum SecretShareError {
 }
 
 #[derive(Error, Debug, PartialEq)]
-pub enum ZkpError {
+pub enum FileError {
+    #[error("read {0} error {1}")]
+    OpenFileError(String, String),
     #[error("read {0} error {1}")]
     ReadFileError(String, String),
+}
+
+impl FileError {
+    pub fn name(&self) -> FileError {
+        let empty = String::from("");
+        match self {
+            FileError::OpenFileError(_, _) => FileError::OpenFileError(empty.clone(), empty),
+            FileError::ReadFileError(_, _) => FileError::ReadFileError(empty.clone(), empty),
+        }
+    }
+}
+
+#[derive(Error, Debug, PartialEq)]
+pub enum ZkpError {
+    #[error(transparent)]
+    FileError(#[from] FileError),
     #[error("parse {0} error {1}")]
     ParseError(String, String),
     #[error("deserialize program error {0}")]
@@ -42,7 +60,9 @@ impl ZkpError {
     pub fn name(&self) -> ZkpError {
         let empty = String::from("");
         match self {
-            ZkpError::ReadFileError(_, _) => ZkpError::ReadFileError(empty.clone(), empty),
+            ZkpError::FileError(_) => {
+                ZkpError::FileError(FileError::ReadFileError(empty.clone(), empty))
+            }
             ZkpError::ParseError(_, _) => ZkpError::ParseError(empty.clone(), empty),
             ZkpError::DeserializeProgramError(_) => ZkpError::DeserializeProgramError(empty),
             ZkpError::ComputeWitnessError(_) => ZkpError::ComputeWitnessError(empty),

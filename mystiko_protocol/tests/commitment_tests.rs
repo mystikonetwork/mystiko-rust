@@ -6,15 +6,14 @@ extern crate num_bigint;
 use ff::hex;
 use num_bigint::{BigInt, Sign};
 
+use crate::mystiko_protocol::utils::{serial_number, sig_pk_hash};
+use mystiko_crypto::crypto::decrypt_asymmetric;
 use mystiko_crypto::utils::{big_int_to_32_bytes, random_bytes};
-use mystiko_protocol::commitment::{
-    build_commitment, serial_number, sig_pk_hash, CommitmentInput, PublicKeys,
-};
-use mystiko_protocol::crypto::decrypt_asymmetric;
-use mystiko_protocol::types::{DecryptedNote, EncryptedData, RandomSecrets};
-use mystiko_protocol::wallet::{
+use mystiko_protocol::address::ShieldedAddress;
+use mystiko_protocol::commitment::{Commitment, EncryptedData, Note};
+use mystiko_protocol::key::{
     public_key_for_encryption, public_key_for_verification, secret_key_for_encryption,
-    secret_key_for_verification, shielded_address,
+    secret_key_for_verification,
 };
 
 #[tokio::test]
@@ -32,7 +31,7 @@ async fn test_serial_number_compatible_with_js() {
     let sk = secret_key_for_verification(&raw_key);
     let random_p = b"1234567812345678";
     let random_p = BigInt::from_bytes_le(Sign::Plus, &random_p[..]);
-    let sn = serial_number(sk, random_p);
+    let sn = serial_number(&sk, &random_p);
     assert_eq!(sn, expect_sn);
 }
 
@@ -49,7 +48,7 @@ async fn test_sig_pk_hash_compatible_with_js() {
     )
     .unwrap();
     let sk = secret_key_for_verification(&raw_key);
-    let sig_pk_hash = sig_pk_hash(&sig_pk, sk);
+    let sig_pk_hash = sig_pk_hash(&sig_pk, &sk);
     assert_eq!(sig_pk_hash, expect_sig_pk_hash);
 }
 
@@ -69,28 +68,30 @@ async fn test_build_commitment_compatible_with_js() {
     let sk_enc = secret_key_for_encryption(&raw_enc_key);
     let sk_enc = big_int_to_32_bytes(&sk_enc);
     let note = decrypt_asymmetric(&sk_enc, &js_encrypt_note).unwrap();
-    let js_decrypt_note = DecryptedNote::from_vec(note);
-    let random_secret = RandomSecrets {
-        random_p: js_decrypt_note.random_p.clone(),
-        random_r: js_decrypt_note.random_r.clone(),
-        random_s: js_decrypt_note.random_s.clone(),
-    };
+    let js_decrypt_note = Note::from_vec(note);
+
     let amount = js_decrypt_note.amount.clone();
-    let commitment_input = CommitmentInput {
-        public_keys: PublicKeys::Object { pk_verify, pk_enc },
-        amount: Some(amount),
-        random_secrets: Some(random_secret),
-        encrypted_note: None,
-    };
+    let cm = Commitment::new(
+        ShieldedAddress::from_public_key(&pk_verify, &pk_enc),
+        Some(Note::new(
+            Some(amount),
+            Some((
+                js_decrypt_note.random_p.clone(),
+                js_decrypt_note.random_r.clone(),
+                js_decrypt_note.random_s.clone(),
+            )),
+        )),
+        None,
+    )
+    .unwrap();
 
-    let output = build_commitment(commitment_input).unwrap();
-    assert_eq!(output.amount.clone(), js_decrypt_note.amount);
-    assert_eq!(output.random_p.clone(), js_decrypt_note.random_p);
-    assert_eq!(output.random_r.clone(), js_decrypt_note.random_r);
-    assert_eq!(output.random_s.clone(), js_decrypt_note.random_s);
+    assert_eq!(cm.note.amount.clone(), js_decrypt_note.amount);
+    assert_eq!(cm.note.random_p.clone(), js_decrypt_note.random_p);
+    assert_eq!(cm.note.random_r.clone(), js_decrypt_note.random_r);
+    assert_eq!(cm.note.random_s.clone(), js_decrypt_note.random_s);
 
-    let note = decrypt_asymmetric(&sk_enc, &output.encrypted_note).unwrap();
-    let decrypt_note = DecryptedNote::from_vec(note);
+    let note = decrypt_asymmetric(&sk_enc, &cm.encrypted_note).unwrap();
+    let decrypt_note = Note::from_vec(note);
     assert_eq!(decrypt_note, js_decrypt_note);
 }
 
@@ -102,60 +103,50 @@ async fn test_build_commitment() {
     let pk_enc = public_key_for_encryption(&raw_enc_key);
     let sk_enc = secret_key_for_encryption(&raw_enc_key);
     let amount = BigInt::from(10u32);
+    let note = Note::new(Some(amount.clone()), None);
+    let cm1 = Commitment::new(
+        ShieldedAddress::from_public_key(&pk_verify, &pk_enc),
+        Some(note.clone()),
+        None,
+    )
+    .unwrap();
 
-    let random_secrets = RandomSecrets::generate();
-    let commitment_input = CommitmentInput {
-        public_keys: PublicKeys::Object {
-            pk_verify: pk_verify.clone(),
-            pk_enc,
-        },
-        amount: Some(amount.clone()),
-        random_secrets: Some(random_secrets.clone()),
-        encrypted_note: None,
-    };
-    let o1 = build_commitment(commitment_input).unwrap();
-    let shield_address = shielded_address(&pk_verify, &pk_enc);
-    assert_eq!(o1.amount, amount);
-    assert_eq!(o1.random_p, random_secrets.random_p);
-    assert_eq!(o1.random_r, random_secrets.random_r);
-    assert_eq!(o1.random_s, random_secrets.random_s);
-    assert_eq!(o1.shielded_address, shield_address.clone());
+    let shield_address = ShieldedAddress::from_public_key(&pk_verify, &pk_enc);
+    assert_eq!(cm1.note.amount, amount);
+    assert_eq!(cm1.note.random_p, note.random_p);
+    assert_eq!(cm1.note.random_r, note.random_r);
+    assert_eq!(cm1.note.random_s, note.random_s);
+    assert_eq!(cm1.shielded_address, shield_address.clone());
 
     let sk_enc_byte = big_int_to_32_bytes(&sk_enc);
-    let note = decrypt_asymmetric(&sk_enc_byte, &o1.encrypted_note).unwrap();
-    let decrypt_note = DecryptedNote::from_vec(note);
+    let note_vec = decrypt_asymmetric(&sk_enc_byte, &cm1.encrypted_note).unwrap();
+    let decrypt_note = Note::from_vec(note_vec);
     assert_eq!(decrypt_note.amount, amount);
-    assert_eq!(decrypt_note.random_p, random_secrets.random_p);
-    assert_eq!(decrypt_note.random_r, random_secrets.random_r);
-    assert_eq!(decrypt_note.random_s, random_secrets.random_s);
+    assert_eq!(decrypt_note.random_p, note.random_p);
+    assert_eq!(decrypt_note.random_r, note.random_r);
+    assert_eq!(decrypt_note.random_s, note.random_s);
 
-    let c2 = CommitmentInput {
-        public_keys: PublicKeys::String { 0: shield_address },
-        amount: None,
-        random_secrets: None,
-        encrypted_note: Some(EncryptedData {
+    let cm2 = Commitment::new(
+        shield_address,
+        None,
+        Some(EncryptedData {
             sk_enc,
-            encrypted_note: o1.encrypted_note.clone(),
+            encrypted_note: cm1.encrypted_note.clone(),
         }),
-    };
-    let o2 = build_commitment(c2).unwrap();
-    assert_eq!(o2.commitment_hash, o1.commitment_hash);
+    )
+    .unwrap();
+
+    assert_eq!(cm2.commitment_hash, cm1.commitment_hash);
 
     let raw_sk_enc_3 = random_bytes(32);
     let sk_enc_3 = secret_key_for_encryption(&raw_sk_enc_3);
-    let c3 = CommitmentInput {
-        public_keys: PublicKeys::Object {
-            pk_verify: pk_verify.clone(),
-            pk_enc,
-        },
-        amount: None,
-        random_secrets: None,
-        encrypted_note: Some(EncryptedData {
+    let cm3 = Commitment::new(
+        ShieldedAddress::from_public_key(&pk_verify, &pk_enc),
+        None,
+        Some(EncryptedData {
             sk_enc: sk_enc_3,
-            encrypted_note: o1.encrypted_note,
+            encrypted_note: cm1.encrypted_note,
         }),
-    };
-
-    let o3 = build_commitment(c3);
-    assert!(o3.is_err())
+    );
+    assert!(cm3.is_err())
 }

@@ -11,7 +11,8 @@ pub fn encrypt_str(password: &str, plain_text: &str) -> Result<String, ECCryptoE
     let salt = random_bytes(KDF_SALT_LENGTH);
     let (key, iv) = password_to_key(password.as_bytes(), salt.as_slice());
     let cipher_text = encrypt(&iv, &key, plain_text.as_bytes());
-    let full_encrypted_data = stringify_cipher_data_with_salt(&cipher_text, &salt);
+    let full_encrypted_data =
+        stringify_cipher_data_with_salt(cipher_text.as_slice(), salt.as_slice());
     Ok(general_purpose::STANDARD.encode(full_encrypted_data))
 }
 
@@ -88,10 +89,11 @@ pub fn password_to_key(password: &[u8], salt: &[u8]) -> (Vec<u8>, Vec<u8>) {
     (key.to_vec(), iv.to_vec())
 }
 
-fn stringify_cipher_data_with_salt(cipher_text: &Vec<u8>, salt: &Vec<u8>) -> Vec<u8> {
-    let mut data = ECIES_MAGIC_DATA.clone();
-    data.extend(salt);
-    data.extend(cipher_text);
+fn stringify_cipher_data_with_salt(cipher_text: &[u8], salt: &[u8]) -> Vec<u8> {
+    let mut data = Vec::with_capacity(ECIES_MAGIC_DATA.len() + salt.len() + cipher_text.len());
+    data.extend_from_slice(&ECIES_MAGIC_DATA);
+    data.extend_from_slice(salt);
+    data.extend_from_slice(cipher_text);
     data
 }
 

@@ -11,6 +11,7 @@ pub struct Point {
     pub y: BigInt,
 }
 
+#[derive(Debug, Clone)]
 pub struct SecretShare {
     pub num_of_shares: u32,
     pub threshold: u32,
@@ -24,7 +25,7 @@ pub fn recover(shares: Vec<Point>, in_prime: Option<BigInt>) -> BigInt {
         _ => FIELD_SIZE.clone(),
     };
 
-    lagrange_interpolate(BigInt::zero(), shares, prime)
+    lagrange_interpolate(&BigInt::zero(), &shares, &prime)
 }
 
 pub fn split(
@@ -77,23 +78,23 @@ fn eval_poly(coefficients: &[BigInt], x: &BigInt, prime: &BigInt) -> BigInt {
     for cf in coefficients.iter().rev() {
         accum *= x;
         accum += cf;
-        accum = calc_mod(accum, prime);
+        accum = calc_mod(&accum, prime);
     }
     accum
 }
 
-fn extended_gcd(a: BigInt, b: BigInt) -> (BigInt, BigInt) {
+fn extended_gcd(a: &BigInt, b: &BigInt) -> (BigInt, BigInt) {
     let mut x = BigInt::zero();
     let mut last_x = BigInt::from(1u32);
     let mut y = BigInt::from(1u32);
     let mut last_y = BigInt::zero();
 
-    let mut a_val = a;
-    let mut b_val = b;
+    let mut a_val = a.clone();
+    let mut b_val = b.clone();
 
     while !b_val.is_zero() {
         let quote = a_val.clone() / b_val.clone();
-        let temp_b = calc_mod(a_val.clone(), &b_val);
+        let temp_b = calc_mod(&a_val, &b_val);
         a_val = b_val.clone();
         b_val = temp_b;
         let temp_x = last_x - (quote.clone() * x.clone());
@@ -107,16 +108,16 @@ fn extended_gcd(a: BigInt, b: BigInt) -> (BigInt, BigInt) {
     (last_x, last_y)
 }
 
-fn div_mod(num: BigInt, den: BigInt, prime: BigInt) -> BigInt {
+fn div_mod(num: &BigInt, den: &BigInt, prime: &BigInt) -> BigInt {
     let (x, _) = extended_gcd(den, prime);
     x * num
 }
 
-fn sum(values: Vec<BigInt>) -> BigInt {
+fn sum(values: &[BigInt]) -> BigInt {
     values.iter().fold(BigInt::zero(), |acc, x| acc + x)
 }
 
-fn lagrange_interpolate(x: BigInt, points: Vec<Point>, prime: BigInt) -> BigInt {
+fn lagrange_interpolate(x: &BigInt, points: &[Point], prime: &BigInt) -> BigInt {
     let k = points.len();
     let mut hashset = HashSet::new();
     assert_eq!(
@@ -148,9 +149,12 @@ fn lagrange_interpolate(x: BigInt, points: Vec<Point>, prime: BigInt) -> BigInt 
     let den = batch_mul(&dens);
     let mut num_values: Vec<BigInt> = vec![];
     for i in 0..k {
-        let num = calc_mod(nums[i].clone() * den.clone() * points[i].clone().y, &prime);
-        num_values.push(div_mod(num, dens[i].clone(), prime.clone()));
+        let num = calc_mod(
+            &(nums[i].clone() * den.clone() * points[i].y.clone()),
+            prime,
+        );
+        num_values.push(div_mod(&num, &dens[i], prime));
     }
-    let num = sum(num_values);
-    calc_mod(div_mod(num, den, prime.clone()) + prime.clone(), &prime)
+    let num = sum(num_values.as_slice());
+    calc_mod(&(div_mod(&num, &den, prime) + prime), prime)
 }
