@@ -1,7 +1,7 @@
 use crate::builder::IndexerClientBuilder;
 use crate::errors::ClientError;
 use crate::response::ApiResponse;
-use crate::types::commitment_queued::{CommitmentQueuedRequest, CommitmentQueuedResponse};
+use crate::types::commitment_queued::{CommitmentQueuedForChainRequest, CommitmentQueuedResponse};
 use reqwest::header::{HeaderValue, ACCEPT};
 use reqwest::{RequestBuilder, Response};
 use serde::Serialize;
@@ -104,7 +104,7 @@ impl IndexerClient {
 
     pub async fn find_commitment_queued_for_chain(
         &self,
-        request: CommitmentQueuedRequest,
+        request: CommitmentQueuedForChainRequest,
     ) -> Result<Vec<CommitmentQueuedResponse>, ClientError> {
         let mut request_builder = self.reqwest_client.post(format!(
             "{}/chains/{}/events/commitment-queued",

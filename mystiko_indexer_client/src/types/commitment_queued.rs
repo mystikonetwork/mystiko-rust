@@ -21,7 +21,7 @@ pub struct CommitmentQueuedFilter {
 }
 
 #[derive(Deserialize, Serialize, TypedBuilder)]
-pub struct CommitmentQueuedRequest {
+pub struct CommitmentQueuedForChainRequest {
     pub chain_id: u32,
     #[builder(setter(strip_option), default=None)]
     pub start_block: Option<u32>,

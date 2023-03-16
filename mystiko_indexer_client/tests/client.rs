@@ -6,7 +6,7 @@ use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::{
     client::IndexerClient,
     types::commitment_queued::{
-        CommitmentQueuedFilter, CommitmentQueuedRequest, CommitmentQueuedResponse,
+        CommitmentQueuedFilter, CommitmentQueuedForChainRequest, CommitmentQueuedResponse,
     },
 };
 use serde_json;
@@ -223,7 +223,7 @@ async fn test_find_commitment_queued_for_chain() {
     let where_filter = CommitmentQueuedFilter::builder().build();
     let resp = indexer_client
         .find_commitment_queued_for_chain(
-            CommitmentQueuedRequest::builder()
+            CommitmentQueuedForChainRequest::builder()
                 .chain_id(chain_id)
                 .start_block(start_block)
                 .end_block(end_block)
@@ -239,10 +239,7 @@ async fn test_find_commitment_queued_for_chain() {
         result: "unknow error",
     };
     let m = mocked_server
-        .mock(
-            "post",
-            "/chains/5/events/commitment-queued",
-        )
+        .mock("post", "/chains/5/events/commitment-queued")
         .with_status(200)
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
@@ -250,7 +247,7 @@ async fn test_find_commitment_queued_for_chain() {
         .await;
     let resp = indexer_client
         .find_commitment_queued_for_chain(
-            CommitmentQueuedRequest::builder()
+            CommitmentQueuedForChainRequest::builder()
                 .chain_id(chain_id)
                 .build(),
         )
