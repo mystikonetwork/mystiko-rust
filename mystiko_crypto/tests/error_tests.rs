@@ -9,6 +9,7 @@ async fn test_error() {
     assert_ne!(merkle_err, MerkleTreeError::IndexOutOfBounds);
 
     let file_err = FileError::ReadFileError(String::from(""), String::from(""));
+    let file_err = file_err.clone();
     assert_ne!(
         file_err,
         FileError::OpenFileError(String::from(""), String::from(""))
@@ -24,6 +25,7 @@ async fn test_error() {
     let zkp_err = ZkpError::ProofError(String::from(""));
     assert_ne!(zkp_err, ZkpError::NotSupport);
     let zkp_err = ZkpError::NotSupport;
+    let zkp_err = zkp_err.clone();
     assert_eq!(zkp_err, ZkpError::NotSupport);
 
     let ec_err = ECCryptoError::DataLengthError;

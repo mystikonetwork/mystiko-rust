@@ -11,16 +11,14 @@ const FILE_PATH: &str = "./../mystiko-circuits/dist/zokrates/dev";
 
 #[tokio::test]
 async fn test_rollup1() {
-    let in_initial_elements = [BigInt::from(100), BigInt::from(200), BigInt::from(300)].to_vec();
+    let in_initial_elements = vec![BigInt::from(100), BigInt::from(200), BigInt::from(300)];
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
+    let new_leaves = vec![BigInt::from(1u32)];
+    let program_path = FILE_PATH.to_owned() + "/Rollup1.program";
+    let abi_path = FILE_PATH.to_owned() + "/Rollup1.abi.json";
+    let pkey_path = FILE_PATH.to_owned() + "/Rollup1.pkey";
 
-    let rollup = Rollup::new(
-        tree,
-        vec![BigInt::from(1u32)],
-        FILE_PATH.to_owned() + "/Rollup1.program",
-        FILE_PATH.to_owned() + "/Rollup1.abi.json",
-        FILE_PATH.to_owned() + "/Rollup1.pkey",
-    );
+    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
 
     let proof = rollup.prove().await.unwrap();
     let verify = proof
@@ -34,16 +32,14 @@ async fn test_rollup1() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup2() {
-    let in_initial_elements = [BigInt::from(100), BigInt::from(200)].to_vec();
+    let in_initial_elements = vec![BigInt::from(100), BigInt::from(200)];
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
+    let new_leaves = vec![BigInt::from(1u32), BigInt::from(2u32)];
+    let program_path = FILE_PATH.to_owned() + "/Rollup2.program";
+    let abi_path = FILE_PATH.to_owned() + "/Rollup2.abi.json";
+    let pkey_path = FILE_PATH.to_owned() + "/Rollup2.pkey";
 
-    let rollup = Rollup::new(
-        tree,
-        vec![BigInt::from(1u32), BigInt::from(2u32)],
-        FILE_PATH.to_owned() + "/Rollup2.program",
-        FILE_PATH.to_owned() + "/Rollup2.abi.json",
-        FILE_PATH.to_owned() + "/Rollup2.pkey",
-    );
+    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
     let proof = rollup.prove().await.unwrap();
     let verify = proof
         .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup2.vkey"))
@@ -55,27 +51,17 @@ async fn test_rollup2() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup4() {
-    let in_initial_elements = [
-        BigInt::from(100),
-        BigInt::from(200),
-        BigInt::from(300),
-        BigInt::from(400),
-    ]
-    .to_vec();
+    let in_initial_elements = (100..=400)
+        .step_by(100)
+        .map(BigInt::from)
+        .collect::<Vec<BigInt>>();
+    let new_leaves = (1..=4).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
+    let program_path = FILE_PATH.to_owned() + "/Rollup4.program";
+    let abi_path = FILE_PATH.to_owned() + "/Rollup4.abi.json";
+    let pkey_path = FILE_PATH.to_owned() + "/Rollup4.pkey";
 
-    let rollup = Rollup::new(
-        tree,
-        vec![
-            BigInt::from(1u32),
-            BigInt::from(2u32),
-            BigInt::from(3u32),
-            BigInt::from(4u32),
-        ],
-        FILE_PATH.to_owned() + "/Rollup4.program",
-        FILE_PATH.to_owned() + "/Rollup4.abi.json",
-        FILE_PATH.to_owned() + "/Rollup4.pkey",
-    );
+    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
     let proof = rollup.prove().await.unwrap();
     let verify = proof
         .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup4.vkey"))
@@ -87,35 +73,17 @@ async fn test_rollup4() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup8() {
-    let in_initial_elements = [
-        BigInt::from(100),
-        BigInt::from(200),
-        BigInt::from(300),
-        BigInt::from(400),
-        BigInt::from(500),
-        BigInt::from(600),
-        BigInt::from(700),
-        BigInt::from(800),
-    ]
-    .to_vec();
+    let in_initial_elements = (100..=800)
+        .step_by(100)
+        .map(BigInt::from)
+        .collect::<Vec<BigInt>>();
+    let new_leaves = (1..=8).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
+    let program_path = FILE_PATH.to_owned() + "/Rollup8.program";
+    let abi_path = FILE_PATH.to_owned() + "/Rollup8.abi.json";
+    let pkey_path = FILE_PATH.to_owned() + "/Rollup8.pkey";
 
-    let rollup = Rollup::new(
-        tree,
-        vec![
-            BigInt::from(1u32),
-            BigInt::from(2u32),
-            BigInt::from(3u32),
-            BigInt::from(4u32),
-            BigInt::from(5u32),
-            BigInt::from(6u32),
-            BigInt::from(7u32),
-            BigInt::from(8u32),
-        ],
-        FILE_PATH.to_owned() + "/Rollup8.program",
-        FILE_PATH.to_owned() + "/Rollup8.abi.json",
-        FILE_PATH.to_owned() + "/Rollup8.pkey",
-    );
+    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
     let proof = rollup.prove().await.unwrap();
     let verify = proof
         .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup8.vkey"))
@@ -127,51 +95,17 @@ async fn test_rollup8() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup16() {
-    let in_initial_elements = [
-        BigInt::from(100),
-        BigInt::from(200),
-        BigInt::from(300),
-        BigInt::from(400),
-        BigInt::from(500),
-        BigInt::from(600),
-        BigInt::from(700),
-        BigInt::from(800),
-        BigInt::from(900),
-        BigInt::from(1000),
-        BigInt::from(1100),
-        BigInt::from(1200),
-        BigInt::from(1300),
-        BigInt::from(1400),
-        BigInt::from(1500),
-        BigInt::from(1600),
-    ]
-    .to_vec();
+    let in_initial_elements = (100..=1600)
+        .step_by(100)
+        .map(BigInt::from)
+        .collect::<Vec<BigInt>>();
+    let new_leaves = (1..=16).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
+    let program_path = FILE_PATH.to_owned() + "/Rollup16.program";
+    let abi_path = FILE_PATH.to_owned() + "/Rollup16.abi.json";
+    let pkey_path = FILE_PATH.to_owned() + "/Rollup16.pkey";
 
-    let rollup = Rollup::new(
-        tree,
-        vec![
-            BigInt::from(1u32),
-            BigInt::from(2u32),
-            BigInt::from(3u32),
-            BigInt::from(4u32),
-            BigInt::from(5u32),
-            BigInt::from(6u32),
-            BigInt::from(7u32),
-            BigInt::from(8u32),
-            BigInt::from(9u32),
-            BigInt::from(10u32),
-            BigInt::from(11u32),
-            BigInt::from(12u32),
-            BigInt::from(13u32),
-            BigInt::from(14u32),
-            BigInt::from(15u32),
-            BigInt::from(16u32),
-        ],
-        FILE_PATH.to_owned() + "/Rollup16.program",
-        FILE_PATH.to_owned() + "/Rollup16.abi.json",
-        FILE_PATH.to_owned() + "/Rollup16.pkey",
-    );
+    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
     let proof = rollup.prove().await.unwrap();
     let verify = proof
         .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup16.vkey"))

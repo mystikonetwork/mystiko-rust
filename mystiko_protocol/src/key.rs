@@ -1,4 +1,4 @@
-use crate::types::{EncPk, EncSk, VerifyPk, VerifySk};
+use crate::types::{EncPk, EncSk, FullPk, FullSk, VerifyPk, VerifySk};
 use crate::types::{ENC_PK_SIZE, ENC_SK_SIZE, VERIFY_PK_SIZE, VERIFY_SK_SIZE};
 use babyjubjub_rs::PrivateKey;
 use k256::SecretKey;
@@ -36,26 +36,26 @@ pub fn public_key_for_encryption(raw_secret_key: &[u8]) -> EncPk {
     public_key_vec.as_slice().try_into().unwrap()
 }
 
-pub fn full_public_key(pk_verify: &[u8], pk_enc: &[u8]) -> [u8; VERIFY_PK_SIZE + ENC_PK_SIZE] {
-    let mut combined = [0u8; VERIFY_PK_SIZE + ENC_PK_SIZE];
-    combined[..VERIFY_PK_SIZE].copy_from_slice(pk_verify);
-    combined[VERIFY_PK_SIZE..].copy_from_slice(pk_enc);
-    combined
-}
-
-pub fn full_secret_key(sk_verify: &[u8], sk_enc: &[u8]) -> [u8; VERIFY_SK_SIZE + ENC_SK_SIZE] {
+pub fn full_secret_key(sk_verify: &[u8], sk_enc: &[u8]) -> FullSk {
     let mut combined = [0u8; VERIFY_SK_SIZE + ENC_SK_SIZE];
     combined[..VERIFY_SK_SIZE].copy_from_slice(sk_verify);
     combined[VERIFY_SK_SIZE..].copy_from_slice(sk_enc);
     combined
 }
 
-pub fn separated_public_keys(long_pk: &[u8; VERIFY_PK_SIZE + ENC_PK_SIZE]) -> (VerifyPk, EncPk) {
-    let (v_pk, e_pk) = long_pk.split_at(VERIFY_PK_SIZE);
-    (v_pk.try_into().unwrap(), e_pk.try_into().unwrap())
+pub fn full_public_key(pk_verify: &[u8], pk_enc: &[u8]) -> FullPk {
+    let mut combined = [0u8; VERIFY_PK_SIZE + ENC_PK_SIZE];
+    combined[..VERIFY_PK_SIZE].copy_from_slice(pk_verify);
+    combined[VERIFY_PK_SIZE..].copy_from_slice(pk_enc);
+    combined
 }
 
-pub fn separated_secret_keys(long_sk: &[u8; VERIFY_SK_SIZE + ENC_SK_SIZE]) -> (VerifySk, EncSk) {
-    let (v_sk, e_sk) = long_sk.split_at(VERIFY_SK_SIZE);
+pub fn separated_secret_keys(full_sk: &FullSk) -> (VerifySk, EncSk) {
+    let (v_sk, e_sk) = full_sk.split_at(VERIFY_SK_SIZE);
     (v_sk.try_into().unwrap(), e_sk.try_into().unwrap())
+}
+
+pub fn separated_public_keys(full_pk: &FullPk) -> (VerifyPk, EncPk) {
+    let (v_pk, e_pk) = full_pk.split_at(VERIFY_PK_SIZE);
+    (v_pk.try_into().unwrap(), e_pk.try_into().unwrap())
 }

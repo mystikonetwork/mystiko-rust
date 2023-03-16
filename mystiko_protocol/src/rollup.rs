@@ -6,26 +6,6 @@ use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_crypto::utils::{bigint_to_be_32_bytes, calc_mod};
 use num_bigint::{BigInt, Sign};
 
-fn is_power_of_two(a_number: usize) -> bool {
-    a_number != 0 && (a_number & (a_number - 1)) == 0
-}
-
-fn path_indices_number(path_indices: &[usize]) -> BigInt {
-    let binary_string = path_indices
-        .iter()
-        .rev()
-        .map(|x| format!("{:b}", x))
-        .collect::<String>();
-    BigInt::parse_bytes(binary_string.as_bytes(), 2).unwrap()
-}
-
-fn calc_leave_hash(leaves: &[BigInt]) -> BigInt {
-    let leaf_buffer: Vec<u8> = leaves.iter().flat_map(bigint_to_be_32_bytes).collect();
-    let hash = keccak256(leaf_buffer.as_slice());
-    let hash = BigInt::from_bytes_be(Sign::Plus, &hash);
-    calc_mod(&hash, &FIELD_SIZE)
-}
-
 #[derive(Debug, Clone)]
 pub struct Rollup {
     tree: MerkleTree,
@@ -63,9 +43,9 @@ impl Rollup {
 
         // todo check insert result
         let mut new_tree = self.tree.clone();
-        new_tree.bulk_insert(new_leaves.clone()).unwrap();
+        new_tree.bulk_insert(new_leaves.clone())?;
         let new_root = new_tree.root();
-        let leaf_path = new_tree.path(current_leaf_count).unwrap();
+        let leaf_path = new_tree.path(current_leaf_count)?;
         let (_, path_indices) = leaf_path.1.split_at(rollup_height);
         let path_indices = path_indices_number(path_indices);
         let (_, path_elements) = leaf_path.0.split_at(rollup_height);
@@ -87,11 +67,30 @@ impl Rollup {
             &self.proving_key_file,
             &input,
         )
-        .await
-        .unwrap();
+        .await?;
 
         Ok(proof)
     }
+}
+
+fn is_power_of_two(a_number: usize) -> bool {
+    a_number != 0 && (a_number & (a_number - 1)) == 0
+}
+
+fn path_indices_number(path_indices: &[usize]) -> BigInt {
+    let binary_string = path_indices
+        .iter()
+        .rev()
+        .map(|x| format!("{:b}", x))
+        .collect::<String>();
+    BigInt::parse_bytes(binary_string.as_bytes(), 2).unwrap()
+}
+
+fn calc_leave_hash(leaves: &[BigInt]) -> BigInt {
+    let leaf_buffer: Vec<u8> = leaves.iter().flat_map(bigint_to_be_32_bytes).collect();
+    let hash = keccak256(leaf_buffer.as_slice());
+    let hash = BigInt::from_bytes_be(Sign::Plus, &hash);
+    calc_mod(&hash, &FIELD_SIZE)
 }
 
 #[cfg(test)]

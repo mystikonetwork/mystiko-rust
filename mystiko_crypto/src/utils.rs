@@ -40,30 +40,6 @@ pub fn bigint_to_32_bytes(num: &BigInt) -> [u8; 32] {
     }
 }
 
-pub fn bigint_to_33_bytes(num: &BigInt) -> [u8; 33] {
-    let (_, y_bytes) = num.to_bytes_le();
-    if y_bytes.len() >= 33 {
-        y_bytes[..33].try_into().unwrap()
-    } else {
-        let mut arr: [u8; 33] = [0; 33];
-        let len = min(y_bytes.len(), arr.len());
-        arr[..len].copy_from_slice(&y_bytes[..len]);
-        arr
-    }
-}
-
-pub fn bigint_to_16_bytes(num: &BigInt) -> [u8; 16] {
-    let (_, y_bytes) = num.to_bytes_le();
-    if y_bytes.len() >= 16 {
-        y_bytes[..16].try_into().unwrap()
-    } else {
-        let mut arr: [u8; 16] = [0; 16];
-        let len = min(y_bytes.len(), arr.len());
-        arr[..len].copy_from_slice(&y_bytes[..len]);
-        arr
-    }
-}
-
 pub fn babyjubjub_unpack_point(key: &[u8]) -> Point {
     decompress_point(key.try_into().unwrap()).unwrap()
 }

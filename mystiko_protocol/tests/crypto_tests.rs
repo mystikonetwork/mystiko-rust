@@ -3,13 +3,10 @@ extern crate mystiko_crypto;
 extern crate mystiko_protocol;
 
 use ff::hex;
-
 use mystiko_crypto::crypto::{
     decrypt_asymmetric, decrypt_symmetric, encrypt_asymmetric, encrypt_symmetric,
 };
-use mystiko_crypto::utils::{
-    bigint_to_32_bytes, bigint_to_33_bytes, random_bytes, random_utf8_string,
-};
+use mystiko_crypto::utils::{random_bytes, random_utf8_string};
 use mystiko_protocol::key::{public_key_for_encryption, secret_key_for_encryption};
 
 #[tokio::test]

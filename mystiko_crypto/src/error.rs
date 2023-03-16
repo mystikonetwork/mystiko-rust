@@ -18,7 +18,7 @@ pub enum SecretShareError {
     ThresholdOutOfBounds,
 }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum FileError {
     #[error("read {0} error {1}")]
     OpenFileError(String, String),
@@ -39,7 +39,7 @@ impl PartialEq for FileError {
     }
 }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum ZkpError {
     #[error(transparent)]
     FileError(#[from] FileError),

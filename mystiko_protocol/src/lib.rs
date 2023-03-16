@@ -6,6 +6,7 @@ extern crate mystiko_crypto;
 extern crate num_bigint;
 extern crate num_traits;
 extern crate serde_json;
+extern crate typed_builder;
 
 pub mod address;
 pub mod commitment;

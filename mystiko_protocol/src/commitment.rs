@@ -113,8 +113,7 @@ impl Commitment {
         }?;
 
         let shielded_address = ShieldedAddress::from_public_key(&pk_verify, &pk_enc);
-        // todo check encrypt result
-        let encrypted_note = encrypt_asymmetric(&pk_enc, note.to_vec().as_slice()).unwrap();
+        let encrypted_note = encrypt_asymmetric(&pk_enc, note.to_vec().as_slice())?;
         let pk_big = BigInt::from_bytes_le(Sign::Plus, &pk_verify);
         let k = poseidon(&[pk_big, note.random_p_big(), note.random_r_big()]);
         let commitment_hash = poseidon(&[k.clone(), note.amount.clone(), note.random_s_big()]);

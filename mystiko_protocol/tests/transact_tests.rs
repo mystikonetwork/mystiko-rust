@@ -145,34 +145,34 @@ fn generate_transaction(
         auditor_public_keys.push(pk);
     }
 
-    Transaction {
-        num_inputs,
-        num_outputs,
-        in_verify_pks,
-        in_verify_sks,
-        in_enc_pks,
-        in_enc_sks,
-        in_commitments,
-        in_private_notes,
-        path_indices,
-        path_elements,
-        sig_pk,
-        tree_root: merkle_tree.root(),
-        public_amount,
-        relayer_fee_amount,
-        rollup_fee_amounts,
-        out_verify_pks,
-        out_amounts,
-        out_commitments,
-        out_random_ps,
-        out_random_rs,
-        out_random_ss,
-        program_file,
-        abi_file,
-        proving_key_file,
-        random_auditing_secret_key,
-        auditor_public_keys,
-    }
+    Transaction::builder()
+        .num_inputs(num_inputs)
+        .num_outputs(num_outputs)
+        .in_verify_pks(in_verify_pks)
+        .in_verify_sks(in_verify_sks)
+        .in_enc_pks(in_enc_pks)
+        .in_enc_sks(in_enc_sks)
+        .in_commitments(in_commitments)
+        .in_private_notes(in_private_notes)
+        .path_indices(path_indices)
+        .path_elements(path_elements)
+        .sig_pk(sig_pk)
+        .tree_root(merkle_tree.root())
+        .public_amount(public_amount)
+        .relayer_fee_amount(relayer_fee_amount)
+        .rollup_fee_amounts(rollup_fee_amounts)
+        .out_verify_pks(out_verify_pks)
+        .out_amounts(out_amounts)
+        .out_commitments(out_commitments)
+        .out_random_ps(out_random_ps)
+        .out_random_rs(out_random_rs)
+        .out_random_ss(out_random_ss)
+        .program_file(program_file)
+        .abi_file(abi_file)
+        .proving_key_file(proving_key_file)
+        .random_auditing_secret_key(random_auditing_secret_key)
+        .auditor_public_keys(auditor_public_keys)
+        .build()
 }
 
 const FILE_PATH: &str = "./../mystiko-circuits/dist/zokrates/dev";
@@ -195,7 +195,6 @@ async fn test_transaction1x0() {
         .await
         .unwrap();
     assert!(verify);
-    let _ = tx.clone();
 }
 
 #[tokio::test]
@@ -295,4 +294,5 @@ async fn test_transaction2x2() {
         .await
         .unwrap();
     assert!(verify);
+    let _ = tx.clone();
 }

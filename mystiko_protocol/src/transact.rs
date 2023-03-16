@@ -13,24 +13,9 @@ use mystiko_crypto::shamir;
 use mystiko_crypto::zkp::proof::ZKProof;
 use num_bigint::{BigInt, Sign};
 use std::ops::Shr;
+use typed_builder::TypedBuilder;
 
-fn is_neg(key: &[u8]) -> bool {
-    let key_big_int = BigInt::from_bytes_le(Sign::Plus, key);
-    let field_size_half: BigInt = FIELD_SIZE.clone().shr(1);
-    key_big_int.gt(&field_size_half)
-}
-
-fn bigint_slice_to_strings(v: &[BigInt]) -> Vec<String> {
-    v.iter().map(|n| n.to_string()).collect()
-}
-
-fn bytes_to_strings<T: AsRef<[u8]>>(v: &[T]) -> Vec<String> {
-    v.iter()
-        .map(|n| BigInt::from_bytes_le(Sign::Plus, n.as_ref()).to_string())
-        .collect()
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, TypedBuilder)]
 pub struct Transaction {
     pub num_inputs: u32,
     pub num_outputs: u32,
@@ -80,8 +65,8 @@ impl Transaction {
         let mut sig_hashes = vec![];
 
         for i in 0..self.num_inputs as usize {
-            let note = decrypt_asymmetric(&self.in_enc_sks[i], self.in_private_notes[i].as_slice())
-                .unwrap();
+            let note =
+                decrypt_asymmetric(&self.in_enc_sks[i], self.in_private_notes[i].as_slice())?;
             assert_eq!(note.len(), DECRYPTED_NOTE_SIZE);
             let note = Note::from_vec(note);
             in_random_p.push(note.random_p);
@@ -120,8 +105,7 @@ impl Transaction {
                 NUM_OF_AUDITORS,
                 AUDITING_THRESHOLD,
                 None,
-            )
-            .unwrap();
+            )?;
 
             let cos = ss.coefficients.clone();
             let cos = bigint_slice_to_strings(&cos).to_owned();
@@ -213,9 +197,24 @@ impl Transaction {
             &self.proving_key_file,
             &tx_param,
         )
-        .await
-        .unwrap();
+        .await?;
 
         Ok(proof)
     }
+}
+
+fn is_neg(key: &[u8]) -> bool {
+    let key_big_int = BigInt::from_bytes_le(Sign::Plus, key);
+    let field_size_half: BigInt = FIELD_SIZE.clone().shr(1);
+    key_big_int.gt(&field_size_half)
+}
+
+fn bigint_slice_to_strings(v: &[BigInt]) -> Vec<String> {
+    v.iter().map(|n| n.to_string()).collect()
+}
+
+fn bytes_to_strings<T: AsRef<[u8]>>(v: &[T]) -> Vec<String> {
+    v.iter()
+        .map(|n| BigInt::from_bytes_le(Sign::Plus, n.as_ref()).to_string())
+        .collect()
 }
