@@ -30,7 +30,10 @@ impl DocumentRawData for SqliteRawData {
         match self.row.try_get::<Option<i64>, &str>(field) {
             Ok(Some(v)) => Ok(T::from(v)),
             Ok(None) => Ok(None),
-            Err(e) => Err(Error::msg(format!("failed to parse column {} value: {}", field, e))),
+            Err(e) => Err(Error::msg(format!(
+                "failed to parse column {} value: {}",
+                field, e
+            ))),
         }
     }
 
@@ -38,14 +41,20 @@ impl DocumentRawData for SqliteRawData {
         match self.row.try_get::<Option<f64>, &str>(field) {
             Ok(Some(v)) => Ok(T::from(v)),
             Ok(None) => Ok(None),
-            Err(e) => Err(Error::msg(format!("failed to parse column {} value: {}", field, e))),
+            Err(e) => Err(Error::msg(format!(
+                "failed to parse column {} value: {}",
+                field, e
+            ))),
         }
     }
 
     fn field_string_value(&self, field: &str) -> Result<Option<String>> {
         match self.row.try_get::<Option<String>, &str>(field) {
             Ok(v) => Ok(v),
-            Err(e) => Err(Error::msg(format!("failed to parse column {} value: {}", field, e))),
+            Err(e) => Err(Error::msg(format!(
+                "failed to parse column {} value: {}",
+                field, e
+            ))),
         }
     }
 }
@@ -90,7 +99,10 @@ impl Storage<SqliteRawData> for SqliteStorage {
             .await;
         match results {
             Ok(rows) => Ok(!rows.is_empty()),
-            Err(e) => Err(Error::msg(format!("sqlite checking table existence error: {}", e))),
+            Err(e) => Err(Error::msg(format!(
+                "sqlite checking table existence error: {}",
+                e
+            ))),
         }
     }
 }
@@ -129,7 +141,10 @@ impl SqliteStorageBuilder {
             Ok(connection) => Ok(SqliteStorage {
                 connection: Arc::new(Mutex::new(connection)),
             }),
-            Err(e) => Err(Error::msg(format!("failed to create sqlite connection pool: {}", e))),
+            Err(e) => Err(Error::msg(format!(
+                "failed to create sqlite connection pool: {}",
+                e
+            ))),
         }
     }
 }
