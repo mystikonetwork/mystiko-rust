@@ -65,9 +65,7 @@ fn encrypt_derive_shared_secret(public_key_bytes: &[u8]) -> (Vec<u8>, Vec<u8>) {
     let pk_a = public_key_to_vec(&pk_a, false);
 
     let pk_b = PublicKey::from_sec1_bytes(public_key_bytes).unwrap();
-
     let shared = elliptic_curve::ecdh::diffie_hellman(sk_a.to_nonzero_scalar(), pk_b.as_affine());
-
     let shared_bytes = shared.raw_secret_bytes();
     let shared_bytes = shared_bytes.as_ref() as &[u8];
 
@@ -90,6 +88,10 @@ fn decrypt_derive_shared_secret(pk_a: &[u8], sk_b: &[u8]) -> Vec<u8> {
 }
 
 pub fn encrypt(public_key_bytes: &[u8], plain_data: &[u8]) -> Result<Vec<u8>, CryptoError> {
+    if public_key_bytes.len() != 33 {
+        return Err(CryptoError::KeyLengthError);
+    }
+
     let (ephemeral_public_key, shared_bytes) = encrypt_derive_shared_secret(public_key_bytes);
 
     let shared_hash = sha512(shared_bytes.as_slice());

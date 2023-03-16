@@ -3,9 +3,8 @@ extern crate mystiko_protocol;
 extern crate num_bigint;
 
 use mystiko_protocol::key::{
-    combined_public_key, combined_secret_key, public_key_for_encryption,
-    public_key_for_verification, secret_key_for_encryption, secret_key_for_verification,
-    separate_public_keys, separate_secret_keys,
+    combined_public_key, combined_secret_key, encryption_public_key, encryption_secret_key,
+    separate_public_keys, separate_secret_keys, verification_public_key, verification_secret_key,
 };
 use mystiko_protocol::types::{ENC_PK_SIZE, ENC_SK_SIZE, VERIFY_PK_SIZE, VERIFY_SK_SIZE};
 
@@ -21,7 +20,7 @@ async fn test_secret_key_for_verification() {
         211, 151, 234, 51, 125, 197, 58, 86, 95, 32, 15,
     ];
 
-    let vk = secret_key_for_verification(&raw_key);
+    let vk = verification_secret_key(&raw_key);
     assert_eq!(vk, expect_vk);
 }
 
@@ -36,7 +35,7 @@ async fn test_public_key_for_verification() {
         5, 136, 71, 203, 25, 247, 30, 120, 219, 84, 207, 18, 27,
     ];
 
-    let vk = public_key_for_verification(&raw_key);
+    let vk = verification_public_key(&raw_key);
     assert_eq!(vk, expect_sk);
 }
 
@@ -46,7 +45,7 @@ async fn test_secret_key_for_encryption() {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
         1, 2,
     ];
-    let sk = secret_key_for_encryption(&raw_key);
+    let sk = encryption_secret_key(&raw_key);
     assert_eq!(sk, raw_key);
 }
 
@@ -60,7 +59,7 @@ async fn test_public_key_for_encryption() {
         2, 177, 145, 47, 171, 168, 15, 206, 205, 42, 100, 197, 116, 254, 254, 66, 44, 97, 16, 96,
         1, 236, 88, 138, 241, 189, 157, 117, 72, 184, 16, 100, 203,
     ];
-    let pk = public_key_for_encryption(&raw_key);
+    let pk = encryption_public_key(&raw_key);
     assert_eq!(pk, expect_pk);
 }
 

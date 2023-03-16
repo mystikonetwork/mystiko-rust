@@ -82,6 +82,8 @@ impl PartialEq for ZkpError {
 pub enum CryptoError {
     #[error("data length error")]
     DataLengthError,
+    #[error("key length error")]
+    KeyLengthError,
     #[error("mac mismatch error")]
     MacMismatchError,
     #[error("decrypt error {0}")]
@@ -95,6 +97,7 @@ impl PartialEq for CryptoError {
         matches!(
             (self, other),
             (Self::DataLengthError, Self::DataLengthError)
+                | (Self::KeyLengthError, Self::KeyLengthError)
                 | (Self::MacMismatchError, Self::MacMismatchError)
                 | (Self::DecryptError(_), Self::DecryptError(_))
                 | (Self::InternalError, Self::InternalError)

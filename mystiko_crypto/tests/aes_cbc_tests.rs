@@ -29,7 +29,7 @@ async fn test_aes_cbc_encrypt_compatible_with_js() {
     let cipher_txt = encrypt(&iv.to_vec(), &key.to_vec(), plain_data.to_vec().as_slice());
     assert_eq!(cipher_txt.as_slice(), expect_cipher_txt);
 
-    let dec_plain_text = decrypt(&iv.to_vec(), &key, cipher_txt.to_vec().as_slice());
+    let dec_plain_text = decrypt(&iv.to_vec(), &key, cipher_txt.to_vec().as_slice()).unwrap();
     assert_eq!(dec_plain_text, plain_data);
 }
 

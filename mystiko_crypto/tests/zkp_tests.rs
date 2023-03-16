@@ -142,7 +142,7 @@ async fn test_verify_by_file() {
         .await;
     assert_eq!(
         result.err().unwrap(),
-        ZkpError::ParseError(String::from(""), String::from(""))
+        ZkpError::SerdeJsonError(String::from(""), String::from(""))
     );
 
     let result = proof
@@ -184,6 +184,6 @@ async fn test_verify() {
     let result = proof.verify(vk.as_slice());
     assert_eq!(
         result.err().unwrap(),
-        ZkpError::ParseError(String::from(""), String::from(""))
+        ZkpError::SerdeJsonError(String::from(""), String::from(""))
     );
 }
