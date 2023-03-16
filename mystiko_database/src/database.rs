@@ -8,13 +8,13 @@ use crate::collection::deposit::DepositCollection;
 use crate::collection::nullifier::NullifierCollection;
 use crate::collection::transaction::TransactionCollection;
 use crate::collection::wallet::WalletCollection;
+use anyhow::Result;
 use futures::lock::Mutex;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::{Document, DocumentRawData};
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
-use std::io::Error;
 use std::sync::Arc;
 
 pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
@@ -43,7 +43,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
         }
     }
 
-    pub async fn migrate(&self) -> Result<Vec<Document<Migration>>, Error> {
+    pub async fn migrate(&self) -> Result<Vec<Document<Migration>>> {
         let migrations: Vec<Document<Migration>> = vec![
             self.accounts.migrate().await?,
             self.chains.migrate().await?,

@@ -1,3 +1,4 @@
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use mystiko_storage::collection::*;
 use mystiko_storage::document::{Document, DocumentData, DocumentRawData, DOCUMENT_ID_FIELD};
@@ -8,7 +9,6 @@ use mystiko_storage::storage::Storage;
 use mystiko_storage::testing::TestDocumentData;
 use num_traits::{Float, PrimInt};
 use std::collections::HashMap;
-use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 
 #[derive(Clone)]
@@ -17,31 +17,31 @@ struct TestDocumentRawData {
 }
 
 impl DocumentRawData for TestDocumentRawData {
-    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>, Error> {
+    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>> {
         let value = self.data.get(field);
         if let Some(..) = value {
             match value.unwrap().parse() {
                 Ok(parsed) => Ok(Some(parsed)),
-                Err(_) => Err(Error::new(ErrorKind::Other, "parsed error")),
+                Err(_) => Err(Error::msg("parsed error")),
             }
         } else {
             Ok(None)
         }
     }
 
-    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>, Error> {
+    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>> {
         let value = self.data.get(field);
         if let Some(..) = value {
             match value.unwrap().parse() {
                 Ok(parsed) => Ok(Some(parsed)),
-                Err(_) => Err(Error::new(ErrorKind::Other, "parsed error")),
+                Err(_) => Err(Error::msg("parsed error")),
             }
         } else {
             Ok(None)
         }
     }
 
-    fn field_string_value(&self, field: &str) -> Result<Option<String>, Error> {
+    fn field_string_value(&self, field: &str) -> Result<Option<String>> {
         Ok(self.data.get(field).cloned())
     }
 }
@@ -70,27 +70,27 @@ impl TestStorage {
 
 #[async_trait]
 impl Storage<TestDocumentRawData> for TestStorage {
-    async fn execute(&mut self, statement: String) -> Result<(), Error> {
+    async fn execute(&mut self, statement: String) -> Result<()> {
         self.statements.push(statement);
         if self.raise_error_on_execute {
-            Err(Error::new(ErrorKind::Other, "expected error"))
+            Err(Error::msg("expected error"))
         } else {
             Ok(())
         }
     }
 
-    async fn query(&mut self, statement: String) -> Result<Vec<TestDocumentRawData>, Error> {
+    async fn query(&mut self, statement: String) -> Result<Vec<TestDocumentRawData>> {
         self.statements.push(statement);
         if self.raise_error_on_query {
-            Err(Error::new(ErrorKind::Other, "expected error"))
+            Err(Error::msg("expected error"))
         } else {
             Ok(self.expected_data.clone())
         }
     }
 
-    async fn collection_exists(&mut self, _collection: &str) -> Result<bool, Error> {
+    async fn collection_exists(&mut self, _collection: &str) -> Result<bool> {
         if self.raise_error_on_collection_exists {
-            Err(Error::new(ErrorKind::Other, "expected error"))
+            Err(Error::msg("expected error"))
         } else {
             Ok(self.collection_exists)
         }

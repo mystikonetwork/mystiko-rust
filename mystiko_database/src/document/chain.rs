@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
-
+use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::io::Error;
 
 pub static CHAIN_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "chains",
@@ -59,7 +58,7 @@ impl DocumentData for Chain {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Chain {
             chain_id: raw.field_integer_value("chain_id")?.unwrap(),
             name: raw.field_string_value("name")?.unwrap(),

@@ -1,9 +1,8 @@
 #![forbid(unsafe_code)]
-
+use anyhow::{Error, Result};
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
 use num_bigint::BigInt;
 use serde_json;
-use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 
 pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
@@ -115,10 +114,10 @@ impl FromStr for TransactionStatus {
             "Pending" => Ok(TransactionStatus::Pending),
             "Succeeded" => Ok(TransactionStatus::Succeeded),
             "Failed" => Ok(TransactionStatus::Failed),
-            _ => Err(Error::new(
-                ErrorKind::InvalidData,
-                format!("invalid transaction status string {}", s),
-            )),
+            _ => Err(Error::msg(format!(
+                "invalid transaction status string {}",
+                s
+            ))),
         }
     }
 }
@@ -145,10 +144,7 @@ impl FromStr for TransactionType {
         match s {
             "Transfer" => Ok(TransactionType::Transfer),
             "Withdraw" => Ok(TransactionType::Withdraw),
-            _ => Err(Error::new(
-                ErrorKind::InvalidData,
-                format!("invalid transaction type string {}", s),
-            )),
+            _ => Err(Error::msg(format!("invalid transaction type string {}", s))),
         }
     }
 }
@@ -230,7 +226,7 @@ impl DocumentData for Transaction {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Transaction {
             chain_id: raw.field_integer_value::<u32>("chain_id")?.unwrap(),
             contract_address: raw.field_string_value("contract_address")?.unwrap(),

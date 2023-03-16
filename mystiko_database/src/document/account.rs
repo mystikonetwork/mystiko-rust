@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
+use anyhow::{Error, Result};
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 
 pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
@@ -67,7 +67,7 @@ impl DocumentData for Account {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Account {
             name: raw.field_string_value("name")?.unwrap(),
             shielded_address: raw.field_string_value("shielded_address")?.unwrap(),
@@ -98,10 +98,7 @@ impl FromStr for AccountStatus {
             "Created" => Ok(AccountStatus::Created),
             "Scanning" => Ok(AccountStatus::Scanning),
             "Scanned" => Ok(AccountStatus::Scanned),
-            _ => Err(Error::new(
-                ErrorKind::InvalidData,
-                format!("invalid account status string {}", s),
-            )),
+            _ => Err(Error::msg(format!("invalid account status string {}", s))),
         }
     }
 }

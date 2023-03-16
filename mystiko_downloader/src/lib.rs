@@ -1,4 +1,5 @@
 #![forbid(unsafe_code)]
+extern crate anyhow;
 extern crate async_compression;
 extern crate blake2;
 extern crate hex;
@@ -7,12 +8,12 @@ extern crate tokio;
 extern crate tokio_stream;
 extern crate tokio_util;
 
+use anyhow::{Error, Result};
 use async_compression::tokio::bufread::GzipDecoder;
 use blake2::{Blake2s256, Digest};
 use digest::DynDigest;
 use reqwest::Client;
 use std::env::temp_dir;
-use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
 use tokio::fs::{create_dir_all, read, remove_file, try_exists, File};
 use tokio::io::{copy, AsyncWriteExt, BufReader, BufWriter};
@@ -42,7 +43,7 @@ impl Downloader {
         &mut self,
         url: &str,
         download_options: Option<DownloadOptions>,
-    ) -> Result<PathBuf, Error> {
+    ) -> Result<PathBuf> {
         let options = download_options.unwrap_or(DownloadOptions::default());
         let is_compressed =
             url.ends_with(".gz") || url.ends_with(".tgz") || url.ends_with(".tar.gz");
@@ -73,7 +74,7 @@ impl Downloader {
         &mut self,
         urls: &Vec<String>,
         options: Option<DownloadOptions>,
-    ) -> Result<PathBuf, Error> {
+    ) -> Result<PathBuf> {
         for (index, url) in urls.iter().enumerate() {
             let result = self.download(url, options.clone()).await;
             if result.is_err() && index < urls.len() - 1 {
@@ -82,30 +83,26 @@ impl Downloader {
                 return result;
             }
         }
-        Err(Error::new(ErrorKind::InvalidInput, "urls cannot be empty"))
+        Err(Error::msg("urls cannot be empty"))
     }
 
     pub async fn read_bytes(
         &mut self,
         url: &str,
         options: Option<DownloadOptions>,
-    ) -> Result<Vec<u8>, Error> {
-        read(self.download(url, options).await?).await
+    ) -> Result<Vec<u8>> {
+        Ok(read(self.download(url, options).await?).await?)
     }
 
     pub async fn read_bytes_failover(
         &mut self,
         urls: &Vec<String>,
         options: Option<DownloadOptions>,
-    ) -> Result<Vec<u8>, Error> {
-        read(self.download_failover(urls, options).await?).await
+    ) -> Result<Vec<u8>> {
+        Ok(read(self.download_failover(urls, options).await?).await?)
     }
 
-    async fn download_raw(
-        &mut self,
-        url: &str,
-        mut options: DownloadOptions,
-    ) -> Result<PathBuf, Error> {
+    async fn download_raw(&mut self, url: &str, mut options: DownloadOptions) -> Result<PathBuf> {
         options.hasher.update(url.as_bytes());
         let hash = hex::encode(&options.hasher.finalize());
         let file_path = self.folder.join(PathBuf::from(&hash));
@@ -113,30 +110,26 @@ impl Downloader {
         if file_exists && !options.skip_cache {
             Ok(file_path)
         } else {
-            let response = self
-                .client
-                .get(url)
-                .send()
-                .await
-                .map_err(|e| Error::new(ErrorKind::Other, format!("reqwest error: {}", e)))?;
+            let response = self.client.get(url).send().await?;
             if response.status().is_success() {
                 if file_exists {
                     remove_file(&file_path).await?;
                 }
                 let file = File::create(&file_path).await?;
-                let stream = response
-                    .bytes_stream()
-                    .map(|result| result.map_err(|e| Error::new(ErrorKind::Other, e)));
+                let stream = response.bytes_stream().map(|result| {
+                    result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+                });
                 let mut file_reader = StreamReader::new(stream);
                 let mut file_writer = BufWriter::new(file);
                 copy(&mut file_reader, &mut file_writer).await?;
                 file_writer.shutdown().await?;
                 Ok(file_path)
             } else {
-                Err(Error::new(
-                    ErrorKind::Other,
-                    format!("failed to fetch {}, status code {}", url, response.status()),
-                ))
+                Err(Error::msg(format!(
+                    "failed to fetch {}, status code {}",
+                    url,
+                    response.status()
+                )))
             }
         }
     }
@@ -171,7 +164,7 @@ impl DownloaderBuilder {
         self
     }
 
-    pub async fn build(self) -> Result<Downloader, Error> {
+    pub async fn build(self) -> Result<Downloader> {
         let folder: PathBuf = match self.folder {
             Some(path) => PathBuf::from(&path),
             None => temp_dir().join(PathBuf::from("mystiko_downloader")),

@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
-
+use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::io::Error;
 
 pub static NULLIFIER_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "nullifiers",
@@ -52,7 +51,7 @@ impl DocumentData for Nullifier {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Nullifier {
             chain_id: raw.field_integer_value::<u32>("chain_id")?.unwrap(),
             contract_address: raw.field_string_value("contract_address")?.unwrap(),
