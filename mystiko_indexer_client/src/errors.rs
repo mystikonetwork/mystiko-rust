@@ -7,17 +7,20 @@ pub enum ClientError {
     #[error("api response with exception (result_code: {code:?}, err_message: {message:?})")]
     ApiResponseError { code: i32, message: String },
 
+    #[error("custom error: {0}")]
+    CustomError(String),
+
     #[error(transparent)]
     ReqwestError(#[from] reqwest::Error),
+
+    #[error(transparent)]
+    JsonSerializeError(#[from] serde_json::Error),
 
     #[error("response content-type is not supported: {0}")]
     UnsupportedContentTypeError(String),
 
     #[error(transparent)]
     UrlParsedError(#[from] ParseError),
-
-    #[error("custom error: {0}")]
-    CustomError(String),
 }
 
 impl PartialEq for ClientError {
