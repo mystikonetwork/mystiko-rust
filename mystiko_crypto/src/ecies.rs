@@ -1,8 +1,8 @@
 use crate::constants::{ECIES_KEY_LENGTH, FIELD_SIZE};
 use crate::hash::poseidon_fr;
-use crate::utils::{
-    babyjubjub_public_key, babyjubjub_unpack_point, calc_mod, fr_to_big_int, random_big_int,
-};
+use crate::utils::bigint_to_32_bytes;
+use crate::utils::fr_to_bytes;
+use crate::utils::{babyjubjub_public_key, babyjubjub_unpack_point, calc_mod, random_bigint};
 use babyjubjub_rs::Point;
 use ff::*;
 use lazy_static::lazy_static;
@@ -22,35 +22,38 @@ lazy_static! {
     };
 }
 
-pub fn generate_secret_key() -> BigInt {
-    random_big_int(ECIES_KEY_LENGTH, &FIELD_SIZE)
+pub fn generate_secret_key() -> [u8; 32] {
+    let s = random_bigint(ECIES_KEY_LENGTH, &FIELD_SIZE);
+    bigint_to_32_bytes(&s)
 }
 
-pub fn public_key(secret_key: &BigInt) -> BigInt {
-    let pk = B8.mul_scalar(secret_key).compress();
-    BigInt::from_bytes_le(Sign::Plus, &pk)
+pub fn public_key(secret_key: &[u8]) -> [u8; 32] {
+    let sk = BigInt::from_bytes_le(Sign::Plus, secret_key);
+    B8.mul_scalar(&sk).compress()
 }
 
-pub fn unpack_public_key(public_key: &BigInt) -> (BigInt, BigInt) {
+pub fn unpack_public_key(public_key: &[u8]) -> ([u8; 32], [u8; 32]) {
     let point = babyjubjub_unpack_point(public_key);
-    (fr_to_big_int(&point.x), fr_to_big_int(&point.y))
+    (fr_to_bytes(&point.x), fr_to_bytes(&point.y))
 }
 
-pub fn public_key_from_unpack_point(x: &BigInt, y: &BigInt) -> BigInt {
+pub fn public_key_from_unpack_point(x: &[u8], y: &[u8]) -> [u8; 32] {
     babyjubjub_public_key(x, y)
 }
 
-pub fn encrypt(plain: &BigInt, pk: &BigInt, common_sk: &BigInt) -> BigInt {
+pub fn encrypt(plain: &BigInt, pk: &[u8], common_sk: &[u8]) -> BigInt {
     let point_pk = babyjubjub_unpack_point(pk);
-    let k = point_pk.mul_scalar(common_sk);
+    let sk = BigInt::from_bytes_le(Sign::Plus, common_sk);
+    let k = point_pk.mul_scalar(&sk);
     let hm = poseidon_fr(&[k.x, k.y]);
 
     calc_mod(&(plain.clone() + hm), &FIELD_SIZE)
 }
 
-pub fn decrypt(encrypted: &BigInt, sk: &BigInt, common_pk: &BigInt) -> BigInt {
+pub fn decrypt(encrypted: &BigInt, sk: &[u8], common_pk: &[u8]) -> BigInt {
     let point_pk = babyjubjub_unpack_point(common_pk);
-    let k = point_pk.mul_scalar(sk);
+    let point_sk = BigInt::from_bytes_le(Sign::Plus, sk);
+    let k = point_pk.mul_scalar(&point_sk);
     let hm = poseidon_fr(&[k.x, k.y]);
 
     calc_mod(&(encrypted.clone() - hm), &FIELD_SIZE)

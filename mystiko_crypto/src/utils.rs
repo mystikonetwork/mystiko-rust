@@ -1,16 +1,22 @@
 use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
-use num_bigint::{BigInt, RandBigInt, Sign};
+use num_bigint::{BigInt, Sign};
 use num_integer::Integer;
 use poseidon_rs::Fr;
-use rand::{distributions::Alphanumeric, Rng};
+use rand::{distributions::Alphanumeric, Rng, RngCore};
 use std::cmp::min;
+use std::convert::TryInto;
 
-pub fn fr_to_big_int(fr: &Fr) -> BigInt {
+pub fn fr_to_bytes(fr: &Fr) -> [u8; 32] {
+    let b = fr_to_bigint(fr);
+    bigint_to_32_bytes(&b)
+}
+
+pub fn fr_to_bigint(fr: &Fr) -> BigInt {
     BigInt::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
 }
 
-pub fn big_int_to_be_32_bytes(num: &BigInt) -> [u8; 32] {
+pub fn bigint_to_be_32_bytes(num: &BigInt) -> [u8; 32] {
     let (_, y_bytes) = num.to_bytes_be();
     if y_bytes.len() >= 32 {
         y_bytes[..32].try_into().unwrap()
@@ -22,7 +28,7 @@ pub fn big_int_to_be_32_bytes(num: &BigInt) -> [u8; 32] {
     }
 }
 
-pub fn big_int_to_32_bytes(num: &BigInt) -> [u8; 32] {
+pub fn bigint_to_32_bytes(num: &BigInt) -> [u8; 32] {
     let (_, y_bytes) = num.to_bytes_le();
     if y_bytes.len() >= 32 {
         y_bytes[..32].try_into().unwrap()
@@ -34,7 +40,7 @@ pub fn big_int_to_32_bytes(num: &BigInt) -> [u8; 32] {
     }
 }
 
-pub fn big_int_to_33_bytes(num: &BigInt) -> [u8; 33] {
+pub fn bigint_to_33_bytes(num: &BigInt) -> [u8; 33] {
     let (_, y_bytes) = num.to_bytes_le();
     if y_bytes.len() >= 33 {
         y_bytes[..33].try_into().unwrap()
@@ -46,7 +52,7 @@ pub fn big_int_to_33_bytes(num: &BigInt) -> [u8; 33] {
     }
 }
 
-pub fn big_int_to_16_bytes(num: &BigInt) -> [u8; 16] {
+pub fn bigint_to_16_bytes(num: &BigInt) -> [u8; 16] {
     let (_, y_bytes) = num.to_bytes_le();
     if y_bytes.len() >= 16 {
         y_bytes[..16].try_into().unwrap()
@@ -58,42 +64,37 @@ pub fn big_int_to_16_bytes(num: &BigInt) -> [u8; 16] {
     }
 }
 
-pub fn babyjubjub_unpack_point(key: &BigInt) -> Point {
-    let arr = big_int_to_32_bytes(key);
-    decompress_point(arr).unwrap()
+pub fn babyjubjub_unpack_point(key: &[u8]) -> Point {
+    decompress_point(key.try_into().unwrap()).unwrap()
 }
 
-pub fn babyjubjub_public_key(x: &BigInt, y: &BigInt) -> BigInt {
+pub fn babyjubjub_public_key(x: &[u8], y: &[u8]) -> [u8; 32] {
+    let x_bigint = BigInt::from_bytes_le(num_bigint::Sign::Plus, x);
+    let y_bigint = BigInt::from_bytes_le(num_bigint::Sign::Plus, y);
+
     let point = Point {
-        x: Fr::from_str(&x.to_string()).unwrap(),
-        y: Fr::from_str(&y.to_string()).unwrap(),
+        x: Fr::from_str(&x_bigint.to_string()).unwrap(),
+        y: Fr::from_str(&y_bigint.to_string()).unwrap(),
     };
-    let pc = point.compress();
-    BigInt::from_bytes_le(Sign::Plus, &pc)
+    point.compress()
 }
 
 pub fn calc_mod(a_number: &BigInt, prime: &BigInt) -> BigInt {
     a_number.mod_floor(prime)
 }
 
-pub fn random_big_int(size: usize, prime: &BigInt) -> BigInt {
-    assert!(size < 256);
-
-    let mut rng = rand::thread_rng();
-    let sk_raw = rng.gen_biguint(256 * 8).to_bytes_le();
-    let sk_raw_bytes = sk_raw[..size].to_vec();
-    let random_bigint = BigInt::from_bytes_le(Sign::Plus, &sk_raw_bytes);
-
-    random_bigint.mod_floor(prime)
+pub fn random_bigint(size: usize, prime: &BigInt) -> BigInt {
+    let bytes = random_bytes(size);
+    let random_bigint = BigInt::from_bytes_le(Sign::Plus, &bytes);
+    calc_mod(&random_bigint, prime)
 }
 
 pub fn random_bytes(size: usize) -> Vec<u8> {
-    assert!(size < 1024);
-
+    assert!(size <= 1024, "Size should be less or equal to 1024");
     let mut rng = rand::thread_rng();
-    let mut sk_raw = rng.gen_biguint(1024).to_bytes_le();
-    sk_raw.drain(size..);
-    sk_raw
+    let mut bytes = vec![0u8; size];
+    rng.fill_bytes(&mut bytes);
+    bytes
 }
 
 pub fn random_utf8_string(size: usize) -> String {

@@ -2,7 +2,6 @@ use crate::key::full_public_key;
 use crate::types::{EncPk, VerifyPk};
 use crate::types::{ENC_PK_SIZE, VERIFY_PK_SIZE};
 use bs58;
-use num_bigint::{BigInt, Sign};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ShieldedAddress {
@@ -42,9 +41,6 @@ impl ShieldedAddress {
         let mut ek = [0u8; ENC_PK_SIZE];
         vk.copy_from_slice(&ck[0..VERIFY_PK_SIZE]);
         ek.copy_from_slice(&ck[VERIFY_PK_SIZE..]);
-        (
-            BigInt::from_bytes_le(Sign::Plus, &vk[..]),
-            BigInt::from_bytes_le(Sign::Plus, &ek[..]),
-        )
+        (vk, ek)
     }
 }

@@ -4,11 +4,11 @@ extern crate mystiko_protocol;
 extern crate num_bigint;
 
 use ff::hex;
-use num_bigint::{BigInt, Sign};
+use num_bigint::BigInt;
 
 use crate::mystiko_protocol::utils::{serial_number, sig_pk_hash};
 use mystiko_crypto::crypto::decrypt_asymmetric;
-use mystiko_crypto::utils::{big_int_to_32_bytes, random_bytes};
+use mystiko_crypto::utils::random_bytes;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment, EncryptedData, Note};
 use mystiko_protocol::key::{
@@ -30,7 +30,6 @@ async fn test_serial_number_compatible_with_js() {
 
     let sk = secret_key_for_verification(&raw_key);
     let random_p = b"1234567812345678";
-    let random_p = BigInt::from_bytes_le(Sign::Plus, &random_p[..]);
     let sn = serial_number(&sk, &random_p);
     assert_eq!(sn, expect_sn);
 }
@@ -42,6 +41,7 @@ async fn test_sig_pk_hash_compatible_with_js() {
         1, 2,
     ];
     let sig_pk = hex::decode("fb8B7C14EB7251D8A62876424E13D27d47C84288").unwrap();
+    let sig_pk = sig_pk.try_into().unwrap();
     let expect_sig_pk_hash = BigInt::parse_bytes(
         b"17300623865218087938631561261083046777856264605308935115400651673035276248790",
         10,
@@ -64,9 +64,7 @@ async fn test_build_commitment_compatible_with_js() {
 
     let pk_verify = public_key_for_verification(&raw_verify_key);
     let pk_enc = public_key_for_encryption(&raw_enc_key);
-
     let sk_enc = secret_key_for_encryption(&raw_enc_key);
-    let sk_enc = big_int_to_32_bytes(&sk_enc);
     let note = decrypt_asymmetric(&sk_enc, &js_encrypt_note).unwrap();
     let js_decrypt_note = Note::from_vec(note);
 
@@ -118,8 +116,7 @@ async fn test_build_commitment() {
     assert_eq!(cm1.note.random_s, note.random_s);
     assert_eq!(cm1.shielded_address, shield_address.clone());
 
-    let sk_enc_byte = big_int_to_32_bytes(&sk_enc);
-    let note_vec = decrypt_asymmetric(&sk_enc_byte, &cm1.encrypted_note).unwrap();
+    let note_vec = decrypt_asymmetric(&sk_enc, &cm1.encrypted_note).unwrap();
     let decrypt_note = Note::from_vec(note_vec);
     assert_eq!(decrypt_note.amount, amount);
     assert_eq!(decrypt_note.random_p, note.random_p);

@@ -23,14 +23,14 @@ use mystiko_protocol::key::{
 };
 use mystiko_protocol::transact::Transaction;
 use mystiko_protocol::types::{
-    AuditingPk, EncPk, EncSk, RandomSk, TxAmount, VerifyPk, VerifySk, NUM_OF_AUDITORS,
+    AuditingPk, EncPk, EncSk, RandomSk, SigPk, TxAmount, VerifyPk, VerifySk, NUM_OF_AUDITORS,
 };
 use mystiko_protocol::types::{ENC_SK_SIZE, MERKLE_TREE_LEVELS, VERIFY_SK_SIZE};
 
-fn generate_eth_wallet() -> Vec<u8> {
+fn generate_eth_address() -> SigPk {
     let wallet = LocalWallet::new(&mut thread_rng());
     let wallet = wallet.with_chain_id(1u64);
-    wallet.address().as_bytes().to_vec()
+    wallet.address().as_bytes().try_into().unwrap()
 }
 
 fn u256_to_big_int(u: &U256) -> BigInt {
@@ -90,7 +90,7 @@ fn generate_transaction(
         path_indices.push(path.1);
     }
 
-    let sig_pk = generate_eth_wallet();
+    let sig_pk = generate_eth_address();
 
     let mut out_verify_pks: Vec<VerifyPk> = vec![];
     let mut out_enc_pks: Vec<EncPk> = vec![];

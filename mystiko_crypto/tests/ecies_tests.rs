@@ -1,13 +1,14 @@
 extern crate mystiko_crypto;
 extern crate num_bigint;
 
-use num_bigint::BigInt;
+use num_bigint::{BigInt, Sign};
 
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::ecies::{
     decrypt, encrypt, generate_secret_key, public_key, public_key_from_unpack_point,
     unpack_public_key,
 };
+use mystiko_crypto::utils::bigint_to_32_bytes;
 
 #[tokio::test]
 async fn test_secret_key() {
@@ -16,11 +17,10 @@ async fn test_secret_key() {
         10,
     )
     .unwrap();
-
+    let sk = bigint_to_32_bytes(&sk);
     let pk = public_key(&sk);
-    // let unpacked_pk = unpack_public_key(&pk);
     assert_eq!(
-        pk,
+        BigInt::from_bytes_le(Sign::Plus, &pk),
         BigInt::parse_bytes(
             b"72444700469954344414033902054315551824029723235242170438854670892932808883061",
             10,
@@ -30,7 +30,7 @@ async fn test_secret_key() {
 
     let unpacked_pk = unpack_public_key(&pk);
     assert_eq!(
-        unpacked_pk.0,
+        BigInt::from_bytes_le(Sign::Plus, &unpacked_pk.0),
         BigInt::parse_bytes(
             b"17698851190026478217268086792453479467089177242109235834022425894878167006166",
             10,
@@ -38,7 +38,7 @@ async fn test_secret_key() {
         .unwrap()
     );
     assert_eq!(
-        unpacked_pk.1,
+        BigInt::from_bytes_le(Sign::Plus, &unpacked_pk.1),
         BigInt::parse_bytes(
             b"14548655851296246702248409549971597897394730902421888419125878888976244063093",
             10,
@@ -51,11 +51,11 @@ async fn test_secret_key() {
         10,
     )
     .unwrap();
-
+    let sk2 = bigint_to_32_bytes(&sk2);
     let pk2 = public_key(&sk2);
     // let unpacked_pk = unpack_public_key(&pk);
     assert_eq!(
-        pk2,
+        BigInt::from_bytes_le(Sign::Plus, &pk2),
         BigInt::parse_bytes(
             b"144953317550107391240674677905376978673879922040003637731432436387597190873",
             10,
@@ -65,7 +65,7 @@ async fn test_secret_key() {
 
     let unpacked_pk2 = unpack_public_key(&pk2);
     assert_eq!(
-        unpacked_pk2.0,
+        BigInt::from_bytes_le(Sign::Plus, &unpacked_pk2.0),
         BigInt::parse_bytes(
             b"909244511446444536038804174950319430779653247671679866159305631824459185121",
             10,
@@ -73,7 +73,7 @@ async fn test_secret_key() {
         .unwrap()
     );
     assert_eq!(
-        unpacked_pk2.1,
+        BigInt::from_bytes_le(Sign::Plus, &unpacked_pk2.1),
         BigInt::parse_bytes(
             b"144953317550107391240674677905376978673879922040003637731432436387597190873",
             10,

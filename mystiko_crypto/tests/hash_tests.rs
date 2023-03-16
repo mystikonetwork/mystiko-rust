@@ -5,7 +5,7 @@ use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::hash::{
     blake2b_512, checksum, keccak256, poseidon, poseidon_bigint, sha256_mod,
 };
-use mystiko_crypto::utils::{random_big_int, random_bytes};
+use mystiko_crypto::utils::{random_bigint, random_bytes};
 use num_bigint::BigInt;
 
 #[tokio::test]
@@ -56,9 +56,9 @@ async fn test_poseidon_compatible_with_js() {
 #[tokio::test]
 async fn test_poseidon_bigint() {
     let size = random_bytes(1);
-    let b1 = random_big_int(size[0] as usize, &FIELD_SIZE);
+    let b1 = random_bigint(size[0] as usize, &FIELD_SIZE);
     let size = random_bytes(1);
-    let b2 = random_big_int(size[0] as usize, &FIELD_SIZE);
+    let b2 = random_bigint(size[0] as usize, &FIELD_SIZE);
     poseidon_bigint(&[b1, b2]);
 }
 

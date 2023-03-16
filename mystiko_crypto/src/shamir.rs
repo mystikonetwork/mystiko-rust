@@ -1,6 +1,7 @@
 use crate::constants::FIELD_SIZE;
 use crate::error::SecretShareError;
-use crate::utils::{calc_mod, random_big_int};
+use crate::num_traits::One;
+use crate::utils::{calc_mod, random_bigint};
 use num_bigint::BigInt;
 use num_traits::identities::Zero;
 use std::collections::HashSet;
@@ -49,7 +50,7 @@ pub fn split(
 
     let mut coefficients: Vec<BigInt> = vec![secret];
     for _ in 1..threshold {
-        coefficients.push(random_big_int(32, &prime));
+        coefficients.push(random_bigint(32, &prime));
     }
 
     let mut shares: Vec<Point> = vec![];
@@ -68,9 +69,7 @@ pub fn split(
 }
 
 fn batch_mul(values: &[BigInt]) -> BigInt {
-    let mut accum = BigInt::from(1u32);
-    values.iter().for_each(|v| accum *= v);
-    accum
+    values.iter().product()
 }
 
 fn eval_poly(coefficients: &[BigInt], x: &BigInt, prime: &BigInt) -> BigInt {
@@ -85,8 +84,8 @@ fn eval_poly(coefficients: &[BigInt], x: &BigInt, prime: &BigInt) -> BigInt {
 
 fn extended_gcd(a: &BigInt, b: &BigInt) -> (BigInt, BigInt) {
     let mut x = BigInt::zero();
-    let mut last_x = BigInt::from(1u32);
-    let mut y = BigInt::from(1u32);
+    let mut last_x = BigInt::one();
+    let mut y = BigInt::one();
     let mut last_y = BigInt::zero();
 
     let mut a_val = a.clone();
@@ -114,7 +113,7 @@ fn div_mod(num: &BigInt, den: &BigInt, prime: &BigInt) -> BigInt {
 }
 
 fn sum(values: &[BigInt]) -> BigInt {
-    values.iter().fold(BigInt::zero(), |acc, x| acc + x)
+    values.iter().sum()
 }
 
 fn lagrange_interpolate(x: &BigInt, points: &[Point], prime: &BigInt) -> BigInt {

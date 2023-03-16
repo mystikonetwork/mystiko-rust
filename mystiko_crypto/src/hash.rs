@@ -1,6 +1,6 @@
 use crate::constants::FIELD_SIZE;
 use crate::utils::calc_mod;
-use crate::utils::fr_to_big_int;
+use crate::utils::fr_to_bigint;
 use blake2::Blake2b512;
 use ff::PrimeField;
 use hmac::{Hmac, Mac};
@@ -29,7 +29,7 @@ pub fn poseidon(arr: &[BigInt]) -> BigInt {
 pub fn poseidon_fr(arr: &[Fr]) -> BigInt {
     let poseidon = Poseidon::new();
     let ph = poseidon.hash(arr.to_vec()).unwrap();
-    fr_to_big_int(&ph)
+    fr_to_bigint(&ph)
 }
 
 pub fn sha512(msg: &[u8]) -> Vec<u8> {

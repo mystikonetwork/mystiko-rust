@@ -3,7 +3,7 @@ use crate::mystiko_crypto::zkp::proof::ZKProof;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::hash::keccak256;
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_crypto::utils::{big_int_to_be_32_bytes, calc_mod};
+use mystiko_crypto::utils::{bigint_to_be_32_bytes, calc_mod};
 use num_bigint::{BigInt, Sign};
 
 fn is_power_of_two(a_number: usize) -> bool {
@@ -20,7 +20,7 @@ fn path_indices_number(path_indices: &[usize]) -> BigInt {
 }
 
 fn calc_leave_hash(leaves: &[BigInt]) -> BigInt {
-    let leaf_buffer: Vec<u8> = leaves.iter().flat_map(big_int_to_be_32_bytes).collect();
+    let leaf_buffer: Vec<u8> = leaves.iter().flat_map(bigint_to_be_32_bytes).collect();
     let hash = keccak256(leaf_buffer.as_slice());
     let hash = BigInt::from_bytes_be(Sign::Plus, &hash);
     calc_mod(&hash, &FIELD_SIZE)

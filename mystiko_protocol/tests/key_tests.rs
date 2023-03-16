@@ -2,9 +2,6 @@ extern crate mystiko_crypto;
 extern crate mystiko_protocol;
 extern crate num_bigint;
 
-use num_bigint::{BigInt, Sign};
-
-use mystiko_crypto::utils::{big_int_to_32_bytes, big_int_to_33_bytes};
 use mystiko_protocol::key::{
     full_public_key, full_secret_key, public_key_for_encryption, public_key_for_verification,
     secret_key_for_encryption, secret_key_for_verification, separated_public_keys,
@@ -25,7 +22,6 @@ async fn test_secret_key_for_verification() {
     ];
 
     let vk = secret_key_for_verification(&raw_key);
-    let vk = big_int_to_32_bytes(&vk);
     assert_eq!(vk, expect_vk);
 }
 
@@ -41,7 +37,6 @@ async fn test_public_key_for_verification() {
     ];
 
     let vk = public_key_for_verification(&raw_key);
-    let vk = big_int_to_32_bytes(&vk);
     assert_eq!(vk, expect_sk);
 }
 
@@ -52,7 +47,6 @@ async fn test_secret_key_for_encryption() {
         1, 2,
     ];
     let sk = secret_key_for_encryption(&raw_key);
-    let sk = big_int_to_32_bytes(&sk);
     assert_eq!(sk, raw_key);
 }
 
@@ -67,7 +61,6 @@ async fn test_public_key_for_encryption() {
         1, 236, 88, 138, 241, 189, 157, 117, 72, 184, 16, 100, 203,
     ];
     let pk = public_key_for_encryption(&raw_key);
-    let pk = big_int_to_33_bytes(&pk);
     assert_eq!(pk, expect_pk);
 }
 
@@ -89,14 +82,12 @@ async fn test_full_and_separate_public_key() {
         184, 16, 100, 203,
     ];
 
-    let vk_big = BigInt::from_bytes_le(Sign::Plus, &vk);
-    let ek_big = BigInt::from_bytes_le(Sign::Plus, &ek);
-    let combine = full_public_key(&vk_big, &ek_big);
+    let combine = full_public_key(&vk, &ek);
     assert_eq!(combine, expect_combine);
 
     let (vk_s, ek_s) = separated_public_keys(&combine);
-    assert_eq!(vk, big_int_to_32_bytes(&vk_s));
-    assert_eq!(ek, big_int_to_33_bytes(&ek_s));
+    assert_eq!(vk, vk_s);
+    assert_eq!(ek, ek_s);
 }
 
 #[tokio::test]
@@ -116,14 +107,10 @@ async fn test_full_and_separate_secret_key() {
         42, 100, 197, 116, 254, 254, 66, 44, 97, 16, 96, 1, 236, 88, 138, 241, 189, 157, 117, 72,
         184, 16, 0,
     ];
-    let vk_u256 = BigInt::from_bytes_le(Sign::Plus, &vk);
-    let ek_u256 = BigInt::from_bytes_le(Sign::Plus, &ek);
-    let combine = full_secret_key(&vk_u256, &ek_u256);
+    let combine = full_secret_key(&vk, &ek);
     assert_eq!(combine, expect_combine);
 
     let (vk_s, ek_s) = separated_secret_keys(&combine);
-    let vk_s = big_int_to_32_bytes(&vk_s);
-    let ek_s = big_int_to_32_bytes(&ek_s);
     assert_eq!(vk, vk_s);
     assert_eq!(ek, ek_s);
 }

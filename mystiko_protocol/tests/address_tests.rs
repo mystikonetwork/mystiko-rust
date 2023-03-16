@@ -2,9 +2,6 @@ extern crate mystiko_crypto;
 extern crate mystiko_protocol;
 extern crate num_bigint;
 
-use num_bigint::{BigInt, Sign};
-
-use mystiko_crypto::utils::{big_int_to_32_bytes, big_int_to_33_bytes};
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::types::{ENC_PK_SIZE, VERIFY_PK_SIZE};
 
@@ -21,9 +18,7 @@ async fn test_shielded_address() {
     let expect_address = String::from(
         "13hMt2P6h8zp5t8Cxm5oAzTULg1boVEvzjaEPXmLtSBUmF4KKnaooWkBKBqZs9BYncvY6rA6TpCkAJ6cEXFEHWMHt",
     );
-    let vk_big = BigInt::from_bytes_le(Sign::Plus, &vk);
-    let ek_big = BigInt::from_bytes_le(Sign::Plus, &ek);
-    let sa = ShieldedAddress::from_public_key(&vk_big, &ek_big);
+    let sa = ShieldedAddress::from_public_key(&vk, &ek);
     assert_eq!(sa.address(), expect_address);
 
     let sa2 = ShieldedAddress::from_string(&expect_address);
@@ -36,6 +31,6 @@ async fn test_shielded_address() {
 
     let (vk_f, ek_f) = sa.public_key();
 
-    assert_eq!(vk, big_int_to_32_bytes(&vk_f));
-    assert_eq!(ek, big_int_to_33_bytes(&ek_f));
+    assert_eq!(vk, vk_f);
+    assert_eq!(ek, ek_f);
 }
