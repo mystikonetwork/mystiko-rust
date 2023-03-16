@@ -150,9 +150,7 @@ impl Transaction {
             .collect();
 
         let mut array: Vec<serde_json::Value> = vec![serde_json::json!(self.tree_root.to_string())];
-        array.push(serde_json::json!(bigint_slice_to_strings(
-            &serial_numbers
-        )));
+        array.push(serde_json::json!(bigint_slice_to_strings(&serial_numbers)));
         array.push(serde_json::json!(bigint_slice_to_strings(&sig_hashes)));
         array.push(serde_json::json!(hex::encode(self.sig_pk)));
         array.push(serde_json::json!(self.public_amount.to_string()));
@@ -170,9 +168,7 @@ impl Transaction {
         )
         .to_string()));
         array.push(serde_json::json!(auditor_public_key_x_signs));
-        array.push(serde_json::json!(bytes_to_strings(
-            &auditor_public_key_ys
-        )));
+        array.push(serde_json::json!(bytes_to_strings(&auditor_public_key_ys)));
         array.push(serde_json::json!(encrypted_commitment_shares));
         array.push(serde_json::json!(bigint_slice_to_strings(
             &self.in_commitments
@@ -195,17 +191,13 @@ impl Transaction {
         array.push(serde_json::json!(bytes_to_strings(&self.out_random_ps)));
         array.push(serde_json::json!(bytes_to_strings(&self.out_random_rs)));
         array.push(serde_json::json!(bytes_to_strings(&self.out_random_ss)));
-        array.push(serde_json::json!(bytes_to_strings(
-            &self.out_verify_pks
-        )));
+        array.push(serde_json::json!(bytes_to_strings(&self.out_verify_pks)));
         array.push(serde_json::json!(BigInt::from_bytes_le(
             Sign::Plus,
             &unpacked_random_auditing_pk.0
         )
         .to_string()));
-        array.push(serde_json::json!(bytes_to_strings(
-            &auditor_public_key_xs
-        )));
+        array.push(serde_json::json!(bytes_to_strings(&auditor_public_key_xs)));
         array.push(serde_json::json!(BigInt::from_bytes_le(
             Sign::Plus,
             &random_auditing_sk
