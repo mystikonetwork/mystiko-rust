@@ -223,7 +223,7 @@ async fn test_find_commitment_queued_for_chain() {
     let where_filter = CommitmentQueuedFilter::builder().build();
     let resp = indexer_client
         .find_commitment_queued_for_chain(
-            CommitmentQueuedForChainRequest::builder()
+            &CommitmentQueuedForChainRequest::builder()
                 .chain_id(chain_id)
                 .start_block(start_block)
                 .end_block(end_block)
@@ -247,7 +247,7 @@ async fn test_find_commitment_queued_for_chain() {
         .await;
     let resp = indexer_client
         .find_commitment_queued_for_chain(
-            CommitmentQueuedForChainRequest::builder()
+            &CommitmentQueuedForChainRequest::builder()
                 .chain_id(chain_id)
                 .build(),
         )

@@ -88,8 +88,8 @@ impl IndexerClient {
     fn build_with_block_param(
         &self,
         mut request_builder: RequestBuilder,
-        start_block: Option<u32>,
-        end_block: Option<u32>,
+        start_block: &Option<u32>,
+        end_block: &Option<u32>,
     ) -> RequestBuilder {
         request_builder = match start_block {
             Some(start_block_num) => request_builder.query(&[("startBlock", start_block_num)]),
@@ -104,14 +104,14 @@ impl IndexerClient {
 
     pub async fn find_commitment_queued_for_chain(
         &self,
-        request: CommitmentQueuedForChainRequest,
+        request: &CommitmentQueuedForChainRequest,
     ) -> Result<Vec<CommitmentQueuedResponse>, ClientError> {
         let mut request_builder = self.reqwest_client.post(format!(
             "{}/chains/{}/events/commitment-queued",
-            &self.base_url, request.chain_id
+            &self.base_url, &request.chain_id
         ));
         request_builder =
-            self.build_with_block_param(request_builder, request.start_block, request.end_block);
+            self.build_with_block_param(request_builder, &request.start_block, &request.end_block);
         request_builder = request_builder.json(&request.where_filter);
         let response = self
             .post_data::<Vec<CommitmentQueuedResponse>>(request_builder)
