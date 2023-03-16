@@ -1,8 +1,7 @@
 #![forbid(unsafe_code)]
-
+use anyhow::{Error, Result};
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
 use num_bigint::BigInt;
-use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 
 pub static COMMITMENT_SCHEMA: DocumentSchema = DocumentSchema {
@@ -114,7 +113,7 @@ impl DocumentData for Commitment {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Commitment {
             chain_id: raw.field_integer_value("chain_id")?.unwrap(),
             contract_address: raw.field_string_value("contract_address")?.unwrap(),
@@ -165,10 +164,10 @@ impl FromStr for CommitmentStatus {
             "Included" => Ok(CommitmentStatus::Included),
             "Spent" => Ok(CommitmentStatus::Spent),
             "Failed" => Ok(CommitmentStatus::Failed),
-            _ => Err(Error::new(
-                ErrorKind::InvalidData,
-                format!("invalid commitment status string {}", s),
-            )),
+            _ => Err(Error::msg(format!(
+                "invalid commitment status string {}",
+                s
+            ))),
         }
     }
 }

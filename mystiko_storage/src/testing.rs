@@ -1,5 +1,6 @@
 use crate::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::io::Error;
+
+use anyhow::Result;
 
 pub static TEST_DOCUMENT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "test_documents",
@@ -36,7 +37,7 @@ impl DocumentData for TestDocumentData {
             _ => None,
         }
     }
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(TestDocumentData {
             field1: raw.field_string_value("field1")?.unwrap(),
             field2: raw.field_integer_value("field2")?.unwrap(),

@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 use crate::document::transaction::Transaction;
+use anyhow::Result;
 use futures::lock::Mutex;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::{Document, DocumentData, DocumentRawData};
@@ -7,7 +8,6 @@ use mystiko_storage::filter::QueryFilter;
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
-use std::io::Error;
 use std::sync::Arc;
 
 pub struct TransactionCollection<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
@@ -19,7 +19,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
         TransactionCollection { collection }
     }
 
-    pub async fn insert(&self, transaction: &Transaction) -> Result<Document<Transaction>, Error> {
+    pub async fn insert(&self, transaction: &Transaction) -> Result<Document<Transaction>> {
         let mut collection = self.collection.lock().await;
         collection.insert(transaction).await
     }
@@ -27,40 +27,37 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
     pub async fn insert_batch(
         &self,
         transactions: &Vec<Transaction>,
-    ) -> Result<Vec<Document<Transaction>>, Error> {
+    ) -> Result<Vec<Document<Transaction>>> {
         let mut collection = self.collection.lock().await;
         collection.insert_batch(transactions).await
     }
 
-    pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Transaction>>, Error> {
+    pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Transaction>>> {
         let mut collection = self.collection.lock().await;
         collection.find::<Transaction>(Some(filter)).await
     }
 
-    pub async fn find_all(&self) -> Result<Vec<Document<Transaction>>, Error> {
+    pub async fn find_all(&self) -> Result<Vec<Document<Transaction>>> {
         let mut collection = self.collection.lock().await;
         collection.find::<Transaction>(None).await
     }
 
-    pub async fn find_one(
-        &self,
-        filter: QueryFilter,
-    ) -> Result<Option<Document<Transaction>>, Error> {
+    pub async fn find_one(&self, filter: QueryFilter) -> Result<Option<Document<Transaction>>> {
         let mut collection = self.collection.lock().await;
         collection.find_one(Some(filter)).await
     }
 
-    pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Transaction>>, Error> {
+    pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Transaction>>> {
         let mut collection = self.collection.lock().await;
         collection.find_by_id(id).await
     }
 
-    pub async fn count(&self, filter: QueryFilter) -> Result<u64, Error> {
+    pub async fn count(&self, filter: QueryFilter) -> Result<u64> {
         let mut collection = self.collection.lock().await;
         collection.count::<Transaction>(Some(filter)).await
     }
 
-    pub async fn count_all(&self) -> Result<u64, Error> {
+    pub async fn count_all(&self) -> Result<u64> {
         let mut collection = self.collection.lock().await;
         collection.count::<Transaction>(None).await
     }
@@ -68,7 +65,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
     pub async fn update(
         &self,
         transaction: &Document<Transaction>,
-    ) -> Result<Document<Transaction>, Error> {
+    ) -> Result<Document<Transaction>> {
         let mut collection = self.collection.lock().await;
         collection.update(transaction).await
     }
@@ -76,42 +73,39 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
     pub async fn update_batch(
         &self,
         transactions: &Vec<Document<Transaction>>,
-    ) -> Result<Vec<Document<Transaction>>, Error> {
+    ) -> Result<Vec<Document<Transaction>>> {
         let mut collection = self.collection.lock().await;
         collection.update_batch(transactions).await
     }
 
-    pub async fn delete(&self, transaction: &Document<Transaction>) -> Result<(), Error> {
+    pub async fn delete(&self, transaction: &Document<Transaction>) -> Result<()> {
         let mut collection = self.collection.lock().await;
         collection.delete(transaction).await
     }
 
-    pub async fn delete_batch(
-        &self,
-        transactions: &Vec<Document<Transaction>>,
-    ) -> Result<(), Error> {
+    pub async fn delete_batch(&self, transactions: &Vec<Document<Transaction>>) -> Result<()> {
         let mut collection = self.collection.lock().await;
         collection.delete_batch(transactions).await
     }
 
-    pub async fn delete_all(&self) -> Result<(), Error> {
+    pub async fn delete_all(&self) -> Result<()> {
         let mut collection = self.collection.lock().await;
         collection.delete_by_filter::<Transaction>(None).await
     }
 
-    pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<(), Error> {
+    pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
         let mut collection = self.collection.lock().await;
         collection
             .delete_by_filter::<Transaction>(Some(filter))
             .await
     }
 
-    pub async fn migrate(&self) -> Result<Document<Migration>, Error> {
+    pub async fn migrate(&self) -> Result<Document<Migration>> {
         let mut collection = self.collection.lock().await;
         collection.migrate(Transaction::schema()).await
     }
 
-    pub async fn collection_exists(&self) -> Result<bool, Error> {
+    pub async fn collection_exists(&self) -> Result<bool> {
         let mut collection = self.collection.lock().await;
         collection.collection_exists(Transaction::schema()).await
     }

@@ -1,15 +1,16 @@
 #![forbid(unsafe_code)]
+extern crate anyhow;
 extern crate async_trait;
 extern crate futures;
 extern crate num_traits;
 extern crate sqlx;
 
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use futures::lock::Mutex;
 use num_traits::{Float, PrimInt};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteRow};
 use sqlx::{ConnectOptions, Executor, Row, SqliteConnection};
-use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -25,54 +26,42 @@ pub struct SqliteStorage {
 }
 
 impl DocumentRawData for SqliteRawData {
-    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>, Error> {
+    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>> {
         match self.row.try_get::<Option<i64>, &str>(field) {
             Ok(Some(v)) => Ok(T::from(v)),
             Ok(None) => Ok(None),
-            Err(e) => Err(Error::new(
-                ErrorKind::Other,
-                format!("failed to parse column {} value: {}", field, e),
-            )),
+            Err(e) => Err(Error::msg(format!("failed to parse column {} value: {}", field, e))),
         }
     }
 
-    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>, Error> {
+    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>> {
         match self.row.try_get::<Option<f64>, &str>(field) {
             Ok(Some(v)) => Ok(T::from(v)),
             Ok(None) => Ok(None),
-            Err(e) => Err(Error::new(
-                ErrorKind::Other,
-                format!("failed to parse column {} value: {}", field, e),
-            )),
+            Err(e) => Err(Error::msg(format!("failed to parse column {} value: {}", field, e))),
         }
     }
 
-    fn field_string_value(&self, field: &str) -> Result<Option<String>, Error> {
+    fn field_string_value(&self, field: &str) -> Result<Option<String>> {
         match self.row.try_get::<Option<String>, &str>(field) {
             Ok(v) => Ok(v),
-            Err(e) => Err(Error::new(
-                ErrorKind::Other,
-                format!("failed to parse column {} value: {}", field, e),
-            )),
+            Err(e) => Err(Error::msg(format!("failed to parse column {} value: {}", field, e))),
         }
     }
 }
 
 #[async_trait]
 impl Storage<SqliteRawData> for SqliteStorage {
-    async fn execute(&mut self, statement: String) -> Result<(), Error> {
+    async fn execute(&mut self, statement: String) -> Result<()> {
         let mut connection = self.connection.lock().await;
         let result = connection.execute(sqlx::query(&statement)).await;
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(Error::new(
-                ErrorKind::Other,
-                format!("sqlite execution error: {}", e),
-            )),
+            Err(e) => Err(Error::msg(format!("sqlite execution error: {}", e))),
         }
     }
 
-    async fn query(&mut self, statement: String) -> Result<Vec<SqliteRawData>, Error> {
+    async fn query(&mut self, statement: String) -> Result<Vec<SqliteRawData>> {
         let mut connection = self.connection.lock().await;
         let results = connection.fetch_all(sqlx::query(&statement)).await;
         match results {
@@ -85,14 +74,11 @@ impl Storage<SqliteRawData> for SqliteStorage {
                 }
                 Ok(documents)
             }
-            Err(e) => Err(Error::new(
-                ErrorKind::Other,
-                format!("sqlite querying error: {}", e),
-            )),
+            Err(e) => Err(Error::msg(format!("sqlite querying error: {}", e))),
         }
     }
 
-    async fn collection_exists(&mut self, collection: &str) -> Result<bool, Error> {
+    async fn collection_exists(&mut self, collection: &str) -> Result<bool> {
         let mut connection = self.connection.lock().await;
         let results = connection
             .fetch_all(
@@ -104,10 +90,7 @@ impl Storage<SqliteRawData> for SqliteStorage {
             .await;
         match results {
             Ok(rows) => Ok(!rows.is_empty()),
-            Err(e) => Err(Error::new(
-                ErrorKind::Other,
-                format!("sqlite checking table existence error: {}", e),
-            )),
+            Err(e) => Err(Error::msg(format!("sqlite checking table existence error: {}", e))),
         }
     }
 }
@@ -136,7 +119,7 @@ impl SqliteStorageBuilder {
         self
     }
 
-    pub async fn build(self) -> Result<SqliteStorage, Error> {
+    pub async fn build(self) -> Result<SqliteStorage> {
         let connection_result = SqliteConnectOptions::new()
             .create_if_missing(true)
             .filename(&self.path)
@@ -146,10 +129,7 @@ impl SqliteStorageBuilder {
             Ok(connection) => Ok(SqliteStorage {
                 connection: Arc::new(Mutex::new(connection)),
             }),
-            Err(e) => Err(Error::new(
-                ErrorKind::Other,
-                format!("failed to create sqlite connection pool: {}", e),
-            )),
+            Err(e) => Err(Error::msg(format!("failed to create sqlite connection pool: {}", e))),
         }
     }
 }

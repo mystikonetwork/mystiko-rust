@@ -1,4 +1,5 @@
 #![forbid(unsafe_code)]
+extern crate anyhow;
 extern crate async_trait;
 extern crate num_traits;
 extern crate ulid;

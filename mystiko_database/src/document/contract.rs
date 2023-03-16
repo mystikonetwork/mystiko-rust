@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
-
+use anyhow::{Error, Result};
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 
 pub static CONTRACT_SCHEMA: DocumentSchema = DocumentSchema {
@@ -71,7 +70,7 @@ impl DocumentData for Contract {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Contract {
             contract_type: ContractType::from_str(
                 &raw.field_string_value("contract_type")?.unwrap(),
@@ -103,10 +102,7 @@ impl FromStr for ContractType {
         match s {
             "Deposit" => Ok(ContractType::Deposit),
             "Pool" => Ok(ContractType::Pool),
-            _ => Err(Error::new(
-                ErrorKind::InvalidData,
-                format!("invalid contract type string {}", s),
-            )),
+            _ => Err(Error::msg(format!("invalid contract type string {}", s))),
         }
     }
 }

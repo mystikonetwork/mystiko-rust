@@ -1,7 +1,7 @@
+use anyhow::{Error, Result};
 use mystiko_storage::document::*;
 use mystiko_storage::testing::*;
 use num_traits::{Float, PrimInt};
-use std::io::{Error, ErrorKind};
 
 #[test]
 fn test_document_definition() {
@@ -61,7 +61,7 @@ fn test_document_deserialize() {
         field3: Option<f64>,
     }
     impl DocumentRawData for TestDocumentRawData {
-        fn field_integer_value<T: PrimInt>(&self, field: &str) -> Result<Option<T>, Error> {
+        fn field_integer_value<T: PrimInt>(&self, field: &str) -> Result<Option<T>> {
             if field.eq(DOCUMENT_CREATED_AT_FIELD) {
                 Ok(T::from(0xdead))
             } else if field.eq(DOCUMENT_UPDATED_AT_FIELD) {
@@ -69,25 +69,25 @@ fn test_document_deserialize() {
             } else if field.eq("field2") {
                 Ok(T::from(0xbaad))
             } else {
-                Err(Error::new(ErrorKind::InvalidInput, "wrong field name"))
+                Err(Error::msg("wrong field name"))
             }
         }
 
-        fn field_float_value<T: Float>(&self, field: &str) -> Result<Option<T>, Error> {
+        fn field_float_value<T: Float>(&self, field: &str) -> Result<Option<T>> {
             if field.eq("field3") {
                 Ok(self.field3.and_then(|f| T::from(f)))
             } else {
-                Err(Error::new(ErrorKind::InvalidInput, "wrong field name"))
+                Err(Error::msg("wrong field name"))
             }
         }
 
-        fn field_string_value(&self, field: &str) -> Result<Option<String>, Error> {
+        fn field_string_value(&self, field: &str) -> Result<Option<String>> {
             if field.eq(DOCUMENT_ID_FIELD) {
                 Ok(Some(String::from("1234")))
             } else if field.eq("field1") {
                 Ok(Some(String::from("field value")))
             } else {
-                Err(Error::new(ErrorKind::InvalidInput, "wrong field name"))
+                Err(Error::msg("wrong field name"))
             }
         }
     }

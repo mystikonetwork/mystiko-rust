@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
-
+use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::io::Error;
 
 pub static WALLET_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "wallets",
@@ -36,7 +35,7 @@ impl DocumentData for Wallet {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Wallet {
             encrypted_master_seed: raw.field_string_value("encrypted_master_seed")?.unwrap(),
             hashed_password: raw.field_string_value("hashed_password")?.unwrap(),

@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 use crate::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::io::Error;
+
+use anyhow::Result;
 
 static MIGRATION_COLLECTION_NAME: &str = "__migrations__";
 static MIGRATION_SQL: &[&str; 1] = &["CREATE TABLE __migrations__ (\
@@ -35,7 +36,7 @@ impl DocumentData for Migration {
             None
         }
     }
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Migration {
             collection_name: raw.field_string_value(MIGRATION_FIELDS[0])?.unwrap(),
             version: raw.field_integer_value(MIGRATION_FIELDS[1])?.unwrap(),

@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
 
+use anyhow::Result;
 use num_traits::{Float, PrimInt};
 use std::fmt::Debug;
-use std::io::Error;
 use std::marker::{Send, Sync};
 use std::str::FromStr;
 
@@ -19,15 +19,15 @@ impl DocumentSchema {
 }
 
 pub trait DocumentRawData: Send + Sync {
-    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>, Error>;
-    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>, Error>;
-    fn field_string_value(&self, field: &str) -> Result<Option<String>, Error>;
+    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>>;
+    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>>;
+    fn field_string_value(&self, field: &str) -> Result<Option<String>>;
 }
 
 pub trait DocumentData: Clone + PartialEq + Debug + Send + Sync {
     fn schema() -> &'static DocumentSchema;
     fn field_value_string(&self, field: &str) -> Option<String>;
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error>;
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self>;
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -65,7 +65,7 @@ impl<T: DocumentData> Document<T> {
             .iter()
             .position(|f| f.eq(&field))
     }
-    pub fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, Error> {
+    pub fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Document {
             id: raw.field_string_value(DOCUMENT_ID_FIELD)?.unwrap(),
             created_at: raw.field_integer_value(DOCUMENT_CREATED_AT_FIELD)?.unwrap(),
