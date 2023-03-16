@@ -104,17 +104,15 @@ impl IndexerClient {
 
     pub async fn find_commitment_queued_for_chain(
         &self,
-        chain_id: u32,
-        start_block: Option<u32>,
-        end_block: Option<u32>,
-        where_filter: Option<CommitmentQueuedRequest>,
+        request: CommitmentQueuedRequest,
     ) -> Result<Vec<CommitmentQueuedResponse>, ClientError> {
         let mut request_builder = self.reqwest_client.post(format!(
             "{}/chains/{}/events/commitment-queued",
-            &self.base_url, chain_id
+            &self.base_url, request.chain_id
         ));
-        request_builder = self.build_with_block_param(request_builder, start_block, end_block);
-        request_builder = request_builder.json(&where_filter);
+        request_builder =
+            self.build_with_block_param(request_builder, request.start_block, request.end_block);
+        request_builder = request_builder.json(&request.where_filter);
         let response = self
             .post_data::<Vec<CommitmentQueuedResponse>>(request_builder)
             .await?;

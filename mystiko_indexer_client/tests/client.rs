@@ -5,7 +5,9 @@ use mystiko_indexer_client::errors::ClientError;
 use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::{
     client::IndexerClient,
-    types::commitment_queued::{CommitmentQueuedRequest, CommitmentQueuedResponse},
+    types::commitment_queued::{
+        CommitmentQueuedFilter, CommitmentQueuedRequest, CommitmentQueuedResponse,
+    },
 };
 use serde_json;
 
@@ -154,9 +156,11 @@ async fn test_find_commitment_queued_for_chain() {
     let chain_id = 5;
     let start_block = 100;
     let end_block = 10000;
-    let where_filter = Some(CommitmentQueuedRequest::builder().build());
+    let where_filter = CommitmentQueuedFilter::builder()
+        .commit_hash("commit_hash 1".to_string())
+        .build();
     let json_str = serde_json::to_string(&where_filter).unwrap();
-    let where_filter2 = serde_json::from_str::<Option<CommitmentQueuedRequest>>(&json_str).unwrap();
+    let where_filter2 = serde_json::from_str::<Option<CommitmentQueuedFilter>>(&json_str).unwrap();
     assert!(where_filter2.is_some());
     let resp_list: Vec<CommitmentQueuedResponse> = vec![
         CommitmentQueuedResponse::builder()
@@ -216,19 +220,20 @@ async fn test_find_commitment_queued_for_chain() {
         .with_header("content-type", "application/json")
         .create_async()
         .await;
-    let where_filter = Some(CommitmentQueuedRequest::builder().build());
+    let where_filter = CommitmentQueuedFilter::builder().build();
     let resp = indexer_client
         .find_commitment_queued_for_chain(
-            chain_id,
-            Some(start_block),
-            Some(end_block),
-            where_filter,
+            CommitmentQueuedRequest::builder()
+                .chain_id(chain_id)
+                .start_block(start_block)
+                .end_block(end_block)
+                .where_filter(where_filter)
+                .build(),
         )
         .await;
     assert!(resp.is_ok());
     assert_eq!(resp.unwrap(), resp_list);
     m.assert_async().await;
-    let where_filter2 = None;
     let mocked_api_resp = ApiResponse {
         code: -1,
         result: "unknow error",
@@ -236,7 +241,7 @@ async fn test_find_commitment_queued_for_chain() {
     let m = mocked_server
         .mock(
             "post",
-            "/chains/5/events/commitment-queued?startBlock=100&endBlock=10000",
+            "/chains/5/events/commitment-queued",
         )
         .with_status(200)
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
@@ -245,10 +250,9 @@ async fn test_find_commitment_queued_for_chain() {
         .await;
     let resp = indexer_client
         .find_commitment_queued_for_chain(
-            chain_id,
-            Some(start_block),
-            Some(end_block),
-            where_filter2,
+            CommitmentQueuedRequest::builder()
+                .chain_id(chain_id)
+                .build(),
         )
         .await;
     assert!(resp.is_err());

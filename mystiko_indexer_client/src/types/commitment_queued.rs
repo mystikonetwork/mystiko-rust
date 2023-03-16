@@ -3,21 +3,32 @@ use typed_builder::TypedBuilder;
 
 #[derive(Deserialize, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct CommitmentQueuedRequest {
-    #[builder(default=None)]
+pub struct CommitmentQueuedFilter {
+    #[builder(setter(strip_option), default=None)]
     pub commit_hash: Option<String>,
-    #[builder(default=None)]
+    #[builder(setter(strip_option), default=None)]
     pub tx_hash: Option<String>,
-    #[builder(default=None)]
+    #[builder(setter(strip_option), default=None)]
     pub encrypted_note: Option<String>,
-    #[builder(default=None)]
+    #[builder(setter(strip_option), default=None)]
     pub leaf_index: Option<u32>,
-    #[builder(default=None)]
+    #[builder(setter(strip_option), default=None)]
     pub create_at: Option<u64>,
-    #[builder(default=None)]
+    #[builder(setter(strip_option), default=None)]
     pub status: Option<u32>,
-    #[builder(default=None)]
+    #[builder(setter(strip_option), default=None)]
     pub contract_id: Option<u64>,
+}
+
+#[derive(Deserialize, Serialize, TypedBuilder)]
+pub struct CommitmentQueuedRequest {
+    pub chain_id: u32,
+    #[builder(setter(strip_option), default=None)]
+    pub start_block: Option<u32>,
+    #[builder(setter(strip_option), default=None)]
+    pub end_block: Option<u32>,
+    #[builder(setter(strip_option), default=None)]
+    pub where_filter: Option<CommitmentQueuedFilter>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TypedBuilder, PartialEq, Eq)]
