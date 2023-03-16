@@ -7,10 +7,7 @@ pub fn from_decimals<T>(bn: T, decimals: Option<u32>) -> f64
 where
     T: ToString,
 {
-    let decimals = match decimals {
-        None => 18,
-        Some(value) => value,
-    };
+    let decimals = decimals.unwrap_or(18);
     let factor = Decimal::from_u64(10u64.pow(decimals)).unwrap();
     let result = Decimal::from_str(&bn.to_string()).unwrap();
     result.div(factor).to_f64().unwrap()

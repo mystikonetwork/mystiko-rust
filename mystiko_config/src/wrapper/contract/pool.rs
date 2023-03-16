@@ -10,6 +10,7 @@ use mystiko_utils::check::check;
 use mystiko_utils::convert::from_decimals;
 use num_bigint::BigInt;
 use std::collections::HashMap;
+use std::error::Error;
 use std::rc::Rc;
 use std::str::FromStr;
 
@@ -53,25 +54,31 @@ impl PoolContractConfig {
     ) -> Result<Self, ValidationError> {
         let contract_config = ContractConfig::new(data, aux_data);
         let aux_data = contract_config.base.aux_data_not_empty().unwrap();
+        let asset_config = PoolContractConfig::init_asset_config(&contract_config, aux_data);
+        if asset_config.is_err() {
+            return Err(ValidationError::new(vec![asset_config
+                .unwrap_err()
+                .to_string()]));
+        }
         let config = Self {
             base: contract_config.clone(),
             circuit_configs: PoolContractConfig::init_circuits_configs(&contract_config, aux_data),
             main_asset_config: aux_data.main_asset_config.clone(),
-            asset_config: PoolContractConfig::init_asset_config(&contract_config, aux_data),
+            asset_config: asset_config.unwrap(),
         };
         let validate = config.validate();
-        return match validate {
+        match validate {
             Ok(_) => Ok(config),
             Err(err) => Err(err),
-        };
+        }
     }
 
     pub fn version(&self) -> &u32 {
-        &self.base.version()
+        self.base.version()
     }
 
     pub fn address(&self) -> &str {
-        &self.base.base.data.address()
+        self.base.base.data.address()
     }
 
     pub fn copy_data(&self) -> RawPoolContractConfig {
@@ -83,11 +90,11 @@ impl PoolContractConfig {
     }
 
     pub fn indexer_filter_size(&self) -> &Option<u64> {
-        &self.base.indexer_filter_size()
+        self.base.indexer_filter_size()
     }
 
     pub fn event_filter_size(&self) -> &Option<u64> {
-        &self.base.event_filter_size()
+        self.base.event_filter_size()
     }
 
     pub fn pool_name(&self) -> &str {
@@ -175,15 +182,15 @@ impl PoolContractConfig {
         aux_data: &AuxData,
     ) -> HashMap<CircuitType, CircuitConfig> {
         let mut circuit_configs: HashMap<CircuitType, CircuitConfig> = HashMap::new();
-        for (_, circuit_conf) in &*aux_data.default_circuit_configs {
-            circuit_configs.insert(circuit_conf.circuit_type().clone(), circuit_conf.clone());
+        for circuit_conf in (*aux_data.default_circuit_configs).values() {
+            circuit_configs.insert(*circuit_conf.circuit_type(), circuit_conf.clone());
         }
         for circuit_name in &base.base.data.circuits {
             let circuit_conf = aux_data.circuit_configs_by_name.get(circuit_name);
             match circuit_conf {
                 None => {}
                 Some(value) => {
-                    circuit_configs.insert(value.circuit_type().clone(), value.clone());
+                    circuit_configs.insert(*value.circuit_type(), value.clone());
                 }
             }
         }
@@ -194,20 +201,20 @@ impl PoolContractConfig {
     fn init_asset_config(
         base: &ContractConfig<RawPoolContractConfig, AuxData>,
         aux_data: &AuxData,
-    ) -> Option<AssetConfig> {
+    ) -> Result<Option<AssetConfig>, Box<dyn Error>> {
         match &base.base.data.asset_address {
-            None => None,
+            None => Ok(None),
             Some(value) => {
-                let asset_config = aux_data.asset_configs.get(value);
-                Some(
-                    asset_config.expect(
+                if let Some(asset_config) = aux_data.asset_configs.get(value) {
+                    Ok(Some(asset_config.clone()))
+                } else {
+                    Err(
                         format!(
                             "asset address={:?} config has not been defined for pool contract address={:?}",
-                            value,
-                            base.base.data.address()
-                        ).as_str()
-                    ).clone()
-                )
+                            value, base.address()
+                        )
+                    )?
+                }
             }
         }
     }

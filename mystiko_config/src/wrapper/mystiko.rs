@@ -44,7 +44,7 @@ impl MystikoConfig {
     pub fn new(data: RawMystikoConfig) -> Result<Self, ValidationError> {
         let base = BaseConfig::new(data, None);
         let mut config = Self {
-            base: base.clone(),
+            base,
             default_circuit_configs: Default::default(),
             circuit_configs_by_name: Default::default(),
             bridge_configs: Default::default(),
@@ -101,16 +101,13 @@ impl MystikoConfig {
 
     pub fn get_peer_chain_configs(&self, chain_id: u32) -> Vec<ChainConfig> {
         let mut peer_chain_configs: Vec<ChainConfig> = Vec::new();
-        let chain_config = self.get_chain_config(chain_id);
-        if chain_config.is_some() {
-            for peer_chain_id in chain_config.unwrap().peer_chain_ids() {
-                let peer_chain_config = self.get_chain_config(peer_chain_id);
-                if peer_chain_config.is_some() {
-                    peer_chain_configs.push(peer_chain_config.unwrap().clone())
+        if let Some(chain_config) = self.get_chain_config(chain_id) {
+            for peer_chain_id in chain_config.peer_chain_ids() {
+                if let Some(peer_chain_config) = self.get_chain_config(peer_chain_id) {
+                    peer_chain_configs.push(peer_chain_config.clone());
                 }
             }
         }
-
         peer_chain_configs
     }
 
@@ -138,9 +135,8 @@ impl MystikoConfig {
                 .unwrap()
                 .get_bridges(peer_chain_id, asset_symbol)?;
             for bridge_type in bridge_types {
-                let bridge_config = self.get_bridge_config(bridge_type);
-                if bridge_config.is_some() {
-                    bridges.push(bridge_config.unwrap().clone());
+                if let Some(bridge_config) = self.get_bridge_config(bridge_type) {
+                    bridges.push(bridge_config.clone());
                 }
             }
         }
@@ -166,7 +162,7 @@ impl MystikoConfig {
         chain_id: u32,
         address: String,
     ) -> Option<&DepositContractConfig> {
-        let chain_config = self.get_chain_config(chain_id).clone();
+        let chain_config = self.get_chain_config(chain_id);
         match chain_config {
             Some(config) => config.get_deposit_contract_by_address(address),
             None => None,
@@ -191,7 +187,7 @@ impl MystikoConfig {
         chain_id: u32,
         asset_symbol: &str,
         bridge_type: BridgeType,
-    ) -> Vec<PoolContractConfig> {
+    ) -> Vec<&PoolContractConfig> {
         match self.get_chain_config(chain_id) {
             None => {
                 vec![]
@@ -205,12 +201,11 @@ impl MystikoConfig {
         chain_id: u32,
         address: &str,
     ) -> Option<&PoolContractConfig> {
-        let chain_config = self.get_chain_config(chain_id);
-        if chain_config.is_some() {
-            return chain_config.unwrap().get_pool_contract_by_address(address);
+        if let Some(chain_config) = self.get_chain_config(chain_id) {
+            chain_config.get_pool_contract_by_address(address)
+        } else {
+            None
         }
-
-        None
     }
 
     pub fn get_bridge_config(&self, bridge_type: BridgeType) -> Option<&BridgeConfigType> {
@@ -226,12 +221,8 @@ impl MystikoConfig {
     }
 
     pub fn get_transaction_url(&self, chain_id: u32, transaction_hash: &str) -> Option<String> {
-        let chain_config = self.get_chain_config(chain_id);
-        if chain_config.is_some() {
-            return Some(chain_config.unwrap().get_transaction_url(transaction_hash));
-        }
-
-        None
+        self.get_chain_config(chain_id)
+            .map(|chain_config| chain_config.get_transaction_url(transaction_hash))
     }
 
     pub fn mutate(&self, data: Option<RawMystikoConfig>) -> Result<Self, ValidationError> {
@@ -390,7 +381,7 @@ impl MystikoConfig {
 
     #[flame]
     fn validate(&self) -> Result<(), ValidationError> {
-        for (_, chain_config) in &self.chain_configs {
+        for chain_config in self.chain_configs.values() {
             for deposit_contract_config in chain_config.deposit_contracts_with_disabled() {
                 if deposit_contract_config.bridge_type() != BridgeType::Loop {
                     let check_result = check(

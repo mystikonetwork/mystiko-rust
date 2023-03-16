@@ -102,7 +102,7 @@ impl<'de> Deserialize<'de> for RawPolyBridgeConfig {
             api_prefix: String,
         }
         let inner = Inner::deserialize(deserializer)?;
-        let bridge_type = inner.bridge_type.unwrap_or_else(|| BridgeType::Poly);
+        let bridge_type = inner.bridge_type.unwrap_or(BridgeType::Poly);
         let base_bridge_type = bridge_type.clone();
         let explorer_prefix = inner
             .explorer_prefix

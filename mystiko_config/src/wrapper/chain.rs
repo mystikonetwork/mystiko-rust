@@ -57,12 +57,15 @@ impl AuxData {
     }
 }
 
+type PoolContractConfigMap = HashMap<u32, PoolContractConfig>;
+type BridgeTypeMap = HashMap<BridgeType, PoolContractConfigMap>;
+type BridgeMap = HashMap<String, BridgeTypeMap>;
+
 #[derive(Validate, Clone, Debug, PartialEq)]
 pub struct ChainConfig {
     base: BaseConfig<RawChainConfig, AuxData>,
     pool_contract_configs: Rc<HashMap<String, PoolContractConfig>>,
-    pool_configs_by_asset_and_bridge:
-        Rc<HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>>,
+    pool_configs_by_asset_and_bridge: Rc<BridgeMap>,
     deposit_contract_configs: Rc<HashMap<String, DepositContractConfig>>,
     main_asset_config: Rc<AssetConfig>,
     asset_configs: Rc<HashMap<String, AssetConfig>>,
@@ -218,13 +221,12 @@ impl ChainConfig {
                     let asset_symbol = config.asset_symbol()?;
                     asset_symbols.insert(asset_symbol);
                 }
-            } else if config.bridge_type() != BridgeType::Loop {
-                if config.peer_chain_id().is_some()
-                    && peer_chain_id == config.peer_chain_id().unwrap()
-                {
-                    let asset_symbol = config.asset_symbol()?;
-                    asset_symbols.insert(asset_symbol);
-                }
+            } else if config.bridge_type() != BridgeType::Loop
+                && config.peer_chain_id().is_some()
+                && peer_chain_id == config.peer_chain_id().unwrap()
+            {
+                let asset_symbol = config.asset_symbol()?;
+                asset_symbols.insert(asset_symbol);
             }
         }
 
@@ -240,12 +242,11 @@ impl ChainConfig {
         for config in self.deposit_contracts() {
             if peer_chain_id != *self.chain_id() {
                 let config_asset_symbol = config.asset_symbol()?;
-                if config_asset_symbol.as_str() == asset_symbol {
-                    if config.peer_chain_id().is_some()
-                        && peer_chain_id == config.peer_chain_id().unwrap()
-                    {
-                        bridges.insert(config.bridge_type());
-                    }
+                if config_asset_symbol.as_str() == asset_symbol
+                    && config.peer_chain_id().is_some()
+                    && peer_chain_id == config.peer_chain_id().unwrap()
+                {
+                    bridges.insert(config.bridge_type());
                 }
             }
         }
@@ -265,47 +266,53 @@ impl ChainConfig {
     }
 
     pub fn get_pool_contract_bridge_type(&self, address: &str) -> Option<BridgeType> {
-        match self.get_pool_contract_by_address(address) {
-            None => None,
-            Some(data) => Some(data.bridge_type().clone()),
-        }
+        self.get_pool_contract_by_address(address)
+            .map(|data| data.bridge_type().clone())
     }
 
-    pub fn get_event_filter_size_by_address(&self, address: &str) -> u64 {
+    pub fn get_event_filter_size_by_address(&self, address: &str) -> &u64 {
         let deposit_contract_config = self.deposit_contract_configs.get(address);
-        if deposit_contract_config.is_some() {
-            let event_filter_size = deposit_contract_config.unwrap().event_filter_size();
-            return if event_filter_size.is_some() {
-                event_filter_size.unwrap()
-            } else {
-                *self.event_filter_size()
-            };
+        match deposit_contract_config {
+            None => {}
+            Some(config) => {
+                return match config.event_filter_size() {
+                    None => self.event_filter_size(),
+                    Some(value) => value,
+                };
+            }
         }
         let pool_contract = self.get_pool_contract_by_address(address);
-        return if pool_contract.is_some() && pool_contract.unwrap().event_filter_size().is_some() {
-            pool_contract.unwrap().event_filter_size().unwrap()
-        } else {
-            *self.event_filter_size()
+        return match pool_contract {
+            None => self.event_filter_size(),
+            Some(config) => match config.event_filter_size() {
+                None => self.event_filter_size(),
+                Some(value) => value,
+            },
         };
     }
 
-    pub fn get_indexer_filter_size_by_address(&self, address: &str) -> u64 {
+    pub fn get_indexer_filter_size_by_address(&self, address: &str) -> &u64 {
         let deposit_contract_config = self.deposit_contract_configs.get(address);
-        if deposit_contract_config.is_some() {
-            let indexer_filter_size = deposit_contract_config.unwrap().indexer_filter_size();
-            return if indexer_filter_size.is_some() {
-                indexer_filter_size.unwrap()
-            } else {
-                *self.indexer_filter_size()
-            };
+        match deposit_contract_config {
+            None => {}
+            Some(config) => {
+                return match config.indexer_filter_size() {
+                    None => self.indexer_filter_size(),
+                    Some(value) => value,
+                };
+            }
         }
         let pool_contract = self.get_pool_contract_by_address(address);
-        return if pool_contract.is_some() && pool_contract.unwrap().indexer_filter_size().is_some()
-        {
-            pool_contract.unwrap().indexer_filter_size().unwrap()
-        } else {
-            *self.indexer_filter_size()
-        };
+        match pool_contract {
+            None => {}
+            Some(config) => match config.indexer_filter_size() {
+                None => {}
+                Some(value) => {
+                    return value;
+                }
+            },
+        }
+        self.indexer_filter_size()
     }
 
     pub fn get_asset_config_by_address(&self, asset_address: &str) -> Option<AssetConfig> {
@@ -344,12 +351,12 @@ impl ChainConfig {
         version: u32,
     ) -> Option<&PoolContractConfig> {
         let pool_config = &self.pool_configs_by_asset_and_bridge.get(asset_symbol);
-        if pool_config.is_some() {
-            let pool_contract_config = pool_config.unwrap().get(&bridge_type);
-            if pool_contract_config.is_some() {
-                return pool_contract_config.unwrap().get(&version);
+        if let Some(pool_config) = pool_config {
+            if let Some(pool_contract_config) = pool_config.get(&bridge_type) {
+                return pool_contract_config.get(&version);
             }
         }
+
         None
     }
 
@@ -357,12 +364,11 @@ impl ChainConfig {
         &self,
         asset_symbol: &str,
         bridge_type: BridgeType,
-    ) -> Vec<PoolContractConfig> {
+    ) -> Vec<&PoolContractConfig> {
         let pool_config = self.pool_configs_by_asset_and_bridge.get(asset_symbol);
-        if pool_config.is_some() {
-            let config = pool_config.unwrap().get(&bridge_type);
-            if config.is_some() {
-                return config.unwrap().values().cloned().collect();
+        if let Some(pool_config) = pool_config {
+            if let Some(config) = pool_config.get(&bridge_type) {
+                return config.values().collect();
             }
         }
         vec![]
@@ -438,7 +444,7 @@ impl ChainConfig {
         match AssetConfig::new(RawAssetConfig::new(
             AssetType::Main,
             base.data.asset_symbol.clone(),
-            base.data.asset_decimals.clone(),
+            base.data.asset_decimals,
             MAIN_ASSET_ADDRESS.to_string(),
             base.data.recommended_amounts.clone(),
         )) {
@@ -453,11 +459,7 @@ impl ChainConfig {
     ) -> Result<Rc<HashMap<String, AssetConfig>>, ValidationError> {
         let mut asset_configs: HashMap<String, AssetConfig> = HashMap::new();
         for raw in &base.data.assets {
-            let asset_config = AssetConfig::new(raw.clone());
-            if asset_config.is_err() {
-                return Err(asset_config.unwrap_err());
-            }
-            let asset_config = asset_config.unwrap();
+            let asset_config = AssetConfig::new(raw.clone())?;
             asset_configs.insert(raw.asset_address.clone(), asset_config);
         }
         Ok(Rc::new(asset_configs))
@@ -466,10 +468,7 @@ impl ChainConfig {
     #[flame]
     fn init_pool_configs_by_asset_and_bridge(
         pool_contracts: Vec<PoolContractConfig>,
-    ) -> Result<
-        Rc<HashMap<String, HashMap<BridgeType, HashMap<u32, PoolContractConfig>>>>,
-        ValidationError,
-    > {
+    ) -> Result<Rc<BridgeMap>, ValidationError> {
         let mut pool_configs_by_asset_and_bridge: HashMap<
             String,
             HashMap<BridgeType, HashMap<u32, PoolContractConfig>>,
@@ -501,7 +500,7 @@ impl ChainConfig {
                     .to_string()]));
             }
             all_versions.insert(
-                pool_contract_config.version().clone(),
+                *pool_contract_config.version(),
                 pool_contract_config.clone(),
             );
             bridges.insert(pool_contract_config.bridge_type().clone(), all_versions);
@@ -555,20 +554,19 @@ impl ChainConfig {
                     .unwrap_err()
                     .to_string()]));
             }
-            if raw.bridge_type != BridgeType::Loop {
-                if raw.peer_chain_id.is_some() {
-                    let check_result = check(
-                        base.data.chain_id != raw.peer_chain_id.unwrap(),
-                        format!(
-                            "current chain id should be different with peer chain id in contract={:?}",
-                            raw.base.address
-                        ).as_str(),
-                    );
-                    if check_result.is_err() {
-                        return Err(ValidationError::new(vec![check_result
-                            .unwrap_err()
-                            .to_string()]));
-                    }
+            if raw.bridge_type != BridgeType::Loop && raw.peer_chain_id.is_some() {
+                let check_result = check(
+                    base.data.chain_id != raw.peer_chain_id.unwrap(),
+                    format!(
+                        "current chain id should be different with peer chain id in contract={:?}",
+                        raw.base.address
+                    )
+                    .as_str(),
+                );
+                if check_result.is_err() {
+                    return Err(ValidationError::new(vec![check_result
+                        .unwrap_err()
+                        .to_string()]));
                 }
             }
             let deposit_contract_config = DepositContractConfig::new(

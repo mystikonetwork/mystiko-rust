@@ -24,11 +24,11 @@ where
     }
 
     pub fn name(&self) -> &String {
-        &self.base.data.name()
+        self.base.data.name()
     }
 
     pub fn bridge_type(&self) -> &BridgeType {
-        &self.base.data.bridge_type()
+        self.base.data.bridge_type()
     }
 
     pub fn mutate(&self, data: Option<T>, aux_data: Option<A>) -> BridgeConfig<T, A> {

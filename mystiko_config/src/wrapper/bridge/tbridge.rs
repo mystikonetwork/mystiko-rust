@@ -23,11 +23,11 @@ impl TBridgeConfig {
     }
 
     pub fn bridge_type(&self) -> &BridgeType {
-        &self.base.bridge_type()
+        self.base.bridge_type()
     }
 
     pub fn name(&self) -> &String {
-        &self.base.name()
+        self.base.name()
     }
 
     pub fn to_json_string(&self) -> String {

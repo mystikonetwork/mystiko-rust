@@ -22,11 +22,11 @@ impl RawConfig {
         T: Validate + Debug,
     {
         let result = validate_object(object);
-        return if result.is_err() {
-            Err(ValidationError::new(result.unwrap_err()))
+        if let Err(errs) = result {
+            Err(ValidationError::new(errs))
         } else {
             Ok(())
-        };
+        }
     }
 
     pub async fn create_from_object<T>(plain: T) -> Result<T, ValidationError>

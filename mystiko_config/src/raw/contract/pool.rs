@@ -108,12 +108,10 @@ impl<'de> Deserialize<'de> for RawPoolContractConfig {
             circuits: Option<Vec<String>>,
         }
         let inner = Inner::deserialize(deserializer)?;
-        let contract_type = inner.contract_type.unwrap_or_else(|| ContractType::Pool);
+        let contract_type = inner.contract_type.unwrap_or(ContractType::Pool);
         let base_contract_type = contract_type.clone();
-        let min_rollup_fee = inner
-            .min_rollup_fee
-            .unwrap_or_else(|| default_min_rollup_fee());
-        let circuits = inner.circuits.unwrap_or_else(|| vec![]);
+        let min_rollup_fee = inner.min_rollup_fee.unwrap_or_else(default_min_rollup_fee);
+        let circuits = inner.circuits.unwrap_or(Vec::new());
         Ok(Self {
             base: RawContractConfig {
                 base: Default::default(),

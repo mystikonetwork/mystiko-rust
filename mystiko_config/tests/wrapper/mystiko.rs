@@ -172,7 +172,7 @@ async fn test_get_deposit_contract_config() {
     let config = CONFIG_CREATER.get().await;
     assert_eq!(
         &config
-            .get_deposit_contract_config(3, 97, "MTT", BridgeType::Celer,)
+            .get_deposit_contract_config(3, 97, "MTT", BridgeType::Celer)
             .unwrap()
             .unwrap(),
         config
@@ -184,7 +184,7 @@ async fn test_get_deposit_contract_config() {
     );
     assert_eq!(
         &config
-            .get_deposit_contract_config(3, 97, "MTT", BridgeType::Tbridge,)
+            .get_deposit_contract_config(3, 97, "MTT", BridgeType::Tbridge)
             .unwrap()
             .unwrap(),
         config
@@ -196,7 +196,7 @@ async fn test_get_deposit_contract_config() {
     );
     assert_eq!(
         &config
-            .get_deposit_contract_config(3, 3, "ETH", BridgeType::Loop,)
+            .get_deposit_contract_config(3, 3, "ETH", BridgeType::Loop)
             .unwrap()
             .unwrap(),
         config
@@ -208,7 +208,7 @@ async fn test_get_deposit_contract_config() {
     );
     assert_eq!(
         &config
-            .get_deposit_contract_config(97, 3, "MTT", BridgeType::Celer,)
+            .get_deposit_contract_config(97, 3, "MTT", BridgeType::Celer)
             .unwrap()
             .unwrap(),
         config
@@ -220,7 +220,7 @@ async fn test_get_deposit_contract_config() {
     );
     assert_eq!(
         &config
-            .get_deposit_contract_config(97, 3, "MTT", BridgeType::Tbridge,)
+            .get_deposit_contract_config(97, 3, "MTT", BridgeType::Tbridge)
             .unwrap()
             .unwrap(),
         config
@@ -232,7 +232,7 @@ async fn test_get_deposit_contract_config() {
     );
     assert_eq!(
         config
-            .get_deposit_contract_config(1024, 3, "MTT", BridgeType::Tbridge,)
+            .get_deposit_contract_config(1024, 3, "MTT", BridgeType::Tbridge)
             .unwrap()
             .is_none(),
         true
@@ -292,33 +292,30 @@ async fn test_get_deposit_contract_config() {
 async fn test_get_pool_contract_config() {
     let config = CONFIG_CREATER.get().await;
     assert_eq!(
-        config.get_pool_contract_config(3, "MTT", BridgeType::Celer, 2,),
-        config
-            .get_pool_contract_config_by_address(3, "0x20Eb345870059E688c59e89523442ade33C7c813",)
+        config.get_pool_contract_config(3, "MTT", BridgeType::Celer, 2),
+        config.get_pool_contract_config_by_address(3, "0x20Eb345870059E688c59e89523442ade33C7c813")
     );
     assert_eq!(
-        config.get_pool_contract_config(3, "MTT", BridgeType::Tbridge, 2,),
-        config
-            .get_pool_contract_config_by_address(3, "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d",)
+        config.get_pool_contract_config(3, "MTT", BridgeType::Tbridge, 2),
+        config.get_pool_contract_config_by_address(3, "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d")
     );
     assert_eq!(
-        config.get_pool_contract_config(3, "ETH", BridgeType::Loop, 2,),
-        config
-            .get_pool_contract_config_by_address(3, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",)
+        config.get_pool_contract_config(3, "ETH", BridgeType::Loop, 2),
+        config.get_pool_contract_config_by_address(3, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
     );
     assert_eq!(
-        config.get_pool_contract_config(97, "MTT", BridgeType::Celer, 2,),
+        config.get_pool_contract_config(97, "MTT", BridgeType::Celer, 2),
         config
-            .get_pool_contract_config_by_address(97, "0x6B8a4ea37C72F1992626eb9bD48d4aA6aa077c47",)
+            .get_pool_contract_config_by_address(97, "0x6B8a4ea37C72F1992626eb9bD48d4aA6aa077c47")
     );
     assert_eq!(
-        config.get_pool_contract_config(97, "MTT", BridgeType::Tbridge, 2,),
+        config.get_pool_contract_config(97, "MTT", BridgeType::Tbridge, 2),
         config
-            .get_pool_contract_config_by_address(97, "0xBe2C9c8a00951662dF3a978b25F448968F0595AE",)
+            .get_pool_contract_config_by_address(97, "0xBe2C9c8a00951662dF3a978b25F448968F0595AE")
     );
     assert_eq!(
         config
-            .get_pool_contract_config(1024, "MTT", BridgeType::Celer, 2,)
+            .get_pool_contract_config(1024, "MTT", BridgeType::Celer, 2)
             .is_none(),
         true
     );
@@ -335,9 +332,9 @@ async fn test_get_pool_contract_config() {
 async fn test_get_pool_contract_configs() {
     let config = CONFIG_CREATER.get().await;
     assert_eq!(
-        config.get_pool_contract_configs(3, "MTT", BridgeType::Celer,),
-        vec![config
-            .get_pool_contract_config_by_address(3, "0x20Eb345870059E688c59e89523442ade33C7c813",)
+        config.get_pool_contract_configs(3, "MTT", BridgeType::Celer),
+        vec![&config
+            .get_pool_contract_config_by_address(3, "0x20Eb345870059E688c59e89523442ade33C7c813")
             .unwrap()
             .clone()]
     );
@@ -346,35 +343,35 @@ async fn test_get_pool_contract_configs() {
     for pool_contract_config in pool_contract_configs {
         assert_eq!(
             &pool_contract_config,
-            config
-                .get_pool_contract_config_by_address(3, pool_contract_config.address(),)
+            &config
+                .get_pool_contract_config_by_address(3, pool_contract_config.address())
                 .unwrap(),
         );
     }
     assert_eq!(
-        config.get_pool_contract_configs(3, "ETH", BridgeType::Loop,),
-        vec![config
-            .get_pool_contract_config_by_address(3, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",)
+        config.get_pool_contract_configs(3, "ETH", BridgeType::Loop),
+        vec![&config
+            .get_pool_contract_config_by_address(3, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
             .unwrap()
             .clone()]
     );
     assert_eq!(
-        config.get_pool_contract_configs(97, "MTT", BridgeType::Celer,),
-        vec![config
-            .get_pool_contract_config_by_address(97, "0x6B8a4ea37C72F1992626eb9bD48d4aA6aa077c47",)
+        config.get_pool_contract_configs(97, "MTT", BridgeType::Celer),
+        vec![&config
+            .get_pool_contract_config_by_address(97, "0x6B8a4ea37C72F1992626eb9bD48d4aA6aa077c47")
             .unwrap()
             .clone()]
     );
     assert_eq!(
-        config.get_pool_contract_configs(97, "MTT", BridgeType::Tbridge,),
-        vec![config
-            .get_pool_contract_config_by_address(97, "0xBe2C9c8a00951662dF3a978b25F448968F0595AE",)
+        config.get_pool_contract_configs(97, "MTT", BridgeType::Tbridge),
+        vec![&config
+            .get_pool_contract_config_by_address(97, "0xBe2C9c8a00951662dF3a978b25F448968F0595AE")
             .unwrap()
             .clone()]
     );
     assert_eq!(
         config
-            .get_pool_contract_configs(1024, "MTT", BridgeType::Celer,)
+            .get_pool_contract_configs(1024, "MTT", BridgeType::Celer)
             .len(),
         0
     );
@@ -566,29 +563,26 @@ async fn test_missing_bridge_definition() {
 #[tokio::test]
 async fn test_duplicate_chain_config() {
     let mut raw_config = default_raw_config().await;
-    raw_config.chains.push(
-        RawConfig::create_from_object::<RawChainConfig>(RawChainConfig::new(
-            3,
-            "Ethereum Ropsten".to_string(),
-            "ETH".to_string(),
-            18,
-            vec![],
-            "https://ropsten.etherscan.io".to_string(),
-            "/tx/%tx%".to_string(),
+    let raw_chain_config = RawChainConfig::builder()
+        .chain_id(3)
+        .name("Ethereum Ropsten".to_string())
+        .asset_symbol("ETH".to_string())
+        .asset_decimals(18)
+        .explorer_url("https://ropsten.etherscan.io".to_string())
+        .explorer_prefix("/tx/%tx%".to_string())
+        .providers(vec![RawProviderConfig::new(
+            "http://localhost:8545".to_string(),
             None,
             None,
-            vec![RawProviderConfig::new(
-                "http://localhost:8545".to_string(),
-                None,
-                None,
-            )],
+        )])
+        .signer_endpoint(
             "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
-            vec![],
-            vec![],
-            vec![],
-        ))
-        .await
-        .unwrap(),
+        )
+        .build();
+    raw_config.chains.push(
+        RawConfig::create_from_object::<RawChainConfig>(raw_chain_config)
+            .await
+            .unwrap(),
     );
     let validate = MystikoConfig::create_from_raw(raw_config).await;
     assert_eq!(validate.is_err(), true);

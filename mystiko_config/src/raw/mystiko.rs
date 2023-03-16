@@ -11,10 +11,10 @@ use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
 use crate::raw::validator::{array_unique, is_sem_ver, validate_nested_vec};
 use serde::{Deserialize, Serialize};
-use std::hash::Hash;
+use std::hash::{Hash, Hasher};
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq)]
 #[serde(tag = "type")]
 #[serde(rename_all = "camelCase")]
 pub enum RawBridgeConfigType {
@@ -66,6 +66,12 @@ impl PartialEq for RawBridgeConfigType {
             RawBridgeConfigType::Tbridge(conf) => &conf.bridge_type,
         };
         type1 == type2
+    }
+}
+
+impl Hash for RawBridgeConfigType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.bridge_type().hash(state)
     }
 }
 

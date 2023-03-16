@@ -4,8 +4,8 @@ use mystiko_config::raw::contract::base::RawContractConfig;
 use mystiko_config::raw::contract::deposit::RawDepositContractConfig;
 
 async fn default_config() -> RawDepositContractConfig {
-    RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-        RawContractConfig::new(
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
             2,
             "MystikoWithPolyERC20".to_string(),
             "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
@@ -13,23 +13,30 @@ async fn default_config() -> RawDepositContractConfig {
             1000000,
             None,
             None,
-        ),
-        BridgeType::Tbridge,
-        "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
-        true,
-        Some(97),
-        Some(String::from("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547")),
-        "10000000000000000".to_string(),
-        "100000000000000000".to_string(),
-        "20000000000000000".to_string(),
-        "30000000000000000".to_string(),
-        Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
-        Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")),
-        Some(2),
-        Some(1000),
-    ))
-    .await
-    .unwrap()
+        ))
+        .bridge_type(BridgeType::Tbridge)
+        .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
+        .disabled(true)
+        .peer_chain_id(Some(97))
+        .peer_contract_address(Some(
+            "0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string(),
+        ))
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .bridge_fee_asset_address(Some(
+            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
+        ))
+        .executor_fee_asset_address(Some(
+            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
+        ))
+        .service_fee(2)
+        .service_fee_divider(1000)
+        .build();
+    RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+        .await
+        .unwrap()
 }
 
 #[tokio::test]

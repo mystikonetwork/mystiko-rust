@@ -75,27 +75,19 @@ impl DepositContractConfig {
         let contract_config = ContractConfig::new(data, aux_data);
         let aux_data = contract_config.base.aux_data_not_empty().unwrap();
         let bridge_fee_asset_config =
-            DepositContractConfig::init_bridge_fee_asset_config(&contract_config, aux_data);
-        if bridge_fee_asset_config.is_err() {
-            return Err(bridge_fee_asset_config.unwrap_err());
-        }
-        let bridge_fee_asset_config = bridge_fee_asset_config.unwrap();
+            DepositContractConfig::init_bridge_fee_asset_config(&contract_config, aux_data)?;
         let executor_fee_asset_config =
-            DepositContractConfig::init_executor_fee_asset_config(&contract_config, aux_data);
-        if executor_fee_asset_config.is_err() {
-            return Err(executor_fee_asset_config.unwrap_err());
-        }
-        let executor_fee_asset_config = executor_fee_asset_config.unwrap();
+            DepositContractConfig::init_executor_fee_asset_config(&contract_config, aux_data)?;
         let instance = Self {
             base: contract_config,
             bridge_fee_asset_config,
             executor_fee_asset_config,
         };
         let validate = instance.validate();
-        return match validate {
+        match validate {
             Ok(_) => Ok(instance),
             Err(err) => Err(err),
-        };
+        }
     }
 
     pub fn bridge_type(&self) -> BridgeType {
@@ -181,7 +173,7 @@ impl DepositContractConfig {
 
     pub fn asset_symbol(&self) -> Result<String, Box<dyn Error>> {
         let pool_contract = self.pool_contract()?;
-        Ok(pool_contract.asset_symbol().to_owned())
+        Ok(pool_contract.asset_symbol())
     }
 
     pub fn asset_decimals(&self) -> Result<u32, Box<dyn Error>> {
@@ -283,7 +275,7 @@ impl DepositContractConfig {
     }
 
     pub fn address(&self) -> &str {
-        &self.base.address()
+        self.base.address()
     }
 
     pub fn event_filter_size(&self) -> &Option<u64> {
@@ -311,7 +303,7 @@ impl DepositContractConfig {
     }
 
     pub fn name(&self) -> &str {
-        &self.base.name()
+        self.base.name()
     }
 
     pub fn mutate(
@@ -425,7 +417,7 @@ impl DepositContractConfig {
                         .unwrap_err()
                         .to_string()]));
                 }
-                return Ok(Some(Rc::new(asset_config.unwrap().clone())));
+                Ok(Some(Rc::new(asset_config.unwrap().clone())))
             }
         }
     }
@@ -453,7 +445,7 @@ impl DepositContractConfig {
                         .unwrap_err()
                         .to_string()]));
                 }
-                return Ok(Some(Rc::new(asset_config.unwrap().clone())));
+                Ok(Some(Rc::new(asset_config.unwrap().clone())))
             }
         }
     }

@@ -86,7 +86,7 @@ pub fn is_sem_ver(s: &str) -> Result<(), ValidationError> {
     Err(ValidationError::new("SemVer is error"))
 }
 
-pub fn is_numeric(s: &String, no_symbol: bool) -> bool {
+pub fn is_numeric(s: &str, no_symbol: bool) -> bool {
     let re = if no_symbol {
         Regex::new(r"^[0-9]+$").unwrap()
     } else {

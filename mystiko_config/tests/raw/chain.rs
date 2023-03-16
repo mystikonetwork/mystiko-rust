@@ -22,8 +22,8 @@ async fn init_provider_config() -> RawProviderConfig {
 }
 
 async fn init_deposit_contract_config() -> RawDepositContractConfig {
-    RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-        RawContractConfig::new(
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
             2,
             "MystikoWithPolyERC20".to_string(),
             "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string(),
@@ -31,23 +31,22 @@ async fn init_deposit_contract_config() -> RawDepositContractConfig {
             1000000,
             None,
             None,
-        ),
-        BridgeType::Tbridge,
-        "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
-        true,
-        Some(97),
-        Some(String::from("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547")),
-        "10000000000000000".to_string(),
-        "100000000000000000".to_string(),
-        "20000000000000000".to_string(),
-        "30000000000000000".to_string(),
-        None,
-        None,
-        None,
-        None,
-    ))
-    .await
-    .unwrap()
+        ))
+        .bridge_type(BridgeType::Tbridge)
+        .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
+        .disabled(true)
+        .peer_chain_id(Some(97))
+        .peer_contract_address(Some(
+            "0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string(),
+        ))
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
+    RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+        .await
+        .unwrap()
 }
 
 async fn init_pool_contract_config() -> RawPoolContractConfig {
@@ -88,27 +87,28 @@ async fn default_config() -> RawChainConfig {
     let deposit_contract_config = init_deposit_contract_config().await;
     let pool_contract_config = init_pool_contract_config().await;
     let asset_config = init_assets_config().await;
-    RawConfig::create_from_object::<RawChainConfig>(RawChainConfig::new(
-        3,
-        "Ethereum Ropsten".to_string(),
-        "ETH".to_string(),
-        18,
-        vec![
+    let raw_chain_config = RawChainConfig::builder()
+        .chain_id(3)
+        .name("Ethereum Ropsten".to_string())
+        .asset_symbol("ETH".to_string())
+        .asset_decimals(18)
+        .recommended_amounts(vec![
             "1000000000000000000".to_string(),
             "10000000000000000000".to_string(),
-        ],
-        "https://ropsten.etherscan.io".to_string(),
-        "/tx/%tx%".to_string(),
-        None,
-        None,
-        vec![provider_config],
-        "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
-        vec![deposit_contract_config],
-        vec![pool_contract_config],
-        vec![asset_config],
-    ))
-    .await
-    .unwrap()
+        ])
+        .explorer_url("https://ropsten.etherscan.io".to_string())
+        .explorer_prefix("/tx/%tx%".to_string())
+        .providers(vec![provider_config])
+        .signer_endpoint(
+            "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
+        )
+        .deposit_contracts(vec![deposit_contract_config])
+        .pool_contracts(vec![pool_contract_config])
+        .assets(vec![asset_config])
+        .build();
+    RawConfig::create_from_object::<RawChainConfig>(raw_chain_config)
+        .await
+        .unwrap()
 }
 
 lazy_static! {

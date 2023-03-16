@@ -27,11 +27,11 @@ impl CircuitConfig {
     }
 
     pub fn name(&self) -> &String {
-        return &self.base.data.name;
+        &self.base.data.name
     }
 
     pub fn circuit_type(&self) -> &CircuitType {
-        return &self.base.data.circuit_type;
+        &self.base.data.circuit_type
     }
 
     pub fn is_default(&self) -> bool {

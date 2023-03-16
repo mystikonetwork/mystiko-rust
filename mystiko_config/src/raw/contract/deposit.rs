@@ -5,6 +5,7 @@ use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 use crate::raw::validator::{is_ethereum_address, is_number_string};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::hash::{Hash, Hasher};
+use typed_builder::TypedBuilder;
 use validator::{Validate, ValidationError};
 
 fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
@@ -14,7 +15,7 @@ fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
     Err(ValidationError::new("contract type error"))
 }
 
-#[derive(Validate, Serialize, Debug, Clone, Eq)]
+#[derive(Validate, Serialize, Debug, Clone, Eq, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
 pub struct RawDepositContractConfig {
     #[serde(flatten)]
@@ -25,6 +26,7 @@ pub struct RawDepositContractConfig {
     #[serde(rename = "type")]
     #[serde(skip_serializing)]
     #[validate(custom = "validate_contract_type")]
+    #[builder(default = ContractType::Deposit)]
     pub contract_type: ContractType,
 
     #[validate(custom = "is_ethereum_address")]
@@ -33,9 +35,11 @@ pub struct RawDepositContractConfig {
     pub disabled: bool,
 
     #[validate(range(min = 1))]
+    #[builder(default = None)]
     pub peer_chain_id: Option<u32>,
 
     #[validate(custom = "is_ethereum_address")]
+    #[builder(default = None)]
     pub peer_contract_address: Option<String>,
 
     #[validate(custom = "is_number_string::<true,false>")]
@@ -51,61 +55,20 @@ pub struct RawDepositContractConfig {
     pub min_executor_fee: String,
 
     #[validate(custom = "is_ethereum_address")]
+    #[builder(default = None)]
     pub bridge_fee_asset_address: Option<String>,
 
     #[validate(custom = "is_ethereum_address")]
+    #[builder(default = None)]
     pub executor_fee_asset_address: Option<String>,
 
     #[validate(range(min = 0))]
+    #[builder(default = 0)]
     pub service_fee: u32,
 
     #[validate(range(min = 1))]
+    #[builder(default = 1000000)]
     pub service_fee_divider: u32,
-}
-
-impl RawDepositContractConfig {
-    pub fn new(
-        base: RawContractConfig,
-        bridge_type: BridgeType,
-        pool_address: String,
-        disabled: bool,
-        peer_chain_id: Option<u32>,
-        peer_contract_address: Option<String>,
-        min_amount: String,
-        max_amount: String,
-        min_bridge_fee: String,
-        min_executor_fee: String,
-        bridge_fee_asset_address: Option<String>,
-        executor_fee_asset_address: Option<String>,
-        service_fee: Option<u32>,
-        service_fee_divider: Option<u32>,
-    ) -> Self {
-        let service_fee = match service_fee {
-            None => 0,
-            Some(value) => value,
-        };
-        let service_fee_divider = match service_fee_divider {
-            None => 1000000,
-            Some(value) => value,
-        };
-        Self {
-            base,
-            bridge_type,
-            pool_address,
-            disabled,
-            peer_chain_id,
-            peer_contract_address,
-            min_amount,
-            max_amount,
-            min_bridge_fee,
-            min_executor_fee,
-            bridge_fee_asset_address,
-            executor_fee_asset_address,
-            service_fee,
-            service_fee_divider,
-            contract_type: ContractType::Deposit,
-        }
-    }
 }
 
 impl Hash for RawDepositContractConfig {
@@ -157,13 +120,13 @@ impl<'de> Deserialize<'de> for RawDepositContractConfig {
             service_fee_divider: Option<u32>,
         }
         let inner = Inner::deserialize(deserializer)?;
-        let contract_type = inner.contract_type.unwrap_or_else(|| ContractType::Deposit);
+        let contract_type = inner.contract_type.unwrap_or(ContractType::Deposit);
         let base_contract_type = contract_type.clone();
-        let service_fee = inner.service_fee.unwrap_or_else(|| 0);
-        let service_fee_divider = inner.service_fee_divider.unwrap_or_else(|| 1000000);
-        let disabled = inner.disabled.unwrap_or_else(|| false);
-        let min_bridge_fee = inner.min_bridge_fee.unwrap_or_else(|| "0".to_string());
-        let min_executor_fee = inner.min_executor_fee.unwrap_or_else(|| "0".to_string());
+        let service_fee = inner.service_fee.unwrap_or(0);
+        let service_fee_divider = inner.service_fee_divider.unwrap_or(1000000);
+        let disabled = inner.disabled.unwrap_or(false);
+        let min_bridge_fee = inner.min_bridge_fee.unwrap_or("0".to_string());
+        let min_executor_fee = inner.min_executor_fee.unwrap_or("0".to_string());
         Ok(Self {
             base: RawContractConfig {
                 base: Default::default(),

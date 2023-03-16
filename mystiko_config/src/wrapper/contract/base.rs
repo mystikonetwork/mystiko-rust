@@ -26,31 +26,31 @@ where
     }
 
     pub fn version(&self) -> &u32 {
-        &self.base.data.version()
+        self.base.data.version()
     }
 
     pub fn name(&self) -> &str {
-        &self.base.data.name()
+        self.base.data.name()
     }
 
     pub fn address(&self) -> &str {
-        &self.base.data.address()
+        self.base.data.address()
     }
 
     pub fn contract_type(&self) -> &ContractType {
-        &self.base.data.contract_type()
+        self.base.data.contract_type()
     }
 
     pub fn start_block(&self) -> &u32 {
-        &self.base.data.start_block()
+        self.base.data.start_block()
     }
 
     pub fn event_filter_size(&self) -> &Option<u64> {
-        &self.base.data.event_filter_size()
+        self.base.data.event_filter_size()
     }
 
     pub fn indexer_filter_size(&self) -> &Option<u64> {
-        &self.base.data.indexer_filter_size()
+        self.base.data.indexer_filter_size()
     }
 
     pub fn mutate(&self, data: Option<T>, aux_data: Option<A>) -> Self {

@@ -74,7 +74,7 @@ impl<'de> Deserialize<'de> for RawAxelarBridgeConfig {
             name: String,
         }
         let inner = Inner::deserialize(deserializer)?;
-        let bridge_type = inner.bridge_type.unwrap_or_else(|| BridgeType::Axelar);
+        let bridge_type = inner.bridge_type.unwrap_or(BridgeType::Axelar);
         let base_bridge_type = bridge_type.clone();
         Ok(Self {
             base: RawBridgeConfig {

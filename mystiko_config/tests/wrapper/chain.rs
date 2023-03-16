@@ -160,33 +160,28 @@ async fn test_peer_chain_ids() {
     .unwrap();
     assert_eq!(config.peer_chain_ids(), vec![97]);
 
-    let loop_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Loop,
-            "0x20Eb345870059E688c59e89523442ade33C7c813".to_string(),
-            false,
-            None,
-            None,
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
+            ContractType::Deposit,
+            1000000,
             None,
             None,
         ))
-        .await
-        .unwrap();
+        .bridge_type(BridgeType::Loop)
+        .pool_address("0x20Eb345870059E688c59e89523442ade33C7c813".to_string())
+        .disabled(false)
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
+    let loop_deposit_contract_config =
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
     let pool_contract_config =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -287,60 +282,56 @@ async fn test_get_asset_symbols() {
         ))
         .await
         .unwrap();
+
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
+            ContractType::Deposit,
+            1000000,
+            None,
+            None,
+        ))
+        .bridge_type(BridgeType::Loop)
+        .pool_address("0x954c6c78A2F93E6E19Ff1DE538F720311414530c".to_string())
+        .disabled(false)
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
     let loop_deposit_contract_config1 =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Loop,
-            "0x954c6c78A2F93E6E19Ff1DE538F720311414530c".to_string(),
-            false,
-            None,
-            None,
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
+
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x0b1d6565d88f9bf6473e21c2ab58d28a495d7bb5".to_string(),
+            ContractType::Deposit,
+            1000000,
             None,
             None,
         ))
-        .await
-        .unwrap();
+        .bridge_type(BridgeType::Tbridge)
+        .pool_address("0x20Eb345870059E688c59e89523442ade33C7c813".to_string())
+        .disabled(false)
+        .peer_chain_id(Some(97))
+        .peer_contract_address(Some(
+            "0x390de26d772d2e2005c6d1d24afc902bae37a4bb".to_string(),
+        ))
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
     let loop_deposit_contract_config2 =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x0b1d6565d88f9bf6473e21c2ab58d28a495d7bb5".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Tbridge,
-            "0x20Eb345870059E688c59e89523442ade33C7c813".to_string(),
-            false,
-            Some(97),
-            Some(String::from("0x390de26d772d2e2005c6d1d24afc902bae37a4bb")),
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
-            None,
-            None,
-        ))
-        .await
-        .unwrap();
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
     raw_config
         .deposit_contracts
         .push(loop_deposit_contract_config1);
@@ -391,33 +382,29 @@ async fn test_get_bridges() {
         config.get_bridges(97, "MTT").unwrap(),
         vec![BridgeType::Tbridge]
     );
-    let loop_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Loop,
-            "0x6b8a4ea37c72f1992626eb9bd48d4aa6aa077c47".to_string(),
-            false,
-            None,
-            None,
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
+
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
+            ContractType::Deposit,
+            1000000,
             None,
             None,
         ))
-        .await
-        .unwrap();
+        .bridge_type(BridgeType::Loop)
+        .pool_address("0x6b8a4ea37c72f1992626eb9bd48d4aa6aa077c47".to_string())
+        .disabled(false)
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
+    let loop_deposit_contract_config =
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
     let pool_contract_config =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -451,33 +438,33 @@ async fn test_get_bridges() {
     )
     .unwrap();
     assert_eq!(config.get_bridges(3, "MTT").unwrap().len(), 0);
-    let celer_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Celer,
-            "0x20Eb345870059E688c59e89523442ade33C7c813".to_string(),
-            false,
-            Some(97),
-            Some(String::from("0x390de26d772d2e2005c6d1d24afc902bae37a4bb")),
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
+
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9".to_string(),
+            ContractType::Deposit,
+            1000000,
             None,
             None,
         ))
-        .await
-        .unwrap();
+        .bridge_type(BridgeType::Celer)
+        .pool_address("0x20Eb345870059E688c59e89523442ade33C7c813".to_string())
+        .disabled(false)
+        .peer_chain_id(Some(97))
+        .peer_contract_address(Some(
+            "0x390de26d772d2e2005c6d1d24afc902bae37a4bb".to_string(),
+        ))
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
+    let celer_deposit_contract_config =
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
     let pool_contract_config2 =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -525,60 +512,54 @@ async fn test_get_deposit_contract() {
             .is_none(),
         true
     );
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9".to_string(),
+            ContractType::Deposit,
+            1000000,
+            None,
+            None,
+        ))
+        .bridge_type(BridgeType::Tbridge)
+        .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
+        .disabled(false)
+        .peer_chain_id(Some(97))
+        .peer_contract_address(Some(
+            "0x390de26d772d2e2005c6d1d24afc902bae37a4bb".to_string(),
+        ))
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
     let tbridge_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Tbridge,
-            "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
-            false,
-            Some(97),
-            Some(String::from("0x390de26d772d2e2005c6d1d24afc902bae37a4bb")),
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
+            ContractType::Deposit,
+            1000000,
             None,
             None,
         ))
-        .await
-        .unwrap();
+        .bridge_type(BridgeType::Loop)
+        .pool_address("0x20Eb345870059E688c59e89523442ade33C7c813".to_string())
+        .disabled(false)
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
     let loop_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Loop,
-            "0x20Eb345870059E688c59e89523442ade33C7c813".to_string(),
-            false,
-            None,
-            None,
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
-            None,
-            None,
-        ))
-        .await
-        .unwrap();
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
     let pool_contract_config =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -619,7 +600,7 @@ async fn test_get_deposit_contract() {
     .unwrap();
     assert_eq!(
         config
-            .get_deposit_contract(97, "MTT", BridgeType::Tbridge,)
+            .get_deposit_contract(97, "MTT", BridgeType::Tbridge)
             .unwrap()
             .unwrap()
             .address(),
@@ -627,7 +608,7 @@ async fn test_get_deposit_contract() {
     );
     assert_eq!(
         config
-            .get_deposit_contract(3, "MTT", BridgeType::Loop,)
+            .get_deposit_contract(3, "MTT", BridgeType::Loop)
             .unwrap()
             .unwrap()
             .address(),
@@ -654,60 +635,54 @@ async fn test_get_deposit_contract() {
 
 #[tokio::test]
 async fn test_get_pool_contract() {
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9".to_string(),
+            ContractType::Deposit,
+            1000000,
+            None,
+            None,
+        ))
+        .bridge_type(BridgeType::Tbridge)
+        .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
+        .disabled(false)
+        .peer_chain_id(Some(100))
+        .peer_contract_address(Some(
+            "0x390de26d772d2e2005c6d1d24afc902bae37a4bb".to_string(),
+        ))
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
     let tbridge_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Tbridge,
-            "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
-            false,
-            Some(100),
-            Some(String::from("0x390de26d772d2e2005c6d1d24afc902bae37a4bb")),
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
+            ContractType::Deposit,
+            1000000,
             None,
             None,
         ))
-        .await
-        .unwrap();
+        .bridge_type(BridgeType::Loop)
+        .pool_address("0x954c6c78A2F93E6E19Ff1DE538F720311414530c".to_string())
+        .disabled(false)
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
     let loop_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Loop,
-            "0x954c6c78A2F93E6E19Ff1DE538F720311414530c".to_string(),
-            false,
-            None,
-            None,
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
-            None,
-            None,
-        ))
-        .await
-        .unwrap();
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
     let pool_contract_config1 =
         RawConfig::create_from_object::<RawPoolContractConfig>(RawPoolContractConfig::new(
             RawContractConfig::new(
@@ -769,53 +744,51 @@ async fn test_get_pool_contract() {
     .unwrap();
     assert_eq!(
         config
-            .get_pool_contract("MTT", BridgeType::Tbridge, 2,)
+            .get_pool_contract("MTT", BridgeType::Tbridge, 2)
             .unwrap()
             .address(),
         "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
     );
     assert_eq!(
         config
-            .get_pool_contract("MTT", BridgeType::Tbridge, 3,)
+            .get_pool_contract("MTT", BridgeType::Tbridge, 3)
             .is_none(),
         true
     );
     assert_eq!(
         config
-            .get_pool_contract("mUSD", BridgeType::Tbridge, 2,)
+            .get_pool_contract("mUSD", BridgeType::Tbridge, 2)
             .is_none(),
         true
     );
     assert_eq!(
         config
-            .get_pool_contract("MTT", BridgeType::Loop, 2,)
+            .get_pool_contract("MTT", BridgeType::Loop, 2)
             .is_none(),
         true
     );
     assert_eq!(
         config
-            .get_pool_contract("ETH", BridgeType::Loop, 1,)
+            .get_pool_contract("ETH", BridgeType::Loop, 1)
             .unwrap()
             .address(),
         "0x81b7e08f65bdf5648606c89998a9cc8164397647"
     );
     assert_eq!(
         config
-            .get_pool_contract("ETH", BridgeType::Loop, 2,)
+            .get_pool_contract("ETH", BridgeType::Loop, 2)
             .unwrap()
             .address(),
         "0x954c6c78A2F93E6E19Ff1DE538F720311414530c"
     );
     assert_eq!(
-        config
-            .get_pool_contracts("mUSD", BridgeType::Tbridge,)
-            .len(),
+        config.get_pool_contracts("mUSD", BridgeType::Tbridge).len(),
         0
     );
-    assert_eq!(config.get_pool_contracts("MTT", BridgeType::Loop,).len(), 0);
+    assert_eq!(config.get_pool_contracts("MTT", BridgeType::Loop).len(), 0);
     assert_eq!(
         config
-            .get_pool_contracts("ETH", BridgeType::Loop,)
+            .get_pool_contracts("ETH", BridgeType::Loop)
             .iter()
             .map(|c| c.address())
             .collect::<Vec<&str>>()
@@ -824,7 +797,7 @@ async fn test_get_pool_contract() {
     );
     assert_eq!(
         config
-            .get_pool_contracts("ETH", BridgeType::Loop,)
+            .get_pool_contracts("ETH", BridgeType::Loop)
             .iter()
             .map(|c| c.address())
             .collect::<Vec<&str>>()
@@ -833,7 +806,7 @@ async fn test_get_pool_contract() {
     );
     assert_eq!(
         config
-            .get_pool_contracts("ETH", BridgeType::Loop,)
+            .get_pool_contracts("ETH", BridgeType::Loop)
             .iter()
             .map(|c| c.address())
             .collect::<Vec<&str>>()
@@ -888,15 +861,15 @@ async fn test_get_event_filter_size_by_address() {
     )
     .unwrap();
     assert_eq!(
-        config.get_event_filter_size_by_address("0x5380442d3c4ec4f5777f551f5edd2fa0f691a27c"),
+        *config.get_event_filter_size_by_address("0x5380442d3c4ec4f5777f551f5edd2fa0f691a27c"),
         12345
     );
     assert_eq!(
-        config.get_event_filter_size_by_address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
+        *config.get_event_filter_size_by_address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
         12345
     );
     assert_eq!(
-        config.get_event_filter_size_by_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
+        *config.get_event_filter_size_by_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
         12345
     );
     raw_config.deposit_contracts[0].base.event_filter_size = Some(87654321);
@@ -911,11 +884,11 @@ async fn test_get_event_filter_size_by_address() {
     )
     .unwrap();
     assert_eq!(
-        config.get_event_filter_size_by_address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
+        *config.get_event_filter_size_by_address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
         87654321
     );
     assert_eq!(
-        config.get_event_filter_size_by_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
+        *config.get_event_filter_size_by_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
         987654321
     );
 }
@@ -936,15 +909,15 @@ async fn test_get_indexer_filter_size_by_address() {
     )
     .unwrap();
     assert_eq!(
-        config.get_indexer_filter_size_by_address("0x5380442d3c4ec4f5777f551f5edd2fa0f691a27c"),
+        *config.get_indexer_filter_size_by_address("0x5380442d3c4ec4f5777f551f5edd2fa0f691a27c"),
         123450
     );
     assert_eq!(
-        config.get_indexer_filter_size_by_address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
+        *config.get_indexer_filter_size_by_address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
         123450
     );
     assert_eq!(
-        config.get_indexer_filter_size_by_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
+        *config.get_indexer_filter_size_by_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
         123450
     );
     raw_config.deposit_contracts[0].base.indexer_filter_size = Some(876543210);
@@ -959,11 +932,11 @@ async fn test_get_indexer_filter_size_by_address() {
     )
     .unwrap();
     assert_eq!(
-        config.get_indexer_filter_size_by_address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
+        *config.get_indexer_filter_size_by_address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
         876543210
     );
     assert_eq!(
-        config.get_indexer_filter_size_by_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
+        *config.get_indexer_filter_size_by_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
         9876543210
     );
 }
@@ -1012,33 +985,32 @@ async fn test_duplicate_bridge_and_asset() {
         ))
         .await
         .unwrap();
-    let tbridge_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Tbridge,
-            "0x954c6c78A2F93E6E19Ff1DE538F720311414530c".to_string(),
-            false,
-            Some(100),
-            Some(String::from("0x390de26d772d2e2005c6d1d24afc902bae37a4bb")),
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x4c55C41Bd839B3552fb2AbecaCFdF4a5D2879Cb9".to_string(),
+            ContractType::Deposit,
+            1000000,
             None,
             None,
         ))
-        .await
-        .unwrap();
+        .bridge_type(BridgeType::Tbridge)
+        .pool_address("0x954c6c78A2F93E6E19Ff1DE538F720311414530c".to_string())
+        .disabled(false)
+        .peer_chain_id(Some(100))
+        .peer_contract_address(Some(
+            "0x390de26d772d2e2005c6d1d24afc902bae37a4bb".to_string(),
+        ))
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
+    let tbridge_deposit_contract_config =
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
     let mut raw_config = default_raw_config().await;
     raw_config.pool_contracts.push(pool_contract_config);
     raw_config
@@ -1081,33 +1053,28 @@ async fn test_different_bridge_with_same_pool_address() {
     )
     .unwrap();
     assert_eq!(config.peer_chain_ids(), vec![97]);
-    let loop_deposit_contract_config =
-        RawConfig::create_from_object::<RawDepositContractConfig>(RawDepositContractConfig::new(
-            RawContractConfig::new(
-                2,
-                "MystikoWithPolyERC20".to_string(),
-                "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
-                ContractType::Deposit,
-                1000000,
-                None,
-                None,
-            ),
-            BridgeType::Loop,
-            "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string(),
-            false,
-            None,
-            None,
-            "10000000000000000".to_string(),
-            "100000000000000000".to_string(),
-            "20000000000000000".to_string(),
-            "30000000000000000".to_string(),
-            None,
-            None,
+    let raw_deposit_contract_config = RawDepositContractConfig::builder()
+        .base(RawContractConfig::new(
+            2,
+            "MystikoWithPolyERC20".to_string(),
+            "0x2f0Fe3154C281Cb25D6a615bf524230e57A462e1".to_string(),
+            ContractType::Deposit,
+            1000000,
             None,
             None,
         ))
-        .await
-        .unwrap();
+        .bridge_type(BridgeType::Loop)
+        .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
+        .disabled(false)
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .min_bridge_fee("20000000000000000".to_string())
+        .min_executor_fee("30000000000000000".to_string())
+        .build();
+    let loop_deposit_contract_config =
+        RawConfig::create_from_object::<RawDepositContractConfig>(raw_deposit_contract_config)
+            .await
+            .unwrap();
     raw_config
         .deposit_contracts
         .push(loop_deposit_contract_config);

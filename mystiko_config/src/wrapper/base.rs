@@ -27,7 +27,7 @@ where
     }
 
     pub fn to_json_string(&self) -> String {
-        return serde_json::to_string(&self.data).unwrap();
+        serde_json::to_string(&self.data).unwrap()
     }
 
     pub fn mutate(&self, data: Option<R>, aux_data: Option<A>) -> BaseConfig<R, A> {

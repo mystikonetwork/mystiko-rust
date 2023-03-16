@@ -34,7 +34,7 @@ impl RawCelerBridgeConfig {
     pub fn new(name: String) -> Self {
         let bridge_type = default_bridge_type();
         Self {
-            base: RawBridgeConfig::new(name, bridge_type.clone()),
+            base: RawBridgeConfig::new(name, bridge_type),
             bridge_type: default_bridge_type(),
         }
     }
@@ -74,7 +74,7 @@ impl<'de> Deserialize<'de> for RawCelerBridgeConfig {
             name: String,
         }
         let inner = Inner::deserialize(deserializer)?;
-        let bridge_type = inner.bridge_type.unwrap_or_else(|| BridgeType::Celer);
+        let bridge_type = inner.bridge_type.unwrap_or(BridgeType::Celer);
         let base_bridge_type = bridge_type.clone();
         Ok(Self {
             base: RawBridgeConfig {

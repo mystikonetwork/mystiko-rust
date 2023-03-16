@@ -13,6 +13,7 @@ serde = { version = "1.0.152", features = ["derive"] }
 serde_json = { version = "1.0.91" }
 strum = { version = "0.24.1", features = ["derive"] }
 validator = { version = "0.15", features = ["derive"] }
+typed-builder = { version = "0.14.0" }
 flame = { version = "0.2.2" }
 flamer = { version = "0.4.0" }
 
