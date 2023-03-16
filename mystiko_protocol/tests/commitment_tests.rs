@@ -6,7 +6,7 @@ extern crate num_bigint;
 use ff::hex;
 use num_bigint::BigInt;
 
-use crate::mystiko_protocol::utils::{serial_number, sig_pk_hash};
+use crate::mystiko_protocol::utils::{compute_serial_number, compute_sig_pk_hash};
 use mystiko_crypto::crypto::decrypt_asymmetric;
 use mystiko_crypto::utils::random_bytes;
 use mystiko_protocol::address::ShieldedAddress;
@@ -30,7 +30,7 @@ async fn test_serial_number_compatible_with_js() {
 
     let sk = secret_key_for_verification(&raw_key);
     let random_p = b"1234567812345678";
-    let sn = serial_number(&sk, &random_p);
+    let sn = compute_serial_number(&sk, &random_p);
     assert_eq!(sn, expect_sn);
 }
 
@@ -48,7 +48,7 @@ async fn test_sig_pk_hash_compatible_with_js() {
     )
     .unwrap();
     let sk = secret_key_for_verification(&raw_key);
-    let sig_pk_hash = sig_pk_hash(&sig_pk, &sk);
+    let sig_pk_hash = compute_sig_pk_hash(&sig_pk, &sk);
     assert_eq!(sig_pk_hash, expect_sig_pk_hash);
 }
 
@@ -66,7 +66,7 @@ async fn test_build_commitment_compatible_with_js() {
     let pk_enc = public_key_for_encryption(&raw_enc_key);
     let sk_enc = secret_key_for_encryption(&raw_enc_key);
     let note = decrypt_asymmetric(&sk_enc, &js_encrypt_note).unwrap();
-    let js_decrypt_note = Note::from_vec(note);
+    let js_decrypt_note = Note::from_vec(note).unwrap();
 
     let amount = js_decrypt_note.amount.clone();
     let cm = Commitment::new(
@@ -89,7 +89,7 @@ async fn test_build_commitment_compatible_with_js() {
     assert_eq!(cm.note.random_s.clone(), js_decrypt_note.random_s);
 
     let note = decrypt_asymmetric(&sk_enc, &cm.encrypted_note).unwrap();
-    let decrypt_note = Note::from_vec(note);
+    let decrypt_note = Note::from_vec(note).unwrap();
     assert_eq!(decrypt_note, js_decrypt_note);
 }
 
@@ -117,7 +117,7 @@ async fn test_build_commitment() {
     assert_eq!(cm1.shielded_address, shield_address.clone());
 
     let note_vec = decrypt_asymmetric(&sk_enc, &cm1.encrypted_note).unwrap();
-    let decrypt_note = Note::from_vec(note_vec);
+    let decrypt_note = Note::from_vec(note_vec).unwrap();
     assert_eq!(decrypt_note.amount, amount);
     assert_eq!(decrypt_note.random_p, note.random_p);
     assert_eq!(decrypt_note.random_r, note.random_r);
@@ -142,14 +142,14 @@ async fn test_build_commitment() {
         None,
         Some(EncryptedData {
             sk_enc: sk_enc_3,
-            encrypted_note: cm1.encrypted_note,
+            encrypted_note: cm1.encrypted_note.clone(),
         }),
     );
     assert!(cm3.is_err());
 
     let enc_data = EncryptedData {
         sk_enc: sk_enc_3,
-        encrypted_note: cm3.encrypted_note,
+        encrypted_note: cm1.encrypted_note,
     };
     let _ = enc_data.clone();
 }

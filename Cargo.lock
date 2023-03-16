@@ -68,6 +68,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.69"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "224afbd727c3d6e4b90103ece64b8d1b67fbb1973b1046c2281eed3f3803f800"
+
+[[package]]
 name = "ark-bls12-377"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2511,6 +2517,7 @@ name = "mystiko_crypto"
 version = "0.1.0"
 dependencies = [
  "aes",
+ "anyhow",
  "babyjubjub-rs",
  "base64 0.21.0",
  "blake2 0.10.6",
@@ -2593,6 +2600,7 @@ dependencies = [
 name = "mystiko_protocol"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "babyjubjub-rs",
  "bs58",
  "ethers",

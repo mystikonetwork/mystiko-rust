@@ -3,6 +3,7 @@ extern crate mystiko_protocol;
 extern crate num_bigint;
 
 use mystiko_protocol::address::ShieldedAddress;
+use mystiko_protocol::error::ProtocolError;
 use mystiko_protocol::types::{ENC_PK_SIZE, VERIFY_PK_SIZE};
 
 #[tokio::test]
@@ -21,13 +22,14 @@ async fn test_shielded_address() {
     let sa = ShieldedAddress::from_public_key(&vk, &ek);
     assert_eq!(sa.address(), expect_address);
 
-    let sa2 = ShieldedAddress::from_string(&expect_address);
+    let sa2 = ShieldedAddress::from_string(&expect_address).unwrap();
     assert_eq!(sa, sa2);
 
-    assert!(ShieldedAddress::check(&sa.address()));
+    assert!(ShieldedAddress::is_valid_address(&sa.address()));
     let wrong_address =
         "*3hMt2P6h8zp5t8Cxm5oAzTULg1boVEvzjaEPXmLtSBUmF4KKnaooWkBKBqZs9BYncvY6rA6TpCkAJ6cEXFEHWMHt";
-    assert!(!ShieldedAddress::check(wrong_address));
+    let sa3 = ShieldedAddress::from_string(wrong_address);
+    assert_eq!(sa3.err().unwrap(), ProtocolError::InvalidShieldedAddress);
 
     let (vk_f, ek_f) = sa.public_key();
 

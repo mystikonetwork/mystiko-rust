@@ -1,9 +1,10 @@
 use crate::error::ProtocolError;
 use crate::mystiko_crypto::zkp::proof::ZKProof;
+use anyhow::Result;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::hash::keccak256;
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_crypto::utils::{bigint_to_be_32_bytes, calc_mod};
+use mystiko_crypto::utils::{bigint_to_be_32_bytes, mod_floor};
 use num_bigint::{BigInt, Sign};
 
 #[derive(Debug, Clone)]
@@ -50,17 +51,19 @@ impl Rollup {
         let path_indices = path_indices_number(path_indices);
         let (_, path_elements) = leaf_path.0.split_at(rollup_height);
         let path_elements: Vec<String> = path_elements.iter().map(|n| n.to_string()).collect();
-        let leaves_hash = calc_leave_hash(new_leaves.as_slice());
+        let leaves_hash = calc_leaves_hash(new_leaves.as_slice());
         let new_leaves: Vec<String> = new_leaves.iter().map(|n| n.to_string()).collect();
 
-        let mut array: Vec<serde_json::Value> = vec![serde_json::json!(current_root.to_string())];
-        array.push(serde_json::json!(new_root.to_string()));
-        array.push(serde_json::json!(leaves_hash.to_string()));
-        array.push(serde_json::json!(path_indices.to_string()));
-        array.push(serde_json::json!(path_elements));
-        array.push(serde_json::json!(new_leaves));
-        let input = serde_json::Value::Array(array).to_string();
+        let array: Vec<serde_json::Value> = vec![
+            serde_json::to_value(current_root.to_string())?,
+            serde_json::to_value(new_root.to_string())?,
+            serde_json::to_value(leaves_hash.to_string())?,
+            serde_json::to_value(path_indices.to_string())?,
+            serde_json::to_value(path_elements)?,
+            serde_json::to_value(new_leaves)?,
+        ];
 
+        let input = serde_json::Value::Array(array).to_string();
         let proof = ZKProof::generate_with_file(
             &self.program_file,
             &self.abi_file,
@@ -68,7 +71,6 @@ impl Rollup {
             &input,
         )
         .await?;
-
         Ok(proof)
     }
 }
@@ -86,11 +88,11 @@ fn path_indices_number(path_indices: &[usize]) -> BigInt {
     BigInt::parse_bytes(binary_string.as_bytes(), 2).unwrap()
 }
 
-fn calc_leave_hash(leaves: &[BigInt]) -> BigInt {
+fn calc_leaves_hash(leaves: &[BigInt]) -> BigInt {
     let leaf_buffer: Vec<u8> = leaves.iter().flat_map(bigint_to_be_32_bytes).collect();
     let hash = keccak256(leaf_buffer.as_slice());
     let hash = BigInt::from_bytes_be(Sign::Plus, &hash);
-    calc_mod(&hash, &FIELD_SIZE)
+    mod_floor(&hash, &FIELD_SIZE)
 }
 
 #[cfg(test)]
@@ -135,7 +137,7 @@ mod tests {
             10,
         )
         .unwrap();
-        let leaves_hash = calc_leave_hash(&leaves);
+        let leaves_hash = calc_leaves_hash(&leaves);
         assert_eq!(expect_hash, leaves_hash);
     }
 }

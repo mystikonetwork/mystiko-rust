@@ -1,3 +1,4 @@
+extern crate anyhow;
 extern crate babyjubjub_rs;
 extern crate bs58;
 extern crate ff;

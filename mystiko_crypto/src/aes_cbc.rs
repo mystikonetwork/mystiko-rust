@@ -1,13 +1,14 @@
 use crate::constants::{
     ECIES_IV_LENGTH, ECIES_KEY_LENGTH, ECIES_MAGIC_DATA, KDF_MAGIC_DATA_LENGTH, KDF_SALT_LENGTH,
 };
-use crate::error::ECCryptoError;
+use crate::error::CryptoError;
 use crate::utils::random_bytes;
 use aes::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
 use generic_array::GenericArray;
 
-pub fn encrypt_str(password: &str, plain_text: &str) -> Result<String, ECCryptoError> {
+pub fn encrypt_str(password: &str, plain_text: &str) -> Result<String, CryptoError> {
     let salt = random_bytes(KDF_SALT_LENGTH);
     let (key, iv) = password_to_key(password.as_bytes(), salt.as_slice());
     let cipher_text = encrypt(&iv, &key, plain_text.as_bytes());
@@ -16,25 +17,17 @@ pub fn encrypt_str(password: &str, plain_text: &str) -> Result<String, ECCryptoE
     Ok(general_purpose::STANDARD.encode(full_encrypted_data))
 }
 
-pub fn decrypt_str(password: &str, cipher_data: &str) -> Result<String, ECCryptoError> {
-    let cipher_data_raw = general_purpose::STANDARD.decode(cipher_data).unwrap();
+pub fn decrypt_str(password: &str, cipher_data: &str) -> Result<String, CryptoError> {
+    let cipher_data_raw = general_purpose::STANDARD
+        .decode(cipher_data)
+        .map_err(|why| CryptoError::DecryptError(why.to_string()))?;
     let (salt, cipher_text) = parse_salt_from_cipher_data(cipher_data_raw.as_slice());
     let (key, iv) = password_to_key(password.as_bytes(), salt.as_slice());
-    let decrypted_data = decrypt(iv.as_slice(), key.as_slice(), cipher_text.as_slice());
-    let text = String::from_utf8(decrypted_data).unwrap();
+    let decrypted_data = decrypt(iv.as_slice(), key.as_slice(), cipher_text.as_slice())?;
+    let text = String::from_utf8(decrypted_data)
+        .map_err(|why| CryptoError::DecryptError(why.to_string()))?;
     Ok(text)
 }
-
-//
-// pub fn encrypt(iv: &[u8], key: &[u8], plain_text: &[u8]) -> Vec<u8> {
-//     // todo check encrypt result
-//     // openssl::symm::encrypt(Cipher::aes_256_cbc(), key, Some(iv), plain_text).unwrap()
-// }
-//
-// pub fn decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Vec<u8> {
-//     // todo check decrypt result
-//     // openssl::symm::decrypt(Cipher::aes_256_cbc(), key, Some(iv), cipher_text).unwrap()
-// }
 
 pub fn encrypt(iv: &[u8], key: &[u8], plain_text: &[u8]) -> Vec<u8> {
     type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
@@ -44,15 +37,14 @@ pub fn encrypt(iv: &[u8], key: &[u8], plain_text: &[u8]) -> Vec<u8> {
     Aes256CbcEnc::new(key_g, iv_g).encrypt_padded_vec_mut::<Pkcs7>(plain_text)
 }
 
-pub fn decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Vec<u8> {
+pub fn decrypt(iv: &[u8], key: &[u8], cipher_text: &[u8]) -> Result<Vec<u8>, CryptoError> {
     type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 
     let key = GenericArray::from_slice(key);
     let iv = GenericArray::from_slice(iv);
-    // todo return  error if failed to decrypt
     Aes256CbcDec::new(key, iv)
         .decrypt_padded_vec_mut::<Pkcs7>(cipher_text)
-        .unwrap()
+        .map_err(|why| CryptoError::DecryptError(why.to_string()))
 }
 
 // compatible with crypto-js evpkdf compute

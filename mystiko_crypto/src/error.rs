@@ -43,8 +43,10 @@ impl PartialEq for FileError {
 pub enum ZkpError {
     #[error(transparent)]
     FileError(#[from] FileError),
-    #[error("parse {0} error {1}")]
-    ParseError(String, String),
+    #[error("serde json {0} error {1}")]
+    SerdeJsonError(String, String),
+    #[error("abi parse error {0}")]
+    AbiParseError(String),
     #[error("deserialize program error {0}")]
     DeserializeProgramError(String),
     #[error("compute witness error {0}")]
@@ -63,7 +65,8 @@ impl PartialEq for ZkpError {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Self::FileError(l), Self::FileError(r)) => l == r,
-            (Self::ParseError(_, _), Self::ParseError(_, _)) => true,
+            (Self::SerdeJsonError(_, _), Self::SerdeJsonError(_, _)) => true,
+            (Self::AbiParseError(_), Self::AbiParseError(_)) => true,
             (Self::DeserializeProgramError(_), Self::DeserializeProgramError(_)) => true,
             (Self::ComputeWitnessError(_), Self::ComputeWitnessError(_)) => true,
             (Self::ProofError(_), Self::ProofError(_)) => true,
@@ -75,12 +78,26 @@ impl PartialEq for ZkpError {
     }
 }
 
-#[derive(Error, Debug, PartialEq)]
-pub enum ECCryptoError {
+#[derive(Error, Debug)]
+pub enum CryptoError {
     #[error("data length error")]
     DataLengthError,
     #[error("mac mismatch error")]
     MacMismatchError,
+    #[error("decrypt error {0}")]
+    DecryptError(String),
     #[error("internal error")]
     InternalError,
+}
+
+impl PartialEq for CryptoError {
+    fn eq(&self, other: &Self) -> bool {
+        matches!(
+            (self, other),
+            (Self::DataLengthError, Self::DataLengthError)
+                | (Self::MacMismatchError, Self::MacMismatchError)
+                | (Self::DecryptError(_), Self::DecryptError(_))
+                | (Self::InternalError, Self::InternalError)
+        )
+    }
 }

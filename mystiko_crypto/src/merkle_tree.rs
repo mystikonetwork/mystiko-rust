@@ -1,34 +1,13 @@
 use crate::constants::FIELD_SIZE;
 use crate::error::MerkleTreeError;
 use crate::hash::{keccak256, poseidon_fr};
+use anyhow::Result;
 use ff::*;
 use num_bigint::{BigInt, Sign};
 use num_integer::Integer;
 use poseidon_rs::Fr;
 
 type CompareFn = dyn Fn(&BigInt, &BigInt) -> bool;
-
-pub fn calc_default_zero_element() -> BigInt {
-    let input = b"Welcome To Mystiko's Magic World!";
-    let seed_hash = keccak256(input);
-    let seed_bigint = BigInt::from_bytes_be(Sign::Plus, &seed_hash);
-    seed_bigint.mod_floor(&FIELD_SIZE)
-}
-
-pub fn hash_two(first: &BigInt, second: &BigInt) -> BigInt {
-    let b1: Fr = Fr::from_str(&first.to_string()).unwrap();
-    let b2: Fr = Fr::from_str(&second.to_string()).unwrap();
-    poseidon_fr(&[b1, b2])
-}
-
-pub fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {
-    let mut z: Vec<BigInt> = vec![];
-    z.push(first_zero);
-    for i in 1..(levels + 1) as usize {
-        z.push(hash_two(&z[i - 1], &z[i - 1]));
-    }
-    z
-}
 
 #[derive(Debug, Clone)]
 pub struct MerkleTree {
@@ -44,20 +23,9 @@ impl MerkleTree {
         in_max_levels: Option<u32>,
         in_zero_element: Option<BigInt>,
     ) -> Result<Self, MerkleTreeError> {
-        let initial_elements = match in_initial_elements {
-            Some(a) => a,
-            _ => vec![],
-        };
-
-        let max_levels = match in_max_levels {
-            Some(a) => a,
-            _ => 20,
-        };
-
-        let zero_element = match in_zero_element {
-            Some(a) => a,
-            _ => calc_default_zero_element(),
-        };
+        let initial_elements = in_initial_elements.unwrap_or_default();
+        let max_levels = in_max_levels.unwrap_or(20);
+        let zero_element = in_zero_element.unwrap_or_else(calc_default_zero_element);
 
         let capacity = 2u32.pow(max_levels);
         if capacity < initial_elements.len() as u32 {
@@ -209,4 +177,26 @@ impl MerkleTree {
             None => self.layers[0].iter().position(|value| value.eq(element)),
         }
     }
+}
+
+pub fn calc_default_zero_element() -> BigInt {
+    let input = b"Welcome To Mystiko's Magic World!";
+    let seed_hash = keccak256(input);
+    let seed_bigint = BigInt::from_bytes_be(Sign::Plus, &seed_hash);
+    seed_bigint.mod_floor(&FIELD_SIZE)
+}
+
+pub fn hash_two(first: &BigInt, second: &BigInt) -> BigInt {
+    let b1: Fr = Fr::from_str(&first.to_string()).unwrap();
+    let b2: Fr = Fr::from_str(&second.to_string()).unwrap();
+    poseidon_fr(&[b1, b2])
+}
+
+pub fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {
+    let mut z: Vec<BigInt> = vec![];
+    z.push(first_zero);
+    for i in 1..(levels + 1) as usize {
+        z.push(hash_two(&z[i - 1], &z[i - 1]));
+    }
+    z
 }

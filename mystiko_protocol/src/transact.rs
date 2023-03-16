@@ -4,7 +4,8 @@ use crate::types::{
     AuditingPk, AuditingSk, EncPk, EncSk, RandomSk, SigPk, TxAmount, VerifyPk, VerifySk,
 };
 use crate::types::{AUDITING_THRESHOLD, DECRYPTED_NOTE_SIZE, NUM_OF_AUDITORS};
-use crate::utils::{serial_number, sig_pk_hash};
+use crate::utils::{compute_serial_number, compute_sig_pk_hash};
+use anyhow::Result;
 use ff::hex;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::crypto::decrypt_asymmetric;
@@ -68,13 +69,16 @@ impl Transaction {
             let note =
                 decrypt_asymmetric(&self.in_enc_sks[i], self.in_private_notes[i].as_slice())?;
             assert_eq!(note.len(), DECRYPTED_NOTE_SIZE);
-            let note = Note::from_vec(note);
+            let note = Note::from_vec(note)?;
             in_random_p.push(note.random_p);
             in_random_r.push(note.random_r);
             in_random_s.push(note.random_s);
             in_amount.push(note.amount);
-            serial_numbers.push(serial_number(&self.in_verify_sks[i], &note.random_p));
-            sig_hashes.push(sig_pk_hash(&self.sig_pk, &self.in_verify_sks[i]));
+            serial_numbers.push(compute_serial_number(
+                &self.in_verify_sks[i],
+                &note.random_p,
+            ));
+            sig_hashes.push(compute_sig_pk_hash(&self.sig_pk, &self.in_verify_sks[i]));
         }
 
         let random_auditing_sk = if let Some(key) = self.random_auditing_secret_key {
@@ -100,25 +104,26 @@ impl Transaction {
         let mut commitment_shares = vec![];
         let mut encrypted_commitment_shares = vec![];
         for i in 0..self.in_commitments.len() {
-            let ss = shamir::split(
+            let s_shares = shamir::split(
                 self.in_commitments[i].clone(),
                 NUM_OF_AUDITORS,
                 AUDITING_THRESHOLD,
                 None,
             )?;
 
-            let cos = ss.coefficients.clone();
+            let cos = s_shares.coefficients.clone();
             let cos = bigint_slice_to_strings(&cos).to_owned();
             coefficients.push(cos.clone());
 
-            let p_ys: Vec<String> = ss.shares.iter().map(|p| p.y.to_string()).collect();
+            let p_ys: Vec<String> = s_shares.shares.iter().map(|p| p.y.to_string()).collect();
             let p_ys: [String; NUM_OF_AUDITORS as usize] = p_ys.try_into().unwrap();
             commitment_shares.push(p_ys);
 
             let mut encrypted_shares = vec![];
-            for j in 0..ss.shares.len() {
+            for j in 0..s_shares.shares.len() {
                 let pk = self.auditor_public_keys[j];
-                let encrypted_share = ecies::encrypt(&ss.shares[j].y, &pk, &random_auditing_sk);
+                let encrypted_share =
+                    ecies::encrypt(&s_shares.shares[j].y, &pk, &random_auditing_sk);
                 encrypted_shares.push(encrypted_share.to_string());
             }
             let encrypted_shares: [String; NUM_OF_AUDITORS as usize] =

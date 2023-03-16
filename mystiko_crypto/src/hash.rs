@@ -1,6 +1,6 @@
 use crate::constants::FIELD_SIZE;
-use crate::utils::calc_mod;
 use crate::utils::fr_to_bigint;
+use crate::utils::mod_floor;
 use blake2::Blake2b512;
 use ff::PrimeField;
 use hmac::{Hmac, Mac};
@@ -10,11 +10,10 @@ use sha2::{Sha256, Sha512};
 use sha3::{Digest, Keccak256};
 
 pub fn poseidon_bigint(arr: &[BigInt]) -> BigInt {
-    let mut arr_fr = vec![];
-    for n in arr {
-        let n_fr = Fr::from_str(&n.to_string()).unwrap();
-        arr_fr.push(n_fr);
-    }
+    let arr_fr: Vec<Fr> = arr
+        .iter()
+        .map(|n| Fr::from_str(&n.to_string()).unwrap())
+        .collect();
 
     poseidon_fr(arr_fr.as_slice())
 }
@@ -47,7 +46,7 @@ pub fn sha256(msg: &[u8]) -> BigInt {
 
 pub fn sha256_mod(msg: &[u8]) -> BigInt {
     let hash = sha256(msg);
-    calc_mod(&hash, &FIELD_SIZE)
+    mod_floor(&hash, &FIELD_SIZE)
 }
 
 pub fn hmac_sha256(key: &[u8], msg: &[u8]) -> Vec<u8> {

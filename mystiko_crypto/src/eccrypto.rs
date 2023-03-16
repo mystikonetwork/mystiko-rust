@@ -3,9 +3,10 @@ use crate::aes_cbc;
 use crate::constants::{
     ECIES_IV_LENGTH, ECIES_MAC_LENGTH, ECIES_META_LENGTH, ECIES_UNCOMPRESSED_PK_LENGTH,
 };
-use crate::error::ECCryptoError;
+use crate::error::CryptoError;
 use crate::hash::{hmac_sha256, sha512};
 use crate::utils::random_bytes;
+use anyhow::Result;
 use elliptic_curve::sec1::{FromEncodedPoint, ToEncodedPoint};
 use k256::{AffinePoint, EncodedPoint, PublicKey, SecretKey};
 use rand_core::OsRng;
@@ -28,9 +29,9 @@ impl ECCryptoData {
         v
     }
 
-    pub fn from_bytes(v: &[u8]) -> Result<Self, ECCryptoError> {
+    pub fn from_bytes(v: &[u8]) -> Result<Self, CryptoError> {
         if v.len() <= ECIES_META_LENGTH {
-            return Err(ECCryptoError::DataLengthError);
+            return Err(CryptoError::DataLengthError);
         }
 
         let (iv, right) = v.split_at(ECIES_IV_LENGTH);
@@ -88,7 +89,7 @@ fn decrypt_derive_shared_secret(pk_a: &[u8], sk_b: &[u8]) -> Vec<u8> {
     shared_bytes.to_vec()
 }
 
-pub fn encrypt(public_key_bytes: &[u8], plain_data: &[u8]) -> Result<Vec<u8>, ECCryptoError> {
+pub fn encrypt(public_key_bytes: &[u8], plain_data: &[u8]) -> Result<Vec<u8>, CryptoError> {
     let (ephemeral_public_key, shared_bytes) = encrypt_derive_shared_secret(public_key_bytes);
 
     let shared_hash = sha512(shared_bytes.as_slice());
@@ -124,9 +125,8 @@ pub fn equal_const_time(b1: &[u8], b2: &[u8]) -> bool {
     res == 0
 }
 
-pub fn decrypt(secret_key_bytes: &[u8], cipher_data: &[u8]) -> Result<Vec<u8>, ECCryptoError> {
-    // todo check unwrap
-    let ec_data = ECCryptoData::from_bytes(cipher_data).unwrap();
+pub fn decrypt(secret_key_bytes: &[u8], cipher_data: &[u8]) -> Result<Vec<u8>, CryptoError> {
+    let ec_data = ECCryptoData::from_bytes(cipher_data)?;
     let pk = uncompressed_public_key_to_compressed(ec_data.ephemeral_public_key.as_slice());
     let shared_bytes = decrypt_derive_shared_secret(pk.as_slice(), secret_key_bytes);
 
@@ -136,11 +136,8 @@ pub fn decrypt(secret_key_bytes: &[u8], cipher_data: &[u8]) -> Result<Vec<u8>, E
     data_to_mac.extend(ec_data.ephemeral_public_key.clone());
     data_to_mac.extend(ec_data.cipher_text.clone());
     let real_mac = hmac_sha256(mac_key, data_to_mac.as_slice());
-    // todo change to result check
     if !equal_const_time(real_mac.as_slice(), ec_data.mac.as_slice()) {
-        return Err(ECCryptoError::MacMismatchError);
+        return Err(CryptoError::MacMismatchError);
     }
-
-    let enc = aes_cbc::decrypt(&ec_data.iv, encryption_key, ec_data.cipher_text.as_slice());
-    Ok(enc)
+    aes_cbc::decrypt(&ec_data.iv, encryption_key, ec_data.cipher_text.as_slice())
 }

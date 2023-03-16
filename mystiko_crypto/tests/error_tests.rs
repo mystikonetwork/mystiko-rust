@@ -1,7 +1,7 @@
 extern crate mystiko_crypto;
 
 use mystiko_crypto::error::FileError;
-use mystiko_crypto::error::{ECCryptoError, MerkleTreeError, SecretShareError, ZkpError};
+use mystiko_crypto::error::{CryptoError, MerkleTreeError, SecretShareError, ZkpError};
 
 #[tokio::test]
 async fn test_error() {
@@ -28,6 +28,6 @@ async fn test_error() {
     let zkp_err = zkp_err.clone();
     assert_eq!(zkp_err, ZkpError::NotSupport);
 
-    let ec_err = ECCryptoError::DataLengthError;
-    assert_ne!(ec_err, ECCryptoError::InternalError);
+    let ec_err = CryptoError::DataLengthError;
+    assert_ne!(ec_err, CryptoError::InternalError);
 }

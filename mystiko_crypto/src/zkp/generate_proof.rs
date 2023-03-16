@@ -1,4 +1,5 @@
 use crate::error::ZkpError;
+use anyhow::Result;
 use zokrates_ast::ir::{self, Witness};
 use zokrates_field::Field;
 use zokrates_proof_systems::{Backend, Proof, Scheme};

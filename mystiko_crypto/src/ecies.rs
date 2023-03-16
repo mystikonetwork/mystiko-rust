@@ -2,7 +2,7 @@ use crate::constants::{ECIES_KEY_LENGTH, FIELD_SIZE};
 use crate::hash::poseidon_fr;
 use crate::utils::bigint_to_32_bytes;
 use crate::utils::fr_to_bytes;
-use crate::utils::{babyjubjub_public_key, babyjubjub_unpack_point, calc_mod, random_bigint};
+use crate::utils::{babyjubjub_public_key, babyjubjub_unpack_point, mod_floor, random_bigint};
 use babyjubjub_rs::Point;
 use ff::*;
 use lazy_static::lazy_static;
@@ -47,7 +47,7 @@ pub fn encrypt(plain: &BigInt, pk: &[u8], common_sk: &[u8]) -> BigInt {
     let k = point_pk.mul_scalar(&sk);
     let hm = poseidon_fr(&[k.x, k.y]);
 
-    calc_mod(&(plain.clone() + hm), &FIELD_SIZE)
+    mod_floor(&(plain.clone() + hm), &FIELD_SIZE)
 }
 
 pub fn decrypt(encrypted: &BigInt, sk: &[u8], common_pk: &[u8]) -> BigInt {
@@ -56,5 +56,5 @@ pub fn decrypt(encrypted: &BigInt, sk: &[u8], common_pk: &[u8]) -> BigInt {
     let k = point_pk.mul_scalar(&point_sk);
     let hm = poseidon_fr(&[k.x, k.y]);
 
-    calc_mod(&(encrypted.clone() - hm), &FIELD_SIZE)
+    mod_floor(&(encrypted.clone() - hm), &FIELD_SIZE)
 }

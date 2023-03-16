@@ -3,9 +3,9 @@ extern crate mystiko_protocol;
 extern crate num_bigint;
 
 use mystiko_protocol::key::{
-    full_public_key, full_secret_key, public_key_for_encryption, public_key_for_verification,
-    secret_key_for_encryption, secret_key_for_verification, separated_public_keys,
-    separated_secret_keys,
+    combined_public_key, combined_secret_key, public_key_for_encryption,
+    public_key_for_verification, secret_key_for_encryption, secret_key_for_verification,
+    separate_public_keys, separate_secret_keys,
 };
 use mystiko_protocol::types::{ENC_PK_SIZE, ENC_SK_SIZE, VERIFY_PK_SIZE, VERIFY_SK_SIZE};
 
@@ -82,10 +82,10 @@ async fn test_full_and_separate_public_key() {
         184, 16, 100, 203,
     ];
 
-    let combine = full_public_key(&vk, &ek);
+    let combine = combined_public_key(&vk, &ek);
     assert_eq!(combine, expect_combine);
 
-    let (vk_s, ek_s) = separated_public_keys(&combine);
+    let (vk_s, ek_s) = separate_public_keys(&combine);
     assert_eq!(vk, vk_s);
     assert_eq!(ek, ek_s);
 }
@@ -107,10 +107,10 @@ async fn test_full_and_separate_secret_key() {
         42, 100, 197, 116, 254, 254, 66, 44, 97, 16, 96, 1, 236, 88, 138, 241, 189, 157, 117, 72,
         184, 16, 0,
     ];
-    let combine = full_secret_key(&vk, &ek);
+    let combine = combined_secret_key(&vk, &ek);
     assert_eq!(combine, expect_combine);
 
-    let (vk_s, ek_s) = separated_secret_keys(&combine);
+    let (vk_s, ek_s) = separate_secret_keys(&combine);
     assert_eq!(vk, vk_s);
     assert_eq!(ek, ek_s);
 }

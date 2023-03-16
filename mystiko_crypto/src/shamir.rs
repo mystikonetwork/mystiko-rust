@@ -1,7 +1,8 @@
 use crate::constants::FIELD_SIZE;
 use crate::error::SecretShareError;
 use crate::num_traits::One;
-use crate::utils::{calc_mod, random_bigint};
+use crate::utils::{mod_floor, random_bigint};
+use anyhow::Result;
 use num_bigint::BigInt;
 use num_traits::identities::Zero;
 use std::collections::HashSet;
@@ -77,7 +78,7 @@ fn eval_poly(coefficients: &[BigInt], x: &BigInt, prime: &BigInt) -> BigInt {
     for cf in coefficients.iter().rev() {
         accum *= x;
         accum += cf;
-        accum = calc_mod(&accum, prime);
+        accum = mod_floor(&accum, prime);
     }
     accum
 }
@@ -93,7 +94,7 @@ fn extended_gcd(a: &BigInt, b: &BigInt) -> (BigInt, BigInt) {
 
     while !b_val.is_zero() {
         let quote = a_val.clone() / b_val.clone();
-        let temp_b = calc_mod(&a_val, &b_val);
+        let temp_b = mod_floor(&a_val, &b_val);
         a_val = b_val.clone();
         b_val = temp_b;
         let temp_x = last_x - (quote.clone() * x.clone());
@@ -148,12 +149,12 @@ fn lagrange_interpolate(x: &BigInt, points: &[Point], prime: &BigInt) -> BigInt 
     let den = batch_mul(&dens);
     let mut num_values: Vec<BigInt> = vec![];
     for i in 0..k {
-        let num = calc_mod(
+        let num = mod_floor(
             &(nums[i].clone() * den.clone() * points[i].y.clone()),
             prime,
         );
         num_values.push(div_mod(&num, &dens[i], prime));
     }
     let num = sum(num_values.as_slice());
-    calc_mod(&(div_mod(&num, &den, prime) + prime), prime)
+    mod_floor(&(div_mod(&num, &den, prime) + prime), prime)
 }

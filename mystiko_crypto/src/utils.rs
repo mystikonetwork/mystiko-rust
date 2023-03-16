@@ -55,18 +55,17 @@ pub fn babyjubjub_public_key(x: &[u8], y: &[u8]) -> [u8; 32] {
     point.compress()
 }
 
-pub fn calc_mod(a_number: &BigInt, prime: &BigInt) -> BigInt {
+pub fn mod_floor(a_number: &BigInt, prime: &BigInt) -> BigInt {
     a_number.mod_floor(prime)
 }
 
 pub fn random_bigint(size: usize, prime: &BigInt) -> BigInt {
     let bytes = random_bytes(size);
     let random_bigint = BigInt::from_bytes_le(Sign::Plus, &bytes);
-    calc_mod(&random_bigint, prime)
+    mod_floor(&random_bigint, prime)
 }
 
 pub fn random_bytes(size: usize) -> Vec<u8> {
-    assert!(size <= 1024, "Size should be less or equal to 1024");
     let mut rng = rand::thread_rng();
     let mut bytes = vec![0u8; size];
     rng.fill_bytes(&mut bytes);

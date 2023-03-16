@@ -14,7 +14,7 @@ async fn test_decrypt_symmetric_compatible_with_js() {
     let plain_text = "mystiko is awesome";
     let passsord = "P@ssw0rd";
     let js_cipher_text = "U2FsdGVkX1+zDTOX4UIDYsI1sV9Xg4NUNa/fM+7+mnew4z1zKth3vySvCu+zPkeb";
-    let dec_text = decrypt_symmetric(passsord, &js_cipher_text);
+    let dec_text = decrypt_symmetric(passsord, &js_cipher_text).unwrap();
     assert_eq!(dec_text, plain_text);
 }
 
@@ -24,8 +24,8 @@ async fn test_random_encrypt_symmetric() {
     let plain_text = random_utf8_string(size[0] as usize);
     let size = random_bytes(1);
     let password = random_utf8_string((size[0] % 64 + 1) as usize);
-    let cipher_text = encrypt_symmetric(&password, &plain_text);
-    let dec_text = decrypt_symmetric(&password, &cipher_text);
+    let cipher_text = encrypt_symmetric(&password, &plain_text).unwrap();
+    let dec_text = decrypt_symmetric(&password, &cipher_text).unwrap();
     assert_eq!(plain_text, dec_text);
 }
 

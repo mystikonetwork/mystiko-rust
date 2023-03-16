@@ -8,7 +8,7 @@ use rand_core::OsRng;
 use mystiko_crypto::eccrypto::{
     decrypt, encrypt, equal_const_time, public_key_to_vec, ECCryptoData,
 };
-use mystiko_crypto::error::ECCryptoError;
+use mystiko_crypto::error::CryptoError;
 use mystiko_crypto::utils::random_bytes;
 
 #[tokio::test]
@@ -53,5 +53,5 @@ async fn test_random_data() {
     let ec_data = ECCryptoData::from_bytes(data.as_slice()).unwrap();
     let ec_data2 = ec_data.clone();
     let ec_data3 = ECCryptoData::from_bytes(&ec_data2.to_vec().as_slice()[0..2]);
-    assert_eq!(ec_data3.err().unwrap(), ECCryptoError::DataLengthError);
+    assert_eq!(ec_data3.err().unwrap(), CryptoError::DataLengthError);
 }
