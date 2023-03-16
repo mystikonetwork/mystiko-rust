@@ -56,5 +56,5 @@ async fn test_random_data() {
     assert_eq!(ec_data3.err().unwrap(), CryptoError::DataLengthError);
 
     let data = encrypt(&pk.as_slice()[0..32], text.as_slice());
-    assert_eq!(data.err().unwrap(),CryptoError::KeyLengthError);
+    assert_eq!(data.err().unwrap(), CryptoError::KeyLengthError);
 }
