@@ -211,11 +211,12 @@ async fn test_find_commitment_queued_for_chain() {
         result: &resp_list,
     };
     let m = mocked_server
-        .mock(
-            "post",
-            "/chains/5/events/commitment-queued?startBlock=100&endBlock=10000",
-        )
+        .mock("post", "/chains/5/events/commitment-queued")
         .with_status(200)
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("startBlock".into(), "100".into()),
+            Matcher::UrlEncoded("endBlock".into(), "10000".into()),
+        ]))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
