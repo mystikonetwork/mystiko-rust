@@ -73,10 +73,10 @@ impl IndexerClient {
         end_block: &Option<u32>,
     ) -> HashMap<String, String> {
         if let Some(start_block_num) = start_block {
-            params_map.insert("startBlock".to_string(), start_block_num.to_string());
+            params_map.insert(String::from("startBlock"), start_block_num.to_string());
         }
         if let Some(end_block_num) = end_block {
-            params_map.insert("endBlock".to_string(), end_block_num.to_string());
+            params_map.insert(String::from("endBlock"), end_block_num.to_string());
         }
         params_map
     }
