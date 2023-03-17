@@ -5,6 +5,7 @@ use crate::types::commitment_queued::{CommitmentQueuedForChainRequest, Commitmen
 use reqwest::header::{HeaderValue, ACCEPT};
 use reqwest::{RequestBuilder, Response};
 use serde::Serialize;
+use std::collections::HashMap;
 
 pub struct IndexerClient {
     pub base_url: String,
@@ -65,6 +66,37 @@ impl IndexerClient {
         self.handle_response::<T>(response).await
     }
 
+    fn build_block_params_map(
+        &self,
+        mut params_map: HashMap<String, String>,
+        start_block: &Option<u32>,
+        end_block: &Option<u32>,
+    ) -> HashMap<String, String> {
+        if let Some(start_block_num) = start_block {
+            params_map.insert(String::from("startBlock"), start_block_num.to_string());
+        }
+        if let Some(end_block_num) = end_block {
+            params_map.insert(String::from("endBlock"), end_block_num.to_string());
+        }
+        params_map
+    }
+
+    fn build_request_builder<T>(
+        &self,
+        mut request_builder: RequestBuilder,
+        params: HashMap<String, String>,
+        body: &T,
+    ) -> RequestBuilder
+    where
+        T: Serialize,
+    {
+        for (key, value) in params.iter() {
+            request_builder = request_builder.query(&[(key, value)]);
+        }
+        request_builder = request_builder.json(body);
+        request_builder
+    }
+
     pub async fn ping(&self, message: &str) -> Result<String, ClientError> {
         let resp = self
             .get_data::<String>(&format!(
@@ -85,23 +117,6 @@ impl IndexerClient {
         Ok(resp)
     }
 
-    fn build_with_block_param(
-        &self,
-        mut request_builder: RequestBuilder,
-        start_block: &Option<u32>,
-        end_block: &Option<u32>,
-    ) -> RequestBuilder {
-        request_builder = match start_block {
-            Some(start_block_num) => request_builder.query(&[("startBlock", start_block_num)]),
-            None => request_builder,
-        };
-        request_builder = match end_block {
-            Some(end_block_num) => request_builder.query(&[("endBlock", end_block_num)]),
-            None => request_builder,
-        };
-        request_builder
-    }
-
     pub async fn find_commitment_queued_for_chain(
         &self,
         request: &CommitmentQueuedForChainRequest,
@@ -110,9 +125,11 @@ impl IndexerClient {
             "{}/chains/{}/events/commitment-queued",
             &self.base_url, &request.chain_id
         ));
+        let params_map: HashMap<String, String> = HashMap::new();
+        let params_map =
+            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
         request_builder =
-            self.build_with_block_param(request_builder, &request.start_block, &request.end_block);
-        request_builder = request_builder.json(&request.where_filter);
+            self.build_request_builder(request_builder, params_map, &request.where_filter);
         let response = self
             .post_data::<Vec<CommitmentQueuedResponse>>(request_builder)
             .await?;
