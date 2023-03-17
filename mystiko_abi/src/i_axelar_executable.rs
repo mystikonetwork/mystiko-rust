@@ -116,6 +116,8 @@ pub mod i_axelar_executable {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NotApprovedByGateway", abi = "NotApprovedByGateway()")]
     pub struct NotApprovedByGateway;
@@ -127,6 +129,8 @@ pub mod i_axelar_executable {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "execute", abi = "execute(bytes32,string,string,bytes)")]
@@ -144,6 +148,8 @@ pub mod i_axelar_executable {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -166,11 +172,21 @@ pub mod i_axelar_executable {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "gateway", abi = "gateway()")]
     pub struct GatewayCall;
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum IAxelarExecutableCalls {
         Execute(ExecuteCall),
         ExecuteWithToken(ExecuteWithTokenCall),
@@ -239,6 +255,8 @@ pub mod i_axelar_executable {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GatewayReturn(pub ethers::core::types::Address);

@@ -162,6 +162,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "CallCrossChainSyncTxError",
@@ -177,6 +179,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
     pub struct OnlyOperator;
@@ -189,6 +193,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyRegister", abi = "OnlyRegister()")]
     pub struct OnlyRegister;
@@ -201,6 +207,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyWhitelistedExecutor", abi = "OnlyWhitelistedExecutor()")]
     pub struct OnlyWhitelistedExecutor;
@@ -213,10 +221,20 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "WithdrawFailed", abi = "WithdrawFailed()")]
     pub struct WithdrawFailed;
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoTBridgeProxyErrors {
         CallCrossChainSyncTxError(CallCrossChainSyncTxError),
         OnlyOperator(OnlyOperator),
@@ -312,6 +330,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -332,6 +352,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "addExecutorWhitelist", abi = "addExecutorWhitelist(address)")]
@@ -346,6 +368,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "addRegisterWhitelist", abi = "addRegisterWhitelist(address)")]
@@ -360,6 +384,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
@@ -374,6 +400,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -395,6 +423,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -412,6 +442,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -429,6 +461,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sendMessage", abi = "sendMessage(address,uint64,bytes)")]
@@ -445,13 +479,23 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "withdraw", abi = "withdraw(address)")]
     pub struct WithdrawCall {
         pub recipient: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoTBridgeProxyCalls {
         AddExecutorWhitelist(AddExecutorWhitelistCall),
         AddRegisterWhitelist(AddRegisterWhitelistCall),
@@ -585,6 +629,8 @@ pub mod mystiko_t_bridge_proxy {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct CrossChainSyncTxReturn(pub bool);

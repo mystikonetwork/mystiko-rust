@@ -415,6 +415,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "AccountBlacklisted", abi = "AccountBlacklisted(address)")]
@@ -429,6 +431,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "AccountWhitelisted", abi = "AccountWhitelisted(address)")]
@@ -443,6 +447,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "AllTokensFrozen", abi = "AllTokensFrozen()")]
@@ -454,6 +460,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "AllTokensUnfrozen", abi = "AllTokensUnfrozen()")]
@@ -465,6 +473,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -487,6 +497,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -512,6 +524,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -539,6 +553,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -563,6 +579,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "Executed", abi = "Executed(bytes32)")]
@@ -577,6 +595,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "TokenDeployed", abi = "TokenDeployed(string,address)")]
@@ -591,6 +611,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "TokenFrozen", abi = "TokenFrozen(string)")]
@@ -604,6 +626,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -625,6 +649,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "TokenUnfrozen", abi = "TokenUnfrozen(string)")]
@@ -638,6 +664,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "Upgraded", abi = "Upgraded(address)")]
@@ -645,7 +673,15 @@ pub mod i_axelar_gateway {
         #[ethevent(indexed)]
         pub implementation: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum IAxelarGatewayEvents {
         AccountBlacklistedFilter(AccountBlacklistedFilter),
         AccountWhitelistedFilter(AccountWhitelistedFilter),
@@ -744,6 +780,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "adminEpoch", abi = "adminEpoch()")]
@@ -756,6 +794,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "adminThreshold", abi = "adminThreshold(uint256)")]
@@ -770,6 +810,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "admins", abi = "admins(uint256)")]
@@ -784,6 +826,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "allTokensFrozen", abi = "allTokensFrozen()")]
@@ -796,6 +840,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "callContract", abi = "callContract(string,string,bytes)")]
@@ -812,6 +858,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -833,6 +881,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "execute", abi = "execute(bytes)")]
@@ -847,6 +897,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "freezeAllTokens", abi = "freezeAllTokens()")]
@@ -859,6 +911,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "freezeToken", abi = "freezeToken(string)")]
@@ -873,6 +927,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "implementation", abi = "implementation()")]
@@ -885,6 +941,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isCommandExecuted", abi = "isCommandExecuted(bytes32)")]
@@ -899,6 +957,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -922,6 +982,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -943,6 +1005,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sendToken", abi = "sendToken(string,string,string,uint256)")]
@@ -960,6 +1024,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setup", abi = "setup(bytes)")]
@@ -974,6 +1040,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "tokenAddresses", abi = "tokenAddresses(string)")]
@@ -988,6 +1056,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "tokenFrozen", abi = "tokenFrozen(string)")]
@@ -1002,6 +1072,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "unfreezeAllTokens", abi = "unfreezeAllTokens()")]
@@ -1014,6 +1086,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "unfreezeToken", abi = "unfreezeToken(string)")]
@@ -1028,6 +1102,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "upgrade", abi = "upgrade(address,bytes32,bytes)")]
@@ -1044,6 +1120,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1064,6 +1142,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1078,7 +1158,15 @@ pub mod i_axelar_gateway {
         pub symbol: String,
         pub amount: ethers::core::types::U256,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum IAxelarGatewayCalls {
         AdminEpoch(AdminEpochCall),
         AdminThreshold(AdminThresholdCall),
@@ -1396,6 +1484,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AdminEpochReturn(pub ethers::core::types::U256);
@@ -1407,6 +1497,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AdminThresholdReturn(pub ethers::core::types::U256);
@@ -1418,6 +1510,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AdminsReturn(pub ::std::vec::Vec<ethers::core::types::Address>);
@@ -1429,6 +1523,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AllTokensFrozenReturn(pub bool);
@@ -1440,6 +1536,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct ImplementationReturn(pub ethers::core::types::Address);
@@ -1451,6 +1549,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsCommandExecutedReturn(pub bool);
@@ -1462,6 +1562,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsContractCallAndMintApprovedReturn(pub bool);
@@ -1473,6 +1575,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsContractCallApprovedReturn(pub bool);
@@ -1484,6 +1588,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct TokenAddressesReturn(pub ethers::core::types::Address);
@@ -1495,6 +1601,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct TokenFrozenReturn(pub bool);
@@ -1506,6 +1614,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct ValidateContractCallReturn(pub bool);
@@ -1517,6 +1627,8 @@ pub mod i_axelar_gateway {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct ValidateContractCallAndMintReturn(pub bool);

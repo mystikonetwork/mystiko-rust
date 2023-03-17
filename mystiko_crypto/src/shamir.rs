@@ -1,16 +1,19 @@
+use crate::constants::FIELD_SIZE;
 use crate::error::SecretShareError;
-use crate::utils::{calc_mod, random};
-use mystiko_utils::constants::FIELD_SIZE;
+use crate::num_traits::One;
+use crate::utils::{mod_floor, random_bigint};
+use anyhow::Result;
 use num_bigint::BigInt;
 use num_traits::identities::Zero;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Point {
-    x: BigInt,
-    y: BigInt,
+    pub x: BigInt,
+    pub y: BigInt,
 }
 
+#[derive(Debug, Clone)]
 pub struct SecretShare {
     pub num_of_shares: u32,
     pub threshold: u32,
@@ -24,7 +27,7 @@ pub fn recover(shares: Vec<Point>, in_prime: Option<BigInt>) -> BigInt {
         _ => FIELD_SIZE.clone(),
     };
 
-    lagrange_interpolate(BigInt::zero(), shares, prime)
+    lagrange_interpolate(&BigInt::zero(), &shares, &prime)
 }
 
 pub fn split(
@@ -48,7 +51,7 @@ pub fn split(
 
     let mut coefficients: Vec<BigInt> = vec![secret];
     for _ in 1..threshold {
-        coefficients.push(random(32, &prime));
+        coefficients.push(random_bigint(32, &prime));
     }
 
     let mut shares: Vec<Point> = vec![];
@@ -67,9 +70,7 @@ pub fn split(
 }
 
 fn batch_mul(values: &[BigInt]) -> BigInt {
-    let mut accum = BigInt::from(1u32);
-    values.iter().for_each(|v| accum *= v);
-    accum
+    values.iter().product()
 }
 
 fn eval_poly(coefficients: &[BigInt], x: &BigInt, prime: &BigInt) -> BigInt {
@@ -77,23 +78,23 @@ fn eval_poly(coefficients: &[BigInt], x: &BigInt, prime: &BigInt) -> BigInt {
     for cf in coefficients.iter().rev() {
         accum *= x;
         accum += cf;
-        accum = calc_mod(accum, prime);
+        accum = mod_floor(&accum, prime);
     }
     accum
 }
 
-fn extended_gcd(a: BigInt, b: BigInt) -> (BigInt, BigInt) {
+fn extended_gcd(a: &BigInt, b: &BigInt) -> (BigInt, BigInt) {
     let mut x = BigInt::zero();
-    let mut last_x = BigInt::from(1u32);
-    let mut y = BigInt::from(1u32);
+    let mut last_x = BigInt::one();
+    let mut y = BigInt::one();
     let mut last_y = BigInt::zero();
 
-    let mut a_val = a;
-    let mut b_val = b;
+    let mut a_val = a.clone();
+    let mut b_val = b.clone();
 
     while !b_val.is_zero() {
         let quote = a_val.clone() / b_val.clone();
-        let temp_b = calc_mod(a_val.clone(), &b_val);
+        let temp_b = mod_floor(&a_val, &b_val);
         a_val = b_val.clone();
         b_val = temp_b;
         let temp_x = last_x - (quote.clone() * x.clone());
@@ -107,16 +108,16 @@ fn extended_gcd(a: BigInt, b: BigInt) -> (BigInt, BigInt) {
     (last_x, last_y)
 }
 
-fn div_mod(num: BigInt, den: BigInt, prime: BigInt) -> BigInt {
+fn div_mod(num: &BigInt, den: &BigInt, prime: &BigInt) -> BigInt {
     let (x, _) = extended_gcd(den, prime);
     x * num
 }
 
-fn sum(values: Vec<BigInt>) -> BigInt {
-    values.iter().fold(BigInt::zero(), |acc, x| acc + x)
+fn sum(values: &[BigInt]) -> BigInt {
+    values.iter().sum()
 }
 
-fn lagrange_interpolate(x: BigInt, points: Vec<Point>, prime: BigInt) -> BigInt {
+fn lagrange_interpolate(x: &BigInt, points: &[Point], prime: &BigInt) -> BigInt {
     let k = points.len();
     let mut hashset = HashSet::new();
     assert_eq!(
@@ -148,53 +149,12 @@ fn lagrange_interpolate(x: BigInt, points: Vec<Point>, prime: BigInt) -> BigInt 
     let den = batch_mul(&dens);
     let mut num_values: Vec<BigInt> = vec![];
     for i in 0..k {
-        let num = calc_mod(nums[i].clone() * den.clone() * points[i].clone().y, &prime);
-        num_values.push(div_mod(num, dens[i].clone(), prime.clone()));
-    }
-    let num = sum(num_values);
-    calc_mod(div_mod(num, den, prime.clone()) + prime.clone(), &prime)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use rand::seq::SliceRandom;
-
-    #[test]
-    fn test_secret_sharing() {
-        let secret = random(32, &FIELD_SIZE.clone());
-        let result = split(secret.clone(), 0, 17, None);
-        assert_eq!(result.err().unwrap(), SecretShareError::SharesOutOfBounds);
-
-        let result = split(secret.clone(), 5, 7, None);
-        assert_eq!(
-            result.err().unwrap(),
-            SecretShareError::ThresholdOutOfBounds
+        let num = mod_floor(
+            &(nums[i].clone() * den.clone() * points[i].y.clone()),
+            prime,
         );
+        num_values.push(div_mod(&num, &dens[i], prime));
     }
-
-    #[test]
-    fn test_secret_sharing1() {
-        let secret = random(32, &FIELD_SIZE.clone());
-        let ss = split(secret.clone(), 30, 17, None).unwrap();
-        let mut shares = ss.shares.clone();
-        shares.shuffle(&mut rand::thread_rng());
-        let es = shares[0..17].to_vec();
-        let recovered_secret = recover(es, None);
-        assert_eq!(secret, recovered_secret);
-    }
-
-    #[test]
-    fn test_secret_sharing2() {
-        let mut secret = random(32, &FIELD_SIZE.clone());
-        let field: BigInt = BigInt::parse_bytes(b"58995116542422524421248775517049", 10).unwrap();
-        secret = calc_mod(secret, &field);
-
-        let ss = split(secret.clone(), 5, 3, Some(field.clone())).unwrap();
-        let mut shares = ss.shares.clone();
-        shares.shuffle(&mut rand::thread_rng());
-        let es = shares[0..3].to_vec();
-        let recovered_secret = recover(es, Some(field.clone()));
-        assert_eq!(secret, recovered_secret);
-    }
+    let num = sum(num_values.as_slice());
+    mod_floor(&(div_mod(&num, &den, prime) + prime), prime)
 }

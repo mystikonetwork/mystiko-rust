@@ -32,7 +32,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          token: ${{ secrets.PACKAGES_TOKEN }}
+          lfs: true
+          submodules: recursive
           persist-credentials: false
+
+      - name: Unzip circuits
+        run: |
+          ./scripts/unzip_circuits.sh
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -56,16 +63,23 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run tests
-        run: cargo llvm-cov --lcov --no-report
+        run: cargo llvm-cov --ignore-filename-regex=mystiko_abi --lcov --no-report
 
       - name: Generate coverage report
-        run: cargo llvm-cov --lcov --no-run --output-path lcov.info
+        run: cargo llvm-cov --ignore-filename-regex=mystiko_abi --lcov --no-run --output-path lcov.info
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
+      - name: Delete circuits
+        if: always()
+        run: |
+          ./scripts/delete_circuits.sh
+
+      - run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
 
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master

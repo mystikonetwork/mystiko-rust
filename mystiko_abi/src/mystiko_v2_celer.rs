@@ -16,7 +16,7 @@ pub mod mystiko_v2_celer {
     use ethers::providers::Middleware;
     #[doc = "MystikoV2Celer was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
     use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooLarge\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooSmall\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BridgeFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHashIncorrect\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"DepositsDisabled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"ExecutorFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromChainIdNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromProxyAddressNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"HashKGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MaxAmountLessThanMinAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MinAmountGreaterThanMaxAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RandomSGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SenderIsNotBridgeProxy\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentCrossChain\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositsDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MaxAmount\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinAmount\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minBridgeFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinBridgeFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinRollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinRollupFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bridgeProxyAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"bridgeType\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct IMystikoBridge.DepositRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"hashK\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint128\",\"name\":\"randomS\",\"type\":\"uint128\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bridgeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"deposit\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_srcChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"executeMessage\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAssociatedCommitmentPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMaxAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinBridgeFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isDepositsDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainId\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_commitmentPoolAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAssociatedCommitmentPool\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_bridgeProxyAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setBridgeProxyAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setDepositsDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_maxAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMaxAmount\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinAmount\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBridgeFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinBridgeFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_peerChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"_peerChainName\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_peerContract\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]" ;
+    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooLarge\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooSmall\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BridgeFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHashIncorrect\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"DepositsDisabled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"ExecutorFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromChainIdNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromProxyAddressNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"HashKGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MinAmountGreaterThanMaxAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RandomSGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SenderIsNotBridgeProxy\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentCrossChain\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"minAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositAmountLimits\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositsDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minBridgeFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinBridgeFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinRollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinRollupFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bridgeProxyAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"bridgeType\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct IMystikoBridge.DepositRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"hashK\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint128\",\"name\":\"randomS\",\"type\":\"uint128\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bridgeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"deposit\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_srcChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"executeMessage\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAssociatedCommitmentPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMaxAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinBridgeFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isDepositsDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainId\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_commitmentPoolAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAssociatedCommitmentPool\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_bridgeProxyAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setBridgeProxyAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setDepositsDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBridgeFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinBridgeFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_peerChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"_peerChainName\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_peerContract\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_maxAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_minAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateDepositAmountLimits\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]" ;
     #[doc = r" The parsed JSON-ABI of the contract."]
     pub static MYSTIKOV2CELER_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
         ethers::contract::Lazy::new(|| {
@@ -240,24 +240,6 @@ pub mod mystiko_v2_celer {
                 .method_hash([234, 12, 222, 133], state)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setMaxAmount` (0x4fe47f70) function"]
-        pub fn set_max_amount(
-            &self,
-            max_amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([79, 228, 127, 112], max_amount)
-                .expect("method not found (this should never happen)")
-        }
-        #[doc = "Calls the contract's `setMinAmount` (0x897b0637) function"]
-        pub fn set_min_amount(
-            &self,
-            min_amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([137, 123, 6, 55], min_amount)
-                .expect("method not found (this should never happen)")
-        }
         #[doc = "Calls the contract's `setMinBridgeFee` (0x19e75d6e) function"]
         pub fn set_min_bridge_fee(
             &self,
@@ -308,6 +290,16 @@ pub mod mystiko_v2_celer {
                 .method_hash([82, 31, 240, 87], peer_min_rollup_fee)
                 .expect("method not found (this should never happen)")
         }
+        #[doc = "Calls the contract's `updateDepositAmountLimits` (0xe8183c44) function"]
+        pub fn update_deposit_amount_limits(
+            &self,
+            max_amount: ethers::core::types::U256,
+            min_amount: ethers::core::types::U256,
+        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            self.0
+                .method_hash([232, 24, 60, 68], (max_amount, min_amount))
+                .expect("method not found (this should never happen)")
+        }
         #[doc = "Calls the contract's `updateSanctionsListAddress` (0x30f49cac) function"]
         pub fn update_sanctions_list_address(
             &self,
@@ -323,18 +315,16 @@ pub mod mystiko_v2_celer {
         ) -> ethers::contract::builders::Event<M, CommitmentCrossChainFilter> {
             self.0.event()
         }
+        #[doc = "Gets the contract's `DepositAmountLimits` event"]
+        pub fn deposit_amount_limits_filter(
+            &self,
+        ) -> ethers::contract::builders::Event<M, DepositAmountLimitsFilter> {
+            self.0.event()
+        }
         #[doc = "Gets the contract's `DepositsDisabled` event"]
         pub fn deposits_disabled_filter(
             &self,
         ) -> ethers::contract::builders::Event<M, DepositsDisabledFilter> {
-            self.0.event()
-        }
-        #[doc = "Gets the contract's `MaxAmount` event"]
-        pub fn max_amount_filter(&self) -> ethers::contract::builders::Event<M, MaxAmountFilter> {
-            self.0.event()
-        }
-        #[doc = "Gets the contract's `MinAmount` event"]
-        pub fn min_amount_filter(&self) -> ethers::contract::builders::Event<M, MinAmountFilter> {
             self.0.event()
         }
         #[doc = "Gets the contract's `MinBridgeFee` event"]
@@ -398,6 +388,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AmountLessThanZero", abi = "AmountLessThanZero()")]
     pub struct AmountLessThanZero;
@@ -410,6 +402,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AmountTooLarge", abi = "AmountTooLarge()")]
     pub struct AmountTooLarge;
@@ -422,6 +416,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "AmountTooSmall", abi = "AmountTooSmall()")]
     pub struct AmountTooSmall;
@@ -434,6 +430,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "BridgeFeeTooFew", abi = "BridgeFeeTooFew()")]
     pub struct BridgeFeeTooFew;
@@ -446,6 +444,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "CommitmentHashIncorrect", abi = "CommitmentHashIncorrect()")]
     pub struct CommitmentHashIncorrect;
@@ -458,6 +458,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "DepositsDisabled", abi = "DepositsDisabled()")]
     pub struct DepositsDisabled;
@@ -470,6 +472,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "ExecutorFeeTooFew", abi = "ExecutorFeeTooFew()")]
     pub struct ExecutorFeeTooFew;
@@ -482,6 +486,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "FromChainIdNotMatched", abi = "FromChainIdNotMatched()")]
     pub struct FromChainIdNotMatched;
@@ -494,6 +500,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "FromProxyAddressNotMatched",
@@ -509,6 +517,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "HashKGreaterThanFieldSize",
@@ -524,26 +534,13 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
         pub param: String,
     }
-    #[doc = "Custom Error type `MaxAmountLessThanMinAmount` with signature `MaxAmountLessThanMinAmount()` and selector `[201, 28, 83, 23]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Default,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-    )]
-    #[etherror(
-        name = "MaxAmountLessThanMinAmount",
-        abi = "MaxAmountLessThanMinAmount()"
-    )]
-    pub struct MaxAmountLessThanMinAmount;
     #[doc = "Custom Error type `MinAmountGreaterThanMaxAmount` with signature `MinAmountGreaterThanMaxAmount()` and selector `[192, 7, 208, 66]`"]
     #[derive(
         Clone,
@@ -553,6 +550,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "MinAmountGreaterThanMaxAmount",
@@ -568,6 +567,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "NotChanged", abi = "NotChanged()")]
     pub struct NotChanged;
@@ -580,6 +581,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
     pub struct OnlyOperator;
@@ -592,6 +595,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(
         name = "RandomSGreaterThanFieldSize",
@@ -607,6 +612,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "RollupFeeToFew", abi = "RollupFeeToFew()")]
     pub struct RollupFeeToFew;
@@ -619,6 +626,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "SanctionedAddress", abi = "SanctionedAddress()")]
     pub struct SanctionedAddress;
@@ -631,10 +640,20 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthError,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     #[etherror(name = "SenderIsNotBridgeProxy", abi = "SenderIsNotBridgeProxy()")]
     pub struct SenderIsNotBridgeProxy;
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2CelerErrors {
         AmountLessThanZero(AmountLessThanZero),
         AmountTooLarge(AmountTooLarge),
@@ -647,7 +666,6 @@ pub mod mystiko_v2_celer {
         FromProxyAddressNotMatched(FromProxyAddressNotMatched),
         HashKGreaterThanFieldSize(HashKGreaterThanFieldSize),
         Invalid(Invalid),
-        MaxAmountLessThanMinAmount(MaxAmountLessThanMinAmount),
         MinAmountGreaterThanMaxAmount(MinAmountGreaterThanMaxAmount),
         NotChanged(NotChanged),
         OnlyOperator(OnlyOperator),
@@ -714,11 +732,6 @@ pub mod mystiko_v2_celer {
                 return Ok(MystikoV2CelerErrors::Invalid(decoded));
             }
             if let Ok(decoded) =
-                <MaxAmountLessThanMinAmount as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2CelerErrors::MaxAmountLessThanMinAmount(decoded));
-            }
-            if let Ok(decoded) =
                 <MinAmountGreaterThanMaxAmount as ethers::core::abi::AbiDecode>::decode(
                     data.as_ref(),
                 )
@@ -771,7 +784,6 @@ pub mod mystiko_v2_celer {
                 MystikoV2CelerErrors::FromProxyAddressNotMatched(element) => element.encode(),
                 MystikoV2CelerErrors::HashKGreaterThanFieldSize(element) => element.encode(),
                 MystikoV2CelerErrors::Invalid(element) => element.encode(),
-                MystikoV2CelerErrors::MaxAmountLessThanMinAmount(element) => element.encode(),
                 MystikoV2CelerErrors::MinAmountGreaterThanMaxAmount(element) => element.encode(),
                 MystikoV2CelerErrors::NotChanged(element) => element.encode(),
                 MystikoV2CelerErrors::OnlyOperator(element) => element.encode(),
@@ -796,7 +808,6 @@ pub mod mystiko_v2_celer {
                 MystikoV2CelerErrors::FromProxyAddressNotMatched(element) => element.fmt(f),
                 MystikoV2CelerErrors::HashKGreaterThanFieldSize(element) => element.fmt(f),
                 MystikoV2CelerErrors::Invalid(element) => element.fmt(f),
-                MystikoV2CelerErrors::MaxAmountLessThanMinAmount(element) => element.fmt(f),
                 MystikoV2CelerErrors::MinAmountGreaterThanMaxAmount(element) => element.fmt(f),
                 MystikoV2CelerErrors::NotChanged(element) => element.fmt(f),
                 MystikoV2CelerErrors::OnlyOperator(element) => element.fmt(f),
@@ -862,11 +873,6 @@ pub mod mystiko_v2_celer {
             MystikoV2CelerErrors::Invalid(var)
         }
     }
-    impl ::std::convert::From<MaxAmountLessThanMinAmount> for MystikoV2CelerErrors {
-        fn from(var: MaxAmountLessThanMinAmount) -> Self {
-            MystikoV2CelerErrors::MaxAmountLessThanMinAmount(var)
-        }
-    }
     impl ::std::convert::From<MinAmountGreaterThanMaxAmount> for MystikoV2CelerErrors {
         fn from(var: MinAmountGreaterThanMaxAmount) -> Self {
             MystikoV2CelerErrors::MinAmountGreaterThanMaxAmount(var)
@@ -909,6 +915,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "CommitmentCrossChain", abi = "CommitmentCrossChain(uint256)")]
@@ -923,6 +931,27 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
+        Default,
+    )]
+    #[ethevent(
+        name = "DepositAmountLimits",
+        abi = "DepositAmountLimits(uint256,uint256)"
+    )]
+    pub struct DepositAmountLimitsFilter {
+        pub max_amount: ethers::core::types::U256,
+        pub min_amount: ethers::core::types::U256,
+    }
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthEvent,
+        ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "DepositsDisabled", abi = "DepositsDisabled(bool)")]
@@ -936,32 +965,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethevent(name = "MaxAmount", abi = "MaxAmount(uint256)")]
-    pub struct MaxAmountFilter {
-        pub max_amount: ethers::core::types::U256,
-    }
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethevent(name = "MinAmount", abi = "MinAmount(uint256)")]
-    pub struct MinAmountFilter {
-        pub min_amount: ethers::core::types::U256,
-    }
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "MinBridgeFee", abi = "MinBridgeFee(uint256)")]
@@ -975,6 +980,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "MinExecutorFee", abi = "MinExecutorFee(uint256)")]
@@ -988,6 +995,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "OperatorChanged", abi = "OperatorChanged(address)")]
@@ -1002,6 +1011,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "PeerMinExecutorFee", abi = "PeerMinExecutorFee(uint256)")]
@@ -1015,6 +1026,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "PeerMinRollupFee", abi = "PeerMinRollupFee(uint256)")]
@@ -1028,6 +1041,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
@@ -1041,18 +1056,27 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
     pub struct SanctionsListFilter {
         pub sanctions: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2CelerEvents {
         CommitmentCrossChainFilter(CommitmentCrossChainFilter),
+        DepositAmountLimitsFilter(DepositAmountLimitsFilter),
         DepositsDisabledFilter(DepositsDisabledFilter),
-        MaxAmountFilter(MaxAmountFilter),
-        MinAmountFilter(MinAmountFilter),
         MinBridgeFeeFilter(MinBridgeFeeFilter),
         MinExecutorFeeFilter(MinExecutorFeeFilter),
         OperatorChangedFilter(OperatorChangedFilter),
@@ -1071,14 +1095,11 @@ pub mod mystiko_v2_celer {
             if let Ok(decoded) = CommitmentCrossChainFilter::decode_log(log) {
                 return Ok(MystikoV2CelerEvents::CommitmentCrossChainFilter(decoded));
             }
+            if let Ok(decoded) = DepositAmountLimitsFilter::decode_log(log) {
+                return Ok(MystikoV2CelerEvents::DepositAmountLimitsFilter(decoded));
+            }
             if let Ok(decoded) = DepositsDisabledFilter::decode_log(log) {
                 return Ok(MystikoV2CelerEvents::DepositsDisabledFilter(decoded));
-            }
-            if let Ok(decoded) = MaxAmountFilter::decode_log(log) {
-                return Ok(MystikoV2CelerEvents::MaxAmountFilter(decoded));
-            }
-            if let Ok(decoded) = MinAmountFilter::decode_log(log) {
-                return Ok(MystikoV2CelerEvents::MinAmountFilter(decoded));
             }
             if let Ok(decoded) = MinBridgeFeeFilter::decode_log(log) {
                 return Ok(MystikoV2CelerEvents::MinBridgeFeeFilter(decoded));
@@ -1108,9 +1129,8 @@ pub mod mystiko_v2_celer {
         fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
             match self {
                 MystikoV2CelerEvents::CommitmentCrossChainFilter(element) => element.fmt(f),
+                MystikoV2CelerEvents::DepositAmountLimitsFilter(element) => element.fmt(f),
                 MystikoV2CelerEvents::DepositsDisabledFilter(element) => element.fmt(f),
-                MystikoV2CelerEvents::MaxAmountFilter(element) => element.fmt(f),
-                MystikoV2CelerEvents::MinAmountFilter(element) => element.fmt(f),
                 MystikoV2CelerEvents::MinBridgeFeeFilter(element) => element.fmt(f),
                 MystikoV2CelerEvents::MinExecutorFeeFilter(element) => element.fmt(f),
                 MystikoV2CelerEvents::OperatorChangedFilter(element) => element.fmt(f),
@@ -1129,6 +1149,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "assetType", abi = "assetType()")]
@@ -1141,6 +1163,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "bridgeProxyAddress", abi = "bridgeProxyAddress()")]
@@ -1153,6 +1177,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "bridgeType", abi = "bridgeType()")]
@@ -1165,6 +1191,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
@@ -1179,6 +1207,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1196,6 +1226,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "disableSanctionsCheck", abi = "disableSanctionsCheck()")]
@@ -1208,6 +1240,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "enableSanctionsCheck", abi = "enableSanctionsCheck()")]
@@ -1220,6 +1254,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1240,6 +1276,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1255,6 +1293,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMaxAmount", abi = "getMaxAmount()")]
@@ -1267,6 +1307,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMinAmount", abi = "getMinAmount()")]
@@ -1279,6 +1321,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMinBridgeFee", abi = "getMinBridgeFee()")]
@@ -1291,6 +1335,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getMinExecutorFee", abi = "getMinExecutorFee()")]
@@ -1303,6 +1349,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getPeerMinExecutorFee", abi = "getPeerMinExecutorFee()")]
@@ -1315,6 +1363,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getPeerMinRollupFee", abi = "getPeerMinRollupFee()")]
@@ -1327,6 +1377,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isDepositsDisabled", abi = "isDepositsDisabled()")]
@@ -1339,6 +1391,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "peerChainId", abi = "peerChainId()")]
@@ -1351,6 +1405,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "peerChainName", abi = "peerChainName()")]
@@ -1363,6 +1419,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "peerContract", abi = "peerContract()")]
@@ -1375,6 +1433,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
@@ -1387,6 +1447,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
@@ -1399,6 +1461,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1416,6 +1480,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setBridgeProxyAddress", abi = "setBridgeProxyAddress(address)")]
@@ -1430,39 +1496,13 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setDepositsDisabled", abi = "setDepositsDisabled(bool)")]
     pub struct SetDepositsDisabledCall {
         pub state: bool,
-    }
-    #[doc = "Container type for all input parameters for the `setMaxAmount` function with signature `setMaxAmount(uint256)` and selector `[79, 228, 127, 112]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "setMaxAmount", abi = "setMaxAmount(uint256)")]
-    pub struct SetMaxAmountCall {
-        pub max_amount: ethers::core::types::U256,
-    }
-    #[doc = "Container type for all input parameters for the `setMinAmount` function with signature `setMinAmount(uint256)` and selector `[137, 123, 6, 55]`"]
-    #[derive(
-        Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        Default,
-    )]
-    #[ethcall(name = "setMinAmount", abi = "setMinAmount(uint256)")]
-    pub struct SetMinAmountCall {
-        pub min_amount: ethers::core::types::U256,
     }
     #[doc = "Container type for all input parameters for the `setMinBridgeFee` function with signature `setMinBridgeFee(uint256)` and selector `[25, 231, 93, 110]`"]
     #[derive(
@@ -1472,6 +1512,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setMinBridgeFee", abi = "setMinBridgeFee(uint256)")]
@@ -1486,6 +1528,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setMinExecutorFee", abi = "setMinExecutorFee(uint256)")]
@@ -1500,6 +1544,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1519,6 +1565,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setPeerMinExecutorFee", abi = "setPeerMinExecutorFee(uint256)")]
@@ -1533,11 +1581,33 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setPeerMinRollupFee", abi = "setPeerMinRollupFee(uint256)")]
     pub struct SetPeerMinRollupFeeCall {
         pub peer_min_rollup_fee: ethers::core::types::U256,
+    }
+    #[doc = "Container type for all input parameters for the `updateDepositAmountLimits` function with signature `updateDepositAmountLimits(uint256,uint256)` and selector `[232, 24, 60, 68]`"]
+    #[derive(
+        Clone,
+        Debug,
+        Eq,
+        PartialEq,
+        ethers :: contract :: EthCall,
+        ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
+        Default,
+    )]
+    #[ethcall(
+        name = "updateDepositAmountLimits",
+        abi = "updateDepositAmountLimits(uint256,uint256)"
+    )]
+    pub struct UpdateDepositAmountLimitsCall {
+        pub max_amount: ethers::core::types::U256,
+        pub min_amount: ethers::core::types::U256,
     }
     #[doc = "Container type for all input parameters for the `updateSanctionsListAddress` function with signature `updateSanctionsListAddress(address)` and selector `[48, 244, 156, 172]`"]
     #[derive(
@@ -1547,6 +1617,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -1556,7 +1628,15 @@ pub mod mystiko_v2_celer {
     pub struct UpdateSanctionsListAddressCall {
         pub sanction: ethers::core::types::Address,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum MystikoV2CelerCalls {
         AssetType(AssetTypeCall),
         BridgeProxyAddress(BridgeProxyAddressCall),
@@ -1582,13 +1662,12 @@ pub mod mystiko_v2_celer {
         SetAssociatedCommitmentPool(SetAssociatedCommitmentPoolCall),
         SetBridgeProxyAddress(SetBridgeProxyAddressCall),
         SetDepositsDisabled(SetDepositsDisabledCall),
-        SetMaxAmount(SetMaxAmountCall),
-        SetMinAmount(SetMinAmountCall),
         SetMinBridgeFee(SetMinBridgeFeeCall),
         SetMinExecutorFee(SetMinExecutorFeeCall),
         SetPeerContract(SetPeerContractCall),
         SetPeerMinExecutorFee(SetPeerMinExecutorFeeCall),
         SetPeerMinRollupFee(SetPeerMinRollupFeeCall),
+        UpdateDepositAmountLimits(UpdateDepositAmountLimitsCall),
         UpdateSanctionsListAddress(UpdateSanctionsListAddressCall),
     }
     impl ethers::core::abi::AbiDecode for MystikoV2CelerCalls {
@@ -1720,16 +1799,6 @@ pub mod mystiko_v2_celer {
                 return Ok(MystikoV2CelerCalls::SetDepositsDisabled(decoded));
             }
             if let Ok(decoded) =
-                <SetMaxAmountCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2CelerCalls::SetMaxAmount(decoded));
-            }
-            if let Ok(decoded) =
-                <SetMinAmountCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2CelerCalls::SetMinAmount(decoded));
-            }
-            if let Ok(decoded) =
                 <SetMinBridgeFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(MystikoV2CelerCalls::SetMinBridgeFee(decoded));
@@ -1753,6 +1822,13 @@ pub mod mystiko_v2_celer {
                 <SetPeerMinRollupFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
             {
                 return Ok(MystikoV2CelerCalls::SetPeerMinRollupFee(decoded));
+            }
+            if let Ok(decoded) =
+                <UpdateDepositAmountLimitsCall as ethers::core::abi::AbiDecode>::decode(
+                    data.as_ref(),
+                )
+            {
+                return Ok(MystikoV2CelerCalls::UpdateDepositAmountLimits(decoded));
             }
             if let Ok(decoded) =
                 <UpdateSanctionsListAddressCall as ethers::core::abi::AbiDecode>::decode(
@@ -1791,13 +1867,12 @@ pub mod mystiko_v2_celer {
                 MystikoV2CelerCalls::SetAssociatedCommitmentPool(element) => element.encode(),
                 MystikoV2CelerCalls::SetBridgeProxyAddress(element) => element.encode(),
                 MystikoV2CelerCalls::SetDepositsDisabled(element) => element.encode(),
-                MystikoV2CelerCalls::SetMaxAmount(element) => element.encode(),
-                MystikoV2CelerCalls::SetMinAmount(element) => element.encode(),
                 MystikoV2CelerCalls::SetMinBridgeFee(element) => element.encode(),
                 MystikoV2CelerCalls::SetMinExecutorFee(element) => element.encode(),
                 MystikoV2CelerCalls::SetPeerContract(element) => element.encode(),
                 MystikoV2CelerCalls::SetPeerMinExecutorFee(element) => element.encode(),
                 MystikoV2CelerCalls::SetPeerMinRollupFee(element) => element.encode(),
+                MystikoV2CelerCalls::UpdateDepositAmountLimits(element) => element.encode(),
                 MystikoV2CelerCalls::UpdateSanctionsListAddress(element) => element.encode(),
             }
         }
@@ -1829,13 +1904,12 @@ pub mod mystiko_v2_celer {
                 MystikoV2CelerCalls::SetAssociatedCommitmentPool(element) => element.fmt(f),
                 MystikoV2CelerCalls::SetBridgeProxyAddress(element) => element.fmt(f),
                 MystikoV2CelerCalls::SetDepositsDisabled(element) => element.fmt(f),
-                MystikoV2CelerCalls::SetMaxAmount(element) => element.fmt(f),
-                MystikoV2CelerCalls::SetMinAmount(element) => element.fmt(f),
                 MystikoV2CelerCalls::SetMinBridgeFee(element) => element.fmt(f),
                 MystikoV2CelerCalls::SetMinExecutorFee(element) => element.fmt(f),
                 MystikoV2CelerCalls::SetPeerContract(element) => element.fmt(f),
                 MystikoV2CelerCalls::SetPeerMinExecutorFee(element) => element.fmt(f),
                 MystikoV2CelerCalls::SetPeerMinRollupFee(element) => element.fmt(f),
+                MystikoV2CelerCalls::UpdateDepositAmountLimits(element) => element.fmt(f),
                 MystikoV2CelerCalls::UpdateSanctionsListAddress(element) => element.fmt(f),
             }
         }
@@ -1960,16 +2034,6 @@ pub mod mystiko_v2_celer {
             MystikoV2CelerCalls::SetDepositsDisabled(var)
         }
     }
-    impl ::std::convert::From<SetMaxAmountCall> for MystikoV2CelerCalls {
-        fn from(var: SetMaxAmountCall) -> Self {
-            MystikoV2CelerCalls::SetMaxAmount(var)
-        }
-    }
-    impl ::std::convert::From<SetMinAmountCall> for MystikoV2CelerCalls {
-        fn from(var: SetMinAmountCall) -> Self {
-            MystikoV2CelerCalls::SetMinAmount(var)
-        }
-    }
     impl ::std::convert::From<SetMinBridgeFeeCall> for MystikoV2CelerCalls {
         fn from(var: SetMinBridgeFeeCall) -> Self {
             MystikoV2CelerCalls::SetMinBridgeFee(var)
@@ -1995,6 +2059,11 @@ pub mod mystiko_v2_celer {
             MystikoV2CelerCalls::SetPeerMinRollupFee(var)
         }
     }
+    impl ::std::convert::From<UpdateDepositAmountLimitsCall> for MystikoV2CelerCalls {
+        fn from(var: UpdateDepositAmountLimitsCall) -> Self {
+            MystikoV2CelerCalls::UpdateDepositAmountLimits(var)
+        }
+    }
     impl ::std::convert::From<UpdateSanctionsListAddressCall> for MystikoV2CelerCalls {
         fn from(var: UpdateSanctionsListAddressCall) -> Self {
             MystikoV2CelerCalls::UpdateSanctionsListAddress(var)
@@ -2008,6 +2077,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct AssetTypeReturn(pub u8);
@@ -2019,6 +2090,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct BridgeProxyAddressReturn(pub ethers::core::types::Address);
@@ -2030,6 +2103,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct BridgeTypeReturn(pub String);
@@ -2041,6 +2116,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct ExecuteMessageReturn(pub bool);
@@ -2052,6 +2129,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetAssociatedCommitmentPoolReturn(pub ethers::core::types::Address);
@@ -2063,6 +2142,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMaxAmountReturn(pub ethers::core::types::U256);
@@ -2074,6 +2155,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMinAmountReturn(pub ethers::core::types::U256);
@@ -2085,6 +2168,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMinBridgeFeeReturn(pub ethers::core::types::U256);
@@ -2096,6 +2181,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetMinExecutorFeeReturn(pub ethers::core::types::U256);
@@ -2107,6 +2194,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetPeerMinExecutorFeeReturn(pub ethers::core::types::U256);
@@ -2118,6 +2207,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetPeerMinRollupFeeReturn(pub ethers::core::types::U256);
@@ -2129,6 +2220,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsDepositsDisabledReturn(pub bool);
@@ -2140,6 +2233,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct PeerChainIdReturn(pub u64);
@@ -2151,6 +2246,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct PeerChainNameReturn(pub String);
@@ -2162,6 +2259,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct PeerContractReturn(pub ethers::core::types::Address);
@@ -2173,6 +2272,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct SanctionsCheckReturn(pub bool);
@@ -2184,6 +2285,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct SanctionsListReturn(pub ethers::core::types::Address);
@@ -2196,6 +2299,8 @@ pub mod mystiko_v2_celer {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
     )]
     pub struct DepositRequest {
         pub amount: ethers::core::types::U256,

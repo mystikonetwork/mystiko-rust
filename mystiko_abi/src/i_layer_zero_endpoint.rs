@@ -294,6 +294,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -315,6 +317,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "forceResumeReceive", abi = "forceResumeReceive(uint16,bytes)")]
@@ -330,6 +334,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getChainId", abi = "getChainId()")]
@@ -342,6 +348,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getConfig", abi = "getConfig(uint16,uint16,address,uint256)")]
@@ -359,6 +367,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getInboundNonce", abi = "getInboundNonce(uint16,bytes)")]
@@ -374,6 +384,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getOutboundNonce", abi = "getOutboundNonce(uint16,address)")]
@@ -389,6 +401,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -406,6 +420,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getReceiveVersion", abi = "getReceiveVersion(address)")]
@@ -420,6 +436,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getSendLibraryAddress", abi = "getSendLibraryAddress(address)")]
@@ -434,6 +452,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "getSendVersion", abi = "getSendVersion(address)")]
@@ -448,6 +468,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "hasStoredPayload", abi = "hasStoredPayload(uint16,bytes)")]
@@ -463,6 +485,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isReceivingPayload", abi = "isReceivingPayload()")]
@@ -475,6 +499,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "isSendingPayload", abi = "isSendingPayload()")]
@@ -487,6 +513,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(
@@ -509,6 +537,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "retryPayload", abi = "retryPayload(uint16,bytes,bytes)")]
@@ -525,6 +555,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "send", abi = "send(uint16,bytes,bytes,address,address,bytes)")]
@@ -544,6 +576,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setConfig", abi = "setConfig(uint16,uint16,uint256,bytes)")]
@@ -561,6 +595,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setReceiveVersion", abi = "setReceiveVersion(uint16)")]
@@ -575,13 +611,23 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "setSendVersion", abi = "setSendVersion(uint16)")]
     pub struct SetSendVersionCall {
         pub version: u16,
     }
-    #[derive(Debug, Clone, PartialEq, Eq, ethers :: contract :: EthAbiType)]
+    #[derive(
+        Debug,
+        Clone,
+        PartialEq,
+        Eq,
+        ethers :: contract :: EthAbiType,
+        serde :: Serialize,
+        serde :: Deserialize,
+    )]
     pub enum ILayerZeroEndpointCalls {
         EstimateFees(EstimateFeesCall),
         ForceResumeReceive(ForceResumeReceiveCall),
@@ -858,6 +904,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct EstimateFeesReturn {
@@ -872,6 +920,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetChainIdReturn(pub u16);
@@ -883,6 +933,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetConfigReturn(pub ethers::core::types::Bytes);
@@ -894,6 +946,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetInboundNonceReturn(pub u64);
@@ -905,6 +959,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetOutboundNonceReturn(pub u64);
@@ -916,6 +972,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetReceiveLibraryAddressReturn(pub ethers::core::types::Address);
@@ -927,6 +985,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetReceiveVersionReturn(pub u16);
@@ -938,6 +998,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetSendLibraryAddressReturn(pub ethers::core::types::Address);
@@ -949,6 +1011,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct GetSendVersionReturn(pub u16);
@@ -960,6 +1024,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct HasStoredPayloadReturn(pub bool);
@@ -971,6 +1037,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsReceivingPayloadReturn(pub bool);
@@ -982,6 +1050,8 @@ pub mod i_layer_zero_endpoint {
         PartialEq,
         ethers :: contract :: EthAbiType,
         ethers :: contract :: EthAbiCodec,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     pub struct IsSendingPayloadReturn(pub bool);

@@ -88,6 +88,8 @@ pub mod i_cross_chain_proxy {
         PartialEq,
         ethers :: contract :: EthEvent,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethevent(
@@ -108,6 +110,8 @@ pub mod i_cross_chain_proxy {
         PartialEq,
         ethers :: contract :: EthCall,
         ethers :: contract :: EthDisplay,
+        serde :: Serialize,
+        serde :: Deserialize,
         Default,
     )]
     #[ethcall(name = "sendMessage", abi = "sendMessage(address,uint64,bytes)")]
