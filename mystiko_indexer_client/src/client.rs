@@ -68,10 +68,10 @@ impl IndexerClient {
 
     fn build_block_params_map<'a>(
         &self,
-        params_map: &'a mut HashMap<String, String>,
+        mut params_map: HashMap<String, String>,
         start_block: &Option<u32>,
         end_block: &Option<u32>,
-    ) -> &'a HashMap<String, String> {
+    ) -> HashMap<String, String> {
         if let Some(start_block_num) = start_block {
             params_map.insert("startBlock".to_string(), start_block_num.to_string());
         }
@@ -84,7 +84,7 @@ impl IndexerClient {
     fn build_request_builder<T>(
         &self,
         mut request_builder: RequestBuilder,
-        params: &HashMap<String, String>,
+        params: HashMap<String, String>,
         body: &T,
     ) -> RequestBuilder
     where
@@ -125,9 +125,9 @@ impl IndexerClient {
             "{}/chains/{}/events/commitment-queued",
             &self.base_url, &request.chain_id
         ));
-        let mut params_map: HashMap<String, String> = HashMap::new();
+        let params_map: HashMap<String, String> = HashMap::new();
         let params_map =
-            self.build_block_params_map(&mut params_map, &request.start_block, &request.end_block);
+            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
         request_builder =
             self.build_request_builder(request_builder, params_map, &request.where_filter);
         let response = self
