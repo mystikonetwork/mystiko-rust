@@ -1,4 +1,4 @@
-use mystiko_indexer_client::{builder::IndexerClientBuilder, errors::ClientError};
+use mystiko_indexer_client::builder::IndexerClientBuilder;
 use std::time::Duration;
 use url::ParseError;
 
@@ -33,15 +33,15 @@ fn test_builder_with_error() {
     let client = builder.build();
     assert!(client.is_err());
     assert_eq!(
-        client.err().unwrap(),
-        ClientError::UrlParsedError(ParseError::InvalidPort)
+        client.err().unwrap().to_string(),
+        ParseError::InvalidPort.to_string()
     );
     let base_url2 = "error_domain_error_port";
     let builder2 = IndexerClientBuilder::new(base_url2);
     let client2 = builder2.build();
     assert!(client2.is_err());
     assert_eq!(
-        client2.err().unwrap(),
-        ClientError::UrlParsedError(ParseError::RelativeUrlWithoutBase)
+        client2.err().unwrap().to_string(),
+        ParseError::RelativeUrlWithoutBase.to_string()
     );
 }
