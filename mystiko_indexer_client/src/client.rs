@@ -2,6 +2,7 @@ use crate::builder::IndexerClientBuilder;
 use crate::errors::ClientError;
 use crate::response::ApiResponse;
 use crate::types::commitment_queued::{CommitmentQueuedForChainRequest, CommitmentQueuedResponse};
+use anyhow::{anyhow, Result};
 use reqwest::header::{HeaderValue, ACCEPT};
 use reqwest::{RequestBuilder, Response};
 use serde::Serialize;
@@ -17,7 +18,7 @@ impl IndexerClient {
         IndexerClientBuilder::new(base_url)
     }
 
-    async fn handle_response<T>(&self, response: Response) -> Result<T, ClientError>
+    async fn handle_response<T>(&self, response: Response) -> Result<T>
     where
         T: serde::de::DeserializeOwned + Serialize,
     {
@@ -31,21 +32,21 @@ impl IndexerClient {
                 let parsed_resp = response.json::<ApiResponse<T>>().await?;
                 let handled_resp = match parsed_resp.code {
                     0 => Ok(parsed_resp),
-                    _ => Err(ClientError::ApiResponseError {
+                    _ => Err(anyhow!(ClientError::ApiResponseError {
                         code: parsed_resp.code,
                         message: serde_json::to_string(&parsed_resp.result)?,
-                    }),
+                    })),
                 };
                 let res_body = handled_resp?;
                 return Ok(res_body.result);
             }
         }
-        Err(ClientError::UnsupportedContentTypeError(
+        Err(anyhow!(ClientError::UnsupportedContentTypeError(
             content_type.unwrap_or("").to_string(),
-        ))
+        )))
     }
 
-    async fn get_data<T>(&self, url: &str) -> Result<T, ClientError>
+    async fn get_data<T>(&self, url: &str) -> Result<T>
     where
         T: serde::de::DeserializeOwned + Serialize,
     {
@@ -58,7 +59,7 @@ impl IndexerClient {
         self.handle_response::<T>(response).await
     }
 
-    async fn post_data<T>(&self, request_builder: RequestBuilder) -> Result<T, ClientError>
+    async fn post_data<T>(&self, request_builder: RequestBuilder) -> Result<T>
     where
         T: serde::de::DeserializeOwned + Serialize,
     {
@@ -97,7 +98,7 @@ impl IndexerClient {
         request_builder
     }
 
-    pub async fn ping(&self, message: &str) -> Result<String, ClientError> {
+    pub async fn ping(&self, message: &str) -> Result<String> {
         let resp = self
             .get_data::<String>(&format!(
                 "{}{}{}",
@@ -107,7 +108,7 @@ impl IndexerClient {
         Ok(resp)
     }
 
-    pub async fn auth_ping(&self, message: &str) -> Result<String, ClientError> {
+    pub async fn auth_ping(&self, message: &str) -> Result<String> {
         let resp = self
             .get_data::<String>(&format!(
                 "{}{}{}",
@@ -120,7 +121,7 @@ impl IndexerClient {
     pub async fn find_commitment_queued_for_chain(
         &self,
         request: &CommitmentQueuedForChainRequest,
-    ) -> Result<Vec<CommitmentQueuedResponse>, ClientError> {
+    ) -> Result<Vec<CommitmentQueuedResponse>> {
         let mut request_builder = self.reqwest_client.post(format!(
             "{}/chains/{}/events/commitment-queued",
             &self.base_url, &request.chain_id

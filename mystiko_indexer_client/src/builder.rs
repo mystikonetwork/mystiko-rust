@@ -1,5 +1,5 @@
 use crate::client::IndexerClient;
-use crate::errors::ClientError;
+use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
 use reqwest::{header, Client};
 use std::time::Duration;
@@ -46,7 +46,7 @@ impl IndexerClientBuilder {
         self
     }
 
-    pub fn build(self) -> Result<IndexerClient, ClientError> {
+    pub fn build(self) -> Result<IndexerClient> {
         let IndexerClientBuilder {
             base_url,
             auth_username: _,

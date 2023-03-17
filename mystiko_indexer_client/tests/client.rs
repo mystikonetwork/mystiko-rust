@@ -123,12 +123,15 @@ async fn test_auth_ping() {
         .await;
     let resp2 = indexer_client.auth_ping(&message).await;
     assert!(resp2.is_err());
+    let error = resp2.unwrap_err();
+    assert!(error.downcast_ref::<ClientError>().is_some());
     assert_eq!(
-        resp2.err(),
-        Some(ClientError::ApiResponseError {
+        error.to_string(),
+        ClientError::ApiResponseError {
             code: -1,
-            message: String::from("any message")
-        })
+            message: String::from("\"helloauth\"")
+        }
+        .to_string()
     );
     m.assert_async().await;
     let m = mocked_server
@@ -141,8 +144,8 @@ async fn test_auth_ping() {
     let resp3 = indexer_client.auth_ping(&message).await;
     assert!(resp3.is_err());
     assert_eq!(
-        resp3.err(),
-        Some(ClientError::UnsupportedContentTypeError(String::from("")))
+        resp3.unwrap_err().to_string(),
+        ClientError::UnsupportedContentTypeError(String::from("")).to_string()
     );
     m.assert_async().await;
 }

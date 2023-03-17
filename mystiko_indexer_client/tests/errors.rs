@@ -46,8 +46,10 @@ async fn test_with_reqwest_err() {
         .await;
     let resp = indexer_client.ping(&ping_message).await;
     assert!(resp.is_err());
+    let err = resp.unwrap_err();
+    assert!(err.downcast_ref::<reqwest::Error>().is_some());
     let resp2 = indexer_client.ping(&ping_message).await;
-    assert_eq!(resp, resp2);
+    assert_eq!(err.to_string(), resp2.unwrap_err().to_string());
     m.assert_async().await;
 }
 
@@ -72,12 +74,15 @@ async fn test_with_api_response_err() {
         .await;
     let resp = indexer_client.ping(&ping_message).await;
     assert!(resp.is_err());
+    let err = resp.unwrap_err();
+    assert!(err.downcast_ref::<ClientError>().is_some());
     assert_eq!(
-        resp.err(),
-        Some(ClientError::ApiResponseError {
+        err.to_string(),
+        ClientError::ApiResponseError {
             code: -1,
-            message: String::from("any message")
-        })
+            message: String::from("\"test error message\"")
+        }
+        .to_string()
     );
     m.assert_async().await;
 }
@@ -109,9 +114,11 @@ async fn test_with_content_type_err() {
         .await;
     let resp = indexer_client.ping(&ping_message).await;
     assert!(resp.is_err());
+    let err = resp.unwrap_err();
+    assert!(err.downcast_ref::<ClientError>().is_some());
     assert_eq!(
-        resp.err(),
-        Some(ClientError::UnsupportedContentTypeError(String::from("")))
+        err.to_string(),
+        ClientError::UnsupportedContentTypeError(String::from("")).to_string()
     );
     m.assert_async().await;
 }
