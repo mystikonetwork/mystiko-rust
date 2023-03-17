@@ -66,7 +66,7 @@ impl IndexerClient {
         self.handle_response::<T>(response).await
     }
 
-    fn build_block_params_map<'a>(
+    fn build_block_params_map(
         &self,
         mut params_map: HashMap<String, String>,
         start_block: &Option<u32>,
