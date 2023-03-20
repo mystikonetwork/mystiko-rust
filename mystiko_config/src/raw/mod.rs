@@ -1,8 +1,8 @@
 pub(crate) mod base;
 pub(crate) mod circuit;
 pub(crate) mod mystiko;
+pub(crate) mod chain;
 mod validator;
-mod chain;
 mod bridge;
 mod contract;
 mod asset;
