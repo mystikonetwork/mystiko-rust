@@ -7,7 +7,7 @@ use num_bigint::BigInt;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_protocol::rollup::Rollup;
 
-const FILE_PATH: &str = "./../mystiko-circuits/dist/zokrates/dev";
+const FILE_PATH: &str = "./../mystiko_circuits/dist/zokrates/dev";
 
 #[tokio::test]
 async fn test_rollup1() {

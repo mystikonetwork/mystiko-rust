@@ -174,7 +174,7 @@ fn generate_transaction(
         .build()
 }
 
-const FILE_PATH: &str = "./../mystiko-circuits/dist/zokrates/dev";
+const FILE_PATH: &str = "./../mystiko_circuits/dist/zokrates/dev";
 
 #[tokio::test]
 #[ignore]
