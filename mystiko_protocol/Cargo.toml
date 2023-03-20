@@ -21,7 +21,7 @@ thiserror = { version = "1.0.38" }
 bs58 = { version = "0.4.0" }
 
 # Encryption
-babyjubjub-rs = { version = "0.0.10" }
+babyjubjub-rs = { version = "0.0.10", features = ["default"] }
 k256 = { version = "0.12.0" }
 
 # mystiko
@@ -30,3 +30,6 @@ mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
 [dev-dependencies]
 ethers = { version = "1.0.2" }
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+babyjubjub-rs = { version = "0.0.10", features = ["aarch64"] }
