@@ -3,12 +3,12 @@ use crate::common::CircuitType;
 use crate::raw::circuit::RawCircuitConfig;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct CircuitConfig<'a> {
-    base: BaseConfig<&'a RawCircuitConfig>,
+pub struct CircuitConfig {
+    base: BaseConfig<RawCircuitConfig>,
 }
 
-impl<'a> CircuitConfig<'a> {
-    pub fn new(data: &'a RawCircuitConfig) -> Self {
+impl CircuitConfig {
+    pub fn new(data: RawCircuitConfig) -> Self {
         Self {
             base: BaseConfig::builder()
                 .data(data)
@@ -16,7 +16,7 @@ impl<'a> CircuitConfig<'a> {
         }
     }
 
-    pub fn data(&self) -> &'a RawCircuitConfig {
+    pub fn data(&self) -> &RawCircuitConfig {
         &self.base.data
     }
 
@@ -56,10 +56,10 @@ impl<'a> CircuitConfig<'a> {
         &self.base.data.verifying_key_file
     }
 
-    pub fn mutate(&self, data: Option<&'a RawCircuitConfig>) -> Self {
+    pub fn mutate(&self, data: Option<&RawCircuitConfig>) -> Self {
         let data = match data {
-            None => self.data(),
-            Some(value) => value,
+            None => self.data().clone(),
+            Some(value) => value.clone(),
         };
         CircuitConfig::new(data)
     }

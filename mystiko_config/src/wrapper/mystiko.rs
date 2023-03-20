@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 use anyhow::ensure;
 use crate::common::CircuitType;
 use crate::raw::mystiko::RawMystikoConfig;
@@ -6,13 +7,13 @@ use crate::wrapper::base::BaseConfig;
 use crate::wrapper::circuit::CircuitConfig;
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct MystikoConfig<'a> {
+pub struct MystikoConfig {
     base: BaseConfig<RawMystikoConfig>,
-    default_circuit_configs: HashMap<CircuitType, CircuitConfig<'a>>,
-    circuit_configs_by_name: HashMap<String, CircuitConfig<'a>>,
+    default_circuit_configs: HashMap<CircuitType, Rc<CircuitConfig>>,
+    circuit_configs_by_name: HashMap<String, Rc<CircuitConfig>>,
 }
 
-impl<'a> MystikoConfig<'a> {
+impl MystikoConfig {
     pub fn new(data: RawMystikoConfig) -> anyhow::Result<Self> {
         let base = BaseConfig::builder()
             .data(data)
@@ -23,6 +24,7 @@ impl<'a> MystikoConfig<'a> {
             circuit_configs_by_name: Default::default(),
         };
         config.init_circuit_configs()?;
+
         Ok(config)
     }
 
@@ -36,7 +38,9 @@ impl<'a> MystikoConfig<'a> {
 
         let circuits = &self.base.data.circuits;
         for raw in circuits {
-            let circuit_config = CircuitConfig::new(raw);
+            let circuit_config = Rc::new(
+                CircuitConfig::new(raw.clone())
+            );
             if raw.is_default {
                 ensure!(
                     !default_circuit_configs.contains_key(circuit_config.circuit_type()),
@@ -50,7 +54,7 @@ impl<'a> MystikoConfig<'a> {
             }
             circuit_config_by_names.insert(
                 circuit_config.name().clone(),
-                circuit_config.clone(),
+                circuit_config,
             );
         }
 

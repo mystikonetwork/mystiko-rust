@@ -40,12 +40,6 @@ pub struct RawCircuitConfig {
     pub verifying_key_file: Vec<String>,
 }
 
-impl<'a> Validator for &'a RawCircuitConfig {
-    fn validation(&self) -> Result<(), anyhow::Error> {
-        self.base.validate_object(self)
-    }
-}
-
 impl Validator for RawCircuitConfig {
     fn validation(&self) -> Result<(), Error> {
         self.base.validate_object::<RawCircuitConfig>(self)
