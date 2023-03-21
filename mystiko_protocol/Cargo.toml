@@ -29,6 +29,7 @@ mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
 
 [dev-dependencies]
 ethers = { version = "1.0.2" }
+mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
 
 [target.'cfg(target_arch = "aarch64")'.dependencies]

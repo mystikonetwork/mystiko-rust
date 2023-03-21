@@ -5,6 +5,7 @@ extern crate num_bigint;
 use num_bigint::BigInt;
 
 use mystiko_crypto::merkle_tree::MerkleTree;
+use mystiko_fs::{read_file_bytes, read_gzip_file_bytes};
 use mystiko_protocol::rollup::Rollup;
 
 const FILE_PATH: &str = "./../mystiko_circuits/dist/zokrates/dev";
@@ -14,16 +15,26 @@ async fn test_rollup1() {
     let in_initial_elements = vec![BigInt::from(100), BigInt::from(200), BigInt::from(300)];
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
     let new_leaves = vec![BigInt::from(1u32)];
-    let program_path = FILE_PATH.to_owned() + "/Rollup1.program";
-    let abi_path = FILE_PATH.to_owned() + "/Rollup1.abi.json";
-    let pkey_path = FILE_PATH.to_owned() + "/Rollup1.pkey";
-
-    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
-
-    let proof = rollup.prove().await.unwrap();
-    let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup1.vkey"))
+    let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup1.program.gz"))
         .await
+        .unwrap();
+    let abi = read_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup1.abi.json"))
+        .await
+        .unwrap();
+    let pkey = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup1.pkey.gz"))
+        .await
+        .unwrap();
+
+    let rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
+
+    let proof = rollup.prove().unwrap();
+    let verify = proof
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup1.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
     let _ = rollup.clone();
@@ -35,15 +46,25 @@ async fn test_rollup2() {
     let in_initial_elements = vec![BigInt::from(100), BigInt::from(200)];
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
     let new_leaves = vec![BigInt::from(1u32), BigInt::from(2u32)];
-    let program_path = FILE_PATH.to_owned() + "/Rollup2.program";
-    let abi_path = FILE_PATH.to_owned() + "/Rollup2.abi.json";
-    let pkey_path = FILE_PATH.to_owned() + "/Rollup2.pkey";
-
-    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
-    let proof = rollup.prove().await.unwrap();
-    let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup2.vkey"))
+    let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup2.program.gz"))
         .await
+        .unwrap();
+    let abi = read_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup2.abi.json"))
+        .await
+        .unwrap();
+    let pkey = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup2.pkey.gz"))
+        .await
+        .unwrap();
+
+    let rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
+    let proof = rollup.prove().unwrap();
+    let verify = proof
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup2.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }
@@ -57,15 +78,25 @@ async fn test_rollup4() {
         .collect::<Vec<BigInt>>();
     let new_leaves = (1..=4).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
-    let program_path = FILE_PATH.to_owned() + "/Rollup4.program";
-    let abi_path = FILE_PATH.to_owned() + "/Rollup4.abi.json";
-    let pkey_path = FILE_PATH.to_owned() + "/Rollup4.pkey";
-
-    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
-    let proof = rollup.prove().await.unwrap();
-    let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup4.vkey"))
+    let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup4.program.gz"))
         .await
+        .unwrap();
+    let abi = read_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup4.abi.json"))
+        .await
+        .unwrap();
+    let pkey = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup4.pkey.gz"))
+        .await
+        .unwrap();
+
+    let rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
+    let proof = rollup.prove().unwrap();
+    let verify = proof
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup4.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }
@@ -79,15 +110,25 @@ async fn test_rollup8() {
         .collect::<Vec<BigInt>>();
     let new_leaves = (1..=8).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
-    let program_path = FILE_PATH.to_owned() + "/Rollup8.program";
-    let abi_path = FILE_PATH.to_owned() + "/Rollup8.abi.json";
-    let pkey_path = FILE_PATH.to_owned() + "/Rollup8.pkey";
-
-    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
-    let proof = rollup.prove().await.unwrap();
-    let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup8.vkey"))
+    let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup8.program.gz"))
         .await
+        .unwrap();
+    let abi = read_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup8.abi.json"))
+        .await
+        .unwrap();
+    let pkey = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup8.pkey.gz"))
+        .await
+        .unwrap();
+
+    let rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
+    let proof = rollup.prove().unwrap();
+    let verify = proof
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup8.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }
@@ -101,15 +142,25 @@ async fn test_rollup16() {
         .collect::<Vec<BigInt>>();
     let new_leaves = (1..=16).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
-    let program_path = FILE_PATH.to_owned() + "/Rollup16.program";
-    let abi_path = FILE_PATH.to_owned() + "/Rollup16.abi.json";
-    let pkey_path = FILE_PATH.to_owned() + "/Rollup16.pkey";
-
-    let rollup = Rollup::new(tree, new_leaves, program_path, abi_path, pkey_path);
-    let proof = rollup.prove().await.unwrap();
-    let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Rollup16.vkey"))
+    let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup16.program.gz"))
         .await
+        .unwrap();
+    let abi = read_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup16.abi.json"))
+        .await
+        .unwrap();
+    let pkey = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup16.pkey.gz"))
+        .await
+        .unwrap();
+
+    let rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
+    let proof = rollup.prove().unwrap();
+    let verify = proof
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup16.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }

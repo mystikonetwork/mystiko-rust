@@ -37,10 +37,6 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
-      - name: Unzip circuits
-        run: |
-          ./scripts/unzip_circuits.sh
-
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly-2023-02-22
@@ -73,11 +69,6 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-
-      - name: Delete circuits
-        if: always()
-        run: |
-          ./scripts/delete_circuits.sh
 
       - run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
 
