@@ -1,9 +1,9 @@
 use crate::raw::asset::RawAssetConfig;
-use crate::raw::base::{RawConfig, Validator};
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
 use crate::raw::validator::{array_unique, is_number_string_vec, validate_nested_vec};
+use crate::raw::{validate_raw, Validator};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
@@ -12,13 +12,9 @@ use validator::Validate;
 pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
 pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq, TypedBuilder)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RawChainConfig {
-    #[serde(default)]
-    #[builder(default)]
-    pub base: RawConfig,
-
     #[validate(range(min = 1))]
     pub chain_id: u32,
 
@@ -79,21 +75,21 @@ pub struct RawChainConfig {
     pub assets: Vec<RawAssetConfig>,
 }
 
-impl PartialEq for RawChainConfig {
-    fn eq(&self, other: &Self) -> bool {
-        self.chain_id == other.chain_id
-    }
-}
-
 impl Hash for RawChainConfig {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.chain_id.hash(state)
     }
 }
 
+impl PartialEq for RawChainConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.chain_id == other.chain_id
+    }
+}
+
 impl Validator for RawChainConfig {
-    fn validation(&self) -> Result<(), anyhow::Error> {
-        self.base.validate_object::<RawChainConfig>(self)
+    fn validation(&self) -> anyhow::Result<()> {
+        validate_raw(self)
     }
 }
 

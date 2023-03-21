@@ -1,12 +1,12 @@
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
-use mystiko_config::raw::base::{RawConfig, Validator};
 use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
 use mystiko_config::raw::indexer::RawIndexerConfig;
 use mystiko_config::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
+use mystiko_config::raw::{create_raw_from_file, Validator};
 
 async fn default_config() -> RawMystikoConfig {
-    RawConfig::from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json")
+    create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json")
         .await
         .unwrap()
 }
@@ -53,7 +53,7 @@ async fn test_invalid_bridges_0() {
 #[tokio::test]
 async fn test_invalid_bridges_1() {
     let mut config = default_config().await;
-    let bridge_config = RawTBridgeConfig::new("".to_string());
+    let bridge_config = RawTBridgeConfig::builder().name("".to_string()).build();
     config
         .bridges
         .push(RawBridgeConfigType::Tbridge(bridge_config));
@@ -91,6 +91,6 @@ async fn test_invalid_indexer() {
 #[tokio::test]
 async fn test_import_invalid_json_file() {
     let file_config =
-        RawConfig::from_file::<RawMystikoConfig>("tests/files/mystiko.invalid.json").await;
+        create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko.invalid.json").await;
     assert_eq!(file_config.is_err(), true);
 }

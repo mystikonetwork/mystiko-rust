@@ -1,23 +1,39 @@
 use crate::common::{BridgeType, ContractType};
-use crate::raw::base::Validator;
-use crate::raw::contract::base::{RawContractConfig, RawContractConfigTrait};
 use crate::raw::validator::{is_ethereum_address, is_number_string, string_vec_each_not_empty};
-use serde::{Deserialize, Deserializer, Serialize};
+use crate::raw::{validate_raw, Validator};
+use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
 use validator::{Validate, ValidationError};
 
-#[derive(Validate, Serialize, Debug, Clone, Eq, TypedBuilder)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawPoolContractConfig {
-    #[serde(flatten)]
-    pub base: RawContractConfig,
+    #[validate(range(min = 1))]
+    pub version: u32,
+
+    #[validate(length(min = 1))]
+    pub name: String,
+
+    #[validate(custom = "is_ethereum_address")]
+    pub address: String,
 
     #[serde(rename = "type")]
-    #[serde(skip_serializing)]
+    #[serde(default = "default_contract_type")]
     #[validate(custom = "validate_contract_type")]
-    #[builder(default = ContractType::Pool)]
+    #[builder(default = default_contract_type())]
     pub contract_type: ContractType,
+
+    #[validate(range(min = 1))]
+    pub start_block: u32,
+
+    #[validate(range(min = 1))]
+    #[builder(default = None)]
+    pub event_filter_size: Option<u64>,
+
+    #[validate(range(min = 1))]
+    #[builder(default = None)]
+    pub indexer_filter_size: Option<u64>,
 
     #[validate(length(min = 1))]
     pub pool_name: String,
@@ -30,6 +46,7 @@ pub struct RawPoolContractConfig {
 
     #[validate(custom = "is_number_string::<true>")]
     #[serde(default = "default_min_rollup_fee")]
+    #[builder(default = default_min_rollup_fee())]
     pub min_rollup_fee: String,
 
     #[validate(custom = "string_vec_each_not_empty")]
@@ -40,97 +57,43 @@ pub struct RawPoolContractConfig {
 
 impl Hash for RawPoolContractConfig {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.base.address.hash(state)
-    }
-}
-
-impl PartialEq for RawPoolContractConfig {
-    fn eq(&self, other: &Self) -> bool {
-        self.base.address == other.base.address
+        self.address.hash(state)
     }
 }
 
 impl Validator for RawPoolContractConfig {
-    fn validation(&self) -> Result<(), anyhow::Error> {
-        self.base.base.validate_object(self)
+    fn validation(&self) -> anyhow::Result<()> {
+        validate_raw(self)
     }
 }
 
-impl<'de> Deserialize<'de> for RawPoolContractConfig {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(rename_all = "camelCase")]
-        struct Inner {
-            version: u32,
-            name: String,
-            address: String,
-            #[serde(rename = "type")]
-            contract_type: Option<ContractType>,
-            start_block: u32,
-            even_filter_size: Option<u64>,
-            indexer_filter_size: Option<u64>,
-            pool_name: String,
-            bridge_type: BridgeType,
-            asset_address: Option<String>,
-            min_rollup_fee: Option<String>,
-            circuits: Option<Vec<String>>,
-        }
-        let inner = Inner::deserialize(deserializer)?;
-        let contract_type = inner.contract_type.unwrap_or(ContractType::Pool);
-        let base_contract_type = contract_type.clone();
-        let min_rollup_fee = inner.min_rollup_fee.unwrap_or_else(default_min_rollup_fee);
-        let circuits = inner.circuits.unwrap_or(Vec::new());
-        Ok(Self {
-            base: RawContractConfig {
-                base: Default::default(),
-                version: inner.version,
-                name: inner.name,
-                address: inner.address,
-                contract_type: base_contract_type,
-                start_block: inner.start_block,
-                event_filter_size: inner.even_filter_size,
-                indexer_filter_size: inner.indexer_filter_size,
-            },
-            contract_type,
-            pool_name: inner.pool_name,
-            bridge_type: inner.bridge_type,
-            asset_address: inner.asset_address,
-            min_rollup_fee,
-            circuits,
-        })
-    }
-}
-
-impl RawContractConfigTrait for RawPoolContractConfig {
-    fn version(&self) -> &u32 {
-        &self.base.version
+impl RawPoolContractConfig {
+    pub fn version(&self) -> &u32 {
+        &self.version
     }
 
-    fn name(&self) -> &str {
-        &self.base.name
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
-    fn address(&self) -> &str {
-        &self.base.address
+    pub fn address(&self) -> &str {
+        &self.address
     }
 
-    fn contract_type(&self) -> &ContractType {
+    pub fn contract_type(&self) -> &ContractType {
         &self.contract_type
     }
 
-    fn start_block(&self) -> &u32 {
-        &self.base.start_block
+    pub fn start_block(&self) -> &u32 {
+        &self.start_block
     }
 
-    fn event_filter_size(&self) -> &Option<u64> {
-        &self.base.event_filter_size
+    pub fn event_filter_size(&self) -> &Option<u64> {
+        &self.event_filter_size
     }
 
-    fn indexer_filter_size(&self) -> &Option<u64> {
-        &self.base.indexer_filter_size
+    pub fn indexer_filter_size(&self) -> &Option<u64> {
+        &self.indexer_filter_size
     }
 }
 
@@ -142,5 +105,9 @@ fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
 }
 
 fn default_min_rollup_fee() -> String {
-    String::from("0")
+    "0".to_string()
+}
+
+fn default_contract_type() -> ContractType {
+    ContractType::Pool
 }

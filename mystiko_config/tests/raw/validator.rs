@@ -1,4 +1,7 @@
-use mystiko_config::raw::validator::{array_unique, is_ethereum_address, is_number_string, is_number_string_vec, is_numeric, is_sem_ver, string_vec_each_not_empty};
+use mystiko_config::raw::validator::{
+    array_unique, is_ethereum_address, is_number_string, is_number_string_vec, is_numeric,
+    is_sem_ver, string_vec_each_not_empty,
+};
 
 #[test]
 fn test_is_ethereum_address() {

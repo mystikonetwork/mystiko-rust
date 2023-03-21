@@ -1,80 +1,37 @@
 use crate::common::BridgeType;
-use crate::raw::base::Validator;
-use crate::raw::bridge::base::{RawBridgeConfig, RawBridgeConfigTrait};
-use serde::{Deserialize, Deserializer, Serialize};
-use std::hash::{Hash, Hasher};
+use crate::raw::{validate_raw, Validator};
+use serde::{Deserialize, Serialize};
+use typed_builder::TypedBuilder;
 use validator::{Validate, ValidationError};
 
-#[derive(Validate, Serialize, Debug, Clone, PartialEq, Eq, Default)]
+#[derive(
+    TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default, Hash,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct RawTBridgeConfig {
-    #[validate]
-    #[serde(flatten)]
-    pub base: RawBridgeConfig,
+    #[validate(length(min = 1))]
+    pub name: String,
 
     #[serde(rename = "type")]
-    #[serde(skip_serializing)]
+    #[serde(default = "default_bridge_type")]
+    #[builder(default = default_bridge_type())]
     #[validate(custom = "validate_bridge_type")]
     pub bridge_type: BridgeType,
 }
 
 impl RawTBridgeConfig {
-    pub fn new(name: String) -> Self {
-        let bridge_type = default_bridge_type();
-        Self {
-            base: RawBridgeConfig::builder()
-                .name(name)
-                .bridge_type(bridge_type.clone())
-                .build(),
-            bridge_type,
-        }
-    }
-}
-
-impl Validator for RawTBridgeConfig {
-    fn validation(&self) -> Result<(), anyhow::Error> {
-        self.base.base.validate_object(self)
-    }
-}
-
-impl RawBridgeConfigTrait for RawTBridgeConfig {
-    fn name(&self) -> &String {
-        &self.base.name
+    pub fn name(&self) -> &String {
+        &self.name
     }
 
-    fn bridge_type(&self) -> &BridgeType {
+    pub fn bridge_type(&self) -> &BridgeType {
         &self.bridge_type
     }
 }
 
-impl Hash for RawTBridgeConfig {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.bridge_type.hash(state)
-    }
-}
-
-impl<'de> Deserialize<'de> for RawTBridgeConfig {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        struct Inner {
-            #[serde(rename = "type")]
-            bridge_type: Option<BridgeType>,
-            name: String,
-        }
-        let inner = Inner::deserialize(deserializer)?;
-        let bridge_type = inner.bridge_type.unwrap_or(BridgeType::Tbridge);
-        let base_bridge_type = bridge_type.clone();
-        Ok(Self {
-            base: RawBridgeConfig {
-                base: Default::default(),
-                bridge_type: base_bridge_type,
-                name: inner.name,
-            },
-            bridge_type,
-        })
+impl Validator for RawTBridgeConfig {
+    fn validation(&self) -> anyhow::Result<()> {
+        validate_raw(self)
     }
 }
 

@@ -1,9 +1,9 @@
 use mystiko_config::common::AssetType;
 use mystiko_config::raw::asset::RawAssetConfig;
-use mystiko_config::raw::base::{RawConfig, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
 
 fn default_config() -> RawAssetConfig {
-    RawConfig::from_object::<RawAssetConfig>(
+    create_raw::<RawAssetConfig>(
         RawAssetConfig::builder()
             .asset_type(AssetType::Erc20)
             .asset_symbol("MTT".to_string())
@@ -18,43 +18,43 @@ fn default_config() -> RawAssetConfig {
     .unwrap()
 }
 
-#[tokio::test]
-async fn test_invalid_asset_symbol() {
+#[test]
+fn test_invalid_asset_symbol() {
     let mut config = default_config();
     config.asset_symbol = "".to_string();
     assert_eq!(config.validation().is_err(), true);
 }
 
-#[tokio::test]
-async fn test_invalid_asset_address_0() {
+#[test]
+fn test_invalid_asset_address_0() {
     let mut config = default_config();
     config.asset_address = String::from("");
     assert_eq!(config.validation().is_err(), true);
 }
 
-#[tokio::test]
-async fn test_invalid_asset_address_1() {
+#[test]
+fn test_invalid_asset_address_1() {
     let mut config = default_config();
     config.asset_address = String::from("0xdeadbeef");
     assert_eq!(config.validation().is_err(), true);
 }
 
-#[tokio::test]
-async fn test_invalid_recommended_amounts_0() {
+#[test]
+fn test_invalid_recommended_amounts_0() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("")];
     assert_eq!(config.validation().is_err(), true);
 }
 
-#[tokio::test]
-async fn test_invalid_recommended_amounts_1() {
+#[test]
+fn test_invalid_recommended_amounts_1() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("abcd")];
     assert_eq!(config.validation().is_err(), true);
 }
 
-#[tokio::test]
-async fn test_invalid_recommended_amounts_2() {
+#[test]
+fn test_invalid_recommended_amounts_2() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("1"), String::from("1")];
     assert_eq!(config.validation().is_err(), true);
@@ -62,16 +62,15 @@ async fn test_invalid_recommended_amounts_2() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config = RawConfig::from_file::<RawAssetConfig>("tests/files/asset.valid.json")
+    let file_config = create_raw_from_file::<RawAssetConfig>("tests/files/asset.valid.json")
         .await
         .unwrap();
     assert_eq!(file_config, default_config());
 }
 
 #[tokio::test]
-#[should_panic]
 async fn test_import_invalid_json_file() {
-    let _file_config = RawConfig::from_file::<RawAssetConfig>("tests/files/asset.invalid.json")
-        .await
-        .unwrap();
+    let file_config =
+        create_raw_from_file::<RawAssetConfig>("tests/files/asset.invalid.json").await;
+    assert_eq!(file_config.is_err(), true);
 }

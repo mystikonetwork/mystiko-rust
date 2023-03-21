@@ -1,15 +1,11 @@
-use crate::raw::base::{RawConfig, Validator};
+use crate::raw::{validate_raw, Validator};
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, TypedBuilder)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RawIndexerConfig {
-    #[serde(default)]
-    #[builder(default)]
-    pub base: RawConfig,
-
     #[validate(url)]
     pub url: String,
 
@@ -20,7 +16,7 @@ pub struct RawIndexerConfig {
 
 impl Validator for RawIndexerConfig {
     fn validation(&self) -> Result<(), anyhow::Error> {
-        self.base.validate_object(self)
+        validate_raw(self)
     }
 }
 

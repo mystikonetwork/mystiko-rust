@@ -1,4 +1,4 @@
-use crate::raw::base::Validator;
+use crate::raw::Validator;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashSet;
@@ -20,8 +20,8 @@ pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
 }
 
 pub fn array_unique<T>(array: &[T]) -> Result<(), ValidationError>
-    where
-        T: Hash + PartialEq + Eq,
+where
+    T: Hash + PartialEq + Eq,
 {
     let mut seen = HashSet::new();
     for item in array {
@@ -33,14 +33,16 @@ pub fn array_unique<T>(array: &[T]) -> Result<(), ValidationError>
     Ok(())
 }
 
-pub fn is_number_string<const NO_SYMBOLS: bool>(s: &String) -> Result<(), ValidationError> {
+pub fn is_number_string<const NO_SYMBOLS: bool>(s: &str) -> Result<(), ValidationError> {
     if !is_numeric(s, NO_SYMBOLS) {
         return Err(ValidationError::new("is number string error"));
     }
     Ok(())
 }
 
-pub fn is_number_string_vec<const NO_SYMBOLS: bool>(v: &Vec<String>) -> Result<(), ValidationError> {
+pub fn is_number_string_vec<const NO_SYMBOLS: bool>(
+    v: &[String],
+) -> Result<(), ValidationError> {
     let is_number = v.iter().all(|s| is_numeric(s, NO_SYMBOLS));
     if !is_number {
         return Err(ValidationError::new("is number string error"));
@@ -48,9 +50,9 @@ pub fn is_number_string_vec<const NO_SYMBOLS: bool>(v: &Vec<String>) -> Result<(
     Ok(())
 }
 
-pub fn validate_nested_vec<T>(v: &Vec<T>) -> Result<(), ValidationError>
-    where
-        T: Validator,
+pub fn validate_nested_vec<T>(v: &[T]) -> Result<(), ValidationError>
+where
+    T: Validator,
 {
     if v.iter().all(|x| x.validation().is_ok()) {
         Ok(())
@@ -59,7 +61,7 @@ pub fn validate_nested_vec<T>(v: &Vec<T>) -> Result<(), ValidationError>
     }
 }
 
-pub fn string_vec_each_not_empty(v: &Vec<String>) -> Result<(), ValidationError> {
+pub fn string_vec_each_not_empty(v: &[String]) -> Result<(), ValidationError> {
     if v.iter().all(|s| !s.is_empty()) {
         Ok(())
     } else {
@@ -75,9 +77,9 @@ pub fn is_sem_ver(s: &str) -> Result<(), ValidationError> {
 }
 
 pub fn is_numeric(s: &str, no_symbol: bool) -> bool {
-    return if no_symbol {
+    if no_symbol {
         NO_SYMBOL_NUMERIC.is_match(s)
     } else {
         NUMERIC_WITH_SYMBOL.is_match(s)
-    };
+    }
 }

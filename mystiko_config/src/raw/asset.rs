@@ -1,18 +1,14 @@
 use crate::common::AssetType;
-use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::{array_unique, is_ethereum_address, is_number_string_vec};
+use crate::raw::{validate_raw, Validator};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, Eq, Default, TypedBuilder)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RawAssetConfig {
-    #[serde(default)]
-    #[builder(default)]
-    pub base: RawConfig,
-
     #[serde(rename = "assetType")]
     pub asset_type: AssetType,
 
@@ -48,6 +44,6 @@ impl PartialEq for RawAssetConfig {
 
 impl Validator for RawAssetConfig {
     fn validation(&self) -> anyhow::Result<()> {
-        self.base.validate_object::<RawAssetConfig>(self)
+        validate_raw(self)
     }
 }

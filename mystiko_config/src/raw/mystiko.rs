@@ -1,5 +1,4 @@
 use crate::common::BridgeType;
-use crate::raw::base::{RawConfig, Validator};
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
 use crate::raw::bridge::celer::RawCelerBridgeConfig;
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
@@ -9,6 +8,7 @@ use crate::raw::chain::RawChainConfig;
 use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
 use crate::raw::validator::{array_unique, is_sem_ver, validate_nested_vec};
+use crate::raw::{validate_raw, Validator};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use validator::Validate;
@@ -77,9 +77,6 @@ impl Hash for RawBridgeConfigType {
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawMystikoConfig {
-    #[serde(default)]
-    pub base: RawConfig,
-
     #[validate(custom = "is_sem_ver")]
     pub version: String,
 
@@ -107,7 +104,7 @@ pub struct RawMystikoConfig {
 
 impl Validator for RawMystikoConfig {
     fn validation(&self) -> Result<(), anyhow::Error> {
-        let result = self.base.validate_object(self);
+        let result = validate_raw(self);
         match result {
             Ok(_) => {
                 for bridge in &self.bridges {

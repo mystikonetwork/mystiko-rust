@@ -1,19 +1,14 @@
 use crate::common::CircuitType;
-use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::string_vec_each_not_empty;
-use anyhow::Error;
+use crate::raw::{validate_raw, Validator};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
-#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawCircuitConfig {
-    #[serde(default)]
-    #[builder(default)]
-    pub base: RawConfig,
-
     #[validate(length(min = 1))]
     pub name: String,
 
@@ -37,8 +32,8 @@ pub struct RawCircuitConfig {
 }
 
 impl Validator for RawCircuitConfig {
-    fn validation(&self) -> Result<(), Error> {
-        self.base.validate_object::<RawCircuitConfig>(self)
+    fn validation(&self) -> anyhow::Result<()> {
+        validate_raw(self)
     }
 }
 
