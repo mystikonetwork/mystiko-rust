@@ -2593,6 +2593,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_fs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-compression",
+ "tokio",
+]
+
+[[package]]
 name = "mystiko_indexer_client"
 version = "0.1.0"
 dependencies = [
