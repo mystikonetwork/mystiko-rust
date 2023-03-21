@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use strum::EnumIter;
 
 #[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone, Default)]
 #[serde(rename_all = "camelCase")]
@@ -28,7 +27,7 @@ pub enum AssetType {
     Main,
 }
 
-#[derive(Serialize, Deserialize, EnumIter, Debug, Clone, Eq, PartialEq, Hash, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, Hash, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum CircuitType {
     Rollup1,

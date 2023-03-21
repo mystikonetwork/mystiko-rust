@@ -2631,7 +2631,6 @@ dependencies = [
  "regex 1.7.1",
  "serde",
  "serde_json",
- "strum",
  "tokio",
  "typed-builder",
  "validator",
