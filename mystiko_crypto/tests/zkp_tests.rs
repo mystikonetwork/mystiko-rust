@@ -29,7 +29,9 @@ async fn test_prove_and_verify() {
 
     let prog = read_file_bytes("./tests/files/zkp/program").await.unwrap();
     let abi_spec = read_file_bytes("./tests/files/zkp/abi.json").await.unwrap();
-    let pk = read_file_bytes("./tests/files/zkp/proving.key").await.unwrap();
+    let pk = read_file_bytes("./tests/files/zkp/proving.key")
+        .await
+        .unwrap();
     let vk = read_file_bytes("./tests/files/zkp/verification.key")
         .await
         .unwrap();
@@ -46,9 +48,13 @@ async fn test_prove_and_verify() {
 async fn test_prove() {
     let arr = ("1", "0", "1");
     let args = serde_json::to_string(&arr).unwrap();
-    let prog = read_file_bytes("./tests/files/zkp/wrong/program").await.unwrap();
+    let prog = read_file_bytes("./tests/files/zkp/wrong/program")
+        .await
+        .unwrap();
     let abi_spec = read_file_bytes("./tests/files/zkp/abi.json").await.unwrap();
-    let pk = read_file_bytes("./tests/files/zkp/proving.key").await.unwrap();
+    let pk = read_file_bytes("./tests/files/zkp/proving.key")
+        .await
+        .unwrap();
 
     let proof = ZKProof::generate(prog.as_slice(), abi_spec.as_slice(), pk.as_slice(), &args);
     assert_eq!(
@@ -59,7 +65,9 @@ async fn test_prove() {
 
 #[tokio::test]
 async fn test_verify() {
-    let proof = read_file_bytes("./tests/files/zkp/proof.json").await.unwrap();
+    let proof = read_file_bytes("./tests/files/zkp/proof.json")
+        .await
+        .unwrap();
     let proof: serde_json::Value = serde_json::from_reader(proof.as_slice()).unwrap();
     let proof = ZKProof::from_json_string(&proof.to_string()).unwrap();
     let vk = read_file_bytes("./tests/files/zkp/wrong/verification_error.key")
