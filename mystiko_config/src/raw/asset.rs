@@ -1,6 +1,6 @@
 use crate::common::AssetType;
 use crate::raw::base::{RawConfig, Validator};
-use crate::raw::validator::{array_unique, is_ethereum_address, is_number_string};
+use crate::raw::validator::{array_unique, is_ethereum_address, is_number_string_vec};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
@@ -27,7 +27,7 @@ pub struct RawAssetConfig {
 
     #[validate(
         custom(function = "array_unique"),
-        custom(function = "is_number_string::<true, true>")
+        custom(function = "is_number_string_vec::<true>")
     )]
     #[serde(default)]
     #[builder(default = vec![])]

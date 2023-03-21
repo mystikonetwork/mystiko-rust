@@ -3,7 +3,6 @@ use crate::raw::chain::RawChainConfig;
 use crate::wrapper::base::BaseConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::deposit::DepositContractConfig;
-use crate::wrapper::mystiko::MystikoConfig;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use validator::Validate;

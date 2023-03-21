@@ -28,7 +28,7 @@ pub struct RawPoolContractConfig {
     #[builder(default = None)]
     pub asset_address: Option<String>,
 
-    #[validate(custom = "is_number_string::<true,false>")]
+    #[validate(custom = "is_number_string::<true>")]
     #[serde(default = "default_min_rollup_fee")]
     pub min_rollup_fee: String,
 

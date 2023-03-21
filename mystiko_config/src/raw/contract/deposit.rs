@@ -34,16 +34,16 @@ pub struct RawDepositContractConfig {
     #[builder(default = None)]
     pub peer_contract_address: Option<String>,
 
-    #[validate(custom = "is_number_string::<true,false>")]
+    #[validate(custom = "is_number_string::<true>")]
     pub min_amount: String,
 
-    #[validate(custom = "is_number_string::<true,false>")]
+    #[validate(custom = "is_number_string::<true>")]
     pub max_amount: String,
 
-    #[validate(custom = "is_number_string::<true,false>")]
+    #[validate(custom = "is_number_string::<true>")]
     pub min_bridge_fee: String,
 
-    #[validate(custom = "is_number_string::<true,false>")]
+    #[validate(custom = "is_number_string::<true>")]
     pub min_executor_fee: String,
 
     #[validate(custom = "is_ethereum_address")]

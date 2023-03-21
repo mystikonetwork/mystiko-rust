@@ -7,10 +7,6 @@ use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
-fn default_is_default() -> bool {
-    false
-}
-
 #[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawCircuitConfig {
@@ -50,4 +46,8 @@ impl Hash for RawCircuitConfig {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state)
     }
+}
+
+fn default_is_default() -> bool {
+    false
 }

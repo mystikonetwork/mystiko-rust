@@ -14,7 +14,7 @@ where
     pub(crate) aux_data: Option<A>,
 }
 
-impl<'a, R, A> BaseConfig<R, A>
+impl<R, A> BaseConfig<R, A>
 where
     R: Validator + Serialize + Clone,
     A: Clone,
