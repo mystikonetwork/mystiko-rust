@@ -11,29 +11,29 @@ use num_bigint::{BigInt, Sign};
 pub struct Rollup {
     tree: MerkleTree,
     new_leaves: Vec<BigInt>,
-    program_file: String,
-    abi_file: String,
-    proving_key_file: String,
+    program: Vec<u8>,
+    abi: Vec<u8>,
+    proving_key: Vec<u8>,
 }
 
 impl Rollup {
     pub fn new(
         tree: MerkleTree,
         new_leaves: Vec<BigInt>,
-        program_file: String,
-        abi_file: String,
-        proving_key_file: String,
+        program: Vec<u8>,
+        abi: Vec<u8>,
+        proving_key: Vec<u8>,
     ) -> Self {
         Self {
             tree,
             new_leaves,
-            program_file,
-            abi_file,
-            proving_key_file,
+            program,
+            abi,
+            proving_key,
         }
     }
 
-    pub async fn prove(&self) -> Result<ZKProof, ProtocolError> {
+    pub fn prove(&self) -> Result<ZKProof, ProtocolError> {
         let new_leaves = self.new_leaves.clone();
         let rollup_size = new_leaves.len();
         assert!(is_power_of_two(rollup_size));
@@ -64,13 +64,12 @@ impl Rollup {
         ];
 
         let input = serde_json::Value::Array(array).to_string();
-        let proof = ZKProof::generate_with_file(
-            &self.program_file,
-            &self.abi_file,
-            &self.proving_key_file,
+        let proof = ZKProof::generate(
+            self.program.as_slice(),
+            self.abi.as_slice(),
+            self.proving_key.as_slice(),
             &input,
-        )
-        .await?;
+        )?;
         Ok(proof)
     }
 }

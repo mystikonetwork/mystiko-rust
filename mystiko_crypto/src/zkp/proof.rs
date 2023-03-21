@@ -1,5 +1,4 @@
 use crate::error::ZkpError;
-use crate::file::load_file;
 use crate::zkp::compute_witness::compute_witness;
 use crate::zkp::generate_proof::generate_proof;
 use anyhow::Result;
@@ -127,33 +126,6 @@ impl ZKProof {
         }
     }
 
-    pub async fn generate_with_file(
-        program_path_str: &str,
-        abi_spec_path_str: &str,
-        proving_key_path_str: &str,
-        json_args_str: &str,
-    ) -> Result<Self, ZkpError> {
-        let program = load_file(program_path_str).await?;
-        let abi_spec = load_file(abi_spec_path_str).await?;
-        let proving_key = load_file(proving_key_path_str).await?;
-
-        let abi: Abi = serde_json::from_slice(abi_spec.as_slice())
-            .map_err(|why| ZkpError::SerdeJsonError("abi".to_string(), why.to_string()))?;
-        let prog = match ir::ProgEnum::deserialize(program.as_slice()) {
-            Ok(p) => p.collect(),
-            Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
-        };
-
-        let p = match prog {
-            ProgEnum::Bn128Program(p) => p,
-            _ => return Err(ZkpError::NotSupport),
-        };
-
-        let witness = compute_witness(p.clone(), &abi, json_args_str)?;
-        let proof = generate_proof::<Bn128Field, G16, Bellman>(p, witness, proving_key.as_slice())?;
-        Ok(ZKProof::from_tagged_proof(&proof))
-    }
-
     pub fn generate(
         program: &[u8],
         abi_spec: &[u8],
@@ -175,17 +147,6 @@ impl ZKProof {
         let witness = compute_witness(p.clone(), &abi, json_args_str)?;
         let proof = generate_proof::<Bn128Field, G16, Bellman>(p, witness, proving_key)?;
         Ok(ZKProof::from_tagged_proof(&proof))
-    }
-
-    pub async fn verify_with_file(
-        &self,
-        verification_key_path_str: &str,
-    ) -> Result<bool, ZkpError> {
-        let vk = load_file(verification_key_path_str).await?;
-        let vk = serde_json::from_reader(vk.as_slice()).map_err(|why| {
-            ZkpError::SerdeJsonError("verification key".to_string(), why.to_string())
-        })?;
-        self.do_verify(vk)
     }
 
     pub fn verify(&self, verification_key: &[u8]) -> Result<bool, ZkpError> {
