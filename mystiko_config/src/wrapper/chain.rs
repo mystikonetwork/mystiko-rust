@@ -3,7 +3,6 @@ use crate::raw::chain::RawChainConfig;
 use crate::wrapper::base::BaseConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use std::collections::HashMap;
-use std::rc::Rc;
 use validator::Validate;
 
 #[derive(Clone, Debug, PartialEq, Default)]
