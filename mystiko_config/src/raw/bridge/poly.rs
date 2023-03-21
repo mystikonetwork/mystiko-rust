@@ -78,8 +78,8 @@ impl Hash for RawPolyBridgeConfig {
 
 impl<'de> Deserialize<'de> for RawPolyBridgeConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]

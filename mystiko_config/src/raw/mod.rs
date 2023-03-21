@@ -1,10 +1,10 @@
-pub(crate) mod base;
-pub(crate) mod circuit;
-pub(crate) mod mystiko;
-pub(crate) mod chain;
-mod validator;
-mod bridge;
-mod contract;
 mod asset;
+pub(crate) mod base;
+mod bridge;
+pub(crate) mod chain;
+pub(crate) mod circuit;
+mod contract;
 mod indexer;
+pub(crate) mod mystiko;
 mod provider;
+mod validator;

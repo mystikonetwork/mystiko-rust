@@ -26,8 +26,8 @@ pub struct RawAssetConfig {
     pub asset_address: String,
 
     #[validate(
-    custom(function = "array_unique"),
-    custom(function = "is_number_string::<true, true>")
+        custom(function = "array_unique"),
+        custom(function = "is_number_string::<true, true>")
     )]
     #[serde(default)]
     #[builder(default = vec![])]

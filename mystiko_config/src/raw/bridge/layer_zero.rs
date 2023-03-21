@@ -55,8 +55,8 @@ impl Hash for RawLayerZeroBridgeConfig {
 
 impl<'de> Deserialize<'de> for RawLayerZeroBridgeConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct Inner {

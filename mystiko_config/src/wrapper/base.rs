@@ -1,23 +1,23 @@
 use crate::raw::base::Validator;
 use anyhow::bail;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use typed_builder::TypedBuilder;
 
-#[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[derive(TypedBuilder, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct BaseConfig<R, A = ()>
-    where
-        R: Validator + Serialize + Clone,
-        A: Clone,
+where
+    R: Validator + Serialize + Clone,
+    A: Clone,
 {
     pub data: R,
     #[builder(default = None)]
     pub(crate) aux_data: Option<A>,
 }
 
-impl<R, A> BaseConfig<R, A>
-    where
-        R: Validator + Serialize + Clone,
-        A: Clone,
+impl<'a, R, A> BaseConfig<R, A>
+where
+    R: Validator + Serialize + Clone,
+    A: Clone,
 {
     pub fn copy_data(&self) -> R {
         self.data.clone()

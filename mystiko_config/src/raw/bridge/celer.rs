@@ -55,8 +55,8 @@ impl Hash for RawCelerBridgeConfig {
 
 impl<'de> Deserialize<'de> for RawCelerBridgeConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         struct Inner {

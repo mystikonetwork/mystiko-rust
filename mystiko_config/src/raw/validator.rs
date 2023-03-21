@@ -14,8 +14,8 @@ pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
 }
 
 pub fn array_unique<T>(array: &[T]) -> Result<(), ValidationError>
-    where
-        T: Hash + PartialEq + Eq,
+where
+    T: Hash + PartialEq + Eq,
 {
     let mut seen = HashSet::new();
     for item in array {
@@ -55,8 +55,8 @@ pub fn is_number_string<const NO_SYMBOLS: bool, const EACH: bool>(
 }
 
 pub fn validate_nested_vec<T>(v: &Vec<T>) -> Result<(), ValidationError>
-    where
-        T: Validator,
+where
+    T: Validator,
 {
     for x in v {
         let result = x.validation();

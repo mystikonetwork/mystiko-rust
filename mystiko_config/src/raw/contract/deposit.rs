@@ -83,8 +83,8 @@ impl Validator for RawDepositContractConfig {
 
 impl<'de> Deserialize<'de> for RawDepositContractConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase")]

@@ -16,20 +16,22 @@ pub struct RawConfig;
 
 impl RawConfig {
     pub fn validate_object<T>(&self, object: &T) -> anyhow::Result<()>
-        where T: Validate + Debug {
+    where
+        T: Validate + Debug,
+    {
         let validate = object.validate();
         match validate {
-            Ok(_) => { Ok(()) }
+            Ok(_) => Ok(()),
             Err(validation) => bail!(
                 "failed to validate config object: \n {:?}",
                 validation.errors()
-            )
+            ),
         }
     }
 
     pub fn from_object<T>(plain: T) -> Result<T, anyhow::Error>
-        where
-            T: DeserializeOwned + Serialize + Validator + Debug,
+    where
+        T: DeserializeOwned + Serialize + Validator + Debug,
     {
         match plain.validation() {
             Ok(_) => Ok(plain),
@@ -38,16 +40,16 @@ impl RawConfig {
     }
 
     pub fn from_json_string<T>(json_str: &str) -> Result<T, anyhow::Error>
-        where
-            T: DeserializeOwned + Serialize + Validator + Debug,
+    where
+        T: DeserializeOwned + Serialize + Validator + Debug,
     {
         let object: T = from_str(json_str).unwrap();
         RawConfig::from_object::<T>(object)
     }
 
     pub async fn from_file<T>(json_file: &str) -> Result<T, anyhow::Error>
-        where
-            T: DeserializeOwned + Serialize + Validator + Debug,
+    where
+        T: DeserializeOwned + Serialize + Validator + Debug,
     {
         let mut file = File::open(json_file)?;
         let mut contents = String::new();

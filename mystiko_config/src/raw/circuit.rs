@@ -1,9 +1,9 @@
 use crate::common::CircuitType;
 use crate::raw::base::{RawConfig, Validator};
 use crate::raw::validator::string_vec_each_not_empty;
+use anyhow::Error;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
-use anyhow::Error;
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
@@ -11,7 +11,7 @@ fn default_is_default() -> bool {
     false
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TypedBuilder)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawCircuitConfig {
     #[serde(default)]

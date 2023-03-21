@@ -1,6 +1,6 @@
-use crate::wrapper::base::BaseConfig;
 use crate::common::CircuitType;
 use crate::raw::circuit::RawCircuitConfig;
+use crate::wrapper::base::BaseConfig;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CircuitConfig {
@@ -10,9 +10,7 @@ pub struct CircuitConfig {
 impl CircuitConfig {
     pub fn new(data: RawCircuitConfig) -> Self {
         Self {
-            base: BaseConfig::builder()
-                .data(data)
-                .build(),
+            base: BaseConfig::builder().data(data).build(),
         }
     }
 
