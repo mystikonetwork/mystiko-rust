@@ -1,0 +1,77 @@
+use mystiko_config::common::AssetType;
+use mystiko_config::raw::asset::RawAssetConfig;
+use mystiko_config::raw::base::{RawConfig, Validator};
+
+fn default_config() -> RawAssetConfig {
+    RawConfig::from_object::<RawAssetConfig>(
+        RawAssetConfig::builder()
+            .asset_type(AssetType::Erc20)
+            .asset_symbol("MTT".to_string())
+            .asset_decimals(16)
+            .asset_address("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string())
+            .recommended_amounts(vec![
+                String::from("10000000000000000"),
+                String::from("100000000000000000"),
+            ])
+            .build(),
+    )
+    .unwrap()
+}
+
+#[tokio::test]
+async fn test_invalid_asset_symbol() {
+    let mut config = default_config();
+    config.asset_symbol = "".to_string();
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[tokio::test]
+async fn test_invalid_asset_address_0() {
+    let mut config = default_config();
+    config.asset_address = String::from("");
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[tokio::test]
+async fn test_invalid_asset_address_1() {
+    let mut config = default_config();
+    config.asset_address = String::from("0xdeadbeef");
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[tokio::test]
+async fn test_invalid_recommended_amounts_0() {
+    let mut config = default_config();
+    config.recommended_amounts = vec![String::from("")];
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[tokio::test]
+async fn test_invalid_recommended_amounts_1() {
+    let mut config = default_config();
+    config.recommended_amounts = vec![String::from("abcd")];
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[tokio::test]
+async fn test_invalid_recommended_amounts_2() {
+    let mut config = default_config();
+    config.recommended_amounts = vec![String::from("1"), String::from("1")];
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[tokio::test]
+async fn test_import_valid_json_file() {
+    let file_config = RawConfig::from_file::<RawAssetConfig>("tests/files/asset.valid.json")
+        .await
+        .unwrap();
+    assert_eq!(file_config, default_config());
+}
+
+#[tokio::test]
+#[should_panic]
+async fn test_import_invalid_json_file() {
+    let _file_config = RawConfig::from_file::<RawAssetConfig>("tests/files/asset.invalid.json")
+        .await
+        .unwrap();
+}

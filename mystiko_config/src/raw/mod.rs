@@ -1,9 +1,9 @@
-mod asset;
-pub(crate) mod base;
+pub mod asset;
+pub mod base;
 mod bridge;
 pub(crate) mod chain;
 pub(crate) mod circuit;
-mod contract;
+pub(crate) mod contract;
 mod indexer;
 pub(crate) mod mystiko;
 mod provider;

@@ -3,3 +3,8 @@ name = "mystiko_utils"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+num-bigint = { version = "0.4.3" }
+lazy_static = { version = "1.4.0" }
+rust_decimal = { version = "1.28" }
+anyhow = { version = "1.0" }

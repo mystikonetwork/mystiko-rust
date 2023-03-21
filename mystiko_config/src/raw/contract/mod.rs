@@ -1,3 +1,3 @@
-mod base;
-mod deposit;
-mod pool;
+pub(crate) mod base;
+pub(crate) mod deposit;
+pub(crate) mod pool;
