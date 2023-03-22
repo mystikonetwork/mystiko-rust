@@ -11,7 +11,8 @@ members = [
     "mystiko_storage",
     "mystiko_storage_sqlite",
     "mystiko_utils",
-    "mystiko_config"
+    "mystiko_config",
+    "mystiko_relayer_config"
 ]
 
 exclude = []
