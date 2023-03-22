@@ -25,6 +25,7 @@ pub struct RawPolyBridgeConfig {
 
     #[validate(contains = "%tx%")]
     #[serde(default = "default_explorer_prefix")]
+    #[builder(default = default_explorer_prefix())]
     pub explorer_prefix: String,
 
     #[validate(url)]

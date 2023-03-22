@@ -1,5 +1,8 @@
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
+use mystiko_config::raw::bridge::axelar::RawAxelarBridgeConfig;
+use mystiko_config::raw::bridge::celer::RawCelerBridgeConfig;
+use mystiko_config::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
 use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
 use mystiko_config::raw::indexer::RawIndexerConfig;
 use mystiko_config::raw::mystiko::{RawBridgeConfigType, RawMystikoConfig};
@@ -86,6 +89,43 @@ async fn test_invalid_indexer() {
             .build(),
     );
     assert_eq!(config.validation().is_err(), true);
+}
+
+#[test]
+fn test_compare_raw_bridge_config_type() {
+    let config1 = RawBridgeConfigType::Axelar(
+        RawAxelarBridgeConfig::builder()
+            .name("test1".to_string())
+            .build(),
+    );
+    let config2 = RawBridgeConfigType::Axelar(
+        RawAxelarBridgeConfig::builder()
+            .name("test2".to_string())
+            .build(),
+    );
+    assert_eq!(config1, config2);
+    let config1 = RawBridgeConfigType::Celer(
+        RawCelerBridgeConfig::builder()
+            .name("test1".to_string())
+            .build(),
+    );
+    let config2 = RawBridgeConfigType::Celer(
+        RawCelerBridgeConfig::builder()
+            .name("test2".to_string())
+            .build(),
+    );
+    assert_eq!(config1, config2);
+    let config1 = RawBridgeConfigType::LayerZero(
+        RawLayerZeroBridgeConfig::builder()
+            .name("test1".to_string())
+            .build(),
+    );
+    let config2 = RawBridgeConfigType::LayerZero(
+        RawLayerZeroBridgeConfig::builder()
+            .name("test2".to_string())
+            .build(),
+    );
+    assert_eq!(config1, config2);
 }
 
 #[tokio::test]

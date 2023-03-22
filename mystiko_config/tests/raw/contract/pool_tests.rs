@@ -28,6 +28,24 @@ lazy_static! {
 }
 
 #[test]
+fn test_default_values() {
+    let raw_config = RawPoolContractConfig::builder()
+        .version(2)
+        .name("CommitmentPool".to_string())
+        .address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string())
+        .start_block(1000000)
+        .pool_name("A Pool(since 07/20/2022)".to_string())
+        .bridge_type(BridgeType::Tbridge)
+        .asset_address(Some(
+            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
+        ))
+        .circuits(vec![String::from("circuit-1.0")])
+        .build();
+    assert_eq!(raw_config.min_rollup_fee, "0");
+    assert_eq!(raw_config.contract_type, ContractType::Pool);
+}
+
+#[test]
 fn test_raw_contract_config_trait() {
     let config = &RAW_CONFIG;
     assert_eq!(2, config.version);

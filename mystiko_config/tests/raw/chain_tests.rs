@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use mystiko_config::raw::asset::RawAssetConfig;
-use mystiko_config::raw::chain::RawChainConfig;
+use mystiko_config::raw::chain::{RawChainConfig, EXPLORER_DEFAULT_PREFIX};
 use mystiko_config::raw::contract::deposit::RawDepositContractConfig;
 use mystiko_config::raw::contract::pool::RawPoolContractConfig;
 use mystiko_config::raw::provider::RawProviderConfig;
@@ -103,6 +103,35 @@ fn default_config() -> RawChainConfig {
 
 lazy_static! {
     static ref RAW_CONFIG: RawChainConfig = default_config();
+}
+
+#[test]
+fn test_default_values() {
+    let provider_config = init_provider_config();
+    let deposit_contract_config = init_deposit_contract_config();
+    let pool_contract_config = init_pool_contract_config();
+    let asset_config = init_assets_config();
+    let raw_config = RawChainConfig::builder()
+        .chain_id(3)
+        .name("Ethereum Ropsten".to_string())
+        .asset_symbol("ETH".to_string())
+        .asset_decimals(18)
+        .recommended_amounts(vec![
+            "1000000000000000000".to_string(),
+            "10000000000000000000".to_string(),
+        ])
+        .explorer_url("https://ropsten.etherscan.io".to_string())
+        .providers(vec![provider_config])
+        .signer_endpoint(
+            "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
+        )
+        .deposit_contracts(vec![deposit_contract_config])
+        .pool_contracts(vec![pool_contract_config])
+        .assets(vec![asset_config])
+        .build();
+    assert_eq!(raw_config.event_filter_size, 200000);
+    assert_eq!(raw_config.indexer_filter_size, 500000);
+    assert_eq!(raw_config.explorer_prefix, EXPLORER_DEFAULT_PREFIX);
 }
 
 #[test]

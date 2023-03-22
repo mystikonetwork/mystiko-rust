@@ -33,6 +33,36 @@ fn default_config() -> RawDepositContractConfig {
 }
 
 #[test]
+fn test_default_values() {
+    let raw_config = RawDepositContractConfig::builder()
+        .version(2)
+        .name("MystikoWithPolyERC20".to_string())
+        .address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string())
+        .contract_type(ContractType::Deposit)
+        .start_block(1000000)
+        .bridge_type(BridgeType::Tbridge)
+        .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
+        .peer_chain_id(Some(97))
+        .peer_contract_address(Some(
+            "0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string(),
+        ))
+        .min_amount("10000000000000000".to_string())
+        .max_amount("100000000000000000".to_string())
+        .bridge_fee_asset_address(Some(
+            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
+        ))
+        .executor_fee_asset_address(Some(
+            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
+        ))
+        .service_fee(2)
+        .service_fee_divider(1000)
+        .build();
+    assert_eq!(raw_config.disabled, false);
+    assert_eq!(raw_config.min_bridge_fee, "0");
+    assert_eq!(raw_config.min_executor_fee, "0");
+}
+
+#[test]
 fn test_invalid_type() {
     let mut config = default_config();
     config.contract_type = ContractType::Pool;

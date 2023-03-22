@@ -24,6 +24,18 @@ lazy_static! {
 }
 
 #[test]
+fn test_default_values() {
+    let raw_config = RawPolyBridgeConfig::builder()
+        .name("Poly Bridge".to_string())
+        .explorer_url("https://explorer.poly.network".to_string())
+        .api_url("https://explorer.poly.network".to_string())
+        .api_prefix("/testnet/api/v1/getcrosstx?txhash=%tx%".to_string())
+        .build();
+    assert_eq!(raw_config.bridge_type, BridgeType::Poly);
+    assert_eq!(raw_config.explorer_prefix, EXPLORER_DEFAULT_PREFIX);
+}
+
+#[test]
 fn test_hash() {
     let config1 = &RAW_CONFIG;
     let mut hasher = DefaultHasher::new();

@@ -41,6 +41,7 @@ pub struct RawDepositContractConfig {
     pub pool_address: String,
 
     #[serde(default = "default_disabled")]
+    #[builder(default = default_disabled())]
     pub disabled: bool,
 
     #[validate(range(min = 1))]
@@ -59,10 +60,12 @@ pub struct RawDepositContractConfig {
 
     #[validate(custom = "is_number_string::<true>")]
     #[serde(default = "default_min_bridge_fee")]
+    #[builder(default = default_min_bridge_fee())]
     pub min_bridge_fee: String,
 
     #[validate(custom = "is_number_string::<true>")]
     #[serde(default = "default_min_executor_fee")]
+    #[builder(default = default_min_executor_fee())]
     pub min_executor_fee: String,
 
     #[validate(custom = "is_ethereum_address")]
