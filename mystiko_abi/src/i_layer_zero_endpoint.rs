@@ -1,106 +1,109 @@
 pub use i_layer_zero_endpoint::*;
-#[allow(clippy::too_many_arguments, non_camel_case_types)]
+/// This module was auto-generated with ethers-rs Abigen.
+/// More information at: <https://github.com/gakonst/ethers-rs>
+#[allow(
+    clippy::enum_variant_names,
+    clippy::too_many_arguments,
+    clippy::upper_case_acronyms,
+    clippy::type_complexity,
+    dead_code,
+    non_camel_case_types,
+)]
 pub mod i_layer_zero_endpoint {
-    #![allow(clippy::enum_variant_names)]
-    #![allow(dead_code)]
-    #![allow(clippy::type_complexity)]
-    #![allow(unused_imports)]
-    use ethers::contract::{
-        builders::{ContractCall, Event},
-        Contract, Lazy,
-    };
-    use ethers::core::{
-        abi::{Abi, Detokenize, InvalidOutputType, Token, Tokenizable},
-        types::*,
-    };
-    use ethers::providers::Middleware;
-    #[doc = "ILayerZeroEndpoint was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
-    use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_dstChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"_payInZRO\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_adapterParam\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"estimateFees\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"nativeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"zroFee\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"forceResumeReceive\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getChainId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getInboundNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_dstChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_srcAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getOutboundNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getReceiveLibraryAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getReceiveVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getSendLibraryAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getSendVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"hasStoredPayload\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isReceivingPayload\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isSendingPayload\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_dstAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_gasLimit\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"receivePayload\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"retryPayload\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_dstChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_destination\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address payable\",\"name\":\"_refundAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_zroPaymentAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_adapterParams\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"send\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_config\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setConfig\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setReceiveVersion\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setSendVersion\",\"outputs\":[]}]" ;
-    #[doc = r" The parsed JSON-ABI of the contract."]
-    pub static ILAYERZEROENDPOINT_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
-        ethers::contract::Lazy::new(|| {
-            ethers::core::utils::__serde_json::from_str(__ABI).expect("invalid abi")
-        });
-    pub struct ILayerZeroEndpoint<M>(ethers::contract::Contract<M>);
-    impl<M> Clone for ILayerZeroEndpoint<M> {
+    #[rustfmt::skip]
+    const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_dstChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bool\",\"name\":\"_payInZRO\",\"type\":\"bool\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_adapterParam\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"estimateFees\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"nativeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"zroFee\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"forceResumeReceive\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getChainId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getInboundNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_dstChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_srcAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getOutboundNonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getReceiveLibraryAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getReceiveVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getSendLibraryAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_userApplication\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getSendVersion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"hasStoredPayload\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isReceivingPayload\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isSendingPayload\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_dstAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_gasLimit\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"receivePayload\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"retryPayload\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_dstChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_destination\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address payable\",\"name\":\"_refundAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_zroPaymentAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_adapterParams\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"send\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_config\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setConfig\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setReceiveVersion\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setSendVersion\",\"outputs\":[]}]";
+    ///The parsed JSON ABI of the contract.
+    pub static ILAYERZEROENDPOINT_ABI: ::ethers_contract::Lazy<
+        ::ethers_core::abi::Abi,
+    > = ::ethers_contract::Lazy::new(|| {
+        ::ethers_core::utils::__serde_json::from_str(__ABI)
+            .expect("ABI is always valid")
+    });
+    pub struct ILayerZeroEndpoint<M>(::ethers_contract::Contract<M>);
+    impl<M> ::core::clone::Clone for ILayerZeroEndpoint<M> {
         fn clone(&self) -> Self {
-            ILayerZeroEndpoint(self.0.clone())
+            Self(::core::clone::Clone::clone(&self.0))
         }
     }
-    impl<M> std::ops::Deref for ILayerZeroEndpoint<M> {
-        type Target = ethers::contract::Contract<M>;
+    impl<M> ::core::ops::Deref for ILayerZeroEndpoint<M> {
+        type Target = ::ethers_contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M> std::fmt::Debug for ILayerZeroEndpoint<M> {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            f.debug_tuple(stringify!(ILayerZeroEndpoint))
-                .field(&self.address())
-                .finish()
+    impl<M> ::core::ops::DerefMut for ILayerZeroEndpoint<M> {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
         }
     }
-    impl<M: ethers::providers::Middleware> ILayerZeroEndpoint<M> {
-        #[doc = r" Creates a new contract instance with the specified `ethers`"]
-        #[doc = r" client at the given `Address`. The contract derefs to a `ethers::Contract`"]
-        #[doc = r" object"]
-        pub fn new<T: Into<ethers::core::types::Address>>(
+    impl<M> ::core::fmt::Debug for ILayerZeroEndpoint<M> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.debug_tuple(stringify!(ILayerZeroEndpoint)).field(&self.address()).finish()
+        }
+    }
+    impl<M: ::ethers_providers::Middleware> ILayerZeroEndpoint<M> {
+        /// Creates a new contract instance with the specified `ethers` client at
+        /// `address`. The contract derefs to a `ethers::Contract` object.
+        pub fn new<T: Into<::ethers_core::types::Address>>(
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            ethers::contract::Contract::new(address.into(), ILAYERZEROENDPOINT_ABI.clone(), client)
-                .into()
+            Self(
+                ::ethers_contract::Contract::new(
+                    address.into(),
+                    ILAYERZEROENDPOINT_ABI.clone(),
+                    client,
+                ),
+            )
         }
-        #[doc = "Calls the contract's `estimateFees` (0x40a7bb10) function"]
+        ///Calls the contract's `estimateFees` (0x40a7bb10) function
         pub fn estimate_fees(
             &self,
             dst_chain_id: u16,
-            user_application: ethers::core::types::Address,
-            payload: ethers::core::types::Bytes,
+            user_application: ::ethers_core::types::Address,
+            payload: ::ethers_core::types::Bytes,
             pay_in_zro: bool,
-            adapter_param: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<
+            adapter_param: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<
             M,
-            (ethers::core::types::U256, ethers::core::types::U256),
+            (::ethers_core::types::U256, ::ethers_core::types::U256),
         > {
             self.0
                 .method_hash(
                     [64, 167, 187, 16],
-                    (
-                        dst_chain_id,
-                        user_application,
-                        payload,
-                        pay_in_zro,
-                        adapter_param,
-                    ),
+                    (dst_chain_id, user_application, payload, pay_in_zro, adapter_param),
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `forceResumeReceive` (0x42d65a8d) function"]
+        ///Calls the contract's `forceResumeReceive` (0x42d65a8d) function
         pub fn force_resume_receive(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            src_address: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([66, 214, 90, 141], (src_chain_id, src_address))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getChainId` (0x3408e470) function"]
-        pub fn get_chain_id(&self) -> ethers::contract::builders::ContractCall<M, u16> {
+        ///Calls the contract's `getChainId` (0x3408e470) function
+        pub fn get_chain_id(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, u16> {
             self.0
                 .method_hash([52, 8, 228, 112], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getConfig` (0xf5ecbdbc) function"]
+        ///Calls the contract's `getConfig` (0xf5ecbdbc) function
         pub fn get_config(
             &self,
             version: u16,
             chain_id: u16,
-            user_application: ethers::core::types::Address,
-            config_type: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Bytes> {
+            user_application: ::ethers_core::types::Address,
+            config_type: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Bytes,
+        > {
             self.0
                 .method_hash(
                     [245, 236, 189, 188],
@@ -108,129 +111,132 @@ pub mod i_layer_zero_endpoint {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getInboundNonce` (0xfdc07c70) function"]
+        ///Calls the contract's `getInboundNonce` (0xfdc07c70) function
         pub fn get_inbound_nonce(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, u64> {
+            src_address: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, u64> {
             self.0
                 .method_hash([253, 192, 124, 112], (src_chain_id, src_address))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getOutboundNonce` (0x7a145748) function"]
+        ///Calls the contract's `getOutboundNonce` (0x7a145748) function
         pub fn get_outbound_nonce(
             &self,
             dst_chain_id: u16,
-            src_address: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, u64> {
+            src_address: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, u64> {
             self.0
                 .method_hash([122, 20, 87, 72], (dst_chain_id, src_address))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getReceiveLibraryAddress` (0x71ba2fd6) function"]
+        ///Calls the contract's `getReceiveLibraryAddress` (0x71ba2fd6) function
         pub fn get_receive_library_address(
             &self,
-            user_application: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+            user_application: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([113, 186, 47, 214], user_application)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getReceiveVersion` (0xda1a7c9a) function"]
+        ///Calls the contract's `getReceiveVersion` (0xda1a7c9a) function
         pub fn get_receive_version(
             &self,
-            user_application: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, u16> {
+            user_application: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, u16> {
             self.0
                 .method_hash([218, 26, 124, 154], user_application)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getSendLibraryAddress` (0x9c729da1) function"]
+        ///Calls the contract's `getSendLibraryAddress` (0x9c729da1) function
         pub fn get_send_library_address(
             &self,
-            user_application: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+            user_application: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([156, 114, 157, 161], user_application)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getSendVersion` (0x096568f6) function"]
+        ///Calls the contract's `getSendVersion` (0x096568f6) function
         pub fn get_send_version(
             &self,
-            user_application: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, u16> {
+            user_application: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, u16> {
             self.0
                 .method_hash([9, 101, 104, 246], user_application)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `hasStoredPayload` (0x0eaf6ea6) function"]
+        ///Calls the contract's `hasStoredPayload` (0x0eaf6ea6) function
         pub fn has_stored_payload(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            src_address: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([14, 175, 110, 166], (src_chain_id, src_address))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isReceivingPayload` (0xca066b35) function"]
-        pub fn is_receiving_payload(&self) -> ethers::contract::builders::ContractCall<M, bool> {
+        ///Calls the contract's `isReceivingPayload` (0xca066b35) function
+        pub fn is_receiving_payload(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([202, 6, 107, 53], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isSendingPayload` (0xe97a448a) function"]
-        pub fn is_sending_payload(&self) -> ethers::contract::builders::ContractCall<M, bool> {
+        ///Calls the contract's `isSendingPayload` (0xe97a448a) function
+        pub fn is_sending_payload(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([233, 122, 68, 138], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `receivePayload` (0xc2fa4813) function"]
+        ///Calls the contract's `receivePayload` (0xc2fa4813) function
         pub fn receive_payload(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
-            dst_address: ethers::core::types::Address,
+            src_address: ::ethers_core::types::Bytes,
+            dst_address: ::ethers_core::types::Address,
             nonce: u64,
-            gas_limit: ethers::core::types::U256,
-            payload: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            gas_limit: ::ethers_core::types::U256,
+            payload: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [194, 250, 72, 19],
-                    (
-                        src_chain_id,
-                        src_address,
-                        dst_address,
-                        nonce,
-                        gas_limit,
-                        payload,
-                    ),
+                    (src_chain_id, src_address, dst_address, nonce, gas_limit, payload),
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `retryPayload` (0xaaff5f16) function"]
+        ///Calls the contract's `retryPayload` (0xaaff5f16) function
         pub fn retry_payload(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
-            payload: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            src_address: ::ethers_core::types::Bytes,
+            payload: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([170, 255, 95, 22], (src_chain_id, src_address, payload))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `send` (0xc5803100) function"]
+        ///Calls the contract's `send` (0xc5803100) function
         pub fn send(
             &self,
             dst_chain_id: u16,
-            destination: ethers::core::types::Bytes,
-            payload: ethers::core::types::Bytes,
-            refund_address: ethers::core::types::Address,
-            zro_payment_address: ethers::core::types::Address,
-            adapter_params: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            destination: ::ethers_core::types::Bytes,
+            payload: ::ethers_core::types::Bytes,
+            refund_address: ::ethers_core::types::Address,
+            zro_payment_address: ::ethers_core::types::Address,
+            adapter_params: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [197, 128, 49, 0],
@@ -245,14 +251,14 @@ pub mod i_layer_zero_endpoint {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setConfig` (0xcbed8b9c) function"]
+        ///Calls the contract's `setConfig` (0xcbed8b9c) function
         pub fn set_config(
             &self,
             version: u16,
             chain_id: u16,
-            config_type: ethers::core::types::U256,
-            config: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            config_type: ::ethers_core::types::U256,
+            config: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [203, 237, 139, 156],
@@ -260,43 +266,43 @@ pub mod i_layer_zero_endpoint {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setReceiveVersion` (0x10ddb137) function"]
+        ///Calls the contract's `setReceiveVersion` (0x10ddb137) function
         pub fn set_receive_version(
             &self,
             version: u16,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([16, 221, 177, 55], version)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setSendVersion` (0x07e0db17) function"]
+        ///Calls the contract's `setSendVersion` (0x07e0db17) function
         pub fn set_send_version(
             &self,
             version: u16,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([7, 224, 219, 23], version)
                 .expect("method not found (this should never happen)")
         }
     }
-    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>>
-        for ILayerZeroEndpoint<M>
-    {
-        fn from(contract: ethers::contract::Contract<M>) -> Self {
-            Self(contract)
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+    for ILayerZeroEndpoint<M> {
+        fn from(contract: ::ethers_contract::Contract<M>) -> Self {
+            Self::new(contract.address(), contract.client())
         }
     }
-    #[doc = "Container type for all input parameters for the `estimateFees` function with signature `estimateFees(uint16,address,bytes,bool,bytes)` and selector `[64, 167, 187, 16]`"]
+    ///Container type for all input parameters for the `estimateFees` function with signature `estimateFees(uint16,address,bytes,bool,bytes)` and selector `0x40a7bb10`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "estimateFees",
@@ -304,218 +310,231 @@ pub mod i_layer_zero_endpoint {
     )]
     pub struct EstimateFeesCall {
         pub dst_chain_id: u16,
-        pub user_application: ethers::core::types::Address,
-        pub payload: ethers::core::types::Bytes,
+        pub user_application: ::ethers_core::types::Address,
+        pub payload: ::ethers_core::types::Bytes,
         pub pay_in_zro: bool,
-        pub adapter_param: ethers::core::types::Bytes,
+        pub adapter_param: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `forceResumeReceive` function with signature `forceResumeReceive(uint16,bytes)` and selector `[66, 214, 90, 141]`"]
+    ///Container type for all input parameters for the `forceResumeReceive` function with signature `forceResumeReceive(uint16,bytes)` and selector `0x42d65a8d`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "forceResumeReceive", abi = "forceResumeReceive(uint16,bytes)")]
     pub struct ForceResumeReceiveCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `getChainId` function with signature `getChainId()` and selector `[52, 8, 228, 112]`"]
+    ///Container type for all input parameters for the `getChainId` function with signature `getChainId()` and selector `0x3408e470`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getChainId", abi = "getChainId()")]
     pub struct GetChainIdCall;
-    #[doc = "Container type for all input parameters for the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `[245, 236, 189, 188]`"]
+    ///Container type for all input parameters for the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `0xf5ecbdbc`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getConfig", abi = "getConfig(uint16,uint16,address,uint256)")]
     pub struct GetConfigCall {
         pub version: u16,
         pub chain_id: u16,
-        pub user_application: ethers::core::types::Address,
-        pub config_type: ethers::core::types::U256,
+        pub user_application: ::ethers_core::types::Address,
+        pub config_type: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `getInboundNonce` function with signature `getInboundNonce(uint16,bytes)` and selector `[253, 192, 124, 112]`"]
+    ///Container type for all input parameters for the `getInboundNonce` function with signature `getInboundNonce(uint16,bytes)` and selector `0xfdc07c70`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getInboundNonce", abi = "getInboundNonce(uint16,bytes)")]
     pub struct GetInboundNonceCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `getOutboundNonce` function with signature `getOutboundNonce(uint16,address)` and selector `[122, 20, 87, 72]`"]
+    ///Container type for all input parameters for the `getOutboundNonce` function with signature `getOutboundNonce(uint16,address)` and selector `0x7a145748`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getOutboundNonce", abi = "getOutboundNonce(uint16,address)")]
     pub struct GetOutboundNonceCall {
         pub dst_chain_id: u16,
-        pub src_address: ethers::core::types::Address,
+        pub src_address: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `getReceiveLibraryAddress` function with signature `getReceiveLibraryAddress(address)` and selector `[113, 186, 47, 214]`"]
+    ///Container type for all input parameters for the `getReceiveLibraryAddress` function with signature `getReceiveLibraryAddress(address)` and selector `0x71ba2fd6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "getReceiveLibraryAddress",
         abi = "getReceiveLibraryAddress(address)"
     )]
     pub struct GetReceiveLibraryAddressCall {
-        pub user_application: ethers::core::types::Address,
+        pub user_application: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `getReceiveVersion` function with signature `getReceiveVersion(address)` and selector `[218, 26, 124, 154]`"]
+    ///Container type for all input parameters for the `getReceiveVersion` function with signature `getReceiveVersion(address)` and selector `0xda1a7c9a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getReceiveVersion", abi = "getReceiveVersion(address)")]
     pub struct GetReceiveVersionCall {
-        pub user_application: ethers::core::types::Address,
+        pub user_application: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `getSendLibraryAddress` function with signature `getSendLibraryAddress(address)` and selector `[156, 114, 157, 161]`"]
+    ///Container type for all input parameters for the `getSendLibraryAddress` function with signature `getSendLibraryAddress(address)` and selector `0x9c729da1`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getSendLibraryAddress", abi = "getSendLibraryAddress(address)")]
     pub struct GetSendLibraryAddressCall {
-        pub user_application: ethers::core::types::Address,
+        pub user_application: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `getSendVersion` function with signature `getSendVersion(address)` and selector `[9, 101, 104, 246]`"]
+    ///Container type for all input parameters for the `getSendVersion` function with signature `getSendVersion(address)` and selector `0x096568f6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getSendVersion", abi = "getSendVersion(address)")]
     pub struct GetSendVersionCall {
-        pub user_application: ethers::core::types::Address,
+        pub user_application: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `hasStoredPayload` function with signature `hasStoredPayload(uint16,bytes)` and selector `[14, 175, 110, 166]`"]
+    ///Container type for all input parameters for the `hasStoredPayload` function with signature `hasStoredPayload(uint16,bytes)` and selector `0x0eaf6ea6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "hasStoredPayload", abi = "hasStoredPayload(uint16,bytes)")]
     pub struct HasStoredPayloadCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `isReceivingPayload` function with signature `isReceivingPayload()` and selector `[202, 6, 107, 53]`"]
+    ///Container type for all input parameters for the `isReceivingPayload` function with signature `isReceivingPayload()` and selector `0xca066b35`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "isReceivingPayload", abi = "isReceivingPayload()")]
     pub struct IsReceivingPayloadCall;
-    #[doc = "Container type for all input parameters for the `isSendingPayload` function with signature `isSendingPayload()` and selector `[233, 122, 68, 138]`"]
+    ///Container type for all input parameters for the `isSendingPayload` function with signature `isSendingPayload()` and selector `0xe97a448a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "isSendingPayload", abi = "isSendingPayload()")]
     pub struct IsSendingPayloadCall;
-    #[doc = "Container type for all input parameters for the `receivePayload` function with signature `receivePayload(uint16,bytes,address,uint64,uint256,bytes)` and selector `[194, 250, 72, 19]`"]
+    ///Container type for all input parameters for the `receivePayload` function with signature `receivePayload(uint16,bytes,address,uint64,uint256,bytes)` and selector `0xc2fa4813`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "receivePayload",
@@ -523,110 +542,117 @@ pub mod i_layer_zero_endpoint {
     )]
     pub struct ReceivePayloadCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
-        pub dst_address: ethers::core::types::Address,
+        pub src_address: ::ethers_core::types::Bytes,
+        pub dst_address: ::ethers_core::types::Address,
         pub nonce: u64,
-        pub gas_limit: ethers::core::types::U256,
-        pub payload: ethers::core::types::Bytes,
+        pub gas_limit: ::ethers_core::types::U256,
+        pub payload: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `retryPayload` function with signature `retryPayload(uint16,bytes,bytes)` and selector `[170, 255, 95, 22]`"]
+    ///Container type for all input parameters for the `retryPayload` function with signature `retryPayload(uint16,bytes,bytes)` and selector `0xaaff5f16`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "retryPayload", abi = "retryPayload(uint16,bytes,bytes)")]
     pub struct RetryPayloadCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
-        pub payload: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
+        pub payload: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `send` function with signature `send(uint16,bytes,bytes,address,address,bytes)` and selector `[197, 128, 49, 0]`"]
+    ///Container type for all input parameters for the `send` function with signature `send(uint16,bytes,bytes,address,address,bytes)` and selector `0xc5803100`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "send", abi = "send(uint16,bytes,bytes,address,address,bytes)")]
     pub struct SendCall {
         pub dst_chain_id: u16,
-        pub destination: ethers::core::types::Bytes,
-        pub payload: ethers::core::types::Bytes,
-        pub refund_address: ethers::core::types::Address,
-        pub zro_payment_address: ethers::core::types::Address,
-        pub adapter_params: ethers::core::types::Bytes,
+        pub destination: ::ethers_core::types::Bytes,
+        pub payload: ::ethers_core::types::Bytes,
+        pub refund_address: ::ethers_core::types::Address,
+        pub zro_payment_address: ::ethers_core::types::Address,
+        pub adapter_params: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `setConfig` function with signature `setConfig(uint16,uint16,uint256,bytes)` and selector `[203, 237, 139, 156]`"]
+    ///Container type for all input parameters for the `setConfig` function with signature `setConfig(uint16,uint16,uint256,bytes)` and selector `0xcbed8b9c`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setConfig", abi = "setConfig(uint16,uint16,uint256,bytes)")]
     pub struct SetConfigCall {
         pub version: u16,
         pub chain_id: u16,
-        pub config_type: ethers::core::types::U256,
-        pub config: ethers::core::types::Bytes,
+        pub config_type: ::ethers_core::types::U256,
+        pub config: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `setReceiveVersion` function with signature `setReceiveVersion(uint16)` and selector `[16, 221, 177, 55]`"]
+    ///Container type for all input parameters for the `setReceiveVersion` function with signature `setReceiveVersion(uint16)` and selector `0x10ddb137`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setReceiveVersion", abi = "setReceiveVersion(uint16)")]
     pub struct SetReceiveVersionCall {
         pub version: u16,
     }
-    #[doc = "Container type for all input parameters for the `setSendVersion` function with signature `setSendVersion(uint16)` and selector `[7, 224, 219, 23]`"]
+    ///Container type for all input parameters for the `setSendVersion` function with signature `setSendVersion(uint16)` and selector `0x07e0db17`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setSendVersion", abi = "setSendVersion(uint16)")]
     pub struct SetSendVersionCall {
         pub version: u16,
     }
+    ///Container type for all of the contract's call
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum ILayerZeroEndpointCalls {
         EstimateFees(EstimateFeesCall),
@@ -649,410 +675,467 @@ pub mod i_layer_zero_endpoint {
         SetReceiveVersion(SetReceiveVersionCall),
         SetSendVersion(SetSendVersionCall),
     }
-    impl ethers::core::abi::AbiDecode for ILayerZeroEndpointCalls {
+    impl ::ethers_core::abi::AbiDecode for ILayerZeroEndpointCalls {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <EstimateFeesCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::EstimateFees(decoded));
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
+            if let Ok(decoded)
+                = <EstimateFeesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::EstimateFees(decoded));
             }
-            if let Ok(decoded) =
-                <ForceResumeReceiveCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::ForceResumeReceive(decoded));
+            if let Ok(decoded)
+                = <ForceResumeReceiveCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ForceResumeReceive(decoded));
             }
-            if let Ok(decoded) =
-                <GetChainIdCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::GetChainId(decoded));
+            if let Ok(decoded)
+                = <GetChainIdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::GetChainId(decoded));
             }
-            if let Ok(decoded) =
-                <GetConfigCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::GetConfig(decoded));
+            if let Ok(decoded)
+                = <GetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::GetConfig(decoded));
             }
-            if let Ok(decoded) =
-                <GetInboundNonceCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::GetInboundNonce(decoded));
+            if let Ok(decoded)
+                = <GetInboundNonceCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::GetInboundNonce(decoded));
             }
-            if let Ok(decoded) =
-                <GetOutboundNonceCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::GetOutboundNonce(decoded));
+            if let Ok(decoded)
+                = <GetOutboundNonceCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::GetOutboundNonce(decoded));
             }
-            if let Ok(decoded) =
-                <GetReceiveLibraryAddressCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(ILayerZeroEndpointCalls::GetReceiveLibraryAddress(decoded));
+            if let Ok(decoded)
+                = <GetReceiveLibraryAddressCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::GetReceiveLibraryAddress(decoded));
             }
-            if let Ok(decoded) =
-                <GetReceiveVersionCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::GetReceiveVersion(decoded));
+            if let Ok(decoded)
+                = <GetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::GetReceiveVersion(decoded));
             }
-            if let Ok(decoded) =
-                <GetSendLibraryAddressCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::GetSendLibraryAddress(decoded));
+            if let Ok(decoded)
+                = <GetSendLibraryAddressCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::GetSendLibraryAddress(decoded));
             }
-            if let Ok(decoded) =
-                <GetSendVersionCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::GetSendVersion(decoded));
+            if let Ok(decoded)
+                = <GetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::GetSendVersion(decoded));
             }
-            if let Ok(decoded) =
-                <HasStoredPayloadCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::HasStoredPayload(decoded));
+            if let Ok(decoded)
+                = <HasStoredPayloadCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::HasStoredPayload(decoded));
             }
-            if let Ok(decoded) =
-                <IsReceivingPayloadCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::IsReceivingPayload(decoded));
+            if let Ok(decoded)
+                = <IsReceivingPayloadCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::IsReceivingPayload(decoded));
             }
-            if let Ok(decoded) =
-                <IsSendingPayloadCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::IsSendingPayload(decoded));
+            if let Ok(decoded)
+                = <IsSendingPayloadCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::IsSendingPayload(decoded));
             }
-            if let Ok(decoded) =
-                <ReceivePayloadCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::ReceivePayload(decoded));
+            if let Ok(decoded)
+                = <ReceivePayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::ReceivePayload(decoded));
             }
-            if let Ok(decoded) =
-                <RetryPayloadCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::RetryPayload(decoded));
+            if let Ok(decoded)
+                = <RetryPayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::RetryPayload(decoded));
             }
-            if let Ok(decoded) = <SendCall as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
-                return Ok(ILayerZeroEndpointCalls::Send(decoded));
+            if let Ok(decoded)
+                = <SendCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Send(decoded));
             }
-            if let Ok(decoded) =
-                <SetConfigCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::SetConfig(decoded));
+            if let Ok(decoded)
+                = <SetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SetConfig(decoded));
             }
-            if let Ok(decoded) =
-                <SetReceiveVersionCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::SetReceiveVersion(decoded));
+            if let Ok(decoded)
+                = <SetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetReceiveVersion(decoded));
             }
-            if let Ok(decoded) =
-                <SetSendVersionCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(ILayerZeroEndpointCalls::SetSendVersion(decoded));
+            if let Ok(decoded)
+                = <SetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SetSendVersion(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for ILayerZeroEndpointCalls {
+    impl ::ethers_core::abi::AbiEncode for ILayerZeroEndpointCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                ILayerZeroEndpointCalls::EstimateFees(element) => element.encode(),
-                ILayerZeroEndpointCalls::ForceResumeReceive(element) => element.encode(),
-                ILayerZeroEndpointCalls::GetChainId(element) => element.encode(),
-                ILayerZeroEndpointCalls::GetConfig(element) => element.encode(),
-                ILayerZeroEndpointCalls::GetInboundNonce(element) => element.encode(),
-                ILayerZeroEndpointCalls::GetOutboundNonce(element) => element.encode(),
-                ILayerZeroEndpointCalls::GetReceiveLibraryAddress(element) => element.encode(),
-                ILayerZeroEndpointCalls::GetReceiveVersion(element) => element.encode(),
-                ILayerZeroEndpointCalls::GetSendLibraryAddress(element) => element.encode(),
-                ILayerZeroEndpointCalls::GetSendVersion(element) => element.encode(),
-                ILayerZeroEndpointCalls::HasStoredPayload(element) => element.encode(),
-                ILayerZeroEndpointCalls::IsReceivingPayload(element) => element.encode(),
-                ILayerZeroEndpointCalls::IsSendingPayload(element) => element.encode(),
-                ILayerZeroEndpointCalls::ReceivePayload(element) => element.encode(),
-                ILayerZeroEndpointCalls::RetryPayload(element) => element.encode(),
-                ILayerZeroEndpointCalls::Send(element) => element.encode(),
-                ILayerZeroEndpointCalls::SetConfig(element) => element.encode(),
-                ILayerZeroEndpointCalls::SetReceiveVersion(element) => element.encode(),
-                ILayerZeroEndpointCalls::SetSendVersion(element) => element.encode(),
+                Self::EstimateFees(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ForceResumeReceive(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetChainId(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetConfig(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetInboundNonce(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetOutboundNonce(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetReceiveLibraryAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetReceiveVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetSendLibraryAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetSendVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::HasStoredPayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsReceivingPayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsSendingPayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ReceivePayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RetryPayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Send(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetConfig(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetReceiveVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetSendVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }
-    impl ::std::fmt::Display for ILayerZeroEndpointCalls {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for ILayerZeroEndpointCalls {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                ILayerZeroEndpointCalls::EstimateFees(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::ForceResumeReceive(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::GetChainId(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::GetConfig(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::GetInboundNonce(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::GetOutboundNonce(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::GetReceiveLibraryAddress(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::GetReceiveVersion(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::GetSendLibraryAddress(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::GetSendVersion(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::HasStoredPayload(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::IsReceivingPayload(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::IsSendingPayload(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::ReceivePayload(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::RetryPayload(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::Send(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::SetConfig(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::SetReceiveVersion(element) => element.fmt(f),
-                ILayerZeroEndpointCalls::SetSendVersion(element) => element.fmt(f),
+                Self::EstimateFees(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ForceResumeReceive(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetChainId(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetConfig(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetInboundNonce(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetOutboundNonce(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetReceiveLibraryAddress(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetReceiveVersion(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetSendLibraryAddress(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetSendVersion(element) => ::core::fmt::Display::fmt(element, f),
+                Self::HasStoredPayload(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsReceivingPayload(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::IsSendingPayload(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ReceivePayload(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RetryPayload(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Send(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetConfig(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetReceiveVersion(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetSendVersion(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
-    impl ::std::convert::From<EstimateFeesCall> for ILayerZeroEndpointCalls {
-        fn from(var: EstimateFeesCall) -> Self {
-            ILayerZeroEndpointCalls::EstimateFees(var)
+    impl ::core::convert::From<EstimateFeesCall> for ILayerZeroEndpointCalls {
+        fn from(value: EstimateFeesCall) -> Self {
+            Self::EstimateFees(value)
         }
     }
-    impl ::std::convert::From<ForceResumeReceiveCall> for ILayerZeroEndpointCalls {
-        fn from(var: ForceResumeReceiveCall) -> Self {
-            ILayerZeroEndpointCalls::ForceResumeReceive(var)
+    impl ::core::convert::From<ForceResumeReceiveCall> for ILayerZeroEndpointCalls {
+        fn from(value: ForceResumeReceiveCall) -> Self {
+            Self::ForceResumeReceive(value)
         }
     }
-    impl ::std::convert::From<GetChainIdCall> for ILayerZeroEndpointCalls {
-        fn from(var: GetChainIdCall) -> Self {
-            ILayerZeroEndpointCalls::GetChainId(var)
+    impl ::core::convert::From<GetChainIdCall> for ILayerZeroEndpointCalls {
+        fn from(value: GetChainIdCall) -> Self {
+            Self::GetChainId(value)
         }
     }
-    impl ::std::convert::From<GetConfigCall> for ILayerZeroEndpointCalls {
-        fn from(var: GetConfigCall) -> Self {
-            ILayerZeroEndpointCalls::GetConfig(var)
+    impl ::core::convert::From<GetConfigCall> for ILayerZeroEndpointCalls {
+        fn from(value: GetConfigCall) -> Self {
+            Self::GetConfig(value)
         }
     }
-    impl ::std::convert::From<GetInboundNonceCall> for ILayerZeroEndpointCalls {
-        fn from(var: GetInboundNonceCall) -> Self {
-            ILayerZeroEndpointCalls::GetInboundNonce(var)
+    impl ::core::convert::From<GetInboundNonceCall> for ILayerZeroEndpointCalls {
+        fn from(value: GetInboundNonceCall) -> Self {
+            Self::GetInboundNonce(value)
         }
     }
-    impl ::std::convert::From<GetOutboundNonceCall> for ILayerZeroEndpointCalls {
-        fn from(var: GetOutboundNonceCall) -> Self {
-            ILayerZeroEndpointCalls::GetOutboundNonce(var)
+    impl ::core::convert::From<GetOutboundNonceCall> for ILayerZeroEndpointCalls {
+        fn from(value: GetOutboundNonceCall) -> Self {
+            Self::GetOutboundNonce(value)
         }
     }
-    impl ::std::convert::From<GetReceiveLibraryAddressCall> for ILayerZeroEndpointCalls {
-        fn from(var: GetReceiveLibraryAddressCall) -> Self {
-            ILayerZeroEndpointCalls::GetReceiveLibraryAddress(var)
+    impl ::core::convert::From<GetReceiveLibraryAddressCall>
+    for ILayerZeroEndpointCalls {
+        fn from(value: GetReceiveLibraryAddressCall) -> Self {
+            Self::GetReceiveLibraryAddress(value)
         }
     }
-    impl ::std::convert::From<GetReceiveVersionCall> for ILayerZeroEndpointCalls {
-        fn from(var: GetReceiveVersionCall) -> Self {
-            ILayerZeroEndpointCalls::GetReceiveVersion(var)
+    impl ::core::convert::From<GetReceiveVersionCall> for ILayerZeroEndpointCalls {
+        fn from(value: GetReceiveVersionCall) -> Self {
+            Self::GetReceiveVersion(value)
         }
     }
-    impl ::std::convert::From<GetSendLibraryAddressCall> for ILayerZeroEndpointCalls {
-        fn from(var: GetSendLibraryAddressCall) -> Self {
-            ILayerZeroEndpointCalls::GetSendLibraryAddress(var)
+    impl ::core::convert::From<GetSendLibraryAddressCall> for ILayerZeroEndpointCalls {
+        fn from(value: GetSendLibraryAddressCall) -> Self {
+            Self::GetSendLibraryAddress(value)
         }
     }
-    impl ::std::convert::From<GetSendVersionCall> for ILayerZeroEndpointCalls {
-        fn from(var: GetSendVersionCall) -> Self {
-            ILayerZeroEndpointCalls::GetSendVersion(var)
+    impl ::core::convert::From<GetSendVersionCall> for ILayerZeroEndpointCalls {
+        fn from(value: GetSendVersionCall) -> Self {
+            Self::GetSendVersion(value)
         }
     }
-    impl ::std::convert::From<HasStoredPayloadCall> for ILayerZeroEndpointCalls {
-        fn from(var: HasStoredPayloadCall) -> Self {
-            ILayerZeroEndpointCalls::HasStoredPayload(var)
+    impl ::core::convert::From<HasStoredPayloadCall> for ILayerZeroEndpointCalls {
+        fn from(value: HasStoredPayloadCall) -> Self {
+            Self::HasStoredPayload(value)
         }
     }
-    impl ::std::convert::From<IsReceivingPayloadCall> for ILayerZeroEndpointCalls {
-        fn from(var: IsReceivingPayloadCall) -> Self {
-            ILayerZeroEndpointCalls::IsReceivingPayload(var)
+    impl ::core::convert::From<IsReceivingPayloadCall> for ILayerZeroEndpointCalls {
+        fn from(value: IsReceivingPayloadCall) -> Self {
+            Self::IsReceivingPayload(value)
         }
     }
-    impl ::std::convert::From<IsSendingPayloadCall> for ILayerZeroEndpointCalls {
-        fn from(var: IsSendingPayloadCall) -> Self {
-            ILayerZeroEndpointCalls::IsSendingPayload(var)
+    impl ::core::convert::From<IsSendingPayloadCall> for ILayerZeroEndpointCalls {
+        fn from(value: IsSendingPayloadCall) -> Self {
+            Self::IsSendingPayload(value)
         }
     }
-    impl ::std::convert::From<ReceivePayloadCall> for ILayerZeroEndpointCalls {
-        fn from(var: ReceivePayloadCall) -> Self {
-            ILayerZeroEndpointCalls::ReceivePayload(var)
+    impl ::core::convert::From<ReceivePayloadCall> for ILayerZeroEndpointCalls {
+        fn from(value: ReceivePayloadCall) -> Self {
+            Self::ReceivePayload(value)
         }
     }
-    impl ::std::convert::From<RetryPayloadCall> for ILayerZeroEndpointCalls {
-        fn from(var: RetryPayloadCall) -> Self {
-            ILayerZeroEndpointCalls::RetryPayload(var)
+    impl ::core::convert::From<RetryPayloadCall> for ILayerZeroEndpointCalls {
+        fn from(value: RetryPayloadCall) -> Self {
+            Self::RetryPayload(value)
         }
     }
-    impl ::std::convert::From<SendCall> for ILayerZeroEndpointCalls {
-        fn from(var: SendCall) -> Self {
-            ILayerZeroEndpointCalls::Send(var)
+    impl ::core::convert::From<SendCall> for ILayerZeroEndpointCalls {
+        fn from(value: SendCall) -> Self {
+            Self::Send(value)
         }
     }
-    impl ::std::convert::From<SetConfigCall> for ILayerZeroEndpointCalls {
-        fn from(var: SetConfigCall) -> Self {
-            ILayerZeroEndpointCalls::SetConfig(var)
+    impl ::core::convert::From<SetConfigCall> for ILayerZeroEndpointCalls {
+        fn from(value: SetConfigCall) -> Self {
+            Self::SetConfig(value)
         }
     }
-    impl ::std::convert::From<SetReceiveVersionCall> for ILayerZeroEndpointCalls {
-        fn from(var: SetReceiveVersionCall) -> Self {
-            ILayerZeroEndpointCalls::SetReceiveVersion(var)
+    impl ::core::convert::From<SetReceiveVersionCall> for ILayerZeroEndpointCalls {
+        fn from(value: SetReceiveVersionCall) -> Self {
+            Self::SetReceiveVersion(value)
         }
     }
-    impl ::std::convert::From<SetSendVersionCall> for ILayerZeroEndpointCalls {
-        fn from(var: SetSendVersionCall) -> Self {
-            ILayerZeroEndpointCalls::SetSendVersion(var)
+    impl ::core::convert::From<SetSendVersionCall> for ILayerZeroEndpointCalls {
+        fn from(value: SetSendVersionCall) -> Self {
+            Self::SetSendVersion(value)
         }
     }
-    #[doc = "Container type for all return fields from the `estimateFees` function with signature `estimateFees(uint16,address,bytes,bool,bytes)` and selector `[64, 167, 187, 16]`"]
+    ///Container type for all return fields from the `estimateFees` function with signature `estimateFees(uint16,address,bytes,bool,bytes)` and selector `0x40a7bb10`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct EstimateFeesReturn {
-        pub native_fee: ethers::core::types::U256,
-        pub zro_fee: ethers::core::types::U256,
+        pub native_fee: ::ethers_core::types::U256,
+        pub zro_fee: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all return fields from the `getChainId` function with signature `getChainId()` and selector `[52, 8, 228, 112]`"]
+    ///Container type for all return fields from the `getChainId` function with signature `getChainId()` and selector `0x3408e470`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct GetChainIdReturn(pub u16);
-    #[doc = "Container type for all return fields from the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `[245, 236, 189, 188]`"]
+    ///Container type for all return fields from the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `0xf5ecbdbc`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetConfigReturn(pub ethers::core::types::Bytes);
-    #[doc = "Container type for all return fields from the `getInboundNonce` function with signature `getInboundNonce(uint16,bytes)` and selector `[253, 192, 124, 112]`"]
+    pub struct GetConfigReturn(pub ::ethers_core::types::Bytes);
+    ///Container type for all return fields from the `getInboundNonce` function with signature `getInboundNonce(uint16,bytes)` and selector `0xfdc07c70`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct GetInboundNonceReturn(pub u64);
-    #[doc = "Container type for all return fields from the `getOutboundNonce` function with signature `getOutboundNonce(uint16,address)` and selector `[122, 20, 87, 72]`"]
+    ///Container type for all return fields from the `getOutboundNonce` function with signature `getOutboundNonce(uint16,address)` and selector `0x7a145748`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct GetOutboundNonceReturn(pub u64);
-    #[doc = "Container type for all return fields from the `getReceiveLibraryAddress` function with signature `getReceiveLibraryAddress(address)` and selector `[113, 186, 47, 214]`"]
+    ///Container type for all return fields from the `getReceiveLibraryAddress` function with signature `getReceiveLibraryAddress(address)` and selector `0x71ba2fd6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetReceiveLibraryAddressReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `getReceiveVersion` function with signature `getReceiveVersion(address)` and selector `[218, 26, 124, 154]`"]
+    pub struct GetReceiveLibraryAddressReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `getReceiveVersion` function with signature `getReceiveVersion(address)` and selector `0xda1a7c9a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct GetReceiveVersionReturn(pub u16);
-    #[doc = "Container type for all return fields from the `getSendLibraryAddress` function with signature `getSendLibraryAddress(address)` and selector `[156, 114, 157, 161]`"]
+    ///Container type for all return fields from the `getSendLibraryAddress` function with signature `getSendLibraryAddress(address)` and selector `0x9c729da1`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetSendLibraryAddressReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `getSendVersion` function with signature `getSendVersion(address)` and selector `[9, 101, 104, 246]`"]
+    pub struct GetSendLibraryAddressReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `getSendVersion` function with signature `getSendVersion(address)` and selector `0x096568f6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct GetSendVersionReturn(pub u16);
-    #[doc = "Container type for all return fields from the `hasStoredPayload` function with signature `hasStoredPayload(uint16,bytes)` and selector `[14, 175, 110, 166]`"]
+    ///Container type for all return fields from the `hasStoredPayload` function with signature `hasStoredPayload(uint16,bytes)` and selector `0x0eaf6ea6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct HasStoredPayloadReturn(pub bool);
-    #[doc = "Container type for all return fields from the `isReceivingPayload` function with signature `isReceivingPayload()` and selector `[202, 6, 107, 53]`"]
+    ///Container type for all return fields from the `isReceivingPayload` function with signature `isReceivingPayload()` and selector `0xca066b35`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct IsReceivingPayloadReturn(pub bool);
-    #[doc = "Container type for all return fields from the `isSendingPayload` function with signature `isSendingPayload()` and selector `[233, 122, 68, 138]`"]
+    ///Container type for all return fields from the `isSendingPayload` function with signature `isSendingPayload()` and selector `0xe97a448a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct IsSendingPayloadReturn(pub bool);
 }

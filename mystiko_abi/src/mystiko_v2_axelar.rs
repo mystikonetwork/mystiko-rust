@@ -1,115 +1,124 @@
 pub use mystiko_v2_axelar::*;
-#[allow(clippy::too_many_arguments, non_camel_case_types)]
+/// This module was auto-generated with ethers-rs Abigen.
+/// More information at: <https://github.com/gakonst/ethers-rs>
+#[allow(
+    clippy::enum_variant_names,
+    clippy::too_many_arguments,
+    clippy::upper_case_acronyms,
+    clippy::type_complexity,
+    dead_code,
+    non_camel_case_types,
+)]
 pub mod mystiko_v2_axelar {
-    #![allow(clippy::enum_variant_names)]
-    #![allow(dead_code)]
-    #![allow(clippy::type_complexity)]
-    #![allow(unused_imports)]
-    use ethers::contract::{
-        builders::{ContractCall, Event},
-        Contract, Lazy,
-    };
-    use ethers::core::{
-        abi::{Abi, Detokenize, InvalidOutputType, Token, Tokenizable},
-        types::*,
-    };
-    use ethers::providers::Middleware;
-    #[doc = "MystikoV2Axelar was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
-    use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooLarge\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooSmall\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BridgeFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHashIncorrect\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"DepositsDisabled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"ExecutorFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromChainIdNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromProxyAddressNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"HashKGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MinAmountGreaterThanMaxAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotApprovedByGateway\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RandomSGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"peerChainName\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"CallContractMessage\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentCrossChain\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"minAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositAmountLimits\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositsDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minBridgeFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinBridgeFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinRollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinRollupFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bridgeProxyAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"bridgeType\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct IMystikoBridge.DepositRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"hashK\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint128\",\"name\":\"randomS\",\"type\":\"uint128\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bridgeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"deposit\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"tokenSymbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"executeWithToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"gateway\",\"outputs\":[{\"internalType\":\"contract IAxelarGateway\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAssociatedCommitmentPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMaxAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinBridgeFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isDepositsDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainId\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_commitmentPoolAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAssociatedCommitmentPool\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_gasReceiver\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAxelarGasReceiver\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_bridgeProxyAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setBridgeProxyAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setDepositsDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBridgeFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinBridgeFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_peerChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"_peerChainName\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_peerContract\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_maxAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_minAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateDepositAmountLimits\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]" ;
-    #[doc = r" The parsed JSON-ABI of the contract."]
-    pub static MYSTIKOV2AXELAR_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
-        ethers::contract::Lazy::new(|| {
-            ethers::core::utils::__serde_json::from_str(__ABI).expect("invalid abi")
-        });
-    pub struct MystikoV2Axelar<M>(ethers::contract::Contract<M>);
-    impl<M> Clone for MystikoV2Axelar<M> {
+    #[rustfmt::skip]
+    const __ABI: &str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooLarge\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooSmall\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BridgeFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHashIncorrect\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"DepositsDisabled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"ExecutorFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromChainIdNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromProxyAddressNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"HashKGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MinAmountGreaterThanMaxAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotApprovedByGateway\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RandomSGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"peerChainName\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"CallContractMessage\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentCrossChain\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"minAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositAmountLimits\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositsDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minBridgeFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinBridgeFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinRollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinRollupFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bridgeProxyAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"bridgeType\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct IMystikoBridge.DepositRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"hashK\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint128\",\"name\":\"randomS\",\"type\":\"uint128\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bridgeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"deposit\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"tokenSymbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"executeWithToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"gateway\",\"outputs\":[{\"internalType\":\"contract IAxelarGateway\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAssociatedCommitmentPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMaxAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinBridgeFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isDepositsDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainId\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_commitmentPoolAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAssociatedCommitmentPool\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_gasReceiver\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAxelarGasReceiver\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_bridgeProxyAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setBridgeProxyAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setDepositsDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBridgeFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinBridgeFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_peerChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"_peerChainName\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_peerContract\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_maxAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_minAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateDepositAmountLimits\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]";
+    ///The parsed JSON ABI of the contract.
+    pub static MYSTIKOV2AXELAR_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(||
+    ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid"));
+    pub struct MystikoV2Axelar<M>(::ethers_contract::Contract<M>);
+    impl<M> ::core::clone::Clone for MystikoV2Axelar<M> {
         fn clone(&self) -> Self {
-            MystikoV2Axelar(self.0.clone())
+            Self(::core::clone::Clone::clone(&self.0))
         }
     }
-    impl<M> std::ops::Deref for MystikoV2Axelar<M> {
-        type Target = ethers::contract::Contract<M>;
+    impl<M> ::core::ops::Deref for MystikoV2Axelar<M> {
+        type Target = ::ethers_contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M> std::fmt::Debug for MystikoV2Axelar<M> {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            f.debug_tuple(stringify!(MystikoV2Axelar))
-                .field(&self.address())
-                .finish()
+    impl<M> ::core::ops::DerefMut for MystikoV2Axelar<M> {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
         }
     }
-    impl<M: ethers::providers::Middleware> MystikoV2Axelar<M> {
-        #[doc = r" Creates a new contract instance with the specified `ethers`"]
-        #[doc = r" client at the given `Address`. The contract derefs to a `ethers::Contract`"]
-        #[doc = r" object"]
-        pub fn new<T: Into<ethers::core::types::Address>>(
+    impl<M> ::core::fmt::Debug for MystikoV2Axelar<M> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.debug_tuple(stringify!(MystikoV2Axelar)).field(&self.address()).finish()
+        }
+    }
+    impl<M: ::ethers_providers::Middleware> MystikoV2Axelar<M> {
+        /// Creates a new contract instance with the specified `ethers` client at
+        /// `address`. The contract derefs to a `ethers::Contract` object.
+        pub fn new<T: Into<::ethers_core::types::Address>>(
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            ethers::contract::Contract::new(address.into(), MYSTIKOV2AXELAR_ABI.clone(), client)
-                .into()
+            Self(
+                ::ethers_contract::Contract::new(
+                    address.into(),
+                    MYSTIKOV2AXELAR_ABI.clone(),
+                    client,
+                ),
+            )
         }
-        #[doc = "Calls the contract's `assetType` (0x3fe3347a) function"]
-        pub fn asset_type(&self) -> ethers::contract::builders::ContractCall<M, u8> {
+        ///Calls the contract's `assetType` (0x3fe3347a) function
+        pub fn asset_type(&self) -> ::ethers_contract::builders::ContractCall<M, u8> {
             self.0
                 .method_hash([63, 227, 52, 122], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `bridgeProxyAddress` (0x2cd26d45) function"]
+        ///Calls the contract's `bridgeProxyAddress` (0x2cd26d45) function
         pub fn bridge_proxy_address(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([44, 210, 109, 69], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `bridgeType` (0x2421e155) function"]
-        pub fn bridge_type(&self) -> ethers::contract::builders::ContractCall<M, String> {
+        ///Calls the contract's `bridgeType` (0x2421e155) function
+        pub fn bridge_type(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
             self.0
                 .method_hash([36, 33, 225, 85], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `changeOperator` (0x06394c9b) function"]
+        ///Calls the contract's `changeOperator` (0x06394c9b) function
         pub fn change_operator(
             &self,
-            new_operator: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            new_operator: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([6, 57, 76, 155], new_operator)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `deposit` (0x9a03636c) function"]
+        ///Calls the contract's `deposit` (0x9a03636c) function
         pub fn deposit(
             &self,
             request: DepositRequest,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([154, 3, 99, 108], (request,))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `disableSanctionsCheck` (0xdd757c34) function"]
-        pub fn disable_sanctions_check(&self) -> ethers::contract::builders::ContractCall<M, ()> {
+        ///Calls the contract's `disableSanctionsCheck` (0xdd757c34) function
+        pub fn disable_sanctions_check(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([221, 117, 124, 52], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `enableSanctionsCheck` (0x01dbf19f) function"]
-        pub fn enable_sanctions_check(&self) -> ethers::contract::builders::ContractCall<M, ()> {
+        ///Calls the contract's `enableSanctionsCheck` (0x01dbf19f) function
+        pub fn enable_sanctions_check(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([1, 219, 241, 159], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `execute` (0x49160658) function"]
+        ///Calls the contract's `execute` (0x49160658) function
         pub fn execute(
             &self,
             command_id: [u8; 32],
-            source_chain: String,
-            source_address: String,
-            payload: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            source_chain: ::std::string::String,
+            source_address: ::std::string::String,
+            payload: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [73, 22, 6, 88],
@@ -117,16 +126,16 @@ pub mod mystiko_v2_axelar {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `executeWithToken` (0x1a98b2e0) function"]
+        ///Calls the contract's `executeWithToken` (0x1a98b2e0) function
         pub fn execute_with_token(
             &self,
             command_id: [u8; 32],
-            source_chain: String,
-            source_address: String,
-            payload: ethers::core::types::Bytes,
-            token_symbol: String,
-            amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            source_chain: ::std::string::String,
+            source_address: ::std::string::String,
+            payload: ::ethers_core::types::Bytes,
+            token_symbol: ::std::string::String,
+            amount: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [26, 152, 178, 224],
@@ -141,171 +150,191 @@ pub mod mystiko_v2_axelar {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `gateway` (0x116191b6) function"]
+        ///Calls the contract's `gateway` (0x116191b6) function
         pub fn gateway(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([17, 97, 145, 182], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getAssociatedCommitmentPool` (0xddac5dc1) function"]
+        ///Calls the contract's `getAssociatedCommitmentPool` (0xddac5dc1) function
         pub fn get_associated_commitment_pool(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([221, 172, 93, 193], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getMaxAmount` (0x0ba95909) function"]
+        ///Calls the contract's `getMaxAmount` (0x0ba95909) function
         pub fn get_max_amount(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([11, 169, 89, 9], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getMinAmount` (0xcfc7e2da) function"]
+        ///Calls the contract's `getMinAmount` (0xcfc7e2da) function
         pub fn get_min_amount(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([207, 199, 226, 218], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getMinBridgeFee` (0xefbfb2ae) function"]
+        ///Calls the contract's `getMinBridgeFee` (0xefbfb2ae) function
         pub fn get_min_bridge_fee(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([239, 191, 178, 174], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getMinExecutorFee` (0xf4ad17c6) function"]
+        ///Calls the contract's `getMinExecutorFee` (0xf4ad17c6) function
         pub fn get_min_executor_fee(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([244, 173, 23, 198], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getPeerMinExecutorFee` (0x5898a0a8) function"]
+        ///Calls the contract's `getPeerMinExecutorFee` (0x5898a0a8) function
         pub fn get_peer_min_executor_fee(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([88, 152, 160, 168], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getPeerMinRollupFee` (0x825b5f8d) function"]
+        ///Calls the contract's `getPeerMinRollupFee` (0x825b5f8d) function
         pub fn get_peer_min_rollup_fee(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([130, 91, 95, 141], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isDepositsDisabled` (0xed6ea33a) function"]
-        pub fn is_deposits_disabled(&self) -> ethers::contract::builders::ContractCall<M, bool> {
+        ///Calls the contract's `isDepositsDisabled` (0xed6ea33a) function
+        pub fn is_deposits_disabled(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([237, 110, 163, 58], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `peerChainId` (0xcdfceeba) function"]
-        pub fn peer_chain_id(&self) -> ethers::contract::builders::ContractCall<M, u64> {
+        ///Calls the contract's `peerChainId` (0xcdfceeba) function
+        pub fn peer_chain_id(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, u64> {
             self.0
                 .method_hash([205, 252, 238, 186], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `peerChainName` (0x4e3c10b7) function"]
-        pub fn peer_chain_name(&self) -> ethers::contract::builders::ContractCall<M, String> {
+        ///Calls the contract's `peerChainName` (0x4e3c10b7) function
+        pub fn peer_chain_name(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
             self.0
                 .method_hash([78, 60, 16, 183], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `peerContract` (0x21e32d55) function"]
+        ///Calls the contract's `peerContract` (0x21e32d55) function
         pub fn peer_contract(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([33, 227, 45, 85], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `sanctionsCheck` (0xb1c39422) function"]
-        pub fn sanctions_check(&self) -> ethers::contract::builders::ContractCall<M, bool> {
+        ///Calls the contract's `sanctionsCheck` (0xb1c39422) function
+        pub fn sanctions_check(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([177, 195, 148, 34], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `sanctionsList` (0xec571c6a) function"]
+        ///Calls the contract's `sanctionsList` (0xec571c6a) function
         pub fn sanctions_list(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([236, 87, 28, 106], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setAssociatedCommitmentPool` (0xe19abef8) function"]
+        ///Calls the contract's `setAssociatedCommitmentPool` (0xe19abef8) function
         pub fn set_associated_commitment_pool(
             &self,
-            commitment_pool_address: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            commitment_pool_address: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([225, 154, 190, 248], commitment_pool_address)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setAxelarGasReceiver` (0xdf420737) function"]
+        ///Calls the contract's `setAxelarGasReceiver` (0xdf420737) function
         pub fn set_axelar_gas_receiver(
             &self,
-            gas_receiver: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            gas_receiver: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([223, 66, 7, 55], gas_receiver)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setBridgeProxyAddress` (0xa3bc64f2) function"]
+        ///Calls the contract's `setBridgeProxyAddress` (0xa3bc64f2) function
         pub fn set_bridge_proxy_address(
             &self,
-            bridge_proxy_address: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            bridge_proxy_address: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([163, 188, 100, 242], bridge_proxy_address)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setDepositsDisabled` (0xea0cde85) function"]
+        ///Calls the contract's `setDepositsDisabled` (0xea0cde85) function
         pub fn set_deposits_disabled(
             &self,
             state: bool,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([234, 12, 222, 133], state)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setMinBridgeFee` (0x19e75d6e) function"]
+        ///Calls the contract's `setMinBridgeFee` (0x19e75d6e) function
         pub fn set_min_bridge_fee(
             &self,
-            min_bridge_fee: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            min_bridge_fee: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([25, 231, 93, 110], min_bridge_fee)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setMinExecutorFee` (0x5e10b2b7) function"]
+        ///Calls the contract's `setMinExecutorFee` (0x5e10b2b7) function
         pub fn set_min_executor_fee(
             &self,
-            min_executor_fee: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            min_executor_fee: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([94, 16, 178, 183], min_executor_fee)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setPeerContract` (0x7d2c8520) function"]
+        ///Calls the contract's `setPeerContract` (0x7d2c8520) function
         pub fn set_peer_contract(
             &self,
             peer_chain_id: u64,
-            peer_chain_name: String,
-            peer_contract: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            peer_chain_name: ::std::string::String,
+            peer_contract: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [125, 44, 133, 32],
@@ -313,393 +342,461 @@ pub mod mystiko_v2_axelar {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setPeerMinExecutorFee` (0x153dc450) function"]
+        ///Calls the contract's `setPeerMinExecutorFee` (0x153dc450) function
         pub fn set_peer_min_executor_fee(
             &self,
-            peer_min_executor_fee: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            peer_min_executor_fee: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([21, 61, 196, 80], peer_min_executor_fee)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setPeerMinRollupFee` (0x521ff057) function"]
+        ///Calls the contract's `setPeerMinRollupFee` (0x521ff057) function
         pub fn set_peer_min_rollup_fee(
             &self,
-            peer_min_rollup_fee: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            peer_min_rollup_fee: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([82, 31, 240, 87], peer_min_rollup_fee)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `updateDepositAmountLimits` (0xe8183c44) function"]
+        ///Calls the contract's `updateDepositAmountLimits` (0xe8183c44) function
         pub fn update_deposit_amount_limits(
             &self,
-            max_amount: ethers::core::types::U256,
-            min_amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            max_amount: ::ethers_core::types::U256,
+            min_amount: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([232, 24, 60, 68], (max_amount, min_amount))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `updateSanctionsListAddress` (0x30f49cac) function"]
+        ///Calls the contract's `updateSanctionsListAddress` (0x30f49cac) function
         pub fn update_sanctions_list_address(
             &self,
-            sanction: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            sanction: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([48, 244, 156, 172], sanction)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Gets the contract's `CallContractMessage` event"]
+        ///Gets the contract's `CallContractMessage` event
         pub fn call_contract_message_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, CallContractMessageFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            CallContractMessageFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `CommitmentCrossChain` event"]
+        ///Gets the contract's `CommitmentCrossChain` event
         pub fn commitment_cross_chain_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, CommitmentCrossChainFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            CommitmentCrossChainFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `DepositAmountLimits` event"]
+        ///Gets the contract's `DepositAmountLimits` event
         pub fn deposit_amount_limits_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, DepositAmountLimitsFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            DepositAmountLimitsFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `DepositsDisabled` event"]
+        ///Gets the contract's `DepositsDisabled` event
         pub fn deposits_disabled_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, DepositsDisabledFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            DepositsDisabledFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `MinBridgeFee` event"]
+        ///Gets the contract's `MinBridgeFee` event
         pub fn min_bridge_fee_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, MinBridgeFeeFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            MinBridgeFeeFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `MinExecutorFee` event"]
+        ///Gets the contract's `MinExecutorFee` event
         pub fn min_executor_fee_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, MinExecutorFeeFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            MinExecutorFeeFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `OperatorChanged` event"]
+        ///Gets the contract's `OperatorChanged` event
         pub fn operator_changed_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, OperatorChangedFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            OperatorChangedFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `PeerMinExecutorFee` event"]
+        ///Gets the contract's `PeerMinExecutorFee` event
         pub fn peer_min_executor_fee_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, PeerMinExecutorFeeFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            PeerMinExecutorFeeFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `PeerMinRollupFee` event"]
+        ///Gets the contract's `PeerMinRollupFee` event
         pub fn peer_min_rollup_fee_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, PeerMinRollupFeeFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            PeerMinRollupFeeFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `SanctionsCheck` event"]
+        ///Gets the contract's `SanctionsCheck` event
         pub fn sanctions_check_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, SanctionsCheckFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            SanctionsCheckFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `SanctionsList` event"]
+        ///Gets the contract's `SanctionsList` event
         pub fn sanctions_list_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, SanctionsListFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            SanctionsListFilter,
+        > {
             self.0.event()
         }
-        #[doc = r" Returns an [`Event`](#ethers_contract::builders::Event) builder for all events of this contract"]
-        pub fn events(&self) -> ethers::contract::builders::Event<M, MystikoV2AxelarEvents> {
-            self.0.event_with_filter(Default::default())
+        /// Returns an `Event` builder for all the events of this contract.
+        pub fn events(
+            &self,
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            MystikoV2AxelarEvents,
+        > {
+            self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for MystikoV2Axelar<M> {
-        fn from(contract: ethers::contract::Contract<M>) -> Self {
-            Self(contract)
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+    for MystikoV2Axelar<M> {
+        fn from(contract: ::ethers_contract::Contract<M>) -> Self {
+            Self::new(contract.address(), contract.client())
         }
     }
-    #[doc = "Custom Error type `AmountLessThanZero` with signature `AmountLessThanZero()` and selector `[130, 11, 241, 229]`"]
+    ///Custom Error type `AmountLessThanZero` with signature `AmountLessThanZero()` and selector `0x820bf1e5`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "AmountLessThanZero", abi = "AmountLessThanZero()")]
     pub struct AmountLessThanZero;
-    #[doc = "Custom Error type `AmountTooLarge` with signature `AmountTooLarge()` and selector `[6, 37, 4, 1]`"]
+    ///Custom Error type `AmountTooLarge` with signature `AmountTooLarge()` and selector `0x06250401`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "AmountTooLarge", abi = "AmountTooLarge()")]
     pub struct AmountTooLarge;
-    #[doc = "Custom Error type `AmountTooSmall` with signature `AmountTooSmall()` and selector `[194, 245, 98, 90]`"]
+    ///Custom Error type `AmountTooSmall` with signature `AmountTooSmall()` and selector `0xc2f5625a`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "AmountTooSmall", abi = "AmountTooSmall()")]
     pub struct AmountTooSmall;
-    #[doc = "Custom Error type `BridgeFeeTooFew` with signature `BridgeFeeTooFew()` and selector `[196, 216, 208, 13]`"]
+    ///Custom Error type `BridgeFeeTooFew` with signature `BridgeFeeTooFew()` and selector `0xc4d8d00d`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "BridgeFeeTooFew", abi = "BridgeFeeTooFew()")]
     pub struct BridgeFeeTooFew;
-    #[doc = "Custom Error type `CommitmentHashIncorrect` with signature `CommitmentHashIncorrect()` and selector `[55, 245, 68, 160]`"]
+    ///Custom Error type `CommitmentHashIncorrect` with signature `CommitmentHashIncorrect()` and selector `0x37f544a0`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "CommitmentHashIncorrect", abi = "CommitmentHashIncorrect()")]
     pub struct CommitmentHashIncorrect;
-    #[doc = "Custom Error type `DepositsDisabled` with signature `DepositsDisabled()` and selector `[113, 122, 22, 72]`"]
+    ///Custom Error type `DepositsDisabled` with signature `DepositsDisabled()` and selector `0x717a1648`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "DepositsDisabled", abi = "DepositsDisabled()")]
     pub struct DepositsDisabled;
-    #[doc = "Custom Error type `ExecutorFeeTooFew` with signature `ExecutorFeeTooFew()` and selector `[171, 77, 173, 66]`"]
+    ///Custom Error type `ExecutorFeeTooFew` with signature `ExecutorFeeTooFew()` and selector `0xab4dad42`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "ExecutorFeeTooFew", abi = "ExecutorFeeTooFew()")]
     pub struct ExecutorFeeTooFew;
-    #[doc = "Custom Error type `FromChainIdNotMatched` with signature `FromChainIdNotMatched()` and selector `[225, 216, 193, 60]`"]
+    ///Custom Error type `FromChainIdNotMatched` with signature `FromChainIdNotMatched()` and selector `0xe1d8c13c`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "FromChainIdNotMatched", abi = "FromChainIdNotMatched()")]
     pub struct FromChainIdNotMatched;
-    #[doc = "Custom Error type `FromProxyAddressNotMatched` with signature `FromProxyAddressNotMatched()` and selector `[40, 129, 192, 242]`"]
+    ///Custom Error type `FromProxyAddressNotMatched` with signature `FromProxyAddressNotMatched()` and selector `0x2881c0f2`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(
         name = "FromProxyAddressNotMatched",
         abi = "FromProxyAddressNotMatched()"
     )]
     pub struct FromProxyAddressNotMatched;
-    #[doc = "Custom Error type `HashKGreaterThanFieldSize` with signature `HashKGreaterThanFieldSize()` and selector `[128, 95, 42, 73]`"]
+    ///Custom Error type `HashKGreaterThanFieldSize` with signature `HashKGreaterThanFieldSize()` and selector `0x805f2a49`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
-    #[etherror(
-        name = "HashKGreaterThanFieldSize",
-        abi = "HashKGreaterThanFieldSize()"
-    )]
+    #[etherror(name = "HashKGreaterThanFieldSize", abi = "HashKGreaterThanFieldSize()")]
     pub struct HashKGreaterThanFieldSize;
-    #[doc = "Custom Error type `Invalid` with signature `Invalid(string)` and selector `[83, 162, 85, 108]`"]
+    ///Custom Error type `Invalid` with signature `Invalid(string)` and selector `0x53a2556c`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
-        pub param: String,
+        pub param: ::std::string::String,
     }
-    #[doc = "Custom Error type `MinAmountGreaterThanMaxAmount` with signature `MinAmountGreaterThanMaxAmount()` and selector `[192, 7, 208, 66]`"]
+    ///Custom Error type `MinAmountGreaterThanMaxAmount` with signature `MinAmountGreaterThanMaxAmount()` and selector `0xc007d042`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(
         name = "MinAmountGreaterThanMaxAmount",
         abi = "MinAmountGreaterThanMaxAmount()"
     )]
     pub struct MinAmountGreaterThanMaxAmount;
-    #[doc = "Custom Error type `NotApprovedByGateway` with signature `NotApprovedByGateway()` and selector `[80, 12, 68, 180]`"]
+    ///Custom Error type `NotApprovedByGateway` with signature `NotApprovedByGateway()` and selector `0x500c44b4`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "NotApprovedByGateway", abi = "NotApprovedByGateway()")]
     pub struct NotApprovedByGateway;
-    #[doc = "Custom Error type `NotChanged` with signature `NotChanged()` and selector `[54, 161, 195, 63]`"]
+    ///Custom Error type `NotChanged` with signature `NotChanged()` and selector `0x36a1c33f`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "NotChanged", abi = "NotChanged()")]
     pub struct NotChanged;
-    #[doc = "Custom Error type `OnlyOperator` with signature `OnlyOperator()` and selector `[39, 225, 241, 229]`"]
+    ///Custom Error type `OnlyOperator` with signature `OnlyOperator()` and selector `0x27e1f1e5`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
     pub struct OnlyOperator;
-    #[doc = "Custom Error type `RandomSGreaterThanFieldSize` with signature `RandomSGreaterThanFieldSize()` and selector `[238, 247, 130, 252]`"]
+    ///Custom Error type `RandomSGreaterThanFieldSize` with signature `RandomSGreaterThanFieldSize()` and selector `0xeef782fc`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(
         name = "RandomSGreaterThanFieldSize",
         abi = "RandomSGreaterThanFieldSize()"
     )]
     pub struct RandomSGreaterThanFieldSize;
-    #[doc = "Custom Error type `RollupFeeToFew` with signature `RollupFeeToFew()` and selector `[240, 158, 5, 122]`"]
+    ///Custom Error type `RollupFeeToFew` with signature `RollupFeeToFew()` and selector `0xf09e057a`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "RollupFeeToFew", abi = "RollupFeeToFew()")]
     pub struct RollupFeeToFew;
-    #[doc = "Custom Error type `SanctionedAddress` with signature `SanctionedAddress()` and selector `[46, 112, 192, 177]`"]
+    ///Custom Error type `SanctionedAddress` with signature `SanctionedAddress()` and selector `0x2e70c0b1`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "SanctionedAddress", abi = "SanctionedAddress()")]
     pub struct SanctionedAddress;
+    ///Container type for all of the contract's custom errors
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum MystikoV2AxelarErrors {
         AmountLessThanZero(AmountLessThanZero),
@@ -720,307 +817,444 @@ pub mod mystiko_v2_axelar {
         RandomSGreaterThanFieldSize(RandomSGreaterThanFieldSize),
         RollupFeeToFew(RollupFeeToFew),
         SanctionedAddress(SanctionedAddress),
+        /// The standard solidity revert string, with selector
+        /// Error(string) -- 0x08c379a0
+        RevertString(::std::string::String),
     }
-    impl ethers::core::abi::AbiDecode for MystikoV2AxelarErrors {
+    impl ::ethers_core::abi::AbiDecode for MystikoV2AxelarErrors {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <AmountLessThanZero as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::AmountLessThanZero(decoded));
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
+            if let Ok(decoded)
+                = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::RevertString(decoded));
             }
-            if let Ok(decoded) =
-                <AmountTooLarge as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::AmountTooLarge(decoded));
+            if let Ok(decoded)
+                = <AmountLessThanZero as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AmountLessThanZero(decoded));
             }
-            if let Ok(decoded) =
-                <AmountTooSmall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::AmountTooSmall(decoded));
+            if let Ok(decoded)
+                = <AmountTooLarge as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AmountTooLarge(decoded));
             }
-            if let Ok(decoded) =
-                <BridgeFeeTooFew as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::BridgeFeeTooFew(decoded));
+            if let Ok(decoded)
+                = <AmountTooSmall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AmountTooSmall(decoded));
             }
-            if let Ok(decoded) =
-                <CommitmentHashIncorrect as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::CommitmentHashIncorrect(decoded));
+            if let Ok(decoded)
+                = <BridgeFeeTooFew as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::BridgeFeeTooFew(decoded));
             }
-            if let Ok(decoded) =
-                <DepositsDisabled as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::DepositsDisabled(decoded));
+            if let Ok(decoded)
+                = <CommitmentHashIncorrect as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::CommitmentHashIncorrect(decoded));
             }
-            if let Ok(decoded) =
-                <ExecutorFeeTooFew as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::ExecutorFeeTooFew(decoded));
+            if let Ok(decoded)
+                = <DepositsDisabled as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::DepositsDisabled(decoded));
             }
-            if let Ok(decoded) =
-                <FromChainIdNotMatched as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::FromChainIdNotMatched(decoded));
+            if let Ok(decoded)
+                = <ExecutorFeeTooFew as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::ExecutorFeeTooFew(decoded));
             }
-            if let Ok(decoded) =
-                <FromProxyAddressNotMatched as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::FromProxyAddressNotMatched(decoded));
+            if let Ok(decoded)
+                = <FromChainIdNotMatched as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::FromChainIdNotMatched(decoded));
             }
-            if let Ok(decoded) =
-                <HashKGreaterThanFieldSize as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::HashKGreaterThanFieldSize(decoded));
+            if let Ok(decoded)
+                = <FromProxyAddressNotMatched as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::FromProxyAddressNotMatched(decoded));
             }
-            if let Ok(decoded) = <Invalid as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
-                return Ok(MystikoV2AxelarErrors::Invalid(decoded));
+            if let Ok(decoded)
+                = <HashKGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::HashKGreaterThanFieldSize(decoded));
             }
-            if let Ok(decoded) =
-                <MinAmountGreaterThanMaxAmount as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(MystikoV2AxelarErrors::MinAmountGreaterThanMaxAmount(
-                    decoded,
-                ));
+            if let Ok(decoded)
+                = <Invalid as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Invalid(decoded));
             }
-            if let Ok(decoded) =
-                <NotApprovedByGateway as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::NotApprovedByGateway(decoded));
+            if let Ok(decoded)
+                = <MinAmountGreaterThanMaxAmount as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::MinAmountGreaterThanMaxAmount(decoded));
             }
-            if let Ok(decoded) = <NotChanged as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::NotChanged(decoded));
+            if let Ok(decoded)
+                = <NotApprovedByGateway as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::NotApprovedByGateway(decoded));
             }
-            if let Ok(decoded) =
-                <OnlyOperator as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::OnlyOperator(decoded));
+            if let Ok(decoded)
+                = <NotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::NotChanged(decoded));
             }
-            if let Ok(decoded) =
-                <RandomSGreaterThanFieldSize as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::RandomSGreaterThanFieldSize(decoded));
+            if let Ok(decoded)
+                = <OnlyOperator as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::OnlyOperator(decoded));
             }
-            if let Ok(decoded) =
-                <RollupFeeToFew as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::RollupFeeToFew(decoded));
+            if let Ok(decoded)
+                = <RandomSGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::RandomSGreaterThanFieldSize(decoded));
             }
-            if let Ok(decoded) =
-                <SanctionedAddress as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarErrors::SanctionedAddress(decoded));
+            if let Ok(decoded)
+                = <RollupFeeToFew as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::RollupFeeToFew(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            if let Ok(decoded)
+                = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SanctionedAddress(decoded));
+            }
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for MystikoV2AxelarErrors {
-        fn encode(self) -> Vec<u8> {
+    impl ::ethers_core::abi::AbiEncode for MystikoV2AxelarErrors {
+        fn encode(self) -> ::std::vec::Vec<u8> {
             match self {
-                MystikoV2AxelarErrors::AmountLessThanZero(element) => element.encode(),
-                MystikoV2AxelarErrors::AmountTooLarge(element) => element.encode(),
-                MystikoV2AxelarErrors::AmountTooSmall(element) => element.encode(),
-                MystikoV2AxelarErrors::BridgeFeeTooFew(element) => element.encode(),
-                MystikoV2AxelarErrors::CommitmentHashIncorrect(element) => element.encode(),
-                MystikoV2AxelarErrors::DepositsDisabled(element) => element.encode(),
-                MystikoV2AxelarErrors::ExecutorFeeTooFew(element) => element.encode(),
-                MystikoV2AxelarErrors::FromChainIdNotMatched(element) => element.encode(),
-                MystikoV2AxelarErrors::FromProxyAddressNotMatched(element) => element.encode(),
-                MystikoV2AxelarErrors::HashKGreaterThanFieldSize(element) => element.encode(),
-                MystikoV2AxelarErrors::Invalid(element) => element.encode(),
-                MystikoV2AxelarErrors::MinAmountGreaterThanMaxAmount(element) => element.encode(),
-                MystikoV2AxelarErrors::NotApprovedByGateway(element) => element.encode(),
-                MystikoV2AxelarErrors::NotChanged(element) => element.encode(),
-                MystikoV2AxelarErrors::OnlyOperator(element) => element.encode(),
-                MystikoV2AxelarErrors::RandomSGreaterThanFieldSize(element) => element.encode(),
-                MystikoV2AxelarErrors::RollupFeeToFew(element) => element.encode(),
-                MystikoV2AxelarErrors::SanctionedAddress(element) => element.encode(),
+                Self::AmountLessThanZero(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AmountTooLarge(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AmountTooSmall(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::BridgeFeeTooFew(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::CommitmentHashIncorrect(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::DepositsDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ExecutorFeeTooFew(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::FromChainIdNotMatched(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::FromProxyAddressNotMatched(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::HashKGreaterThanFieldSize(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Invalid(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::MinAmountGreaterThanMaxAmount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::NotApprovedByGateway(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::NotChanged(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::OnlyOperator(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RandomSGreaterThanFieldSize(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RollupFeeToFew(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SanctionedAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RevertString(s) => ::ethers_core::abi::AbiEncode::encode(s),
             }
         }
     }
-    impl ::std::fmt::Display for MystikoV2AxelarErrors {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::ethers_contract::ContractRevert for MystikoV2AxelarErrors {
+        fn valid_selector(selector: [u8; 4]) -> bool {
+            match selector {
+                [0x08, 0xc3, 0x79, 0xa0] => true,
+                _ if selector
+                    == <AmountLessThanZero as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <AmountTooLarge as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <AmountTooSmall as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <BridgeFeeTooFew as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <CommitmentHashIncorrect as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <DepositsDisabled as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <ExecutorFeeTooFew as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <FromChainIdNotMatched as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <FromProxyAddressNotMatched as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <HashKGreaterThanFieldSize as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <Invalid as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <MinAmountGreaterThanMaxAmount as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <NotApprovedByGateway as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <NotChanged as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <OnlyOperator as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <RandomSGreaterThanFieldSize as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <RollupFeeToFew as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <SanctionedAddress as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ => false,
+            }
+        }
+    }
+    impl ::core::fmt::Display for MystikoV2AxelarErrors {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                MystikoV2AxelarErrors::AmountLessThanZero(element) => element.fmt(f),
-                MystikoV2AxelarErrors::AmountTooLarge(element) => element.fmt(f),
-                MystikoV2AxelarErrors::AmountTooSmall(element) => element.fmt(f),
-                MystikoV2AxelarErrors::BridgeFeeTooFew(element) => element.fmt(f),
-                MystikoV2AxelarErrors::CommitmentHashIncorrect(element) => element.fmt(f),
-                MystikoV2AxelarErrors::DepositsDisabled(element) => element.fmt(f),
-                MystikoV2AxelarErrors::ExecutorFeeTooFew(element) => element.fmt(f),
-                MystikoV2AxelarErrors::FromChainIdNotMatched(element) => element.fmt(f),
-                MystikoV2AxelarErrors::FromProxyAddressNotMatched(element) => element.fmt(f),
-                MystikoV2AxelarErrors::HashKGreaterThanFieldSize(element) => element.fmt(f),
-                MystikoV2AxelarErrors::Invalid(element) => element.fmt(f),
-                MystikoV2AxelarErrors::MinAmountGreaterThanMaxAmount(element) => element.fmt(f),
-                MystikoV2AxelarErrors::NotApprovedByGateway(element) => element.fmt(f),
-                MystikoV2AxelarErrors::NotChanged(element) => element.fmt(f),
-                MystikoV2AxelarErrors::OnlyOperator(element) => element.fmt(f),
-                MystikoV2AxelarErrors::RandomSGreaterThanFieldSize(element) => element.fmt(f),
-                MystikoV2AxelarErrors::RollupFeeToFew(element) => element.fmt(f),
-                MystikoV2AxelarErrors::SanctionedAddress(element) => element.fmt(f),
+                Self::AmountLessThanZero(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::AmountTooLarge(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AmountTooSmall(element) => ::core::fmt::Display::fmt(element, f),
+                Self::BridgeFeeTooFew(element) => ::core::fmt::Display::fmt(element, f),
+                Self::CommitmentHashIncorrect(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::DepositsDisabled(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ExecutorFeeTooFew(element) => ::core::fmt::Display::fmt(element, f),
+                Self::FromChainIdNotMatched(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::FromProxyAddressNotMatched(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::HashKGreaterThanFieldSize(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::Invalid(element) => ::core::fmt::Display::fmt(element, f),
+                Self::MinAmountGreaterThanMaxAmount(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::NotApprovedByGateway(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::NotChanged(element) => ::core::fmt::Display::fmt(element, f),
+                Self::OnlyOperator(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RandomSGreaterThanFieldSize(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::RollupFeeToFew(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionedAddress(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RevertString(s) => ::core::fmt::Display::fmt(s, f),
             }
         }
     }
-    impl ::std::convert::From<AmountLessThanZero> for MystikoV2AxelarErrors {
-        fn from(var: AmountLessThanZero) -> Self {
-            MystikoV2AxelarErrors::AmountLessThanZero(var)
+    impl ::core::convert::From<::std::string::String> for MystikoV2AxelarErrors {
+        fn from(value: String) -> Self {
+            Self::RevertString(value)
         }
     }
-    impl ::std::convert::From<AmountTooLarge> for MystikoV2AxelarErrors {
-        fn from(var: AmountTooLarge) -> Self {
-            MystikoV2AxelarErrors::AmountTooLarge(var)
+    impl ::core::convert::From<AmountLessThanZero> for MystikoV2AxelarErrors {
+        fn from(value: AmountLessThanZero) -> Self {
+            Self::AmountLessThanZero(value)
         }
     }
-    impl ::std::convert::From<AmountTooSmall> for MystikoV2AxelarErrors {
-        fn from(var: AmountTooSmall) -> Self {
-            MystikoV2AxelarErrors::AmountTooSmall(var)
+    impl ::core::convert::From<AmountTooLarge> for MystikoV2AxelarErrors {
+        fn from(value: AmountTooLarge) -> Self {
+            Self::AmountTooLarge(value)
         }
     }
-    impl ::std::convert::From<BridgeFeeTooFew> for MystikoV2AxelarErrors {
-        fn from(var: BridgeFeeTooFew) -> Self {
-            MystikoV2AxelarErrors::BridgeFeeTooFew(var)
+    impl ::core::convert::From<AmountTooSmall> for MystikoV2AxelarErrors {
+        fn from(value: AmountTooSmall) -> Self {
+            Self::AmountTooSmall(value)
         }
     }
-    impl ::std::convert::From<CommitmentHashIncorrect> for MystikoV2AxelarErrors {
-        fn from(var: CommitmentHashIncorrect) -> Self {
-            MystikoV2AxelarErrors::CommitmentHashIncorrect(var)
+    impl ::core::convert::From<BridgeFeeTooFew> for MystikoV2AxelarErrors {
+        fn from(value: BridgeFeeTooFew) -> Self {
+            Self::BridgeFeeTooFew(value)
         }
     }
-    impl ::std::convert::From<DepositsDisabled> for MystikoV2AxelarErrors {
-        fn from(var: DepositsDisabled) -> Self {
-            MystikoV2AxelarErrors::DepositsDisabled(var)
+    impl ::core::convert::From<CommitmentHashIncorrect> for MystikoV2AxelarErrors {
+        fn from(value: CommitmentHashIncorrect) -> Self {
+            Self::CommitmentHashIncorrect(value)
         }
     }
-    impl ::std::convert::From<ExecutorFeeTooFew> for MystikoV2AxelarErrors {
-        fn from(var: ExecutorFeeTooFew) -> Self {
-            MystikoV2AxelarErrors::ExecutorFeeTooFew(var)
+    impl ::core::convert::From<DepositsDisabled> for MystikoV2AxelarErrors {
+        fn from(value: DepositsDisabled) -> Self {
+            Self::DepositsDisabled(value)
         }
     }
-    impl ::std::convert::From<FromChainIdNotMatched> for MystikoV2AxelarErrors {
-        fn from(var: FromChainIdNotMatched) -> Self {
-            MystikoV2AxelarErrors::FromChainIdNotMatched(var)
+    impl ::core::convert::From<ExecutorFeeTooFew> for MystikoV2AxelarErrors {
+        fn from(value: ExecutorFeeTooFew) -> Self {
+            Self::ExecutorFeeTooFew(value)
         }
     }
-    impl ::std::convert::From<FromProxyAddressNotMatched> for MystikoV2AxelarErrors {
-        fn from(var: FromProxyAddressNotMatched) -> Self {
-            MystikoV2AxelarErrors::FromProxyAddressNotMatched(var)
+    impl ::core::convert::From<FromChainIdNotMatched> for MystikoV2AxelarErrors {
+        fn from(value: FromChainIdNotMatched) -> Self {
+            Self::FromChainIdNotMatched(value)
         }
     }
-    impl ::std::convert::From<HashKGreaterThanFieldSize> for MystikoV2AxelarErrors {
-        fn from(var: HashKGreaterThanFieldSize) -> Self {
-            MystikoV2AxelarErrors::HashKGreaterThanFieldSize(var)
+    impl ::core::convert::From<FromProxyAddressNotMatched> for MystikoV2AxelarErrors {
+        fn from(value: FromProxyAddressNotMatched) -> Self {
+            Self::FromProxyAddressNotMatched(value)
         }
     }
-    impl ::std::convert::From<Invalid> for MystikoV2AxelarErrors {
-        fn from(var: Invalid) -> Self {
-            MystikoV2AxelarErrors::Invalid(var)
+    impl ::core::convert::From<HashKGreaterThanFieldSize> for MystikoV2AxelarErrors {
+        fn from(value: HashKGreaterThanFieldSize) -> Self {
+            Self::HashKGreaterThanFieldSize(value)
         }
     }
-    impl ::std::convert::From<MinAmountGreaterThanMaxAmount> for MystikoV2AxelarErrors {
-        fn from(var: MinAmountGreaterThanMaxAmount) -> Self {
-            MystikoV2AxelarErrors::MinAmountGreaterThanMaxAmount(var)
+    impl ::core::convert::From<Invalid> for MystikoV2AxelarErrors {
+        fn from(value: Invalid) -> Self {
+            Self::Invalid(value)
         }
     }
-    impl ::std::convert::From<NotApprovedByGateway> for MystikoV2AxelarErrors {
-        fn from(var: NotApprovedByGateway) -> Self {
-            MystikoV2AxelarErrors::NotApprovedByGateway(var)
+    impl ::core::convert::From<MinAmountGreaterThanMaxAmount> for MystikoV2AxelarErrors {
+        fn from(value: MinAmountGreaterThanMaxAmount) -> Self {
+            Self::MinAmountGreaterThanMaxAmount(value)
         }
     }
-    impl ::std::convert::From<NotChanged> for MystikoV2AxelarErrors {
-        fn from(var: NotChanged) -> Self {
-            MystikoV2AxelarErrors::NotChanged(var)
+    impl ::core::convert::From<NotApprovedByGateway> for MystikoV2AxelarErrors {
+        fn from(value: NotApprovedByGateway) -> Self {
+            Self::NotApprovedByGateway(value)
         }
     }
-    impl ::std::convert::From<OnlyOperator> for MystikoV2AxelarErrors {
-        fn from(var: OnlyOperator) -> Self {
-            MystikoV2AxelarErrors::OnlyOperator(var)
+    impl ::core::convert::From<NotChanged> for MystikoV2AxelarErrors {
+        fn from(value: NotChanged) -> Self {
+            Self::NotChanged(value)
         }
     }
-    impl ::std::convert::From<RandomSGreaterThanFieldSize> for MystikoV2AxelarErrors {
-        fn from(var: RandomSGreaterThanFieldSize) -> Self {
-            MystikoV2AxelarErrors::RandomSGreaterThanFieldSize(var)
+    impl ::core::convert::From<OnlyOperator> for MystikoV2AxelarErrors {
+        fn from(value: OnlyOperator) -> Self {
+            Self::OnlyOperator(value)
         }
     }
-    impl ::std::convert::From<RollupFeeToFew> for MystikoV2AxelarErrors {
-        fn from(var: RollupFeeToFew) -> Self {
-            MystikoV2AxelarErrors::RollupFeeToFew(var)
+    impl ::core::convert::From<RandomSGreaterThanFieldSize> for MystikoV2AxelarErrors {
+        fn from(value: RandomSGreaterThanFieldSize) -> Self {
+            Self::RandomSGreaterThanFieldSize(value)
         }
     }
-    impl ::std::convert::From<SanctionedAddress> for MystikoV2AxelarErrors {
-        fn from(var: SanctionedAddress) -> Self {
-            MystikoV2AxelarErrors::SanctionedAddress(var)
+    impl ::core::convert::From<RollupFeeToFew> for MystikoV2AxelarErrors {
+        fn from(value: RollupFeeToFew) -> Self {
+            Self::RollupFeeToFew(value)
+        }
+    }
+    impl ::core::convert::From<SanctionedAddress> for MystikoV2AxelarErrors {
+        fn from(value: SanctionedAddress) -> Self {
+            Self::SanctionedAddress(value)
         }
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    #[ethevent(
-        name = "CallContractMessage",
-        abi = "CallContractMessage(string,string)"
-    )]
+    #[ethevent(name = "CallContractMessage", abi = "CallContractMessage(string,string)")]
     pub struct CallContractMessageFilter {
-        pub peer_chain_name: String,
-        pub destination_address: String,
+        pub peer_chain_name: ::std::string::String,
+        pub destination_address: ::std::string::String,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "CommitmentCrossChain", abi = "CommitmentCrossChain(uint256)")]
     pub struct CommitmentCrossChainFilter {
         #[ethevent(indexed)]
-        pub commitment: ethers::core::types::U256,
+        pub commitment: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(
         name = "DepositAmountLimits",
         abi = "DepositAmountLimits(uint256,uint256)"
     )]
     pub struct DepositAmountLimitsFilter {
-        pub max_amount: ethers::core::types::U256,
-        pub min_amount: ethers::core::types::U256,
+        pub max_amount: ::ethers_core::types::U256,
+        pub min_amount: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "DepositsDisabled", abi = "DepositsDisabled(bool)")]
     pub struct DepositsDisabledFilter {
@@ -1028,90 +1262,96 @@ pub mod mystiko_v2_axelar {
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "MinBridgeFee", abi = "MinBridgeFee(uint256)")]
     pub struct MinBridgeFeeFilter {
-        pub min_bridge_fee: ethers::core::types::U256,
+        pub min_bridge_fee: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "MinExecutorFee", abi = "MinExecutorFee(uint256)")]
     pub struct MinExecutorFeeFilter {
-        pub min_executor_fee: ethers::core::types::U256,
+        pub min_executor_fee: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "OperatorChanged", abi = "OperatorChanged(address)")]
     pub struct OperatorChangedFilter {
         #[ethevent(indexed)]
-        pub operator: ethers::core::types::Address,
+        pub operator: ::ethers_core::types::Address,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "PeerMinExecutorFee", abi = "PeerMinExecutorFee(uint256)")]
     pub struct PeerMinExecutorFeeFilter {
-        pub peer_min_executor_fee: ethers::core::types::U256,
+        pub peer_min_executor_fee: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "PeerMinRollupFee", abi = "PeerMinRollupFee(uint256)")]
     pub struct PeerMinRollupFeeFilter {
-        pub peer_min_rollup_fee: ethers::core::types::U256,
+        pub peer_min_rollup_fee: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
     pub struct SanctionsCheckFilter {
@@ -1119,27 +1359,30 @@ pub mod mystiko_v2_axelar {
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
     pub struct SanctionsListFilter {
-        pub sanctions: ethers::core::types::Address,
+        pub sanctions: ::ethers_core::types::Address,
     }
+    ///Container type for all of the contract's events
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum MystikoV2AxelarEvents {
         CallContractMessageFilter(CallContractMessageFilter),
@@ -1154,13 +1397,10 @@ pub mod mystiko_v2_axelar {
         SanctionsCheckFilter(SanctionsCheckFilter),
         SanctionsListFilter(SanctionsListFilter),
     }
-    impl ethers::contract::EthLogDecode for MystikoV2AxelarEvents {
+    impl ::ethers_contract::EthLogDecode for MystikoV2AxelarEvents {
         fn decode_log(
-            log: &ethers::core::abi::RawLog,
-        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
-        where
-            Self: Sized,
-        {
+            log: &::ethers_core::abi::RawLog,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = CallContractMessageFilter::decode_log(log) {
                 return Ok(MystikoV2AxelarEvents::CallContractMessageFilter(decoded));
             }
@@ -1194,95 +1434,177 @@ pub mod mystiko_v2_axelar {
             if let Ok(decoded) = SanctionsListFilter::decode_log(log) {
                 return Ok(MystikoV2AxelarEvents::SanctionsListFilter(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData)
+            Err(::ethers_core::abi::Error::InvalidData)
         }
     }
-    impl ::std::fmt::Display for MystikoV2AxelarEvents {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for MystikoV2AxelarEvents {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                MystikoV2AxelarEvents::CallContractMessageFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::CommitmentCrossChainFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::DepositAmountLimitsFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::DepositsDisabledFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::MinBridgeFeeFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::MinExecutorFeeFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::OperatorChangedFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::PeerMinExecutorFeeFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::PeerMinRollupFeeFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::SanctionsCheckFilter(element) => element.fmt(f),
-                MystikoV2AxelarEvents::SanctionsListFilter(element) => element.fmt(f),
+                Self::CallContractMessageFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::CommitmentCrossChainFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::DepositAmountLimitsFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::DepositsDisabledFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::MinBridgeFeeFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::MinExecutorFeeFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::OperatorChangedFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::PeerMinExecutorFeeFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::PeerMinRollupFeeFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SanctionsCheckFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SanctionsListFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
             }
         }
     }
-    #[doc = "Container type for all input parameters for the `assetType` function with signature `assetType()` and selector `[63, 227, 52, 122]`"]
+    impl ::core::convert::From<CallContractMessageFilter> for MystikoV2AxelarEvents {
+        fn from(value: CallContractMessageFilter) -> Self {
+            Self::CallContractMessageFilter(value)
+        }
+    }
+    impl ::core::convert::From<CommitmentCrossChainFilter> for MystikoV2AxelarEvents {
+        fn from(value: CommitmentCrossChainFilter) -> Self {
+            Self::CommitmentCrossChainFilter(value)
+        }
+    }
+    impl ::core::convert::From<DepositAmountLimitsFilter> for MystikoV2AxelarEvents {
+        fn from(value: DepositAmountLimitsFilter) -> Self {
+            Self::DepositAmountLimitsFilter(value)
+        }
+    }
+    impl ::core::convert::From<DepositsDisabledFilter> for MystikoV2AxelarEvents {
+        fn from(value: DepositsDisabledFilter) -> Self {
+            Self::DepositsDisabledFilter(value)
+        }
+    }
+    impl ::core::convert::From<MinBridgeFeeFilter> for MystikoV2AxelarEvents {
+        fn from(value: MinBridgeFeeFilter) -> Self {
+            Self::MinBridgeFeeFilter(value)
+        }
+    }
+    impl ::core::convert::From<MinExecutorFeeFilter> for MystikoV2AxelarEvents {
+        fn from(value: MinExecutorFeeFilter) -> Self {
+            Self::MinExecutorFeeFilter(value)
+        }
+    }
+    impl ::core::convert::From<OperatorChangedFilter> for MystikoV2AxelarEvents {
+        fn from(value: OperatorChangedFilter) -> Self {
+            Self::OperatorChangedFilter(value)
+        }
+    }
+    impl ::core::convert::From<PeerMinExecutorFeeFilter> for MystikoV2AxelarEvents {
+        fn from(value: PeerMinExecutorFeeFilter) -> Self {
+            Self::PeerMinExecutorFeeFilter(value)
+        }
+    }
+    impl ::core::convert::From<PeerMinRollupFeeFilter> for MystikoV2AxelarEvents {
+        fn from(value: PeerMinRollupFeeFilter) -> Self {
+            Self::PeerMinRollupFeeFilter(value)
+        }
+    }
+    impl ::core::convert::From<SanctionsCheckFilter> for MystikoV2AxelarEvents {
+        fn from(value: SanctionsCheckFilter) -> Self {
+            Self::SanctionsCheckFilter(value)
+        }
+    }
+    impl ::core::convert::From<SanctionsListFilter> for MystikoV2AxelarEvents {
+        fn from(value: SanctionsListFilter) -> Self {
+            Self::SanctionsListFilter(value)
+        }
+    }
+    ///Container type for all input parameters for the `assetType` function with signature `assetType()` and selector `0x3fe3347a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "assetType", abi = "assetType()")]
     pub struct AssetTypeCall;
-    #[doc = "Container type for all input parameters for the `bridgeProxyAddress` function with signature `bridgeProxyAddress()` and selector `[44, 210, 109, 69]`"]
+    ///Container type for all input parameters for the `bridgeProxyAddress` function with signature `bridgeProxyAddress()` and selector `0x2cd26d45`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "bridgeProxyAddress", abi = "bridgeProxyAddress()")]
     pub struct BridgeProxyAddressCall;
-    #[doc = "Container type for all input parameters for the `bridgeType` function with signature `bridgeType()` and selector `[36, 33, 225, 85]`"]
+    ///Container type for all input parameters for the `bridgeType` function with signature `bridgeType()` and selector `0x2421e155`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "bridgeType", abi = "bridgeType()")]
     pub struct BridgeTypeCall;
-    #[doc = "Container type for all input parameters for the `changeOperator` function with signature `changeOperator(address)` and selector `[6, 57, 76, 155]`"]
+    ///Container type for all input parameters for the `changeOperator` function with signature `changeOperator(address)` and selector `0x06394c9b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
     pub struct ChangeOperatorCall {
-        pub new_operator: ethers::core::types::Address,
+        pub new_operator: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `deposit` function with signature `deposit((uint256,uint256,uint256,uint128,bytes,uint256,uint256,uint256))` and selector `[154, 3, 99, 108]`"]
+    ///Container type for all input parameters for the `deposit` function with signature `deposit((uint256,uint256,uint256,uint128,bytes,uint256,uint256,uint256))` and selector `0x9a03636c`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "deposit",
@@ -1291,64 +1613,68 @@ pub mod mystiko_v2_axelar {
     pub struct DepositCall {
         pub request: DepositRequest,
     }
-    #[doc = "Container type for all input parameters for the `disableSanctionsCheck` function with signature `disableSanctionsCheck()` and selector `[221, 117, 124, 52]`"]
+    ///Container type for all input parameters for the `disableSanctionsCheck` function with signature `disableSanctionsCheck()` and selector `0xdd757c34`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "disableSanctionsCheck", abi = "disableSanctionsCheck()")]
     pub struct DisableSanctionsCheckCall;
-    #[doc = "Container type for all input parameters for the `enableSanctionsCheck` function with signature `enableSanctionsCheck()` and selector `[1, 219, 241, 159]`"]
+    ///Container type for all input parameters for the `enableSanctionsCheck` function with signature `enableSanctionsCheck()` and selector `0x01dbf19f`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "enableSanctionsCheck", abi = "enableSanctionsCheck()")]
     pub struct EnableSanctionsCheckCall;
-    #[doc = "Container type for all input parameters for the `execute` function with signature `execute(bytes32,string,string,bytes)` and selector `[73, 22, 6, 88]`"]
+    ///Container type for all input parameters for the `execute` function with signature `execute(bytes32,string,string,bytes)` and selector `0x49160658`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "execute", abi = "execute(bytes32,string,string,bytes)")]
     pub struct ExecuteCall {
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
-        pub payload: ethers::core::types::Bytes,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
+        pub payload: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `executeWithToken` function with signature `executeWithToken(bytes32,string,string,bytes,string,uint256)` and selector `[26, 152, 178, 224]`"]
+    ///Container type for all input parameters for the `executeWithToken` function with signature `executeWithToken(bytes32,string,string,bytes,string,uint256)` and selector `0x1a98b2e0`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "executeWithToken",
@@ -1356,410 +1682,434 @@ pub mod mystiko_v2_axelar {
     )]
     pub struct ExecuteWithTokenCall {
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
-        pub payload: ethers::core::types::Bytes,
-        pub token_symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
+        pub payload: ::ethers_core::types::Bytes,
+        pub token_symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `gateway` function with signature `gateway()` and selector `[17, 97, 145, 182]`"]
+    ///Container type for all input parameters for the `gateway` function with signature `gateway()` and selector `0x116191b6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "gateway", abi = "gateway()")]
     pub struct GatewayCall;
-    #[doc = "Container type for all input parameters for the `getAssociatedCommitmentPool` function with signature `getAssociatedCommitmentPool()` and selector `[221, 172, 93, 193]`"]
+    ///Container type for all input parameters for the `getAssociatedCommitmentPool` function with signature `getAssociatedCommitmentPool()` and selector `0xddac5dc1`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "getAssociatedCommitmentPool",
         abi = "getAssociatedCommitmentPool()"
     )]
     pub struct GetAssociatedCommitmentPoolCall;
-    #[doc = "Container type for all input parameters for the `getMaxAmount` function with signature `getMaxAmount()` and selector `[11, 169, 89, 9]`"]
+    ///Container type for all input parameters for the `getMaxAmount` function with signature `getMaxAmount()` and selector `0x0ba95909`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getMaxAmount", abi = "getMaxAmount()")]
     pub struct GetMaxAmountCall;
-    #[doc = "Container type for all input parameters for the `getMinAmount` function with signature `getMinAmount()` and selector `[207, 199, 226, 218]`"]
+    ///Container type for all input parameters for the `getMinAmount` function with signature `getMinAmount()` and selector `0xcfc7e2da`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getMinAmount", abi = "getMinAmount()")]
     pub struct GetMinAmountCall;
-    #[doc = "Container type for all input parameters for the `getMinBridgeFee` function with signature `getMinBridgeFee()` and selector `[239, 191, 178, 174]`"]
+    ///Container type for all input parameters for the `getMinBridgeFee` function with signature `getMinBridgeFee()` and selector `0xefbfb2ae`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getMinBridgeFee", abi = "getMinBridgeFee()")]
     pub struct GetMinBridgeFeeCall;
-    #[doc = "Container type for all input parameters for the `getMinExecutorFee` function with signature `getMinExecutorFee()` and selector `[244, 173, 23, 198]`"]
+    ///Container type for all input parameters for the `getMinExecutorFee` function with signature `getMinExecutorFee()` and selector `0xf4ad17c6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getMinExecutorFee", abi = "getMinExecutorFee()")]
     pub struct GetMinExecutorFeeCall;
-    #[doc = "Container type for all input parameters for the `getPeerMinExecutorFee` function with signature `getPeerMinExecutorFee()` and selector `[88, 152, 160, 168]`"]
+    ///Container type for all input parameters for the `getPeerMinExecutorFee` function with signature `getPeerMinExecutorFee()` and selector `0x5898a0a8`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getPeerMinExecutorFee", abi = "getPeerMinExecutorFee()")]
     pub struct GetPeerMinExecutorFeeCall;
-    #[doc = "Container type for all input parameters for the `getPeerMinRollupFee` function with signature `getPeerMinRollupFee()` and selector `[130, 91, 95, 141]`"]
+    ///Container type for all input parameters for the `getPeerMinRollupFee` function with signature `getPeerMinRollupFee()` and selector `0x825b5f8d`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getPeerMinRollupFee", abi = "getPeerMinRollupFee()")]
     pub struct GetPeerMinRollupFeeCall;
-    #[doc = "Container type for all input parameters for the `isDepositsDisabled` function with signature `isDepositsDisabled()` and selector `[237, 110, 163, 58]`"]
+    ///Container type for all input parameters for the `isDepositsDisabled` function with signature `isDepositsDisabled()` and selector `0xed6ea33a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "isDepositsDisabled", abi = "isDepositsDisabled()")]
     pub struct IsDepositsDisabledCall;
-    #[doc = "Container type for all input parameters for the `peerChainId` function with signature `peerChainId()` and selector `[205, 252, 238, 186]`"]
+    ///Container type for all input parameters for the `peerChainId` function with signature `peerChainId()` and selector `0xcdfceeba`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "peerChainId", abi = "peerChainId()")]
     pub struct PeerChainIdCall;
-    #[doc = "Container type for all input parameters for the `peerChainName` function with signature `peerChainName()` and selector `[78, 60, 16, 183]`"]
+    ///Container type for all input parameters for the `peerChainName` function with signature `peerChainName()` and selector `0x4e3c10b7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "peerChainName", abi = "peerChainName()")]
     pub struct PeerChainNameCall;
-    #[doc = "Container type for all input parameters for the `peerContract` function with signature `peerContract()` and selector `[33, 227, 45, 85]`"]
+    ///Container type for all input parameters for the `peerContract` function with signature `peerContract()` and selector `0x21e32d55`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "peerContract", abi = "peerContract()")]
     pub struct PeerContractCall;
-    #[doc = "Container type for all input parameters for the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `[177, 195, 148, 34]`"]
+    ///Container type for all input parameters for the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `0xb1c39422`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
     pub struct SanctionsCheckCall;
-    #[doc = "Container type for all input parameters for the `sanctionsList` function with signature `sanctionsList()` and selector `[236, 87, 28, 106]`"]
+    ///Container type for all input parameters for the `sanctionsList` function with signature `sanctionsList()` and selector `0xec571c6a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
     pub struct SanctionsListCall;
-    #[doc = "Container type for all input parameters for the `setAssociatedCommitmentPool` function with signature `setAssociatedCommitmentPool(address)` and selector `[225, 154, 190, 248]`"]
+    ///Container type for all input parameters for the `setAssociatedCommitmentPool` function with signature `setAssociatedCommitmentPool(address)` and selector `0xe19abef8`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "setAssociatedCommitmentPool",
         abi = "setAssociatedCommitmentPool(address)"
     )]
     pub struct SetAssociatedCommitmentPoolCall {
-        pub commitment_pool_address: ethers::core::types::Address,
+        pub commitment_pool_address: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `setAxelarGasReceiver` function with signature `setAxelarGasReceiver(address)` and selector `[223, 66, 7, 55]`"]
+    ///Container type for all input parameters for the `setAxelarGasReceiver` function with signature `setAxelarGasReceiver(address)` and selector `0xdf420737`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setAxelarGasReceiver", abi = "setAxelarGasReceiver(address)")]
     pub struct SetAxelarGasReceiverCall {
-        pub gas_receiver: ethers::core::types::Address,
+        pub gas_receiver: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `setBridgeProxyAddress` function with signature `setBridgeProxyAddress(address)` and selector `[163, 188, 100, 242]`"]
+    ///Container type for all input parameters for the `setBridgeProxyAddress` function with signature `setBridgeProxyAddress(address)` and selector `0xa3bc64f2`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setBridgeProxyAddress", abi = "setBridgeProxyAddress(address)")]
     pub struct SetBridgeProxyAddressCall {
-        pub bridge_proxy_address: ethers::core::types::Address,
+        pub bridge_proxy_address: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `setDepositsDisabled` function with signature `setDepositsDisabled(bool)` and selector `[234, 12, 222, 133]`"]
+    ///Container type for all input parameters for the `setDepositsDisabled` function with signature `setDepositsDisabled(bool)` and selector `0xea0cde85`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setDepositsDisabled", abi = "setDepositsDisabled(bool)")]
     pub struct SetDepositsDisabledCall {
         pub state: bool,
     }
-    #[doc = "Container type for all input parameters for the `setMinBridgeFee` function with signature `setMinBridgeFee(uint256)` and selector `[25, 231, 93, 110]`"]
+    ///Container type for all input parameters for the `setMinBridgeFee` function with signature `setMinBridgeFee(uint256)` and selector `0x19e75d6e`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setMinBridgeFee", abi = "setMinBridgeFee(uint256)")]
     pub struct SetMinBridgeFeeCall {
-        pub min_bridge_fee: ethers::core::types::U256,
+        pub min_bridge_fee: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `setMinExecutorFee` function with signature `setMinExecutorFee(uint256)` and selector `[94, 16, 178, 183]`"]
+    ///Container type for all input parameters for the `setMinExecutorFee` function with signature `setMinExecutorFee(uint256)` and selector `0x5e10b2b7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setMinExecutorFee", abi = "setMinExecutorFee(uint256)")]
     pub struct SetMinExecutorFeeCall {
-        pub min_executor_fee: ethers::core::types::U256,
+        pub min_executor_fee: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `setPeerContract` function with signature `setPeerContract(uint64,string,address)` and selector `[125, 44, 133, 32]`"]
+    ///Container type for all input parameters for the `setPeerContract` function with signature `setPeerContract(uint64,string,address)` and selector `0x7d2c8520`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    #[ethcall(
-        name = "setPeerContract",
-        abi = "setPeerContract(uint64,string,address)"
-    )]
+    #[ethcall(name = "setPeerContract", abi = "setPeerContract(uint64,string,address)")]
     pub struct SetPeerContractCall {
         pub peer_chain_id: u64,
-        pub peer_chain_name: String,
-        pub peer_contract: ethers::core::types::Address,
+        pub peer_chain_name: ::std::string::String,
+        pub peer_contract: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `setPeerMinExecutorFee` function with signature `setPeerMinExecutorFee(uint256)` and selector `[21, 61, 196, 80]`"]
+    ///Container type for all input parameters for the `setPeerMinExecutorFee` function with signature `setPeerMinExecutorFee(uint256)` and selector `0x153dc450`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setPeerMinExecutorFee", abi = "setPeerMinExecutorFee(uint256)")]
     pub struct SetPeerMinExecutorFeeCall {
-        pub peer_min_executor_fee: ethers::core::types::U256,
+        pub peer_min_executor_fee: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `setPeerMinRollupFee` function with signature `setPeerMinRollupFee(uint256)` and selector `[82, 31, 240, 87]`"]
+    ///Container type for all input parameters for the `setPeerMinRollupFee` function with signature `setPeerMinRollupFee(uint256)` and selector `0x521ff057`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setPeerMinRollupFee", abi = "setPeerMinRollupFee(uint256)")]
     pub struct SetPeerMinRollupFeeCall {
-        pub peer_min_rollup_fee: ethers::core::types::U256,
+        pub peer_min_rollup_fee: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `updateDepositAmountLimits` function with signature `updateDepositAmountLimits(uint256,uint256)` and selector `[232, 24, 60, 68]`"]
+    ///Container type for all input parameters for the `updateDepositAmountLimits` function with signature `updateDepositAmountLimits(uint256,uint256)` and selector `0xe8183c44`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "updateDepositAmountLimits",
         abi = "updateDepositAmountLimits(uint256,uint256)"
     )]
     pub struct UpdateDepositAmountLimitsCall {
-        pub max_amount: ethers::core::types::U256,
-        pub min_amount: ethers::core::types::U256,
+        pub max_amount: ::ethers_core::types::U256,
+        pub min_amount: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `updateSanctionsListAddress` function with signature `updateSanctionsListAddress(address)` and selector `[48, 244, 156, 172]`"]
+    ///Container type for all input parameters for the `updateSanctionsListAddress` function with signature `updateSanctionsListAddress(address)` and selector `0x30f49cac`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "updateSanctionsListAddress",
         abi = "updateSanctionsListAddress(address)"
     )]
     pub struct UpdateSanctionsListAddressCall {
-        pub sanction: ethers::core::types::Address,
+        pub sanction: ::ethers_core::types::Address,
     }
+    ///Container type for all of the contract's call
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum MystikoV2AxelarCalls {
         AssetType(AssetTypeCall),
@@ -1797,682 +2147,789 @@ pub mod mystiko_v2_axelar {
         UpdateDepositAmountLimits(UpdateDepositAmountLimitsCall),
         UpdateSanctionsListAddress(UpdateSanctionsListAddressCall),
     }
-    impl ethers::core::abi::AbiDecode for MystikoV2AxelarCalls {
+    impl ::ethers_core::abi::AbiDecode for MystikoV2AxelarCalls {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <AssetTypeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::AssetType(decoded));
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
+            if let Ok(decoded)
+                = <AssetTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AssetType(decoded));
             }
-            if let Ok(decoded) =
-                <BridgeProxyAddressCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::BridgeProxyAddress(decoded));
+            if let Ok(decoded)
+                = <BridgeProxyAddressCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::BridgeProxyAddress(decoded));
             }
-            if let Ok(decoded) =
-                <BridgeTypeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::BridgeType(decoded));
+            if let Ok(decoded)
+                = <BridgeTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::BridgeType(decoded));
             }
-            if let Ok(decoded) =
-                <ChangeOperatorCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::ChangeOperator(decoded));
+            if let Ok(decoded)
+                = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::ChangeOperator(decoded));
             }
-            if let Ok(decoded) =
-                <DepositCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::Deposit(decoded));
+            if let Ok(decoded)
+                = <DepositCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Deposit(decoded));
             }
-            if let Ok(decoded) =
-                <DisableSanctionsCheckCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::DisableSanctionsCheck(decoded));
+            if let Ok(decoded)
+                = <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::DisableSanctionsCheck(decoded));
             }
-            if let Ok(decoded) =
-                <EnableSanctionsCheckCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::EnableSanctionsCheck(decoded));
+            if let Ok(decoded)
+                = <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::EnableSanctionsCheck(decoded));
             }
-            if let Ok(decoded) =
-                <ExecuteCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::Execute(decoded));
+            if let Ok(decoded)
+                = <ExecuteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Execute(decoded));
             }
-            if let Ok(decoded) =
-                <ExecuteWithTokenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::ExecuteWithToken(decoded));
+            if let Ok(decoded)
+                = <ExecuteWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ExecuteWithToken(decoded));
             }
-            if let Ok(decoded) =
-                <GatewayCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::Gateway(decoded));
+            if let Ok(decoded)
+                = <GatewayCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Gateway(decoded));
             }
-            if let Ok(decoded) =
-                <GetAssociatedCommitmentPoolCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(MystikoV2AxelarCalls::GetAssociatedCommitmentPool(decoded));
+            if let Ok(decoded)
+                = <GetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::GetAssociatedCommitmentPool(decoded));
             }
-            if let Ok(decoded) =
-                <GetMaxAmountCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::GetMaxAmount(decoded));
+            if let Ok(decoded)
+                = <GetMaxAmountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::GetMaxAmount(decoded));
             }
-            if let Ok(decoded) =
-                <GetMinAmountCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::GetMinAmount(decoded));
+            if let Ok(decoded)
+                = <GetMinAmountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::GetMinAmount(decoded));
             }
-            if let Ok(decoded) =
-                <GetMinBridgeFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::GetMinBridgeFee(decoded));
+            if let Ok(decoded)
+                = <GetMinBridgeFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::GetMinBridgeFee(decoded));
             }
-            if let Ok(decoded) =
-                <GetMinExecutorFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::GetMinExecutorFee(decoded));
+            if let Ok(decoded)
+                = <GetMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::GetMinExecutorFee(decoded));
             }
-            if let Ok(decoded) =
-                <GetPeerMinExecutorFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::GetPeerMinExecutorFee(decoded));
+            if let Ok(decoded)
+                = <GetPeerMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::GetPeerMinExecutorFee(decoded));
             }
-            if let Ok(decoded) =
-                <GetPeerMinRollupFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::GetPeerMinRollupFee(decoded));
+            if let Ok(decoded)
+                = <GetPeerMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::GetPeerMinRollupFee(decoded));
             }
-            if let Ok(decoded) =
-                <IsDepositsDisabledCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::IsDepositsDisabled(decoded));
+            if let Ok(decoded)
+                = <IsDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::IsDepositsDisabled(decoded));
             }
-            if let Ok(decoded) =
-                <PeerChainIdCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::PeerChainId(decoded));
+            if let Ok(decoded)
+                = <PeerChainIdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::PeerChainId(decoded));
             }
-            if let Ok(decoded) =
-                <PeerChainNameCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::PeerChainName(decoded));
+            if let Ok(decoded)
+                = <PeerChainNameCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::PeerChainName(decoded));
             }
-            if let Ok(decoded) =
-                <PeerContractCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::PeerContract(decoded));
+            if let Ok(decoded)
+                = <PeerContractCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::PeerContract(decoded));
             }
-            if let Ok(decoded) =
-                <SanctionsCheckCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SanctionsCheck(decoded));
+            if let Ok(decoded)
+                = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SanctionsCheck(decoded));
             }
-            if let Ok(decoded) =
-                <SanctionsListCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SanctionsList(decoded));
+            if let Ok(decoded)
+                = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SanctionsList(decoded));
             }
-            if let Ok(decoded) =
-                <SetAssociatedCommitmentPoolCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(MystikoV2AxelarCalls::SetAssociatedCommitmentPool(decoded));
+            if let Ok(decoded)
+                = <SetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetAssociatedCommitmentPool(decoded));
             }
-            if let Ok(decoded) =
-                <SetAxelarGasReceiverCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetAxelarGasReceiver(decoded));
+            if let Ok(decoded)
+                = <SetAxelarGasReceiverCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetAxelarGasReceiver(decoded));
             }
-            if let Ok(decoded) =
-                <SetBridgeProxyAddressCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetBridgeProxyAddress(decoded));
+            if let Ok(decoded)
+                = <SetBridgeProxyAddressCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetBridgeProxyAddress(decoded));
             }
-            if let Ok(decoded) =
-                <SetDepositsDisabledCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetDepositsDisabled(decoded));
+            if let Ok(decoded)
+                = <SetDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetDepositsDisabled(decoded));
             }
-            if let Ok(decoded) =
-                <SetMinBridgeFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetMinBridgeFee(decoded));
+            if let Ok(decoded)
+                = <SetMinBridgeFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SetMinBridgeFee(decoded));
             }
-            if let Ok(decoded) =
-                <SetMinExecutorFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetMinExecutorFee(decoded));
+            if let Ok(decoded)
+                = <SetMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetMinExecutorFee(decoded));
             }
-            if let Ok(decoded) =
-                <SetPeerContractCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetPeerContract(decoded));
+            if let Ok(decoded)
+                = <SetPeerContractCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SetPeerContract(decoded));
             }
-            if let Ok(decoded) =
-                <SetPeerMinExecutorFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetPeerMinExecutorFee(decoded));
+            if let Ok(decoded)
+                = <SetPeerMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetPeerMinExecutorFee(decoded));
             }
-            if let Ok(decoded) =
-                <SetPeerMinRollupFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(MystikoV2AxelarCalls::SetPeerMinRollupFee(decoded));
+            if let Ok(decoded)
+                = <SetPeerMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetPeerMinRollupFee(decoded));
             }
-            if let Ok(decoded) =
-                <UpdateDepositAmountLimitsCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(MystikoV2AxelarCalls::UpdateDepositAmountLimits(decoded));
+            if let Ok(decoded)
+                = <UpdateDepositAmountLimitsCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::UpdateDepositAmountLimits(decoded));
             }
-            if let Ok(decoded) =
-                <UpdateSanctionsListAddressCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(MystikoV2AxelarCalls::UpdateSanctionsListAddress(decoded));
+            if let Ok(decoded)
+                = <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::UpdateSanctionsListAddress(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for MystikoV2AxelarCalls {
+    impl ::ethers_core::abi::AbiEncode for MystikoV2AxelarCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                MystikoV2AxelarCalls::AssetType(element) => element.encode(),
-                MystikoV2AxelarCalls::BridgeProxyAddress(element) => element.encode(),
-                MystikoV2AxelarCalls::BridgeType(element) => element.encode(),
-                MystikoV2AxelarCalls::ChangeOperator(element) => element.encode(),
-                MystikoV2AxelarCalls::Deposit(element) => element.encode(),
-                MystikoV2AxelarCalls::DisableSanctionsCheck(element) => element.encode(),
-                MystikoV2AxelarCalls::EnableSanctionsCheck(element) => element.encode(),
-                MystikoV2AxelarCalls::Execute(element) => element.encode(),
-                MystikoV2AxelarCalls::ExecuteWithToken(element) => element.encode(),
-                MystikoV2AxelarCalls::Gateway(element) => element.encode(),
-                MystikoV2AxelarCalls::GetAssociatedCommitmentPool(element) => element.encode(),
-                MystikoV2AxelarCalls::GetMaxAmount(element) => element.encode(),
-                MystikoV2AxelarCalls::GetMinAmount(element) => element.encode(),
-                MystikoV2AxelarCalls::GetMinBridgeFee(element) => element.encode(),
-                MystikoV2AxelarCalls::GetMinExecutorFee(element) => element.encode(),
-                MystikoV2AxelarCalls::GetPeerMinExecutorFee(element) => element.encode(),
-                MystikoV2AxelarCalls::GetPeerMinRollupFee(element) => element.encode(),
-                MystikoV2AxelarCalls::IsDepositsDisabled(element) => element.encode(),
-                MystikoV2AxelarCalls::PeerChainId(element) => element.encode(),
-                MystikoV2AxelarCalls::PeerChainName(element) => element.encode(),
-                MystikoV2AxelarCalls::PeerContract(element) => element.encode(),
-                MystikoV2AxelarCalls::SanctionsCheck(element) => element.encode(),
-                MystikoV2AxelarCalls::SanctionsList(element) => element.encode(),
-                MystikoV2AxelarCalls::SetAssociatedCommitmentPool(element) => element.encode(),
-                MystikoV2AxelarCalls::SetAxelarGasReceiver(element) => element.encode(),
-                MystikoV2AxelarCalls::SetBridgeProxyAddress(element) => element.encode(),
-                MystikoV2AxelarCalls::SetDepositsDisabled(element) => element.encode(),
-                MystikoV2AxelarCalls::SetMinBridgeFee(element) => element.encode(),
-                MystikoV2AxelarCalls::SetMinExecutorFee(element) => element.encode(),
-                MystikoV2AxelarCalls::SetPeerContract(element) => element.encode(),
-                MystikoV2AxelarCalls::SetPeerMinExecutorFee(element) => element.encode(),
-                MystikoV2AxelarCalls::SetPeerMinRollupFee(element) => element.encode(),
-                MystikoV2AxelarCalls::UpdateDepositAmountLimits(element) => element.encode(),
-                MystikoV2AxelarCalls::UpdateSanctionsListAddress(element) => element.encode(),
+                Self::AssetType(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::BridgeProxyAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::BridgeType(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ChangeOperator(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Deposit(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::DisableSanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::EnableSanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Execute(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::ExecuteWithToken(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Gateway(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetAssociatedCommitmentPool(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetMaxAmount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetMinAmount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetMinBridgeFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetMinExecutorFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetPeerMinExecutorFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetPeerMinRollupFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsDepositsDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::PeerChainId(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::PeerChainName(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::PeerContract(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SanctionsList(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetAssociatedCommitmentPool(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetAxelarGasReceiver(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetBridgeProxyAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetDepositsDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetMinBridgeFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetMinExecutorFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetPeerContract(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetPeerMinExecutorFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetPeerMinRollupFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::UpdateDepositAmountLimits(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::UpdateSanctionsListAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }
-    impl ::std::fmt::Display for MystikoV2AxelarCalls {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for MystikoV2AxelarCalls {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                MystikoV2AxelarCalls::AssetType(element) => element.fmt(f),
-                MystikoV2AxelarCalls::BridgeProxyAddress(element) => element.fmt(f),
-                MystikoV2AxelarCalls::BridgeType(element) => element.fmt(f),
-                MystikoV2AxelarCalls::ChangeOperator(element) => element.fmt(f),
-                MystikoV2AxelarCalls::Deposit(element) => element.fmt(f),
-                MystikoV2AxelarCalls::DisableSanctionsCheck(element) => element.fmt(f),
-                MystikoV2AxelarCalls::EnableSanctionsCheck(element) => element.fmt(f),
-                MystikoV2AxelarCalls::Execute(element) => element.fmt(f),
-                MystikoV2AxelarCalls::ExecuteWithToken(element) => element.fmt(f),
-                MystikoV2AxelarCalls::Gateway(element) => element.fmt(f),
-                MystikoV2AxelarCalls::GetAssociatedCommitmentPool(element) => element.fmt(f),
-                MystikoV2AxelarCalls::GetMaxAmount(element) => element.fmt(f),
-                MystikoV2AxelarCalls::GetMinAmount(element) => element.fmt(f),
-                MystikoV2AxelarCalls::GetMinBridgeFee(element) => element.fmt(f),
-                MystikoV2AxelarCalls::GetMinExecutorFee(element) => element.fmt(f),
-                MystikoV2AxelarCalls::GetPeerMinExecutorFee(element) => element.fmt(f),
-                MystikoV2AxelarCalls::GetPeerMinRollupFee(element) => element.fmt(f),
-                MystikoV2AxelarCalls::IsDepositsDisabled(element) => element.fmt(f),
-                MystikoV2AxelarCalls::PeerChainId(element) => element.fmt(f),
-                MystikoV2AxelarCalls::PeerChainName(element) => element.fmt(f),
-                MystikoV2AxelarCalls::PeerContract(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SanctionsCheck(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SanctionsList(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetAssociatedCommitmentPool(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetAxelarGasReceiver(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetBridgeProxyAddress(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetDepositsDisabled(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetMinBridgeFee(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetMinExecutorFee(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetPeerContract(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetPeerMinExecutorFee(element) => element.fmt(f),
-                MystikoV2AxelarCalls::SetPeerMinRollupFee(element) => element.fmt(f),
-                MystikoV2AxelarCalls::UpdateDepositAmountLimits(element) => element.fmt(f),
-                MystikoV2AxelarCalls::UpdateSanctionsListAddress(element) => element.fmt(f),
+                Self::AssetType(element) => ::core::fmt::Display::fmt(element, f),
+                Self::BridgeProxyAddress(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::BridgeType(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ChangeOperator(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Deposit(element) => ::core::fmt::Display::fmt(element, f),
+                Self::DisableSanctionsCheck(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::EnableSanctionsCheck(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::Execute(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ExecuteWithToken(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Gateway(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetAssociatedCommitmentPool(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetMaxAmount(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetMinAmount(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetMinBridgeFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetMinExecutorFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetPeerMinExecutorFee(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetPeerMinRollupFee(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::IsDepositsDisabled(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::PeerChainId(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PeerChainName(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PeerContract(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionsList(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetAssociatedCommitmentPool(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SetAxelarGasReceiver(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SetBridgeProxyAddress(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SetDepositsDisabled(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SetMinBridgeFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetMinExecutorFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetPeerContract(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetPeerMinExecutorFee(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SetPeerMinRollupFee(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::UpdateDepositAmountLimits(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::UpdateSanctionsListAddress(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
             }
         }
     }
-    impl ::std::convert::From<AssetTypeCall> for MystikoV2AxelarCalls {
-        fn from(var: AssetTypeCall) -> Self {
-            MystikoV2AxelarCalls::AssetType(var)
+    impl ::core::convert::From<AssetTypeCall> for MystikoV2AxelarCalls {
+        fn from(value: AssetTypeCall) -> Self {
+            Self::AssetType(value)
         }
     }
-    impl ::std::convert::From<BridgeProxyAddressCall> for MystikoV2AxelarCalls {
-        fn from(var: BridgeProxyAddressCall) -> Self {
-            MystikoV2AxelarCalls::BridgeProxyAddress(var)
+    impl ::core::convert::From<BridgeProxyAddressCall> for MystikoV2AxelarCalls {
+        fn from(value: BridgeProxyAddressCall) -> Self {
+            Self::BridgeProxyAddress(value)
         }
     }
-    impl ::std::convert::From<BridgeTypeCall> for MystikoV2AxelarCalls {
-        fn from(var: BridgeTypeCall) -> Self {
-            MystikoV2AxelarCalls::BridgeType(var)
+    impl ::core::convert::From<BridgeTypeCall> for MystikoV2AxelarCalls {
+        fn from(value: BridgeTypeCall) -> Self {
+            Self::BridgeType(value)
         }
     }
-    impl ::std::convert::From<ChangeOperatorCall> for MystikoV2AxelarCalls {
-        fn from(var: ChangeOperatorCall) -> Self {
-            MystikoV2AxelarCalls::ChangeOperator(var)
+    impl ::core::convert::From<ChangeOperatorCall> for MystikoV2AxelarCalls {
+        fn from(value: ChangeOperatorCall) -> Self {
+            Self::ChangeOperator(value)
         }
     }
-    impl ::std::convert::From<DepositCall> for MystikoV2AxelarCalls {
-        fn from(var: DepositCall) -> Self {
-            MystikoV2AxelarCalls::Deposit(var)
+    impl ::core::convert::From<DepositCall> for MystikoV2AxelarCalls {
+        fn from(value: DepositCall) -> Self {
+            Self::Deposit(value)
         }
     }
-    impl ::std::convert::From<DisableSanctionsCheckCall> for MystikoV2AxelarCalls {
-        fn from(var: DisableSanctionsCheckCall) -> Self {
-            MystikoV2AxelarCalls::DisableSanctionsCheck(var)
+    impl ::core::convert::From<DisableSanctionsCheckCall> for MystikoV2AxelarCalls {
+        fn from(value: DisableSanctionsCheckCall) -> Self {
+            Self::DisableSanctionsCheck(value)
         }
     }
-    impl ::std::convert::From<EnableSanctionsCheckCall> for MystikoV2AxelarCalls {
-        fn from(var: EnableSanctionsCheckCall) -> Self {
-            MystikoV2AxelarCalls::EnableSanctionsCheck(var)
+    impl ::core::convert::From<EnableSanctionsCheckCall> for MystikoV2AxelarCalls {
+        fn from(value: EnableSanctionsCheckCall) -> Self {
+            Self::EnableSanctionsCheck(value)
         }
     }
-    impl ::std::convert::From<ExecuteCall> for MystikoV2AxelarCalls {
-        fn from(var: ExecuteCall) -> Self {
-            MystikoV2AxelarCalls::Execute(var)
+    impl ::core::convert::From<ExecuteCall> for MystikoV2AxelarCalls {
+        fn from(value: ExecuteCall) -> Self {
+            Self::Execute(value)
         }
     }
-    impl ::std::convert::From<ExecuteWithTokenCall> for MystikoV2AxelarCalls {
-        fn from(var: ExecuteWithTokenCall) -> Self {
-            MystikoV2AxelarCalls::ExecuteWithToken(var)
+    impl ::core::convert::From<ExecuteWithTokenCall> for MystikoV2AxelarCalls {
+        fn from(value: ExecuteWithTokenCall) -> Self {
+            Self::ExecuteWithToken(value)
         }
     }
-    impl ::std::convert::From<GatewayCall> for MystikoV2AxelarCalls {
-        fn from(var: GatewayCall) -> Self {
-            MystikoV2AxelarCalls::Gateway(var)
+    impl ::core::convert::From<GatewayCall> for MystikoV2AxelarCalls {
+        fn from(value: GatewayCall) -> Self {
+            Self::Gateway(value)
         }
     }
-    impl ::std::convert::From<GetAssociatedCommitmentPoolCall> for MystikoV2AxelarCalls {
-        fn from(var: GetAssociatedCommitmentPoolCall) -> Self {
-            MystikoV2AxelarCalls::GetAssociatedCommitmentPool(var)
+    impl ::core::convert::From<GetAssociatedCommitmentPoolCall>
+    for MystikoV2AxelarCalls {
+        fn from(value: GetAssociatedCommitmentPoolCall) -> Self {
+            Self::GetAssociatedCommitmentPool(value)
         }
     }
-    impl ::std::convert::From<GetMaxAmountCall> for MystikoV2AxelarCalls {
-        fn from(var: GetMaxAmountCall) -> Self {
-            MystikoV2AxelarCalls::GetMaxAmount(var)
+    impl ::core::convert::From<GetMaxAmountCall> for MystikoV2AxelarCalls {
+        fn from(value: GetMaxAmountCall) -> Self {
+            Self::GetMaxAmount(value)
         }
     }
-    impl ::std::convert::From<GetMinAmountCall> for MystikoV2AxelarCalls {
-        fn from(var: GetMinAmountCall) -> Self {
-            MystikoV2AxelarCalls::GetMinAmount(var)
+    impl ::core::convert::From<GetMinAmountCall> for MystikoV2AxelarCalls {
+        fn from(value: GetMinAmountCall) -> Self {
+            Self::GetMinAmount(value)
         }
     }
-    impl ::std::convert::From<GetMinBridgeFeeCall> for MystikoV2AxelarCalls {
-        fn from(var: GetMinBridgeFeeCall) -> Self {
-            MystikoV2AxelarCalls::GetMinBridgeFee(var)
+    impl ::core::convert::From<GetMinBridgeFeeCall> for MystikoV2AxelarCalls {
+        fn from(value: GetMinBridgeFeeCall) -> Self {
+            Self::GetMinBridgeFee(value)
         }
     }
-    impl ::std::convert::From<GetMinExecutorFeeCall> for MystikoV2AxelarCalls {
-        fn from(var: GetMinExecutorFeeCall) -> Self {
-            MystikoV2AxelarCalls::GetMinExecutorFee(var)
+    impl ::core::convert::From<GetMinExecutorFeeCall> for MystikoV2AxelarCalls {
+        fn from(value: GetMinExecutorFeeCall) -> Self {
+            Self::GetMinExecutorFee(value)
         }
     }
-    impl ::std::convert::From<GetPeerMinExecutorFeeCall> for MystikoV2AxelarCalls {
-        fn from(var: GetPeerMinExecutorFeeCall) -> Self {
-            MystikoV2AxelarCalls::GetPeerMinExecutorFee(var)
+    impl ::core::convert::From<GetPeerMinExecutorFeeCall> for MystikoV2AxelarCalls {
+        fn from(value: GetPeerMinExecutorFeeCall) -> Self {
+            Self::GetPeerMinExecutorFee(value)
         }
     }
-    impl ::std::convert::From<GetPeerMinRollupFeeCall> for MystikoV2AxelarCalls {
-        fn from(var: GetPeerMinRollupFeeCall) -> Self {
-            MystikoV2AxelarCalls::GetPeerMinRollupFee(var)
+    impl ::core::convert::From<GetPeerMinRollupFeeCall> for MystikoV2AxelarCalls {
+        fn from(value: GetPeerMinRollupFeeCall) -> Self {
+            Self::GetPeerMinRollupFee(value)
         }
     }
-    impl ::std::convert::From<IsDepositsDisabledCall> for MystikoV2AxelarCalls {
-        fn from(var: IsDepositsDisabledCall) -> Self {
-            MystikoV2AxelarCalls::IsDepositsDisabled(var)
+    impl ::core::convert::From<IsDepositsDisabledCall> for MystikoV2AxelarCalls {
+        fn from(value: IsDepositsDisabledCall) -> Self {
+            Self::IsDepositsDisabled(value)
         }
     }
-    impl ::std::convert::From<PeerChainIdCall> for MystikoV2AxelarCalls {
-        fn from(var: PeerChainIdCall) -> Self {
-            MystikoV2AxelarCalls::PeerChainId(var)
+    impl ::core::convert::From<PeerChainIdCall> for MystikoV2AxelarCalls {
+        fn from(value: PeerChainIdCall) -> Self {
+            Self::PeerChainId(value)
         }
     }
-    impl ::std::convert::From<PeerChainNameCall> for MystikoV2AxelarCalls {
-        fn from(var: PeerChainNameCall) -> Self {
-            MystikoV2AxelarCalls::PeerChainName(var)
+    impl ::core::convert::From<PeerChainNameCall> for MystikoV2AxelarCalls {
+        fn from(value: PeerChainNameCall) -> Self {
+            Self::PeerChainName(value)
         }
     }
-    impl ::std::convert::From<PeerContractCall> for MystikoV2AxelarCalls {
-        fn from(var: PeerContractCall) -> Self {
-            MystikoV2AxelarCalls::PeerContract(var)
+    impl ::core::convert::From<PeerContractCall> for MystikoV2AxelarCalls {
+        fn from(value: PeerContractCall) -> Self {
+            Self::PeerContract(value)
         }
     }
-    impl ::std::convert::From<SanctionsCheckCall> for MystikoV2AxelarCalls {
-        fn from(var: SanctionsCheckCall) -> Self {
-            MystikoV2AxelarCalls::SanctionsCheck(var)
+    impl ::core::convert::From<SanctionsCheckCall> for MystikoV2AxelarCalls {
+        fn from(value: SanctionsCheckCall) -> Self {
+            Self::SanctionsCheck(value)
         }
     }
-    impl ::std::convert::From<SanctionsListCall> for MystikoV2AxelarCalls {
-        fn from(var: SanctionsListCall) -> Self {
-            MystikoV2AxelarCalls::SanctionsList(var)
+    impl ::core::convert::From<SanctionsListCall> for MystikoV2AxelarCalls {
+        fn from(value: SanctionsListCall) -> Self {
+            Self::SanctionsList(value)
         }
     }
-    impl ::std::convert::From<SetAssociatedCommitmentPoolCall> for MystikoV2AxelarCalls {
-        fn from(var: SetAssociatedCommitmentPoolCall) -> Self {
-            MystikoV2AxelarCalls::SetAssociatedCommitmentPool(var)
+    impl ::core::convert::From<SetAssociatedCommitmentPoolCall>
+    for MystikoV2AxelarCalls {
+        fn from(value: SetAssociatedCommitmentPoolCall) -> Self {
+            Self::SetAssociatedCommitmentPool(value)
         }
     }
-    impl ::std::convert::From<SetAxelarGasReceiverCall> for MystikoV2AxelarCalls {
-        fn from(var: SetAxelarGasReceiverCall) -> Self {
-            MystikoV2AxelarCalls::SetAxelarGasReceiver(var)
+    impl ::core::convert::From<SetAxelarGasReceiverCall> for MystikoV2AxelarCalls {
+        fn from(value: SetAxelarGasReceiverCall) -> Self {
+            Self::SetAxelarGasReceiver(value)
         }
     }
-    impl ::std::convert::From<SetBridgeProxyAddressCall> for MystikoV2AxelarCalls {
-        fn from(var: SetBridgeProxyAddressCall) -> Self {
-            MystikoV2AxelarCalls::SetBridgeProxyAddress(var)
+    impl ::core::convert::From<SetBridgeProxyAddressCall> for MystikoV2AxelarCalls {
+        fn from(value: SetBridgeProxyAddressCall) -> Self {
+            Self::SetBridgeProxyAddress(value)
         }
     }
-    impl ::std::convert::From<SetDepositsDisabledCall> for MystikoV2AxelarCalls {
-        fn from(var: SetDepositsDisabledCall) -> Self {
-            MystikoV2AxelarCalls::SetDepositsDisabled(var)
+    impl ::core::convert::From<SetDepositsDisabledCall> for MystikoV2AxelarCalls {
+        fn from(value: SetDepositsDisabledCall) -> Self {
+            Self::SetDepositsDisabled(value)
         }
     }
-    impl ::std::convert::From<SetMinBridgeFeeCall> for MystikoV2AxelarCalls {
-        fn from(var: SetMinBridgeFeeCall) -> Self {
-            MystikoV2AxelarCalls::SetMinBridgeFee(var)
+    impl ::core::convert::From<SetMinBridgeFeeCall> for MystikoV2AxelarCalls {
+        fn from(value: SetMinBridgeFeeCall) -> Self {
+            Self::SetMinBridgeFee(value)
         }
     }
-    impl ::std::convert::From<SetMinExecutorFeeCall> for MystikoV2AxelarCalls {
-        fn from(var: SetMinExecutorFeeCall) -> Self {
-            MystikoV2AxelarCalls::SetMinExecutorFee(var)
+    impl ::core::convert::From<SetMinExecutorFeeCall> for MystikoV2AxelarCalls {
+        fn from(value: SetMinExecutorFeeCall) -> Self {
+            Self::SetMinExecutorFee(value)
         }
     }
-    impl ::std::convert::From<SetPeerContractCall> for MystikoV2AxelarCalls {
-        fn from(var: SetPeerContractCall) -> Self {
-            MystikoV2AxelarCalls::SetPeerContract(var)
+    impl ::core::convert::From<SetPeerContractCall> for MystikoV2AxelarCalls {
+        fn from(value: SetPeerContractCall) -> Self {
+            Self::SetPeerContract(value)
         }
     }
-    impl ::std::convert::From<SetPeerMinExecutorFeeCall> for MystikoV2AxelarCalls {
-        fn from(var: SetPeerMinExecutorFeeCall) -> Self {
-            MystikoV2AxelarCalls::SetPeerMinExecutorFee(var)
+    impl ::core::convert::From<SetPeerMinExecutorFeeCall> for MystikoV2AxelarCalls {
+        fn from(value: SetPeerMinExecutorFeeCall) -> Self {
+            Self::SetPeerMinExecutorFee(value)
         }
     }
-    impl ::std::convert::From<SetPeerMinRollupFeeCall> for MystikoV2AxelarCalls {
-        fn from(var: SetPeerMinRollupFeeCall) -> Self {
-            MystikoV2AxelarCalls::SetPeerMinRollupFee(var)
+    impl ::core::convert::From<SetPeerMinRollupFeeCall> for MystikoV2AxelarCalls {
+        fn from(value: SetPeerMinRollupFeeCall) -> Self {
+            Self::SetPeerMinRollupFee(value)
         }
     }
-    impl ::std::convert::From<UpdateDepositAmountLimitsCall> for MystikoV2AxelarCalls {
-        fn from(var: UpdateDepositAmountLimitsCall) -> Self {
-            MystikoV2AxelarCalls::UpdateDepositAmountLimits(var)
+    impl ::core::convert::From<UpdateDepositAmountLimitsCall> for MystikoV2AxelarCalls {
+        fn from(value: UpdateDepositAmountLimitsCall) -> Self {
+            Self::UpdateDepositAmountLimits(value)
         }
     }
-    impl ::std::convert::From<UpdateSanctionsListAddressCall> for MystikoV2AxelarCalls {
-        fn from(var: UpdateSanctionsListAddressCall) -> Self {
-            MystikoV2AxelarCalls::UpdateSanctionsListAddress(var)
+    impl ::core::convert::From<UpdateSanctionsListAddressCall> for MystikoV2AxelarCalls {
+        fn from(value: UpdateSanctionsListAddressCall) -> Self {
+            Self::UpdateSanctionsListAddress(value)
         }
     }
-    #[doc = "Container type for all return fields from the `assetType` function with signature `assetType()` and selector `[63, 227, 52, 122]`"]
+    ///Container type for all return fields from the `assetType` function with signature `assetType()` and selector `0x3fe3347a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct AssetTypeReturn(pub u8);
-    #[doc = "Container type for all return fields from the `bridgeProxyAddress` function with signature `bridgeProxyAddress()` and selector `[44, 210, 109, 69]`"]
+    ///Container type for all return fields from the `bridgeProxyAddress` function with signature `bridgeProxyAddress()` and selector `0x2cd26d45`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct BridgeProxyAddressReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `bridgeType` function with signature `bridgeType()` and selector `[36, 33, 225, 85]`"]
+    pub struct BridgeProxyAddressReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `bridgeType` function with signature `bridgeType()` and selector `0x2421e155`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct BridgeTypeReturn(pub String);
-    #[doc = "Container type for all return fields from the `gateway` function with signature `gateway()` and selector `[17, 97, 145, 182]`"]
+    pub struct BridgeTypeReturn(pub ::std::string::String);
+    ///Container type for all return fields from the `gateway` function with signature `gateway()` and selector `0x116191b6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GatewayReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `getAssociatedCommitmentPool` function with signature `getAssociatedCommitmentPool()` and selector `[221, 172, 93, 193]`"]
+    pub struct GatewayReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `getAssociatedCommitmentPool` function with signature `getAssociatedCommitmentPool()` and selector `0xddac5dc1`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetAssociatedCommitmentPoolReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `getMaxAmount` function with signature `getMaxAmount()` and selector `[11, 169, 89, 9]`"]
+    pub struct GetAssociatedCommitmentPoolReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `getMaxAmount` function with signature `getMaxAmount()` and selector `0x0ba95909`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetMaxAmountReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getMinAmount` function with signature `getMinAmount()` and selector `[207, 199, 226, 218]`"]
+    pub struct GetMaxAmountReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getMinAmount` function with signature `getMinAmount()` and selector `0xcfc7e2da`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetMinAmountReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getMinBridgeFee` function with signature `getMinBridgeFee()` and selector `[239, 191, 178, 174]`"]
+    pub struct GetMinAmountReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getMinBridgeFee` function with signature `getMinBridgeFee()` and selector `0xefbfb2ae`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetMinBridgeFeeReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getMinExecutorFee` function with signature `getMinExecutorFee()` and selector `[244, 173, 23, 198]`"]
+    pub struct GetMinBridgeFeeReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getMinExecutorFee` function with signature `getMinExecutorFee()` and selector `0xf4ad17c6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetMinExecutorFeeReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getPeerMinExecutorFee` function with signature `getPeerMinExecutorFee()` and selector `[88, 152, 160, 168]`"]
+    pub struct GetMinExecutorFeeReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getPeerMinExecutorFee` function with signature `getPeerMinExecutorFee()` and selector `0x5898a0a8`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetPeerMinExecutorFeeReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getPeerMinRollupFee` function with signature `getPeerMinRollupFee()` and selector `[130, 91, 95, 141]`"]
+    pub struct GetPeerMinExecutorFeeReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getPeerMinRollupFee` function with signature `getPeerMinRollupFee()` and selector `0x825b5f8d`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetPeerMinRollupFeeReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `isDepositsDisabled` function with signature `isDepositsDisabled()` and selector `[237, 110, 163, 58]`"]
+    pub struct GetPeerMinRollupFeeReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `isDepositsDisabled` function with signature `isDepositsDisabled()` and selector `0xed6ea33a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct IsDepositsDisabledReturn(pub bool);
-    #[doc = "Container type for all return fields from the `peerChainId` function with signature `peerChainId()` and selector `[205, 252, 238, 186]`"]
+    ///Container type for all return fields from the `peerChainId` function with signature `peerChainId()` and selector `0xcdfceeba`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct PeerChainIdReturn(pub u64);
-    #[doc = "Container type for all return fields from the `peerChainName` function with signature `peerChainName()` and selector `[78, 60, 16, 183]`"]
+    ///Container type for all return fields from the `peerChainName` function with signature `peerChainName()` and selector `0x4e3c10b7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct PeerChainNameReturn(pub String);
-    #[doc = "Container type for all return fields from the `peerContract` function with signature `peerContract()` and selector `[33, 227, 45, 85]`"]
+    pub struct PeerChainNameReturn(pub ::std::string::String);
+    ///Container type for all return fields from the `peerContract` function with signature `peerContract()` and selector `0x21e32d55`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct PeerContractReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `[177, 195, 148, 34]`"]
+    pub struct PeerContractReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `0xb1c39422`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct SanctionsCheckReturn(pub bool);
-    #[doc = "Container type for all return fields from the `sanctionsList` function with signature `sanctionsList()` and selector `[236, 87, 28, 106]`"]
+    ///Container type for all return fields from the `sanctionsList` function with signature `sanctionsList()` and selector `0xec571c6a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct SanctionsListReturn(pub ethers::core::types::Address);
-    #[doc = "`DepositRequest(uint256,uint256,uint256,uint128,bytes,uint256,uint256,uint256)`"]
+    pub struct SanctionsListReturn(pub ::ethers_core::types::Address);
+    ///`DepositRequest(uint256,uint256,uint256,uint128,bytes,uint256,uint256,uint256)`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     pub struct DepositRequest {
-        pub amount: ethers::core::types::U256,
-        pub commitment: ethers::core::types::U256,
-        pub hash_k: ethers::core::types::U256,
+        pub amount: ::ethers_core::types::U256,
+        pub commitment: ::ethers_core::types::U256,
+        pub hash_k: ::ethers_core::types::U256,
         pub random_s: u128,
-        pub encrypted_note: ethers::core::types::Bytes,
-        pub bridge_fee: ethers::core::types::U256,
-        pub executor_fee: ethers::core::types::U256,
-        pub rollup_fee: ethers::core::types::U256,
+        pub encrypted_note: ::ethers_core::types::Bytes,
+        pub bridge_fee: ::ethers_core::types::U256,
+        pub executor_fee: ::ethers_core::types::U256,
+        pub rollup_fee: ::ethers_core::types::U256,
     }
 }

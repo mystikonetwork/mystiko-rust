@@ -1,156 +1,158 @@
 pub use commitment_pool::*;
-#[allow(clippy::too_many_arguments, non_camel_case_types)]
+/// This module was auto-generated with ethers-rs Abigen.
+/// More information at: <https://github.com/gakonst/ethers-rs>
+#[allow(
+    clippy::enum_variant_names,
+    clippy::too_many_arguments,
+    clippy::upper_case_acronyms,
+    clippy::type_complexity,
+    dead_code,
+    non_camel_case_types
+)]
 pub mod commitment_pool {
-    #![allow(clippy::enum_variant_names)]
-    #![allow(dead_code)]
-    #![allow(clippy::type_complexity)]
-    #![allow(unused_imports)]
-    use ethers::contract::{
-        builders::{ContractCall, Event},
-        Contract, Lazy,
-    };
-    use ethers::core::{
-        abi::{Abi, Detokenize, InvalidOutputType, Token, Tokenizable},
-        types::*,
-    };
-    use ethers::providers::Middleware;
-    #[doc = "CommitmentPool was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
-    use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AuditorIndexError\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AuditorNotesLengthError\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AuditorPublicKeyNotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHasBeenSubmitted\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Duplicated\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"IndexOutOfBound\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NewRootIsDuplicated\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NoteHasBeenSpent\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NumInputsGreaterThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyWhitelistedRoller\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyWhitelistedSender\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OutputNotesLessThanThree\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupSizeNotPowerOfTwo\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"TreeHeightLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"TreeHeightOutOfBounds\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"TreeIsFull\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"VerifierUpdatesHasBeenDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"publicKey\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"AuditorPublicKey\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentIncluded\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"leafIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"CommitmentQueued\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"rootHash\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"serialNumber\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentSpent\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"id\",\"type\":\"uint64\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"auditorPublicKey\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"encryptedAuditorNote\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"EncryptedAuditorNote\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"struct CommitmentPool.AuditorNote[]\",\"name\":\"notes\",\"type\":\"tuple[]\",\"components\":[{\"internalType\":\"uint64\",\"name\":\"id\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"publicKey\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"note\",\"type\":\"uint256\",\"components\":[]}],\"indexed\":false}],\"type\":\"event\",\"name\":\"EncryptedAuditorNotes\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"RollupWhitelistDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"VerifierUpdateDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_fullPath\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint32\",\"name\":\"_rollupSize\",\"type\":\"uint32\",\"components\":[]}],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"_pathIndices\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_actor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"addEnqueueWhitelist\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_roller\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"addRollupWhitelist\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"auditorCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_rollupSize\",\"type\":\"uint32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableRollupVerifier\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_numInputs\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"uint32\",\"name\":\"_numOutputs\",\"type\":\"uint32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableTransactVerifier\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_rollupSize\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"contract IVerifier\",\"name\":\"_rollupVerifier\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableRollupVerifier\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_numInputs\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"uint32\",\"name\":\"_numOutputs\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"contract IVerifier\",\"name\":\"_transactVerifier\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableTransactVerifier\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct ICommitmentPool.CommitmentRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]}]},{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enqueue\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAllAuditorPublicKeys\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAuditorPublicKey\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getCommitmentIncludedCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getTreeCapacity\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_commitment\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isHistoricCommitment\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"root\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isKnownRoot\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isRollupWhitelistDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_serialNumber\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isSpentSerialNumber\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isVerifierUpdateDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_actor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"removeEnqueueWhitelist\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_roller\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"removeRollupWhitelist\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct ICommitmentPool.RollupRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.Proof\",\"name\":\"proof\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"a\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G2Point\",\"name\":\"b\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\",\"components\":[]},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"c\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]}]},{\"internalType\":\"uint32\",\"name\":\"rollupSize\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"newRoot\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"leafHash\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"rollup\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setRollupWhitelistDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setVerifierUpdateDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct ICommitmentPool.TransactRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.Proof\",\"name\":\"proof\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"a\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G2Point\",\"name\":\"b\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\",\"components\":[]},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"c\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]}]},{\"internalType\":\"uint256\",\"name\":\"rootHash\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"serialNumbers\",\"type\":\"uint256[]\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"sigHashes\",\"type\":\"uint256[]\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"sigPk\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"publicAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"relayerFeeAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"outCommitments\",\"type\":\"uint256[]\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"outRollupFees\",\"type\":\"uint256[]\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"publicRecipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"relayerAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes[]\",\"name\":\"outEncryptedNotes\",\"type\":\"bytes[]\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"randomAuditingPublicKey\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"encryptedAuditorNotes\",\"type\":\"uint256[]\",\"components\":[]}]},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transact\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_publicKey\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateAuditorPublicKey\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]" ;
-    #[doc = r" The parsed JSON-ABI of the contract."]
-    pub static COMMITMENTPOOL_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
-        ethers::contract::Lazy::new(|| {
-            ethers::core::utils::__serde_json::from_str(__ABI).expect("invalid abi")
+    #[rustfmt::skip]
+    const __ABI: &str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AuditorIndexError\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AuditorNotesLengthError\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AuditorPublicKeyNotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHasBeenSubmitted\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Duplicated\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"IndexOutOfBound\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NewRootIsDuplicated\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NoteHasBeenSpent\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NumInputsGreaterThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyWhitelistedRoller\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyWhitelistedSender\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OutputNotesLessThanThree\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupSizeNotPowerOfTwo\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"TreeHeightLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"TreeHeightOutOfBounds\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"TreeIsFull\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"VerifierUpdatesHasBeenDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"publicKey\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"AuditorPublicKey\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentIncluded\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"leafIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"CommitmentQueued\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"rootHash\",\"type\":\"uint256\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"serialNumber\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentSpent\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"id\",\"type\":\"uint64\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"auditorPublicKey\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"encryptedAuditorNote\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"EncryptedAuditorNote\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"struct CommitmentPool.AuditorNote[]\",\"name\":\"notes\",\"type\":\"tuple[]\",\"components\":[{\"internalType\":\"uint64\",\"name\":\"id\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"publicKey\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"note\",\"type\":\"uint256\",\"components\":[]}],\"indexed\":false}],\"type\":\"event\",\"name\":\"EncryptedAuditorNotes\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"RollupWhitelistDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"VerifierUpdateDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_fullPath\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint32\",\"name\":\"_rollupSize\",\"type\":\"uint32\",\"components\":[]}],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"_pathIndices\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_actor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"addEnqueueWhitelist\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_roller\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"addRollupWhitelist\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"auditorCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_rollupSize\",\"type\":\"uint32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableRollupVerifier\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_numInputs\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"uint32\",\"name\":\"_numOutputs\",\"type\":\"uint32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableTransactVerifier\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_rollupSize\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"contract IVerifier\",\"name\":\"_rollupVerifier\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableRollupVerifier\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"_numInputs\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"uint32\",\"name\":\"_numOutputs\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"contract IVerifier\",\"name\":\"_transactVerifier\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableTransactVerifier\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct ICommitmentPool.CommitmentRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]}]},{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enqueue\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAllAuditorPublicKeys\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAuditorPublicKey\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getCommitmentIncludedCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getTreeCapacity\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_commitment\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isHistoricCommitment\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"root\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isKnownRoot\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isRollupWhitelistDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_serialNumber\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isSpentSerialNumber\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isVerifierUpdateDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_actor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"removeEnqueueWhitelist\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_roller\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"removeRollupWhitelist\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct ICommitmentPool.RollupRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.Proof\",\"name\":\"proof\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"a\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G2Point\",\"name\":\"b\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\",\"components\":[]},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"c\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]}]},{\"internalType\":\"uint32\",\"name\":\"rollupSize\",\"type\":\"uint32\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"newRoot\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"leafHash\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"rollup\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setRollupWhitelistDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setVerifierUpdateDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct ICommitmentPool.TransactRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.Proof\",\"name\":\"proof\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"a\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G2Point\",\"name\":\"b\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\",\"components\":[]},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"c\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]}]},{\"internalType\":\"uint256\",\"name\":\"rootHash\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"serialNumbers\",\"type\":\"uint256[]\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"sigHashes\",\"type\":\"uint256[]\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"sigPk\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"publicAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"relayerFeeAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"outCommitments\",\"type\":\"uint256[]\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"outRollupFees\",\"type\":\"uint256[]\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"publicRecipient\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"relayerAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes[]\",\"name\":\"outEncryptedNotes\",\"type\":\"bytes[]\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"randomAuditingPublicKey\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256[]\",\"name\":\"encryptedAuditorNotes\",\"type\":\"uint256[]\",\"components\":[]}]},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transact\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_publicKey\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateAuditorPublicKey\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]";
+    ///The parsed JSON ABI of the contract.
+    pub static COMMITMENTPOOL_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
+        ::ethers_contract::Lazy::new(|| {
+            ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid")
         });
-    pub struct CommitmentPool<M>(ethers::contract::Contract<M>);
-    impl<M> Clone for CommitmentPool<M> {
+    pub struct CommitmentPool<M>(::ethers_contract::Contract<M>);
+    impl<M> ::core::clone::Clone for CommitmentPool<M> {
         fn clone(&self) -> Self {
-            CommitmentPool(self.0.clone())
+            Self(::core::clone::Clone::clone(&self.0))
         }
     }
-    impl<M> std::ops::Deref for CommitmentPool<M> {
-        type Target = ethers::contract::Contract<M>;
+    impl<M> ::core::ops::Deref for CommitmentPool<M> {
+        type Target = ::ethers_contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M> std::fmt::Debug for CommitmentPool<M> {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    impl<M> ::core::ops::DerefMut for CommitmentPool<M> {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
+        }
+    }
+    impl<M> ::core::fmt::Debug for CommitmentPool<M> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             f.debug_tuple(stringify!(CommitmentPool))
                 .field(&self.address())
                 .finish()
         }
     }
-    impl<M: ethers::providers::Middleware> CommitmentPool<M> {
-        #[doc = r" Creates a new contract instance with the specified `ethers`"]
-        #[doc = r" client at the given `Address`. The contract derefs to a `ethers::Contract`"]
-        #[doc = r" object"]
-        pub fn new<T: Into<ethers::core::types::Address>>(
+    impl<M: ::ethers_providers::Middleware> CommitmentPool<M> {
+        /// Creates a new contract instance with the specified `ethers` client at
+        /// `address`. The contract derefs to a `ethers::Contract` object.
+        pub fn new<T: Into<::ethers_core::types::Address>>(
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            ethers::contract::Contract::new(address.into(), COMMITMENTPOOL_ABI.clone(), client)
-                .into()
+            Self(::ethers_contract::Contract::new(
+                address.into(),
+                COMMITMENTPOOL_ABI.clone(),
+                client,
+            ))
         }
-        #[doc = "Calls the contract's `_pathIndices` (0xf2da1d41) function"]
+        ///Calls the contract's `_pathIndices` (0xf2da1d41) function
         pub fn path_indices(
             &self,
-            full_path: ethers::core::types::U256,
+            full_path: ::ethers_core::types::U256,
             rollup_size: u32,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([242, 218, 29, 65], (full_path, rollup_size))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `addEnqueueWhitelist` (0xa9b1d296) function"]
+        ///Calls the contract's `addEnqueueWhitelist` (0xa9b1d296) function
         pub fn add_enqueue_whitelist(
             &self,
-            actor: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            actor: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([169, 177, 210, 150], actor)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `addRollupWhitelist` (0x02d498f1) function"]
+        ///Calls the contract's `addRollupWhitelist` (0x02d498f1) function
         pub fn add_rollup_whitelist(
             &self,
-            roller: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            roller: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([2, 212, 152, 241], roller)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `assetType` (0x3fe3347a) function"]
-        pub fn asset_type(&self) -> ethers::contract::builders::ContractCall<M, u8> {
+        ///Calls the contract's `assetType` (0x3fe3347a) function
+        pub fn asset_type(&self) -> ::ethers_contract::builders::ContractCall<M, u8> {
             self.0
                 .method_hash([63, 227, 52, 122], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `auditorCount` (0x115f574c) function"]
+        ///Calls the contract's `auditorCount` (0x115f574c) function
         pub fn auditor_count(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([17, 95, 87, 76], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `changeOperator` (0x06394c9b) function"]
+        ///Calls the contract's `changeOperator` (0x06394c9b) function
         pub fn change_operator(
             &self,
-            new_operator: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            new_operator: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([6, 57, 76, 155], new_operator)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `disableRollupVerifier` (0x9b0a6fea) function"]
+        ///Calls the contract's `disableRollupVerifier` (0x9b0a6fea) function
         pub fn disable_rollup_verifier(
             &self,
             rollup_size: u32,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([155, 10, 111, 234], rollup_size)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `disableSanctionsCheck` (0xdd757c34) function"]
-        pub fn disable_sanctions_check(&self) -> ethers::contract::builders::ContractCall<M, ()> {
+        ///Calls the contract's `disableSanctionsCheck` (0xdd757c34) function
+        pub fn disable_sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([221, 117, 124, 52], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `disableTransactVerifier` (0xc259e2e6) function"]
+        ///Calls the contract's `disableTransactVerifier` (0xc259e2e6) function
         pub fn disable_transact_verifier(
             &self,
             num_inputs: u32,
             num_outputs: u32,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([194, 89, 226, 230], (num_inputs, num_outputs))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `enableRollupVerifier` (0xdeeff7cd) function"]
+        ///Calls the contract's `enableRollupVerifier` (0xdeeff7cd) function
         pub fn enable_rollup_verifier(
             &self,
             rollup_size: u32,
-            rollup_verifier: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            rollup_verifier: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([222, 239, 247, 205], (rollup_size, rollup_verifier))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `enableSanctionsCheck` (0x01dbf19f) function"]
-        pub fn enable_sanctions_check(&self) -> ethers::contract::builders::ContractCall<M, ()> {
+        ///Calls the contract's `enableSanctionsCheck` (0x01dbf19f) function
+        pub fn enable_sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([1, 219, 241, 159], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `enableTransactVerifier` (0x7fa4b09c) function"]
+        ///Calls the contract's `enableTransactVerifier` (0x7fa4b09c) function
         pub fn enable_transact_verifier(
             &self,
             num_inputs: u32,
             num_outputs: u32,
-            transact_verifier: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            transact_verifier: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [127, 164, 176, 156],
@@ -158,603 +160,642 @@ pub mod commitment_pool {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `enqueue` (0x78d60cd7) function"]
+        ///Calls the contract's `enqueue` (0x78d60cd7) function
         pub fn enqueue(
             &self,
             request: CommitmentRequest,
-            executor: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            executor: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([120, 214, 12, 215], (request, executor))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getAllAuditorPublicKeys` (0x63bc7d32) function"]
+        ///Calls the contract's `getAllAuditorPublicKeys` (0x63bc7d32) function
         pub fn get_all_auditor_public_keys(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ::std::vec::Vec<ethers::core::types::U256>>
+        ) -> ::ethers_contract::builders::ContractCall<M, ::std::vec::Vec<::ethers_core::types::U256>>
         {
             self.0
                 .method_hash([99, 188, 125, 50], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getAuditorPublicKey` (0x87780df9) function"]
+        ///Calls the contract's `getAuditorPublicKey` (0x87780df9) function
         pub fn get_auditor_public_key(
             &self,
-            index: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            index: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([135, 120, 13, 249], index)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getCommitmentIncludedCount` (0xe500f504) function"]
+        ///Calls the contract's `getCommitmentIncludedCount` (0xe500f504) function
         pub fn get_commitment_included_count(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([229, 0, 245, 4], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getMinRollupFee` (0xb08892d0) function"]
+        ///Calls the contract's `getMinRollupFee` (0xb08892d0) function
         pub fn get_min_rollup_fee(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([176, 136, 146, 208], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getTreeCapacity` (0x484eb652) function"]
+        ///Calls the contract's `getTreeCapacity` (0x484eb652) function
         pub fn get_tree_capacity(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([72, 78, 182, 82], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isHistoricCommitment` (0x57060016) function"]
+        ///Calls the contract's `isHistoricCommitment` (0x57060016) function
         pub fn is_historic_commitment(
             &self,
-            commitment: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            commitment: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([87, 6, 0, 22], commitment)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isKnownRoot` (0xa6232a93) function"]
+        ///Calls the contract's `isKnownRoot` (0xa6232a93) function
         pub fn is_known_root(
             &self,
-            root: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            root: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([166, 35, 42, 147], root)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isRollupWhitelistDisabled` (0xffa89b88) function"]
+        ///Calls the contract's `isRollupWhitelistDisabled` (0xffa89b88) function
         pub fn is_rollup_whitelist_disabled(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([255, 168, 155, 136], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isSpentSerialNumber` (0x3bb8d1b4) function"]
+        ///Calls the contract's `isSpentSerialNumber` (0x3bb8d1b4) function
         pub fn is_spent_serial_number(
             &self,
-            serial_number: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            serial_number: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([59, 184, 209, 180], serial_number)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isVerifierUpdateDisabled` (0x4eb069f7) function"]
+        ///Calls the contract's `isVerifierUpdateDisabled` (0x4eb069f7) function
         pub fn is_verifier_update_disabled(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([78, 176, 105, 247], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `removeEnqueueWhitelist` (0x03db9874) function"]
+        ///Calls the contract's `removeEnqueueWhitelist` (0x03db9874) function
         pub fn remove_enqueue_whitelist(
             &self,
-            actor: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            actor: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([3, 219, 152, 116], actor)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `removeRollupWhitelist` (0x9cc6b354) function"]
+        ///Calls the contract's `removeRollupWhitelist` (0x9cc6b354) function
         pub fn remove_rollup_whitelist(
             &self,
-            roller: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            roller: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([156, 198, 179, 84], roller)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `rollup` (0x14a7737d) function"]
+        ///Calls the contract's `rollup` (0x14a7737d) function
         pub fn rollup(
             &self,
             request: RollupRequest,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([20, 167, 115, 125], (request,))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `sanctionsCheck` (0xb1c39422) function"]
-        pub fn sanctions_check(&self) -> ethers::contract::builders::ContractCall<M, bool> {
+        ///Calls the contract's `sanctionsCheck` (0xb1c39422) function
+        pub fn sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([177, 195, 148, 34], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `sanctionsList` (0xec571c6a) function"]
+        ///Calls the contract's `sanctionsList` (0xec571c6a) function
         pub fn sanctions_list(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([236, 87, 28, 106], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setMinRollupFee` (0x7cbf0ff6) function"]
+        ///Calls the contract's `setMinRollupFee` (0x7cbf0ff6) function
         pub fn set_min_rollup_fee(
             &self,
-            min_rollup_fee: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            min_rollup_fee: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([124, 191, 15, 246], min_rollup_fee)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setRollupWhitelistDisabled` (0xf8f05388) function"]
+        ///Calls the contract's `setRollupWhitelistDisabled` (0xf8f05388) function
         pub fn set_rollup_whitelist_disabled(
             &self,
             state: bool,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([248, 240, 83, 136], state)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setVerifierUpdateDisabled` (0xb3b75631) function"]
+        ///Calls the contract's `setVerifierUpdateDisabled` (0xb3b75631) function
         pub fn set_verifier_update_disabled(
             &self,
             state: bool,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([179, 183, 86, 49], state)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `transact` (0x72082971) function"]
+        ///Calls the contract's `transact` (0x72082971) function
         pub fn transact(
             &self,
             request: TransactRequest,
-            signature: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            signature: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([114, 8, 41, 113], (request, signature))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `updateAuditorPublicKey` (0x0c8867e6) function"]
+        ///Calls the contract's `updateAuditorPublicKey` (0x0c8867e6) function
         pub fn update_auditor_public_key(
             &self,
-            index: ethers::core::types::U256,
-            public_key: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            index: ::ethers_core::types::U256,
+            public_key: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([12, 136, 103, 230], (index, public_key))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `updateSanctionsListAddress` (0x30f49cac) function"]
+        ///Calls the contract's `updateSanctionsListAddress` (0x30f49cac) function
         pub fn update_sanctions_list_address(
             &self,
-            sanction: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            sanction: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([48, 244, 156, 172], sanction)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Gets the contract's `AuditorPublicKey` event"]
+        ///Gets the contract's `AuditorPublicKey` event
         pub fn auditor_public_key_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, AuditorPublicKeyFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, AuditorPublicKeyFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `CommitmentIncluded` event"]
+        ///Gets the contract's `CommitmentIncluded` event
         pub fn commitment_included_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, CommitmentIncludedFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentIncludedFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `CommitmentQueued` event"]
+        ///Gets the contract's `CommitmentQueued` event
         pub fn commitment_queued_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, CommitmentQueuedFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentQueuedFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `CommitmentSpent` event"]
+        ///Gets the contract's `CommitmentSpent` event
         pub fn commitment_spent_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, CommitmentSpentFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentSpentFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `EncryptedAuditorNote` event"]
+        ///Gets the contract's `EncryptedAuditorNote` event
         pub fn encrypted_auditor_note_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, EncryptedAuditorNoteFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, EncryptedAuditorNoteFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `EncryptedAuditorNotes` event"]
+        ///Gets the contract's `EncryptedAuditorNotes` event
         pub fn encrypted_auditor_notes_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, EncryptedAuditorNotesFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, EncryptedAuditorNotesFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `OperatorChanged` event"]
+        ///Gets the contract's `OperatorChanged` event
         pub fn operator_changed_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, OperatorChangedFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `RollupWhitelistDisabled` event"]
+        ///Gets the contract's `RollupWhitelistDisabled` event
         pub fn rollup_whitelist_disabled_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, RollupWhitelistDisabledFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, RollupWhitelistDisabledFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `SanctionsCheck` event"]
+        ///Gets the contract's `SanctionsCheck` event
         pub fn sanctions_check_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, SanctionsCheckFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsCheckFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `SanctionsList` event"]
+        ///Gets the contract's `SanctionsList` event
         pub fn sanctions_list_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, SanctionsListFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsListFilter>
+        {
             self.0.event()
         }
-        #[doc = "Gets the contract's `VerifierUpdateDisabled` event"]
+        ///Gets the contract's `VerifierUpdateDisabled` event
         pub fn verifier_update_disabled_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, VerifierUpdateDisabledFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, VerifierUpdateDisabledFilter>
+        {
             self.0.event()
         }
-        #[doc = r" Returns an [`Event`](#ethers_contract::builders::Event) builder for all events of this contract"]
-        pub fn events(&self) -> ethers::contract::builders::Event<M, CommitmentPoolEvents> {
-            self.0.event_with_filter(Default::default())
+        /// Returns an `Event` builder for all the events of this contract.
+        pub fn events(
+            &self,
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentPoolEvents>
+        {
+            self.0
+                .event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for CommitmentPool<M> {
-        fn from(contract: ethers::contract::Contract<M>) -> Self {
-            Self(contract)
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for CommitmentPool<M> {
+        fn from(contract: ::ethers_contract::Contract<M>) -> Self {
+            Self::new(contract.address(), contract.client())
         }
     }
-    #[doc = "Custom Error type `AuditorIndexError` with signature `AuditorIndexError()` and selector `[198, 49, 13, 20]`"]
+    ///Custom Error type `AuditorIndexError` with signature `AuditorIndexError()` and selector `0xc6310d14`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "AuditorIndexError", abi = "AuditorIndexError()")]
     pub struct AuditorIndexError;
-    #[doc = "Custom Error type `AuditorNotesLengthError` with signature `AuditorNotesLengthError()` and selector `[235, 61, 34, 236]`"]
+    ///Custom Error type `AuditorNotesLengthError` with signature `AuditorNotesLengthError()` and selector `0xeb3d22ec`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "AuditorNotesLengthError", abi = "AuditorNotesLengthError()")]
     pub struct AuditorNotesLengthError;
-    #[doc = "Custom Error type `AuditorPublicKeyNotChanged` with signature `AuditorPublicKeyNotChanged()` and selector `[2, 83, 131, 56]`"]
+    ///Custom Error type `AuditorPublicKeyNotChanged` with signature `AuditorPublicKeyNotChanged()` and selector `0x02538338`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(
         name = "AuditorPublicKeyNotChanged",
         abi = "AuditorPublicKeyNotChanged()"
     )]
     pub struct AuditorPublicKeyNotChanged;
-    #[doc = "Custom Error type `CommitmentHasBeenSubmitted` with signature `CommitmentHasBeenSubmitted()` and selector `[227, 140, 209, 77]`"]
+    ///Custom Error type `CommitmentHasBeenSubmitted` with signature `CommitmentHasBeenSubmitted()` and selector `0xe38cd14d`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(
         name = "CommitmentHasBeenSubmitted",
         abi = "CommitmentHasBeenSubmitted()"
     )]
     pub struct CommitmentHasBeenSubmitted;
-    #[doc = "Custom Error type `Duplicated` with signature `Duplicated(string)` and selector `[190, 227, 97, 17]`"]
+    ///Custom Error type `Duplicated` with signature `Duplicated(string)` and selector `0xbee36111`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "Duplicated", abi = "Duplicated(string)")]
     pub struct Duplicated {
-        pub param: String,
+        pub param: ::std::string::String,
     }
-    #[doc = "Custom Error type `IndexOutOfBound` with signature `IndexOutOfBound()` and selector `[211, 72, 47, 123]`"]
+    ///Custom Error type `IndexOutOfBound` with signature `IndexOutOfBound()` and selector `0xd3482f7b`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "IndexOutOfBound", abi = "IndexOutOfBound()")]
     pub struct IndexOutOfBound;
-    #[doc = "Custom Error type `Invalid` with signature `Invalid(string)` and selector `[83, 162, 85, 108]`"]
+    ///Custom Error type `Invalid` with signature `Invalid(string)` and selector `0x53a2556c`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
-        pub param: String,
+        pub param: ::std::string::String,
     }
-    #[doc = "Custom Error type `NewRootIsDuplicated` with signature `NewRootIsDuplicated()` and selector `[226, 225, 33, 3]`"]
+    ///Custom Error type `NewRootIsDuplicated` with signature `NewRootIsDuplicated()` and selector `0xe2e12103`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "NewRootIsDuplicated", abi = "NewRootIsDuplicated()")]
     pub struct NewRootIsDuplicated;
-    #[doc = "Custom Error type `NotChanged` with signature `NotChanged()` and selector `[54, 161, 195, 63]`"]
+    ///Custom Error type `NotChanged` with signature `NotChanged()` and selector `0x36a1c33f`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "NotChanged", abi = "NotChanged()")]
     pub struct NotChanged;
-    #[doc = "Custom Error type `NoteHasBeenSpent` with signature `NoteHasBeenSpent()` and selector `[255, 85, 110, 32]`"]
+    ///Custom Error type `NoteHasBeenSpent` with signature `NoteHasBeenSpent()` and selector `0xff556e20`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "NoteHasBeenSpent", abi = "NoteHasBeenSpent()")]
     pub struct NoteHasBeenSpent;
-    #[doc = "Custom Error type `NumInputsGreaterThanZero` with signature `NumInputsGreaterThanZero()` and selector `[159, 123, 217, 75]`"]
+    ///Custom Error type `NumInputsGreaterThanZero` with signature `NumInputsGreaterThanZero()` and selector `0x9f7bd94b`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "NumInputsGreaterThanZero", abi = "NumInputsGreaterThanZero()")]
     pub struct NumInputsGreaterThanZero;
-    #[doc = "Custom Error type `OnlyOperator` with signature `OnlyOperator()` and selector `[39, 225, 241, 229]`"]
+    ///Custom Error type `OnlyOperator` with signature `OnlyOperator()` and selector `0x27e1f1e5`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
     pub struct OnlyOperator;
-    #[doc = "Custom Error type `OnlyWhitelistedRoller` with signature `OnlyWhitelistedRoller()` and selector `[33, 206, 1, 243]`"]
+    ///Custom Error type `OnlyWhitelistedRoller` with signature `OnlyWhitelistedRoller()` and selector `0x21ce01f3`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "OnlyWhitelistedRoller", abi = "OnlyWhitelistedRoller()")]
     pub struct OnlyWhitelistedRoller;
-    #[doc = "Custom Error type `OnlyWhitelistedSender` with signature `OnlyWhitelistedSender()` and selector `[247, 94, 159, 199]`"]
+    ///Custom Error type `OnlyWhitelistedSender` with signature `OnlyWhitelistedSender()` and selector `0xf75e9fc7`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "OnlyWhitelistedSender", abi = "OnlyWhitelistedSender()")]
     pub struct OnlyWhitelistedSender;
-    #[doc = "Custom Error type `OutputNotesLessThanThree` with signature `OutputNotesLessThanThree()` and selector `[127, 99, 40, 186]`"]
+    ///Custom Error type `OutputNotesLessThanThree` with signature `OutputNotesLessThanThree()` and selector `0x7f6328ba`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "OutputNotesLessThanThree", abi = "OutputNotesLessThanThree()")]
     pub struct OutputNotesLessThanThree;
-    #[doc = "Custom Error type `RollupFeeToFew` with signature `RollupFeeToFew()` and selector `[240, 158, 5, 122]`"]
+    ///Custom Error type `RollupFeeToFew` with signature `RollupFeeToFew()` and selector `0xf09e057a`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "RollupFeeToFew", abi = "RollupFeeToFew()")]
     pub struct RollupFeeToFew;
-    #[doc = "Custom Error type `RollupSizeNotPowerOfTwo` with signature `RollupSizeNotPowerOfTwo()` and selector `[34, 113, 127, 249]`"]
+    ///Custom Error type `RollupSizeNotPowerOfTwo` with signature `RollupSizeNotPowerOfTwo()` and selector `0x22717ff9`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "RollupSizeNotPowerOfTwo", abi = "RollupSizeNotPowerOfTwo()")]
     pub struct RollupSizeNotPowerOfTwo;
-    #[doc = "Custom Error type `SanctionedAddress` with signature `SanctionedAddress()` and selector `[46, 112, 192, 177]`"]
+    ///Custom Error type `SanctionedAddress` with signature `SanctionedAddress()` and selector `0x2e70c0b1`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "SanctionedAddress", abi = "SanctionedAddress()")]
     pub struct SanctionedAddress;
-    #[doc = "Custom Error type `TreeHeightLessThanZero` with signature `TreeHeightLessThanZero()` and selector `[177, 60, 166, 196]`"]
+    ///Custom Error type `TreeHeightLessThanZero` with signature `TreeHeightLessThanZero()` and selector `0xb13ca6c4`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "TreeHeightLessThanZero", abi = "TreeHeightLessThanZero()")]
     pub struct TreeHeightLessThanZero;
-    #[doc = "Custom Error type `TreeHeightOutOfBounds` with signature `TreeHeightOutOfBounds()` and selector `[151, 128, 244, 41]`"]
+    ///Custom Error type `TreeHeightOutOfBounds` with signature `TreeHeightOutOfBounds()` and selector `0x9780f429`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "TreeHeightOutOfBounds", abi = "TreeHeightOutOfBounds()")]
     pub struct TreeHeightOutOfBounds;
-    #[doc = "Custom Error type `TreeIsFull` with signature `TreeIsFull()` and selector `[237, 115, 45, 12]`"]
+    ///Custom Error type `TreeIsFull` with signature `TreeIsFull()` and selector `0xed732d0c`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(name = "TreeIsFull", abi = "TreeIsFull()")]
     pub struct TreeIsFull;
-    #[doc = "Custom Error type `VerifierUpdatesHasBeenDisabled` with signature `VerifierUpdatesHasBeenDisabled()` and selector `[54, 227, 224, 149]`"]
+    ///Custom Error type `VerifierUpdatesHasBeenDisabled` with signature `VerifierUpdatesHasBeenDisabled()` and selector `0x36e3e095`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     #[etherror(
         name = "VerifierUpdatesHasBeenDisabled",
         abi = "VerifierUpdatesHasBeenDisabled()"
     )]
     pub struct VerifierUpdatesHasBeenDisabled;
+    ///Container type for all of the contract's custom errors
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash,
     )]
     pub enum CommitmentPoolErrors {
         AuditorIndexError(AuditorIndexError),
@@ -779,332 +820,446 @@ pub mod commitment_pool {
         TreeHeightOutOfBounds(TreeHeightOutOfBounds),
         TreeIsFull(TreeIsFull),
         VerifierUpdatesHasBeenDisabled(VerifierUpdatesHasBeenDisabled),
+        /// The standard solidity revert string, with selector
+        /// Error(string) -- 0x08c379a0
+        RevertString(::std::string::String),
     }
-    impl ethers::core::abi::AbiDecode for CommitmentPoolErrors {
+    impl ::ethers_core::abi::AbiDecode for CommitmentPoolErrors {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
             if let Ok(decoded) =
-                <AuditorIndexError as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::AuditorIndexError(decoded));
+                return Ok(Self::RevertString(decoded));
             }
-            if let Ok(decoded) =
-                <AuditorNotesLengthError as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+            if let Ok(decoded) = <AuditorIndexError as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::AuditorNotesLengthError(decoded));
-            }
-            if let Ok(decoded) =
-                <AuditorPublicKeyNotChanged as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolErrors::AuditorPublicKeyNotChanged(decoded));
+                return Ok(Self::AuditorIndexError(decoded));
             }
             if let Ok(decoded) =
-                <CommitmentHasBeenSubmitted as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <AuditorNotesLengthError as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::CommitmentHasBeenSubmitted(decoded));
-            }
-            if let Ok(decoded) = <Duplicated as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolErrors::Duplicated(decoded));
+                return Ok(Self::AuditorNotesLengthError(decoded));
             }
             if let Ok(decoded) =
-                <IndexOutOfBound as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <AuditorPublicKeyNotChanged as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::IndexOutOfBound(decoded));
-            }
-            if let Ok(decoded) = <Invalid as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
-                return Ok(CommitmentPoolErrors::Invalid(decoded));
+                return Ok(Self::AuditorPublicKeyNotChanged(decoded));
             }
             if let Ok(decoded) =
-                <NewRootIsDuplicated as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <CommitmentHasBeenSubmitted as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::NewRootIsDuplicated(decoded));
+                return Ok(Self::CommitmentHasBeenSubmitted(decoded));
             }
-            if let Ok(decoded) = <NotChanged as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolErrors::NotChanged(decoded));
+            if let Ok(decoded) = <Duplicated as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Duplicated(decoded));
             }
-            if let Ok(decoded) =
-                <NoteHasBeenSpent as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolErrors::NoteHasBeenSpent(decoded));
+            if let Ok(decoded) = <IndexOutOfBound as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::IndexOutOfBound(decoded));
             }
-            if let Ok(decoded) =
-                <NumInputsGreaterThanZero as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolErrors::NumInputsGreaterThanZero(decoded));
+            if let Ok(decoded) = <Invalid as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Invalid(decoded));
             }
             if let Ok(decoded) =
-                <OnlyOperator as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <NewRootIsDuplicated as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::OnlyOperator(decoded));
+                return Ok(Self::NewRootIsDuplicated(decoded));
+            }
+            if let Ok(decoded) = <NotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::NotChanged(decoded));
+            }
+            if let Ok(decoded) = <NoteHasBeenSpent as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::NoteHasBeenSpent(decoded));
             }
             if let Ok(decoded) =
-                <OnlyWhitelistedRoller as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <NumInputsGreaterThanZero as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::OnlyWhitelistedRoller(decoded));
+                return Ok(Self::NumInputsGreaterThanZero(decoded));
+            }
+            if let Ok(decoded) = <OnlyOperator as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::OnlyOperator(decoded));
             }
             if let Ok(decoded) =
-                <OnlyWhitelistedSender as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <OnlyWhitelistedRoller as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::OnlyWhitelistedSender(decoded));
+                return Ok(Self::OnlyWhitelistedRoller(decoded));
             }
             if let Ok(decoded) =
-                <OutputNotesLessThanThree as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <OnlyWhitelistedSender as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::OutputNotesLessThanThree(decoded));
+                return Ok(Self::OnlyWhitelistedSender(decoded));
             }
             if let Ok(decoded) =
-                <RollupFeeToFew as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <OutputNotesLessThanThree as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::RollupFeeToFew(decoded));
+                return Ok(Self::OutputNotesLessThanThree(decoded));
+            }
+            if let Ok(decoded) = <RollupFeeToFew as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::RollupFeeToFew(decoded));
             }
             if let Ok(decoded) =
-                <RollupSizeNotPowerOfTwo as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <RollupSizeNotPowerOfTwo as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::RollupSizeNotPowerOfTwo(decoded));
+                return Ok(Self::RollupSizeNotPowerOfTwo(decoded));
+            }
+            if let Ok(decoded) = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
+                return Ok(Self::SanctionedAddress(decoded));
             }
             if let Ok(decoded) =
-                <SanctionedAddress as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <TreeHeightLessThanZero as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::SanctionedAddress(decoded));
+                return Ok(Self::TreeHeightLessThanZero(decoded));
             }
             if let Ok(decoded) =
-                <TreeHeightLessThanZero as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <TreeHeightOutOfBounds as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::TreeHeightLessThanZero(decoded));
+                return Ok(Self::TreeHeightOutOfBounds(decoded));
+            }
+            if let Ok(decoded) = <TreeIsFull as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::TreeIsFull(decoded));
             }
             if let Ok(decoded) =
-                <TreeHeightOutOfBounds as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <VerifierUpdatesHasBeenDisabled as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolErrors::TreeHeightOutOfBounds(decoded));
+                return Ok(Self::VerifierUpdatesHasBeenDisabled(decoded));
             }
-            if let Ok(decoded) = <TreeIsFull as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolErrors::TreeIsFull(decoded));
-            }
-            if let Ok(decoded) =
-                <VerifierUpdatesHasBeenDisabled as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(CommitmentPoolErrors::VerifierUpdatesHasBeenDisabled(
-                    decoded,
-                ));
-            }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for CommitmentPoolErrors {
-        fn encode(self) -> Vec<u8> {
+    impl ::ethers_core::abi::AbiEncode for CommitmentPoolErrors {
+        fn encode(self) -> ::std::vec::Vec<u8> {
             match self {
-                CommitmentPoolErrors::AuditorIndexError(element) => element.encode(),
-                CommitmentPoolErrors::AuditorNotesLengthError(element) => element.encode(),
-                CommitmentPoolErrors::AuditorPublicKeyNotChanged(element) => element.encode(),
-                CommitmentPoolErrors::CommitmentHasBeenSubmitted(element) => element.encode(),
-                CommitmentPoolErrors::Duplicated(element) => element.encode(),
-                CommitmentPoolErrors::IndexOutOfBound(element) => element.encode(),
-                CommitmentPoolErrors::Invalid(element) => element.encode(),
-                CommitmentPoolErrors::NewRootIsDuplicated(element) => element.encode(),
-                CommitmentPoolErrors::NotChanged(element) => element.encode(),
-                CommitmentPoolErrors::NoteHasBeenSpent(element) => element.encode(),
-                CommitmentPoolErrors::NumInputsGreaterThanZero(element) => element.encode(),
-                CommitmentPoolErrors::OnlyOperator(element) => element.encode(),
-                CommitmentPoolErrors::OnlyWhitelistedRoller(element) => element.encode(),
-                CommitmentPoolErrors::OnlyWhitelistedSender(element) => element.encode(),
-                CommitmentPoolErrors::OutputNotesLessThanThree(element) => element.encode(),
-                CommitmentPoolErrors::RollupFeeToFew(element) => element.encode(),
-                CommitmentPoolErrors::RollupSizeNotPowerOfTwo(element) => element.encode(),
-                CommitmentPoolErrors::SanctionedAddress(element) => element.encode(),
-                CommitmentPoolErrors::TreeHeightLessThanZero(element) => element.encode(),
-                CommitmentPoolErrors::TreeHeightOutOfBounds(element) => element.encode(),
-                CommitmentPoolErrors::TreeIsFull(element) => element.encode(),
-                CommitmentPoolErrors::VerifierUpdatesHasBeenDisabled(element) => element.encode(),
+                Self::AuditorIndexError(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AuditorNotesLengthError(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AuditorPublicKeyNotChanged(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::CommitmentHasBeenSubmitted(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Duplicated(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::IndexOutOfBound(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::Invalid(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::NewRootIsDuplicated(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::NotChanged(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::NoteHasBeenSpent(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::NumInputsGreaterThanZero(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::OnlyOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::OnlyWhitelistedRoller(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::OnlyWhitelistedSender(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::OutputNotesLessThanThree(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RollupFeeToFew(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::RollupSizeNotPowerOfTwo(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SanctionedAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::TreeHeightLessThanZero(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TreeHeightOutOfBounds(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TreeIsFull(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::VerifierUpdatesHasBeenDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RevertString(s) => ::ethers_core::abi::AbiEncode::encode(s),
             }
         }
     }
-    impl ::std::fmt::Display for CommitmentPoolErrors {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::ethers_contract::ContractRevert for CommitmentPoolErrors {
+        fn valid_selector(selector: [u8; 4]) -> bool {
+            match selector {
+                [0x08, 0xc3, 0x79, 0xa0] => true,
+                _ if selector
+                    == <AuditorIndexError as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <AuditorNotesLengthError as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <AuditorPublicKeyNotChanged as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <CommitmentHasBeenSubmitted as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <Duplicated as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <IndexOutOfBound as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <Invalid as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <NewRootIsDuplicated as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <NotChanged as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <NoteHasBeenSpent as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <NumInputsGreaterThanZero as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <OnlyOperator as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <OnlyWhitelistedRoller as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <OnlyWhitelistedSender as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <OutputNotesLessThanThree as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <RollupFeeToFew as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <RollupSizeNotPowerOfTwo as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <SanctionedAddress as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <TreeHeightLessThanZero as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <TreeHeightOutOfBounds as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <TreeIsFull as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <VerifierUpdatesHasBeenDisabled as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ => false,
+            }
+        }
+    }
+    impl ::core::fmt::Display for CommitmentPoolErrors {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                CommitmentPoolErrors::AuditorIndexError(element) => element.fmt(f),
-                CommitmentPoolErrors::AuditorNotesLengthError(element) => element.fmt(f),
-                CommitmentPoolErrors::AuditorPublicKeyNotChanged(element) => element.fmt(f),
-                CommitmentPoolErrors::CommitmentHasBeenSubmitted(element) => element.fmt(f),
-                CommitmentPoolErrors::Duplicated(element) => element.fmt(f),
-                CommitmentPoolErrors::IndexOutOfBound(element) => element.fmt(f),
-                CommitmentPoolErrors::Invalid(element) => element.fmt(f),
-                CommitmentPoolErrors::NewRootIsDuplicated(element) => element.fmt(f),
-                CommitmentPoolErrors::NotChanged(element) => element.fmt(f),
-                CommitmentPoolErrors::NoteHasBeenSpent(element) => element.fmt(f),
-                CommitmentPoolErrors::NumInputsGreaterThanZero(element) => element.fmt(f),
-                CommitmentPoolErrors::OnlyOperator(element) => element.fmt(f),
-                CommitmentPoolErrors::OnlyWhitelistedRoller(element) => element.fmt(f),
-                CommitmentPoolErrors::OnlyWhitelistedSender(element) => element.fmt(f),
-                CommitmentPoolErrors::OutputNotesLessThanThree(element) => element.fmt(f),
-                CommitmentPoolErrors::RollupFeeToFew(element) => element.fmt(f),
-                CommitmentPoolErrors::RollupSizeNotPowerOfTwo(element) => element.fmt(f),
-                CommitmentPoolErrors::SanctionedAddress(element) => element.fmt(f),
-                CommitmentPoolErrors::TreeHeightLessThanZero(element) => element.fmt(f),
-                CommitmentPoolErrors::TreeHeightOutOfBounds(element) => element.fmt(f),
-                CommitmentPoolErrors::TreeIsFull(element) => element.fmt(f),
-                CommitmentPoolErrors::VerifierUpdatesHasBeenDisabled(element) => element.fmt(f),
+                Self::AuditorIndexError(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AuditorNotesLengthError(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AuditorPublicKeyNotChanged(element) => ::core::fmt::Display::fmt(element, f),
+                Self::CommitmentHasBeenSubmitted(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Duplicated(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IndexOutOfBound(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Invalid(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NewRootIsDuplicated(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NotChanged(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NoteHasBeenSpent(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NumInputsGreaterThanZero(element) => ::core::fmt::Display::fmt(element, f),
+                Self::OnlyOperator(element) => ::core::fmt::Display::fmt(element, f),
+                Self::OnlyWhitelistedRoller(element) => ::core::fmt::Display::fmt(element, f),
+                Self::OnlyWhitelistedSender(element) => ::core::fmt::Display::fmt(element, f),
+                Self::OutputNotesLessThanThree(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RollupFeeToFew(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RollupSizeNotPowerOfTwo(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionedAddress(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TreeHeightLessThanZero(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TreeHeightOutOfBounds(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TreeIsFull(element) => ::core::fmt::Display::fmt(element, f),
+                Self::VerifierUpdatesHasBeenDisabled(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::RevertString(s) => ::core::fmt::Display::fmt(s, f),
             }
         }
     }
-    impl ::std::convert::From<AuditorIndexError> for CommitmentPoolErrors {
-        fn from(var: AuditorIndexError) -> Self {
-            CommitmentPoolErrors::AuditorIndexError(var)
+    impl ::core::convert::From<::std::string::String> for CommitmentPoolErrors {
+        fn from(value: String) -> Self {
+            Self::RevertString(value)
         }
     }
-    impl ::std::convert::From<AuditorNotesLengthError> for CommitmentPoolErrors {
-        fn from(var: AuditorNotesLengthError) -> Self {
-            CommitmentPoolErrors::AuditorNotesLengthError(var)
+    impl ::core::convert::From<AuditorIndexError> for CommitmentPoolErrors {
+        fn from(value: AuditorIndexError) -> Self {
+            Self::AuditorIndexError(value)
         }
     }
-    impl ::std::convert::From<AuditorPublicKeyNotChanged> for CommitmentPoolErrors {
-        fn from(var: AuditorPublicKeyNotChanged) -> Self {
-            CommitmentPoolErrors::AuditorPublicKeyNotChanged(var)
+    impl ::core::convert::From<AuditorNotesLengthError> for CommitmentPoolErrors {
+        fn from(value: AuditorNotesLengthError) -> Self {
+            Self::AuditorNotesLengthError(value)
         }
     }
-    impl ::std::convert::From<CommitmentHasBeenSubmitted> for CommitmentPoolErrors {
-        fn from(var: CommitmentHasBeenSubmitted) -> Self {
-            CommitmentPoolErrors::CommitmentHasBeenSubmitted(var)
+    impl ::core::convert::From<AuditorPublicKeyNotChanged> for CommitmentPoolErrors {
+        fn from(value: AuditorPublicKeyNotChanged) -> Self {
+            Self::AuditorPublicKeyNotChanged(value)
         }
     }
-    impl ::std::convert::From<Duplicated> for CommitmentPoolErrors {
-        fn from(var: Duplicated) -> Self {
-            CommitmentPoolErrors::Duplicated(var)
+    impl ::core::convert::From<CommitmentHasBeenSubmitted> for CommitmentPoolErrors {
+        fn from(value: CommitmentHasBeenSubmitted) -> Self {
+            Self::CommitmentHasBeenSubmitted(value)
         }
     }
-    impl ::std::convert::From<IndexOutOfBound> for CommitmentPoolErrors {
-        fn from(var: IndexOutOfBound) -> Self {
-            CommitmentPoolErrors::IndexOutOfBound(var)
+    impl ::core::convert::From<Duplicated> for CommitmentPoolErrors {
+        fn from(value: Duplicated) -> Self {
+            Self::Duplicated(value)
         }
     }
-    impl ::std::convert::From<Invalid> for CommitmentPoolErrors {
-        fn from(var: Invalid) -> Self {
-            CommitmentPoolErrors::Invalid(var)
+    impl ::core::convert::From<IndexOutOfBound> for CommitmentPoolErrors {
+        fn from(value: IndexOutOfBound) -> Self {
+            Self::IndexOutOfBound(value)
         }
     }
-    impl ::std::convert::From<NewRootIsDuplicated> for CommitmentPoolErrors {
-        fn from(var: NewRootIsDuplicated) -> Self {
-            CommitmentPoolErrors::NewRootIsDuplicated(var)
+    impl ::core::convert::From<Invalid> for CommitmentPoolErrors {
+        fn from(value: Invalid) -> Self {
+            Self::Invalid(value)
         }
     }
-    impl ::std::convert::From<NotChanged> for CommitmentPoolErrors {
-        fn from(var: NotChanged) -> Self {
-            CommitmentPoolErrors::NotChanged(var)
+    impl ::core::convert::From<NewRootIsDuplicated> for CommitmentPoolErrors {
+        fn from(value: NewRootIsDuplicated) -> Self {
+            Self::NewRootIsDuplicated(value)
         }
     }
-    impl ::std::convert::From<NoteHasBeenSpent> for CommitmentPoolErrors {
-        fn from(var: NoteHasBeenSpent) -> Self {
-            CommitmentPoolErrors::NoteHasBeenSpent(var)
+    impl ::core::convert::From<NotChanged> for CommitmentPoolErrors {
+        fn from(value: NotChanged) -> Self {
+            Self::NotChanged(value)
         }
     }
-    impl ::std::convert::From<NumInputsGreaterThanZero> for CommitmentPoolErrors {
-        fn from(var: NumInputsGreaterThanZero) -> Self {
-            CommitmentPoolErrors::NumInputsGreaterThanZero(var)
+    impl ::core::convert::From<NoteHasBeenSpent> for CommitmentPoolErrors {
+        fn from(value: NoteHasBeenSpent) -> Self {
+            Self::NoteHasBeenSpent(value)
         }
     }
-    impl ::std::convert::From<OnlyOperator> for CommitmentPoolErrors {
-        fn from(var: OnlyOperator) -> Self {
-            CommitmentPoolErrors::OnlyOperator(var)
+    impl ::core::convert::From<NumInputsGreaterThanZero> for CommitmentPoolErrors {
+        fn from(value: NumInputsGreaterThanZero) -> Self {
+            Self::NumInputsGreaterThanZero(value)
         }
     }
-    impl ::std::convert::From<OnlyWhitelistedRoller> for CommitmentPoolErrors {
-        fn from(var: OnlyWhitelistedRoller) -> Self {
-            CommitmentPoolErrors::OnlyWhitelistedRoller(var)
+    impl ::core::convert::From<OnlyOperator> for CommitmentPoolErrors {
+        fn from(value: OnlyOperator) -> Self {
+            Self::OnlyOperator(value)
         }
     }
-    impl ::std::convert::From<OnlyWhitelistedSender> for CommitmentPoolErrors {
-        fn from(var: OnlyWhitelistedSender) -> Self {
-            CommitmentPoolErrors::OnlyWhitelistedSender(var)
+    impl ::core::convert::From<OnlyWhitelistedRoller> for CommitmentPoolErrors {
+        fn from(value: OnlyWhitelistedRoller) -> Self {
+            Self::OnlyWhitelistedRoller(value)
         }
     }
-    impl ::std::convert::From<OutputNotesLessThanThree> for CommitmentPoolErrors {
-        fn from(var: OutputNotesLessThanThree) -> Self {
-            CommitmentPoolErrors::OutputNotesLessThanThree(var)
+    impl ::core::convert::From<OnlyWhitelistedSender> for CommitmentPoolErrors {
+        fn from(value: OnlyWhitelistedSender) -> Self {
+            Self::OnlyWhitelistedSender(value)
         }
     }
-    impl ::std::convert::From<RollupFeeToFew> for CommitmentPoolErrors {
-        fn from(var: RollupFeeToFew) -> Self {
-            CommitmentPoolErrors::RollupFeeToFew(var)
+    impl ::core::convert::From<OutputNotesLessThanThree> for CommitmentPoolErrors {
+        fn from(value: OutputNotesLessThanThree) -> Self {
+            Self::OutputNotesLessThanThree(value)
         }
     }
-    impl ::std::convert::From<RollupSizeNotPowerOfTwo> for CommitmentPoolErrors {
-        fn from(var: RollupSizeNotPowerOfTwo) -> Self {
-            CommitmentPoolErrors::RollupSizeNotPowerOfTwo(var)
+    impl ::core::convert::From<RollupFeeToFew> for CommitmentPoolErrors {
+        fn from(value: RollupFeeToFew) -> Self {
+            Self::RollupFeeToFew(value)
         }
     }
-    impl ::std::convert::From<SanctionedAddress> for CommitmentPoolErrors {
-        fn from(var: SanctionedAddress) -> Self {
-            CommitmentPoolErrors::SanctionedAddress(var)
+    impl ::core::convert::From<RollupSizeNotPowerOfTwo> for CommitmentPoolErrors {
+        fn from(value: RollupSizeNotPowerOfTwo) -> Self {
+            Self::RollupSizeNotPowerOfTwo(value)
         }
     }
-    impl ::std::convert::From<TreeHeightLessThanZero> for CommitmentPoolErrors {
-        fn from(var: TreeHeightLessThanZero) -> Self {
-            CommitmentPoolErrors::TreeHeightLessThanZero(var)
+    impl ::core::convert::From<SanctionedAddress> for CommitmentPoolErrors {
+        fn from(value: SanctionedAddress) -> Self {
+            Self::SanctionedAddress(value)
         }
     }
-    impl ::std::convert::From<TreeHeightOutOfBounds> for CommitmentPoolErrors {
-        fn from(var: TreeHeightOutOfBounds) -> Self {
-            CommitmentPoolErrors::TreeHeightOutOfBounds(var)
+    impl ::core::convert::From<TreeHeightLessThanZero> for CommitmentPoolErrors {
+        fn from(value: TreeHeightLessThanZero) -> Self {
+            Self::TreeHeightLessThanZero(value)
         }
     }
-    impl ::std::convert::From<TreeIsFull> for CommitmentPoolErrors {
-        fn from(var: TreeIsFull) -> Self {
-            CommitmentPoolErrors::TreeIsFull(var)
+    impl ::core::convert::From<TreeHeightOutOfBounds> for CommitmentPoolErrors {
+        fn from(value: TreeHeightOutOfBounds) -> Self {
+            Self::TreeHeightOutOfBounds(value)
         }
     }
-    impl ::std::convert::From<VerifierUpdatesHasBeenDisabled> for CommitmentPoolErrors {
-        fn from(var: VerifierUpdatesHasBeenDisabled) -> Self {
-            CommitmentPoolErrors::VerifierUpdatesHasBeenDisabled(var)
+    impl ::core::convert::From<TreeIsFull> for CommitmentPoolErrors {
+        fn from(value: TreeIsFull) -> Self {
+            Self::TreeIsFull(value)
+        }
+    }
+    impl ::core::convert::From<VerifierUpdatesHasBeenDisabled> for CommitmentPoolErrors {
+        fn from(value: VerifierUpdatesHasBeenDisabled) -> Self {
+            Self::VerifierUpdatesHasBeenDisabled(value)
         }
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(name = "AuditorPublicKey", abi = "AuditorPublicKey(uint256,uint256)")]
     pub struct AuditorPublicKeyFilter {
         #[ethevent(indexed)]
-        pub index: ethers::core::types::U256,
-        pub public_key: ethers::core::types::U256,
+        pub index: ::ethers_core::types::U256,
+        pub public_key: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(name = "CommitmentIncluded", abi = "CommitmentIncluded(uint256)")]
     pub struct CommitmentIncludedFilter {
         #[ethevent(indexed)]
-        pub commitment: ethers::core::types::U256,
+        pub commitment: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(
         name = "CommitmentQueued",
@@ -1112,39 +1267,41 @@ pub mod commitment_pool {
     )]
     pub struct CommitmentQueuedFilter {
         #[ethevent(indexed)]
-        pub commitment: ethers::core::types::U256,
-        pub rollup_fee: ethers::core::types::U256,
-        pub leaf_index: ethers::core::types::U256,
-        pub encrypted_note: ethers::core::types::Bytes,
+        pub commitment: ::ethers_core::types::U256,
+        pub rollup_fee: ::ethers_core::types::U256,
+        pub leaf_index: ::ethers_core::types::U256,
+        pub encrypted_note: ::ethers_core::types::Bytes,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(name = "CommitmentSpent", abi = "CommitmentSpent(uint256,uint256)")]
     pub struct CommitmentSpentFilter {
         #[ethevent(indexed)]
-        pub root_hash: ethers::core::types::U256,
+        pub root_hash: ::ethers_core::types::U256,
         #[ethevent(indexed)]
-        pub serial_number: ethers::core::types::U256,
+        pub serial_number: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(
         name = "EncryptedAuditorNote",
@@ -1152,19 +1309,20 @@ pub mod commitment_pool {
     )]
     pub struct EncryptedAuditorNoteFilter {
         pub id: u64,
-        pub auditor_public_key: ethers::core::types::U256,
-        pub encrypted_auditor_note: ethers::core::types::U256,
+        pub auditor_public_key: ::ethers_core::types::U256,
+        pub encrypted_auditor_note: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(
         name = "EncryptedAuditorNotes",
@@ -1175,30 +1333,32 @@ pub mod commitment_pool {
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(name = "OperatorChanged", abi = "OperatorChanged(address)")]
     pub struct OperatorChangedFilter {
         #[ethevent(indexed)]
-        pub operator: ethers::core::types::Address,
+        pub operator: ::ethers_core::types::Address,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(
         name = "RollupWhitelistDisabled",
@@ -1209,14 +1369,15 @@ pub mod commitment_pool {
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
     pub struct SanctionsCheckFilter {
@@ -1224,42 +1385,46 @@ pub mod commitment_pool {
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
     pub struct SanctionsListFilter {
-        pub sanctions: ethers::core::types::Address,
+        pub sanctions: ::ethers_core::types::Address,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethevent(name = "VerifierUpdateDisabled", abi = "VerifierUpdateDisabled(bool)")]
     pub struct VerifierUpdateDisabledFilter {
         pub state: bool,
     }
+    ///Container type for all of the contract's events
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash,
     )]
     pub enum CommitmentPoolEvents {
         AuditorPublicKeyFilter(AuditorPublicKeyFilter),
@@ -1274,13 +1439,10 @@ pub mod commitment_pool {
         SanctionsListFilter(SanctionsListFilter),
         VerifierUpdateDisabledFilter(VerifierUpdateDisabledFilter),
     }
-    impl ethers::contract::EthLogDecode for CommitmentPoolEvents {
+    impl ::ethers_contract::EthLogDecode for CommitmentPoolEvents {
         fn decode_log(
-            log: &ethers::core::abi::RawLog,
-        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
-        where
-            Self: Sized,
-        {
+            log: &::ethers_core::abi::RawLog,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = AuditorPublicKeyFilter::decode_log(log) {
                 return Ok(CommitmentPoolEvents::AuditorPublicKeyFilter(decoded));
             }
@@ -1314,160 +1476,228 @@ pub mod commitment_pool {
             if let Ok(decoded) = VerifierUpdateDisabledFilter::decode_log(log) {
                 return Ok(CommitmentPoolEvents::VerifierUpdateDisabledFilter(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData)
+            Err(::ethers_core::abi::Error::InvalidData)
         }
     }
-    impl ::std::fmt::Display for CommitmentPoolEvents {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for CommitmentPoolEvents {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                CommitmentPoolEvents::AuditorPublicKeyFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::CommitmentIncludedFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::CommitmentQueuedFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::CommitmentSpentFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::EncryptedAuditorNoteFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::EncryptedAuditorNotesFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::OperatorChangedFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::RollupWhitelistDisabledFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::SanctionsCheckFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::SanctionsListFilter(element) => element.fmt(f),
-                CommitmentPoolEvents::VerifierUpdateDisabledFilter(element) => element.fmt(f),
+                Self::AuditorPublicKeyFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::CommitmentIncludedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::CommitmentQueuedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::CommitmentSpentFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::EncryptedAuditorNoteFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::EncryptedAuditorNotesFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::OperatorChangedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RollupWhitelistDisabledFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SanctionsCheckFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionsListFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::VerifierUpdateDisabledFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
             }
         }
     }
-    #[doc = "Container type for all input parameters for the `_pathIndices` function with signature `_pathIndices(uint256,uint32)` and selector `[242, 218, 29, 65]`"]
+    impl ::core::convert::From<AuditorPublicKeyFilter> for CommitmentPoolEvents {
+        fn from(value: AuditorPublicKeyFilter) -> Self {
+            Self::AuditorPublicKeyFilter(value)
+        }
+    }
+    impl ::core::convert::From<CommitmentIncludedFilter> for CommitmentPoolEvents {
+        fn from(value: CommitmentIncludedFilter) -> Self {
+            Self::CommitmentIncludedFilter(value)
+        }
+    }
+    impl ::core::convert::From<CommitmentQueuedFilter> for CommitmentPoolEvents {
+        fn from(value: CommitmentQueuedFilter) -> Self {
+            Self::CommitmentQueuedFilter(value)
+        }
+    }
+    impl ::core::convert::From<CommitmentSpentFilter> for CommitmentPoolEvents {
+        fn from(value: CommitmentSpentFilter) -> Self {
+            Self::CommitmentSpentFilter(value)
+        }
+    }
+    impl ::core::convert::From<EncryptedAuditorNoteFilter> for CommitmentPoolEvents {
+        fn from(value: EncryptedAuditorNoteFilter) -> Self {
+            Self::EncryptedAuditorNoteFilter(value)
+        }
+    }
+    impl ::core::convert::From<EncryptedAuditorNotesFilter> for CommitmentPoolEvents {
+        fn from(value: EncryptedAuditorNotesFilter) -> Self {
+            Self::EncryptedAuditorNotesFilter(value)
+        }
+    }
+    impl ::core::convert::From<OperatorChangedFilter> for CommitmentPoolEvents {
+        fn from(value: OperatorChangedFilter) -> Self {
+            Self::OperatorChangedFilter(value)
+        }
+    }
+    impl ::core::convert::From<RollupWhitelistDisabledFilter> for CommitmentPoolEvents {
+        fn from(value: RollupWhitelistDisabledFilter) -> Self {
+            Self::RollupWhitelistDisabledFilter(value)
+        }
+    }
+    impl ::core::convert::From<SanctionsCheckFilter> for CommitmentPoolEvents {
+        fn from(value: SanctionsCheckFilter) -> Self {
+            Self::SanctionsCheckFilter(value)
+        }
+    }
+    impl ::core::convert::From<SanctionsListFilter> for CommitmentPoolEvents {
+        fn from(value: SanctionsListFilter) -> Self {
+            Self::SanctionsListFilter(value)
+        }
+    }
+    impl ::core::convert::From<VerifierUpdateDisabledFilter> for CommitmentPoolEvents {
+        fn from(value: VerifierUpdateDisabledFilter) -> Self {
+            Self::VerifierUpdateDisabledFilter(value)
+        }
+    }
+    ///Container type for all input parameters for the `_pathIndices` function with signature `_pathIndices(uint256,uint32)` and selector `0xf2da1d41`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "_pathIndices", abi = "_pathIndices(uint256,uint32)")]
     pub struct PathIndicesCall {
-        pub full_path: ethers::core::types::U256,
+        pub full_path: ::ethers_core::types::U256,
         pub rollup_size: u32,
     }
-    #[doc = "Container type for all input parameters for the `addEnqueueWhitelist` function with signature `addEnqueueWhitelist(address)` and selector `[169, 177, 210, 150]`"]
+    ///Container type for all input parameters for the `addEnqueueWhitelist` function with signature `addEnqueueWhitelist(address)` and selector `0xa9b1d296`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "addEnqueueWhitelist", abi = "addEnqueueWhitelist(address)")]
     pub struct AddEnqueueWhitelistCall {
-        pub actor: ethers::core::types::Address,
+        pub actor: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `addRollupWhitelist` function with signature `addRollupWhitelist(address)` and selector `[2, 212, 152, 241]`"]
+    ///Container type for all input parameters for the `addRollupWhitelist` function with signature `addRollupWhitelist(address)` and selector `0x02d498f1`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "addRollupWhitelist", abi = "addRollupWhitelist(address)")]
     pub struct AddRollupWhitelistCall {
-        pub roller: ethers::core::types::Address,
+        pub roller: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `assetType` function with signature `assetType()` and selector `[63, 227, 52, 122]`"]
+    ///Container type for all input parameters for the `assetType` function with signature `assetType()` and selector `0x3fe3347a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "assetType", abi = "assetType()")]
     pub struct AssetTypeCall;
-    #[doc = "Container type for all input parameters for the `auditorCount` function with signature `auditorCount()` and selector `[17, 95, 87, 76]`"]
+    ///Container type for all input parameters for the `auditorCount` function with signature `auditorCount()` and selector `0x115f574c`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "auditorCount", abi = "auditorCount()")]
     pub struct AuditorCountCall;
-    #[doc = "Container type for all input parameters for the `changeOperator` function with signature `changeOperator(address)` and selector `[6, 57, 76, 155]`"]
+    ///Container type for all input parameters for the `changeOperator` function with signature `changeOperator(address)` and selector `0x06394c9b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
     pub struct ChangeOperatorCall {
-        pub new_operator: ethers::core::types::Address,
+        pub new_operator: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `disableRollupVerifier` function with signature `disableRollupVerifier(uint32)` and selector `[155, 10, 111, 234]`"]
+    ///Container type for all input parameters for the `disableRollupVerifier` function with signature `disableRollupVerifier(uint32)` and selector `0x9b0a6fea`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "disableRollupVerifier", abi = "disableRollupVerifier(uint32)")]
     pub struct DisableRollupVerifierCall {
         pub rollup_size: u32,
     }
-    #[doc = "Container type for all input parameters for the `disableSanctionsCheck` function with signature `disableSanctionsCheck()` and selector `[221, 117, 124, 52]`"]
+    ///Container type for all input parameters for the `disableSanctionsCheck` function with signature `disableSanctionsCheck()` and selector `0xdd757c34`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "disableSanctionsCheck", abi = "disableSanctionsCheck()")]
     pub struct DisableSanctionsCheckCall;
-    #[doc = "Container type for all input parameters for the `disableTransactVerifier` function with signature `disableTransactVerifier(uint32,uint32)` and selector `[194, 89, 226, 230]`"]
+    ///Container type for all input parameters for the `disableTransactVerifier` function with signature `disableTransactVerifier(uint32,uint32)` and selector `0xc259e2e6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "disableTransactVerifier",
@@ -1477,17 +1707,18 @@ pub mod commitment_pool {
         pub num_inputs: u32,
         pub num_outputs: u32,
     }
-    #[doc = "Container type for all input parameters for the `enableRollupVerifier` function with signature `enableRollupVerifier(uint32,address)` and selector `[222, 239, 247, 205]`"]
+    ///Container type for all input parameters for the `enableRollupVerifier` function with signature `enableRollupVerifier(uint32,address)` and selector `0xdeeff7cd`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "enableRollupVerifier",
@@ -1495,33 +1726,35 @@ pub mod commitment_pool {
     )]
     pub struct EnableRollupVerifierCall {
         pub rollup_size: u32,
-        pub rollup_verifier: ethers::core::types::Address,
+        pub rollup_verifier: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `enableSanctionsCheck` function with signature `enableSanctionsCheck()` and selector `[1, 219, 241, 159]`"]
+    ///Container type for all input parameters for the `enableSanctionsCheck` function with signature `enableSanctionsCheck()` and selector `0x01dbf19f`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "enableSanctionsCheck", abi = "enableSanctionsCheck()")]
     pub struct EnableSanctionsCheckCall;
-    #[doc = "Container type for all input parameters for the `enableTransactVerifier` function with signature `enableTransactVerifier(uint32,uint32,address)` and selector `[127, 164, 176, 156]`"]
+    ///Container type for all input parameters for the `enableTransactVerifier` function with signature `enableTransactVerifier(uint32,uint32,address)` and selector `0x7fa4b09c`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "enableTransactVerifier",
@@ -1530,19 +1763,20 @@ pub mod commitment_pool {
     pub struct EnableTransactVerifierCall {
         pub num_inputs: u32,
         pub num_outputs: u32,
-        pub transact_verifier: ethers::core::types::Address,
+        pub transact_verifier: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `enqueue` function with signature `enqueue((uint256,uint256,uint256,uint256,bytes),address)` and selector `[120, 214, 12, 215]`"]
+    ///Container type for all input parameters for the `enqueue` function with signature `enqueue((uint256,uint256,uint256,uint256,bytes),address)` and selector `0x78d60cd7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "enqueue",
@@ -1550,208 +1784,221 @@ pub mod commitment_pool {
     )]
     pub struct EnqueueCall {
         pub request: CommitmentRequest,
-        pub executor: ethers::core::types::Address,
+        pub executor: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `getAllAuditorPublicKeys` function with signature `getAllAuditorPublicKeys()` and selector `[99, 188, 125, 50]`"]
+    ///Container type for all input parameters for the `getAllAuditorPublicKeys` function with signature `getAllAuditorPublicKeys()` and selector `0x63bc7d32`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "getAllAuditorPublicKeys", abi = "getAllAuditorPublicKeys()")]
     pub struct GetAllAuditorPublicKeysCall;
-    #[doc = "Container type for all input parameters for the `getAuditorPublicKey` function with signature `getAuditorPublicKey(uint256)` and selector `[135, 120, 13, 249]`"]
+    ///Container type for all input parameters for the `getAuditorPublicKey` function with signature `getAuditorPublicKey(uint256)` and selector `0x87780df9`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "getAuditorPublicKey", abi = "getAuditorPublicKey(uint256)")]
     pub struct GetAuditorPublicKeyCall {
-        pub index: ethers::core::types::U256,
+        pub index: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `getCommitmentIncludedCount` function with signature `getCommitmentIncludedCount()` and selector `[229, 0, 245, 4]`"]
+    ///Container type for all input parameters for the `getCommitmentIncludedCount` function with signature `getCommitmentIncludedCount()` and selector `0xe500f504`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "getCommitmentIncludedCount",
         abi = "getCommitmentIncludedCount()"
     )]
     pub struct GetCommitmentIncludedCountCall;
-    #[doc = "Container type for all input parameters for the `getMinRollupFee` function with signature `getMinRollupFee()` and selector `[176, 136, 146, 208]`"]
+    ///Container type for all input parameters for the `getMinRollupFee` function with signature `getMinRollupFee()` and selector `0xb08892d0`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "getMinRollupFee", abi = "getMinRollupFee()")]
     pub struct GetMinRollupFeeCall;
-    #[doc = "Container type for all input parameters for the `getTreeCapacity` function with signature `getTreeCapacity()` and selector `[72, 78, 182, 82]`"]
+    ///Container type for all input parameters for the `getTreeCapacity` function with signature `getTreeCapacity()` and selector `0x484eb652`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "getTreeCapacity", abi = "getTreeCapacity()")]
     pub struct GetTreeCapacityCall;
-    #[doc = "Container type for all input parameters for the `isHistoricCommitment` function with signature `isHistoricCommitment(uint256)` and selector `[87, 6, 0, 22]`"]
+    ///Container type for all input parameters for the `isHistoricCommitment` function with signature `isHistoricCommitment(uint256)` and selector `0x57060016`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "isHistoricCommitment", abi = "isHistoricCommitment(uint256)")]
     pub struct IsHistoricCommitmentCall {
-        pub commitment: ethers::core::types::U256,
+        pub commitment: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `isKnownRoot` function with signature `isKnownRoot(uint256)` and selector `[166, 35, 42, 147]`"]
+    ///Container type for all input parameters for the `isKnownRoot` function with signature `isKnownRoot(uint256)` and selector `0xa6232a93`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "isKnownRoot", abi = "isKnownRoot(uint256)")]
     pub struct IsKnownRootCall {
-        pub root: ethers::core::types::U256,
+        pub root: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `isRollupWhitelistDisabled` function with signature `isRollupWhitelistDisabled()` and selector `[255, 168, 155, 136]`"]
+    ///Container type for all input parameters for the `isRollupWhitelistDisabled` function with signature `isRollupWhitelistDisabled()` and selector `0xffa89b88`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "isRollupWhitelistDisabled",
         abi = "isRollupWhitelistDisabled()"
     )]
     pub struct IsRollupWhitelistDisabledCall;
-    #[doc = "Container type for all input parameters for the `isSpentSerialNumber` function with signature `isSpentSerialNumber(uint256)` and selector `[59, 184, 209, 180]`"]
+    ///Container type for all input parameters for the `isSpentSerialNumber` function with signature `isSpentSerialNumber(uint256)` and selector `0x3bb8d1b4`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "isSpentSerialNumber", abi = "isSpentSerialNumber(uint256)")]
     pub struct IsSpentSerialNumberCall {
-        pub serial_number: ethers::core::types::U256,
+        pub serial_number: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `isVerifierUpdateDisabled` function with signature `isVerifierUpdateDisabled()` and selector `[78, 176, 105, 247]`"]
+    ///Container type for all input parameters for the `isVerifierUpdateDisabled` function with signature `isVerifierUpdateDisabled()` and selector `0x4eb069f7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "isVerifierUpdateDisabled", abi = "isVerifierUpdateDisabled()")]
     pub struct IsVerifierUpdateDisabledCall;
-    #[doc = "Container type for all input parameters for the `removeEnqueueWhitelist` function with signature `removeEnqueueWhitelist(address)` and selector `[3, 219, 152, 116]`"]
+    ///Container type for all input parameters for the `removeEnqueueWhitelist` function with signature `removeEnqueueWhitelist(address)` and selector `0x03db9874`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "removeEnqueueWhitelist",
         abi = "removeEnqueueWhitelist(address)"
     )]
     pub struct RemoveEnqueueWhitelistCall {
-        pub actor: ethers::core::types::Address,
+        pub actor: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `removeRollupWhitelist` function with signature `removeRollupWhitelist(address)` and selector `[156, 198, 179, 84]`"]
+    ///Container type for all input parameters for the `removeRollupWhitelist` function with signature `removeRollupWhitelist(address)` and selector `0x9cc6b354`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "removeRollupWhitelist", abi = "removeRollupWhitelist(address)")]
     pub struct RemoveRollupWhitelistCall {
-        pub roller: ethers::core::types::Address,
+        pub roller: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `rollup` function with signature `rollup((((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint256,uint256))` and selector `[20, 167, 115, 125]`"]
+    ///Container type for all input parameters for the `rollup` function with signature `rollup((((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint256,uint256))` and selector `0x14a7737d`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "rollup",
@@ -1760,61 +2007,65 @@ pub mod commitment_pool {
     pub struct RollupCall {
         pub request: RollupRequest,
     }
-    #[doc = "Container type for all input parameters for the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `[177, 195, 148, 34]`"]
+    ///Container type for all input parameters for the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `0xb1c39422`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
     pub struct SanctionsCheckCall;
-    #[doc = "Container type for all input parameters for the `sanctionsList` function with signature `sanctionsList()` and selector `[236, 87, 28, 106]`"]
+    ///Container type for all input parameters for the `sanctionsList` function with signature `sanctionsList()` and selector `0xec571c6a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
     pub struct SanctionsListCall;
-    #[doc = "Container type for all input parameters for the `setMinRollupFee` function with signature `setMinRollupFee(uint256)` and selector `[124, 191, 15, 246]`"]
+    ///Container type for all input parameters for the `setMinRollupFee` function with signature `setMinRollupFee(uint256)` and selector `0x7cbf0ff6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(name = "setMinRollupFee", abi = "setMinRollupFee(uint256)")]
     pub struct SetMinRollupFeeCall {
-        pub min_rollup_fee: ethers::core::types::U256,
+        pub min_rollup_fee: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `setRollupWhitelistDisabled` function with signature `setRollupWhitelistDisabled(bool)` and selector `[248, 240, 83, 136]`"]
+    ///Container type for all input parameters for the `setRollupWhitelistDisabled` function with signature `setRollupWhitelistDisabled(bool)` and selector `0xf8f05388`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "setRollupWhitelistDisabled",
@@ -1823,17 +2074,18 @@ pub mod commitment_pool {
     pub struct SetRollupWhitelistDisabledCall {
         pub state: bool,
     }
-    #[doc = "Container type for all input parameters for the `setVerifierUpdateDisabled` function with signature `setVerifierUpdateDisabled(bool)` and selector `[179, 183, 86, 49]`"]
+    ///Container type for all input parameters for the `setVerifierUpdateDisabled` function with signature `setVerifierUpdateDisabled(bool)` and selector `0xb3b75631`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "setVerifierUpdateDisabled",
@@ -1842,17 +2094,13 @@ pub mod commitment_pool {
     pub struct SetVerifierUpdateDisabledCall {
         pub state: bool,
     }
-    #[doc = "Container type for all input parameters for the `transact` function with signature `transact((((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256[],uint256[],bytes32,uint256,uint256,uint256[],uint256[],address,address,bytes[],uint256,uint256[]),bytes)` and selector `[114, 8, 41, 113]`"]
+    ///Container type for all input parameters for the `transact` function with signature `transact((((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256[],uint256[],bytes32,uint256,uint256,uint256[],uint256[],address,address,bytes[],uint256,uint256[]),bytes)` and selector `0x72082971`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
-        Default,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
     )]
     #[ethcall(
         name = "transact",
@@ -1860,56 +2108,51 @@ pub mod commitment_pool {
     )]
     pub struct TransactCall {
         pub request: TransactRequest,
-        pub signature: ethers::core::types::Bytes,
+        pub signature: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `updateAuditorPublicKey` function with signature `updateAuditorPublicKey(uint256,uint256)` and selector `[12, 136, 103, 230]`"]
+    ///Container type for all input parameters for the `updateAuditorPublicKey` function with signature `updateAuditorPublicKey(uint256,uint256)` and selector `0x0c8867e6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "updateAuditorPublicKey",
         abi = "updateAuditorPublicKey(uint256,uint256)"
     )]
     pub struct UpdateAuditorPublicKeyCall {
-        pub index: ethers::core::types::U256,
-        pub public_key: ethers::core::types::U256,
+        pub index: ::ethers_core::types::U256,
+        pub public_key: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `updateSanctionsListAddress` function with signature `updateSanctionsListAddress(address)` and selector `[48, 244, 156, 172]`"]
+    ///Container type for all input parameters for the `updateSanctionsListAddress` function with signature `updateSanctionsListAddress(address)` and selector `0x30f49cac`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     #[ethcall(
         name = "updateSanctionsListAddress",
         abi = "updateSanctionsListAddress(address)"
     )]
     pub struct UpdateSanctionsListAddressCall {
-        pub sanction: ethers::core::types::Address,
+        pub sanction: ::ethers_core::types::Address,
     }
-    #[derive(
-        Debug,
-        Clone,
-        PartialEq,
-        Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
-    )]
+    ///Container type for all of the contract's call
+    #[derive(Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize)]
     pub enum CommitmentPoolCalls {
         PathIndices(PathIndicesCall),
         AddEnqueueWhitelist(AddEnqueueWhitelistCall),
@@ -1946,764 +2189,799 @@ pub mod commitment_pool {
         UpdateAuditorPublicKey(UpdateAuditorPublicKeyCall),
         UpdateSanctionsListAddress(UpdateSanctionsListAddressCall),
     }
-    impl ethers::core::abi::AbiDecode for CommitmentPoolCalls {
+    impl ::ethers_core::abi::AbiDecode for CommitmentPoolCalls {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <PathIndicesCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolCalls::PathIndices(decoded));
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
+            if let Ok(decoded) = <PathIndicesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::PathIndices(decoded));
             }
             if let Ok(decoded) =
-                <AddEnqueueWhitelistCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <AddEnqueueWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::AddEnqueueWhitelist(decoded));
+                return Ok(Self::AddEnqueueWhitelist(decoded));
             }
             if let Ok(decoded) =
-                <AddRollupWhitelistCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <AddRollupWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::AddRollupWhitelist(decoded));
+                return Ok(Self::AddRollupWhitelist(decoded));
+            }
+            if let Ok(decoded) = <AssetTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AssetType(decoded));
+            }
+            if let Ok(decoded) = <AuditorCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AuditorCount(decoded));
+            }
+            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
+                return Ok(Self::ChangeOperator(decoded));
             }
             if let Ok(decoded) =
-                <AssetTypeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <DisableRollupVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::AssetType(decoded));
+                return Ok(Self::DisableRollupVerifier(decoded));
             }
             if let Ok(decoded) =
-                <AuditorCountCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::AuditorCount(decoded));
+                return Ok(Self::DisableSanctionsCheck(decoded));
             }
             if let Ok(decoded) =
-                <ChangeOperatorCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <DisableTransactVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::ChangeOperator(decoded));
+                return Ok(Self::DisableTransactVerifier(decoded));
             }
             if let Ok(decoded) =
-                <DisableRollupVerifierCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <EnableRollupVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::DisableRollupVerifier(decoded));
+                return Ok(Self::EnableRollupVerifier(decoded));
             }
             if let Ok(decoded) =
-                <DisableSanctionsCheckCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::DisableSanctionsCheck(decoded));
+                return Ok(Self::EnableSanctionsCheck(decoded));
             }
             if let Ok(decoded) =
-                <DisableTransactVerifierCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <EnableTransactVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::DisableTransactVerifier(decoded));
+                return Ok(Self::EnableTransactVerifier(decoded));
+            }
+            if let Ok(decoded) = <EnqueueCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Enqueue(decoded));
             }
             if let Ok(decoded) =
-                <EnableRollupVerifierCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <GetAllAuditorPublicKeysCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::EnableRollupVerifier(decoded));
+                return Ok(Self::GetAllAuditorPublicKeys(decoded));
             }
             if let Ok(decoded) =
-                <EnableSanctionsCheckCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <GetAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::EnableSanctionsCheck(decoded));
+                return Ok(Self::GetAuditorPublicKey(decoded));
             }
             if let Ok(decoded) =
-                <EnableTransactVerifierCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <GetCommitmentIncludedCountCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::EnableTransactVerifier(decoded));
+                return Ok(Self::GetCommitmentIncludedCount(decoded));
             }
             if let Ok(decoded) =
-                <EnqueueCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <GetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::Enqueue(decoded));
+                return Ok(Self::GetMinRollupFee(decoded));
             }
             if let Ok(decoded) =
-                <GetAllAuditorPublicKeysCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <GetTreeCapacityCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::GetAllAuditorPublicKeys(decoded));
+                return Ok(Self::GetTreeCapacity(decoded));
             }
             if let Ok(decoded) =
-                <GetAuditorPublicKeyCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <IsHistoricCommitmentCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::GetAuditorPublicKey(decoded));
+                return Ok(Self::IsHistoricCommitment(decoded));
+            }
+            if let Ok(decoded) = <IsKnownRootCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::IsKnownRoot(decoded));
             }
             if let Ok(decoded) =
-                <GetCommitmentIncludedCountCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
+                <IsRollupWhitelistDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::GetCommitmentIncludedCount(decoded));
+                return Ok(Self::IsRollupWhitelistDisabled(decoded));
             }
             if let Ok(decoded) =
-                <GetMinRollupFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <IsSpentSerialNumberCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::GetMinRollupFee(decoded));
+                return Ok(Self::IsSpentSerialNumber(decoded));
             }
             if let Ok(decoded) =
-                <GetTreeCapacityCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <IsVerifierUpdateDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::GetTreeCapacity(decoded));
+                return Ok(Self::IsVerifierUpdateDisabled(decoded));
             }
             if let Ok(decoded) =
-                <IsHistoricCommitmentCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <RemoveEnqueueWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::IsHistoricCommitment(decoded));
+                return Ok(Self::RemoveEnqueueWhitelist(decoded));
             }
             if let Ok(decoded) =
-                <IsKnownRootCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <RemoveRollupWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::IsKnownRoot(decoded));
+                return Ok(Self::RemoveRollupWhitelist(decoded));
+            }
+            if let Ok(decoded) = <RollupCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Rollup(decoded));
+            }
+            if let Ok(decoded) = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
+                return Ok(Self::SanctionsCheck(decoded));
+            }
+            if let Ok(decoded) = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
+                return Ok(Self::SanctionsList(decoded));
             }
             if let Ok(decoded) =
-                <IsRollupWhitelistDisabledCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
+                <SetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::IsRollupWhitelistDisabled(decoded));
+                return Ok(Self::SetMinRollupFee(decoded));
             }
             if let Ok(decoded) =
-                <IsSpentSerialNumberCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <SetRollupWhitelistDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::IsSpentSerialNumber(decoded));
+                return Ok(Self::SetRollupWhitelistDisabled(decoded));
             }
             if let Ok(decoded) =
-                <IsVerifierUpdateDisabledCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
+                <SetVerifierUpdateDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::IsVerifierUpdateDisabled(decoded));
+                return Ok(Self::SetVerifierUpdateDisabled(decoded));
+            }
+            if let Ok(decoded) = <TransactCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Transact(decoded));
             }
             if let Ok(decoded) =
-                <RemoveEnqueueWhitelistCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <UpdateAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::RemoveEnqueueWhitelist(decoded));
+                return Ok(Self::UpdateAuditorPublicKey(decoded));
             }
             if let Ok(decoded) =
-                <RemoveRollupWhitelistCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
+                <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(data)
             {
-                return Ok(CommitmentPoolCalls::RemoveRollupWhitelist(decoded));
+                return Ok(Self::UpdateSanctionsListAddress(decoded));
             }
-            if let Ok(decoded) = <RollupCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolCalls::Rollup(decoded));
-            }
-            if let Ok(decoded) =
-                <SanctionsCheckCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolCalls::SanctionsCheck(decoded));
-            }
-            if let Ok(decoded) =
-                <SanctionsListCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolCalls::SanctionsList(decoded));
-            }
-            if let Ok(decoded) =
-                <SetMinRollupFeeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolCalls::SetMinRollupFee(decoded));
-            }
-            if let Ok(decoded) =
-                <SetRollupWhitelistDisabledCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(CommitmentPoolCalls::SetRollupWhitelistDisabled(decoded));
-            }
-            if let Ok(decoded) =
-                <SetVerifierUpdateDisabledCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(CommitmentPoolCalls::SetVerifierUpdateDisabled(decoded));
-            }
-            if let Ok(decoded) =
-                <TransactCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolCalls::Transact(decoded));
-            }
-            if let Ok(decoded) =
-                <UpdateAuditorPublicKeyCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(CommitmentPoolCalls::UpdateAuditorPublicKey(decoded));
-            }
-            if let Ok(decoded) =
-                <UpdateSanctionsListAddressCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(CommitmentPoolCalls::UpdateSanctionsListAddress(decoded));
-            }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for CommitmentPoolCalls {
+    impl ::ethers_core::abi::AbiEncode for CommitmentPoolCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                CommitmentPoolCalls::PathIndices(element) => element.encode(),
-                CommitmentPoolCalls::AddEnqueueWhitelist(element) => element.encode(),
-                CommitmentPoolCalls::AddRollupWhitelist(element) => element.encode(),
-                CommitmentPoolCalls::AssetType(element) => element.encode(),
-                CommitmentPoolCalls::AuditorCount(element) => element.encode(),
-                CommitmentPoolCalls::ChangeOperator(element) => element.encode(),
-                CommitmentPoolCalls::DisableRollupVerifier(element) => element.encode(),
-                CommitmentPoolCalls::DisableSanctionsCheck(element) => element.encode(),
-                CommitmentPoolCalls::DisableTransactVerifier(element) => element.encode(),
-                CommitmentPoolCalls::EnableRollupVerifier(element) => element.encode(),
-                CommitmentPoolCalls::EnableSanctionsCheck(element) => element.encode(),
-                CommitmentPoolCalls::EnableTransactVerifier(element) => element.encode(),
-                CommitmentPoolCalls::Enqueue(element) => element.encode(),
-                CommitmentPoolCalls::GetAllAuditorPublicKeys(element) => element.encode(),
-                CommitmentPoolCalls::GetAuditorPublicKey(element) => element.encode(),
-                CommitmentPoolCalls::GetCommitmentIncludedCount(element) => element.encode(),
-                CommitmentPoolCalls::GetMinRollupFee(element) => element.encode(),
-                CommitmentPoolCalls::GetTreeCapacity(element) => element.encode(),
-                CommitmentPoolCalls::IsHistoricCommitment(element) => element.encode(),
-                CommitmentPoolCalls::IsKnownRoot(element) => element.encode(),
-                CommitmentPoolCalls::IsRollupWhitelistDisabled(element) => element.encode(),
-                CommitmentPoolCalls::IsSpentSerialNumber(element) => element.encode(),
-                CommitmentPoolCalls::IsVerifierUpdateDisabled(element) => element.encode(),
-                CommitmentPoolCalls::RemoveEnqueueWhitelist(element) => element.encode(),
-                CommitmentPoolCalls::RemoveRollupWhitelist(element) => element.encode(),
-                CommitmentPoolCalls::Rollup(element) => element.encode(),
-                CommitmentPoolCalls::SanctionsCheck(element) => element.encode(),
-                CommitmentPoolCalls::SanctionsList(element) => element.encode(),
-                CommitmentPoolCalls::SetMinRollupFee(element) => element.encode(),
-                CommitmentPoolCalls::SetRollupWhitelistDisabled(element) => element.encode(),
-                CommitmentPoolCalls::SetVerifierUpdateDisabled(element) => element.encode(),
-                CommitmentPoolCalls::Transact(element) => element.encode(),
-                CommitmentPoolCalls::UpdateAuditorPublicKey(element) => element.encode(),
-                CommitmentPoolCalls::UpdateSanctionsListAddress(element) => element.encode(),
+                Self::PathIndices(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AddEnqueueWhitelist(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AddRollupWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AssetType(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AuditorCount(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::ChangeOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::DisableRollupVerifier(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::DisableSanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::DisableTransactVerifier(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::EnableRollupVerifier(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::EnableSanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::EnableTransactVerifier(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Enqueue(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetAllAuditorPublicKeys(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetAuditorPublicKey(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetCommitmentIncludedCount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetMinRollupFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetTreeCapacity(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::IsHistoricCommitment(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsKnownRoot(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::IsRollupWhitelistDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsSpentSerialNumber(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsVerifierUpdateDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RemoveEnqueueWhitelist(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RemoveRollupWhitelist(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Rollup(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SanctionsList(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetMinRollupFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetRollupWhitelistDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetVerifierUpdateDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Transact(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::UpdateAuditorPublicKey(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::UpdateSanctionsListAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }
-    impl ::std::fmt::Display for CommitmentPoolCalls {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for CommitmentPoolCalls {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                CommitmentPoolCalls::PathIndices(element) => element.fmt(f),
-                CommitmentPoolCalls::AddEnqueueWhitelist(element) => element.fmt(f),
-                CommitmentPoolCalls::AddRollupWhitelist(element) => element.fmt(f),
-                CommitmentPoolCalls::AssetType(element) => element.fmt(f),
-                CommitmentPoolCalls::AuditorCount(element) => element.fmt(f),
-                CommitmentPoolCalls::ChangeOperator(element) => element.fmt(f),
-                CommitmentPoolCalls::DisableRollupVerifier(element) => element.fmt(f),
-                CommitmentPoolCalls::DisableSanctionsCheck(element) => element.fmt(f),
-                CommitmentPoolCalls::DisableTransactVerifier(element) => element.fmt(f),
-                CommitmentPoolCalls::EnableRollupVerifier(element) => element.fmt(f),
-                CommitmentPoolCalls::EnableSanctionsCheck(element) => element.fmt(f),
-                CommitmentPoolCalls::EnableTransactVerifier(element) => element.fmt(f),
-                CommitmentPoolCalls::Enqueue(element) => element.fmt(f),
-                CommitmentPoolCalls::GetAllAuditorPublicKeys(element) => element.fmt(f),
-                CommitmentPoolCalls::GetAuditorPublicKey(element) => element.fmt(f),
-                CommitmentPoolCalls::GetCommitmentIncludedCount(element) => element.fmt(f),
-                CommitmentPoolCalls::GetMinRollupFee(element) => element.fmt(f),
-                CommitmentPoolCalls::GetTreeCapacity(element) => element.fmt(f),
-                CommitmentPoolCalls::IsHistoricCommitment(element) => element.fmt(f),
-                CommitmentPoolCalls::IsKnownRoot(element) => element.fmt(f),
-                CommitmentPoolCalls::IsRollupWhitelistDisabled(element) => element.fmt(f),
-                CommitmentPoolCalls::IsSpentSerialNumber(element) => element.fmt(f),
-                CommitmentPoolCalls::IsVerifierUpdateDisabled(element) => element.fmt(f),
-                CommitmentPoolCalls::RemoveEnqueueWhitelist(element) => element.fmt(f),
-                CommitmentPoolCalls::RemoveRollupWhitelist(element) => element.fmt(f),
-                CommitmentPoolCalls::Rollup(element) => element.fmt(f),
-                CommitmentPoolCalls::SanctionsCheck(element) => element.fmt(f),
-                CommitmentPoolCalls::SanctionsList(element) => element.fmt(f),
-                CommitmentPoolCalls::SetMinRollupFee(element) => element.fmt(f),
-                CommitmentPoolCalls::SetRollupWhitelistDisabled(element) => element.fmt(f),
-                CommitmentPoolCalls::SetVerifierUpdateDisabled(element) => element.fmt(f),
-                CommitmentPoolCalls::Transact(element) => element.fmt(f),
-                CommitmentPoolCalls::UpdateAuditorPublicKey(element) => element.fmt(f),
-                CommitmentPoolCalls::UpdateSanctionsListAddress(element) => element.fmt(f),
+                Self::PathIndices(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AddEnqueueWhitelist(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AddRollupWhitelist(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AssetType(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AuditorCount(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ChangeOperator(element) => ::core::fmt::Display::fmt(element, f),
+                Self::DisableRollupVerifier(element) => ::core::fmt::Display::fmt(element, f),
+                Self::DisableSanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
+                Self::DisableTransactVerifier(element) => ::core::fmt::Display::fmt(element, f),
+                Self::EnableRollupVerifier(element) => ::core::fmt::Display::fmt(element, f),
+                Self::EnableSanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
+                Self::EnableTransactVerifier(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Enqueue(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetAllAuditorPublicKeys(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetAuditorPublicKey(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetCommitmentIncludedCount(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetMinRollupFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetTreeCapacity(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsHistoricCommitment(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsKnownRoot(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsRollupWhitelistDisabled(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsSpentSerialNumber(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsVerifierUpdateDisabled(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RemoveEnqueueWhitelist(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RemoveRollupWhitelist(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Rollup(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionsList(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetMinRollupFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetRollupWhitelistDisabled(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetVerifierUpdateDisabled(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Transact(element) => ::core::fmt::Display::fmt(element, f),
+                Self::UpdateAuditorPublicKey(element) => ::core::fmt::Display::fmt(element, f),
+                Self::UpdateSanctionsListAddress(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
-    impl ::std::convert::From<PathIndicesCall> for CommitmentPoolCalls {
-        fn from(var: PathIndicesCall) -> Self {
-            CommitmentPoolCalls::PathIndices(var)
+    impl ::core::convert::From<PathIndicesCall> for CommitmentPoolCalls {
+        fn from(value: PathIndicesCall) -> Self {
+            Self::PathIndices(value)
         }
     }
-    impl ::std::convert::From<AddEnqueueWhitelistCall> for CommitmentPoolCalls {
-        fn from(var: AddEnqueueWhitelistCall) -> Self {
-            CommitmentPoolCalls::AddEnqueueWhitelist(var)
+    impl ::core::convert::From<AddEnqueueWhitelistCall> for CommitmentPoolCalls {
+        fn from(value: AddEnqueueWhitelistCall) -> Self {
+            Self::AddEnqueueWhitelist(value)
         }
     }
-    impl ::std::convert::From<AddRollupWhitelistCall> for CommitmentPoolCalls {
-        fn from(var: AddRollupWhitelistCall) -> Self {
-            CommitmentPoolCalls::AddRollupWhitelist(var)
+    impl ::core::convert::From<AddRollupWhitelistCall> for CommitmentPoolCalls {
+        fn from(value: AddRollupWhitelistCall) -> Self {
+            Self::AddRollupWhitelist(value)
         }
     }
-    impl ::std::convert::From<AssetTypeCall> for CommitmentPoolCalls {
-        fn from(var: AssetTypeCall) -> Self {
-            CommitmentPoolCalls::AssetType(var)
+    impl ::core::convert::From<AssetTypeCall> for CommitmentPoolCalls {
+        fn from(value: AssetTypeCall) -> Self {
+            Self::AssetType(value)
         }
     }
-    impl ::std::convert::From<AuditorCountCall> for CommitmentPoolCalls {
-        fn from(var: AuditorCountCall) -> Self {
-            CommitmentPoolCalls::AuditorCount(var)
+    impl ::core::convert::From<AuditorCountCall> for CommitmentPoolCalls {
+        fn from(value: AuditorCountCall) -> Self {
+            Self::AuditorCount(value)
         }
     }
-    impl ::std::convert::From<ChangeOperatorCall> for CommitmentPoolCalls {
-        fn from(var: ChangeOperatorCall) -> Self {
-            CommitmentPoolCalls::ChangeOperator(var)
+    impl ::core::convert::From<ChangeOperatorCall> for CommitmentPoolCalls {
+        fn from(value: ChangeOperatorCall) -> Self {
+            Self::ChangeOperator(value)
         }
     }
-    impl ::std::convert::From<DisableRollupVerifierCall> for CommitmentPoolCalls {
-        fn from(var: DisableRollupVerifierCall) -> Self {
-            CommitmentPoolCalls::DisableRollupVerifier(var)
+    impl ::core::convert::From<DisableRollupVerifierCall> for CommitmentPoolCalls {
+        fn from(value: DisableRollupVerifierCall) -> Self {
+            Self::DisableRollupVerifier(value)
         }
     }
-    impl ::std::convert::From<DisableSanctionsCheckCall> for CommitmentPoolCalls {
-        fn from(var: DisableSanctionsCheckCall) -> Self {
-            CommitmentPoolCalls::DisableSanctionsCheck(var)
+    impl ::core::convert::From<DisableSanctionsCheckCall> for CommitmentPoolCalls {
+        fn from(value: DisableSanctionsCheckCall) -> Self {
+            Self::DisableSanctionsCheck(value)
         }
     }
-    impl ::std::convert::From<DisableTransactVerifierCall> for CommitmentPoolCalls {
-        fn from(var: DisableTransactVerifierCall) -> Self {
-            CommitmentPoolCalls::DisableTransactVerifier(var)
+    impl ::core::convert::From<DisableTransactVerifierCall> for CommitmentPoolCalls {
+        fn from(value: DisableTransactVerifierCall) -> Self {
+            Self::DisableTransactVerifier(value)
         }
     }
-    impl ::std::convert::From<EnableRollupVerifierCall> for CommitmentPoolCalls {
-        fn from(var: EnableRollupVerifierCall) -> Self {
-            CommitmentPoolCalls::EnableRollupVerifier(var)
+    impl ::core::convert::From<EnableRollupVerifierCall> for CommitmentPoolCalls {
+        fn from(value: EnableRollupVerifierCall) -> Self {
+            Self::EnableRollupVerifier(value)
         }
     }
-    impl ::std::convert::From<EnableSanctionsCheckCall> for CommitmentPoolCalls {
-        fn from(var: EnableSanctionsCheckCall) -> Self {
-            CommitmentPoolCalls::EnableSanctionsCheck(var)
+    impl ::core::convert::From<EnableSanctionsCheckCall> for CommitmentPoolCalls {
+        fn from(value: EnableSanctionsCheckCall) -> Self {
+            Self::EnableSanctionsCheck(value)
         }
     }
-    impl ::std::convert::From<EnableTransactVerifierCall> for CommitmentPoolCalls {
-        fn from(var: EnableTransactVerifierCall) -> Self {
-            CommitmentPoolCalls::EnableTransactVerifier(var)
+    impl ::core::convert::From<EnableTransactVerifierCall> for CommitmentPoolCalls {
+        fn from(value: EnableTransactVerifierCall) -> Self {
+            Self::EnableTransactVerifier(value)
         }
     }
-    impl ::std::convert::From<EnqueueCall> for CommitmentPoolCalls {
-        fn from(var: EnqueueCall) -> Self {
-            CommitmentPoolCalls::Enqueue(var)
+    impl ::core::convert::From<EnqueueCall> for CommitmentPoolCalls {
+        fn from(value: EnqueueCall) -> Self {
+            Self::Enqueue(value)
         }
     }
-    impl ::std::convert::From<GetAllAuditorPublicKeysCall> for CommitmentPoolCalls {
-        fn from(var: GetAllAuditorPublicKeysCall) -> Self {
-            CommitmentPoolCalls::GetAllAuditorPublicKeys(var)
+    impl ::core::convert::From<GetAllAuditorPublicKeysCall> for CommitmentPoolCalls {
+        fn from(value: GetAllAuditorPublicKeysCall) -> Self {
+            Self::GetAllAuditorPublicKeys(value)
         }
     }
-    impl ::std::convert::From<GetAuditorPublicKeyCall> for CommitmentPoolCalls {
-        fn from(var: GetAuditorPublicKeyCall) -> Self {
-            CommitmentPoolCalls::GetAuditorPublicKey(var)
+    impl ::core::convert::From<GetAuditorPublicKeyCall> for CommitmentPoolCalls {
+        fn from(value: GetAuditorPublicKeyCall) -> Self {
+            Self::GetAuditorPublicKey(value)
         }
     }
-    impl ::std::convert::From<GetCommitmentIncludedCountCall> for CommitmentPoolCalls {
-        fn from(var: GetCommitmentIncludedCountCall) -> Self {
-            CommitmentPoolCalls::GetCommitmentIncludedCount(var)
+    impl ::core::convert::From<GetCommitmentIncludedCountCall> for CommitmentPoolCalls {
+        fn from(value: GetCommitmentIncludedCountCall) -> Self {
+            Self::GetCommitmentIncludedCount(value)
         }
     }
-    impl ::std::convert::From<GetMinRollupFeeCall> for CommitmentPoolCalls {
-        fn from(var: GetMinRollupFeeCall) -> Self {
-            CommitmentPoolCalls::GetMinRollupFee(var)
+    impl ::core::convert::From<GetMinRollupFeeCall> for CommitmentPoolCalls {
+        fn from(value: GetMinRollupFeeCall) -> Self {
+            Self::GetMinRollupFee(value)
         }
     }
-    impl ::std::convert::From<GetTreeCapacityCall> for CommitmentPoolCalls {
-        fn from(var: GetTreeCapacityCall) -> Self {
-            CommitmentPoolCalls::GetTreeCapacity(var)
+    impl ::core::convert::From<GetTreeCapacityCall> for CommitmentPoolCalls {
+        fn from(value: GetTreeCapacityCall) -> Self {
+            Self::GetTreeCapacity(value)
         }
     }
-    impl ::std::convert::From<IsHistoricCommitmentCall> for CommitmentPoolCalls {
-        fn from(var: IsHistoricCommitmentCall) -> Self {
-            CommitmentPoolCalls::IsHistoricCommitment(var)
+    impl ::core::convert::From<IsHistoricCommitmentCall> for CommitmentPoolCalls {
+        fn from(value: IsHistoricCommitmentCall) -> Self {
+            Self::IsHistoricCommitment(value)
         }
     }
-    impl ::std::convert::From<IsKnownRootCall> for CommitmentPoolCalls {
-        fn from(var: IsKnownRootCall) -> Self {
-            CommitmentPoolCalls::IsKnownRoot(var)
+    impl ::core::convert::From<IsKnownRootCall> for CommitmentPoolCalls {
+        fn from(value: IsKnownRootCall) -> Self {
+            Self::IsKnownRoot(value)
         }
     }
-    impl ::std::convert::From<IsRollupWhitelistDisabledCall> for CommitmentPoolCalls {
-        fn from(var: IsRollupWhitelistDisabledCall) -> Self {
-            CommitmentPoolCalls::IsRollupWhitelistDisabled(var)
+    impl ::core::convert::From<IsRollupWhitelistDisabledCall> for CommitmentPoolCalls {
+        fn from(value: IsRollupWhitelistDisabledCall) -> Self {
+            Self::IsRollupWhitelistDisabled(value)
         }
     }
-    impl ::std::convert::From<IsSpentSerialNumberCall> for CommitmentPoolCalls {
-        fn from(var: IsSpentSerialNumberCall) -> Self {
-            CommitmentPoolCalls::IsSpentSerialNumber(var)
+    impl ::core::convert::From<IsSpentSerialNumberCall> for CommitmentPoolCalls {
+        fn from(value: IsSpentSerialNumberCall) -> Self {
+            Self::IsSpentSerialNumber(value)
         }
     }
-    impl ::std::convert::From<IsVerifierUpdateDisabledCall> for CommitmentPoolCalls {
-        fn from(var: IsVerifierUpdateDisabledCall) -> Self {
-            CommitmentPoolCalls::IsVerifierUpdateDisabled(var)
+    impl ::core::convert::From<IsVerifierUpdateDisabledCall> for CommitmentPoolCalls {
+        fn from(value: IsVerifierUpdateDisabledCall) -> Self {
+            Self::IsVerifierUpdateDisabled(value)
         }
     }
-    impl ::std::convert::From<RemoveEnqueueWhitelistCall> for CommitmentPoolCalls {
-        fn from(var: RemoveEnqueueWhitelistCall) -> Self {
-            CommitmentPoolCalls::RemoveEnqueueWhitelist(var)
+    impl ::core::convert::From<RemoveEnqueueWhitelistCall> for CommitmentPoolCalls {
+        fn from(value: RemoveEnqueueWhitelistCall) -> Self {
+            Self::RemoveEnqueueWhitelist(value)
         }
     }
-    impl ::std::convert::From<RemoveRollupWhitelistCall> for CommitmentPoolCalls {
-        fn from(var: RemoveRollupWhitelistCall) -> Self {
-            CommitmentPoolCalls::RemoveRollupWhitelist(var)
+    impl ::core::convert::From<RemoveRollupWhitelistCall> for CommitmentPoolCalls {
+        fn from(value: RemoveRollupWhitelistCall) -> Self {
+            Self::RemoveRollupWhitelist(value)
         }
     }
-    impl ::std::convert::From<RollupCall> for CommitmentPoolCalls {
-        fn from(var: RollupCall) -> Self {
-            CommitmentPoolCalls::Rollup(var)
+    impl ::core::convert::From<RollupCall> for CommitmentPoolCalls {
+        fn from(value: RollupCall) -> Self {
+            Self::Rollup(value)
         }
     }
-    impl ::std::convert::From<SanctionsCheckCall> for CommitmentPoolCalls {
-        fn from(var: SanctionsCheckCall) -> Self {
-            CommitmentPoolCalls::SanctionsCheck(var)
+    impl ::core::convert::From<SanctionsCheckCall> for CommitmentPoolCalls {
+        fn from(value: SanctionsCheckCall) -> Self {
+            Self::SanctionsCheck(value)
         }
     }
-    impl ::std::convert::From<SanctionsListCall> for CommitmentPoolCalls {
-        fn from(var: SanctionsListCall) -> Self {
-            CommitmentPoolCalls::SanctionsList(var)
+    impl ::core::convert::From<SanctionsListCall> for CommitmentPoolCalls {
+        fn from(value: SanctionsListCall) -> Self {
+            Self::SanctionsList(value)
         }
     }
-    impl ::std::convert::From<SetMinRollupFeeCall> for CommitmentPoolCalls {
-        fn from(var: SetMinRollupFeeCall) -> Self {
-            CommitmentPoolCalls::SetMinRollupFee(var)
+    impl ::core::convert::From<SetMinRollupFeeCall> for CommitmentPoolCalls {
+        fn from(value: SetMinRollupFeeCall) -> Self {
+            Self::SetMinRollupFee(value)
         }
     }
-    impl ::std::convert::From<SetRollupWhitelistDisabledCall> for CommitmentPoolCalls {
-        fn from(var: SetRollupWhitelistDisabledCall) -> Self {
-            CommitmentPoolCalls::SetRollupWhitelistDisabled(var)
+    impl ::core::convert::From<SetRollupWhitelistDisabledCall> for CommitmentPoolCalls {
+        fn from(value: SetRollupWhitelistDisabledCall) -> Self {
+            Self::SetRollupWhitelistDisabled(value)
         }
     }
-    impl ::std::convert::From<SetVerifierUpdateDisabledCall> for CommitmentPoolCalls {
-        fn from(var: SetVerifierUpdateDisabledCall) -> Self {
-            CommitmentPoolCalls::SetVerifierUpdateDisabled(var)
+    impl ::core::convert::From<SetVerifierUpdateDisabledCall> for CommitmentPoolCalls {
+        fn from(value: SetVerifierUpdateDisabledCall) -> Self {
+            Self::SetVerifierUpdateDisabled(value)
         }
     }
-    impl ::std::convert::From<TransactCall> for CommitmentPoolCalls {
-        fn from(var: TransactCall) -> Self {
-            CommitmentPoolCalls::Transact(var)
+    impl ::core::convert::From<TransactCall> for CommitmentPoolCalls {
+        fn from(value: TransactCall) -> Self {
+            Self::Transact(value)
         }
     }
-    impl ::std::convert::From<UpdateAuditorPublicKeyCall> for CommitmentPoolCalls {
-        fn from(var: UpdateAuditorPublicKeyCall) -> Self {
-            CommitmentPoolCalls::UpdateAuditorPublicKey(var)
+    impl ::core::convert::From<UpdateAuditorPublicKeyCall> for CommitmentPoolCalls {
+        fn from(value: UpdateAuditorPublicKeyCall) -> Self {
+            Self::UpdateAuditorPublicKey(value)
         }
     }
-    impl ::std::convert::From<UpdateSanctionsListAddressCall> for CommitmentPoolCalls {
-        fn from(var: UpdateSanctionsListAddressCall) -> Self {
-            CommitmentPoolCalls::UpdateSanctionsListAddress(var)
+    impl ::core::convert::From<UpdateSanctionsListAddressCall> for CommitmentPoolCalls {
+        fn from(value: UpdateSanctionsListAddressCall) -> Self {
+            Self::UpdateSanctionsListAddress(value)
         }
     }
-    #[doc = "Container type for all return fields from the `_pathIndices` function with signature `_pathIndices(uint256,uint32)` and selector `[242, 218, 29, 65]`"]
+    ///Container type for all return fields from the `_pathIndices` function with signature `_pathIndices(uint256,uint32)` and selector `0xf2da1d41`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
-    pub struct PathIndicesReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `assetType` function with signature `assetType()` and selector `[63, 227, 52, 122]`"]
+    pub struct PathIndicesReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `assetType` function with signature `assetType()` and selector `0x3fe3347a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub struct AssetTypeReturn(pub u8);
-    #[doc = "Container type for all return fields from the `auditorCount` function with signature `auditorCount()` and selector `[17, 95, 87, 76]`"]
+    ///Container type for all return fields from the `auditorCount` function with signature `auditorCount()` and selector `0x115f574c`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
-    pub struct AuditorCountReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getAllAuditorPublicKeys` function with signature `getAllAuditorPublicKeys()` and selector `[99, 188, 125, 50]`"]
+    pub struct AuditorCountReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getAllAuditorPublicKeys` function with signature `getAllAuditorPublicKeys()` and selector `0x63bc7d32`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
-    pub struct GetAllAuditorPublicKeysReturn(pub ::std::vec::Vec<ethers::core::types::U256>);
-    #[doc = "Container type for all return fields from the `getAuditorPublicKey` function with signature `getAuditorPublicKey(uint256)` and selector `[135, 120, 13, 249]`"]
+    pub struct GetAllAuditorPublicKeysReturn(pub ::std::vec::Vec<::ethers_core::types::U256>);
+    ///Container type for all return fields from the `getAuditorPublicKey` function with signature `getAuditorPublicKey(uint256)` and selector `0x87780df9`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
-    pub struct GetAuditorPublicKeyReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getCommitmentIncludedCount` function with signature `getCommitmentIncludedCount()` and selector `[229, 0, 245, 4]`"]
+    pub struct GetAuditorPublicKeyReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getCommitmentIncludedCount` function with signature `getCommitmentIncludedCount()` and selector `0xe500f504`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
-    pub struct GetCommitmentIncludedCountReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getMinRollupFee` function with signature `getMinRollupFee()` and selector `[176, 136, 146, 208]`"]
+    pub struct GetCommitmentIncludedCountReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getMinRollupFee` function with signature `getMinRollupFee()` and selector `0xb08892d0`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
-    pub struct GetMinRollupFeeReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `getTreeCapacity` function with signature `getTreeCapacity()` and selector `[72, 78, 182, 82]`"]
+    pub struct GetMinRollupFeeReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `getTreeCapacity` function with signature `getTreeCapacity()` and selector `0x484eb652`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
-    pub struct GetTreeCapacityReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `isHistoricCommitment` function with signature `isHistoricCommitment(uint256)` and selector `[87, 6, 0, 22]`"]
+    pub struct GetTreeCapacityReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `isHistoricCommitment` function with signature `isHistoricCommitment(uint256)` and selector `0x57060016`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub struct IsHistoricCommitmentReturn(pub bool);
-    #[doc = "Container type for all return fields from the `isKnownRoot` function with signature `isKnownRoot(uint256)` and selector `[166, 35, 42, 147]`"]
+    ///Container type for all return fields from the `isKnownRoot` function with signature `isKnownRoot(uint256)` and selector `0xa6232a93`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub struct IsKnownRootReturn(pub bool);
-    #[doc = "Container type for all return fields from the `isRollupWhitelistDisabled` function with signature `isRollupWhitelistDisabled()` and selector `[255, 168, 155, 136]`"]
+    ///Container type for all return fields from the `isRollupWhitelistDisabled` function with signature `isRollupWhitelistDisabled()` and selector `0xffa89b88`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub struct IsRollupWhitelistDisabledReturn(pub bool);
-    #[doc = "Container type for all return fields from the `isSpentSerialNumber` function with signature `isSpentSerialNumber(uint256)` and selector `[59, 184, 209, 180]`"]
+    ///Container type for all return fields from the `isSpentSerialNumber` function with signature `isSpentSerialNumber(uint256)` and selector `0x3bb8d1b4`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub struct IsSpentSerialNumberReturn(pub bool);
-    #[doc = "Container type for all return fields from the `isVerifierUpdateDisabled` function with signature `isVerifierUpdateDisabled()` and selector `[78, 176, 105, 247]`"]
+    ///Container type for all return fields from the `isVerifierUpdateDisabled` function with signature `isVerifierUpdateDisabled()` and selector `0x4eb069f7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub struct IsVerifierUpdateDisabledReturn(pub bool);
-    #[doc = "Container type for all return fields from the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `[177, 195, 148, 34]`"]
+    ///Container type for all return fields from the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `0xb1c39422`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub struct SanctionsCheckReturn(pub bool);
-    #[doc = "Container type for all return fields from the `sanctionsList` function with signature `sanctionsList()` and selector `[236, 87, 28, 106]`"]
+    ///Container type for all return fields from the `sanctionsList` function with signature `sanctionsList()` and selector `0xec571c6a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
-    pub struct SanctionsListReturn(pub ethers::core::types::Address);
-    #[doc = "`AuditorNote(uint64,uint256,uint256)`"]
+    pub struct SanctionsListReturn(pub ::ethers_core::types::Address);
+    ///`AuditorNote(uint64,uint256,uint256)`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     pub struct AuditorNote {
         pub id: u64,
-        pub public_key: ethers::core::types::U256,
-        pub note: ethers::core::types::U256,
+        pub public_key: ::ethers_core::types::U256,
+        pub note: ::ethers_core::types::U256,
     }
-    #[doc = "`CommitmentRequest(uint256,uint256,uint256,uint256,bytes)`"]
+    ///`CommitmentRequest(uint256,uint256,uint256,uint256,bytes)`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     pub struct CommitmentRequest {
-        pub amount: ethers::core::types::U256,
-        pub commitment: ethers::core::types::U256,
-        pub executor_fee: ethers::core::types::U256,
-        pub rollup_fee: ethers::core::types::U256,
-        pub encrypted_note: ethers::core::types::Bytes,
+        pub amount: ::ethers_core::types::U256,
+        pub commitment: ::ethers_core::types::U256,
+        pub executor_fee: ::ethers_core::types::U256,
+        pub rollup_fee: ::ethers_core::types::U256,
+        pub encrypted_note: ::ethers_core::types::Bytes,
     }
-    #[doc = "`RollupRequest(((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint256,uint256)`"]
+    ///`RollupRequest(((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint256,uint256)`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     pub struct RollupRequest {
         pub proof: Proof,
         pub rollup_size: u32,
-        pub new_root: ethers::core::types::U256,
-        pub leaf_hash: ethers::core::types::U256,
+        pub new_root: ::ethers_core::types::U256,
+        pub leaf_hash: ::ethers_core::types::U256,
     }
-    #[doc = "`TransactRequest(((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256[],uint256[],bytes32,uint256,uint256,uint256[],uint256[],address,address,bytes[],uint256,uint256[])`"]
+    ///`TransactRequest(((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256[],uint256[],bytes32,uint256,uint256,uint256[],uint256[],address,address,bytes[],uint256,uint256[])`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     pub struct TransactRequest {
         pub proof: Proof,
-        pub root_hash: ethers::core::types::U256,
-        pub serial_numbers: Vec<ethers::core::types::U256>,
-        pub sig_hashes: Vec<ethers::core::types::U256>,
+        pub root_hash: ::ethers_core::types::U256,
+        pub serial_numbers: ::std::vec::Vec<::ethers_core::types::U256>,
+        pub sig_hashes: ::std::vec::Vec<::ethers_core::types::U256>,
         pub sig_pk: [u8; 32],
-        pub public_amount: ethers::core::types::U256,
-        pub relayer_fee_amount: ethers::core::types::U256,
-        pub out_commitments: Vec<ethers::core::types::U256>,
-        pub out_rollup_fees: Vec<ethers::core::types::U256>,
-        pub public_recipient: ethers::core::types::Address,
-        pub relayer_address: ethers::core::types::Address,
-        pub out_encrypted_notes: Vec<ethers::core::types::Bytes>,
-        pub random_auditing_public_key: ethers::core::types::U256,
-        pub encrypted_auditor_notes: Vec<ethers::core::types::U256>,
+        pub public_amount: ::ethers_core::types::U256,
+        pub relayer_fee_amount: ::ethers_core::types::U256,
+        pub out_commitments: ::std::vec::Vec<::ethers_core::types::U256>,
+        pub out_rollup_fees: ::std::vec::Vec<::ethers_core::types::U256>,
+        pub public_recipient: ::ethers_core::types::Address,
+        pub relayer_address: ::ethers_core::types::Address,
+        pub out_encrypted_notes: ::std::vec::Vec<::ethers_core::types::Bytes>,
+        pub random_auditing_public_key: ::ethers_core::types::U256,
+        pub encrypted_auditor_notes: ::std::vec::Vec<::ethers_core::types::U256>,
     }
-    #[doc = "`G1Point(uint256,uint256)`"]
+    ///`G1Point(uint256,uint256)`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     pub struct G1Point {
-        pub x: ethers::core::types::U256,
-        pub y: ethers::core::types::U256,
+        pub x: ::ethers_core::types::U256,
+        pub y: ::ethers_core::types::U256,
     }
-    #[doc = "`G2Point(uint256[2],uint256[2])`"]
+    ///`G2Point(uint256[2],uint256[2])`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     pub struct G2Point {
-        pub x: [ethers::core::types::U256; 2],
-        pub y: [ethers::core::types::U256; 2],
+        pub x: [::ethers_core::types::U256; 2],
+        pub y: [::ethers_core::types::U256; 2],
     }
-    #[doc = "`Proof((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256))`"]
+    ///`Proof((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256))`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash,
     )]
     pub struct Proof {
         pub a: G1Point,

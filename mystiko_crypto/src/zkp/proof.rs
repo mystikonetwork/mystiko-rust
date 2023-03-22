@@ -94,8 +94,7 @@ impl ZKProof {
     }
 
     pub fn from_json_string(proof: &str) -> Result<Self, ZkpError> {
-        let proof_json: serde_json::Value = serde_json::from_str(proof)
-            .map_err(|why| ZkpError::SerdeJsonError("proof".to_string(), why.to_string()))?;
+        let proof_json: serde_json::Value = serde_json::from_str(proof)?;
 
         let proof: ZKProof = serde_json::from_value(proof_json)
             .map_err(|why| ZkpError::ProofError(why.to_string()))?;
@@ -132,8 +131,7 @@ impl ZKProof {
         proving_key: &[u8],
         json_args_str: &str,
     ) -> Result<Self, ZkpError> {
-        let abi: Abi = serde_json::from_slice(abi_spec)
-            .map_err(|why| ZkpError::SerdeJsonError("abi".to_string(), why.to_string()))?;
+        let abi: Abi = serde_json::from_slice(abi_spec)?;
         let prog = match ir::ProgEnum::deserialize(program) {
             Ok(p) => p.collect(),
             Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
@@ -150,10 +148,7 @@ impl ZKProof {
     }
 
     pub fn verify(&self, verification_key: &[u8]) -> Result<bool, ZkpError> {
-        let vk: serde_json::Value = serde_json::from_slice(verification_key).map_err(|why| {
-            ZkpError::SerdeJsonError("verification key".to_string(), why.to_string())
-        })?;
-
+        let vk: serde_json::Value = serde_json::from_slice(verification_key)?;
         self.do_verify(vk)
     }
 

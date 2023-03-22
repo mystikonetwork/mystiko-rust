@@ -42,7 +42,6 @@ impl Rollup {
         assert_eq!(current_leaf_count % rollup_size, 0);
         let current_root = self.tree.root();
 
-        // todo check insert result
         let mut new_tree = self.tree.clone();
         new_tree.bulk_insert(new_leaves.clone())?;
         let new_root = new_tree.root();

@@ -75,8 +75,5 @@ async fn test_verify() {
         .unwrap();
 
     let result = proof.verify(vk.as_slice());
-    assert_eq!(
-        result.err().unwrap(),
-        ZkpError::SerdeJsonError(String::from(""), String::from(""))
-    );
+    assert!(matches!(result.err().unwrap(), ZkpError::SerdeJsonError(_)));
 }

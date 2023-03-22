@@ -29,7 +29,7 @@ async fn test_serial_number_compatible_with_js() {
 
     let sk = verification_secret_key(&raw_key);
     let random_p = b"1234567812345678";
-    let sn = compute_serial_number(&sk, &random_p);
+    let sn = compute_serial_number(&sk, random_p);
     assert_eq!(sn, expect_sn);
 }
 
@@ -73,16 +73,16 @@ async fn test_build_commitment_compatible_with_js() {
         Some(Note::new(
             Some(amount),
             Some((
-                js_decrypt_note.random_p.clone(),
-                js_decrypt_note.random_r.clone(),
-                js_decrypt_note.random_s.clone(),
+                js_decrypt_note.random_p,
+                js_decrypt_note.random_r,
+                js_decrypt_note.random_s,
             )),
         )),
         None,
     )
     .unwrap();
 
-    assert_eq!(cm.note.amount.clone(), js_decrypt_note.amount);
+    assert_eq!(cm.note.amount, js_decrypt_note.amount);
     assert_eq!(cm.note.random_p.clone(), js_decrypt_note.random_p);
     assert_eq!(cm.note.random_r.clone(), js_decrypt_note.random_r);
     assert_eq!(cm.note.random_s.clone(), js_decrypt_note.random_s);
@@ -113,7 +113,7 @@ async fn test_build_commitment() {
     assert_eq!(cm1.note.random_p, note.random_p);
     assert_eq!(cm1.note.random_r, note.random_r);
     assert_eq!(cm1.note.random_s, note.random_s);
-    assert_eq!(cm1.shielded_address, shield_address.clone());
+    assert_eq!(cm1.shielded_address, shield_address);
 
     let note_vec = decrypt_asymmetric(&sk_enc, &cm1.encrypted_note).unwrap();
     let decrypt_note = Note::from_vec(note_vec).unwrap();
@@ -131,7 +131,7 @@ async fn test_build_commitment() {
         }),
     )
     .unwrap();
-    let _ = cm2.clone();
+    let _ = cm2;
     assert_eq!(cm2.commitment_hash, cm1.commitment_hash);
 
     let raw_sk_enc_3 = random_bytes(32);
@@ -150,5 +150,5 @@ async fn test_build_commitment() {
         sk_enc: sk_enc_3,
         encrypted_note: cm1.encrypted_note,
     };
-    let _ = enc_data.clone();
+    let _ = enc_data;
 }

@@ -35,7 +35,7 @@ async fn test_decrypt_compatible_with_js() {
         0x4A, 0xE3, 0xFC, 0xCF, 0x68, 0xF9, 0x68, 0x6A, 0x1C, 0xC4, 0x41, 0x3E, 0xCA, 0x2C, 0x0E,
         0xDD, 0x34, 0x18, 0xAB, 0xE7, 0x97, 0x67, 0x1B, 0x6A, 0x97,
     ];
-    let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &js_dec_data.to_vec()).unwrap();
+    let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), js_dec_data).unwrap();
     assert_eq!(text, dec_text.as_slice());
 }
 
@@ -51,7 +51,7 @@ async fn test_random_data() {
     assert_eq!(text, dec_text);
 
     let ec_data = ECCryptoData::from_bytes(data.as_slice()).unwrap();
-    let ec_data2 = ec_data.clone();
+    let ec_data2 = ec_data;
     let ec_data3 = ECCryptoData::from_bytes(&ec_data2.to_vec().as_slice()[0..2]);
     assert_eq!(ec_data3.err().unwrap(), CryptoError::DataLengthError);
 
