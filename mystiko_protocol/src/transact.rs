@@ -39,9 +39,9 @@ pub struct Transaction {
     pub out_random_ps: Vec<RandomSk>,
     pub out_random_rs: Vec<RandomSk>,
     pub out_random_ss: Vec<RandomSk>,
-    pub program_file: String,
-    pub abi_file: String,
-    pub proving_key_file: String,
+    pub program: Vec<u8>,
+    pub abi: Vec<u8>,
+    pub proving_key: Vec<u8>,
     pub random_auditing_secret_key: Option<AuditingSk>,
     pub auditor_public_keys: Vec<AuditingPk>,
 }
@@ -54,7 +54,7 @@ impl Transaction {
         Ok(())
     }
 
-    pub async fn prove(&self) -> Result<ZKProof, ProtocolError> {
+    pub fn prove(&self) -> Result<ZKProof, ProtocolError> {
         // todo add logs
         self.check()?;
 
@@ -196,13 +196,12 @@ impl Transaction {
         array.push(serde_json::json!(commitment_shares));
         let tx_param = serde_json::Value::Array(array).to_string();
 
-        let proof = ZKProof::generate_with_file(
-            &self.program_file,
-            &self.abi_file,
-            &self.proving_key_file,
+        let proof = ZKProof::generate(
+            self.program.as_slice(),
+            self.abi.as_slice(),
+            self.proving_key.as_slice(),
             &tx_param,
-        )
-        .await?;
+        )?;
 
         Ok(proof)
     }

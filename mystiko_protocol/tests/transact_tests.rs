@@ -1,5 +1,6 @@
 extern crate ethers;
 extern crate mystiko_crypto;
+extern crate mystiko_fs;
 extern crate mystiko_protocol;
 extern crate num_bigint;
 extern crate num_traits;
@@ -15,6 +16,7 @@ use num_traits::identities::Zero;
 use mystiko_crypto::ecies;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_crypto::utils::random_bytes;
+use mystiko_fs::{read_file_bytes, read_gzip_file_bytes};
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment, EncryptedNote, Note};
 use mystiko_protocol::key::{
@@ -41,9 +43,9 @@ fn u256_to_big_int(u: &U256) -> BigInt {
 fn generate_transaction(
     num_inputs: u32,
     num_outputs: u32,
-    program_file: String,
-    abi_file: String,
-    proving_key_file: String,
+    program: Vec<u8>,
+    abi: Vec<u8>,
+    proving_key: Vec<u8>,
     generate_auditing_key: Option<bool>,
 ) -> Transaction {
     let mut in_verify_pks: Vec<VerifyPk> = vec![];
@@ -166,9 +168,9 @@ fn generate_transaction(
         .out_random_ps(out_random_ps)
         .out_random_rs(out_random_rs)
         .out_random_ss(out_random_ss)
-        .program_file(program_file)
-        .abi_file(abi_file)
-        .proving_key_file(proving_key_file)
+        .program(program)
+        .abi(abi)
+        .proving_key(proving_key)
         .random_auditing_secret_key(random_auditing_secret_key)
         .auditor_public_keys(auditor_public_keys)
         .build()
@@ -182,16 +184,26 @@ async fn test_transaction1x0() {
     let tx = generate_transaction(
         1u32,
         0u32,
-        (FILE_PATH.to_owned() + "/Transaction1x0.program").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction1x0.abi.json").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction1x0.pkey").to_string(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x0.program.gz"))
+            .await
+            .unwrap(),
+        read_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x0.abi.json"))
+            .await
+            .unwrap(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x0.pkey.gz"))
+            .await
+            .unwrap(),
         None,
     );
 
-    let proof = tx.prove().await.unwrap();
+    let proof = tx.prove().unwrap();
     let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction1x0.vkey"))
-        .await
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x0.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }
@@ -202,16 +214,26 @@ async fn test_transaction1x1() {
     let tx = generate_transaction(
         1u32,
         1u32,
-        (FILE_PATH.to_owned() + "/Transaction1x1.program").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction1x1.abi.json").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction1x1.pkey").to_string(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x1.program.gz"))
+            .await
+            .unwrap(),
+        read_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x1.abi.json"))
+            .await
+            .unwrap(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x1.pkey.gz"))
+            .await
+            .unwrap(),
         Some(true),
     );
 
-    let proof = tx.prove().await.unwrap();
+    let proof = tx.prove().unwrap();
     let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction1x1.vkey"))
-        .await
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x1.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }
@@ -222,16 +244,26 @@ async fn test_transaction1x2() {
     let tx = generate_transaction(
         1u32,
         2u32,
-        (FILE_PATH.to_owned() + "/Transaction1x2.program").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction1x2.abi.json").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction1x2.pkey").to_string(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x2.program.gz"))
+            .await
+            .unwrap(),
+        read_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x2.abi.json"))
+            .await
+            .unwrap(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x2.pkey.gz"))
+            .await
+            .unwrap(),
         Some(true),
     );
 
-    let proof = tx.prove().await.unwrap();
+    let proof = tx.prove().unwrap();
     let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction1x2.vkey"))
-        .await
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction1x2.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }
@@ -242,16 +274,26 @@ async fn test_transaction2x0() {
     let tx = generate_transaction(
         2u32,
         0u32,
-        (FILE_PATH.to_owned() + "/Transaction2x0.program").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction2x0.abi.json").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction2x0.pkey").to_string(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x0.program.gz"))
+            .await
+            .unwrap(),
+        read_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x0.abi.json"))
+            .await
+            .unwrap(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x0.pkey.gz"))
+            .await
+            .unwrap(),
         Some(true),
     );
 
-    let proof = tx.prove().await.unwrap();
+    let proof = tx.prove().unwrap();
     let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction2x0.vkey"))
-        .await
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x0.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }
@@ -262,16 +304,26 @@ async fn test_transaction2x1() {
     let tx = generate_transaction(
         2u32,
         1u32,
-        (FILE_PATH.to_owned() + "/Transaction2x1.program").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction2x1.abi.json").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction2x1.pkey").to_string(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x1.program.gz"))
+            .await
+            .unwrap(),
+        read_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x1.abi.json"))
+            .await
+            .unwrap(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x1.pkey.gz"))
+            .await
+            .unwrap(),
         Some(true),
     );
 
-    let proof = tx.prove().await.unwrap();
+    let proof = tx.prove().unwrap();
     let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction2x1.vkey"))
-        .await
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x1.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
 }
@@ -281,16 +333,26 @@ async fn test_transaction2x2() {
     let tx = generate_transaction(
         2u32,
         2u32,
-        (FILE_PATH.to_owned() + "/Transaction2x2.program").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction2x2.abi.json").to_string(),
-        (FILE_PATH.to_owned() + "/Transaction2x2.pkey").to_string(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x2.program.gz"))
+            .await
+            .unwrap(),
+        read_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x2.abi.json"))
+            .await
+            .unwrap(),
+        read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x2.pkey.gz"))
+            .await
+            .unwrap(),
         Some(true),
     );
 
-    let proof = tx.prove().await.unwrap();
+    let proof = tx.prove().unwrap();
     let verify = proof
-        .verify_with_file(&(FILE_PATH.to_owned() + "/Transaction2x2.vkey"))
-        .await
+        .verify(
+            read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Transaction2x2.vkey.gz"))
+                .await
+                .unwrap()
+                .as_slice(),
+        )
         .unwrap();
     assert!(verify);
     let _ = tx.clone();
