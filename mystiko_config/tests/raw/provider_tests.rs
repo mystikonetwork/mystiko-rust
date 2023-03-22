@@ -1,0 +1,63 @@
+use mystiko_config::raw::provider::RawProviderConfig;
+use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
+
+fn default_config() -> RawProviderConfig {
+    create_raw::<RawProviderConfig>(
+        RawProviderConfig::builder()
+            .url("http://localhost:8545".to_string())
+            .timeout_ms(100000)
+            .max_try_count(5)
+            .build(),
+    )
+    .unwrap()
+}
+
+#[test]
+fn test_invalid_url_0() {
+    let mut config = default_config();
+    config.url = "".to_string();
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[test]
+fn test_invalid_url_1() {
+    let mut config = default_config();
+    config.url = "not even a url".to_string();
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[test]
+fn test_invalid_url_2() {
+    let mut config = default_config();
+    config.url = "wrong_schema://localhost:8545".to_string();
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[test]
+fn test_invalid_timeout_ms() {
+    let mut config = default_config();
+    config.timeout_ms = 0;
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[test]
+fn test_invalid_max_try_count() {
+    let mut config = default_config();
+    config.max_try_count = 0;
+    assert_eq!(config.validation().is_err(), true);
+}
+
+#[tokio::test]
+async fn test_import_valid_json_file() {
+    let file_config = create_raw_from_file::<RawProviderConfig>("tests/files/provider.valid.json")
+        .await
+        .unwrap();
+    assert_eq!(file_config, default_config());
+}
+
+#[tokio::test]
+async fn test_import_invalid_json_file() {
+    let file_config =
+        create_raw_from_file::<RawProviderConfig>("tests/files/provider.invalid.json").await;
+    assert!(file_config.is_err());
+}
