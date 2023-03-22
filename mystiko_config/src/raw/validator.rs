@@ -40,9 +40,7 @@ pub fn is_number_string<const NO_SYMBOLS: bool>(s: &str) -> Result<(), Validatio
     Ok(())
 }
 
-pub fn is_number_string_vec<const NO_SYMBOLS: bool>(
-    v: &[String],
-) -> Result<(), ValidationError> {
+pub fn is_number_string_vec<const NO_SYMBOLS: bool>(v: &[String]) -> Result<(), ValidationError> {
     let is_number = v.iter().all(|s| is_numeric(s, NO_SYMBOLS));
     if !is_number {
         return Err(ValidationError::new("is number string error"));
