@@ -1,2 +1,2 @@
-mod deposit;
-mod pool;
+mod deposit_tests;
+mod pool_tests;

@@ -1,9 +1,9 @@
-mod asset;
+mod asset_tests;
 mod bridge;
-mod chain;
-mod circuit;
+mod chain_tests;
+mod circuit_tests;
 mod contract;
-mod indexer;
-mod mystiko;
-mod provider;
-mod validator;
+mod indexer_tests;
+mod mystiko_tests;
+mod provider_tests;
+mod validator_tests;
