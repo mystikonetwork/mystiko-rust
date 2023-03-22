@@ -1,5 +1,5 @@
-use crate::common::BridgeType;
 use crate::raw::{validate_raw, Validator};
+use crate::types::BridgeType;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 use validator::{Validate, ValidationError};
@@ -17,16 +17,6 @@ pub struct RawTBridgeConfig {
     #[builder(default = default_bridge_type())]
     #[validate(custom = "validate_bridge_type")]
     pub bridge_type: BridgeType,
-}
-
-impl RawTBridgeConfig {
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn bridge_type(&self) -> &BridgeType {
-        &self.bridge_type
-    }
 }
 
 impl Validator for RawTBridgeConfig {

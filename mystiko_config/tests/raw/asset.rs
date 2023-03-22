@@ -1,6 +1,6 @@
-use mystiko_config::common::AssetType;
 use mystiko_config::raw::asset::RawAssetConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
+use mystiko_config::types::AssetType;
 
 fn default_config() -> RawAssetConfig {
     create_raw::<RawAssetConfig>(

@@ -1,5 +1,5 @@
-use crate::common::BridgeType;
 use crate::raw::{validate_raw, Validator};
+use crate::types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
 use typed_builder::TypedBuilder;
@@ -23,16 +23,6 @@ pub struct RawAxelarBridgeConfig {
 impl Validator for RawAxelarBridgeConfig {
     fn validation(&self) -> Result<(), anyhow::Error> {
         validate_raw(self)
-    }
-}
-
-impl RawAxelarBridgeConfig {
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn bridge_type(&self) -> &BridgeType {
-        &self.bridge_type
     }
 }
 

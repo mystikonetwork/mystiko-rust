@@ -1,11 +1,11 @@
 use lazy_static::lazy_static;
-use mystiko_config::common::{AssetType, BridgeType, ContractType};
 use mystiko_config::raw::asset::RawAssetConfig;
 use mystiko_config::raw::chain::RawChainConfig;
 use mystiko_config::raw::contract::deposit::RawDepositContractConfig;
 use mystiko_config::raw::contract::pool::RawPoolContractConfig;
 use mystiko_config::raw::provider::RawProviderConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
+use mystiko_config::types::{AssetType, BridgeType, ContractType};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 

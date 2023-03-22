@@ -1,6 +1,6 @@
-use crate::common::AssetType;
 use crate::raw::validator::{array_unique, is_ethereum_address, is_number_string_vec};
 use crate::raw::{validate_raw, Validator};
+use crate::types::AssetType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;

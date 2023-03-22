@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
-use mystiko_config::common::BridgeType;
 use mystiko_config::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json, Validator};
+use mystiko_config::types::BridgeType;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -37,7 +37,7 @@ fn test_hash() {
 #[test]
 fn test_name() {
     let config = &RAW_CONFIG;
-    assert_eq!(config.name(), &config.name);
+    assert_eq!("LayerZero Bridge", &config.name);
 }
 
 #[test]
@@ -54,7 +54,7 @@ async fn test_import_valid_json_file() {
             .await
             .unwrap();
     assert_eq!(file_config, default_config());
-    assert_eq!(&file_config.bridge_type, file_config.bridge_type());
+    assert_eq!(file_config.bridge_type, BridgeType::LayerZero);
 }
 
 #[tokio::test]
@@ -73,5 +73,4 @@ async fn test_import_valid_json_str() {
         }"#;
     let str_config = create_raw_from_json::<RawLayerZeroBridgeConfig>(json_str).unwrap();
     assert_eq!(str_config.bridge_type, BridgeType::LayerZero);
-    assert_eq!(&str_config.bridge_type, str_config.bridge_type())
 }

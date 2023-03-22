@@ -1,6 +1,6 @@
-use crate::common::CircuitType;
 use crate::raw::validator::string_vec_each_not_empty;
 use crate::raw::{validate_raw, Validator};
+use crate::types::CircuitType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;

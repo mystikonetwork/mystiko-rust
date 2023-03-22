@@ -1,5 +1,5 @@
-use crate::common::BridgeType;
 use crate::raw::{validate_raw, Validator};
+use crate::types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
 use typed_builder::TypedBuilder;
@@ -18,16 +18,6 @@ pub struct RawLayerZeroBridgeConfig {
     #[builder(default = default_bridge_type())]
     #[validate(custom = "validate_bridge_type")]
     pub bridge_type: BridgeType,
-}
-
-impl RawLayerZeroBridgeConfig {
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn bridge_type(&self) -> &BridgeType {
-        &self.bridge_type
-    }
 }
 
 impl Validator for RawLayerZeroBridgeConfig {

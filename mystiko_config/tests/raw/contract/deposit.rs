@@ -1,6 +1,6 @@
-use mystiko_config::common::{BridgeType, ContractType};
 use mystiko_config::raw::contract::deposit::RawDepositContractConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json, Validator};
+use mystiko_config::types::{BridgeType, ContractType};
 
 fn default_config() -> RawDepositContractConfig {
     let raw_deposit_contract_config = RawDepositContractConfig::builder()
@@ -221,7 +221,7 @@ async fn test_import_valid_json_file() {
             .await
             .unwrap();
     assert_eq!(file_config, default_config());
-    assert_eq!(&file_config.contract_type, file_config.contract_type());
+    assert_eq!(file_config.contract_type, ContractType::Deposit);
 }
 
 #[tokio::test]
@@ -258,5 +258,4 @@ async fn test_import_valid_json_str() {
         "#;
     let str_config = create_raw_from_json::<RawDepositContractConfig>(json_str).unwrap();
     assert_eq!(str_config.contract_type, ContractType::Deposit);
-    assert_eq!(&str_config.contract_type, str_config.contract_type());
 }

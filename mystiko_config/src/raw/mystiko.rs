@@ -1,4 +1,3 @@
-use crate::common::BridgeType;
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
 use crate::raw::bridge::celer::RawCelerBridgeConfig;
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
@@ -9,6 +8,7 @@ use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
 use crate::raw::validator::{array_unique, is_sem_ver, validate_nested_vec};
 use crate::raw::{validate_raw, Validator};
+use crate::types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use validator::Validate;

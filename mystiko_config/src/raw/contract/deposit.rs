@@ -1,6 +1,6 @@
-use crate::common::{BridgeType, ContractType};
 use crate::raw::validator::{is_ethereum_address, is_number_string};
 use crate::raw::{validate_raw, Validator};
+use crate::types::{BridgeType, ContractType};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
@@ -93,36 +93,6 @@ impl Hash for RawDepositContractConfig {
 impl Validator for RawDepositContractConfig {
     fn validation(&self) -> anyhow::Result<()> {
         validate_raw(self)
-    }
-}
-
-impl RawDepositContractConfig {
-    pub fn version(&self) -> &u32 {
-        &self.version
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn address(&self) -> &str {
-        &self.address
-    }
-
-    pub fn contract_type(&self) -> &ContractType {
-        &self.contract_type
-    }
-
-    pub fn start_block(&self) -> &u32 {
-        &self.start_block
-    }
-
-    pub fn event_filter_size(&self) -> &Option<u64> {
-        &self.event_filter_size
-    }
-
-    pub fn indexer_filter_size(&self) -> &Option<u64> {
-        &self.indexer_filter_size
     }
 }
 

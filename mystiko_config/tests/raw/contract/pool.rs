@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
-use mystiko_config::common::{BridgeType, ContractType};
 use mystiko_config::raw::contract::pool::RawPoolContractConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json, Validator};
+use mystiko_config::types::{BridgeType, ContractType};
 
 fn default_config() -> RawPoolContractConfig {
     create_raw::<RawPoolContractConfig>(
@@ -30,13 +30,13 @@ lazy_static! {
 #[test]
 fn test_raw_contract_config_trait() {
     let config = &RAW_CONFIG;
-    assert_eq!(config.version(), &config.version);
-    assert_eq!(config.name(), config.name);
-    assert_eq!(config.address(), config.address);
-    assert_eq!(config.contract_type(), &config.contract_type);
-    assert_eq!(config.start_block(), &config.start_block);
-    assert_eq!(config.event_filter_size(), &config.event_filter_size);
-    assert_eq!(config.indexer_filter_size(), &config.indexer_filter_size);
+    assert_eq!(2, config.version);
+    assert_eq!("CommitmentPool", config.name);
+    assert_eq!("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67", config.address);
+    assert_eq!(ContractType::Pool, config.contract_type);
+    assert_eq!(1000000, config.start_block);
+    assert_eq!(None, config.event_filter_size);
+    assert_eq!(None, config.indexer_filter_size);
 }
 
 #[test]
@@ -104,7 +104,7 @@ async fn test_import_valid_json_file() {
             .await
             .unwrap();
     assert_eq!(file_config, default_config());
-    assert_eq!(&file_config.contract_type, file_config.contract_type());
+    assert_eq!(file_config.contract_type, ContractType::Pool);
 }
 
 #[tokio::test]
@@ -132,5 +132,4 @@ fn test_import_valid_json_str() {
         "#;
     let str_config = create_raw_from_json::<RawPoolContractConfig>(json_str).unwrap();
     assert_eq!(str_config.contract_type, ContractType::Pool);
-    assert_eq!(&str_config.contract_type, str_config.contract_type());
 }

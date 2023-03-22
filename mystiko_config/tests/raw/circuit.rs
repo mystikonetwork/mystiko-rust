@@ -1,6 +1,6 @@
-use mystiko_config::common::CircuitType;
 use mystiko_config::raw::circuit::RawCircuitConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
+use mystiko_config::types::CircuitType;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
