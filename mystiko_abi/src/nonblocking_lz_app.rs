@@ -1,124 +1,134 @@
 pub use nonblocking_lz_app::*;
-#[allow(clippy::too_many_arguments, non_camel_case_types)]
+/// This module was auto-generated with ethers-rs Abigen.
+/// More information at: <https://github.com/gakonst/ethers-rs>
+#[allow(
+    clippy::enum_variant_names,
+    clippy::too_many_arguments,
+    clippy::upper_case_acronyms,
+    clippy::type_complexity,
+    dead_code,
+    non_camel_case_types,
+)]
 pub mod nonblocking_lz_app {
-    #![allow(clippy::enum_variant_names)]
-    #![allow(dead_code)]
-    #![allow(clippy::type_complexity)]
-    #![allow(unused_imports)]
-    use ethers::contract::{
-        builders::{ContractCall, Event},
-        Contract, Lazy,
-    };
-    use ethers::core::{
-        abi::{Abi, Detokenize, InvalidOutputType, Token, Tokenizable},
-        types::*,
-    };
-    use ethers::providers::Middleware;
-    #[doc = "NonblockingLzApp was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
-    use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"CallIsNotLzApp\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NoStoredMessage\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MessageFailed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OwnershipTransferred\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SetTrustedRemote\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"failedMessages\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"forceResumeReceive\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isTrustedRemote\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"localLayerZeroChainId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"lzEndpoint\",\"outputs\":[{\"internalType\":\"contract ILayerZeroEndpoint\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"lzReceive\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"nonblockingLzReceive\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerLayerZeroChainId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"renounceOwnership\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"retryMessage\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_config\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setConfig\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_lzChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_lzEndpoint\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setEndpoint\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setReceiveVersion\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setSendVersion\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_peerLayerZeroChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_peerAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setTrustedRemote\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transferOwnership\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"trustedRemoteLookup\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]}]" ;
-    #[doc = r" The parsed JSON-ABI of the contract."]
-    pub static NONBLOCKINGLZAPP_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
-        ethers::contract::Lazy::new(|| {
-            ethers::core::utils::__serde_json::from_str(__ABI).expect("invalid abi")
-        });
-    pub struct NonblockingLzApp<M>(ethers::contract::Contract<M>);
-    impl<M> Clone for NonblockingLzApp<M> {
+    #[rustfmt::skip]
+    const __ABI: &str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"CallIsNotLzApp\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NoStoredMessage\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MessageFailed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OwnershipTransferred\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SetTrustedRemote\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"failedMessages\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"forceResumeReceive\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isTrustedRemote\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"localLayerZeroChainId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"lzEndpoint\",\"outputs\":[{\"internalType\":\"contract ILayerZeroEndpoint\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"lzReceive\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"nonblockingLzReceive\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerLayerZeroChainId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"renounceOwnership\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"retryMessage\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_config\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setConfig\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_lzChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_lzEndpoint\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setEndpoint\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setReceiveVersion\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setSendVersion\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_peerLayerZeroChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_peerAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setTrustedRemote\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transferOwnership\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"trustedRemoteLookup\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]}]";
+    ///The parsed JSON ABI of the contract.
+    pub static NONBLOCKINGLZAPP_ABI: ::ethers_contract::Lazy<
+        ::ethers_core::abi::Abi,
+    > = ::ethers_contract::Lazy::new(|| {
+        ::ethers_core::utils::__serde_json::from_str(__ABI)
+            .expect("ABI is always valid")
+    });
+    pub struct NonblockingLzApp<M>(::ethers_contract::Contract<M>);
+    impl<M> ::core::clone::Clone for NonblockingLzApp<M> {
         fn clone(&self) -> Self {
-            NonblockingLzApp(self.0.clone())
+            Self(::core::clone::Clone::clone(&self.0))
         }
     }
-    impl<M> std::ops::Deref for NonblockingLzApp<M> {
-        type Target = ethers::contract::Contract<M>;
+    impl<M> ::core::ops::Deref for NonblockingLzApp<M> {
+        type Target = ::ethers_contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M> std::fmt::Debug for NonblockingLzApp<M> {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            f.debug_tuple(stringify!(NonblockingLzApp))
-                .field(&self.address())
-                .finish()
+    impl<M> ::core::ops::DerefMut for NonblockingLzApp<M> {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
         }
     }
-    impl<M: ethers::providers::Middleware> NonblockingLzApp<M> {
-        #[doc = r" Creates a new contract instance with the specified `ethers`"]
-        #[doc = r" client at the given `Address`. The contract derefs to a `ethers::Contract`"]
-        #[doc = r" object"]
-        pub fn new<T: Into<ethers::core::types::Address>>(
+    impl<M> ::core::fmt::Debug for NonblockingLzApp<M> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.debug_tuple(stringify!(NonblockingLzApp)).field(&self.address()).finish()
+        }
+    }
+    impl<M: ::ethers_providers::Middleware> NonblockingLzApp<M> {
+        /// Creates a new contract instance with the specified `ethers` client at
+        /// `address`. The contract derefs to a `ethers::Contract` object.
+        pub fn new<T: Into<::ethers_core::types::Address>>(
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            ethers::contract::Contract::new(address.into(), NONBLOCKINGLZAPP_ABI.clone(), client)
-                .into()
+            Self(
+                ::ethers_contract::Contract::new(
+                    address.into(),
+                    NONBLOCKINGLZAPP_ABI.clone(),
+                    client,
+                ),
+            )
         }
-        #[doc = "Calls the contract's `failedMessages` (0x5b8c41e6) function"]
+        ///Calls the contract's `failedMessages` (0x5b8c41e6) function
         pub fn failed_messages(
             &self,
             p0: u16,
-            p1: ethers::core::types::Bytes,
+            p1: ::ethers_core::types::Bytes,
             p2: u64,
-        ) -> ethers::contract::builders::ContractCall<M, [u8; 32]> {
+        ) -> ::ethers_contract::builders::ContractCall<M, [u8; 32]> {
             self.0
                 .method_hash([91, 140, 65, 230], (p0, p1, p2))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `forceResumeReceive` (0x42d65a8d) function"]
+        ///Calls the contract's `forceResumeReceive` (0x42d65a8d) function
         pub fn force_resume_receive(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            src_address: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([66, 214, 90, 141], (src_chain_id, src_address))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `getConfig` (0xf5ecbdbc) function"]
+        ///Calls the contract's `getConfig` (0xf5ecbdbc) function
         pub fn get_config(
             &self,
             version: u16,
             chain_id: u16,
-            p2: ethers::core::types::Address,
-            config_type: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Bytes> {
+            p2: ::ethers_core::types::Address,
+            config_type: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Bytes,
+        > {
             self.0
                 .method_hash([245, 236, 189, 188], (version, chain_id, p2, config_type))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isTrustedRemote` (0x3d8b38f6) function"]
+        ///Calls the contract's `isTrustedRemote` (0x3d8b38f6) function
         pub fn is_trusted_remote(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            src_address: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([61, 139, 56, 246], (src_chain_id, src_address))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `localLayerZeroChainId` (0x302d5f4b) function"]
+        ///Calls the contract's `localLayerZeroChainId` (0x302d5f4b) function
         pub fn local_layer_zero_chain_id(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, u16> {
+        ) -> ::ethers_contract::builders::ContractCall<M, u16> {
             self.0
                 .method_hash([48, 45, 95, 75], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `lzEndpoint` (0xb353aaa7) function"]
+        ///Calls the contract's `lzEndpoint` (0xb353aaa7) function
         pub fn lz_endpoint(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([179, 83, 170, 167], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `lzReceive` (0x001d3567) function"]
+        ///Calls the contract's `lzReceive` (0x001d3567) function
         pub fn lz_receive(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
+            src_address: ::ethers_core::types::Bytes,
             nonce: u64,
-            payload: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            payload: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [0, 29, 53, 103],
@@ -126,14 +136,14 @@ pub mod nonblocking_lz_app {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `nonblockingLzReceive` (0x66ad5c8a) function"]
+        ///Calls the contract's `nonblockingLzReceive` (0x66ad5c8a) function
         pub fn nonblocking_lz_receive(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
+            src_address: ::ethers_core::types::Bytes,
             nonce: u64,
-            payload: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            payload: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [102, 173, 92, 138],
@@ -141,34 +151,41 @@ pub mod nonblocking_lz_app {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `owner` (0x8da5cb5b) function"]
+        ///Calls the contract's `owner` (0x8da5cb5b) function
         pub fn owner(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([141, 165, 203, 91], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `peerLayerZeroChainId` (0x0097a063) function"]
-        pub fn peer_layer_zero_chain_id(&self) -> ethers::contract::builders::ContractCall<M, u16> {
+        ///Calls the contract's `peerLayerZeroChainId` (0x0097a063) function
+        pub fn peer_layer_zero_chain_id(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, u16> {
             self.0
                 .method_hash([0, 151, 160, 99], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `renounceOwnership` (0x715018a6) function"]
-        pub fn renounce_ownership(&self) -> ethers::contract::builders::ContractCall<M, ()> {
+        ///Calls the contract's `renounceOwnership` (0x715018a6) function
+        pub fn renounce_ownership(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([113, 80, 24, 166], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `retryMessage` (0xd1deba1f) function"]
+        ///Calls the contract's `retryMessage` (0xd1deba1f) function
         pub fn retry_message(
             &self,
             src_chain_id: u16,
-            src_address: ethers::core::types::Bytes,
+            src_address: ::ethers_core::types::Bytes,
             nonce: u64,
-            payload: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            payload: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [209, 222, 186, 31],
@@ -176,14 +193,14 @@ pub mod nonblocking_lz_app {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setConfig` (0xcbed8b9c) function"]
+        ///Calls the contract's `setConfig` (0xcbed8b9c) function
         pub fn set_config(
             &self,
             version: u16,
             chain_id: u16,
-            config_type: ethers::core::types::U256,
-            config: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            config_type: ::ethers_core::types::U256,
+            config: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [203, 237, 139, 156],
@@ -191,40 +208,40 @@ pub mod nonblocking_lz_app {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setEndpoint` (0x4ee7ded6) function"]
+        ///Calls the contract's `setEndpoint` (0x4ee7ded6) function
         pub fn set_endpoint(
             &self,
             lz_chain_id: u16,
-            lz_endpoint: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            lz_endpoint: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([78, 231, 222, 214], (lz_chain_id, lz_endpoint))
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setReceiveVersion` (0x10ddb137) function"]
+        ///Calls the contract's `setReceiveVersion` (0x10ddb137) function
         pub fn set_receive_version(
             &self,
             version: u16,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([16, 221, 177, 55], version)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setSendVersion` (0x07e0db17) function"]
+        ///Calls the contract's `setSendVersion` (0x07e0db17) function
         pub fn set_send_version(
             &self,
             version: u16,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([7, 224, 219, 23], version)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setTrustedRemote` (0xeb8d72b7) function"]
+        ///Calls the contract's `setTrustedRemote` (0xeb8d72b7) function
         pub fn set_trusted_remote(
             &self,
             peer_layer_zero_chain_id: u16,
-            peer_address: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            peer_address: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [235, 141, 114, 183],
@@ -232,194 +249,258 @@ pub mod nonblocking_lz_app {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `transferOwnership` (0xf2fde38b) function"]
+        ///Calls the contract's `transferOwnership` (0xf2fde38b) function
         pub fn transfer_ownership(
             &self,
-            new_owner: ethers::core::types::Address,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            new_owner: ::ethers_core::types::Address,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([242, 253, 227, 139], new_owner)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `trustedRemoteLookup` (0x7533d788) function"]
+        ///Calls the contract's `trustedRemoteLookup` (0x7533d788) function
         pub fn trusted_remote_lookup(
             &self,
             p0: u16,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Bytes> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Bytes,
+        > {
             self.0
                 .method_hash([117, 51, 215, 136], p0)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Gets the contract's `MessageFailed` event"]
+        ///Gets the contract's `MessageFailed` event
         pub fn message_failed_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, MessageFailedFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            MessageFailedFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `OwnershipTransferred` event"]
+        ///Gets the contract's `OwnershipTransferred` event
         pub fn ownership_transferred_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, OwnershipTransferredFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            OwnershipTransferredFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `SetTrustedRemote` event"]
+        ///Gets the contract's `SetTrustedRemote` event
         pub fn set_trusted_remote_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, SetTrustedRemoteFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            SetTrustedRemoteFilter,
+        > {
             self.0.event()
         }
-        #[doc = r" Returns an [`Event`](#ethers_contract::builders::Event) builder for all events of this contract"]
-        pub fn events(&self) -> ethers::contract::builders::Event<M, NonblockingLzAppEvents> {
-            self.0.event_with_filter(Default::default())
+        /// Returns an `Event` builder for all the events of this contract.
+        pub fn events(
+            &self,
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            NonblockingLzAppEvents,
+        > {
+            self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for NonblockingLzApp<M> {
-        fn from(contract: ethers::contract::Contract<M>) -> Self {
-            Self(contract)
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+    for NonblockingLzApp<M> {
+        fn from(contract: ::ethers_contract::Contract<M>) -> Self {
+            Self::new(contract.address(), contract.client())
         }
     }
-    #[doc = "Custom Error type `CallIsNotLzApp` with signature `CallIsNotLzApp()` and selector `[227, 234, 29, 130]`"]
+    ///Custom Error type `CallIsNotLzApp` with signature `CallIsNotLzApp()` and selector `0xe3ea1d82`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "CallIsNotLzApp", abi = "CallIsNotLzApp()")]
     pub struct CallIsNotLzApp;
-    #[doc = "Custom Error type `Invalid` with signature `Invalid(string)` and selector `[83, 162, 85, 108]`"]
+    ///Custom Error type `Invalid` with signature `Invalid(string)` and selector `0x53a2556c`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
-        pub param: String,
+        pub param: ::std::string::String,
     }
-    #[doc = "Custom Error type `NoStoredMessage` with signature `NoStoredMessage()` and selector `[174, 91, 38, 20]`"]
+    ///Custom Error type `NoStoredMessage` with signature `NoStoredMessage()` and selector `0xae5b2614`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "NoStoredMessage", abi = "NoStoredMessage()")]
     pub struct NoStoredMessage;
+    ///Container type for all of the contract's custom errors
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum NonblockingLzAppErrors {
         CallIsNotLzApp(CallIsNotLzApp),
         Invalid(Invalid),
         NoStoredMessage(NoStoredMessage),
+        /// The standard solidity revert string, with selector
+        /// Error(string) -- 0x08c379a0
+        RevertString(::std::string::String),
     }
-    impl ethers::core::abi::AbiDecode for NonblockingLzAppErrors {
+    impl ::ethers_core::abi::AbiDecode for NonblockingLzAppErrors {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <CallIsNotLzApp as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppErrors::CallIsNotLzApp(decoded));
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
+            if let Ok(decoded)
+                = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::RevertString(decoded));
             }
-            if let Ok(decoded) = <Invalid as ethers::core::abi::AbiDecode>::decode(data.as_ref()) {
-                return Ok(NonblockingLzAppErrors::Invalid(decoded));
+            if let Ok(decoded)
+                = <CallIsNotLzApp as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::CallIsNotLzApp(decoded));
             }
-            if let Ok(decoded) =
-                <NoStoredMessage as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppErrors::NoStoredMessage(decoded));
+            if let Ok(decoded)
+                = <Invalid as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Invalid(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            if let Ok(decoded)
+                = <NoStoredMessage as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::NoStoredMessage(decoded));
+            }
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for NonblockingLzAppErrors {
-        fn encode(self) -> Vec<u8> {
+    impl ::ethers_core::abi::AbiEncode for NonblockingLzAppErrors {
+        fn encode(self) -> ::std::vec::Vec<u8> {
             match self {
-                NonblockingLzAppErrors::CallIsNotLzApp(element) => element.encode(),
-                NonblockingLzAppErrors::Invalid(element) => element.encode(),
-                NonblockingLzAppErrors::NoStoredMessage(element) => element.encode(),
+                Self::CallIsNotLzApp(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Invalid(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::NoStoredMessage(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RevertString(s) => ::ethers_core::abi::AbiEncode::encode(s),
             }
         }
     }
-    impl ::std::fmt::Display for NonblockingLzAppErrors {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::ethers_contract::ContractRevert for NonblockingLzAppErrors {
+        fn valid_selector(selector: [u8; 4]) -> bool {
+            match selector {
+                [0x08, 0xc3, 0x79, 0xa0] => true,
+                _ if selector
+                    == <CallIsNotLzApp as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <Invalid as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <NoStoredMessage as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ => false,
+            }
+        }
+    }
+    impl ::core::fmt::Display for NonblockingLzAppErrors {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                NonblockingLzAppErrors::CallIsNotLzApp(element) => element.fmt(f),
-                NonblockingLzAppErrors::Invalid(element) => element.fmt(f),
-                NonblockingLzAppErrors::NoStoredMessage(element) => element.fmt(f),
+                Self::CallIsNotLzApp(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Invalid(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NoStoredMessage(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RevertString(s) => ::core::fmt::Display::fmt(s, f),
             }
         }
     }
-    impl ::std::convert::From<CallIsNotLzApp> for NonblockingLzAppErrors {
-        fn from(var: CallIsNotLzApp) -> Self {
-            NonblockingLzAppErrors::CallIsNotLzApp(var)
+    impl ::core::convert::From<::std::string::String> for NonblockingLzAppErrors {
+        fn from(value: String) -> Self {
+            Self::RevertString(value)
         }
     }
-    impl ::std::convert::From<Invalid> for NonblockingLzAppErrors {
-        fn from(var: Invalid) -> Self {
-            NonblockingLzAppErrors::Invalid(var)
+    impl ::core::convert::From<CallIsNotLzApp> for NonblockingLzAppErrors {
+        fn from(value: CallIsNotLzApp) -> Self {
+            Self::CallIsNotLzApp(value)
         }
     }
-    impl ::std::convert::From<NoStoredMessage> for NonblockingLzAppErrors {
-        fn from(var: NoStoredMessage) -> Self {
-            NonblockingLzAppErrors::NoStoredMessage(var)
+    impl ::core::convert::From<Invalid> for NonblockingLzAppErrors {
+        fn from(value: Invalid) -> Self {
+            Self::Invalid(value)
+        }
+    }
+    impl ::core::convert::From<NoStoredMessage> for NonblockingLzAppErrors {
+        fn from(value: NoStoredMessage) -> Self {
+            Self::NoStoredMessage(value)
         }
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    #[ethevent(
-        name = "MessageFailed",
-        abi = "MessageFailed(uint16,bytes,uint64,bytes)"
-    )]
+    #[ethevent(name = "MessageFailed", abi = "MessageFailed(uint16,bytes,uint64,bytes)")]
     pub struct MessageFailedFilter {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
         pub nonce: u64,
-        pub payload: ethers::core::types::Bytes,
+        pub payload: ::ethers_core::types::Bytes,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(
         name = "OwnershipTransferred",
@@ -427,47 +508,47 @@ pub mod nonblocking_lz_app {
     )]
     pub struct OwnershipTransferredFilter {
         #[ethevent(indexed)]
-        pub previous_owner: ethers::core::types::Address,
+        pub previous_owner: ::ethers_core::types::Address,
         #[ethevent(indexed)]
-        pub new_owner: ethers::core::types::Address,
+        pub new_owner: ::ethers_core::types::Address,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "SetTrustedRemote", abi = "SetTrustedRemote(uint16,bytes)")]
     pub struct SetTrustedRemoteFilter {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
     }
+    ///Container type for all of the contract's events
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum NonblockingLzAppEvents {
         MessageFailedFilter(MessageFailedFilter),
         OwnershipTransferredFilter(OwnershipTransferredFilter),
         SetTrustedRemoteFilter(SetTrustedRemoteFilter),
     }
-    impl ethers::contract::EthLogDecode for NonblockingLzAppEvents {
+    impl ::ethers_contract::EthLogDecode for NonblockingLzAppEvents {
         fn decode_log(
-            log: &ethers::core::abi::RawLog,
-        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
-        where
-            Self: Sized,
-        {
+            log: &::ethers_core::abi::RawLog,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = MessageFailedFilter::decode_log(log) {
                 return Ok(NonblockingLzAppEvents::MessageFailedFilter(decoded));
             }
@@ -477,143 +558,172 @@ pub mod nonblocking_lz_app {
             if let Ok(decoded) = SetTrustedRemoteFilter::decode_log(log) {
                 return Ok(NonblockingLzAppEvents::SetTrustedRemoteFilter(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData)
+            Err(::ethers_core::abi::Error::InvalidData)
         }
     }
-    impl ::std::fmt::Display for NonblockingLzAppEvents {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for NonblockingLzAppEvents {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                NonblockingLzAppEvents::MessageFailedFilter(element) => element.fmt(f),
-                NonblockingLzAppEvents::OwnershipTransferredFilter(element) => element.fmt(f),
-                NonblockingLzAppEvents::SetTrustedRemoteFilter(element) => element.fmt(f),
+                Self::MessageFailedFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::OwnershipTransferredFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SetTrustedRemoteFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
             }
         }
     }
-    #[doc = "Container type for all input parameters for the `failedMessages` function with signature `failedMessages(uint16,bytes,uint64)` and selector `[91, 140, 65, 230]`"]
+    impl ::core::convert::From<MessageFailedFilter> for NonblockingLzAppEvents {
+        fn from(value: MessageFailedFilter) -> Self {
+            Self::MessageFailedFilter(value)
+        }
+    }
+    impl ::core::convert::From<OwnershipTransferredFilter> for NonblockingLzAppEvents {
+        fn from(value: OwnershipTransferredFilter) -> Self {
+            Self::OwnershipTransferredFilter(value)
+        }
+    }
+    impl ::core::convert::From<SetTrustedRemoteFilter> for NonblockingLzAppEvents {
+        fn from(value: SetTrustedRemoteFilter) -> Self {
+            Self::SetTrustedRemoteFilter(value)
+        }
+    }
+    ///Container type for all input parameters for the `failedMessages` function with signature `failedMessages(uint16,bytes,uint64)` and selector `0x5b8c41e6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "failedMessages", abi = "failedMessages(uint16,bytes,uint64)")]
-    pub struct FailedMessagesCall(pub u16, pub ethers::core::types::Bytes, pub u64);
-    #[doc = "Container type for all input parameters for the `forceResumeReceive` function with signature `forceResumeReceive(uint16,bytes)` and selector `[66, 214, 90, 141]`"]
+    pub struct FailedMessagesCall(pub u16, pub ::ethers_core::types::Bytes, pub u64);
+    ///Container type for all input parameters for the `forceResumeReceive` function with signature `forceResumeReceive(uint16,bytes)` and selector `0x42d65a8d`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "forceResumeReceive", abi = "forceResumeReceive(uint16,bytes)")]
     pub struct ForceResumeReceiveCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `[245, 236, 189, 188]`"]
+    ///Container type for all input parameters for the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `0xf5ecbdbc`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "getConfig", abi = "getConfig(uint16,uint16,address,uint256)")]
     pub struct GetConfigCall {
         pub version: u16,
         pub chain_id: u16,
-        pub p2: ethers::core::types::Address,
-        pub config_type: ethers::core::types::U256,
+        pub p2: ::ethers_core::types::Address,
+        pub config_type: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `isTrustedRemote` function with signature `isTrustedRemote(uint16,bytes)` and selector `[61, 139, 56, 246]`"]
+    ///Container type for all input parameters for the `isTrustedRemote` function with signature `isTrustedRemote(uint16,bytes)` and selector `0x3d8b38f6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "isTrustedRemote", abi = "isTrustedRemote(uint16,bytes)")]
     pub struct IsTrustedRemoteCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `localLayerZeroChainId` function with signature `localLayerZeroChainId()` and selector `[48, 45, 95, 75]`"]
+    ///Container type for all input parameters for the `localLayerZeroChainId` function with signature `localLayerZeroChainId()` and selector `0x302d5f4b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "localLayerZeroChainId", abi = "localLayerZeroChainId()")]
     pub struct LocalLayerZeroChainIdCall;
-    #[doc = "Container type for all input parameters for the `lzEndpoint` function with signature `lzEndpoint()` and selector `[179, 83, 170, 167]`"]
+    ///Container type for all input parameters for the `lzEndpoint` function with signature `lzEndpoint()` and selector `0xb353aaa7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "lzEndpoint", abi = "lzEndpoint()")]
     pub struct LzEndpointCall;
-    #[doc = "Container type for all input parameters for the `lzReceive` function with signature `lzReceive(uint16,bytes,uint64,bytes)` and selector `[0, 29, 53, 103]`"]
+    ///Container type for all input parameters for the `lzReceive` function with signature `lzReceive(uint16,bytes,uint64,bytes)` and selector `0x001d3567`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "lzReceive", abi = "lzReceive(uint16,bytes,uint64,bytes)")]
     pub struct LzReceiveCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
         pub nonce: u64,
-        pub payload: ethers::core::types::Bytes,
+        pub payload: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `nonblockingLzReceive` function with signature `nonblockingLzReceive(uint16,bytes,uint64,bytes)` and selector `[102, 173, 92, 138]`"]
+    ///Container type for all input parameters for the `nonblockingLzReceive` function with signature `nonblockingLzReceive(uint16,bytes,uint64,bytes)` and selector `0x66ad5c8a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "nonblockingLzReceive",
@@ -621,194 +731,207 @@ pub mod nonblocking_lz_app {
     )]
     pub struct NonblockingLzReceiveCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
         pub nonce: u64,
-        pub payload: ethers::core::types::Bytes,
+        pub payload: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `owner` function with signature `owner()` and selector `[141, 165, 203, 91]`"]
+    ///Container type for all input parameters for the `owner` function with signature `owner()` and selector `0x8da5cb5b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "owner", abi = "owner()")]
     pub struct OwnerCall;
-    #[doc = "Container type for all input parameters for the `peerLayerZeroChainId` function with signature `peerLayerZeroChainId()` and selector `[0, 151, 160, 99]`"]
+    ///Container type for all input parameters for the `peerLayerZeroChainId` function with signature `peerLayerZeroChainId()` and selector `0x0097a063`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "peerLayerZeroChainId", abi = "peerLayerZeroChainId()")]
     pub struct PeerLayerZeroChainIdCall;
-    #[doc = "Container type for all input parameters for the `renounceOwnership` function with signature `renounceOwnership()` and selector `[113, 80, 24, 166]`"]
+    ///Container type for all input parameters for the `renounceOwnership` function with signature `renounceOwnership()` and selector `0x715018a6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "renounceOwnership", abi = "renounceOwnership()")]
     pub struct RenounceOwnershipCall;
-    #[doc = "Container type for all input parameters for the `retryMessage` function with signature `retryMessage(uint16,bytes,uint64,bytes)` and selector `[209, 222, 186, 31]`"]
+    ///Container type for all input parameters for the `retryMessage` function with signature `retryMessage(uint16,bytes,uint64,bytes)` and selector `0xd1deba1f`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "retryMessage", abi = "retryMessage(uint16,bytes,uint64,bytes)")]
     pub struct RetryMessageCall {
         pub src_chain_id: u16,
-        pub src_address: ethers::core::types::Bytes,
+        pub src_address: ::ethers_core::types::Bytes,
         pub nonce: u64,
-        pub payload: ethers::core::types::Bytes,
+        pub payload: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `setConfig` function with signature `setConfig(uint16,uint16,uint256,bytes)` and selector `[203, 237, 139, 156]`"]
+    ///Container type for all input parameters for the `setConfig` function with signature `setConfig(uint16,uint16,uint256,bytes)` and selector `0xcbed8b9c`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setConfig", abi = "setConfig(uint16,uint16,uint256,bytes)")]
     pub struct SetConfigCall {
         pub version: u16,
         pub chain_id: u16,
-        pub config_type: ethers::core::types::U256,
-        pub config: ethers::core::types::Bytes,
+        pub config_type: ::ethers_core::types::U256,
+        pub config: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `setEndpoint` function with signature `setEndpoint(uint16,address)` and selector `[78, 231, 222, 214]`"]
+    ///Container type for all input parameters for the `setEndpoint` function with signature `setEndpoint(uint16,address)` and selector `0x4ee7ded6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setEndpoint", abi = "setEndpoint(uint16,address)")]
     pub struct SetEndpointCall {
         pub lz_chain_id: u16,
-        pub lz_endpoint: ethers::core::types::Address,
+        pub lz_endpoint: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `setReceiveVersion` function with signature `setReceiveVersion(uint16)` and selector `[16, 221, 177, 55]`"]
+    ///Container type for all input parameters for the `setReceiveVersion` function with signature `setReceiveVersion(uint16)` and selector `0x10ddb137`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setReceiveVersion", abi = "setReceiveVersion(uint16)")]
     pub struct SetReceiveVersionCall {
         pub version: u16,
     }
-    #[doc = "Container type for all input parameters for the `setSendVersion` function with signature `setSendVersion(uint16)` and selector `[7, 224, 219, 23]`"]
+    ///Container type for all input parameters for the `setSendVersion` function with signature `setSendVersion(uint16)` and selector `0x07e0db17`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setSendVersion", abi = "setSendVersion(uint16)")]
     pub struct SetSendVersionCall {
         pub version: u16,
     }
-    #[doc = "Container type for all input parameters for the `setTrustedRemote` function with signature `setTrustedRemote(uint16,bytes)` and selector `[235, 141, 114, 183]`"]
+    ///Container type for all input parameters for the `setTrustedRemote` function with signature `setTrustedRemote(uint16,bytes)` and selector `0xeb8d72b7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setTrustedRemote", abi = "setTrustedRemote(uint16,bytes)")]
     pub struct SetTrustedRemoteCall {
         pub peer_layer_zero_chain_id: u16,
-        pub peer_address: ethers::core::types::Bytes,
+        pub peer_address: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `transferOwnership` function with signature `transferOwnership(address)` and selector `[242, 253, 227, 139]`"]
+    ///Container type for all input parameters for the `transferOwnership` function with signature `transferOwnership(address)` and selector `0xf2fde38b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "transferOwnership", abi = "transferOwnership(address)")]
     pub struct TransferOwnershipCall {
-        pub new_owner: ethers::core::types::Address,
+        pub new_owner: ::ethers_core::types::Address,
     }
-    #[doc = "Container type for all input parameters for the `trustedRemoteLookup` function with signature `trustedRemoteLookup(uint16)` and selector `[117, 51, 215, 136]`"]
+    ///Container type for all input parameters for the `trustedRemoteLookup` function with signature `trustedRemoteLookup(uint16)` and selector `0x7533d788`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "trustedRemoteLookup", abi = "trustedRemoteLookup(uint16)")]
     pub struct TrustedRemoteLookupCall(pub u16);
+    ///Container type for all of the contract's call
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum NonblockingLzAppCalls {
         FailedMessages(FailedMessagesCall),
@@ -831,354 +954,409 @@ pub mod nonblocking_lz_app {
         TransferOwnership(TransferOwnershipCall),
         TrustedRemoteLookup(TrustedRemoteLookupCall),
     }
-    impl ethers::core::abi::AbiDecode for NonblockingLzAppCalls {
+    impl ::ethers_core::abi::AbiDecode for NonblockingLzAppCalls {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <FailedMessagesCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::FailedMessages(decoded));
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
+            if let Ok(decoded)
+                = <FailedMessagesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::FailedMessages(decoded));
             }
-            if let Ok(decoded) =
-                <ForceResumeReceiveCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::ForceResumeReceive(decoded));
+            if let Ok(decoded)
+                = <ForceResumeReceiveCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ForceResumeReceive(decoded));
             }
-            if let Ok(decoded) =
-                <GetConfigCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::GetConfig(decoded));
+            if let Ok(decoded)
+                = <GetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::GetConfig(decoded));
             }
-            if let Ok(decoded) =
-                <IsTrustedRemoteCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::IsTrustedRemote(decoded));
+            if let Ok(decoded)
+                = <IsTrustedRemoteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::IsTrustedRemote(decoded));
             }
-            if let Ok(decoded) =
-                <LocalLayerZeroChainIdCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::LocalLayerZeroChainId(decoded));
+            if let Ok(decoded)
+                = <LocalLayerZeroChainIdCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::LocalLayerZeroChainId(decoded));
             }
-            if let Ok(decoded) =
-                <LzEndpointCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::LzEndpoint(decoded));
+            if let Ok(decoded)
+                = <LzEndpointCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::LzEndpoint(decoded));
             }
-            if let Ok(decoded) =
-                <LzReceiveCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::LzReceive(decoded));
+            if let Ok(decoded)
+                = <LzReceiveCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::LzReceive(decoded));
             }
-            if let Ok(decoded) =
-                <NonblockingLzReceiveCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::NonblockingLzReceive(decoded));
+            if let Ok(decoded)
+                = <NonblockingLzReceiveCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::NonblockingLzReceive(decoded));
             }
-            if let Ok(decoded) = <OwnerCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::Owner(decoded));
+            if let Ok(decoded)
+                = <OwnerCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Owner(decoded));
             }
-            if let Ok(decoded) =
-                <PeerLayerZeroChainIdCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::PeerLayerZeroChainId(decoded));
+            if let Ok(decoded)
+                = <PeerLayerZeroChainIdCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::PeerLayerZeroChainId(decoded));
             }
-            if let Ok(decoded) =
-                <RenounceOwnershipCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::RenounceOwnership(decoded));
+            if let Ok(decoded)
+                = <RenounceOwnershipCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::RenounceOwnership(decoded));
             }
-            if let Ok(decoded) =
-                <RetryMessageCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::RetryMessage(decoded));
+            if let Ok(decoded)
+                = <RetryMessageCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::RetryMessage(decoded));
             }
-            if let Ok(decoded) =
-                <SetConfigCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::SetConfig(decoded));
+            if let Ok(decoded)
+                = <SetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SetConfig(decoded));
             }
-            if let Ok(decoded) =
-                <SetEndpointCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::SetEndpoint(decoded));
+            if let Ok(decoded)
+                = <SetEndpointCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SetEndpoint(decoded));
             }
-            if let Ok(decoded) =
-                <SetReceiveVersionCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::SetReceiveVersion(decoded));
+            if let Ok(decoded)
+                = <SetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetReceiveVersion(decoded));
             }
-            if let Ok(decoded) =
-                <SetSendVersionCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::SetSendVersion(decoded));
+            if let Ok(decoded)
+                = <SetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SetSendVersion(decoded));
             }
-            if let Ok(decoded) =
-                <SetTrustedRemoteCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::SetTrustedRemote(decoded));
+            if let Ok(decoded)
+                = <SetTrustedRemoteCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SetTrustedRemote(decoded));
             }
-            if let Ok(decoded) =
-                <TransferOwnershipCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::TransferOwnership(decoded));
+            if let Ok(decoded)
+                = <TransferOwnershipCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::TransferOwnership(decoded));
             }
-            if let Ok(decoded) =
-                <TrustedRemoteLookupCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(NonblockingLzAppCalls::TrustedRemoteLookup(decoded));
+            if let Ok(decoded)
+                = <TrustedRemoteLookupCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::TrustedRemoteLookup(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for NonblockingLzAppCalls {
+    impl ::ethers_core::abi::AbiEncode for NonblockingLzAppCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                NonblockingLzAppCalls::FailedMessages(element) => element.encode(),
-                NonblockingLzAppCalls::ForceResumeReceive(element) => element.encode(),
-                NonblockingLzAppCalls::GetConfig(element) => element.encode(),
-                NonblockingLzAppCalls::IsTrustedRemote(element) => element.encode(),
-                NonblockingLzAppCalls::LocalLayerZeroChainId(element) => element.encode(),
-                NonblockingLzAppCalls::LzEndpoint(element) => element.encode(),
-                NonblockingLzAppCalls::LzReceive(element) => element.encode(),
-                NonblockingLzAppCalls::NonblockingLzReceive(element) => element.encode(),
-                NonblockingLzAppCalls::Owner(element) => element.encode(),
-                NonblockingLzAppCalls::PeerLayerZeroChainId(element) => element.encode(),
-                NonblockingLzAppCalls::RenounceOwnership(element) => element.encode(),
-                NonblockingLzAppCalls::RetryMessage(element) => element.encode(),
-                NonblockingLzAppCalls::SetConfig(element) => element.encode(),
-                NonblockingLzAppCalls::SetEndpoint(element) => element.encode(),
-                NonblockingLzAppCalls::SetReceiveVersion(element) => element.encode(),
-                NonblockingLzAppCalls::SetSendVersion(element) => element.encode(),
-                NonblockingLzAppCalls::SetTrustedRemote(element) => element.encode(),
-                NonblockingLzAppCalls::TransferOwnership(element) => element.encode(),
-                NonblockingLzAppCalls::TrustedRemoteLookup(element) => element.encode(),
+                Self::FailedMessages(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ForceResumeReceive(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetConfig(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsTrustedRemote(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::LocalLayerZeroChainId(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::LzEndpoint(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::LzReceive(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::NonblockingLzReceive(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Owner(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::PeerLayerZeroChainId(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RenounceOwnership(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RetryMessage(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetConfig(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetEndpoint(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetReceiveVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetSendVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetTrustedRemote(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TransferOwnership(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TrustedRemoteLookup(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }
-    impl ::std::fmt::Display for NonblockingLzAppCalls {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for NonblockingLzAppCalls {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                NonblockingLzAppCalls::FailedMessages(element) => element.fmt(f),
-                NonblockingLzAppCalls::ForceResumeReceive(element) => element.fmt(f),
-                NonblockingLzAppCalls::GetConfig(element) => element.fmt(f),
-                NonblockingLzAppCalls::IsTrustedRemote(element) => element.fmt(f),
-                NonblockingLzAppCalls::LocalLayerZeroChainId(element) => element.fmt(f),
-                NonblockingLzAppCalls::LzEndpoint(element) => element.fmt(f),
-                NonblockingLzAppCalls::LzReceive(element) => element.fmt(f),
-                NonblockingLzAppCalls::NonblockingLzReceive(element) => element.fmt(f),
-                NonblockingLzAppCalls::Owner(element) => element.fmt(f),
-                NonblockingLzAppCalls::PeerLayerZeroChainId(element) => element.fmt(f),
-                NonblockingLzAppCalls::RenounceOwnership(element) => element.fmt(f),
-                NonblockingLzAppCalls::RetryMessage(element) => element.fmt(f),
-                NonblockingLzAppCalls::SetConfig(element) => element.fmt(f),
-                NonblockingLzAppCalls::SetEndpoint(element) => element.fmt(f),
-                NonblockingLzAppCalls::SetReceiveVersion(element) => element.fmt(f),
-                NonblockingLzAppCalls::SetSendVersion(element) => element.fmt(f),
-                NonblockingLzAppCalls::SetTrustedRemote(element) => element.fmt(f),
-                NonblockingLzAppCalls::TransferOwnership(element) => element.fmt(f),
-                NonblockingLzAppCalls::TrustedRemoteLookup(element) => element.fmt(f),
+                Self::FailedMessages(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ForceResumeReceive(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetConfig(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsTrustedRemote(element) => ::core::fmt::Display::fmt(element, f),
+                Self::LocalLayerZeroChainId(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::LzEndpoint(element) => ::core::fmt::Display::fmt(element, f),
+                Self::LzReceive(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NonblockingLzReceive(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::Owner(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PeerLayerZeroChainId(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::RenounceOwnership(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RetryMessage(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetConfig(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetEndpoint(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetReceiveVersion(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetSendVersion(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetTrustedRemote(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TransferOwnership(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TrustedRemoteLookup(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
             }
         }
     }
-    impl ::std::convert::From<FailedMessagesCall> for NonblockingLzAppCalls {
-        fn from(var: FailedMessagesCall) -> Self {
-            NonblockingLzAppCalls::FailedMessages(var)
+    impl ::core::convert::From<FailedMessagesCall> for NonblockingLzAppCalls {
+        fn from(value: FailedMessagesCall) -> Self {
+            Self::FailedMessages(value)
         }
     }
-    impl ::std::convert::From<ForceResumeReceiveCall> for NonblockingLzAppCalls {
-        fn from(var: ForceResumeReceiveCall) -> Self {
-            NonblockingLzAppCalls::ForceResumeReceive(var)
+    impl ::core::convert::From<ForceResumeReceiveCall> for NonblockingLzAppCalls {
+        fn from(value: ForceResumeReceiveCall) -> Self {
+            Self::ForceResumeReceive(value)
         }
     }
-    impl ::std::convert::From<GetConfigCall> for NonblockingLzAppCalls {
-        fn from(var: GetConfigCall) -> Self {
-            NonblockingLzAppCalls::GetConfig(var)
+    impl ::core::convert::From<GetConfigCall> for NonblockingLzAppCalls {
+        fn from(value: GetConfigCall) -> Self {
+            Self::GetConfig(value)
         }
     }
-    impl ::std::convert::From<IsTrustedRemoteCall> for NonblockingLzAppCalls {
-        fn from(var: IsTrustedRemoteCall) -> Self {
-            NonblockingLzAppCalls::IsTrustedRemote(var)
+    impl ::core::convert::From<IsTrustedRemoteCall> for NonblockingLzAppCalls {
+        fn from(value: IsTrustedRemoteCall) -> Self {
+            Self::IsTrustedRemote(value)
         }
     }
-    impl ::std::convert::From<LocalLayerZeroChainIdCall> for NonblockingLzAppCalls {
-        fn from(var: LocalLayerZeroChainIdCall) -> Self {
-            NonblockingLzAppCalls::LocalLayerZeroChainId(var)
+    impl ::core::convert::From<LocalLayerZeroChainIdCall> for NonblockingLzAppCalls {
+        fn from(value: LocalLayerZeroChainIdCall) -> Self {
+            Self::LocalLayerZeroChainId(value)
         }
     }
-    impl ::std::convert::From<LzEndpointCall> for NonblockingLzAppCalls {
-        fn from(var: LzEndpointCall) -> Self {
-            NonblockingLzAppCalls::LzEndpoint(var)
+    impl ::core::convert::From<LzEndpointCall> for NonblockingLzAppCalls {
+        fn from(value: LzEndpointCall) -> Self {
+            Self::LzEndpoint(value)
         }
     }
-    impl ::std::convert::From<LzReceiveCall> for NonblockingLzAppCalls {
-        fn from(var: LzReceiveCall) -> Self {
-            NonblockingLzAppCalls::LzReceive(var)
+    impl ::core::convert::From<LzReceiveCall> for NonblockingLzAppCalls {
+        fn from(value: LzReceiveCall) -> Self {
+            Self::LzReceive(value)
         }
     }
-    impl ::std::convert::From<NonblockingLzReceiveCall> for NonblockingLzAppCalls {
-        fn from(var: NonblockingLzReceiveCall) -> Self {
-            NonblockingLzAppCalls::NonblockingLzReceive(var)
+    impl ::core::convert::From<NonblockingLzReceiveCall> for NonblockingLzAppCalls {
+        fn from(value: NonblockingLzReceiveCall) -> Self {
+            Self::NonblockingLzReceive(value)
         }
     }
-    impl ::std::convert::From<OwnerCall> for NonblockingLzAppCalls {
-        fn from(var: OwnerCall) -> Self {
-            NonblockingLzAppCalls::Owner(var)
+    impl ::core::convert::From<OwnerCall> for NonblockingLzAppCalls {
+        fn from(value: OwnerCall) -> Self {
+            Self::Owner(value)
         }
     }
-    impl ::std::convert::From<PeerLayerZeroChainIdCall> for NonblockingLzAppCalls {
-        fn from(var: PeerLayerZeroChainIdCall) -> Self {
-            NonblockingLzAppCalls::PeerLayerZeroChainId(var)
+    impl ::core::convert::From<PeerLayerZeroChainIdCall> for NonblockingLzAppCalls {
+        fn from(value: PeerLayerZeroChainIdCall) -> Self {
+            Self::PeerLayerZeroChainId(value)
         }
     }
-    impl ::std::convert::From<RenounceOwnershipCall> for NonblockingLzAppCalls {
-        fn from(var: RenounceOwnershipCall) -> Self {
-            NonblockingLzAppCalls::RenounceOwnership(var)
+    impl ::core::convert::From<RenounceOwnershipCall> for NonblockingLzAppCalls {
+        fn from(value: RenounceOwnershipCall) -> Self {
+            Self::RenounceOwnership(value)
         }
     }
-    impl ::std::convert::From<RetryMessageCall> for NonblockingLzAppCalls {
-        fn from(var: RetryMessageCall) -> Self {
-            NonblockingLzAppCalls::RetryMessage(var)
+    impl ::core::convert::From<RetryMessageCall> for NonblockingLzAppCalls {
+        fn from(value: RetryMessageCall) -> Self {
+            Self::RetryMessage(value)
         }
     }
-    impl ::std::convert::From<SetConfigCall> for NonblockingLzAppCalls {
-        fn from(var: SetConfigCall) -> Self {
-            NonblockingLzAppCalls::SetConfig(var)
+    impl ::core::convert::From<SetConfigCall> for NonblockingLzAppCalls {
+        fn from(value: SetConfigCall) -> Self {
+            Self::SetConfig(value)
         }
     }
-    impl ::std::convert::From<SetEndpointCall> for NonblockingLzAppCalls {
-        fn from(var: SetEndpointCall) -> Self {
-            NonblockingLzAppCalls::SetEndpoint(var)
+    impl ::core::convert::From<SetEndpointCall> for NonblockingLzAppCalls {
+        fn from(value: SetEndpointCall) -> Self {
+            Self::SetEndpoint(value)
         }
     }
-    impl ::std::convert::From<SetReceiveVersionCall> for NonblockingLzAppCalls {
-        fn from(var: SetReceiveVersionCall) -> Self {
-            NonblockingLzAppCalls::SetReceiveVersion(var)
+    impl ::core::convert::From<SetReceiveVersionCall> for NonblockingLzAppCalls {
+        fn from(value: SetReceiveVersionCall) -> Self {
+            Self::SetReceiveVersion(value)
         }
     }
-    impl ::std::convert::From<SetSendVersionCall> for NonblockingLzAppCalls {
-        fn from(var: SetSendVersionCall) -> Self {
-            NonblockingLzAppCalls::SetSendVersion(var)
+    impl ::core::convert::From<SetSendVersionCall> for NonblockingLzAppCalls {
+        fn from(value: SetSendVersionCall) -> Self {
+            Self::SetSendVersion(value)
         }
     }
-    impl ::std::convert::From<SetTrustedRemoteCall> for NonblockingLzAppCalls {
-        fn from(var: SetTrustedRemoteCall) -> Self {
-            NonblockingLzAppCalls::SetTrustedRemote(var)
+    impl ::core::convert::From<SetTrustedRemoteCall> for NonblockingLzAppCalls {
+        fn from(value: SetTrustedRemoteCall) -> Self {
+            Self::SetTrustedRemote(value)
         }
     }
-    impl ::std::convert::From<TransferOwnershipCall> for NonblockingLzAppCalls {
-        fn from(var: TransferOwnershipCall) -> Self {
-            NonblockingLzAppCalls::TransferOwnership(var)
+    impl ::core::convert::From<TransferOwnershipCall> for NonblockingLzAppCalls {
+        fn from(value: TransferOwnershipCall) -> Self {
+            Self::TransferOwnership(value)
         }
     }
-    impl ::std::convert::From<TrustedRemoteLookupCall> for NonblockingLzAppCalls {
-        fn from(var: TrustedRemoteLookupCall) -> Self {
-            NonblockingLzAppCalls::TrustedRemoteLookup(var)
+    impl ::core::convert::From<TrustedRemoteLookupCall> for NonblockingLzAppCalls {
+        fn from(value: TrustedRemoteLookupCall) -> Self {
+            Self::TrustedRemoteLookup(value)
         }
     }
-    #[doc = "Container type for all return fields from the `failedMessages` function with signature `failedMessages(uint16,bytes,uint64)` and selector `[91, 140, 65, 230]`"]
+    ///Container type for all return fields from the `failedMessages` function with signature `failedMessages(uint16,bytes,uint64)` and selector `0x5b8c41e6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct FailedMessagesReturn(pub [u8; 32]);
-    #[doc = "Container type for all return fields from the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `[245, 236, 189, 188]`"]
+    ///Container type for all return fields from the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `0xf5ecbdbc`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GetConfigReturn(pub ethers::core::types::Bytes);
-    #[doc = "Container type for all return fields from the `isTrustedRemote` function with signature `isTrustedRemote(uint16,bytes)` and selector `[61, 139, 56, 246]`"]
+    pub struct GetConfigReturn(pub ::ethers_core::types::Bytes);
+    ///Container type for all return fields from the `isTrustedRemote` function with signature `isTrustedRemote(uint16,bytes)` and selector `0x3d8b38f6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct IsTrustedRemoteReturn(pub bool);
-    #[doc = "Container type for all return fields from the `localLayerZeroChainId` function with signature `localLayerZeroChainId()` and selector `[48, 45, 95, 75]`"]
+    ///Container type for all return fields from the `localLayerZeroChainId` function with signature `localLayerZeroChainId()` and selector `0x302d5f4b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct LocalLayerZeroChainIdReturn(pub u16);
-    #[doc = "Container type for all return fields from the `lzEndpoint` function with signature `lzEndpoint()` and selector `[179, 83, 170, 167]`"]
+    ///Container type for all return fields from the `lzEndpoint` function with signature `lzEndpoint()` and selector `0xb353aaa7`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct LzEndpointReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `owner` function with signature `owner()` and selector `[141, 165, 203, 91]`"]
+    pub struct LzEndpointReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `owner` function with signature `owner()` and selector `0x8da5cb5b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct OwnerReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `peerLayerZeroChainId` function with signature `peerLayerZeroChainId()` and selector `[0, 151, 160, 99]`"]
+    pub struct OwnerReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `peerLayerZeroChainId` function with signature `peerLayerZeroChainId()` and selector `0x0097a063`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct PeerLayerZeroChainIdReturn(pub u16);
-    #[doc = "Container type for all return fields from the `trustedRemoteLookup` function with signature `trustedRemoteLookup(uint16)` and selector `[117, 51, 215, 136]`"]
+    ///Container type for all return fields from the `trustedRemoteLookup` function with signature `trustedRemoteLookup(uint16)` and selector `0x7533d788`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct TrustedRemoteLookupReturn(pub ethers::core::types::Bytes);
+    pub struct TrustedRemoteLookupReturn(pub ::ethers_core::types::Bytes);
 }

@@ -12,7 +12,7 @@ use zokrates_proof_systems::{Backend, G1Affine, G2Affine, G2AffineFq2, Scheme, G
 
 type ZokratesSystemProof = zokrates_proof_systems::Proof<Bn128Field, G16>;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct G1Point {
     pub x: String,
     pub y: String,
@@ -31,7 +31,7 @@ impl G1Point {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct G2Point {
     pub x: [String; 2],
     pub y: [String; 2],
@@ -57,7 +57,7 @@ impl G2Point {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Proof {
     pub a: G1Point,
     pub b: G2Point,
@@ -82,7 +82,7 @@ fn call_verify<T: Field, S: Scheme<T>, B: Backend<T, S>>(
     Ok(B::verify(vk, proof))
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ZKProof {
     pub proof: Proof,
     pub inputs: Vec<String>,
@@ -94,15 +94,14 @@ impl ZKProof {
     }
 
     pub fn from_json_string(proof: &str) -> Result<Self, ZkpError> {
-        let proof_json: serde_json::Value = serde_json::from_str(proof)
-            .map_err(|why| ZkpError::SerdeJsonError("proof".to_string(), why.to_string()))?;
+        let proof_json: serde_json::Value = serde_json::from_str(proof)?;
 
         let proof: ZKProof = serde_json::from_value(proof_json)
             .map_err(|why| ZkpError::ProofError(why.to_string()))?;
         Ok(proof)
     }
 
-    fn to_tagged_proof(&self) -> ZokratesSystemProof {
+    pub fn to_tagged_proof(&self) -> ZokratesSystemProof {
         let proof = self.proof.clone();
         let inputs = self.inputs.clone();
         let point = ProofPoints {
@@ -113,7 +112,7 @@ impl ZKProof {
         ZokratesSystemProof::new(point, inputs)
     }
 
-    fn from_tagged_proof(zok: &ZokratesSystemProof) -> Self {
+    pub fn from_tagged_proof(zok: &ZokratesSystemProof) -> Self {
         let proof = Proof {
             a: G1Point::from_affine(&zok.proof.a),
             b: G2Point::from_affine(&zok.proof.b),
@@ -132,8 +131,7 @@ impl ZKProof {
         proving_key: &[u8],
         json_args_str: &str,
     ) -> Result<Self, ZkpError> {
-        let abi: Abi = serde_json::from_slice(abi_spec)
-            .map_err(|why| ZkpError::SerdeJsonError("abi".to_string(), why.to_string()))?;
+        let abi: Abi = serde_json::from_slice(abi_spec)?;
         let prog = match ir::ProgEnum::deserialize(program) {
             Ok(p) => p.collect(),
             Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
@@ -150,10 +148,7 @@ impl ZKProof {
     }
 
     pub fn verify(&self, verification_key: &[u8]) -> Result<bool, ZkpError> {
-        let vk: serde_json::Value = serde_json::from_slice(verification_key).map_err(|why| {
-            ZkpError::SerdeJsonError("verification key".to_string(), why.to_string())
-        })?;
-
+        let vk: serde_json::Value = serde_json::from_slice(verification_key)?;
         self.do_verify(vk)
     }
 
@@ -198,6 +193,12 @@ mod tests {
     #[test]
     #[should_panic(expected = "Unexpected G2Affine type")]
     fn test_g2_point_from_affine() {
+        let point = G2Affine::Fq2(G2AffineFq2(
+            ("1".to_string(), "2".to_string()),
+            ("3".to_string(), "4".to_string()),
+        ));
+        let _ = G2Point::from_affine(&point);
+
         let point = G2Affine::Fq(G2AffineFq("0".to_string(), "1".to_string()));
         let _ = G2Point::from_affine(&point);
     }

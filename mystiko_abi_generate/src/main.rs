@@ -4,9 +4,27 @@ use regex::Regex;
 use std::env;
 use std::error::Error;
 use std::fs;
+use std::io::Write;
 use std::path::Path;
 
-use ethers::prelude::Abigen;
+use ethers_contract_abigen::Abigen;
+
+fn abi_file_replace_package(input_filename: &str) -> Result<(), Box<dyn Error>> {
+    // Read the contents of the input Rust file
+    let contents = fs::read_to_string(input_filename)?;
+
+    let replaced_contents = contents.replace("::ethers::core::", "::ethers_core::");
+    let replaced_contents =
+        replaced_contents.replace("::ethers::contract::", "::ethers_contract::");
+    let replaced_contents =
+        replaced_contents.replace("::ethers::providers::", "::ethers_providers::");
+
+    // Write the replaced contents to the output Rust file
+    let mut file = fs::File::create(input_filename)?;
+    file.write_all(replaced_contents.as_bytes())?;
+
+    Ok(())
+}
 
 fn abi_file_generation(src: &Path, dst: &str) -> Result<(), Box<dyn Error>> {
     let file_name = src.file_stem().unwrap().to_str().unwrap();
@@ -19,10 +37,12 @@ fn abi_file_generation(src: &Path, dst: &str) -> Result<(), Box<dyn Error>> {
 
     let dst_file = format!("{dst}/{file_name_snake_case}.rs");
     Abigen::new(file_name, src.to_str().unwrap())?
-        .add_event_derive("serde::Serialize")
-        .add_event_derive("serde::Deserialize")
+        .add_derive("serde::Serialize")?
+        .add_derive("serde::Deserialize")?
         .generate()?
-        .write_to_file(dst_file)?;
+        .write_to_file(dst_file.clone())?;
+
+    abi_file_replace_package(&dst_file)?;
 
     Ok(())
 }
@@ -114,5 +134,14 @@ mod tests {
             String::from("./tests"),
         ];
         generate(args);
+
+        for entry in fs::read_dir("./tests").unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.is_file() && path.extension() == Some(std::ffi::OsStr::new("rs")) {
+                fs::remove_file(&path).unwrap();
+                println!("Deleted {:?}", path);
+            }
+        }
     }
 }
