@@ -1,10 +1,11 @@
 use lazy_static::lazy_static;
 use mystiko_config::raw::bridge::poly::RawPolyBridgeConfig;
 use mystiko_config::raw::chain::EXPLORER_DEFAULT_PREFIX;
-use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json};
 use mystiko_config::types::BridgeType;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use validator::Validate;
 
 fn default_config() -> RawPolyBridgeConfig {
     create_raw::<RawPolyBridgeConfig>(
@@ -68,63 +69,63 @@ fn test_validate_success() {
 fn test_invalid_type() {
     let mut config = default_config();
     config.bridge_type = BridgeType::Tbridge;
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_explorer_url_0() {
     let mut config = default_config();
     config.explorer_url = String::from("");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_explorer_url_1() {
     let mut config = default_config();
     config.explorer_url = String::from("wrong url");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_explorer_prefix_0() {
     let mut config = default_config();
     config.explorer_prefix = String::from("");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_explorer_prefix_1() {
     let mut config = default_config();
     config.explorer_prefix = String::from("wrong prefix");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_api_url_0() {
     let mut config = default_config();
     config.api_url = String::from("");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_api_url_1() {
     let mut config = default_config();
     config.api_url = String::from("wrong url");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_api_prefix_0() {
     let mut config = default_config();
     config.api_prefix = String::from("");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_api_prefix_1() {
     let mut config = default_config();
     config.api_prefix = String::from("wrong prefix");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[tokio::test]

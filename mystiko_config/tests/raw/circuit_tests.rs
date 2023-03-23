@@ -1,8 +1,9 @@
 use mystiko_config::raw::circuit::RawCircuitConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file};
 use mystiko_config::types::CircuitType;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use validator::Validate;
 
 fn default_config() -> RawCircuitConfig {
     create_raw::<RawCircuitConfig>(
@@ -39,35 +40,35 @@ fn test_hash() {
 fn test_invalid_name() {
     let mut config = default_config();
     config.name = String::from("");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_program_file() {
     let mut config = default_config();
     config.program_file = vec![String::from("")];
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_abi_file() {
     let mut config = default_config();
     config.abi_file = vec![String::from("")];
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_proving_key_file() {
     let mut config = default_config();
     config.proving_key_file = vec![String::from("")];
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_verifying_key_file() {
     let mut config = default_config();
     config.verifying_key_file = vec![String::from("")];
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[tokio::test]

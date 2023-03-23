@@ -1,5 +1,5 @@
-use crate::raw::{validate_raw, Validator};
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
@@ -14,9 +14,9 @@ pub struct RawIndexerConfig {
     pub timeout_ms: u32,
 }
 
-impl Validator for RawIndexerConfig {
-    fn validation(&self) -> Result<(), anyhow::Error> {
-        validate_raw(self)
+impl Hash for RawIndexerConfig {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.url.hash(state)
     }
 }
 

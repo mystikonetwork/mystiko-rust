@@ -1,5 +1,4 @@
 use crate::raw::validator::{is_ethereum_address, is_number_string, string_vec_each_not_empty};
-use crate::raw::{validate_raw, Validator};
 use crate::types::{BridgeType, ContractType};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -58,12 +57,6 @@ pub struct RawPoolContractConfig {
 impl Hash for RawPoolContractConfig {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.address.hash(state)
-    }
-}
-
-impl Validator for RawPoolContractConfig {
-    fn validation(&self) -> anyhow::Result<()> {
-        validate_raw(self)
     }
 }
 
