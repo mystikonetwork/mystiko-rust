@@ -12,7 +12,7 @@ use zokrates_proof_systems::{Backend, G1Affine, G2Affine, G2AffineFq2, Scheme, G
 
 type ZokratesSystemProof = zokrates_proof_systems::Proof<Bn128Field, G16>;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct G1Point {
     pub x: String,
     pub y: String,
@@ -31,7 +31,7 @@ impl G1Point {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct G2Point {
     pub x: [String; 2],
     pub y: [String; 2],
@@ -57,7 +57,7 @@ impl G2Point {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Proof {
     pub a: G1Point,
     pub b: G2Point,
@@ -82,7 +82,7 @@ fn call_verify<T: Field, S: Scheme<T>, B: Backend<T, S>>(
     Ok(B::verify(vk, proof))
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ZKProof {
     pub proof: Proof,
     pub inputs: Vec<String>,
@@ -101,7 +101,7 @@ impl ZKProof {
         Ok(proof)
     }
 
-    fn to_tagged_proof(&self) -> ZokratesSystemProof {
+    pub fn to_tagged_proof(&self) -> ZokratesSystemProof {
         let proof = self.proof.clone();
         let inputs = self.inputs.clone();
         let point = ProofPoints {
@@ -112,7 +112,7 @@ impl ZKProof {
         ZokratesSystemProof::new(point, inputs)
     }
 
-    fn from_tagged_proof(zok: &ZokratesSystemProof) -> Self {
+    pub fn from_tagged_proof(zok: &ZokratesSystemProof) -> Self {
         let proof = Proof {
             a: G1Point::from_affine(&zok.proof.a),
             b: G2Point::from_affine(&zok.proof.b),
@@ -193,6 +193,12 @@ mod tests {
     #[test]
     #[should_panic(expected = "Unexpected G2Affine type")]
     fn test_g2_point_from_affine() {
+        let point = G2Affine::Fq2(G2AffineFq2(
+            ("1".to_string(), "2".to_string()),
+            ("3".to_string(), "4".to_string()),
+        ));
+        let _ = G2Point::from_affine(&point);
+
         let point = G2Affine::Fq(G2AffineFq("0".to_string(), "1".to_string()));
         let _ = G2Point::from_affine(&point);
     }

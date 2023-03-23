@@ -7,6 +7,7 @@ use mystiko_crypto::crypto::{
     decrypt_asymmetric, decrypt_symmetric, encrypt_asymmetric, encrypt_symmetric,
 };
 use mystiko_crypto::eccrypto::public_key_to_vec;
+use mystiko_crypto::error::CryptoError;
 use mystiko_crypto::utils::{random_bytes, random_utf8_string};
 use rand_core::OsRng;
 
@@ -28,6 +29,20 @@ async fn test_random_encrypt_symmetric() {
     let cipher_text = encrypt_symmetric(&password, &plain_text).unwrap();
     let dec_text = decrypt_symmetric(&password, &cipher_text).unwrap();
     assert_eq!(plain_text, dec_text);
+
+    let cipher_text_wrong = "%$##";
+    let dec_text = decrypt_symmetric(&password, &cipher_text_wrong);
+    assert!(matches!(
+        dec_text.err().unwrap(),
+        CryptoError::DecryptError(_)
+    ));
+
+    let password = random_utf8_string((size[0] % 64 + 1) as usize);
+    let dec_text = decrypt_symmetric(&password, &cipher_text);
+    assert!(matches!(
+        dec_text.err().unwrap(),
+        CryptoError::DecryptError(_)
+    ));
 }
 
 #[tokio::test]

@@ -11,6 +11,7 @@ use mystiko_crypto::crypto::decrypt_asymmetric;
 use mystiko_crypto::utils::random_bytes;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment, EncryptedData, Note};
+use mystiko_protocol::error::ProtocolError;
 use mystiko_protocol::key::{
     encryption_public_key, encryption_secret_key, verification_public_key, verification_secret_key,
 };
@@ -144,11 +145,23 @@ async fn test_build_commitment() {
             encrypted_note: cm1.encrypted_note.clone(),
         }),
     );
-    assert!(cm3.is_err());
+    assert!(matches!(
+        cm3.err().unwrap(),
+        ProtocolError::ECCryptoError(_)
+    ));
 
     let enc_data = EncryptedData {
         sk_enc: sk_enc_3,
         encrypted_note: cm1.encrypted_note,
     };
     let _ = enc_data;
+}
+
+#[tokio::test]
+async fn test_build_note() {
+    let note = Note::from_vec(vec![1]);
+    assert!(matches!(
+        note.err().unwrap(),
+        ProtocolError::InvalidNoteSize
+    ));
 }

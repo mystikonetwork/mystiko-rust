@@ -93,23 +93,12 @@ async fn test_insert() {
         16,
     )
     .unwrap();
-    let elements = vec![e1];
+    let elements = vec![e1.clone()];
     let mut tree = MerkleTree::new(Some(elements), Some(0), None).unwrap();
-    let result = tree.insert(e2);
+    let result = tree.insert(e2.clone());
     assert_eq!(result.err().unwrap(), MerkleTreeError::MerkleTreeIsFull);
 
     let mut tree = MerkleTree::new(None, None, None).unwrap();
-    let e1 = BigInt::parse_bytes(
-        b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
-        16,
-    )
-    .unwrap();
-    let e2 = BigInt::parse_bytes(
-        b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
-        16,
-    )
-    .unwrap();
-
     tree.insert(e1).unwrap();
     tree.insert(e2).unwrap();
     assert_eq!(

@@ -57,4 +57,11 @@ async fn test_random_data() {
 
     let data = encrypt(&pk.as_slice()[0..32], text.as_slice());
     assert_eq!(data.err().unwrap(), CryptoError::KeyLengthError);
+
+    let data = vec![1, 2, 3];
+    let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &data);
+    assert!(matches!(
+        dec_text.err().unwrap(),
+        CryptoError::DataLengthError
+    ));
 }
