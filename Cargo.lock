@@ -2777,6 +2777,7 @@ name = "mystiko_relayer_config"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "rust_decimal",
  "serde",
  "serde_json",
  "tokio",

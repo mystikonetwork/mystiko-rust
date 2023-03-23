@@ -1,0 +1,85 @@
+use mystiko_relayer_config::raw::chain::RawChainConfig;
+use mystiko_relayer_config::raw::contract::RawContractConfig;
+use mystiko_relayer_config::raw::gas_cost::RawGasCostConfig;
+use mystiko_relayer_config::raw::relayer::RawRelayerConfig;
+use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
+use mystiko_relayer_config::raw::{create_raw, create_raw_from_file};
+
+fn default_chain_config() -> RawChainConfig {
+    let raw_gas_cost_config = RawGasCostConfig::builder()
+        .transaction1x0(500704)
+        .transaction1x1(617592)
+        .transaction1x2(705128)
+        .transaction2x0(598799)
+        .transaction2x1(708389)
+        .transaction2x2(803183)
+        .build();
+    create_raw::<RawChainConfig>(
+        RawChainConfig::builder()
+            .name("Ethereum Goerli".to_string())
+            .chain_id(5)
+            .asset_symbol("ETH".to_string())
+            .relayer_contract_address("0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc".to_string())
+            .contracts(vec![
+                RawContractConfig::builder()
+                    .asset_symbol("ETH".to_string())
+                    .relayer_fee_of_ten_thousandth(25)
+                    .build(),
+                RawContractConfig::builder()
+                    .asset_symbol("MTT".to_string())
+                    .relayer_fee_of_ten_thousandth(25)
+                    .build(),
+                RawContractConfig::builder()
+                    .asset_symbol("mUSD".to_string())
+                    .relayer_fee_of_ten_thousandth(25)
+                    .build(),
+            ])
+            .transaction_info(
+                RawTransactionInfoConfig::builder()
+                    .main_gas_cost(raw_gas_cost_config.clone())
+                    .erc20_gas_cost(raw_gas_cost_config.clone())
+                    .build(),
+            )
+            .build(),
+    )
+    .unwrap()
+}
+
+fn default_config() -> RawRelayerConfig {
+    create_raw::<RawRelayerConfig>(
+        RawRelayerConfig::builder()
+            .version("0.0.1".to_string())
+            .chains(vec![default_chain_config()])
+            .build(),
+    )
+    .unwrap()
+}
+
+// #[test]
+// fn test_invalid_version_0() {
+//     let mut config = default_config();
+//     config.version = "".to_string();
+//     assert!(config.validate().is_err());
+// }
+//
+// #[test]
+// fn test_invalid_version_1() {
+//     let mut config = default_config();
+//     config.version = "wrong version".to_string();
+//     assert!(config.validate().is_err());
+// }
+
+#[tokio::test]
+async fn test_import_valid_json_file() {
+    let file_config = create_raw_from_file::<RawRelayerConfig>("tests/files/relayer.valid.json")
+        .await
+        .unwrap();
+    assert_eq!(file_config, default_config());
+}
+
+#[tokio::test]
+async fn test_import_invalid_json_file() {
+    let file_config =
+        create_raw_from_file::<RawRelayerConfig>("tests/files/relayer.invalid.json").await;
+    assert!(file_config.is_err());
+}

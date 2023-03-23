@@ -1,8 +1,9 @@
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
-#[derive(TypedBuilder, Validate, Serialize, Deserialize)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawContractConfig {
     #[validate(length(min = 1))]
@@ -12,10 +13,12 @@ pub struct RawContractConfig {
     pub relayer_fee_of_ten_thousandth: u32,
 
     #[serde(skip_serializing)]
+    #[serde(skip_deserializing)]
+    #[serde(default = "default_minimum_gas_fee")]
     #[builder(default = default_minimum_gas_fee())]
-    pub minimum_gas_fee: String,
+    pub minimum_gas_fee: Decimal,
 }
 
-fn default_minimum_gas_fee() -> String {
-    "0".to_string()
+fn default_minimum_gas_fee() -> Decimal {
+    Decimal::ZERO
 }
