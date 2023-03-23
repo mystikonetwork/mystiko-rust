@@ -3,7 +3,6 @@ use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
 use crate::raw::validator::{array_unique, is_number_string_vec, validate_nested_vec};
-use crate::raw::{validate_raw, Validator};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
@@ -85,12 +84,6 @@ impl Hash for RawChainConfig {
 impl PartialEq for RawChainConfig {
     fn eq(&self, other: &Self) -> bool {
         self.chain_id == other.chain_id
-    }
-}
-
-impl Validator for RawChainConfig {
-    fn validation(&self) -> anyhow::Result<()> {
-        validate_raw(self)
     }
 }
 

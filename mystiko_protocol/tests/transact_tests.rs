@@ -1,4 +1,5 @@
-extern crate ethers;
+extern crate ethers_core;
+extern crate ethers_signers;
 extern crate mystiko_crypto;
 extern crate mystiko_fs;
 extern crate mystiko_protocol;
@@ -7,9 +8,9 @@ extern crate num_traits;
 
 use std::ops::Sub;
 
-use ethers::core::rand::thread_rng;
-use ethers::core::types::U256;
-use ethers::signers::{LocalWallet, Signer};
+use ethers_core::rand::thread_rng;
+use ethers_core::types::U256;
+use ethers_signers::{LocalWallet, Signer};
 use num_bigint::{BigInt, Sign};
 use num_traits::identities::Zero;
 
@@ -56,10 +57,10 @@ fn generate_transaction(
     let mut in_commitments: Vec<BigInt> = vec![];
     let mut in_private_notes: Vec<EncryptedNote> = vec![];
 
-    let in_amount = u256_to_big_int(&ethers::utils::parse_ether("200").unwrap());
-    let out_amount = u256_to_big_int(&ethers::utils::parse_ether("50").unwrap());
-    let rollup_fee_amount = u256_to_big_int(&ethers::utils::parse_ether("10").unwrap());
-    let relayer_fee_amount = u256_to_big_int(&ethers::utils::parse_ether("20").unwrap());
+    let in_amount = u256_to_big_int(&ethers_core::utils::parse_ether("200").unwrap());
+    let out_amount = u256_to_big_int(&ethers_core::utils::parse_ether("50").unwrap());
+    let rollup_fee_amount = u256_to_big_int(&ethers_core::utils::parse_ether("10").unwrap());
+    let relayer_fee_amount = u256_to_big_int(&ethers_core::utils::parse_ether("20").unwrap());
 
     for i in 0..num_inputs as usize {
         let raw_verify_sk = random_bytes(VERIFY_SK_SIZE);

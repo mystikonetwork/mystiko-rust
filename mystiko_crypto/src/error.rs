@@ -1,3 +1,4 @@
+use serde_json::Error as SerdeJsonError;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
@@ -18,33 +19,10 @@ pub enum SecretShareError {
     ThresholdOutOfBounds,
 }
 
-#[derive(Error, Debug, Clone)]
-pub enum FileError {
-    #[error("read {0} error {1}")]
-    OpenFileError(String, String),
-    #[error("read {0} error {1}")]
-    ReadFileError(String, String),
-    #[error("internal error")]
-    InternalError,
-}
-
-impl PartialEq for FileError {
-    fn eq(&self, other: &Self) -> bool {
-        matches!(
-            (self, other),
-            (Self::OpenFileError(_, _), Self::OpenFileError(_, _))
-                | (Self::ReadFileError(_, _), Self::ReadFileError(_, _))
-                | (Self::InternalError, Self::InternalError)
-        )
-    }
-}
-
-#[derive(Error, Debug, Clone)]
+#[derive(Error, Debug)]
 pub enum ZkpError {
     #[error(transparent)]
-    FileError(#[from] FileError),
-    #[error("serde json {0} error {1}")]
-    SerdeJsonError(String, String),
+    SerdeJsonError(#[from] SerdeJsonError),
     #[error("abi parse error {0}")]
     AbiParseError(String),
     #[error("deserialize program error {0}")]
@@ -63,18 +41,20 @@ pub enum ZkpError {
 
 impl PartialEq for ZkpError {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::FileError(l), Self::FileError(r)) => l == r,
-            (Self::SerdeJsonError(_, _), Self::SerdeJsonError(_, _)) => true,
-            (Self::AbiParseError(_), Self::AbiParseError(_)) => true,
-            (Self::DeserializeProgramError(_), Self::DeserializeProgramError(_)) => true,
-            (Self::ComputeWitnessError(_), Self::ComputeWitnessError(_)) => true,
-            (Self::ProofError(_), Self::ProofError(_)) => true,
-            (Self::VKError(_), Self::VKError(_)) => true,
-            (Self::MismatchError(_), Self::MismatchError(_)) => true,
-            (Self::NotSupport, Self::NotSupport) => true,
-            _ => false,
-        }
+        matches!(
+            (self, other),
+            (Self::SerdeJsonError(_), Self::SerdeJsonError(_))
+                | (Self::AbiParseError(_), Self::AbiParseError(_))
+                | (
+                    Self::DeserializeProgramError(_),
+                    Self::DeserializeProgramError(_)
+                )
+                | (Self::ComputeWitnessError(_), Self::ComputeWitnessError(_))
+                | (Self::ProofError(_), Self::ProofError(_))
+                | (Self::VKError(_), Self::VKError(_))
+                | (Self::MismatchError(_), Self::MismatchError(_))
+                | (Self::NotSupport, Self::NotSupport)
+        )
     }
 }
 

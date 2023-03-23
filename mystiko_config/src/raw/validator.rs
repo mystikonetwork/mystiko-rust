@@ -1,9 +1,8 @@
-use crate::raw::Validator;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashSet;
 use std::hash::Hash;
-use validator::ValidationError;
+use validator::{Validate, ValidationError};
 
 lazy_static! {
     static ref ETHEREUM_ADDRESS_REGEX: Regex = Regex::new(r"^(0x)[0-9a-fA-F]{40}$").unwrap();
@@ -50,9 +49,9 @@ pub fn is_number_string_vec<const NO_SYMBOLS: bool>(v: &[String]) -> Result<(), 
 
 pub fn validate_nested_vec<T>(v: &[T]) -> Result<(), ValidationError>
 where
-    T: Validator,
+    T: Validate,
 {
-    if v.iter().all(|x| x.validation().is_ok()) {
+    if v.iter().all(|x| x.validate().is_ok()) {
         Ok(())
     } else {
         Err(ValidationError::new("validate nested vec error"))

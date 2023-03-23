@@ -18,7 +18,7 @@ async fn test_calc_zeros() {
         .unwrap()
     );
 
-    let zeros = calc_zeros(fist_zero, &(32 as u32));
+    let zeros = calc_zeros(fist_zero, &32_u32);
     assert_eq!(
         zeros[31],
         BigInt::parse_bytes(
@@ -73,14 +73,11 @@ async fn test_new_merkle_tree() {
     assert_eq!(tree2.index_of(&e1, None).unwrap(), 0);
     assert_eq!(tree2.index_of(&e2, Some(&compare_big_int)).unwrap(), 1);
 
-    let zero_element = BigInt::from(0 as u32);
+    let zero_element = BigInt::from(0_u32);
     let tree3 = MerkleTree::new(None, Some(1), Some(zero_element.clone())).unwrap();
-    assert_eq!(
-        tree3.root(),
-        hash_two(&zero_element.clone(), &zero_element.clone())
-    );
+    assert_eq!(tree3.root(), hash_two(&zero_element, &zero_element));
 
-    let tree4 = MerkleTree::new(Some(elements.clone()), Some(0), Some(zero_element.clone()));
+    let tree4 = MerkleTree::new(Some(elements), Some(0), Some(zero_element));
     assert_eq!(tree4.err().unwrap(), MerkleTreeError::MerkleTreeIsFull);
 }
 
@@ -96,23 +93,12 @@ async fn test_insert() {
         16,
     )
     .unwrap();
-    let elements = vec![e1];
+    let elements = vec![e1.clone()];
     let mut tree = MerkleTree::new(Some(elements), Some(0), None).unwrap();
-    let result = tree.insert(e2);
+    let result = tree.insert(e2.clone());
     assert_eq!(result.err().unwrap(), MerkleTreeError::MerkleTreeIsFull);
 
     let mut tree = MerkleTree::new(None, None, None).unwrap();
-    let e1 = BigInt::parse_bytes(
-        b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
-        16,
-    )
-    .unwrap();
-    let e2 = BigInt::parse_bytes(
-        b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
-        16,
-    )
-    .unwrap();
-
     tree.insert(e1).unwrap();
     tree.insert(e2).unwrap();
     assert_eq!(
@@ -233,7 +219,7 @@ async fn test_path() {
 
     let result3 = tree.path(2).unwrap();
     assert_eq!(result3.1, vec![0, 1]);
-    assert_eq!(result3.0, vec![default_zero.clone(), hash_two(&e1, &e2)]);
+    assert_eq!(result3.0, vec![default_zero, hash_two(&e1, &e2)]);
 
     let result4 = tree.path(4);
     assert_eq!(result4.err().unwrap(), MerkleTreeError::IndexOutOfBounds);

@@ -9,7 +9,7 @@ pub mod provider;
 pub mod validator;
 
 use ::validator::Validate;
-use anyhow::bail;
+use anyhow::{bail, Result};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::from_str;
@@ -17,11 +17,7 @@ use std::fmt::Debug;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
-pub trait Validator {
-    fn validation(&self) -> anyhow::Result<()>;
-}
-
-pub fn validate_raw<T>(raw: &T) -> anyhow::Result<()>
+pub fn validate_raw<T>(raw: &T) -> Result<()>
 where
     T: Validate + Debug,
 {
@@ -35,27 +31,25 @@ where
     }
 }
 
-pub fn create_raw<T>(plain: T) -> anyhow::Result<T>
+pub fn create_raw<T>(plain: T) -> Result<T>
 where
-    T: Validator + Serialize + DeserializeOwned + Debug,
+    T: Validate + Serialize + DeserializeOwned + Debug,
 {
-    match plain.validation() {
-        Ok(_) => Ok(plain),
-        Err(err) => Err(err),
-    }
+    validate_raw(&plain)?;
+    Ok(plain)
 }
 
-pub fn create_raw_from_json<T>(json_str: &str) -> anyhow::Result<T>
+pub fn create_raw_from_json<T>(json_str: &str) -> Result<T>
 where
-    T: Validator + Serialize + DeserializeOwned + Debug,
+    T: Validate + Serialize + DeserializeOwned + Debug,
 {
     let object: T = from_str(json_str)?;
     create_raw::<T>(object)
 }
 
-pub async fn create_raw_from_file<T>(json_file: &str) -> anyhow::Result<T>
+pub async fn create_raw_from_file<T>(json_file: &str) -> Result<T>
 where
-    T: Validator + Serialize + DeserializeOwned + Debug,
+    T: Validate + Serialize + DeserializeOwned + Debug,
 {
     let mut file = File::open(json_file).await?;
     let mut contents = String::new();

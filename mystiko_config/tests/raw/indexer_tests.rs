@@ -1,5 +1,6 @@
 use mystiko_config::raw::indexer::RawIndexerConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file};
+use validator::Validate;
 
 fn default_config() -> RawIndexerConfig {
     create_raw::<RawIndexerConfig>(
@@ -15,14 +16,14 @@ fn default_config() -> RawIndexerConfig {
 fn test_invalid_url() {
     let mut config = default_config();
     config.url = String::from("not a valid url");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_time_out_ms() {
     let mut config = default_config();
     config.timeout_ms = 0;
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[tokio::test]

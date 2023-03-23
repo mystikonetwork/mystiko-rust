@@ -1,99 +1,101 @@
 pub use i_axelar_gateway::*;
-#[allow(clippy::too_many_arguments, non_camel_case_types)]
+/// This module was auto-generated with ethers-rs Abigen.
+/// More information at: <https://github.com/gakonst/ethers-rs>
+#[allow(
+    clippy::enum_variant_names,
+    clippy::too_many_arguments,
+    clippy::upper_case_acronyms,
+    clippy::type_complexity,
+    dead_code,
+    non_camel_case_types,
+)]
 pub mod i_axelar_gateway {
-    #![allow(clippy::enum_variant_names)]
-    #![allow(dead_code)]
-    #![allow(clippy::type_complexity)]
-    #![allow(unused_imports)]
-    use ethers::contract::{
-        builders::{ContractCall, Event},
-        Contract, Lazy,
-    };
-    use ethers::core::{
-        abi::{Abi, Detokenize, InvalidOutputType, Token, Tokenizable},
-        types::*,
-    };
-    use ethers::providers::Middleware;
-    #[doc = "IAxelarGateway was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
-    use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"AccountBlacklisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"AccountWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"type\":\"event\",\"name\":\"AllTokensFrozen\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"type\":\"event\",\"name\":\"AllTokensUnfrozen\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationContractAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ContractCall\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"sourceTxHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"sourceEventIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ContractCallApproved\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"sourceTxHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"sourceEventIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ContractCallApprovedWithMint\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationContractAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ContractCallWithToken\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"Executed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"tokenAddresses\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenDeployed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenFrozen\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenSent\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenUnfrozen\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"Upgraded\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"adminEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"adminThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"admins\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"allTokensFrozen\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"contractAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"callContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"contractAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"callContractWithToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"freezeAllTokens\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"freezeToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"implementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isCommandExecuted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isContractCallAndMintApproved\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isContractCallApproved\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"sendToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"params\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setup\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"tokenAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"tokenFrozen\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"unfreezeAllTokens\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"unfreezeToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"newImplementationCodeHash\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"setupParams\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"upgrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"validateContractCall\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"validateContractCallAndMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]" ;
-    #[doc = r" The parsed JSON-ABI of the contract."]
-    pub static IAXELARGATEWAY_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
-        ethers::contract::Lazy::new(|| {
-            ethers::core::utils::__serde_json::from_str(__ABI).expect("invalid abi")
-        });
-    pub struct IAxelarGateway<M>(ethers::contract::Contract<M>);
-    impl<M> Clone for IAxelarGateway<M> {
+    #[rustfmt::skip]
+    const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"AccountBlacklisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"AccountWhitelisted\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"type\":\"event\",\"name\":\"AllTokensFrozen\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"type\":\"event\",\"name\":\"AllTokensUnfrozen\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationContractAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ContractCall\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"sourceTxHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"sourceEventIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ContractCallApproved\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"sourceTxHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"sourceEventIndex\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ContractCallApprovedWithMint\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationContractAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"ContractCallWithToken\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"Executed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"tokenAddresses\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenDeployed\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenFrozen\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenSent\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"TokenUnfrozen\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementation\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"Upgraded\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"adminEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"adminThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"admins\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"allTokensFrozen\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"contractAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"callContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"contractAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"callContractWithToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"input\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"freezeAllTokens\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"freezeToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"implementation\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isCommandExecuted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isContractCallAndMintApproved\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isContractCallApproved\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"sendToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"params\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setup\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"tokenAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"tokenFrozen\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"unfreezeAllTokens\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"unfreezeToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"newImplementationCodeHash\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"setupParams\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"upgrade\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"validateContractCall\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"validateContractCallAndMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]";
+    ///The parsed JSON ABI of the contract.
+    pub static IAXELARGATEWAY_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(||
+    ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid"));
+    pub struct IAxelarGateway<M>(::ethers_contract::Contract<M>);
+    impl<M> ::core::clone::Clone for IAxelarGateway<M> {
         fn clone(&self) -> Self {
-            IAxelarGateway(self.0.clone())
+            Self(::core::clone::Clone::clone(&self.0))
         }
     }
-    impl<M> std::ops::Deref for IAxelarGateway<M> {
-        type Target = ethers::contract::Contract<M>;
+    impl<M> ::core::ops::Deref for IAxelarGateway<M> {
+        type Target = ::ethers_contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M> std::fmt::Debug for IAxelarGateway<M> {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            f.debug_tuple(stringify!(IAxelarGateway))
-                .field(&self.address())
-                .finish()
+    impl<M> ::core::ops::DerefMut for IAxelarGateway<M> {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
         }
     }
-    impl<M: ethers::providers::Middleware> IAxelarGateway<M> {
-        #[doc = r" Creates a new contract instance with the specified `ethers`"]
-        #[doc = r" client at the given `Address`. The contract derefs to a `ethers::Contract`"]
-        #[doc = r" object"]
-        pub fn new<T: Into<ethers::core::types::Address>>(
+    impl<M> ::core::fmt::Debug for IAxelarGateway<M> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.debug_tuple(stringify!(IAxelarGateway)).field(&self.address()).finish()
+        }
+    }
+    impl<M: ::ethers_providers::Middleware> IAxelarGateway<M> {
+        /// Creates a new contract instance with the specified `ethers` client at
+        /// `address`. The contract derefs to a `ethers::Contract` object.
+        pub fn new<T: Into<::ethers_core::types::Address>>(
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            ethers::contract::Contract::new(address.into(), IAXELARGATEWAY_ABI.clone(), client)
-                .into()
+            Self(
+                ::ethers_contract::Contract::new(
+                    address.into(),
+                    IAXELARGATEWAY_ABI.clone(),
+                    client,
+                ),
+            )
         }
-        #[doc = "Calls the contract's `adminEpoch` (0x364940d8) function"]
+        ///Calls the contract's `adminEpoch` (0x364940d8) function
         pub fn admin_epoch(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([54, 73, 64, 216], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `adminThreshold` (0x88b30587) function"]
+        ///Calls the contract's `adminThreshold` (0x88b30587) function
         pub fn admin_threshold(
             &self,
-            epoch: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::U256> {
+            epoch: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([136, 179, 5, 135], epoch)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `admins` (0x14bfd6d0) function"]
+        ///Calls the contract's `admins` (0x14bfd6d0) function
         pub fn admins(
             &self,
-            epoch: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<
+            epoch: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<
             M,
-            ::std::vec::Vec<ethers::core::types::Address>,
+            ::std::vec::Vec<::ethers_core::types::Address>,
         > {
             self.0
                 .method_hash([20, 191, 214, 208], epoch)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `allTokensFrozen` (0xaa1e1f0a) function"]
-        pub fn all_tokens_frozen(&self) -> ethers::contract::builders::ContractCall<M, bool> {
+        ///Calls the contract's `allTokensFrozen` (0xaa1e1f0a) function
+        pub fn all_tokens_frozen(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([170, 30, 31, 10], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `callContract` (0x1c92115f) function"]
+        ///Calls the contract's `callContract` (0x1c92115f) function
         pub fn call_contract(
             &self,
-            destination_chain: String,
-            contract_address: String,
-            payload: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            destination_chain: ::std::string::String,
+            contract_address: ::std::string::String,
+            payload: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [28, 146, 17, 95],
@@ -101,15 +103,15 @@ pub mod i_axelar_gateway {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `callContractWithToken` (0xb5417084) function"]
+        ///Calls the contract's `callContractWithToken` (0xb5417084) function
         pub fn call_contract_with_token(
             &self,
-            destination_chain: String,
-            contract_address: String,
-            payload: ethers::core::types::Bytes,
-            symbol: String,
-            amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            destination_chain: ::std::string::String,
+            contract_address: ::std::string::String,
+            payload: ::ethers_core::types::Bytes,
+            symbol: ::std::string::String,
+            amount: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [181, 65, 112, 132],
@@ -117,58 +119,63 @@ pub mod i_axelar_gateway {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `execute` (0x09c5eabe) function"]
+        ///Calls the contract's `execute` (0x09c5eabe) function
         pub fn execute(
             &self,
-            input: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            input: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([9, 197, 234, 190], input)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `freezeAllTokens` (0xd2bc37f8) function"]
-        pub fn freeze_all_tokens(&self) -> ethers::contract::builders::ContractCall<M, ()> {
+        ///Calls the contract's `freezeAllTokens` (0xd2bc37f8) function
+        pub fn freeze_all_tokens(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([210, 188, 55, 248], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `freezeToken` (0x646c5d34) function"]
+        ///Calls the contract's `freezeToken` (0x646c5d34) function
         pub fn freeze_token(
             &self,
-            symbol: String,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            symbol: ::std::string::String,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([100, 108, 93, 52], symbol)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `implementation` (0x5c60da1b) function"]
+        ///Calls the contract's `implementation` (0x5c60da1b) function
         pub fn implementation(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([92, 96, 218, 27], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isCommandExecuted` (0xd26ff210) function"]
+        ///Calls the contract's `isCommandExecuted` (0xd26ff210) function
         pub fn is_command_executed(
             &self,
             command_id: [u8; 32],
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([210, 111, 242, 16], command_id)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isContractCallAndMintApproved` (0xbc00c216) function"]
+        ///Calls the contract's `isContractCallAndMintApproved` (0xbc00c216) function
         pub fn is_contract_call_and_mint_approved(
             &self,
             command_id: [u8; 32],
-            source_chain: String,
-            source_address: String,
-            contract_address: ethers::core::types::Address,
+            source_chain: ::std::string::String,
+            source_address: ::std::string::String,
+            contract_address: ::ethers_core::types::Address,
             payload_hash: [u8; 32],
-            symbol: String,
-            amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            symbol: ::std::string::String,
+            amount: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash(
                     [188, 0, 194, 22],
@@ -184,15 +191,15 @@ pub mod i_axelar_gateway {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `isContractCallApproved` (0xf6a5f9f5) function"]
+        ///Calls the contract's `isContractCallApproved` (0xf6a5f9f5) function
         pub fn is_contract_call_approved(
             &self,
             command_id: [u8; 32],
-            source_chain: String,
-            source_address: String,
-            contract_address: ethers::core::types::Address,
+            source_chain: ::std::string::String,
+            source_address: ::std::string::String,
+            contract_address: ::ethers_core::types::Address,
             payload_hash: [u8; 32],
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash(
                     [246, 165, 249, 245],
@@ -206,14 +213,14 @@ pub mod i_axelar_gateway {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `sendToken` (0x26ef699d) function"]
+        ///Calls the contract's `sendToken` (0x26ef699d) function
         pub fn send_token(
             &self,
-            destination_chain: String,
-            destination_address: String,
-            symbol: String,
-            amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            destination_chain: ::std::string::String,
+            destination_address: ::std::string::String,
+            symbol: ::std::string::String,
+            amount: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [38, 239, 105, 157],
@@ -221,74 +228,75 @@ pub mod i_axelar_gateway {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `setup` (0x9ded06df) function"]
+        ///Calls the contract's `setup` (0x9ded06df) function
         pub fn setup(
             &self,
-            params: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            params: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([157, 237, 6, 223], params)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `tokenAddresses` (0x935b13f6) function"]
+        ///Calls the contract's `tokenAddresses` (0x935b13f6) function
         pub fn token_addresses(
             &self,
-            symbol: String,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+            symbol: ::std::string::String,
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([147, 91, 19, 246], symbol)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `tokenFrozen` (0x7b1b769e) function"]
+        ///Calls the contract's `tokenFrozen` (0x7b1b769e) function
         pub fn token_frozen(
             &self,
-            symbol: String,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            symbol: ::std::string::String,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([123, 27, 118, 158], symbol)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `unfreezeAllTokens` (0xe3dfa299) function"]
-        pub fn unfreeze_all_tokens(&self) -> ethers::contract::builders::ContractCall<M, ()> {
+        ///Calls the contract's `unfreezeAllTokens` (0xe3dfa299) function
+        pub fn unfreeze_all_tokens(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([227, 223, 162, 153], ())
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `unfreezeToken` (0x34ff6983) function"]
+        ///Calls the contract's `unfreezeToken` (0x34ff6983) function
         pub fn unfreeze_token(
             &self,
-            symbol: String,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            symbol: ::std::string::String,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([52, 255, 105, 131], symbol)
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `upgrade` (0xa3499c73) function"]
+        ///Calls the contract's `upgrade` (0xa3499c73) function
         pub fn upgrade(
             &self,
-            new_implementation: ethers::core::types::Address,
+            new_implementation: ::ethers_core::types::Address,
             new_implementation_code_hash: [u8; 32],
-            setup_params: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            setup_params: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [163, 73, 156, 115],
-                    (
-                        new_implementation,
-                        new_implementation_code_hash,
-                        setup_params,
-                    ),
+                    (new_implementation, new_implementation_code_hash, setup_params),
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `validateContractCall` (0x5f6970c3) function"]
+        ///Calls the contract's `validateContractCall` (0x5f6970c3) function
         pub fn validate_contract_call(
             &self,
             command_id: [u8; 32],
-            source_chain: String,
-            source_address: String,
+            source_chain: ::std::string::String,
+            source_address: ::std::string::String,
             payload_hash: [u8; 32],
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash(
                     [95, 105, 112, 195],
@@ -296,16 +304,16 @@ pub mod i_axelar_gateway {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `validateContractCallAndMint` (0x1876eed9) function"]
+        ///Calls the contract's `validateContractCallAndMint` (0x1876eed9) function
         pub fn validate_contract_call_and_mint(
             &self,
             command_id: [u8; 32],
-            source_chain: String,
-            source_address: String,
+            source_chain: ::std::string::String,
+            source_address: ::std::string::String,
             payload_hash: [u8; 32],
-            symbol: String,
-            amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, bool> {
+            symbol: ::std::string::String,
+            amount: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash(
                     [24, 118, 238, 217],
@@ -320,162 +328,236 @@ pub mod i_axelar_gateway {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Gets the contract's `AccountBlacklisted` event"]
+        ///Gets the contract's `AccountBlacklisted` event
         pub fn account_blacklisted_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, AccountBlacklistedFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            AccountBlacklistedFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `AccountWhitelisted` event"]
+        ///Gets the contract's `AccountWhitelisted` event
         pub fn account_whitelisted_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, AccountWhitelistedFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            AccountWhitelistedFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `AllTokensFrozen` event"]
+        ///Gets the contract's `AllTokensFrozen` event
         pub fn all_tokens_frozen_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, AllTokensFrozenFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            AllTokensFrozenFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `AllTokensUnfrozen` event"]
+        ///Gets the contract's `AllTokensUnfrozen` event
         pub fn all_tokens_unfrozen_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, AllTokensUnfrozenFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            AllTokensUnfrozenFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `ContractCall` event"]
+        ///Gets the contract's `ContractCall` event
         pub fn contract_call_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, ContractCallFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            ContractCallFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `ContractCallApproved` event"]
+        ///Gets the contract's `ContractCallApproved` event
         pub fn contract_call_approved_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, ContractCallApprovedFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            ContractCallApprovedFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `ContractCallApprovedWithMint` event"]
+        ///Gets the contract's `ContractCallApprovedWithMint` event
         pub fn contract_call_approved_with_mint_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, ContractCallApprovedWithMintFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            ContractCallApprovedWithMintFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `ContractCallWithToken` event"]
+        ///Gets the contract's `ContractCallWithToken` event
         pub fn contract_call_with_token_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, ContractCallWithTokenFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            ContractCallWithTokenFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `Executed` event"]
-        pub fn executed_filter(&self) -> ethers::contract::builders::Event<M, ExecutedFilter> {
+        ///Gets the contract's `Executed` event
+        pub fn executed_filter(
+            &self,
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            ExecutedFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `TokenDeployed` event"]
+        ///Gets the contract's `TokenDeployed` event
         pub fn token_deployed_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, TokenDeployedFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            TokenDeployedFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `TokenFrozen` event"]
+        ///Gets the contract's `TokenFrozen` event
         pub fn token_frozen_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, TokenFrozenFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            TokenFrozenFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `TokenSent` event"]
-        pub fn token_sent_filter(&self) -> ethers::contract::builders::Event<M, TokenSentFilter> {
+        ///Gets the contract's `TokenSent` event
+        pub fn token_sent_filter(
+            &self,
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            TokenSentFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `TokenUnfrozen` event"]
+        ///Gets the contract's `TokenUnfrozen` event
         pub fn token_unfrozen_filter(
             &self,
-        ) -> ethers::contract::builders::Event<M, TokenUnfrozenFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            TokenUnfrozenFilter,
+        > {
             self.0.event()
         }
-        #[doc = "Gets the contract's `Upgraded` event"]
-        pub fn upgraded_filter(&self) -> ethers::contract::builders::Event<M, UpgradedFilter> {
+        ///Gets the contract's `Upgraded` event
+        pub fn upgraded_filter(
+            &self,
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            UpgradedFilter,
+        > {
             self.0.event()
         }
-        #[doc = r" Returns an [`Event`](#ethers_contract::builders::Event) builder for all events of this contract"]
-        pub fn events(&self) -> ethers::contract::builders::Event<M, IAxelarGatewayEvents> {
-            self.0.event_with_filter(Default::default())
+        /// Returns an `Event` builder for all the events of this contract.
+        pub fn events(
+            &self,
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            IAxelarGatewayEvents,
+        > {
+            self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>> for IAxelarGateway<M> {
-        fn from(contract: ethers::contract::Contract<M>) -> Self {
-            Self(contract)
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+    for IAxelarGateway<M> {
+        fn from(contract: ::ethers_contract::Contract<M>) -> Self {
+            Self::new(contract.address(), contract.client())
         }
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "AccountBlacklisted", abi = "AccountBlacklisted(address)")]
     pub struct AccountBlacklistedFilter {
         #[ethevent(indexed)]
-        pub account: ethers::core::types::Address,
+        pub account: ::ethers_core::types::Address,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "AccountWhitelisted", abi = "AccountWhitelisted(address)")]
     pub struct AccountWhitelistedFilter {
         #[ethevent(indexed)]
-        pub account: ethers::core::types::Address,
+        pub account: ::ethers_core::types::Address,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "AllTokensFrozen", abi = "AllTokensFrozen()")]
-    pub struct AllTokensFrozenFilter();
+    pub struct AllTokensFrozenFilter;
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "AllTokensUnfrozen", abi = "AllTokensUnfrozen()")]
-    pub struct AllTokensUnfrozenFilter();
+    pub struct AllTokensUnfrozenFilter;
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(
         name = "ContractCall",
@@ -483,23 +565,24 @@ pub mod i_axelar_gateway {
     )]
     pub struct ContractCallFilter {
         #[ethevent(indexed)]
-        pub sender: ethers::core::types::Address,
-        pub destination_chain: String,
-        pub destination_contract_address: String,
+        pub sender: ::ethers_core::types::Address,
+        pub destination_chain: ::std::string::String,
+        pub destination_contract_address: ::std::string::String,
         #[ethevent(indexed)]
         pub payload_hash: [u8; 32],
-        pub payload: ethers::core::types::Bytes,
+        pub payload: ::ethers_core::types::Bytes,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(
         name = "ContractCallApproved",
@@ -508,25 +591,26 @@ pub mod i_axelar_gateway {
     pub struct ContractCallApprovedFilter {
         #[ethevent(indexed)]
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
         #[ethevent(indexed)]
-        pub contract_address: ethers::core::types::Address,
+        pub contract_address: ::ethers_core::types::Address,
         #[ethevent(indexed)]
         pub payload_hash: [u8; 32],
         pub source_tx_hash: [u8; 32],
-        pub source_event_index: ethers::core::types::U256,
+        pub source_event_index: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(
         name = "ContractCallApprovedWithMint",
@@ -535,27 +619,28 @@ pub mod i_axelar_gateway {
     pub struct ContractCallApprovedWithMintFilter {
         #[ethevent(indexed)]
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
         #[ethevent(indexed)]
-        pub contract_address: ethers::core::types::Address,
+        pub contract_address: ::ethers_core::types::Address,
         #[ethevent(indexed)]
         pub payload_hash: [u8; 32],
-        pub symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
         pub source_tx_hash: [u8; 32],
-        pub source_event_index: ethers::core::types::U256,
+        pub source_event_index: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(
         name = "ContractCallWithToken",
@@ -563,25 +648,26 @@ pub mod i_axelar_gateway {
     )]
     pub struct ContractCallWithTokenFilter {
         #[ethevent(indexed)]
-        pub sender: ethers::core::types::Address,
-        pub destination_chain: String,
-        pub destination_contract_address: String,
+        pub sender: ::ethers_core::types::Address,
+        pub destination_chain: ::std::string::String,
+        pub destination_contract_address: ::std::string::String,
         #[ethevent(indexed)]
         pub payload_hash: [u8; 32],
-        pub payload: ethers::core::types::Bytes,
-        pub symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub payload: ::ethers_core::types::Bytes,
+        pub symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "Executed", abi = "Executed(bytes32)")]
     pub struct ExecutedFilter {
@@ -590,45 +676,48 @@ pub mod i_axelar_gateway {
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "TokenDeployed", abi = "TokenDeployed(string,address)")]
     pub struct TokenDeployedFilter {
-        pub symbol: String,
-        pub token_addresses: ethers::core::types::Address,
+        pub symbol: ::std::string::String,
+        pub token_addresses: ::ethers_core::types::Address,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "TokenFrozen", abi = "TokenFrozen(string)")]
     pub struct TokenFrozenFilter {
-        pub symbol: String,
+        pub symbol: ::std::string::String,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(
         name = "TokenSent",
@@ -636,51 +725,55 @@ pub mod i_axelar_gateway {
     )]
     pub struct TokenSentFilter {
         #[ethevent(indexed)]
-        pub sender: ethers::core::types::Address,
-        pub destination_chain: String,
-        pub destination_address: String,
-        pub symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub sender: ::ethers_core::types::Address,
+        pub destination_chain: ::std::string::String,
+        pub destination_address: ::std::string::String,
+        pub symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "TokenUnfrozen", abi = "TokenUnfrozen(string)")]
     pub struct TokenUnfrozenFilter {
-        pub symbol: String,
+        pub symbol: ::std::string::String,
     }
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthEvent,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthEvent,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethevent(name = "Upgraded", abi = "Upgraded(address)")]
     pub struct UpgradedFilter {
         #[ethevent(indexed)]
-        pub implementation: ethers::core::types::Address,
+        pub implementation: ::ethers_core::types::Address,
     }
+    ///Container type for all of the contract's events
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum IAxelarGatewayEvents {
         AccountBlacklistedFilter(AccountBlacklistedFilter),
@@ -698,13 +791,10 @@ pub mod i_axelar_gateway {
         TokenUnfrozenFilter(TokenUnfrozenFilter),
         UpgradedFilter(UpgradedFilter),
     }
-    impl ethers::contract::EthLogDecode for IAxelarGatewayEvents {
+    impl ::ethers_contract::EthLogDecode for IAxelarGatewayEvents {
         fn decode_log(
-            log: &ethers::core::abi::RawLog,
-        ) -> ::std::result::Result<Self, ethers::core::abi::Error>
-        where
-            Self: Sized,
-        {
+            log: &::ethers_core::abi::RawLog,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = AccountBlacklistedFilter::decode_log(log) {
                 return Ok(IAxelarGatewayEvents::AccountBlacklistedFilter(decoded));
             }
@@ -724,9 +814,9 @@ pub mod i_axelar_gateway {
                 return Ok(IAxelarGatewayEvents::ContractCallApprovedFilter(decoded));
             }
             if let Ok(decoded) = ContractCallApprovedWithMintFilter::decode_log(log) {
-                return Ok(IAxelarGatewayEvents::ContractCallApprovedWithMintFilter(
-                    decoded,
-                ));
+                return Ok(
+                    IAxelarGatewayEvents::ContractCallApprovedWithMintFilter(decoded),
+                );
             }
             if let Ok(decoded) = ContractCallWithTokenFilter::decode_log(log) {
                 return Ok(IAxelarGatewayEvents::ContractCallWithTokenFilter(decoded));
@@ -749,217 +839,320 @@ pub mod i_axelar_gateway {
             if let Ok(decoded) = UpgradedFilter::decode_log(log) {
                 return Ok(IAxelarGatewayEvents::UpgradedFilter(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData)
+            Err(::ethers_core::abi::Error::InvalidData)
         }
     }
-    impl ::std::fmt::Display for IAxelarGatewayEvents {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for IAxelarGatewayEvents {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                IAxelarGatewayEvents::AccountBlacklistedFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::AccountWhitelistedFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::AllTokensFrozenFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::AllTokensUnfrozenFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::ContractCallFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::ContractCallApprovedFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::ContractCallApprovedWithMintFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::ContractCallWithTokenFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::ExecutedFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::TokenDeployedFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::TokenFrozenFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::TokenSentFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::TokenUnfrozenFilter(element) => element.fmt(f),
-                IAxelarGatewayEvents::UpgradedFilter(element) => element.fmt(f),
+                Self::AccountBlacklistedFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::AccountWhitelistedFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::AllTokensFrozenFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::AllTokensUnfrozenFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ContractCallFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ContractCallApprovedFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ContractCallApprovedWithMintFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ContractCallWithTokenFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ExecutedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TokenDeployedFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::TokenFrozenFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TokenSentFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TokenUnfrozenFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::UpgradedFilter(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
-    #[doc = "Container type for all input parameters for the `adminEpoch` function with signature `adminEpoch()` and selector `[54, 73, 64, 216]`"]
+    impl ::core::convert::From<AccountBlacklistedFilter> for IAxelarGatewayEvents {
+        fn from(value: AccountBlacklistedFilter) -> Self {
+            Self::AccountBlacklistedFilter(value)
+        }
+    }
+    impl ::core::convert::From<AccountWhitelistedFilter> for IAxelarGatewayEvents {
+        fn from(value: AccountWhitelistedFilter) -> Self {
+            Self::AccountWhitelistedFilter(value)
+        }
+    }
+    impl ::core::convert::From<AllTokensFrozenFilter> for IAxelarGatewayEvents {
+        fn from(value: AllTokensFrozenFilter) -> Self {
+            Self::AllTokensFrozenFilter(value)
+        }
+    }
+    impl ::core::convert::From<AllTokensUnfrozenFilter> for IAxelarGatewayEvents {
+        fn from(value: AllTokensUnfrozenFilter) -> Self {
+            Self::AllTokensUnfrozenFilter(value)
+        }
+    }
+    impl ::core::convert::From<ContractCallFilter> for IAxelarGatewayEvents {
+        fn from(value: ContractCallFilter) -> Self {
+            Self::ContractCallFilter(value)
+        }
+    }
+    impl ::core::convert::From<ContractCallApprovedFilter> for IAxelarGatewayEvents {
+        fn from(value: ContractCallApprovedFilter) -> Self {
+            Self::ContractCallApprovedFilter(value)
+        }
+    }
+    impl ::core::convert::From<ContractCallApprovedWithMintFilter>
+    for IAxelarGatewayEvents {
+        fn from(value: ContractCallApprovedWithMintFilter) -> Self {
+            Self::ContractCallApprovedWithMintFilter(value)
+        }
+    }
+    impl ::core::convert::From<ContractCallWithTokenFilter> for IAxelarGatewayEvents {
+        fn from(value: ContractCallWithTokenFilter) -> Self {
+            Self::ContractCallWithTokenFilter(value)
+        }
+    }
+    impl ::core::convert::From<ExecutedFilter> for IAxelarGatewayEvents {
+        fn from(value: ExecutedFilter) -> Self {
+            Self::ExecutedFilter(value)
+        }
+    }
+    impl ::core::convert::From<TokenDeployedFilter> for IAxelarGatewayEvents {
+        fn from(value: TokenDeployedFilter) -> Self {
+            Self::TokenDeployedFilter(value)
+        }
+    }
+    impl ::core::convert::From<TokenFrozenFilter> for IAxelarGatewayEvents {
+        fn from(value: TokenFrozenFilter) -> Self {
+            Self::TokenFrozenFilter(value)
+        }
+    }
+    impl ::core::convert::From<TokenSentFilter> for IAxelarGatewayEvents {
+        fn from(value: TokenSentFilter) -> Self {
+            Self::TokenSentFilter(value)
+        }
+    }
+    impl ::core::convert::From<TokenUnfrozenFilter> for IAxelarGatewayEvents {
+        fn from(value: TokenUnfrozenFilter) -> Self {
+            Self::TokenUnfrozenFilter(value)
+        }
+    }
+    impl ::core::convert::From<UpgradedFilter> for IAxelarGatewayEvents {
+        fn from(value: UpgradedFilter) -> Self {
+            Self::UpgradedFilter(value)
+        }
+    }
+    ///Container type for all input parameters for the `adminEpoch` function with signature `adminEpoch()` and selector `0x364940d8`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "adminEpoch", abi = "adminEpoch()")]
     pub struct AdminEpochCall;
-    #[doc = "Container type for all input parameters for the `adminThreshold` function with signature `adminThreshold(uint256)` and selector `[136, 179, 5, 135]`"]
+    ///Container type for all input parameters for the `adminThreshold` function with signature `adminThreshold(uint256)` and selector `0x88b30587`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "adminThreshold", abi = "adminThreshold(uint256)")]
     pub struct AdminThresholdCall {
-        pub epoch: ethers::core::types::U256,
+        pub epoch: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `admins` function with signature `admins(uint256)` and selector `[20, 191, 214, 208]`"]
+    ///Container type for all input parameters for the `admins` function with signature `admins(uint256)` and selector `0x14bfd6d0`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "admins", abi = "admins(uint256)")]
     pub struct AdminsCall {
-        pub epoch: ethers::core::types::U256,
+        pub epoch: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `allTokensFrozen` function with signature `allTokensFrozen()` and selector `[170, 30, 31, 10]`"]
+    ///Container type for all input parameters for the `allTokensFrozen` function with signature `allTokensFrozen()` and selector `0xaa1e1f0a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "allTokensFrozen", abi = "allTokensFrozen()")]
     pub struct AllTokensFrozenCall;
-    #[doc = "Container type for all input parameters for the `callContract` function with signature `callContract(string,string,bytes)` and selector `[28, 146, 17, 95]`"]
+    ///Container type for all input parameters for the `callContract` function with signature `callContract(string,string,bytes)` and selector `0x1c92115f`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "callContract", abi = "callContract(string,string,bytes)")]
     pub struct CallContractCall {
-        pub destination_chain: String,
-        pub contract_address: String,
-        pub payload: ethers::core::types::Bytes,
+        pub destination_chain: ::std::string::String,
+        pub contract_address: ::std::string::String,
+        pub payload: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `callContractWithToken` function with signature `callContractWithToken(string,string,bytes,string,uint256)` and selector `[181, 65, 112, 132]`"]
+    ///Container type for all input parameters for the `callContractWithToken` function with signature `callContractWithToken(string,string,bytes,string,uint256)` and selector `0xb5417084`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "callContractWithToken",
         abi = "callContractWithToken(string,string,bytes,string,uint256)"
     )]
     pub struct CallContractWithTokenCall {
-        pub destination_chain: String,
-        pub contract_address: String,
-        pub payload: ethers::core::types::Bytes,
-        pub symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub destination_chain: ::std::string::String,
+        pub contract_address: ::std::string::String,
+        pub payload: ::ethers_core::types::Bytes,
+        pub symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `execute` function with signature `execute(bytes)` and selector `[9, 197, 234, 190]`"]
+    ///Container type for all input parameters for the `execute` function with signature `execute(bytes)` and selector `0x09c5eabe`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "execute", abi = "execute(bytes)")]
     pub struct ExecuteCall {
-        pub input: ethers::core::types::Bytes,
+        pub input: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `freezeAllTokens` function with signature `freezeAllTokens()` and selector `[210, 188, 55, 248]`"]
+    ///Container type for all input parameters for the `freezeAllTokens` function with signature `freezeAllTokens()` and selector `0xd2bc37f8`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "freezeAllTokens", abi = "freezeAllTokens()")]
     pub struct FreezeAllTokensCall;
-    #[doc = "Container type for all input parameters for the `freezeToken` function with signature `freezeToken(string)` and selector `[100, 108, 93, 52]`"]
+    ///Container type for all input parameters for the `freezeToken` function with signature `freezeToken(string)` and selector `0x646c5d34`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "freezeToken", abi = "freezeToken(string)")]
     pub struct FreezeTokenCall {
-        pub symbol: String,
+        pub symbol: ::std::string::String,
     }
-    #[doc = "Container type for all input parameters for the `implementation` function with signature `implementation()` and selector `[92, 96, 218, 27]`"]
+    ///Container type for all input parameters for the `implementation` function with signature `implementation()` and selector `0x5c60da1b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "implementation", abi = "implementation()")]
     pub struct ImplementationCall;
-    #[doc = "Container type for all input parameters for the `isCommandExecuted` function with signature `isCommandExecuted(bytes32)` and selector `[210, 111, 242, 16]`"]
+    ///Container type for all input parameters for the `isCommandExecuted` function with signature `isCommandExecuted(bytes32)` and selector `0xd26ff210`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "isCommandExecuted", abi = "isCommandExecuted(bytes32)")]
     pub struct IsCommandExecutedCall {
         pub command_id: [u8; 32],
     }
-    #[doc = "Container type for all input parameters for the `isContractCallAndMintApproved` function with signature `isContractCallAndMintApproved(bytes32,string,string,address,bytes32,string,uint256)` and selector `[188, 0, 194, 22]`"]
+    ///Container type for all input parameters for the `isContractCallAndMintApproved` function with signature `isContractCallAndMintApproved(bytes32,string,string,address,bytes32,string,uint256)` and selector `0xbc00c216`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "isContractCallAndMintApproved",
@@ -967,24 +1160,25 @@ pub mod i_axelar_gateway {
     )]
     pub struct IsContractCallAndMintApprovedCall {
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
-        pub contract_address: ethers::core::types::Address,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
+        pub contract_address: ::ethers_core::types::Address,
         pub payload_hash: [u8; 32],
-        pub symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `isContractCallApproved` function with signature `isContractCallApproved(bytes32,string,string,address,bytes32)` and selector `[246, 165, 249, 245]`"]
+    ///Container type for all input parameters for the `isContractCallApproved` function with signature `isContractCallApproved(bytes32,string,string,address,bytes32)` and selector `0xf6a5f9f5`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "isContractCallApproved",
@@ -992,137 +1186,145 @@ pub mod i_axelar_gateway {
     )]
     pub struct IsContractCallApprovedCall {
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
-        pub contract_address: ethers::core::types::Address,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
+        pub contract_address: ::ethers_core::types::Address,
         pub payload_hash: [u8; 32],
     }
-    #[doc = "Container type for all input parameters for the `sendToken` function with signature `sendToken(string,string,string,uint256)` and selector `[38, 239, 105, 157]`"]
+    ///Container type for all input parameters for the `sendToken` function with signature `sendToken(string,string,string,uint256)` and selector `0x26ef699d`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "sendToken", abi = "sendToken(string,string,string,uint256)")]
     pub struct SendTokenCall {
-        pub destination_chain: String,
-        pub destination_address: String,
-        pub symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub destination_chain: ::std::string::String,
+        pub destination_address: ::std::string::String,
+        pub symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `setup` function with signature `setup(bytes)` and selector `[157, 237, 6, 223]`"]
+    ///Container type for all input parameters for the `setup` function with signature `setup(bytes)` and selector `0x9ded06df`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "setup", abi = "setup(bytes)")]
     pub struct SetupCall {
-        pub params: ethers::core::types::Bytes,
+        pub params: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `tokenAddresses` function with signature `tokenAddresses(string)` and selector `[147, 91, 19, 246]`"]
+    ///Container type for all input parameters for the `tokenAddresses` function with signature `tokenAddresses(string)` and selector `0x935b13f6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "tokenAddresses", abi = "tokenAddresses(string)")]
     pub struct TokenAddressesCall {
-        pub symbol: String,
+        pub symbol: ::std::string::String,
     }
-    #[doc = "Container type for all input parameters for the `tokenFrozen` function with signature `tokenFrozen(string)` and selector `[123, 27, 118, 158]`"]
+    ///Container type for all input parameters for the `tokenFrozen` function with signature `tokenFrozen(string)` and selector `0x7b1b769e`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "tokenFrozen", abi = "tokenFrozen(string)")]
     pub struct TokenFrozenCall {
-        pub symbol: String,
+        pub symbol: ::std::string::String,
     }
-    #[doc = "Container type for all input parameters for the `unfreezeAllTokens` function with signature `unfreezeAllTokens()` and selector `[227, 223, 162, 153]`"]
+    ///Container type for all input parameters for the `unfreezeAllTokens` function with signature `unfreezeAllTokens()` and selector `0xe3dfa299`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "unfreezeAllTokens", abi = "unfreezeAllTokens()")]
     pub struct UnfreezeAllTokensCall;
-    #[doc = "Container type for all input parameters for the `unfreezeToken` function with signature `unfreezeToken(string)` and selector `[52, 255, 105, 131]`"]
+    ///Container type for all input parameters for the `unfreezeToken` function with signature `unfreezeToken(string)` and selector `0x34ff6983`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "unfreezeToken", abi = "unfreezeToken(string)")]
     pub struct UnfreezeTokenCall {
-        pub symbol: String,
+        pub symbol: ::std::string::String,
     }
-    #[doc = "Container type for all input parameters for the `upgrade` function with signature `upgrade(address,bytes32,bytes)` and selector `[163, 73, 156, 115]`"]
+    ///Container type for all input parameters for the `upgrade` function with signature `upgrade(address,bytes32,bytes)` and selector `0xa3499c73`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "upgrade", abi = "upgrade(address,bytes32,bytes)")]
     pub struct UpgradeCall {
-        pub new_implementation: ethers::core::types::Address,
+        pub new_implementation: ::ethers_core::types::Address,
         pub new_implementation_code_hash: [u8; 32],
-        pub setup_params: ethers::core::types::Bytes,
+        pub setup_params: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `validateContractCall` function with signature `validateContractCall(bytes32,string,string,bytes32)` and selector `[95, 105, 112, 195]`"]
+    ///Container type for all input parameters for the `validateContractCall` function with signature `validateContractCall(bytes32,string,string,bytes32)` and selector `0x5f6970c3`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "validateContractCall",
@@ -1130,21 +1332,22 @@ pub mod i_axelar_gateway {
     )]
     pub struct ValidateContractCallCall {
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
         pub payload_hash: [u8; 32],
     }
-    #[doc = "Container type for all input parameters for the `validateContractCallAndMint` function with signature `validateContractCallAndMint(bytes32,string,string,bytes32,string,uint256)` and selector `[24, 118, 238, 217]`"]
+    ///Container type for all input parameters for the `validateContractCallAndMint` function with signature `validateContractCallAndMint(bytes32,string,string,bytes32,string,uint256)` and selector `0x1876eed9`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "validateContractCallAndMint",
@@ -1152,20 +1355,22 @@ pub mod i_axelar_gateway {
     )]
     pub struct ValidateContractCallAndMintCall {
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
         pub payload_hash: [u8; 32],
-        pub symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
     }
+    ///Container type for all of the contract's call
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum IAxelarGatewayCalls {
         AdminEpoch(AdminEpochCall),
@@ -1191,445 +1396,495 @@ pub mod i_axelar_gateway {
         ValidateContractCall(ValidateContractCallCall),
         ValidateContractCallAndMint(ValidateContractCallAndMintCall),
     }
-    impl ethers::core::abi::AbiDecode for IAxelarGatewayCalls {
+    impl ::ethers_core::abi::AbiDecode for IAxelarGatewayCalls {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <AdminEpochCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::AdminEpoch(decoded));
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
+            if let Ok(decoded)
+                = <AdminEpochCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AdminEpoch(decoded));
             }
-            if let Ok(decoded) =
-                <AdminThresholdCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::AdminThreshold(decoded));
+            if let Ok(decoded)
+                = <AdminThresholdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AdminThreshold(decoded));
             }
-            if let Ok(decoded) = <AdminsCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::Admins(decoded));
+            if let Ok(decoded)
+                = <AdminsCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Admins(decoded));
             }
-            if let Ok(decoded) =
-                <AllTokensFrozenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::AllTokensFrozen(decoded));
+            if let Ok(decoded)
+                = <AllTokensFrozenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AllTokensFrozen(decoded));
             }
-            if let Ok(decoded) =
-                <CallContractCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::CallContract(decoded));
+            if let Ok(decoded)
+                = <CallContractCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::CallContract(decoded));
             }
-            if let Ok(decoded) =
-                <CallContractWithTokenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::CallContractWithToken(decoded));
+            if let Ok(decoded)
+                = <CallContractWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::CallContractWithToken(decoded));
             }
-            if let Ok(decoded) =
-                <ExecuteCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::Execute(decoded));
+            if let Ok(decoded)
+                = <ExecuteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Execute(decoded));
             }
-            if let Ok(decoded) =
-                <FreezeAllTokensCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::FreezeAllTokens(decoded));
+            if let Ok(decoded)
+                = <FreezeAllTokensCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::FreezeAllTokens(decoded));
             }
-            if let Ok(decoded) =
-                <FreezeTokenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::FreezeToken(decoded));
+            if let Ok(decoded)
+                = <FreezeTokenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::FreezeToken(decoded));
             }
-            if let Ok(decoded) =
-                <ImplementationCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::Implementation(decoded));
+            if let Ok(decoded)
+                = <ImplementationCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Implementation(decoded));
             }
-            if let Ok(decoded) =
-                <IsCommandExecutedCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::IsCommandExecuted(decoded));
+            if let Ok(decoded)
+                = <IsCommandExecutedCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::IsCommandExecuted(decoded));
             }
-            if let Ok(decoded) =
-                <IsContractCallAndMintApprovedCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(IAxelarGatewayCalls::IsContractCallAndMintApproved(decoded));
+            if let Ok(decoded)
+                = <IsContractCallAndMintApprovedCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::IsContractCallAndMintApproved(decoded));
             }
-            if let Ok(decoded) =
-                <IsContractCallApprovedCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::IsContractCallApproved(decoded));
+            if let Ok(decoded)
+                = <IsContractCallApprovedCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::IsContractCallApproved(decoded));
             }
-            if let Ok(decoded) =
-                <SendTokenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::SendToken(decoded));
+            if let Ok(decoded)
+                = <SendTokenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::SendToken(decoded));
             }
-            if let Ok(decoded) = <SetupCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::Setup(decoded));
+            if let Ok(decoded)
+                = <SetupCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Setup(decoded));
             }
-            if let Ok(decoded) =
-                <TokenAddressesCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::TokenAddresses(decoded));
+            if let Ok(decoded)
+                = <TokenAddressesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::TokenAddresses(decoded));
             }
-            if let Ok(decoded) =
-                <TokenFrozenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::TokenFrozen(decoded));
+            if let Ok(decoded)
+                = <TokenFrozenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::TokenFrozen(decoded));
             }
-            if let Ok(decoded) =
-                <UnfreezeAllTokensCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::UnfreezeAllTokens(decoded));
+            if let Ok(decoded)
+                = <UnfreezeAllTokensCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::UnfreezeAllTokens(decoded));
             }
-            if let Ok(decoded) =
-                <UnfreezeTokenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::UnfreezeToken(decoded));
+            if let Ok(decoded)
+                = <UnfreezeTokenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::UnfreezeToken(decoded));
             }
-            if let Ok(decoded) =
-                <UpgradeCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::Upgrade(decoded));
+            if let Ok(decoded)
+                = <UpgradeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Upgrade(decoded));
             }
-            if let Ok(decoded) =
-                <ValidateContractCallCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarGatewayCalls::ValidateContractCall(decoded));
+            if let Ok(decoded)
+                = <ValidateContractCallCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ValidateContractCall(decoded));
             }
-            if let Ok(decoded) =
-                <ValidateContractCallAndMintCall as ethers::core::abi::AbiDecode>::decode(
-                    data.as_ref(),
-                )
-            {
-                return Ok(IAxelarGatewayCalls::ValidateContractCallAndMint(decoded));
+            if let Ok(decoded)
+                = <ValidateContractCallAndMintCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ValidateContractCallAndMint(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for IAxelarGatewayCalls {
+    impl ::ethers_core::abi::AbiEncode for IAxelarGatewayCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                IAxelarGatewayCalls::AdminEpoch(element) => element.encode(),
-                IAxelarGatewayCalls::AdminThreshold(element) => element.encode(),
-                IAxelarGatewayCalls::Admins(element) => element.encode(),
-                IAxelarGatewayCalls::AllTokensFrozen(element) => element.encode(),
-                IAxelarGatewayCalls::CallContract(element) => element.encode(),
-                IAxelarGatewayCalls::CallContractWithToken(element) => element.encode(),
-                IAxelarGatewayCalls::Execute(element) => element.encode(),
-                IAxelarGatewayCalls::FreezeAllTokens(element) => element.encode(),
-                IAxelarGatewayCalls::FreezeToken(element) => element.encode(),
-                IAxelarGatewayCalls::Implementation(element) => element.encode(),
-                IAxelarGatewayCalls::IsCommandExecuted(element) => element.encode(),
-                IAxelarGatewayCalls::IsContractCallAndMintApproved(element) => element.encode(),
-                IAxelarGatewayCalls::IsContractCallApproved(element) => element.encode(),
-                IAxelarGatewayCalls::SendToken(element) => element.encode(),
-                IAxelarGatewayCalls::Setup(element) => element.encode(),
-                IAxelarGatewayCalls::TokenAddresses(element) => element.encode(),
-                IAxelarGatewayCalls::TokenFrozen(element) => element.encode(),
-                IAxelarGatewayCalls::UnfreezeAllTokens(element) => element.encode(),
-                IAxelarGatewayCalls::UnfreezeToken(element) => element.encode(),
-                IAxelarGatewayCalls::Upgrade(element) => element.encode(),
-                IAxelarGatewayCalls::ValidateContractCall(element) => element.encode(),
-                IAxelarGatewayCalls::ValidateContractCallAndMint(element) => element.encode(),
+                Self::AdminEpoch(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AdminThreshold(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Admins(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AllTokensFrozen(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::CallContract(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::CallContractWithToken(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Execute(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::FreezeAllTokens(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::FreezeToken(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Implementation(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsCommandExecuted(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsContractCallAndMintApproved(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsContractCallApproved(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SendToken(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Setup(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::TokenAddresses(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TokenFrozen(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::UnfreezeAllTokens(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::UnfreezeToken(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Upgrade(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::ValidateContractCall(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ValidateContractCallAndMint(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }
-    impl ::std::fmt::Display for IAxelarGatewayCalls {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for IAxelarGatewayCalls {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                IAxelarGatewayCalls::AdminEpoch(element) => element.fmt(f),
-                IAxelarGatewayCalls::AdminThreshold(element) => element.fmt(f),
-                IAxelarGatewayCalls::Admins(element) => element.fmt(f),
-                IAxelarGatewayCalls::AllTokensFrozen(element) => element.fmt(f),
-                IAxelarGatewayCalls::CallContract(element) => element.fmt(f),
-                IAxelarGatewayCalls::CallContractWithToken(element) => element.fmt(f),
-                IAxelarGatewayCalls::Execute(element) => element.fmt(f),
-                IAxelarGatewayCalls::FreezeAllTokens(element) => element.fmt(f),
-                IAxelarGatewayCalls::FreezeToken(element) => element.fmt(f),
-                IAxelarGatewayCalls::Implementation(element) => element.fmt(f),
-                IAxelarGatewayCalls::IsCommandExecuted(element) => element.fmt(f),
-                IAxelarGatewayCalls::IsContractCallAndMintApproved(element) => element.fmt(f),
-                IAxelarGatewayCalls::IsContractCallApproved(element) => element.fmt(f),
-                IAxelarGatewayCalls::SendToken(element) => element.fmt(f),
-                IAxelarGatewayCalls::Setup(element) => element.fmt(f),
-                IAxelarGatewayCalls::TokenAddresses(element) => element.fmt(f),
-                IAxelarGatewayCalls::TokenFrozen(element) => element.fmt(f),
-                IAxelarGatewayCalls::UnfreezeAllTokens(element) => element.fmt(f),
-                IAxelarGatewayCalls::UnfreezeToken(element) => element.fmt(f),
-                IAxelarGatewayCalls::Upgrade(element) => element.fmt(f),
-                IAxelarGatewayCalls::ValidateContractCall(element) => element.fmt(f),
-                IAxelarGatewayCalls::ValidateContractCallAndMint(element) => element.fmt(f),
+                Self::AdminEpoch(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AdminThreshold(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Admins(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AllTokensFrozen(element) => ::core::fmt::Display::fmt(element, f),
+                Self::CallContract(element) => ::core::fmt::Display::fmt(element, f),
+                Self::CallContractWithToken(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::Execute(element) => ::core::fmt::Display::fmt(element, f),
+                Self::FreezeAllTokens(element) => ::core::fmt::Display::fmt(element, f),
+                Self::FreezeToken(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Implementation(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsCommandExecuted(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsContractCallAndMintApproved(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::IsContractCallApproved(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SendToken(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Setup(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TokenAddresses(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TokenFrozen(element) => ::core::fmt::Display::fmt(element, f),
+                Self::UnfreezeAllTokens(element) => ::core::fmt::Display::fmt(element, f),
+                Self::UnfreezeToken(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Upgrade(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ValidateContractCall(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ValidateContractCallAndMint(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
             }
         }
     }
-    impl ::std::convert::From<AdminEpochCall> for IAxelarGatewayCalls {
-        fn from(var: AdminEpochCall) -> Self {
-            IAxelarGatewayCalls::AdminEpoch(var)
+    impl ::core::convert::From<AdminEpochCall> for IAxelarGatewayCalls {
+        fn from(value: AdminEpochCall) -> Self {
+            Self::AdminEpoch(value)
         }
     }
-    impl ::std::convert::From<AdminThresholdCall> for IAxelarGatewayCalls {
-        fn from(var: AdminThresholdCall) -> Self {
-            IAxelarGatewayCalls::AdminThreshold(var)
+    impl ::core::convert::From<AdminThresholdCall> for IAxelarGatewayCalls {
+        fn from(value: AdminThresholdCall) -> Self {
+            Self::AdminThreshold(value)
         }
     }
-    impl ::std::convert::From<AdminsCall> for IAxelarGatewayCalls {
-        fn from(var: AdminsCall) -> Self {
-            IAxelarGatewayCalls::Admins(var)
+    impl ::core::convert::From<AdminsCall> for IAxelarGatewayCalls {
+        fn from(value: AdminsCall) -> Self {
+            Self::Admins(value)
         }
     }
-    impl ::std::convert::From<AllTokensFrozenCall> for IAxelarGatewayCalls {
-        fn from(var: AllTokensFrozenCall) -> Self {
-            IAxelarGatewayCalls::AllTokensFrozen(var)
+    impl ::core::convert::From<AllTokensFrozenCall> for IAxelarGatewayCalls {
+        fn from(value: AllTokensFrozenCall) -> Self {
+            Self::AllTokensFrozen(value)
         }
     }
-    impl ::std::convert::From<CallContractCall> for IAxelarGatewayCalls {
-        fn from(var: CallContractCall) -> Self {
-            IAxelarGatewayCalls::CallContract(var)
+    impl ::core::convert::From<CallContractCall> for IAxelarGatewayCalls {
+        fn from(value: CallContractCall) -> Self {
+            Self::CallContract(value)
         }
     }
-    impl ::std::convert::From<CallContractWithTokenCall> for IAxelarGatewayCalls {
-        fn from(var: CallContractWithTokenCall) -> Self {
-            IAxelarGatewayCalls::CallContractWithToken(var)
+    impl ::core::convert::From<CallContractWithTokenCall> for IAxelarGatewayCalls {
+        fn from(value: CallContractWithTokenCall) -> Self {
+            Self::CallContractWithToken(value)
         }
     }
-    impl ::std::convert::From<ExecuteCall> for IAxelarGatewayCalls {
-        fn from(var: ExecuteCall) -> Self {
-            IAxelarGatewayCalls::Execute(var)
+    impl ::core::convert::From<ExecuteCall> for IAxelarGatewayCalls {
+        fn from(value: ExecuteCall) -> Self {
+            Self::Execute(value)
         }
     }
-    impl ::std::convert::From<FreezeAllTokensCall> for IAxelarGatewayCalls {
-        fn from(var: FreezeAllTokensCall) -> Self {
-            IAxelarGatewayCalls::FreezeAllTokens(var)
+    impl ::core::convert::From<FreezeAllTokensCall> for IAxelarGatewayCalls {
+        fn from(value: FreezeAllTokensCall) -> Self {
+            Self::FreezeAllTokens(value)
         }
     }
-    impl ::std::convert::From<FreezeTokenCall> for IAxelarGatewayCalls {
-        fn from(var: FreezeTokenCall) -> Self {
-            IAxelarGatewayCalls::FreezeToken(var)
+    impl ::core::convert::From<FreezeTokenCall> for IAxelarGatewayCalls {
+        fn from(value: FreezeTokenCall) -> Self {
+            Self::FreezeToken(value)
         }
     }
-    impl ::std::convert::From<ImplementationCall> for IAxelarGatewayCalls {
-        fn from(var: ImplementationCall) -> Self {
-            IAxelarGatewayCalls::Implementation(var)
+    impl ::core::convert::From<ImplementationCall> for IAxelarGatewayCalls {
+        fn from(value: ImplementationCall) -> Self {
+            Self::Implementation(value)
         }
     }
-    impl ::std::convert::From<IsCommandExecutedCall> for IAxelarGatewayCalls {
-        fn from(var: IsCommandExecutedCall) -> Self {
-            IAxelarGatewayCalls::IsCommandExecuted(var)
+    impl ::core::convert::From<IsCommandExecutedCall> for IAxelarGatewayCalls {
+        fn from(value: IsCommandExecutedCall) -> Self {
+            Self::IsCommandExecuted(value)
         }
     }
-    impl ::std::convert::From<IsContractCallAndMintApprovedCall> for IAxelarGatewayCalls {
-        fn from(var: IsContractCallAndMintApprovedCall) -> Self {
-            IAxelarGatewayCalls::IsContractCallAndMintApproved(var)
+    impl ::core::convert::From<IsContractCallAndMintApprovedCall>
+    for IAxelarGatewayCalls {
+        fn from(value: IsContractCallAndMintApprovedCall) -> Self {
+            Self::IsContractCallAndMintApproved(value)
         }
     }
-    impl ::std::convert::From<IsContractCallApprovedCall> for IAxelarGatewayCalls {
-        fn from(var: IsContractCallApprovedCall) -> Self {
-            IAxelarGatewayCalls::IsContractCallApproved(var)
+    impl ::core::convert::From<IsContractCallApprovedCall> for IAxelarGatewayCalls {
+        fn from(value: IsContractCallApprovedCall) -> Self {
+            Self::IsContractCallApproved(value)
         }
     }
-    impl ::std::convert::From<SendTokenCall> for IAxelarGatewayCalls {
-        fn from(var: SendTokenCall) -> Self {
-            IAxelarGatewayCalls::SendToken(var)
+    impl ::core::convert::From<SendTokenCall> for IAxelarGatewayCalls {
+        fn from(value: SendTokenCall) -> Self {
+            Self::SendToken(value)
         }
     }
-    impl ::std::convert::From<SetupCall> for IAxelarGatewayCalls {
-        fn from(var: SetupCall) -> Self {
-            IAxelarGatewayCalls::Setup(var)
+    impl ::core::convert::From<SetupCall> for IAxelarGatewayCalls {
+        fn from(value: SetupCall) -> Self {
+            Self::Setup(value)
         }
     }
-    impl ::std::convert::From<TokenAddressesCall> for IAxelarGatewayCalls {
-        fn from(var: TokenAddressesCall) -> Self {
-            IAxelarGatewayCalls::TokenAddresses(var)
+    impl ::core::convert::From<TokenAddressesCall> for IAxelarGatewayCalls {
+        fn from(value: TokenAddressesCall) -> Self {
+            Self::TokenAddresses(value)
         }
     }
-    impl ::std::convert::From<TokenFrozenCall> for IAxelarGatewayCalls {
-        fn from(var: TokenFrozenCall) -> Self {
-            IAxelarGatewayCalls::TokenFrozen(var)
+    impl ::core::convert::From<TokenFrozenCall> for IAxelarGatewayCalls {
+        fn from(value: TokenFrozenCall) -> Self {
+            Self::TokenFrozen(value)
         }
     }
-    impl ::std::convert::From<UnfreezeAllTokensCall> for IAxelarGatewayCalls {
-        fn from(var: UnfreezeAllTokensCall) -> Self {
-            IAxelarGatewayCalls::UnfreezeAllTokens(var)
+    impl ::core::convert::From<UnfreezeAllTokensCall> for IAxelarGatewayCalls {
+        fn from(value: UnfreezeAllTokensCall) -> Self {
+            Self::UnfreezeAllTokens(value)
         }
     }
-    impl ::std::convert::From<UnfreezeTokenCall> for IAxelarGatewayCalls {
-        fn from(var: UnfreezeTokenCall) -> Self {
-            IAxelarGatewayCalls::UnfreezeToken(var)
+    impl ::core::convert::From<UnfreezeTokenCall> for IAxelarGatewayCalls {
+        fn from(value: UnfreezeTokenCall) -> Self {
+            Self::UnfreezeToken(value)
         }
     }
-    impl ::std::convert::From<UpgradeCall> for IAxelarGatewayCalls {
-        fn from(var: UpgradeCall) -> Self {
-            IAxelarGatewayCalls::Upgrade(var)
+    impl ::core::convert::From<UpgradeCall> for IAxelarGatewayCalls {
+        fn from(value: UpgradeCall) -> Self {
+            Self::Upgrade(value)
         }
     }
-    impl ::std::convert::From<ValidateContractCallCall> for IAxelarGatewayCalls {
-        fn from(var: ValidateContractCallCall) -> Self {
-            IAxelarGatewayCalls::ValidateContractCall(var)
+    impl ::core::convert::From<ValidateContractCallCall> for IAxelarGatewayCalls {
+        fn from(value: ValidateContractCallCall) -> Self {
+            Self::ValidateContractCall(value)
         }
     }
-    impl ::std::convert::From<ValidateContractCallAndMintCall> for IAxelarGatewayCalls {
-        fn from(var: ValidateContractCallAndMintCall) -> Self {
-            IAxelarGatewayCalls::ValidateContractCallAndMint(var)
+    impl ::core::convert::From<ValidateContractCallAndMintCall> for IAxelarGatewayCalls {
+        fn from(value: ValidateContractCallAndMintCall) -> Self {
+            Self::ValidateContractCallAndMint(value)
         }
     }
-    #[doc = "Container type for all return fields from the `adminEpoch` function with signature `adminEpoch()` and selector `[54, 73, 64, 216]`"]
+    ///Container type for all return fields from the `adminEpoch` function with signature `adminEpoch()` and selector `0x364940d8`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct AdminEpochReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `adminThreshold` function with signature `adminThreshold(uint256)` and selector `[136, 179, 5, 135]`"]
+    pub struct AdminEpochReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `adminThreshold` function with signature `adminThreshold(uint256)` and selector `0x88b30587`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct AdminThresholdReturn(pub ethers::core::types::U256);
-    #[doc = "Container type for all return fields from the `admins` function with signature `admins(uint256)` and selector `[20, 191, 214, 208]`"]
+    pub struct AdminThresholdReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `admins` function with signature `admins(uint256)` and selector `0x14bfd6d0`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct AdminsReturn(pub ::std::vec::Vec<ethers::core::types::Address>);
-    #[doc = "Container type for all return fields from the `allTokensFrozen` function with signature `allTokensFrozen()` and selector `[170, 30, 31, 10]`"]
+    pub struct AdminsReturn(pub ::std::vec::Vec<::ethers_core::types::Address>);
+    ///Container type for all return fields from the `allTokensFrozen` function with signature `allTokensFrozen()` and selector `0xaa1e1f0a`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct AllTokensFrozenReturn(pub bool);
-    #[doc = "Container type for all return fields from the `implementation` function with signature `implementation()` and selector `[92, 96, 218, 27]`"]
+    ///Container type for all return fields from the `implementation` function with signature `implementation()` and selector `0x5c60da1b`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct ImplementationReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `isCommandExecuted` function with signature `isCommandExecuted(bytes32)` and selector `[210, 111, 242, 16]`"]
+    pub struct ImplementationReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `isCommandExecuted` function with signature `isCommandExecuted(bytes32)` and selector `0xd26ff210`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct IsCommandExecutedReturn(pub bool);
-    #[doc = "Container type for all return fields from the `isContractCallAndMintApproved` function with signature `isContractCallAndMintApproved(bytes32,string,string,address,bytes32,string,uint256)` and selector `[188, 0, 194, 22]`"]
+    ///Container type for all return fields from the `isContractCallAndMintApproved` function with signature `isContractCallAndMintApproved(bytes32,string,string,address,bytes32,string,uint256)` and selector `0xbc00c216`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct IsContractCallAndMintApprovedReturn(pub bool);
-    #[doc = "Container type for all return fields from the `isContractCallApproved` function with signature `isContractCallApproved(bytes32,string,string,address,bytes32)` and selector `[246, 165, 249, 245]`"]
+    ///Container type for all return fields from the `isContractCallApproved` function with signature `isContractCallApproved(bytes32,string,string,address,bytes32)` and selector `0xf6a5f9f5`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct IsContractCallApprovedReturn(pub bool);
-    #[doc = "Container type for all return fields from the `tokenAddresses` function with signature `tokenAddresses(string)` and selector `[147, 91, 19, 246]`"]
+    ///Container type for all return fields from the `tokenAddresses` function with signature `tokenAddresses(string)` and selector `0x935b13f6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct TokenAddressesReturn(pub ethers::core::types::Address);
-    #[doc = "Container type for all return fields from the `tokenFrozen` function with signature `tokenFrozen(string)` and selector `[123, 27, 118, 158]`"]
+    pub struct TokenAddressesReturn(pub ::ethers_core::types::Address);
+    ///Container type for all return fields from the `tokenFrozen` function with signature `tokenFrozen(string)` and selector `0x7b1b769e`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct TokenFrozenReturn(pub bool);
-    #[doc = "Container type for all return fields from the `validateContractCall` function with signature `validateContractCall(bytes32,string,string,bytes32)` and selector `[95, 105, 112, 195]`"]
+    ///Container type for all return fields from the `validateContractCall` function with signature `validateContractCall(bytes32,string,string,bytes32)` and selector `0x5f6970c3`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct ValidateContractCallReturn(pub bool);
-    #[doc = "Container type for all return fields from the `validateContractCallAndMint` function with signature `validateContractCallAndMint(bytes32,string,string,bytes32,string,uint256)` and selector `[24, 118, 238, 217]`"]
+    ///Container type for all return fields from the `validateContractCallAndMint` function with signature `validateContractCallAndMint(bytes32,string,string,bytes32,string,uint256)` and selector `0x1876eed9`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub struct ValidateContractCallAndMintReturn(pub bool);
 }

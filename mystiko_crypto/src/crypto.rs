@@ -6,7 +6,6 @@ pub fn encrypt_asymmetric(public_key: &[u8], plain_data: &[u8]) -> Result<Vec<u8
     eccrypto::encrypt(public_key, plain_data)
 }
 
-// todo check decrypt result from caller
 pub fn decrypt_asymmetric(secret_key: &[u8], cipher_data: &[u8]) -> Result<Vec<u8>, CryptoError> {
     eccrypto::decrypt(secret_key, cipher_data)
 }

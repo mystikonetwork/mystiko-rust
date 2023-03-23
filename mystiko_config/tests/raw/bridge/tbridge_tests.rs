@@ -1,9 +1,10 @@
 use lazy_static::lazy_static;
 use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json};
 use mystiko_config::types::BridgeType;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use validator::Validate;
 
 fn default_config() -> RawTBridgeConfig {
     create_raw::<RawTBridgeConfig>(
@@ -50,14 +51,14 @@ fn test_validate_success() {
 fn test_invalid_name() {
     let mut config = default_config();
     config.name = "".to_string();
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_type() {
     let mut config = default_config();
     config.bridge_type = BridgeType::Poly;
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[tokio::test]

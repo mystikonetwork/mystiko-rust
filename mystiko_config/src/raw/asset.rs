@@ -1,5 +1,4 @@
 use crate::raw::validator::{array_unique, is_ethereum_address, is_number_string_vec};
-use crate::raw::{validate_raw, Validator};
 use crate::types::AssetType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -39,11 +38,5 @@ impl Hash for RawAssetConfig {
 impl PartialEq for RawAssetConfig {
     fn eq(&self, other: &Self) -> bool {
         self.asset_address == other.asset_address
-    }
-}
-
-impl Validator for RawAssetConfig {
-    fn validation(&self) -> anyhow::Result<()> {
-        validate_raw(self)
     }
 }

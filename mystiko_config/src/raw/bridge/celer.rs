@@ -1,4 +1,3 @@
-use crate::raw::{validate_raw, Validator};
 use crate::types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
@@ -18,12 +17,6 @@ pub struct RawCelerBridgeConfig {
     #[builder(default = default_bridge_type())]
     #[validate(custom = "validate_bridge_type")]
     pub bridge_type: BridgeType,
-}
-
-impl Validator for RawCelerBridgeConfig {
-    fn validation(&self) -> anyhow::Result<()> {
-        validate_raw(self)
-    }
 }
 
 fn default_bridge_type() -> BridgeType {

@@ -15,7 +15,7 @@ async fn test_secret_sharing() {
     let result = split(secret.clone(), 0, 17, None);
     assert_eq!(result.err().unwrap(), SecretShareError::SharesOutOfBounds);
 
-    let result = split(secret.clone(), 5, 7, None);
+    let result = split(secret, 5, 7, None);
     assert_eq!(
         result.err().unwrap(),
         SecretShareError::ThresholdOutOfBounds
@@ -26,7 +26,7 @@ async fn test_secret_sharing() {
 async fn test_secret_sharing1() {
     let secret = random_bigint(32, &FIELD_SIZE);
     let ss = split(secret.clone(), 30, 17, None).unwrap();
-    let mut shares = ss.shares.clone();
+    let mut shares = ss.shares;
     shares.shuffle(&mut rand::thread_rng());
     let es = shares[0..17].to_vec();
     let recovered_secret = recover(es, None);
@@ -40,8 +40,8 @@ async fn test_secret_sharing2() {
     secret = mod_floor(&secret, &field);
 
     let ss1 = split(secret.clone(), 5, 3, Some(field.clone())).unwrap();
-    let ss = ss1.clone();
-    let mut shares = ss.shares.clone();
+    let ss = ss1;
+    let mut shares = ss.shares;
     shares.shuffle(&mut rand::thread_rng());
     let es = shares[0..3].to_vec();
     let filed = Some(field);

@@ -1,65 +1,69 @@
 pub use i_axelar_executable::*;
-#[allow(clippy::too_many_arguments, non_camel_case_types)]
+/// This module was auto-generated with ethers-rs Abigen.
+/// More information at: <https://github.com/gakonst/ethers-rs>
+#[allow(
+    clippy::enum_variant_names,
+    clippy::too_many_arguments,
+    clippy::upper_case_acronyms,
+    clippy::type_complexity,
+    dead_code,
+    non_camel_case_types,
+)]
 pub mod i_axelar_executable {
-    #![allow(clippy::enum_variant_names)]
-    #![allow(dead_code)]
-    #![allow(clippy::type_complexity)]
-    #![allow(unused_imports)]
-    use ethers::contract::{
-        builders::{ContractCall, Event},
-        Contract, Lazy,
-    };
-    use ethers::core::{
-        abi::{Abi, Detokenize, InvalidOutputType, Token, Tokenizable},
-        types::*,
-    };
-    use ethers::providers::Middleware;
-    #[doc = "IAxelarExecutable was auto-generated with ethers-rs Abigen. More information at: https://github.com/gakonst/ethers-rs"]
-    use std::sync::Arc;
-    # [rustfmt :: skip] const __ABI : & str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"NotApprovedByGateway\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"tokenSymbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"executeWithToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"gateway\",\"outputs\":[{\"internalType\":\"contract IAxelarGateway\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]" ;
-    #[doc = r" The parsed JSON-ABI of the contract."]
-    pub static IAXELAREXECUTABLE_ABI: ethers::contract::Lazy<ethers::core::abi::Abi> =
-        ethers::contract::Lazy::new(|| {
-            ethers::core::utils::__serde_json::from_str(__ABI).expect("invalid abi")
-        });
-    pub struct IAxelarExecutable<M>(ethers::contract::Contract<M>);
-    impl<M> Clone for IAxelarExecutable<M> {
+    #[rustfmt::skip]
+    const __ABI: &str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"NotApprovedByGateway\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"tokenSymbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"executeWithToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"gateway\",\"outputs\":[{\"internalType\":\"contract IAxelarGateway\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]";
+    ///The parsed JSON ABI of the contract.
+    pub static IAXELAREXECUTABLE_ABI: ::ethers_contract::Lazy<
+        ::ethers_core::abi::Abi,
+    > = ::ethers_contract::Lazy::new(|| {
+        ::ethers_core::utils::__serde_json::from_str(__ABI)
+            .expect("ABI is always valid")
+    });
+    pub struct IAxelarExecutable<M>(::ethers_contract::Contract<M>);
+    impl<M> ::core::clone::Clone for IAxelarExecutable<M> {
         fn clone(&self) -> Self {
-            IAxelarExecutable(self.0.clone())
+            Self(::core::clone::Clone::clone(&self.0))
         }
     }
-    impl<M> std::ops::Deref for IAxelarExecutable<M> {
-        type Target = ethers::contract::Contract<M>;
+    impl<M> ::core::ops::Deref for IAxelarExecutable<M> {
+        type Target = ::ethers_contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
     }
-    impl<M> std::fmt::Debug for IAxelarExecutable<M> {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            f.debug_tuple(stringify!(IAxelarExecutable))
-                .field(&self.address())
-                .finish()
+    impl<M> ::core::ops::DerefMut for IAxelarExecutable<M> {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
         }
     }
-    impl<M: ethers::providers::Middleware> IAxelarExecutable<M> {
-        #[doc = r" Creates a new contract instance with the specified `ethers`"]
-        #[doc = r" client at the given `Address`. The contract derefs to a `ethers::Contract`"]
-        #[doc = r" object"]
-        pub fn new<T: Into<ethers::core::types::Address>>(
+    impl<M> ::core::fmt::Debug for IAxelarExecutable<M> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.debug_tuple(stringify!(IAxelarExecutable)).field(&self.address()).finish()
+        }
+    }
+    impl<M: ::ethers_providers::Middleware> IAxelarExecutable<M> {
+        /// Creates a new contract instance with the specified `ethers` client at
+        /// `address`. The contract derefs to a `ethers::Contract` object.
+        pub fn new<T: Into<::ethers_core::types::Address>>(
             address: T,
             client: ::std::sync::Arc<M>,
         ) -> Self {
-            ethers::contract::Contract::new(address.into(), IAXELAREXECUTABLE_ABI.clone(), client)
-                .into()
+            Self(
+                ::ethers_contract::Contract::new(
+                    address.into(),
+                    IAXELAREXECUTABLE_ABI.clone(),
+                    client,
+                ),
+            )
         }
-        #[doc = "Calls the contract's `execute` (0x49160658) function"]
+        ///Calls the contract's `execute` (0x49160658) function
         pub fn execute(
             &self,
             command_id: [u8; 32],
-            source_chain: String,
-            source_address: String,
-            payload: ethers::core::types::Bytes,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            source_chain: ::std::string::String,
+            source_address: ::std::string::String,
+            payload: ::ethers_core::types::Bytes,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [73, 22, 6, 88],
@@ -67,16 +71,16 @@ pub mod i_axelar_executable {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `executeWithToken` (0x1a98b2e0) function"]
+        ///Calls the contract's `executeWithToken` (0x1a98b2e0) function
         pub fn execute_with_token(
             &self,
             command_id: [u8; 32],
-            source_chain: String,
-            source_address: String,
-            payload: ethers::core::types::Bytes,
-            token_symbol: String,
-            amount: ethers::core::types::U256,
-        ) -> ethers::contract::builders::ContractCall<M, ()> {
+            source_chain: ::std::string::String,
+            source_address: ::std::string::String,
+            payload: ::ethers_core::types::Bytes,
+            token_symbol: ::std::string::String,
+            amount: ::ethers_core::types::U256,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [26, 152, 178, 224],
@@ -91,66 +95,71 @@ pub mod i_axelar_executable {
                 )
                 .expect("method not found (this should never happen)")
         }
-        #[doc = "Calls the contract's `gateway` (0x116191b6) function"]
+        ///Calls the contract's `gateway` (0x116191b6) function
         pub fn gateway(
             &self,
-        ) -> ethers::contract::builders::ContractCall<M, ethers::core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([17, 97, 145, 182], ())
                 .expect("method not found (this should never happen)")
         }
     }
-    impl<M: ethers::providers::Middleware> From<ethers::contract::Contract<M>>
-        for IAxelarExecutable<M>
-    {
-        fn from(contract: ethers::contract::Contract<M>) -> Self {
-            Self(contract)
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+    for IAxelarExecutable<M> {
+        fn from(contract: ::ethers_contract::Contract<M>) -> Self {
+            Self::new(contract.address(), contract.client())
         }
     }
-    #[doc = "Custom Error type `NotApprovedByGateway` with signature `NotApprovedByGateway()` and selector `[80, 12, 68, 180]`"]
+    ///Custom Error type `NotApprovedByGateway` with signature `NotApprovedByGateway()` and selector `0x500c44b4`
     #[derive(
         Clone,
-        Debug,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
-        Eq,
+        Debug,
         PartialEq,
-        ethers :: contract :: EthError,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Eq,
+        Hash
     )]
     #[etherror(name = "NotApprovedByGateway", abi = "NotApprovedByGateway()")]
     pub struct NotApprovedByGateway;
-    #[doc = "Container type for all input parameters for the `execute` function with signature `execute(bytes32,string,string,bytes)` and selector `[73, 22, 6, 88]`"]
+    ///Container type for all input parameters for the `execute` function with signature `execute(bytes32,string,string,bytes)` and selector `0x49160658`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "execute", abi = "execute(bytes32,string,string,bytes)")]
     pub struct ExecuteCall {
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
-        pub payload: ethers::core::types::Bytes,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
+        pub payload: ::ethers_core::types::Bytes,
     }
-    #[doc = "Container type for all input parameters for the `executeWithToken` function with signature `executeWithToken(bytes32,string,string,bytes,string,uint256)` and selector `[26, 152, 178, 224]`"]
+    ///Container type for all input parameters for the `executeWithToken` function with signature `executeWithToken(bytes32,string,string,bytes,string,uint256)` and selector `0x1a98b2e0`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(
         name = "executeWithToken",
@@ -158,106 +167,112 @@ pub mod i_axelar_executable {
     )]
     pub struct ExecuteWithTokenCall {
         pub command_id: [u8; 32],
-        pub source_chain: String,
-        pub source_address: String,
-        pub payload: ethers::core::types::Bytes,
-        pub token_symbol: String,
-        pub amount: ethers::core::types::U256,
+        pub source_chain: ::std::string::String,
+        pub source_address: ::std::string::String,
+        pub payload: ::ethers_core::types::Bytes,
+        pub token_symbol: ::std::string::String,
+        pub amount: ::ethers_core::types::U256,
     }
-    #[doc = "Container type for all input parameters for the `gateway` function with signature `gateway()` and selector `[17, 97, 145, 182]`"]
+    ///Container type for all input parameters for the `gateway` function with signature `gateway()` and selector `0x116191b6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthCall,
-        ethers :: contract :: EthDisplay,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     #[ethcall(name = "gateway", abi = "gateway()")]
     pub struct GatewayCall;
+    ///Container type for all of the contract's call
     #[derive(
-        Debug,
         Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
         PartialEq,
         Eq,
-        ethers :: contract :: EthAbiType,
-        serde :: Serialize,
-        serde :: Deserialize,
+        Hash
     )]
     pub enum IAxelarExecutableCalls {
         Execute(ExecuteCall),
         ExecuteWithToken(ExecuteWithTokenCall),
         Gateway(GatewayCall),
     }
-    impl ethers::core::abi::AbiDecode for IAxelarExecutableCalls {
+    impl ::ethers_core::abi::AbiDecode for IAxelarExecutableCalls {
         fn decode(
             data: impl AsRef<[u8]>,
-        ) -> ::std::result::Result<Self, ethers::core::abi::AbiError> {
-            if let Ok(decoded) =
-                <ExecuteCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarExecutableCalls::Execute(decoded));
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+            let data = data.as_ref();
+            if let Ok(decoded)
+                = <ExecuteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Execute(decoded));
             }
-            if let Ok(decoded) =
-                <ExecuteWithTokenCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarExecutableCalls::ExecuteWithToken(decoded));
+            if let Ok(decoded)
+                = <ExecuteWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ExecuteWithToken(decoded));
             }
-            if let Ok(decoded) =
-                <GatewayCall as ethers::core::abi::AbiDecode>::decode(data.as_ref())
-            {
-                return Ok(IAxelarExecutableCalls::Gateway(decoded));
+            if let Ok(decoded)
+                = <GatewayCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Gateway(decoded));
             }
-            Err(ethers::core::abi::Error::InvalidData.into())
+            Err(::ethers_core::abi::Error::InvalidData.into())
         }
     }
-    impl ethers::core::abi::AbiEncode for IAxelarExecutableCalls {
+    impl ::ethers_core::abi::AbiEncode for IAxelarExecutableCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                IAxelarExecutableCalls::Execute(element) => element.encode(),
-                IAxelarExecutableCalls::ExecuteWithToken(element) => element.encode(),
-                IAxelarExecutableCalls::Gateway(element) => element.encode(),
+                Self::Execute(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::ExecuteWithToken(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Gateway(element) => ::ethers_core::abi::AbiEncode::encode(element),
             }
         }
     }
-    impl ::std::fmt::Display for IAxelarExecutableCalls {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+    impl ::core::fmt::Display for IAxelarExecutableCalls {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                IAxelarExecutableCalls::Execute(element) => element.fmt(f),
-                IAxelarExecutableCalls::ExecuteWithToken(element) => element.fmt(f),
-                IAxelarExecutableCalls::Gateway(element) => element.fmt(f),
+                Self::Execute(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ExecuteWithToken(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Gateway(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
-    impl ::std::convert::From<ExecuteCall> for IAxelarExecutableCalls {
-        fn from(var: ExecuteCall) -> Self {
-            IAxelarExecutableCalls::Execute(var)
+    impl ::core::convert::From<ExecuteCall> for IAxelarExecutableCalls {
+        fn from(value: ExecuteCall) -> Self {
+            Self::Execute(value)
         }
     }
-    impl ::std::convert::From<ExecuteWithTokenCall> for IAxelarExecutableCalls {
-        fn from(var: ExecuteWithTokenCall) -> Self {
-            IAxelarExecutableCalls::ExecuteWithToken(var)
+    impl ::core::convert::From<ExecuteWithTokenCall> for IAxelarExecutableCalls {
+        fn from(value: ExecuteWithTokenCall) -> Self {
+            Self::ExecuteWithToken(value)
         }
     }
-    impl ::std::convert::From<GatewayCall> for IAxelarExecutableCalls {
-        fn from(var: GatewayCall) -> Self {
-            IAxelarExecutableCalls::Gateway(var)
+    impl ::core::convert::From<GatewayCall> for IAxelarExecutableCalls {
+        fn from(value: GatewayCall) -> Self {
+            Self::Gateway(value)
         }
     }
-    #[doc = "Container type for all return fields from the `gateway` function with signature `gateway()` and selector `[17, 97, 145, 182]`"]
+    ///Container type for all return fields from the `gateway` function with signature `gateway()` and selector `0x116191b6`
     #[derive(
         Clone,
-        Debug,
-        Eq,
-        PartialEq,
-        ethers :: contract :: EthAbiType,
-        ethers :: contract :: EthAbiCodec,
-        serde :: Serialize,
-        serde :: Deserialize,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
         Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
-    pub struct GatewayReturn(pub ethers::core::types::Address);
+    pub struct GatewayReturn(pub ::ethers_core::types::Address);
 }

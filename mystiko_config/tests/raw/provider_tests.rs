@@ -1,5 +1,6 @@
 use mystiko_config::raw::provider::RawProviderConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file};
+use validator::Validate;
 
 fn default_config() -> RawProviderConfig {
     create_raw::<RawProviderConfig>(
@@ -16,35 +17,35 @@ fn default_config() -> RawProviderConfig {
 fn test_invalid_url_0() {
     let mut config = default_config();
     config.url = "".to_string();
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_url_1() {
     let mut config = default_config();
     config.url = "not even a url".to_string();
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_url_2() {
     let mut config = default_config();
     config.url = "wrong_schema://localhost:8545".to_string();
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_timeout_ms() {
     let mut config = default_config();
     config.timeout_ms = 0;
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_max_try_count() {
     let mut config = default_config();
     config.max_try_count = 0;
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[tokio::test]
