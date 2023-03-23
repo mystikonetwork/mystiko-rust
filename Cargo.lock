@@ -2802,8 +2802,8 @@ name = "mystiko_utils"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "lazy_static",
  "num-bigint 0.4.3",
+ "num-traits 0.2.15",
  "rust_decimal",
 ]
 

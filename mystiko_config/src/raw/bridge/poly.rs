@@ -1,5 +1,4 @@
 use crate::raw::chain::EXPLORER_DEFAULT_PREFIX;
-use crate::raw::{validate_raw, Validator};
 use crate::types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
@@ -33,12 +32,6 @@ pub struct RawPolyBridgeConfig {
 
     #[validate(contains = "%tx%")]
     pub api_prefix: String,
-}
-
-impl Validator for RawPolyBridgeConfig {
-    fn validation(&self) -> Result<(), anyhow::Error> {
-        validate_raw(self)
-    }
 }
 
 fn default_bridge_type() -> BridgeType {

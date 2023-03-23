@@ -1,7 +1,8 @@
 use lazy_static::lazy_static;
 use mystiko_config::raw::contract::pool::RawPoolContractConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json};
 use mystiko_config::types::{BridgeType, ContractType};
+use validator::Validate;
 
 fn default_config() -> RawPoolContractConfig {
     create_raw::<RawPoolContractConfig>(
@@ -63,56 +64,56 @@ fn test_validate_success() {
     config.asset_address = None;
     config.min_rollup_fee = "0".to_string();
     config.circuits = vec![];
-    assert_eq!(config.validation().is_err(), false);
+    assert_eq!(config.validate().is_err(), false);
 }
 
 #[test]
 fn test_invalid_pool_name() {
     let mut config = default_config();
     config.pool_name = "".to_string();
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_contract_type() {
     let mut config = default_config();
     config.contract_type = ContractType::Deposit;
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_min_rollup_fee_0() {
     let mut config = default_config();
     config.min_rollup_fee = String::from("");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_min_rollup_fee_1() {
     let mut config = default_config();
     config.min_rollup_fee = String::from("0xdeadbeef");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_min_rollup_fee_2() {
     let mut config = default_config();
     config.min_rollup_fee = String::from("-1");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_min_rollup_fee_3() {
     let mut config = default_config();
     config.min_rollup_fee = String::from("1.2");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_circuits() {
     let mut config = default_config();
     config.circuits = vec![String::from("")];
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[tokio::test]

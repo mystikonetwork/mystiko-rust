@@ -1,5 +1,4 @@
 use crate::raw::validator::string_vec_each_not_empty;
-use crate::raw::{validate_raw, Validator};
 use crate::types::CircuitType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -29,12 +28,6 @@ pub struct RawCircuitConfig {
 
     #[validate(custom = "string_vec_each_not_empty")]
     pub verifying_key_file: Vec<String>,
-}
-
-impl Validator for RawCircuitConfig {
-    fn validation(&self) -> anyhow::Result<()> {
-        validate_raw(self)
-    }
 }
 
 impl Hash for RawCircuitConfig {

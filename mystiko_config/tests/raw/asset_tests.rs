@@ -1,6 +1,7 @@
 use mystiko_config::raw::asset::RawAssetConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file};
 use mystiko_config::types::AssetType;
+use validator::Validate;
 
 fn default_config() -> RawAssetConfig {
     create_raw::<RawAssetConfig>(
@@ -22,42 +23,42 @@ fn default_config() -> RawAssetConfig {
 fn test_invalid_asset_symbol() {
     let mut config = default_config();
     config.asset_symbol = "".to_string();
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_asset_address_0() {
     let mut config = default_config();
     config.asset_address = String::from("");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_asset_address_1() {
     let mut config = default_config();
     config.asset_address = String::from("0xdeadbeef");
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_recommended_amounts_0() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("")];
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_recommended_amounts_1() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("abcd")];
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[test]
 fn test_invalid_recommended_amounts_2() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("1"), String::from("1")];
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[tokio::test]

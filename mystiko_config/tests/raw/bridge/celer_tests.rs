@@ -1,9 +1,10 @@
 use lazy_static::lazy_static;
 use mystiko_config::raw::bridge::celer::RawCelerBridgeConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json, Validator};
+use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json};
 use mystiko_config::types::BridgeType;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use validator::Validate;
 
 fn default_config() -> RawCelerBridgeConfig {
     create_raw::<RawCelerBridgeConfig>(
@@ -44,7 +45,7 @@ fn test_name() {
 fn test_invalid_type() {
     let mut config = default_config();
     config.bridge_type = BridgeType::Tbridge;
-    assert_eq!(config.validation().is_err(), true);
+    assert_eq!(config.validate().is_err(), true);
 }
 
 #[tokio::test]

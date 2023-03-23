@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-num-bigint = { version = "0.4.3" }
-lazy_static = { version = "1.4.0" }
-rust_decimal = { version = "1.28" }
 anyhow = { version = "1.0" }
+num-bigint = { version = "0.4.3" }
+num-traits = { version = "0.2.15" }
+rust_decimal = { version = "1.29.0" }
