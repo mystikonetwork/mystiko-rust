@@ -2773,6 +2773,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_relayer_config"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "tokio",
+ "typed-builder",
+ "validator",
+]
+
+[[package]]
 name = "mystiko_storage"
 version = "0.1.0"
 dependencies = [
