@@ -1,6 +1,5 @@
 use mystiko_relayer_config::raw::gas_cost::RawGasCostConfig;
 use mystiko_relayer_config::raw::{create_raw, create_raw_from_file, create_raw_from_json};
-use serde_json::json;
 use validator::Validate;
 
 fn default_config() -> RawGasCostConfig {

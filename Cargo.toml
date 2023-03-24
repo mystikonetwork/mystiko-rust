@@ -8,11 +8,11 @@ members = [
     "mystiko_downloader",
     "mystiko_fs",
     "mystiko_indexer_client",
+    "mystiko_relayer_config",
     "mystiko_storage",
     "mystiko_storage_sqlite",
     "mystiko_utils",
-    "mystiko_config",
-    "mystiko_relayer_config"
+    "mystiko_config"
 ]
 
 exclude = []
