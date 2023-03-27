@@ -37,7 +37,7 @@ fn default_chain_config() -> RawChainConfig {
             .transaction_info(
                 RawTransactionInfoConfig::builder()
                     .main_gas_cost(raw_gas_cost_config.clone())
-                    .erc20_gas_cost(raw_gas_cost_config.clone())
+                    .erc20_gas_cost(raw_gas_cost_config)
                     .build(),
             )
             .build(),
