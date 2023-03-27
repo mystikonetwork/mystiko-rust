@@ -71,6 +71,11 @@ fn test_invalid_verifying_key_file() {
     assert!(config.validate().is_err());
 }
 
+#[test]
+fn test_circuit_type_all() {
+    assert!(!CircuitType::all().is_empty())
+}
+
 #[tokio::test]
 async fn test_import_valid_json_file() {
     let file_config = create_raw_from_file::<RawCircuitConfig>("tests/files/circuit.valid.json")
