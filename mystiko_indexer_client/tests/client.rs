@@ -658,6 +658,7 @@ async fn test_query_chain_sync_response_by_id() {
     let resp = indexer_client.query_chain_sync_repsonse_by_id(5).await;
     assert!(resp.is_ok());
     let resp = resp.unwrap();
+    dbg!(&resp);
     assert_eq!(resp.contracts.len(), 2);
     assert_eq!(resp, chain_sync_resp);
     m.assert_async().await;
