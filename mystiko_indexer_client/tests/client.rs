@@ -10,7 +10,6 @@ use mystiko_indexer_client::{
     },
 };
 
-
 static AUTH_USERNAME: &str = "test_username";
 static AUTH_PASSWORD: &str = "110110";
 
