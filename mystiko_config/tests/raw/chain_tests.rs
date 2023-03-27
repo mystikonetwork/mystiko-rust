@@ -8,6 +8,7 @@ use mystiko_config::raw::{create_raw, create_raw_from_file};
 use mystiko_config::types::{AssetType, BridgeType, ContractType};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 use validator::Validate;
 
 fn init_provider_config() -> RawProviderConfig {
@@ -91,13 +92,13 @@ fn default_config() -> RawChainConfig {
         ])
         .explorer_url("https://ropsten.etherscan.io".to_string())
         .explorer_prefix("/tx/%tx%".to_string())
-        .providers(vec![provider_config])
+        .providers(vec![Arc::new(provider_config)])
         .signer_endpoint(
             "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
         )
-        .deposit_contracts(vec![deposit_contract_config])
-        .pool_contracts(vec![pool_contract_config])
-        .assets(vec![asset_config])
+        .deposit_contracts(vec![Arc::new(deposit_contract_config)])
+        .pool_contracts(vec![Arc::new(pool_contract_config)])
+        .assets(vec![Arc::new(asset_config)])
         .build();
     create_raw::<RawChainConfig>(raw_chain_config).unwrap()
 }
@@ -122,13 +123,13 @@ fn test_default_values() {
             "10000000000000000000".to_string(),
         ])
         .explorer_url("https://ropsten.etherscan.io".to_string())
-        .providers(vec![provider_config])
+        .providers(vec![Arc::new(provider_config)])
         .signer_endpoint(
             "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
         )
-        .deposit_contracts(vec![deposit_contract_config])
-        .pool_contracts(vec![pool_contract_config])
-        .assets(vec![asset_config])
+        .deposit_contracts(vec![Arc::new(deposit_contract_config)])
+        .pool_contracts(vec![Arc::new(pool_contract_config)])
+        .assets(vec![Arc::new(asset_config)])
         .build();
     assert_eq!(raw_config.event_filter_size, 200000);
     assert_eq!(raw_config.indexer_filter_size, 500000);
@@ -166,137 +167,139 @@ fn test_hash() {
 fn test_invalid_name() {
     let mut config = default_config();
     config.name = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_asset_symbol() {
     let mut config = default_config();
     config.asset_symbol = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_asset_decimals() {
     let mut config = default_config();
     config.asset_decimals = 0;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_recommended_amounts_0() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_recommended_amounts_1() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("abcd")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_recommended_amounts_2() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("1"), String::from("1")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_explore_url_0() {
     let mut config = default_config();
     config.explorer_url = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_explore_url_1() {
     let mut config = default_config();
     config.explorer_url = String::from("wrong url");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_explore_prefix_0() {
     let mut config = default_config();
     config.explorer_prefix = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_explore_prefix_1() {
     let mut config = default_config();
     config.explorer_prefix = String::from("wrong prefix");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_providers_0() {
     let mut config = default_config();
     config.providers = vec![];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_providers_1() {
     let mut config = default_config();
-    let mut provider_config = config.providers[0].clone();
+    let mut provider_config = (*config.providers.remove(0)).clone();
     provider_config.url = String::from("wrong url");
-    config.providers = vec![provider_config];
-    assert_eq!(config.validate().is_err(), true);
+    config.providers.insert(0, Arc::new(provider_config));
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_signer_endpoint_0() {
     let mut config = default_config();
     config.signer_endpoint = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_signer_endpoint_1() {
     let mut config = default_config();
     config.signer_endpoint = String::from("wrong url");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_signer_endpoint_2() {
     let mut config = default_config();
     config.signer_endpoint = String::from("wrong_schema://127.0.0.1");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_event_filter_size() {
     let mut config = default_config();
     config.event_filter_size = 0;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_indexer_filter_size() {
     let mut config = default_config();
     config.indexer_filter_size = 0;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_pool_contracts_0() {
     let mut config = default_config();
-    config.pool_contracts.push(init_pool_contract_config());
-    assert_eq!(config.validate().is_err(), true);
+    config
+        .pool_contracts
+        .push(Arc::new(init_pool_contract_config()));
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_pool_contracts_1() {
     let mut config = default_config();
-    let mut pool_contract = config.pool_contracts[0].clone();
+    let mut pool_contract = (*config.pool_contracts.remove(0)).clone();
     pool_contract.asset_address = Some(String::from("0xdeadbeef"));
-    config.pool_contracts = vec![pool_contract];
-    assert_eq!(config.validate().is_err(), true);
+    config.pool_contracts.insert(0, Arc::new(pool_contract));
+    assert!(config.validate().is_err());
 }
 
 #[test]
@@ -304,15 +307,15 @@ fn test_invalid_deposit_contracts() {
     let mut config = default_config();
     config
         .deposit_contracts
-        .push(init_deposit_contract_config());
-    assert_eq!(config.validate().is_err(), true);
+        .push(Arc::new(init_deposit_contract_config()));
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_assets() {
     let mut config = default_config();
-    config.assets.push(init_assets_config());
-    assert_eq!(config.validate().is_err(), true);
+    config.assets.push(Arc::new(init_assets_config()));
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]

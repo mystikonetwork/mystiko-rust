@@ -58,7 +58,7 @@ fn test_default_values() {
         .service_fee(2)
         .service_fee_divider(1000)
         .build();
-    assert_eq!(raw_config.disabled, false);
+    assert!(!raw_config.disabled);
     assert_eq!(raw_config.min_bridge_fee, "0");
     assert_eq!(raw_config.min_executor_fee, "0");
 }
@@ -67,182 +67,182 @@ fn test_default_values() {
 fn test_invalid_type() {
     let mut config = default_config();
     config.contract_type = ContractType::Pool;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_pool_address_0() {
     let mut config = default_config();
     config.pool_address = String::from("0xdeadbeef");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_pool_address_1() {
     let mut config = default_config();
     config.pool_address = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_peer_chain_id() {
     let mut config = default_config();
     config.peer_chain_id = Some(0);
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_peer_contract_address_0() {
     let mut config = default_config();
     config.peer_contract_address = Some(String::from(""));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_peer_contract_address_1() {
     let mut config = default_config();
     config.peer_contract_address = Some(String::from("0xdeadbeef"));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_amount_0() {
     let mut config = default_config();
     config.min_amount = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_amount_1() {
     let mut config = default_config();
     config.min_amount = String::from("0xdeadbeef");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_amount_2() {
     let mut config = default_config();
     config.min_amount = String::from("-1");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_amount_3() {
     let mut config = default_config();
     config.min_amount = String::from("1.2");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_max_amount_0() {
     let mut config = default_config();
     config.max_amount = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_max_amount_1() {
     let mut config = default_config();
     config.max_amount = String::from("0xdeadbeef");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_max_amount_2() {
     let mut config = default_config();
     config.max_amount = String::from("-1");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_max_amount_3() {
     let mut config = default_config();
     config.max_amount = String::from("1.2");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_bridge_fee_0() {
     let mut config = default_config();
     config.min_bridge_fee = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_bridge_fee_1() {
     let mut config = default_config();
     config.min_bridge_fee = String::from("0xdeadbeef");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_bridge_fee_2() {
     let mut config = default_config();
     config.min_bridge_fee = String::from("-1");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_bridge_fee_3() {
     let mut config = default_config();
     config.min_bridge_fee = String::from("1.2");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_executor_fee_0() {
     let mut config = default_config();
     config.min_executor_fee = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_executor_fee_1() {
     let mut config = default_config();
     config.min_executor_fee = String::from("0xdeadbeef");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_executor_fee_2() {
     let mut config = default_config();
     config.min_executor_fee = String::from("-1");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_executor_fee_3() {
     let mut config = default_config();
     config.min_executor_fee = String::from("1.2");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_bridge_fee_asset_address_0() {
     let mut config = default_config();
     config.bridge_fee_asset_address = Some(String::from("0xdeadbeef"));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_bridge_fee_asset_address_1() {
     let mut config = default_config();
     config.bridge_fee_asset_address = Some(String::from(""));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_executor_fee_asset_address_0() {
     let mut config = default_config();
     config.executor_fee_asset_address = Some(String::from("0xdeadbeef"));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_executor_fee_asset_address_1() {
     let mut config = default_config();
     config.executor_fee_asset_address = Some(String::from(""));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
@@ -261,7 +261,7 @@ async fn test_import_invalid_json_file() {
         "tests/files/contract/deposit.invalid.json",
     )
     .await;
-    assert_eq!(file_config.is_err(), true);
+    assert!(file_config.is_err());
 }
 
 #[tokio::test]

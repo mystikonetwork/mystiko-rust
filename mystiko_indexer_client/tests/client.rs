@@ -1,5 +1,5 @@
 use base64::{engine::general_purpose, Engine as _};
-use mockito;
+
 use mockito::*;
 use mystiko_indexer_client::errors::ClientError;
 use mystiko_indexer_client::response::ApiResponse;
@@ -9,7 +9,6 @@ use mystiko_indexer_client::{
         CommitmentQueuedFilter, CommitmentQueuedForChainRequest, CommitmentQueuedResponse,
     },
 };
-use serde_json;
 
 static AUTH_USERNAME: &str = "test_username";
 static AUTH_PASSWORD: &str = "110110";
@@ -53,8 +52,8 @@ async fn setup_with_auth() -> Result<TestClientSetupData, Error> {
 
 fn generate_auth_header() -> String {
     let str = AUTH_USERNAME.to_owned() + ":" + AUTH_PASSWORD;
-    let encoded = general_purpose::STANDARD.encode(&str);
-    String::from("Basic ".to_owned() + &encoded)
+    let encoded = general_purpose::STANDARD.encode(str);
+    "Basic ".to_owned() + &encoded
 }
 
 #[test]

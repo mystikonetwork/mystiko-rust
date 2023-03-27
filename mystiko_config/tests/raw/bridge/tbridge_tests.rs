@@ -51,14 +51,14 @@ fn test_validate_success() {
 fn test_invalid_name() {
     let mut config = default_config();
     config.name = "".to_string();
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_type() {
     let mut config = default_config();
     config.bridge_type = BridgeType::Poly;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
@@ -75,7 +75,7 @@ async fn test_import_valid_json_file() {
 async fn test_import_invalid_json_file() {
     let file_config =
         create_raw_from_file::<RawTBridgeConfig>("tests/files/bridge/tbridge.invalid.json").await;
-    assert_eq!(file_config.is_err(), true);
+    assert!(file_config.is_err());
 }
 
 #[test]

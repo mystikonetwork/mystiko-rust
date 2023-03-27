@@ -35,7 +35,7 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run clippy
         timeout-minutes: 60
-        run: cargo clippy -j 4 -- -D warnings
+        run: cargo clippy --all-targets -j 4 -- -D warnings
       - run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master

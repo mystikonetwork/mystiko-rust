@@ -69,63 +69,63 @@ fn test_validate_success() {
 fn test_invalid_type() {
     let mut config = default_config();
     config.bridge_type = BridgeType::Tbridge;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_explorer_url_0() {
     let mut config = default_config();
     config.explorer_url = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_explorer_url_1() {
     let mut config = default_config();
     config.explorer_url = String::from("wrong url");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_explorer_prefix_0() {
     let mut config = default_config();
     config.explorer_prefix = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_explorer_prefix_1() {
     let mut config = default_config();
     config.explorer_prefix = String::from("wrong prefix");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_api_url_0() {
     let mut config = default_config();
     config.api_url = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_api_url_1() {
     let mut config = default_config();
     config.api_url = String::from("wrong url");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_api_prefix_0() {
     let mut config = default_config();
     config.api_prefix = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_api_prefix_1() {
     let mut config = default_config();
     config.api_prefix = String::from("wrong prefix");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
@@ -141,7 +141,7 @@ async fn test_import_valid_json_file() {
 async fn test_import_invalid_json_file() {
     let file_config =
         create_raw_from_file::<RawPolyBridgeConfig>("tests/files/bridge/poly.invalid.json").await;
-    assert_eq!(file_config.is_err(), true);
+    assert!(file_config.is_err());
 }
 
 #[tokio::test]

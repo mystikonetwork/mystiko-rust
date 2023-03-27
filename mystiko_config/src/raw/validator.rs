@@ -2,6 +2,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashSet;
 use std::hash::Hash;
+use std::sync::Arc;
 use validator::{Validate, ValidationError};
 
 lazy_static! {
@@ -47,7 +48,7 @@ pub fn is_number_string_vec<const NO_SYMBOLS: bool>(v: &[String]) -> Result<(), 
     Ok(())
 }
 
-pub fn validate_nested_vec<T>(v: &[T]) -> Result<(), ValidationError>
+pub fn validate_nested_vec<T>(v: &[Arc<T>]) -> Result<(), ValidationError>
 where
     T: Validate,
 {

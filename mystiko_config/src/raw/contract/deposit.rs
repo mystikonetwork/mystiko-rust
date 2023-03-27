@@ -26,7 +26,7 @@ pub struct RawDepositContractConfig {
     pub contract_type: ContractType,
 
     #[validate(range(min = 1))]
-    pub start_block: u32,
+    pub start_block: u64,
 
     #[validate(range(min = 1))]
     #[builder(default = None)]

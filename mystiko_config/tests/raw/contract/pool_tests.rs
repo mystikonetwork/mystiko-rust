@@ -64,56 +64,56 @@ fn test_validate_success() {
     config.asset_address = None;
     config.min_rollup_fee = "0".to_string();
     config.circuits = vec![];
-    assert_eq!(config.validate().is_err(), false);
+    assert!(config.validate().is_ok());
 }
 
 #[test]
 fn test_invalid_pool_name() {
     let mut config = default_config();
     config.pool_name = "".to_string();
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_contract_type() {
     let mut config = default_config();
     config.contract_type = ContractType::Deposit;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_rollup_fee_0() {
     let mut config = default_config();
     config.min_rollup_fee = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_rollup_fee_1() {
     let mut config = default_config();
     config.min_rollup_fee = String::from("0xdeadbeef");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_rollup_fee_2() {
     let mut config = default_config();
     config.min_rollup_fee = String::from("-1");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_min_rollup_fee_3() {
     let mut config = default_config();
     config.min_rollup_fee = String::from("1.2");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_circuits() {
     let mut config = default_config();
     config.circuits = vec![String::from("")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
@@ -131,7 +131,7 @@ async fn test_import_invalid_json_file() {
     let file_config =
         create_raw_from_file::<RawPoolContractConfig>("tests/files/contract/pool.invalid.json")
             .await;
-    assert_eq!(file_config.is_err(), true);
+    assert!(file_config.is_err());
 }
 
 #[test]

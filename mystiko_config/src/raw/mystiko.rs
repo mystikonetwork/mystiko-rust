@@ -4,6 +4,7 @@ use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
 use crate::raw::validator::{array_unique, is_sem_ver, validate_nested_vec};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use validator::Validate;
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone, Hash, PartialEq, Eq)]
@@ -16,20 +17,20 @@ pub struct RawMystikoConfig {
         custom(function = "array_unique"),
         custom(function = "validate_nested_vec")
     )]
-    pub chains: Vec<RawChainConfig>,
+    pub chains: Vec<Arc<RawChainConfig>>,
 
     #[validate(
         custom(function = "array_unique"),
         custom(function = "validate_nested_vec")
     )]
-    pub bridges: Vec<RawBridgeConfig>,
+    pub bridges: Vec<Arc<RawBridgeConfig>>,
 
     #[validate(
         custom(function = "array_unique"),
         custom(function = "validate_nested_vec")
     )]
-    pub circuits: Vec<RawCircuitConfig>,
+    pub circuits: Vec<Arc<RawCircuitConfig>>,
 
     #[validate]
-    pub indexer: Option<RawIndexerConfig>,
+    pub indexer: Option<Arc<RawIndexerConfig>>,
 }

@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 num-bigint = { version = "0.4.3" }
+num-traits = { version = "0.2.15" }
 regex = { version = "1.7.1" }
-serde = { version = "1.0.152", features = ["derive"] }
+serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }
 validator = { version = "0.16.0", features = ["derive"] }
 typed-builder = { version = "0.14.0" }

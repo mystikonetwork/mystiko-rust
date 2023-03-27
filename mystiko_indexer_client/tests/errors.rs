@@ -1,9 +1,7 @@
-use mockito;
 use mockito::*;
 use mystiko_indexer_client::client::IndexerClient;
 use mystiko_indexer_client::errors::ClientError;
 use mystiko_indexer_client::response::ApiResponse;
-use serde_json;
 
 struct TestErrorSetupData {
     mocked_server: mockito::ServerGuard,

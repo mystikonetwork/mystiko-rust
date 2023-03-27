@@ -11,7 +11,7 @@ pub struct RawIndexerConfig {
 
     #[validate(range(min = 1))]
     #[serde(default = "default_timeout_ms")]
-    pub timeout_ms: u32,
+    pub timeout_ms: u64,
 }
 
 impl Hash for RawIndexerConfig {
@@ -20,6 +20,6 @@ impl Hash for RawIndexerConfig {
     }
 }
 
-fn default_timeout_ms() -> u32 {
+fn default_timeout_ms() -> u64 {
     15000
 }
