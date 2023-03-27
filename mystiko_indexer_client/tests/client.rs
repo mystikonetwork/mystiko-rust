@@ -15,6 +15,7 @@ use mystiko_indexer_client::{
         commitment_spent::{
             CommitmentSpentFilter, CommitmentSpentForChainRequest, CommitmentSpentResponse,
         },
+        sync_response::{ChainSyncRepsonse, ContractSyncResponse},
     },
 };
 
@@ -576,5 +577,48 @@ async fn test_find_commitment_spent_for_chain() {
         )
         .await;
     assert!(resp.is_err());
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_query_chain_sync_response_by_id() {
+    let TestClientSetupData {
+        mut mocked_server,
+        indexer_client,
+    } = setup().await.unwrap();
+    let test_chain_id = 5;
+    let contracts = vec![
+        ContractSyncResponse::builder()
+            .chain_id(test_chain_id)
+            .contract_address(String::from("address1"))
+            .current_sync_block_num(100)
+            .current_sync_time(10000000)
+            .build(),
+        ContractSyncResponse::builder()
+            .chain_id(test_chain_id)
+            .contract_address(String::from("address1"))
+            .current_sync_block_num(200)
+            .current_sync_time(200000000000)
+            .build(),
+    ];
+    let chain_sync_resp = ChainSyncRepsonse::builder()
+        .chain_id(test_chain_id)
+        .current_sync_block_num(10000000)
+        .contracts(contracts)
+        .build();
+    let mocked_api_resp = ApiResponse {
+        code: 0,
+        result: &chain_sync_resp,
+    };
+    let m = mocked_server
+        .mock("get", "/chains/5/block-number")
+        .with_status(200)
+        .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let resp = indexer_client.query_chain_sync_repsonse_by_id(5).await;
+    assert!(resp.is_ok());
+    assert_eq!(resp.unwrap(), chain_sync_resp);
     m.assert_async().await;
 }
