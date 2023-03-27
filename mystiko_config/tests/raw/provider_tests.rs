@@ -17,35 +17,35 @@ fn default_config() -> RawProviderConfig {
 fn test_invalid_url_0() {
     let mut config = default_config();
     config.url = "".to_string();
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_url_1() {
     let mut config = default_config();
     config.url = "not even a url".to_string();
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_url_2() {
     let mut config = default_config();
     config.url = "wrong_schema://localhost:8545".to_string();
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_timeout_ms() {
     let mut config = default_config();
     config.timeout_ms = 0;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_max_try_count() {
     let mut config = default_config();
     config.max_try_count = 0;
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]

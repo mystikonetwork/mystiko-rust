@@ -31,7 +31,7 @@ async fn test_random_encrypt_symmetric() {
     assert_eq!(plain_text, dec_text);
 
     let cipher_text_wrong = "%$##";
-    let dec_text = decrypt_symmetric(&password, &cipher_text_wrong);
+    let dec_text = decrypt_symmetric(&password, cipher_text_wrong);
     assert!(matches!(
         dec_text.err().unwrap(),
         CryptoError::DecryptError(_)

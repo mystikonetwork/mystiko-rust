@@ -22,35 +22,35 @@ lazy_static! {
 #[tokio::test]
 async fn test_valid_success() {
     let config = CONFIG_CREATER.get().await;
-    assert_eq!(config.validate().is_err(), false);
+    assert!(config.validate().is_ok());
 }
 
 #[tokio::test]
 async fn test_invalid_version_0() {
     let mut config = default_config().await;
     config.version = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
 async fn test_invalid_version_1() {
     let mut config = default_config().await;
     config.version = String::from("wrong version");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
 async fn test_invalid_chains() {
     let mut config = default_config().await;
     config.chains.append(&mut config.chains.clone());
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
 async fn test_invalid_bridges_0() {
     let mut config = default_config().await;
     config.bridges.append(&mut config.bridges.clone());
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
@@ -60,14 +60,14 @@ async fn test_invalid_bridges_1() {
     config
         .bridges
         .push(Arc::new(RawBridgeConfig::Tbridge(bridge_config)));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
 async fn test_invalid_circuits_0() {
     let mut config = default_config().await;
     config.circuits.append(&mut config.circuits.clone());
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
@@ -76,7 +76,7 @@ async fn test_invalid_circuits_1() {
     let mut circuit_config = (*config.circuits.remove(0)).clone();
     circuit_config.name = "".to_string();
     config.circuits.insert(0, Arc::new(circuit_config));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
@@ -88,12 +88,12 @@ async fn test_invalid_indexer() {
             .timeout_ms(1000)
             .build(),
     ));
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
     let file_config =
         create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko.invalid.json").await;
-    assert_eq!(file_config.is_err(), true);
+    assert!(file_config.is_err());
 }

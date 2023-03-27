@@ -40,35 +40,35 @@ fn test_hash() {
 fn test_invalid_name() {
     let mut config = default_config();
     config.name = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_program_file() {
     let mut config = default_config();
     config.program_file = vec![String::from("")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_abi_file() {
     let mut config = default_config();
     config.abi_file = vec![String::from("")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_proving_key_file() {
     let mut config = default_config();
     config.proving_key_file = vec![String::from("")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_verifying_key_file() {
     let mut config = default_config();
     config.verifying_key_file = vec![String::from("")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]

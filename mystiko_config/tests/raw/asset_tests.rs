@@ -23,42 +23,42 @@ fn default_config() -> RawAssetConfig {
 fn test_invalid_asset_symbol() {
     let mut config = default_config();
     config.asset_symbol = "".to_string();
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_asset_address_0() {
     let mut config = default_config();
     config.asset_address = String::from("");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_asset_address_1() {
     let mut config = default_config();
     config.asset_address = String::from("0xdeadbeef");
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_recommended_amounts_0() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_recommended_amounts_1() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("abcd")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[test]
 fn test_invalid_recommended_amounts_2() {
     let mut config = default_config();
     config.recommended_amounts = vec![String::from("1"), String::from("1")];
-    assert_eq!(config.validate().is_err(), true);
+    assert!(config.validate().is_err());
 }
 
 #[tokio::test]
@@ -73,5 +73,5 @@ async fn test_import_valid_json_file() {
 async fn test_import_invalid_json_file() {
     let file_config =
         create_raw_from_file::<RawAssetConfig>("tests/files/asset.invalid.json").await;
-    assert_eq!(file_config.is_err(), true);
+    assert!(file_config.is_err());
 }
