@@ -6,6 +6,7 @@ use crate::raw::bridge::tbridge::RawTBridgeConfig;
 use crate::types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 use validator::{Validate, ValidationErrors};
 
 pub mod axelar;
@@ -18,11 +19,11 @@ pub mod tbridge;
 #[serde(tag = "type")]
 #[serde(rename_all = "camelCase")]
 pub enum RawBridgeConfig {
-    Axelar(RawAxelarBridgeConfig),
-    Celer(RawCelerBridgeConfig),
-    LayerZero(RawLayerZeroBridgeConfig),
-    Poly(RawPolyBridgeConfig),
-    Tbridge(RawTBridgeConfig),
+    Axelar(Arc<RawAxelarBridgeConfig>),
+    Celer(Arc<RawCelerBridgeConfig>),
+    LayerZero(Arc<RawLayerZeroBridgeConfig>),
+    Poly(Arc<RawPolyBridgeConfig>),
+    Tbridge(Arc<RawTBridgeConfig>),
 }
 
 impl RawBridgeConfig {

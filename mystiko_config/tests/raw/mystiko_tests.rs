@@ -56,7 +56,7 @@ async fn test_invalid_bridges_0() {
 #[tokio::test]
 async fn test_invalid_bridges_1() {
     let mut config = default_config().await;
-    let bridge_config = RawTBridgeConfig::builder().name("".to_string()).build();
+    let bridge_config = Arc::new(RawTBridgeConfig::builder().name("".to_string()).build());
     config
         .bridges
         .push(Arc::new(RawBridgeConfig::Tbridge(bridge_config)));
