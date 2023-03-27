@@ -2644,6 +2644,7 @@ dependencies = [
  "lazy_static",
  "mystiko_utils",
  "num-bigint 0.4.3",
+ "num-traits 0.2.15",
  "regex 1.7.1",
  "serde",
  "serde_json",

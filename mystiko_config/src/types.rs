@@ -42,3 +42,21 @@ pub enum CircuitType {
     Transaction2x1,
     Transaction2x2,
 }
+
+impl CircuitType {
+    pub fn all() -> Vec<CircuitType> {
+        vec![
+            CircuitType::Rollup1,
+            CircuitType::Rollup2,
+            CircuitType::Rollup4,
+            CircuitType::Rollup8,
+            CircuitType::Rollup16,
+            CircuitType::Transaction1x0,
+            CircuitType::Transaction1x1,
+            CircuitType::Transaction1x2,
+            CircuitType::Transaction2x0,
+            CircuitType::Transaction2x1,
+            CircuitType::Transaction2x2,
+        ]
+    }
+}

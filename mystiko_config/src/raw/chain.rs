@@ -5,6 +5,7 @@ use crate::raw::provider::RawProviderConfig;
 use crate::raw::validator::{array_unique, is_number_string_vec, validate_nested_vec};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
@@ -44,7 +45,7 @@ pub struct RawChainConfig {
 
     #[validate(length(min = 1))]
     #[validate(custom = "validate_nested_vec")]
-    pub providers: Vec<RawProviderConfig>,
+    pub providers: Vec<Arc<RawProviderConfig>>,
 
     #[validate(url)]
     pub signer_endpoint: String,
@@ -62,17 +63,17 @@ pub struct RawChainConfig {
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
     #[builder(default = vec ! [])]
-    pub deposit_contracts: Vec<RawDepositContractConfig>,
+    pub deposit_contracts: Vec<Arc<RawDepositContractConfig>>,
 
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
     #[builder(default = vec ! [])]
-    pub pool_contracts: Vec<RawPoolContractConfig>,
+    pub pool_contracts: Vec<Arc<RawPoolContractConfig>>,
 
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
     #[builder(default = vec ! [])]
-    pub assets: Vec<RawAssetConfig>,
+    pub assets: Vec<Arc<RawAssetConfig>>,
 }
 
 impl Hash for RawChainConfig {
