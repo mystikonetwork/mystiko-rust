@@ -217,6 +217,8 @@ async fn test_find_commitment_queued_for_chain() {
             .tx_hash("tx_hash 3".to_string())
             .build(),
     ];
+
+    // test find without filter
     let mocked_api_resp = ApiResponse {
         code: 0,
         result: &resp_list,
@@ -245,6 +247,42 @@ async fn test_find_commitment_queued_for_chain() {
         .await;
     assert!(resp.is_ok());
     assert_eq!(resp.unwrap(), resp_list);
+    m.assert_async().await;
+
+    //test find with filter
+    let where_filter = CommitmentQueuedFilter::builder()
+        .commit_hash(String::from("commit hash 3"))
+        .build();
+    let mocked_api_resp = ApiResponse {
+        code: 0,
+        result: vec![&resp_list[2]],
+    };
+    let m = mocked_server
+        .mock("post", "/chains/5/events/commitment-queued")
+        .with_status(200)
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("startBlock".into(), "100".into()),
+            Matcher::UrlEncoded("endBlock".into(), "10000".into()),
+        ]))
+        .match_body(Matcher::JsonString(
+            serde_json::to_string(&where_filter).unwrap(),
+        ))
+        .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let resp = indexer_client
+        .find_commitment_queued_for_chain(
+            &CommitmentQueuedForChainRequest::builder()
+                .chain_id(5)
+                .start_block(start_block)
+                .end_block(end_block)
+                .where_filter(where_filter)
+                .build(),
+        )
+        .await;
+    assert!(resp.is_ok());
+    assert_eq!(resp.unwrap()[0], resp_list[2]);
     m.assert_async().await;
     let mocked_api_resp = ApiResponse {
         code: -1,
@@ -619,6 +657,8 @@ async fn test_query_chain_sync_response_by_id() {
         .await;
     let resp = indexer_client.query_chain_sync_repsonse_by_id(5).await;
     assert!(resp.is_ok());
-    assert_eq!(resp.unwrap(), chain_sync_resp);
+    let resp = resp.unwrap();
+    assert_eq!(resp.contracts.len(), 2);
+    assert_eq!(resp, chain_sync_resp);
     m.assert_async().await;
 }
