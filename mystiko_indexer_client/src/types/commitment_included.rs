@@ -33,6 +33,18 @@ pub struct CommitmentIncludedForChainRequest {
     pub where_filter: Option<CommitmentIncludedFilter>,
 }
 
+#[derive(Deserialize, Serialize, TypedBuilder)]
+pub struct CommitmentIncludedForContractRequest {
+    pub chain_id: u32,
+    pub address: String,
+    #[builder(setter(strip_option), default=None)]
+    pub start_block: Option<u32>,
+    #[builder(setter(strip_option), default=None)]
+    pub end_block: Option<u32>,
+    #[builder(setter(strip_option), default=None)]
+    pub where_filter: Option<CommitmentIncludedFilter>,
+}
+
 #[derive(Debug, Serialize, Deserialize, TypedBuilder, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentIncludedResponse {
