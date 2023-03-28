@@ -3,7 +3,7 @@ use crate::types::{AssetType, BridgeType, ContractType};
 use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
-use anyhow::Result;
+use anyhow::{Error, Result};
 use mystiko_utils::convert::decimal_to_number;
 use num_bigint::BigInt;
 use num_traits::{NumCast, Zero};
@@ -11,6 +11,7 @@ use std::fmt::Debug;
 use std::str::FromStr;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
+use validator::Validate;
 
 #[derive(Clone, Debug, TypedBuilder)]
 pub struct DepositContractConfig {
@@ -203,5 +204,48 @@ impl DepositContractConfig {
 
     pub fn peer_contract_address(&self) -> &Option<String> {
         &self.raw.peer_contract_address
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        self.raw.validate()?;
+        if self.min_amount()? > self.max_amount()? {
+            return Err(Error::msg(format!(
+                "deposit contract {} min_amount is greater than max_amount",
+                self.address()
+            )));
+        }
+        if self.bridge_type() == &BridgeType::Loop {
+            if self.peer_contract_address().is_some() || self.peer_chain_id().is_some() {
+                return Err(Error::msg(format!(
+                    "deposit contract {} peer_contract_address and peer_contract_address \
+                    should be None when bridge_type is LOOP",
+                    self.address()
+                )));
+            }
+        } else if self.peer_contract_address().is_none() || self.peer_chain_id().is_none() {
+            return Err(Error::msg(format!(
+                "deposit contract {} peer_contract_address and peer_contract_address \
+                    should NOT be None when bridge_type is NOT LOOP",
+                self.address()
+            )));
+        }
+        if self.pool_contract_address() != self.pool_contract_config.address() {
+            return Err(Error::msg(format!(
+                "mismatched pool contract address {} vs {} for deposit contract config at {}",
+                self.pool_contract_address(),
+                self.pool_contract_config.address(),
+                self.address()
+            )));
+        }
+        if self.bridge_type() != self.pool_contract_config.bridge_type() {
+            return Err(Error::msg(format!(
+                "mismatched pool contract bridge_type {:?} vs {:?} \
+                for deposit contract config at {:?}",
+                self.bridge_type(),
+                self.pool_contract_config.bridge_type(),
+                self.address()
+            )));
+        }
+        Ok(())
     }
 }

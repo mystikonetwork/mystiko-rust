@@ -1,6 +1,8 @@
 use crate::raw::circuit::RawCircuitConfig;
 use crate::types::CircuitType;
+use anyhow::Result;
 use std::sync::Arc;
+use validator::Validate;
 
 #[derive(Clone, Debug)]
 pub struct CircuitConfig {
@@ -38,5 +40,9 @@ impl CircuitConfig {
 
     pub fn verifying_key_file(&self) -> &Vec<String> {
         &self.raw.verifying_key_file
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        Ok(self.raw.validate()?)
     }
 }

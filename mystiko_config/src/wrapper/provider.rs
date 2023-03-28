@@ -1,5 +1,7 @@
 use crate::raw::provider::RawProviderConfig;
+use anyhow::Result;
 use std::sync::Arc;
+use validator::Validate;
 
 #[derive(Clone, Debug)]
 pub struct ProviderConfig {
@@ -21,5 +23,9 @@ impl ProviderConfig {
 
     pub fn max_try_count(&self) -> u32 {
         self.raw.max_try_count
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        Ok(self.raw.validate()?)
     }
 }

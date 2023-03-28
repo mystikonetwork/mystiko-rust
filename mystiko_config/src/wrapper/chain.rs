@@ -13,6 +13,7 @@ use num_bigint::BigInt;
 use num_traits::{NumCast, Zero};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
+use validator::Validate;
 
 pub const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
@@ -135,6 +136,13 @@ impl ChainConfig {
     }
 
     pub fn deposit_contracts(&self) -> Vec<&DepositContractConfig> {
+        self.deposit_contracts_with_disabled()
+            .into_iter()
+            .filter(|c| !c.disabled())
+            .collect()
+    }
+
+    pub fn deposit_contracts_with_disabled(&self) -> Vec<&DepositContractConfig> {
         self.deposit_contract_configs
             .iter()
             .map(|c| c.as_ref())
@@ -293,6 +301,80 @@ impl ChainConfig {
         format!("{}{}", self.explorer_url(), self.explorer_prefix())
             .replace(EXPLORER_TX_PLACEHOLDER, tx_hash)
     }
+
+    pub fn validate(&self) -> Result<()> {
+        self.raw.validate()?;
+        self.main_asset_config.validate()?;
+        let mut pool_contracts: HashMap<&str, &PoolContractConfig> = HashMap::new();
+        let mut pool_contracts_versions =
+            HashMap::<&str, HashMap<&BridgeType, HashSet<u32>>>::new();
+        for pool_contract in self.pool_contracts() {
+            pool_contract.validate()?;
+            if pool_contracts.contains_key(pool_contract.address()) {
+                return Err(Error::msg(format!(
+                    "duplicate pool contract config at {}",
+                    pool_contract.address()
+                )));
+            }
+            pool_contracts.insert(pool_contract.address(), pool_contract);
+            if let Some(pool_contracts_bridges) =
+                pool_contracts_versions.get_mut(pool_contract.asset_symbol())
+            {
+                if let Some(all_versions) =
+                    pool_contracts_bridges.get_mut(pool_contract.bridge_type())
+                {
+                    if all_versions.contains(&pool_contract.version()) {
+                        return Err(Error::msg(format!(
+                            "only one version is allowed for pool contract config \
+                            at {} for asset_symbol {} and bridge_type {:?}",
+                            pool_contract.address(),
+                            pool_contract.asset_symbol(),
+                            pool_contract.bridge_type(),
+                        )));
+                    }
+                    all_versions.insert(pool_contract.version());
+                } else {
+                    let mut all_versions: HashSet<u32> = HashSet::new();
+                    all_versions.insert(pool_contract.version());
+                    pool_contracts_bridges.insert(pool_contract.bridge_type(), all_versions);
+                }
+            } else {
+                let mut all_versions: HashSet<u32> = HashSet::new();
+                all_versions.insert(pool_contract.version());
+                let mut pool_contract_bridges = HashMap::<&BridgeType, HashSet<u32>>::new();
+                pool_contract_bridges.insert(pool_contract.bridge_type(), all_versions);
+                pool_contracts_versions.insert(pool_contract.asset_symbol(), pool_contract_bridges);
+            }
+        }
+        let mut deposit_contract_addresses: HashSet<&str> = HashSet::new();
+        for deposit_contract in self.deposit_contracts_with_disabled() {
+            deposit_contract.validate()?;
+            if deposit_contract_addresses.contains(deposit_contract.address()) {
+                return Err(Error::msg(format!(
+                    "duplicate deposit contract config at {}",
+                    deposit_contract.address()
+                )));
+            }
+            deposit_contract_addresses.insert(deposit_contract.address());
+            if let Some(peer_chain_id) = deposit_contract.peer_chain_id() {
+                if self.chain_id() == *peer_chain_id {
+                    return Err(Error::msg(format!(
+                        "deposit contract config at {} chain_id {} \
+                        cannot be same as peer_chain_id",
+                        deposit_contract.address(),
+                        self.chain_id()
+                    )));
+                }
+            }
+        }
+        for asset_config in self.assets() {
+            asset_config.validate()?;
+        }
+        for provider_config in self.providers() {
+            provider_config.validate()?;
+        }
+        Ok(())
+    }
 }
 
 fn initialize_pool_contracts(
@@ -317,10 +399,7 @@ fn initialize_pool_contracts(
         }
         for name in &raw_pool_contract.circuits {
             if let Some(circuit_config) = circuit_configs_by_name.get(name) {
-                circuit_configs.insert(
-                    *circuit_config.circuit_type(),
-                    circuit_config.clone(),
-                );
+                circuit_configs.insert(*circuit_config.circuit_type(), circuit_config.clone());
             }
         }
         pool_contracts.push(Arc::new(PoolContractConfig::new(

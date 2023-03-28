@@ -5,6 +5,7 @@ use crate::wrapper::bridge::celer::CelerBridgeConfig;
 use crate::wrapper::bridge::layer_zero::LayerZeroBridgeConfig;
 use crate::wrapper::bridge::poly::PolyBridgeConfig;
 use crate::wrapper::bridge::tbridge::TBridgeConfig;
+use anyhow::Result;
 use std::sync::Arc;
 
 pub mod axelar;
@@ -60,6 +61,16 @@ impl BridgeConfig {
             BridgeConfig::LayerZero(conf) => conf.bridge_type(),
             BridgeConfig::Poly(conf) => conf.bridge_type(),
             BridgeConfig::TBridge(conf) => conf.bridge_type(),
+        }
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        match self {
+            BridgeConfig::Axelar(conf) => conf.validate(),
+            BridgeConfig::Celer(conf) => conf.validate(),
+            BridgeConfig::LayerZero(conf) => conf.validate(),
+            BridgeConfig::Poly(conf) => conf.validate(),
+            BridgeConfig::TBridge(conf) => conf.validate(),
         }
     }
 }

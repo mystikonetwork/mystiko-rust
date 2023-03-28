@@ -1,6 +1,8 @@
 use crate::raw::bridge::poly::RawPolyBridgeConfig;
 use crate::types::BridgeType;
+use anyhow::Result;
 use std::sync::Arc;
+use validator::Validate;
 
 #[derive(Clone, Debug)]
 pub struct PolyBridgeConfig {
@@ -30,5 +32,9 @@ impl PolyBridgeConfig {
 
     pub fn api_prefix(&self) -> &str {
         &self.raw.api_prefix
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        Ok(self.raw.validate()?)
     }
 }

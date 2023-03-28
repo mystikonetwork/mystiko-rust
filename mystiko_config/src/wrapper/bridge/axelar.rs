@@ -1,6 +1,8 @@
 use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
 use crate::types::BridgeType;
+use anyhow::Result;
 use std::sync::Arc;
+use validator::Validate;
 
 #[derive(Clone, Debug)]
 pub struct AxelarBridgeConfig {
@@ -18,5 +20,9 @@ impl AxelarBridgeConfig {
 
     pub fn bridge_type(&self) -> &BridgeType {
         &self.raw.bridge_type
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        Ok(self.raw.validate()?)
     }
 }

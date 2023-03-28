@@ -2,7 +2,7 @@ use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::types::{AssetType, BridgeType, CircuitType, ContractType};
 use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
-use anyhow::Result;
+use anyhow::{Error, Result};
 use mystiko_utils::convert::decimal_to_number;
 use num_bigint::BigInt;
 use num_traits::{NumCast, Zero};
@@ -10,6 +10,7 @@ use std::fmt::Debug;
 use std::str::FromStr;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
+use validator::Validate;
 
 #[derive(Clone, Debug, TypedBuilder)]
 pub struct PoolContractConfig {
@@ -71,7 +72,7 @@ impl PoolContractConfig {
     }
 
     pub fn asset(&self) -> &AssetConfig {
-        if  self.asset_address().is_some() {
+        if self.asset_address().is_some() {
             &self.asset_config
         } else {
             &self.main_asset_config
@@ -129,5 +130,22 @@ impl PoolContractConfig {
         self.circuits()
             .into_iter()
             .find(|c| c.circuit_type() == circuit_type)
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        self.raw.validate()?;
+        if self.asset_address().is_some() && self.asset_type() == &AssetType::Main {
+            return Err(Error::msg(format!(
+                "pool contract {} asset_address should be None when asset_type is MAIN",
+                self.address()
+            )));
+        }
+        if self.asset_address().is_none() && self.asset_type() != &AssetType::Main {
+            return Err(Error::msg(format!(
+                "pool contract {} asset_address should NOT be None when asset_type is not MAIN",
+                self.address()
+            )));
+        }
+        Ok(())
     }
 }

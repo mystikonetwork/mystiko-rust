@@ -1,6 +1,8 @@
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
 use crate::types::BridgeType;
+use anyhow::Result;
 use std::sync::Arc;
+use validator::Validate;
 
 #[derive(Clone, Debug)]
 pub struct LayerZeroBridgeConfig {
@@ -18,5 +20,9 @@ impl LayerZeroBridgeConfig {
 
     pub fn bridge_type(&self) -> &BridgeType {
         &self.raw.bridge_type
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        Ok(self.raw.validate()?)
     }
 }

@@ -6,6 +6,7 @@ use num_bigint::BigInt;
 use num_traits::{NumCast, Zero};
 use std::str::FromStr;
 use std::sync::Arc;
+use validator::Validate;
 
 pub const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
@@ -55,5 +56,9 @@ impl AssetConfig {
             )?);
         }
         Ok(amounts)
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        Ok(self.raw.validate()?)
     }
 }
