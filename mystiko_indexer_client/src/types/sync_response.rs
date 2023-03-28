@@ -16,5 +16,6 @@ pub struct ContractSyncResponse {
     pub chain_id: Option<u32>,
     pub contract_address: String,
     pub current_sync_block_num: u32,
-    pub current_sync_time: u64,
+    #[builder(setter(strip_option), default=None)]
+    pub current_sync_time: Option<u64>,
 }
