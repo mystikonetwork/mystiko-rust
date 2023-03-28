@@ -368,8 +368,8 @@ async fn test_find_commitment_queued_for_contract() {
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("startBlock".into(), start_block.to_string().into()),
-            Matcher::UrlEncoded("endBlock".into(), end_block.to_string().into()),
+            Matcher::UrlEncoded("startBlock".into(), start_block.to_string()),
+            Matcher::UrlEncoded("endBlock".into(), end_block.to_string()),
         ]))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
@@ -681,8 +681,8 @@ async fn test_find_commitment_included_for_contract() {
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("startBlock".into(), start_block.to_string().into()),
-            Matcher::UrlEncoded("endBlock".into(), end_block.to_string().into()),
+            Matcher::UrlEncoded("startBlock".into(), start_block.to_string()),
+            Matcher::UrlEncoded("endBlock".into(), end_block.to_string()),
         ]))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
@@ -726,8 +726,8 @@ async fn test_find_commitment_included_for_contract() {
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("startBlock".into(), start_block.to_string().into()),
-            Matcher::UrlEncoded("endBlock".into(), end_block.to_string().into()),
+            Matcher::UrlEncoded("startBlock".into(), start_block.to_string()),
+            Matcher::UrlEncoded("endBlock".into(), end_block.to_string()),
         ]))
         .match_body(Matcher::JsonString(
             serde_json::to_string(&where_filter).unwrap(),
@@ -1015,8 +1015,8 @@ async fn test_find_commitment_spent_for_contract() {
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("startBlock".into(), start_block.to_string().into()),
-            Matcher::UrlEncoded("endBlock".into(), end_block.to_string().into()),
+            Matcher::UrlEncoded("startBlock".into(), start_block.to_string()),
+            Matcher::UrlEncoded("endBlock".into(), end_block.to_string()),
         ]))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
@@ -1058,8 +1058,8 @@ async fn test_find_commitment_spent_for_contract() {
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("startBlock".into(), start_block.to_string().into()),
-            Matcher::UrlEncoded("endBlock".into(), end_block.to_string().into()),
+            Matcher::UrlEncoded("startBlock".into(), start_block.to_string()),
+            Matcher::UrlEncoded("endBlock".into(), end_block.to_string()),
         ]))
         .match_body(Matcher::JsonString(
             serde_json::to_string(&where_filter).unwrap(),
