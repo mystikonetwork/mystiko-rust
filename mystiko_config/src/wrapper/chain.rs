@@ -246,27 +246,24 @@ impl ChainConfig {
     }
 
     pub fn find_pool_contract_by_address(&self, address: &str) -> Option<&PoolContractConfig> {
-        self.pool_contract_configs
-            .iter()
+        self.pool_contracts()
+            .into_iter()
             .find(|c| c.address() == address)
-            .map(|c| c.as_ref())
     }
 
     pub fn find_deposit_contract_by_address(
         &self,
         address: &str,
     ) -> Option<&DepositContractConfig> {
-        self.deposit_contract_configs
-            .iter()
+        self.deposit_contracts_with_disabled()
+            .into_iter()
             .find(|c| c.address() == address)
-            .map(|c| c.as_ref())
     }
 
     pub fn find_asset(&self, address: &str) -> Option<&AssetConfig> {
-        self.asset_configs
-            .iter()
+        self.assets()
+            .into_iter()
             .find(|c| c.asset_address() == address)
-            .map(|c| c.as_ref())
     }
 
     pub fn contract_event_filter_size(&self, address: &str) -> u64 {

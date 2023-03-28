@@ -102,10 +102,7 @@ impl MystikoConfig {
     }
 
     pub fn find_chain(&self, chain_id: u32) -> Option<&ChainConfig> {
-        self.chain_configs
-            .iter()
-            .find(|c| c.chain_id() == chain_id)
-            .map(|c| c.as_ref())
+        self.chains().into_iter().find(|c| c.chain_id() == chain_id)
     }
 
     pub fn find_peer_chains(&self, chain_id: u32) -> Vec<&ChainConfig> {
