@@ -2,10 +2,11 @@ use crate::builder::IndexerClientBuilder;
 use crate::errors::ClientError;
 use crate::response::ApiResponse;
 use crate::types::{
+    commitment::{CommitmentResponse, CommitmentsForContractRequest},
     commitment_included::{CommitmentIncludedForChainRequest, CommitmentIncludedResponse},
     commitment_queued::{CommitmentQueuedForChainRequest, CommitmentQueuedResponse},
     commitment_spent::{CommitmentSpentForChainRequest, CommitmentSpentResponse},
-    sync_response::ChainSyncRepsonse,
+    sync_response::{ChainSyncRepsonse, ContractSyncResponse},
 };
 use anyhow::{anyhow, Result};
 use reqwest::header::{HeaderValue, ACCEPT};
@@ -136,6 +137,20 @@ impl IndexerClient {
         Ok(resp)
     }
 
+    pub async fn query_contract_sync_response(
+        &self,
+        chain_id: u32,
+        contract_address: &str,
+    ) -> Result<ContractSyncResponse> {
+        let resp = self
+            .get_data::<ContractSyncResponse>(&format!(
+                "{}/chains/{}/contracts/{}/block-number",
+                &self.base_url, chain_id, contract_address
+            ))
+            .await?;
+        Ok(resp)
+    }
+
     pub async fn find_commitment_queued_for_chain(
         &self,
         request: &CommitmentQueuedForChainRequest,
@@ -173,6 +188,7 @@ impl IndexerClient {
             .await?;
         Ok(response)
     }
+
     pub async fn find_commitment_spent_for_chain(
         &self,
         request: &CommitmentSpentForChainRequest,
@@ -188,6 +204,25 @@ impl IndexerClient {
             self.build_request_builder(request_builder, params_map, &request.where_filter);
         let response = self
             .post_data::<Vec<CommitmentSpentResponse>>(request_builder)
+            .await?;
+        Ok(response)
+    }
+
+    pub async fn find_commitments_for_contract(
+        &self,
+        request: &CommitmentsForContractRequest,
+    ) -> Result<Vec<CommitmentResponse>> {
+        let mut request_builder = self.reqwest_client.post(format!(
+            "{}/chains/{}/contracts/{}/commitments",
+            &self.base_url, &request.chain_id, &request.contract_address
+        ));
+        let params_map: HashMap<String, String> = HashMap::new();
+        let params_map =
+            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
+        request_builder =
+            self.build_request_builder(request_builder, params_map, &request.where_filter);
+        let response = self
+            .post_data::<Vec<CommitmentResponse>>(request_builder)
             .await?;
         Ok(response)
     }

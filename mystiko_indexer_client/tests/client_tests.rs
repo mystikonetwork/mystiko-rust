@@ -6,6 +6,9 @@ use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::{
     client::IndexerClient,
     types::{
+        commitment::{
+            CommitmentFilter, CommitmentResponse, CommitmentsForContractRequest, DepositStatus,
+        },
         commitment_included::{
             CommitmentIncludedFilter, CommitmentIncludedForChainRequest, CommitmentIncludedResponse,
         },
@@ -661,5 +664,145 @@ async fn test_query_chain_sync_response_by_id() {
     dbg!(&resp);
     assert_eq!(resp.contracts.len(), 2);
     assert_eq!(resp, chain_sync_resp);
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_query_contract_sync_response() {
+    let TestClientSetupData {
+        mut mocked_server,
+        indexer_client,
+    } = setup().await.unwrap();
+    let test_chain_id = 5;
+    let contract_sync_resp = ContractSyncResponse::builder()
+        .chain_id(test_chain_id)
+        .current_sync_block_num(1000000)
+        .contract_address(String::from("address1"))
+        .build();
+    let mocked_api_resp = ApiResponse {
+        code: 0,
+        result: &contract_sync_resp,
+    };
+    let m = mocked_server
+        .mock("get", "/chains/5/contracts/address1/block-number")
+        .with_status(200)
+        .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let resp = indexer_client
+        .query_contract_sync_response(5, "address1")
+        .await;
+    assert!(resp.is_ok());
+    let resp = resp.unwrap();
+    dbg!(&resp);
+    assert_eq!(resp, contract_sync_resp);
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_find_commitments_for_contract() {
+    let TestClientSetupData {
+        mut mocked_server,
+        indexer_client,
+    } = setup().await.unwrap();
+
+    let resp_list: Vec<CommitmentResponse> = vec![
+        CommitmentResponse::builder()
+            .id(1)
+            .status(DepositStatus::SrcSucceeded)
+            .chain_id(5)
+            .contract_address(String::from("contract_address1"))
+            .contract_id(1)
+            .commit_hash(String::from("commit_hash1"))
+            .rollup_fee(String::from("rollup_fee1"))
+            .encrypted_note(String::from("encrypted_note1"))
+            .creation_transaction_hash(String::from("creation_transaction_hash1"))
+            .build(),
+        CommitmentResponse::builder()
+            .id(2)
+            .status(DepositStatus::Queued)
+            .chain_id(5)
+            .contract_address(String::from("contract_address1"))
+            .contract_id(2)
+            .commit_hash(String::from("commit_hash2"))
+            .rollup_fee(String::from("rollup_fee2"))
+            .encrypted_note(String::from("encrypted_note2"))
+            .creation_transaction_hash(String::from("creation_transaction_hash2"))
+            .build(),
+    ];
+    let chain_id = 5;
+    let start_block = 0;
+    let end_block = 21716247;
+    // test find without filter
+    let mocked_api_resp = ApiResponse {
+        code: 0,
+        result: &resp_list,
+    };
+    let m = mocked_server
+        .mock("post", "/chains/5/contracts/contract_address1/commitments")
+        .with_status(200)
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("startBlock".into(), "0".into()),
+            Matcher::UrlEncoded("endBlock".into(), "21716247".into()),
+        ]))
+        .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+
+    let where_filter = CommitmentFilter::builder().build();
+    let resp = indexer_client
+        .find_commitments_for_contract(
+            &CommitmentsForContractRequest::builder()
+                .chain_id(chain_id)
+                .contract_address(String::from("contract_address1"))
+                .start_block(start_block)
+                .end_block(end_block)
+                .where_filter(where_filter)
+                .build(),
+        )
+        .await;
+    assert!(resp.is_ok());
+    dbg!(&resp);
+    assert_eq!(resp.unwrap(), resp_list);
+    m.assert_async().await;
+
+    //test find with filter
+    let where_filter = CommitmentFilter::builder()
+        .commit_hash(String::from("commit_hash2"))
+        .build();
+    let mocked_api_resp = ApiResponse {
+        code: 0,
+        result: vec![&resp_list[1]],
+    };
+    let m = mocked_server
+        .mock("post", "/chains/5/contracts/contract_address1/commitments")
+        .with_status(200)
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("startBlock".into(), "0".into()),
+            Matcher::UrlEncoded("endBlock".into(), "21716247".into()),
+        ]))
+        .match_body(Matcher::JsonString(
+            serde_json::to_string(&where_filter).unwrap(),
+        ))
+        .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let resp = indexer_client
+        .find_commitments_for_contract(
+            &CommitmentsForContractRequest::builder()
+                .chain_id(5)
+                .contract_address(String::from("contract_address1"))
+                .start_block(start_block)
+                .end_block(end_block)
+                .where_filter(where_filter)
+                .build(),
+        )
+        .await;
+    assert!(resp.is_ok());
+    assert_eq!(resp.as_ref().unwrap().len(), 1);
+    assert_eq!(resp.unwrap()[0], resp_list[1]);
     m.assert_async().await;
 }
