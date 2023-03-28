@@ -37,6 +37,18 @@ pub struct CommitmentSpentForChainRequest {
     pub where_filter: Option<CommitmentSpentFilter>,
 }
 
+#[derive(Deserialize, Serialize, TypedBuilder)]
+pub struct CommitmentSpentForContractRequest {
+    pub chain_id: u32,
+    pub address: String,
+    #[builder(setter(strip_option), default=None)]
+    pub start_block: Option<u32>,
+    #[builder(setter(strip_option), default=None)]
+    pub end_block: Option<u32>,
+    #[builder(setter(strip_option), default=None)]
+    pub where_filter: Option<CommitmentSpentFilter>,
+}
+
 #[derive(Debug, Serialize, Deserialize, TypedBuilder, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentSpentResponse {
