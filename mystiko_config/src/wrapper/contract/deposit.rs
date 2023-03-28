@@ -214,6 +214,28 @@ impl DepositContractConfig {
                 self.address()
             )));
         }
+        if let Some(bridge_fee_asset_address) = self.bridge_fee_asset_address() {
+            if bridge_fee_asset_address != self.bridge_fee_asset().asset_address() {
+                return Err(Error::msg(format!(
+                    "deposit contract {} configured bridge_fee_asset_address {} \
+                    is different with the given bridge_fee_asset_config asset_address {}",
+                    self.address(),
+                    bridge_fee_asset_address,
+                    self.bridge_fee_asset().asset_address()
+                )));
+            }
+        }
+        if let Some(executor_fee_asset_address) = self.executor_fee_asset_address() {
+            if executor_fee_asset_address != self.executor_fee_asset().asset_address() {
+                return Err(Error::msg(format!(
+                    "deposit contract {} configured executor_fee_asset_address {} \
+                    is different with the given executor_fee_asset_config asset_address {}",
+                    self.address(),
+                    executor_fee_asset_address,
+                    self.executor_fee_asset().asset_address()
+                )));
+            }
+        }
         if self.bridge_type() == &BridgeType::Loop {
             if self.peer_contract_address().is_some() || self.peer_chain_id().is_some() {
                 return Err(Error::msg(format!(

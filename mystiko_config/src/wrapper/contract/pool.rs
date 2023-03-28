@@ -132,6 +132,12 @@ impl PoolContractConfig {
             .find(|c| c.circuit_type() == circuit_type)
     }
 
+    pub fn circuit_by_name(&self, circuit_name: &str) -> Option<&CircuitConfig> {
+        self.circuits()
+            .into_iter()
+            .find(|c| c.name() == circuit_name)
+    }
+
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
         if self.asset_address().is_some() && self.asset_type() == &AssetType::Main {
@@ -145,6 +151,45 @@ impl PoolContractConfig {
                 "pool contract {} asset_address should NOT be None when asset_type is not MAIN",
                 self.address()
             )));
+        }
+        if let Some(asset_address) = self.asset_address() {
+            if asset_address != self.asset_config.asset_address() {
+                return Err(Error::msg(format!(
+                    "the given asset_config's address {} \
+                    is different with pool config {} asset_address {}",
+                    self.asset_config.asset_address(),
+                    self.address(),
+                    asset_address
+                )));
+            }
+        }
+        for circuit_name in self.circuits_names() {
+            if self.circuit_by_name(circuit_name).is_none() {
+                return Err(Error::msg(format!(
+                    "circuit config is missing for circuit_name {}",
+                    circuit_name
+                )));
+            }
+        }
+        for circuit_type in &CircuitType::all() {
+            if self.circuit_by_type(circuit_type).is_none() {
+                return Err(Error::msg(format!(
+                    "circuit config is missing for circuit_type {:?}",
+                    circuit_type
+                )));
+            }
+            if self
+                .circuits()
+                .into_iter()
+                .filter(|c| c.circuit_type() == circuit_type)
+                .count()
+                > 1
+            {
+                return Err(Error::msg(format!(
+                    "multiple circuit configs of circuit_type {:?}",
+                    circuit_type
+                )));
+            }
         }
         Ok(())
     }

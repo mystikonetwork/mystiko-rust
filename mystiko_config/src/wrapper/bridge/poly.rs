@@ -26,6 +26,10 @@ impl PolyBridgeConfig {
         &self.raw.explorer_url
     }
 
+    pub fn explorer_prefix(&self) -> &str {
+        &self.raw.explorer_prefix
+    }
+
     pub fn api_url(&self) -> &str {
         &self.raw.api_url
     }
