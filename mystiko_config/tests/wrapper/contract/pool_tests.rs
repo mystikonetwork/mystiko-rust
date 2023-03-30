@@ -7,32 +7,17 @@ use mystiko_config::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
 use mystiko_config::wrapper::circuit::CircuitConfig;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use num_bigint::BigInt;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
+use tokio::fs::read_to_string;
 
-const VALID_CONFIG_FILE: &str = "tests/files/contract/pool.valid.json";
+const VALID_CONFIG_FILE: &str = "tests/files/contract/pool/valid.json";
 
 #[tokio::test]
 async fn test_create() {
-    let raw_config = Arc::new(
-        create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
-            .await
-            .unwrap(),
-    );
-    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_main_asset_config())));
-    let asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_asset_config(
-        raw_config.asset_address.as_ref().unwrap(),
-    ))));
-    let circuit_configs: Vec<Arc<CircuitConfig>> = default_raw_circuit_configs()
-        .into_iter()
-        .map(|r| Arc::new(CircuitConfig::new(Arc::new(r))))
-        .collect();
-    let config = PoolContractConfig::new(
-        raw_config.clone(),
-        main_asset_config.clone(),
-        asset_config.clone(),
-        circuit_configs.clone(),
-    );
+    let (main_asset_config, asset_config, circuit_configs, raw_config, config) =
+        setup(SetupOptions::default()).await;
     config.validate().unwrap();
     assert_eq!(config.version(), 2);
     assert_eq!(config.name(), "CommitmentPool");
@@ -104,21 +89,11 @@ async fn test_create() {
 
 #[tokio::test]
 async fn test_validate_asset_address_mismatch() {
-    let raw_config = Arc::new(
-        create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
-            .await
-            .unwrap(),
-    );
-    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_main_asset_config())));
-    let asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_asset_config(
-        MAIN_ASSET_ADDRESS,
-    ))));
-    let circuit_configs: Vec<Arc<CircuitConfig>> = default_raw_circuit_configs()
-        .into_iter()
-        .map(|r| Arc::new(CircuitConfig::new(Arc::new(r))))
-        .collect();
-    let config =
-        PoolContractConfig::new(raw_config, main_asset_config, asset_config, circuit_configs);
+    let (_, _, _, _, config) = setup(SetupOptions {
+        asset_address: Some(MAIN_ASSET_ADDRESS.to_string()),
+        ..SetupOptions::default()
+    })
+    .await;
     assert_eq!(
         config.validate().err().unwrap().to_string(),
         "the given asset_config's address 0x0000000000000000000000000000000000000000 \
@@ -129,24 +104,11 @@ async fn test_validate_asset_address_mismatch() {
 
 #[tokio::test]
 async fn test_validate_missing_circuit_name() {
-    let raw_config = Arc::new(
-        create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
-            .await
-            .unwrap(),
-    );
-    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_main_asset_config())));
-    let asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_asset_config(
-        raw_config.asset_address.as_ref().unwrap(),
-    ))));
-    let mut raw_circuit_configs = default_raw_circuit_configs();
-    let mut raw_circuit_config = raw_circuit_configs.get_mut(0).unwrap();
-    raw_circuit_config.name = String::from("no_existing_name");
-    let circuit_configs = raw_circuit_configs
-        .into_iter()
-        .map(|r| Arc::new(CircuitConfig::new(Arc::new(r))))
-        .collect();
-    let config =
-        PoolContractConfig::new(raw_config, main_asset_config, asset_config, circuit_configs);
+    let (_, _, _, _, config) = setup(SetupOptions {
+        missing_circuit_name: true,
+        ..SetupOptions::default()
+    })
+    .await;
     assert_eq!(
         config.validate().err().unwrap().to_string(),
         "circuit config is missing for circuit_name circuit-1.0"
@@ -155,23 +117,11 @@ async fn test_validate_missing_circuit_name() {
 
 #[tokio::test]
 async fn test_validate_missing_circuit_type() {
-    let raw_config = Arc::new(
-        create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
-            .await
-            .unwrap(),
-    );
-    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_main_asset_config())));
-    let asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_asset_config(
-        raw_config.asset_address.as_ref().unwrap(),
-    ))));
-    let mut raw_circuit_configs = default_raw_circuit_configs();
-    raw_circuit_configs.remove(1);
-    let circuit_configs = raw_circuit_configs
-        .into_iter()
-        .map(|r| Arc::new(CircuitConfig::new(Arc::new(r))))
-        .collect();
-    let config =
-        PoolContractConfig::new(raw_config, main_asset_config, asset_config, circuit_configs);
+    let (_, _, _, _, config) = setup(SetupOptions {
+        missing_circuit_type: true,
+        ..SetupOptions::default()
+    })
+    .await;
     assert_eq!(
         config.validate().err().unwrap().to_string(),
         "circuit config is missing for circuit_type Rollup2"
@@ -180,25 +130,11 @@ async fn test_validate_missing_circuit_type() {
 
 #[tokio::test]
 async fn test_validate_duplicate_circuit_types() {
-    let raw_config = Arc::new(
-        create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
-            .await
-            .unwrap(),
-    );
-    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_main_asset_config())));
-    let asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_asset_config(
-        raw_config.asset_address.as_ref().unwrap(),
-    ))));
-    let mut raw_circuit_configs = default_raw_circuit_configs();
-    let mut raw_circuit_config = raw_circuit_configs.get(1).unwrap().clone();
-    raw_circuit_config.name = String::from("duplicate_rollup2");
-    raw_circuit_configs.push(raw_circuit_config);
-    let circuit_configs = raw_circuit_configs
-        .into_iter()
-        .map(|r| Arc::new(CircuitConfig::new(Arc::new(r))))
-        .collect();
-    let config =
-        PoolContractConfig::new(raw_config, main_asset_config, asset_config, circuit_configs);
+    let (_, _, _, _, config) = setup(SetupOptions {
+        duplicate_circuit: true,
+        ..SetupOptions::default()
+    })
+    .await;
     assert_eq!(
         config.validate().err().unwrap().to_string(),
         "multiple circuit configs of circuit_type Rollup2"
@@ -207,25 +143,11 @@ async fn test_validate_duplicate_circuit_types() {
 
 #[tokio::test]
 async fn test_validate_asset_type_mismatch() {
-    let raw_config = Arc::new(
-        create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
-            .await
-            .unwrap(),
-    );
-    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(default_raw_main_asset_config())));
-    let mut raw_asset_config = default_raw_asset_config(raw_config.asset_address.as_ref().unwrap());
-    raw_asset_config.asset_type = AssetType::Main;
-    let asset_config = Arc::new(AssetConfig::new(Arc::new(raw_asset_config)));
-    let circuit_configs: Vec<Arc<CircuitConfig>> = default_raw_circuit_configs()
-        .into_iter()
-        .map(|r| Arc::new(CircuitConfig::new(Arc::new(r))))
-        .collect();
-    let config = PoolContractConfig::new(
-        raw_config.clone(),
-        main_asset_config.clone(),
-        asset_config.clone(),
-        circuit_configs.clone(),
-    );
+    let (_, asset_config, circuit_configs, raw_config, config) = setup(SetupOptions {
+        mismatch_asset_type: true,
+        ..SetupOptions::default()
+    })
+    .await;
     assert_eq!(
         config.validate().err().unwrap().to_string(),
         "pool contract 0x961f315a836542e603a3df2e0dd9d4ecd06ebc67 \
@@ -233,7 +155,7 @@ async fn test_validate_asset_type_mismatch() {
     );
     let mut raw_config1 = raw_config.as_ref().clone();
     raw_config1.asset_address = None;
-    let mut raw_main_asset_config1 = default_raw_main_asset_config();
+    let mut raw_main_asset_config1 = default_raw_main_asset_config().await;
     raw_main_asset_config1.asset_type = AssetType::Erc20;
     let main_asset_config1 = Arc::new(AssetConfig::new(Arc::new(raw_main_asset_config1)));
     let config1 = PoolContractConfig::new(
@@ -249,129 +171,90 @@ async fn test_validate_asset_type_mismatch() {
     );
 }
 
-fn default_raw_main_asset_config() -> RawAssetConfig {
-    RawAssetConfig {
-        asset_address: MAIN_ASSET_ADDRESS.to_string(),
-        asset_type: AssetType::Main,
-        asset_decimals: 18,
-        asset_symbol: String::from("ETH"),
-        recommended_amounts: vec![String::from("1000000000000000000")],
-    }
+#[derive(Default)]
+struct SetupOptions {
+    asset_address: Option<String>,
+    mismatch_asset_type: bool,
+    duplicate_circuit: bool,
+    missing_circuit_type: bool,
+    missing_circuit_name: bool,
 }
 
-fn default_raw_asset_config(address: &str) -> RawAssetConfig {
-    RawAssetConfig {
-        asset_address: address.to_string(),
-        asset_type: AssetType::Erc20,
-        asset_decimals: 18,
-        asset_symbol: String::from("MTT"),
-        recommended_amounts: vec![
-            String::from("1000000000000000000"),
-            String::from("10000000000000000000"),
-        ],
+async fn setup(
+    options: SetupOptions,
+) -> (
+    Arc<AssetConfig>,
+    Arc<AssetConfig>,
+    Vec<Arc<CircuitConfig>>,
+    Arc<RawPoolContractConfig>,
+    PoolContractConfig,
+) {
+    let raw_config = Arc::new(
+        create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
+            .await
+            .unwrap(),
+    );
+    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(
+        default_raw_main_asset_config().await,
+    )));
+    let mut raw_asset_config = default_raw_asset_config(
+        &options
+            .asset_address
+            .unwrap_or(raw_config.asset_address.as_ref().unwrap().to_string()),
+    )
+    .await;
+    if options.mismatch_asset_type {
+        raw_asset_config.asset_type = AssetType::Main;
     }
+    let asset_config = Arc::new(AssetConfig::new(Arc::new(raw_asset_config)));
+    let mut raw_circuit_configs = default_raw_circuit_configs().await;
+    if options.missing_circuit_name {
+        let circuit_config = raw_circuit_configs.get_mut(0).unwrap();
+        circuit_config.name = String::from("no_existing_name");
+    }
+    if options.missing_circuit_type {
+        raw_circuit_configs.remove(1);
+    }
+    if options.duplicate_circuit {
+        let mut circuit_config = raw_circuit_configs.get(1).unwrap().clone();
+        circuit_config.name = String::from("duplicate_circuit_type");
+        raw_circuit_configs.push(circuit_config);
+    }
+    let circuit_configs: Vec<Arc<CircuitConfig>> = raw_circuit_configs
+        .into_iter()
+        .map(|r| Arc::new(CircuitConfig::new(Arc::new(r))))
+        .collect();
+    let config = PoolContractConfig::new(
+        raw_config.clone(),
+        main_asset_config.clone(),
+        asset_config.clone(),
+        circuit_configs.clone(),
+    );
+    (
+        main_asset_config,
+        asset_config,
+        circuit_configs,
+        raw_config,
+        config,
+    )
 }
 
-fn default_raw_circuit_configs() -> Vec<RawCircuitConfig> {
-    vec![
-        RawCircuitConfig {
-            name: String::from("circuit-1.0"),
-            circuit_type: CircuitType::Rollup1,
-            is_default: false,
-            program_file: vec![String::from("./Rollup1_1.program.gz")],
-            abi_file: vec![String::from("./Rollup1_1.abi.json")],
-            proving_key_file: vec![String::from("./Rollup1_1.pkey.gz")],
-            verifying_key_file: vec![String::from("./Rollup1_1.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-rollup2"),
-            circuit_type: CircuitType::Rollup2,
-            is_default: true,
-            program_file: vec![String::from("./Rollup2.program.gz")],
-            abi_file: vec![String::from("./Rollup2.abi.json")],
-            proving_key_file: vec![String::from("./Rollup2.pkey.gz")],
-            verifying_key_file: vec![String::from("./Rollup2.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-rollup4"),
-            circuit_type: CircuitType::Rollup4,
-            is_default: true,
-            program_file: vec![String::from("./Rollup4.program.gz")],
-            abi_file: vec![String::from("./Rollup4.abi.json")],
-            proving_key_file: vec![String::from("./Rollup4.pkey.gz")],
-            verifying_key_file: vec![String::from("./Rollup4.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-rollup8"),
-            circuit_type: CircuitType::Rollup8,
-            is_default: true,
-            program_file: vec![String::from("./Rollup8.program.gz")],
-            abi_file: vec![String::from("./Rollup8.abi.json")],
-            proving_key_file: vec![String::from("./Rollup8.pkey.gz")],
-            verifying_key_file: vec![String::from("./Rollup8.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-rollup16"),
-            circuit_type: CircuitType::Rollup16,
-            is_default: true,
-            program_file: vec![String::from("./Rollup16.program.gz")],
-            abi_file: vec![String::from("./Rollup16.abi.json")],
-            proving_key_file: vec![String::from("./Rollup16.pkey.gz")],
-            verifying_key_file: vec![String::from("./Rollup16.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-transaction1x0"),
-            circuit_type: CircuitType::Transaction1x0,
-            is_default: true,
-            program_file: vec![String::from("./Transaction1x0.program.gz")],
-            abi_file: vec![String::from("./Transaction1x0.abi.json")],
-            proving_key_file: vec![String::from("./Transaction1x0.pkey.gz")],
-            verifying_key_file: vec![String::from("./Transaction1x0.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-transaction1x1"),
-            circuit_type: CircuitType::Transaction1x1,
-            is_default: true,
-            program_file: vec![String::from("./Transaction1x1.program.gz")],
-            abi_file: vec![String::from("./Transaction1x1.abi.json")],
-            proving_key_file: vec![String::from("./Transaction1x1.pkey.gz")],
-            verifying_key_file: vec![String::from("./Transaction1x1.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-transaction1x2"),
-            circuit_type: CircuitType::Transaction1x2,
-            is_default: true,
-            program_file: vec![String::from("./Transaction1x2.program.gz")],
-            abi_file: vec![String::from("./Transaction1x2.abi.json")],
-            proving_key_file: vec![String::from("./Transaction1x2.pkey.gz")],
-            verifying_key_file: vec![String::from("./Transaction1x2.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-transaction2x0"),
-            circuit_type: CircuitType::Transaction2x0,
-            is_default: true,
-            program_file: vec![String::from("./Transaction2x0.program.gz")],
-            abi_file: vec![String::from("./Transaction2x0.abi.json")],
-            proving_key_file: vec![String::from("./Transaction2x0.pkey.gz")],
-            verifying_key_file: vec![String::from("./Transaction2x0.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-transaction2x1"),
-            circuit_type: CircuitType::Transaction2x1,
-            is_default: true,
-            program_file: vec![String::from("./Transaction2x1.program.gz")],
-            abi_file: vec![String::from("./Transaction2x1.abi.json")],
-            proving_key_file: vec![String::from("./Transaction2x1.pkey.gz")],
-            verifying_key_file: vec![String::from("./Transaction2x1.vkey.gz")],
-        },
-        RawCircuitConfig {
-            name: String::from("zokrates-1.0-transaction2x2"),
-            circuit_type: CircuitType::Transaction2x2,
-            is_default: true,
-            program_file: vec![String::from("./Transaction2x2.program.gz")],
-            abi_file: vec![String::from("./Transaction2x2.abi.json")],
-            proving_key_file: vec![String::from("./Transaction2x2.pkey.gz")],
-            verifying_key_file: vec![String::from("./Transaction2x2.vkey.gz")],
-        },
-    ]
+async fn default_raw_main_asset_config() -> RawAssetConfig {
+    create_raw_from_file::<RawAssetConfig>("tests/files/contract/pool/main_asset.json")
+        .await
+        .unwrap()
+}
+
+async fn default_raw_asset_config(address: &str) -> RawAssetConfig {
+    let contents = read_to_string(PathBuf::from("tests/files/contract/pool/asset.json"))
+        .await
+        .unwrap();
+    serde_json::from_str::<RawAssetConfig>(&contents.replace("__ADDRESS__", address)).unwrap()
+}
+
+async fn default_raw_circuit_configs() -> Vec<RawCircuitConfig> {
+    let contents = read_to_string(PathBuf::from("tests/files/contract/pool/circuits.json"))
+        .await
+        .unwrap();
+    serde_json::from_str::<Vec<RawCircuitConfig>>(&contents).unwrap()
 }

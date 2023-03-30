@@ -4,7 +4,7 @@ use mystiko_config::types::BridgeType;
 use mystiko_config::wrapper::bridge::layer_zero::LayerZeroBridgeConfig;
 use std::sync::Arc;
 
-const VALID_CONFIG_FILE: &str = "tests/files/bridge/layerZero.valid.json";
+const VALID_CONFIG_FILE: &str = "tests/files/bridge/layer_zero.valid.json";
 
 #[tokio::test]
 async fn test_create() {
