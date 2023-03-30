@@ -6,7 +6,7 @@ use num_bigint::BigInt;
 use std::str::FromStr;
 use std::sync::Arc;
 
-const VALID_CONFIG_FILE: &str = "tests/files/asset.valid.json";
+const VALID_CONFIG_FILE: &str = "tests/files/asset/valid.json";
 
 #[tokio::test]
 async fn test_create() {

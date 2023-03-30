@@ -3,7 +3,7 @@ use mystiko_config::raw::provider::RawProviderConfig;
 use mystiko_config::wrapper::provider::ProviderConfig;
 use std::sync::Arc;
 
-const VALID_CONFIG_FILE: &str = "tests/files/provider.valid.json";
+const VALID_CONFIG_FILE: &str = "tests/files/provider/valid.json";
 
 #[tokio::test]
 async fn test_create() {

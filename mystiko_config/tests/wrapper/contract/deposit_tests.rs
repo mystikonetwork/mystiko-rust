@@ -35,7 +35,7 @@ async fn test_create() {
         config.pool_contract_address(),
         "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
     );
-    assert_eq!(config.disabled(), true);
+    assert!(config.disabled());
     assert_eq!(
         config.min_amount().unwrap(),
         BigInt::from_str("10000000000000000").unwrap()
@@ -272,7 +272,7 @@ async fn setup(
         MAIN_ASSET_ADDRESS
     };
     let asset_config = Arc::new(AssetConfig::new(Arc::new(
-        create_raw_asset_config(&asset_address).await,
+        create_raw_asset_config(asset_address).await,
     )));
     let circuit_configs: Vec<Arc<CircuitConfig>> = create_raw_circuit_configs()
         .await

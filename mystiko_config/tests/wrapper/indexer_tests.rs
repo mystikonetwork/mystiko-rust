@@ -3,7 +3,7 @@ use mystiko_config::raw::indexer::RawIndexerConfig;
 use mystiko_config::wrapper::indexer::IndexerConfig;
 use std::sync::Arc;
 
-const VALID_CONFIG_FILE: &str = "tests/files/indexer.valid.json";
+const VALID_CONFIG_FILE: &str = "tests/files/indexer/valid.json";
 
 #[tokio::test]
 async fn test_create() {

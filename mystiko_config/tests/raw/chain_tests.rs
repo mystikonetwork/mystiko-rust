@@ -14,7 +14,7 @@ use validator::Validate;
 fn init_provider_config() -> RawProviderConfig {
     create_raw::<RawProviderConfig>(
         RawProviderConfig::builder()
-            .url("wss://ropsten.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string())
+            .url("wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string())
             .timeout_ms(5000)
             .max_try_count(5)
             .build(),
@@ -82,20 +82,18 @@ fn default_config() -> RawChainConfig {
     let pool_contract_config = init_pool_contract_config();
     let asset_config = init_assets_config();
     let raw_chain_config = RawChainConfig::builder()
-        .chain_id(3)
-        .name("Ethereum Ropsten".to_string())
+        .chain_id(5)
+        .name("Ethereum Goerli".to_string())
         .asset_symbol("ETH".to_string())
         .asset_decimals(18)
         .recommended_amounts(vec![
             "1000000000000000000".to_string(),
             "10000000000000000000".to_string(),
         ])
-        .explorer_url("https://ropsten.etherscan.io".to_string())
+        .explorer_url("https://goerli.etherscan.io".to_string())
         .explorer_prefix("/tx/%tx%".to_string())
         .providers(vec![Arc::new(provider_config)])
-        .signer_endpoint(
-            "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
-        )
+        .signer_endpoint("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string())
         .deposit_contracts(vec![Arc::new(deposit_contract_config)])
         .pool_contracts(vec![Arc::new(pool_contract_config)])
         .assets(vec![Arc::new(asset_config)])
@@ -114,19 +112,17 @@ fn test_default_values() {
     let pool_contract_config = init_pool_contract_config();
     let asset_config = init_assets_config();
     let raw_config = RawChainConfig::builder()
-        .chain_id(3)
-        .name("Ethereum Ropsten".to_string())
+        .chain_id(5)
+        .name("Ethereum Goerli".to_string())
         .asset_symbol("ETH".to_string())
         .asset_decimals(18)
         .recommended_amounts(vec![
             "1000000000000000000".to_string(),
             "10000000000000000000".to_string(),
         ])
-        .explorer_url("https://ropsten.etherscan.io".to_string())
+        .explorer_url("https://goerli.etherscan.io".to_string())
         .providers(vec![Arc::new(provider_config)])
-        .signer_endpoint(
-            "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string(),
-        )
+        .signer_endpoint("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string())
         .deposit_contracts(vec![Arc::new(deposit_contract_config)])
         .pool_contracts(vec![Arc::new(pool_contract_config)])
         .assets(vec![Arc::new(asset_config)])
@@ -320,7 +316,7 @@ fn test_invalid_assets() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config = create_raw_from_file::<RawChainConfig>("tests/files/chain.valid.json")
+    let file_config = create_raw_from_file::<RawChainConfig>("tests/files/chain/valid.json")
         .await
         .unwrap();
     assert_eq!(file_config, default_config())
@@ -329,6 +325,6 @@ async fn test_import_valid_json_file() {
 #[tokio::test]
 async fn test_import_invalid_json_file() {
     let file_config =
-        create_raw_from_file::<RawChainConfig>("tests/files/chain.invalid.json").await;
+        create_raw_from_file::<RawChainConfig>("tests/files/chain/invalid.json").await;
     assert!(file_config.is_err());
 }

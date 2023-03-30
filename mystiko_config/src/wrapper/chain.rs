@@ -186,11 +186,14 @@ impl ChainConfig {
     pub fn find_bridges(&self, peer_chain_id: u32, asset_symbol: &str) -> Vec<&BridgeType> {
         let mut bridges: HashSet<&BridgeType> = HashSet::new();
         for deposit_contract_config in &self.deposit_contract_configs {
-            if let Some(id) = deposit_contract_config.peer_chain_id() {
-                if *id == peer_chain_id
-                    && peer_chain_id != self.chain_id()
-                    && asset_symbol == deposit_contract_config.asset_symbol()
+            if peer_chain_id == self.chain_id() {
+                if deposit_contract_config.bridge_type() == &BridgeType::Loop
+                    && deposit_contract_config.asset_symbol() == asset_symbol
                 {
+                    return vec![&BridgeType::Loop];
+                }
+            } else if let Some(id) = deposit_contract_config.peer_chain_id() {
+                if *id == peer_chain_id && asset_symbol == deposit_contract_config.asset_symbol() {
                     bridges.insert(deposit_contract_config.bridge_type());
                 }
             }
@@ -302,18 +305,10 @@ impl ChainConfig {
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
         self.main_asset_config.validate()?;
-        let mut pool_contracts: HashMap<&str, &PoolContractConfig> = HashMap::new();
         let mut pool_contracts_versions =
             HashMap::<&str, HashMap<&BridgeType, HashSet<u32>>>::new();
         for pool_contract in self.pool_contracts() {
             pool_contract.validate()?;
-            if pool_contracts.contains_key(pool_contract.address()) {
-                return Err(Error::msg(format!(
-                    "duplicate pool contract config at {}",
-                    pool_contract.address()
-                )));
-            }
-            pool_contracts.insert(pool_contract.address(), pool_contract);
             if let Some(pool_contracts_bridges) =
                 pool_contracts_versions.get_mut(pool_contract.asset_symbol())
             {
@@ -322,11 +317,12 @@ impl ChainConfig {
                 {
                     if all_versions.contains(&pool_contract.version()) {
                         return Err(Error::msg(format!(
-                            "only one version is allowed for pool contract config \
-                            at {} for asset_symbol {} and bridge_type {:?}",
-                            pool_contract.address(),
+                            "only one pool contract is allowed for \
+                            chain_id {}, asset_symbol {}, bridge_type {:?} and version {}",
+                            self.chain_id(),
                             pool_contract.asset_symbol(),
                             pool_contract.bridge_type(),
+                            pool_contract.version(),
                         )));
                     }
                     all_versions.insert(pool_contract.version());
@@ -343,16 +339,8 @@ impl ChainConfig {
                 pool_contracts_versions.insert(pool_contract.asset_symbol(), pool_contract_bridges);
             }
         }
-        let mut deposit_contract_addresses: HashSet<&str> = HashSet::new();
         for deposit_contract in self.deposit_contracts_with_disabled() {
             deposit_contract.validate()?;
-            if deposit_contract_addresses.contains(deposit_contract.address()) {
-                return Err(Error::msg(format!(
-                    "duplicate deposit contract config at {}",
-                    deposit_contract.address()
-                )));
-            }
-            deposit_contract_addresses.insert(deposit_contract.address());
             if let Some(peer_chain_id) = deposit_contract.peer_chain_id() {
                 if self.chain_id() == *peer_chain_id {
                     return Err(Error::msg(format!(

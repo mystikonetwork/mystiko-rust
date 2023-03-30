@@ -9,7 +9,7 @@ use std::sync::Arc;
 use validator::Validate;
 
 async fn default_config() -> RawMystikoConfig {
-    create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko.valid.json")
+    create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko/valid.json")
         .await
         .unwrap()
 }
@@ -94,6 +94,6 @@ async fn test_invalid_indexer() {
 #[tokio::test]
 async fn test_import_invalid_json_file() {
     let file_config =
-        create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko.invalid.json").await;
+        create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko/invalid.json").await;
     assert!(file_config.is_err());
 }

@@ -4,7 +4,7 @@ use mystiko_config::types::BridgeType;
 use mystiko_config::wrapper::bridge::celer::CelerBridgeConfig;
 use std::sync::Arc;
 
-const VALID_CONFIG_FILE: &str = "tests/files/bridge/celer.valid.json";
+const VALID_CONFIG_FILE: &str = "tests/files/bridge/celer/valid.json";
 
 #[tokio::test]
 async fn test_create() {

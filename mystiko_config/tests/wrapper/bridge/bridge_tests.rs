@@ -9,11 +9,11 @@ use mystiko_config::types::BridgeType;
 use mystiko_config::wrapper::bridge::BridgeConfig;
 use std::sync::Arc;
 
-const AXELAR_CONFIG_FILE: &str = "tests/files/bridge/axelar.valid.json";
-const CELER_CONFIG_FILE: &str = "tests/files/bridge/celer.valid.json";
-const LAYER_ZERO_CONFIG_FILE: &str = "tests/files/bridge/layer_zero.valid.json";
-const POLY_CONFIG_FILE: &str = "tests/files/bridge/poly.valid.json";
-const TBRIDGE_CONFIG_FILE: &str = "tests/files/bridge/tbridge.valid.json";
+const AXELAR_CONFIG_FILE: &str = "tests/files/bridge/axelar/valid.json";
+const CELER_CONFIG_FILE: &str = "tests/files/bridge/celer/valid.json";
+const LAYER_ZERO_CONFIG_FILE: &str = "tests/files/bridge/layer_zero/valid.json";
+const POLY_CONFIG_FILE: &str = "tests/files/bridge/poly/valid.json";
+const TBRIDGE_CONFIG_FILE: &str = "tests/files/bridge/tbridge/valid.json";
 
 #[tokio::test]
 async fn test_create() {

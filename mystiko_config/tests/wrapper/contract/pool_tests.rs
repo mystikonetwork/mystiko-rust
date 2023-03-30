@@ -79,9 +79,9 @@ async fn test_create() {
     raw_config1.indexer_filter_size = Some(10000);
     let config1 = PoolContractConfig::new(
         Arc::new(raw_config1),
-        main_asset_config.clone(),
-        asset_config.clone(),
-        circuit_configs.clone(),
+        main_asset_config,
+        asset_config,
+        circuit_configs,
     );
     assert_eq!(config1.event_filter_size().unwrap(), 1000);
     assert_eq!(config1.indexer_filter_size().unwrap(), 10000);

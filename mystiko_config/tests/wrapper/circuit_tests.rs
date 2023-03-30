@@ -4,7 +4,7 @@ use mystiko_config::types::CircuitType;
 use mystiko_config::wrapper::circuit::CircuitConfig;
 use std::sync::Arc;
 
-const VALID_CONFIG_FILE: &str = "tests/files/circuit.valid.json";
+const VALID_CONFIG_FILE: &str = "tests/files/circuit/valid.json";
 
 #[tokio::test]
 async fn test_create() {
@@ -15,7 +15,7 @@ async fn test_create() {
     config.validate().unwrap();
     assert_eq!(config.name(), "zokrates-1.0-rollup1");
     assert_eq!(config.circuit_type(), &CircuitType::Rollup1);
-    assert_eq!(config.is_default(), true);
+    assert!(config.is_default());
     assert_eq!(
         config.program_file(),
         &vec![String::from("./Rollup1.program.gz")]
