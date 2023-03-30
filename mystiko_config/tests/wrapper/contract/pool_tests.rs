@@ -36,7 +36,7 @@ async fn test_create() {
         "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"
     );
     assert_eq!(
-        config.asset_address().as_ref().unwrap(),
+        config.asset_address().unwrap(),
         "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"
     );
     assert_eq!(config.asset_type(), &AssetType::Erc20);
@@ -155,7 +155,7 @@ async fn test_validate_asset_type_mismatch() {
     );
     let mut raw_config1 = raw_config.as_ref().clone();
     raw_config1.asset_address = None;
-    let mut raw_main_asset_config1 = default_raw_main_asset_config().await;
+    let mut raw_main_asset_config1 = create_raw_main_asset_config().await;
     raw_main_asset_config1.asset_type = AssetType::Erc20;
     let main_asset_config1 = Arc::new(AssetConfig::new(Arc::new(raw_main_asset_config1)));
     let config1 = PoolContractConfig::new(
@@ -195,9 +195,9 @@ async fn setup(
             .unwrap(),
     );
     let main_asset_config = Arc::new(AssetConfig::new(Arc::new(
-        default_raw_main_asset_config().await,
+        create_raw_main_asset_config().await,
     )));
-    let mut raw_asset_config = default_raw_asset_config(
+    let mut raw_asset_config = create_raw_asset_config(
         &options
             .asset_address
             .unwrap_or(raw_config.asset_address.as_ref().unwrap().to_string()),
@@ -207,7 +207,7 @@ async fn setup(
         raw_asset_config.asset_type = AssetType::Main;
     }
     let asset_config = Arc::new(AssetConfig::new(Arc::new(raw_asset_config)));
-    let mut raw_circuit_configs = default_raw_circuit_configs().await;
+    let mut raw_circuit_configs = create_raw_circuit_configs().await;
     if options.missing_circuit_name {
         let circuit_config = raw_circuit_configs.get_mut(0).unwrap();
         circuit_config.name = String::from("no_existing_name");
@@ -239,20 +239,20 @@ async fn setup(
     )
 }
 
-async fn default_raw_main_asset_config() -> RawAssetConfig {
+async fn create_raw_main_asset_config() -> RawAssetConfig {
     create_raw_from_file::<RawAssetConfig>("tests/files/contract/pool/main_asset.json")
         .await
         .unwrap()
 }
 
-async fn default_raw_asset_config(address: &str) -> RawAssetConfig {
+async fn create_raw_asset_config(address: &str) -> RawAssetConfig {
     let contents = read_to_string(PathBuf::from("tests/files/contract/pool/asset.json"))
         .await
         .unwrap();
     serde_json::from_str::<RawAssetConfig>(&contents.replace("__ADDRESS__", address)).unwrap()
 }
 
-async fn default_raw_circuit_configs() -> Vec<RawCircuitConfig> {
+async fn create_raw_circuit_configs() -> Vec<RawCircuitConfig> {
     let contents = read_to_string(PathBuf::from("tests/files/contract/pool/circuits.json"))
         .await
         .unwrap();

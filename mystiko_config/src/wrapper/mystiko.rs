@@ -269,7 +269,7 @@ impl MystikoConfig {
                                 )));
                             }
                             if peer_contract.peer_contract_address()
-                                != &Some(deposit_contract_config.address().to_string())
+                                != Some(deposit_contract_config.address())
                             {
                                 return Err(Error::msg(format!(
                                     "peer_contract_address for peer deposit contract config of \

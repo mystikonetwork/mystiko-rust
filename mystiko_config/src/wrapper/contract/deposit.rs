@@ -151,7 +151,7 @@ impl DepositContractConfig {
         self.pool_contract().asset()
     }
 
-    pub fn asset_address(&self) -> &Option<String> {
+    pub fn asset_address(&self) -> Option<&str> {
         self.pool_contract().asset_address()
     }
 
@@ -182,16 +182,16 @@ impl DepositContractConfig {
         &self.bridge_fee_asset_config
     }
 
-    pub fn bridge_fee_asset_address(&self) -> &Option<String> {
-        &self.raw.bridge_fee_asset_address
+    pub fn bridge_fee_asset_address(&self) -> Option<&str> {
+        self.raw.bridge_fee_asset_address.as_deref()
     }
 
     pub fn executor_fee_asset(&self) -> &AssetConfig {
         &self.executor_fee_asset_config
     }
 
-    pub fn executor_fee_asset_address(&self) -> &Option<String> {
-        &self.raw.executor_fee_asset_address
+    pub fn executor_fee_asset_address(&self) -> Option<&str> {
+        self.raw.executor_fee_asset_address.as_deref()
     }
 
     pub fn circuits(&self) -> Vec<&CircuitConfig> {
@@ -202,8 +202,8 @@ impl DepositContractConfig {
         &self.raw.peer_chain_id
     }
 
-    pub fn peer_contract_address(&self) -> &Option<String> {
-        &self.raw.peer_contract_address
+    pub fn peer_contract_address(&self) -> Option<&str> {
+        self.raw.peer_contract_address.as_deref()
     }
 
     pub fn validate(&self) -> Result<()> {
@@ -262,7 +262,7 @@ impl DepositContractConfig {
         if self.bridge_type() != self.pool_contract_config.bridge_type() {
             return Err(Error::msg(format!(
                 "mismatched pool contract bridge_type {:?} vs {:?} \
-                for deposit contract config at {:?}",
+                for deposit contract config at {}",
                 self.bridge_type(),
                 self.pool_contract_config.bridge_type(),
                 self.address()

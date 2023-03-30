@@ -79,8 +79,8 @@ impl PoolContractConfig {
         }
     }
 
-    pub fn asset_address(&self) -> &Option<String> {
-        &self.raw.asset_address
+    pub fn asset_address(&self) -> Option<&str> {
+        self.raw.asset_address.as_deref()
     }
 
     pub fn asset_type(&self) -> &AssetType {
