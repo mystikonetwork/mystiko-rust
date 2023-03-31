@@ -2,7 +2,9 @@ use crate::raw::bridge::RawBridgeConfig;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
-use crate::raw::validator::{array_unique, is_sem_ver, validate_nested_vec};
+use crate::raw::validator::{
+    array_unique, is_git_revision, is_sem_ver, string_vec_each_not_empty, validate_nested_vec,
+};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use validator::Validate;
@@ -13,24 +15,39 @@ pub struct RawMystikoConfig {
     #[validate(custom = "is_sem_ver")]
     pub version: String,
 
+    #[validate(custom = "is_git_revision")]
+    #[serde(default)]
+    pub git_revision: Option<String>,
+
     #[validate(
         custom(function = "array_unique"),
         custom(function = "validate_nested_vec")
     )]
+    #[serde(default)]
     pub chains: Vec<Arc<RawChainConfig>>,
 
     #[validate(
         custom(function = "array_unique"),
         custom(function = "validate_nested_vec")
     )]
+    #[serde(default)]
     pub bridges: Vec<Arc<RawBridgeConfig>>,
 
     #[validate(
         custom(function = "array_unique"),
         custom(function = "validate_nested_vec")
     )]
+    #[serde(default)]
     pub circuits: Vec<Arc<RawCircuitConfig>>,
 
     #[validate]
+    #[serde(default)]
     pub indexer: Option<Arc<RawIndexerConfig>>,
+
+    #[validate(
+        custom(function = "array_unique"),
+        custom(function = "string_vec_each_not_empty")
+    )]
+    #[serde(default)]
+    pub country_blacklist: Vec<String>,
 }

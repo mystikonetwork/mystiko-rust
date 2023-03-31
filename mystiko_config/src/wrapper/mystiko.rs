@@ -69,6 +69,10 @@ impl MystikoConfig {
         &self.raw.version
     }
 
+    pub fn git_revision(&self) -> Option<&str> {
+        self.raw.git_revision.as_deref()
+    }
+
     pub fn circuits(&self) -> Vec<&CircuitConfig> {
         self.circuit_configs.iter().map(|c| c.as_ref()).collect()
     }
@@ -83,6 +87,14 @@ impl MystikoConfig {
 
     pub fn indexer(&self) -> Option<&IndexerConfig> {
         self.indexer_config.as_ref()
+    }
+
+    pub fn country_blacklist(&self) -> Vec<&str> {
+        self.raw
+            .country_blacklist
+            .iter()
+            .map(|c| c.as_str())
+            .collect()
     }
 
     pub fn find_default_circuit(&self, circuit_type: &CircuitType) -> Option<&CircuitConfig> {

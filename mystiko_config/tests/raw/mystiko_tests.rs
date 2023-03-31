@@ -40,6 +40,15 @@ async fn test_invalid_version_1() {
 }
 
 #[tokio::test]
+async fn test_invalid_git_revision() {
+    let mut config = default_config().await;
+    config.git_revision = Some(String::from(""));
+    assert!(config.validate().is_err());
+    config.git_revision = Some(String::from("wrong git revision"));
+    assert!(config.validate().is_err());
+}
+
+#[tokio::test]
 async fn test_invalid_chains() {
     let mut config = default_config().await;
     config.chains.append(&mut config.chains.clone());
@@ -96,4 +105,11 @@ async fn test_import_invalid_json_file() {
     let file_config =
         create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko/invalid.json").await;
     assert!(file_config.is_err());
+}
+
+#[tokio::test]
+async fn test_empty_file() {
+    let file_config =
+        create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko/empty.json").await;
+    assert!(file_config.is_ok());
 }

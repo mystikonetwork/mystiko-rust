@@ -14,6 +14,7 @@ async fn test_create() {
         .unwrap();
     config.validate().unwrap();
     assert_eq!(config.version(), "0.1.0");
+    assert_eq!(config.git_revision().unwrap(), "b6b5b5b");
     let mut chain_ids: Vec<u32> = config.chains().into_iter().map(|c| c.chain_id()).collect();
     chain_ids.sort();
     assert_eq!(chain_ids, vec![5, 97]);
@@ -60,6 +61,7 @@ async fn test_create() {
         0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e"
     );
     assert!(config.transaction_url(234243, "xxx").is_none());
+    assert_eq!(config.country_blacklist(), vec!["US", "CN"]);
 }
 
 #[tokio::test]
