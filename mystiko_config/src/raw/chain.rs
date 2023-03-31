@@ -62,16 +62,19 @@ pub struct RawChainConfig {
 
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
+    #[serde(default)]
     #[builder(default = vec ! [])]
     pub deposit_contracts: Vec<Arc<RawDepositContractConfig>>,
 
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
+    #[serde(default)]
     #[builder(default = vec ! [])]
     pub pool_contracts: Vec<Arc<RawPoolContractConfig>>,
 
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
+    #[serde(default)]
     #[builder(default = vec ! [])]
     pub assets: Vec<Arc<RawAssetConfig>>,
 }

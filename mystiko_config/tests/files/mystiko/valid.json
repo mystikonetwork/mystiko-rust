@@ -1,24 +1,25 @@
 {
-  "version": "wrong version",
+  "version": "0.1.0",
+  "gitRevision": "b6b5b5b",
   "chains": [
     {
-      "chainId": 3,
-      "name": "Ethereum Ropsten",
+      "chainId": 5,
+      "name": "Ethereum Goerli",
       "assetSymbol": "ETH",
       "assetDecimals": 18,
-      "explorerUrl": "https://ropsten.etherscan.io",
+      "explorerUrl": "https://goerli.etherscan.io",
       "explorerPrefix": "/tx/%tx%",
       "providers": [
         {
-          "url": "wss://ropsten.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+          "url": "wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161",
           "timeoutMs": 5000,
           "maxTryCount": 2
         },
         {
-          "url": "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+          "url": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
         }
       ],
-      "signerEndpoint": "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      "signerEndpoint": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       "depositContracts": [
         {
           "version": 2,
@@ -31,10 +32,10 @@
           "disabled": true,
           "peerChainId": 97,
           "peerContractAddress": "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9",
-          "minAmount": "1",
-          "maxAmount": "10",
-          "minBridgeFee": "2",
-          "minExecutorFee": "3"
+          "minAmount": "10000000000000000",
+          "maxAmount": "100000000000000000",
+          "minBridgeFee": "20000000000000000",
+          "minExecutorFee": "30000000000000000"
         }
       ],
       "poolContracts": [
@@ -42,19 +43,21 @@
           "version": 2,
           "name": "CommitmentPool",
           "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "tbridge",
           "address": "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d",
           "type": "pool",
           "startBlock": 1000000,
           "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
-          "minRollupFee": "12345",
-          "circuits": ["zokrates-1.0-rollup1"]
+          "minRollupFee": "40000000000000000",
+          "circuits": ["zokrates-2.0-rollup1"]
         }
       ],
       "assets": [{
         "assetType": "erc20",
         "assetSymbol": "MTT",
-        "assetDecimals": 18,
-        "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"
+        "assetDecimals": 16,
+        "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+        "recommendedAmounts": ["10000000000000000", "100000000000000000"]
       }]
     },
     {
@@ -85,12 +88,12 @@
           "bridgeType": "tbridge",
           "poolAddress": "0xBe2C9c8a00951662dF3a978b25F448968F0595AE",
           "disabled": true,
-          "peerChainId": 3,
+          "peerChainId": 5,
           "peerContractAddress": "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67",
-          "minAmount": "1",
-          "maxAmount": "10",
-          "minBridgeFee": "2",
-          "minExecutorFee": "3"
+          "minAmount": "10000000000000000",
+          "maxAmount": "100000000000000000",
+          "minBridgeFee": "20000000000000000",
+          "minExecutorFee": "30000000000000000"
         }
       ],
       "poolContracts": [
@@ -98,18 +101,18 @@
           "version": 2,
           "name": "CommitmentPool",
           "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "tbridge",
           "address": "0xBe2C9c8a00951662dF3a978b25F448968F0595AE",
           "type": "pool",
           "startBlock": 1000000,
           "assetAddress": "0xaA055A9888e414faF9f0DA3F4cb4C56Df8a4bdA9",
-          "recommendedAmounts": ["1000000000000000000", "10000000000000000000"],
           "minRollupFee": "12345"
         }
       ],
       "assets": [{
         "assetType": "erc20",
         "assetSymbol": "MTT",
-        "assetDecimals": 18,
+        "assetDecimals": 16,
         "assetAddress": "0xaA055A9888e414faF9f0DA3F4cb4C56Df8a4bdA9"
       }]
     }
@@ -130,6 +133,14 @@
     {
       "name": "Celer Network",
       "type": "celer"
+    },
+    {
+      "name": "LayerZero Bridge",
+      "type": "layerZero"
+    },
+    {
+      "name": "Axelar Network",
+      "type": "axelar"
     }
   ],
   "circuits": [
@@ -141,6 +152,14 @@
       "abiFile": ["./Rollup1.abi.json"],
       "provingKeyFile": ["./Rollup1.pkey.gz"],
       "verifyingKeyFile": ["./Rollup1.vkey.gz"]
+    },
+    {
+      "name": "zokrates-2.0-rollup1",
+      "type": "rollup1",
+      "programFile": ["./v2/Rollup1.program.gz"],
+      "abiFile": ["./v2/Rollup1.abi.json"],
+      "provingKeyFile": ["./v2/Rollup1.pkey.gz"],
+      "verifyingKeyFile": ["./v2/Rollup1.vkey.gz"]
     },
     {
       "name": "zokrates-1.0-rollup2",
@@ -232,5 +251,9 @@
       "provingKeyFile": ["./Transaction2x2.pkey.gz"],
       "verifyingKeyFile": ["./Transaction2x2.vkey.gz"]
     }
-  ]
+  ],
+  "indexer": {
+    "url": "https://example.com"
+  },
+  "countryBlacklist": ["US", "CN"]
 }

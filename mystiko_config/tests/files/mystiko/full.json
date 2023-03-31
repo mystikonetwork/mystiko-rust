@@ -2,23 +2,23 @@
   "version": "0.1.0",
   "chains": [
     {
-      "chainId": 3,
-      "name": "Ethereum Ropsten",
+      "chainId": 5,
+      "name": "Ethereum Goerli",
       "assetSymbol": "ETH",
       "assetDecimals": 18,
-      "explorerUrl": "https://ropsten.etherscan.io",
+      "explorerUrl": "https://goerli.etherscan.io",
       "explorerPrefix": "/tx/%tx%",
       "providers": [
         {
-          "url": "wss://ropsten.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+          "url": "wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161",
           "timeoutMs": 5000,
           "maxTryCount": 2
         },
         {
-          "url": "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+          "url": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
         }
       ],
-      "signerEndpoint": "https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      "signerEndpoint": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       "depositContracts": [
         {
           "version": 2,
@@ -217,7 +217,7 @@
           "startBlock": 1000000,
           "bridgeType": "tbridge",
           "poolAddress": "0xBe2C9c8a00951662dF3a978b25F448968F0595AE",
-          "peerChainId": 3,
+          "peerChainId": 5,
           "peerContractAddress": "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67",
           "minAmount": "10000000000000000",
           "maxAmount": "10000000000000000000",
@@ -232,7 +232,7 @@
           "startBlock": 1000000,
           "bridgeType": "tbridge",
           "poolAddress": "0xBe2C9c8a00951662dF3a978b25F448968F0595AE",
-          "peerChainId": 3,
+          "peerChainId": 5,
           "peerContractAddress": "0xbF5605f5Ed6d18ed957cBA80dbA8838dFcb9A69f",
           "minAmount": "10000000000000000",
           "maxAmount": "10000000000000000000",
@@ -247,7 +247,7 @@
           "startBlock": 1000000,
           "bridgeType": "celer",
           "poolAddress": "0x6B8a4ea37C72F1992626eb9bD48d4aA6aa077c47",
-          "peerChainId": 3,
+          "peerChainId": 5,
           "peerContractAddress": "0xe6394a06905d83B19Dbd51804Ca84677a2054FA6",
           "minAmount": "10000000000000000",
           "maxAmount": "10000000000000000000",
@@ -262,7 +262,7 @@
           "startBlock": 1000000,
           "bridgeType": "layerZero",
           "poolAddress": "0x81b7E08F65Bdf5648606c89998A9CC8164397647",
-          "peerChainId": 3,
+          "peerChainId": 5,
           "peerContractAddress": "0x85Bad2d92E225f61D877982E0EFA8CEC0D204fDd",
           "minAmount": "10000000000000000",
           "maxAmount": "10000000000000000000",
@@ -276,7 +276,7 @@
           "startBlock": 9180649,
           "bridgeType": "axelar",
           "poolAddress": "0x2Dad9a5B2b0FaeD138Cf02176D2165b628Ac11fC",
-          "peerChainId": 3,
+          "peerChainId": 5,
           "peerContractAddress": "0xF0850b2a2EC6e9E214D077658A95c4745a8B8aAf",
           "minAmount": "100000000000000000",
           "maxAmount": "10000000000000000000",
@@ -472,5 +472,6 @@
       "provingKeyFile": ["./Transaction2x2.pkey.gz"],
       "verifyingKeyFile": ["./Transaction2x2.vkey.gz"]
     }
-  ]
+  ],
+  "countryBlacklist": ["US", "CN"]
 }

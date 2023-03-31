@@ -6,17 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = { version = "1.0" }
+lazy_static = { version = "1.4.0" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 num-bigint = { version = "0.4.3" }
 num-traits = { version = "0.2.15" }
 regex = { version = "1.7.1" }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }
-validator = { version = "0.16.0", features = ["derive"] }
-typed-builder = { version = "0.14.0" }
-anyhow = { version = "1.0" }
-lazy_static = { version = "1.4.0" }
 tokio = { version = "1.26.0", features = ["full"] }
+typed-builder = { version = "0.14.0" }
+validator = { version = "0.16.0", features = ["derive"] }
 
 [dev-dependencies]
 async_once = { version = "0.2.6" }

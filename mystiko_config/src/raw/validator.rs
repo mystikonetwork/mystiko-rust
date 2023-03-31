@@ -10,6 +10,7 @@ lazy_static! {
     static ref IS_SEM_VER: Regex = Regex::new(r"^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$").unwrap();
     static ref NO_SYMBOL_NUMERIC: Regex = Regex::new(r"^[0-9]+$").unwrap();
     static ref NUMERIC_WITH_SYMBOL: Regex = Regex::new(r"^[+-]?([0-9]*[.])?[0-9]+$").unwrap();
+    static ref IS_GIT_REVISION: Regex = Regex::new(r"\b[0-9a-f]{7,40}\b").unwrap();
 }
 
 pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
@@ -71,7 +72,14 @@ pub fn is_sem_ver(s: &str) -> Result<(), ValidationError> {
     if IS_SEM_VER.is_match(s) {
         return Ok(());
     }
-    Err(ValidationError::new("SemVer is error"))
+    Err(ValidationError::new("version is invalid"))
+}
+
+pub fn is_git_revision(s: &str) -> Result<(), ValidationError> {
+    if IS_GIT_REVISION.is_match(s) {
+        return Ok(());
+    }
+    Err(ValidationError::new("git revision is invalid"))
 }
 
 pub fn is_numeric(s: &str, no_symbol: bool) -> bool {
