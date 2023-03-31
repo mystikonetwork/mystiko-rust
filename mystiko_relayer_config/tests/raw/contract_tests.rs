@@ -34,7 +34,7 @@ fn test_default_minimum_gas_fee() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config = create_raw_from_file::<RawContractConfig>("tests/files/contract/valid.json")
+    let file_config = create_raw_from_file::<RawContractConfig>("tests/files/contract.valid.json")
         .await
         .unwrap();
     assert_eq!(file_config, default_config());
@@ -43,6 +43,6 @@ async fn test_import_valid_json_file() {
 #[tokio::test]
 async fn test_import_invalid_json_file() {
     let file_config =
-        create_raw_from_file::<RawContractConfig>("tests/files/contract/invalid.json").await;
+        create_raw_from_file::<RawContractConfig>("tests/files/contract.invalid.json").await;
     assert!(file_config.is_err());
 }
