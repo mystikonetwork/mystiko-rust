@@ -1,6 +1,6 @@
 use crate::raw::chain::RawChainConfig;
+use crate::raw::create_raw_from_file;
 use crate::raw::mystiko::RawMystikoConfig;
-use crate::raw::{create_raw_from_file, create_raw_from_json};
 use crate::types::{BridgeType, CircuitType};
 use crate::wrapper::bridge::BridgeConfig;
 use crate::wrapper::chain::ChainConfig;
@@ -9,7 +9,7 @@ use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
 use crate::wrapper::indexer::IndexerConfig;
 use anyhow::{Error, Result};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::Arc;
 use validator::Validate;
 
@@ -55,18 +55,14 @@ impl MystikoConfig {
         })
     }
 
-    pub fn from_json_str(json_str: &str) -> Result<Self> {
-        let raw_config = create_raw_from_json::<RawMystikoConfig>(json_str)?;
-        let config = MystikoConfig::new(raw_config)?;
+    pub fn from_raw(raw: RawMystikoConfig) -> Result<Self> {
+        let config = MystikoConfig::new(raw)?;
         config.validate()?;
         Ok(config)
     }
 
     pub async fn from_json_file(json_file: &str) -> Result<Self> {
-        let raw_config = create_raw_from_file::<RawMystikoConfig>(json_file).await?;
-        let config = MystikoConfig::new(raw_config)?;
-        config.validate()?;
-        Ok(config)
+        MystikoConfig::from_raw(create_raw_from_file::<RawMystikoConfig>(json_file).await?)
     }
 
     pub fn version(&self) -> &str {
@@ -210,18 +206,8 @@ impl MystikoConfig {
 
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
-        let mut has_pool_contracts: bool = false;
-        let mut chain_ids: HashSet<u32> = HashSet::new();
         for chain_config in self.chains() {
             chain_config.validate()?;
-            if chain_ids.contains(&chain_config.chain_id()) {
-                return Err(Error::msg(format!(
-                    "duplicate chain config for chain_id {}",
-                    chain_config.chain_id()
-                )));
-            }
-            chain_ids.insert(chain_config.chain_id());
-            has_pool_contracts = !chain_config.pool_contracts().is_empty();
         }
         for chain_config in self.chains() {
             for deposit_contract_config in chain_config.deposit_contracts_with_disabled() {
@@ -294,7 +280,7 @@ impl MystikoConfig {
                     } else {
                         return Err(Error::msg(format!(
                             "cannot find chain config of peer_chain_id {} \
-                            for deposit contract config at {} chain id {}",
+                            for deposit contract config at {} chain_id {}",
                             peer_chain_id,
                             deposit_contract_config.address(),
                             chain_config.chain_id()
@@ -305,27 +291,6 @@ impl MystikoConfig {
         }
         for circuit_config in self.circuits() {
             circuit_config.validate()?;
-        }
-        if has_pool_contracts {
-            for circuit_type in &CircuitType::all() {
-                if self.find_default_circuit(circuit_type).is_none() {
-                    return Err(Error::msg(format!(
-                        "missing default circuit config for circuit_type {:?}",
-                        circuit_type
-                    )));
-                }
-            }
-        }
-        let mut bridge_types: HashSet<&BridgeType> = HashSet::new();
-        for bridge_config in self.bridges() {
-            bridge_config.validate()?;
-            if bridge_types.contains(bridge_config.bridge_type()) {
-                return Err(Error::msg(format!(
-                    "duplicate bridge config for bridge_type {:?}",
-                    bridge_config.bridge_type()
-                )));
-            }
-            bridge_types.insert(bridge_config.bridge_type());
         }
         if let Some(indexer_config) = self.indexer() {
             indexer_config.validate()?;
