@@ -252,6 +252,78 @@ async fn test_validate_invalid_peer_chain_id() {
     );
 }
 
+#[tokio::test]
+async fn test_missing_bridge_asset_config() {
+    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) =
+        setup(SetupOptions::default()).await;
+    let mut new_raw_config = raw_config.as_ref().clone();
+    let mut deposit_contract_config = new_raw_config.deposit_contracts.remove(0).as_ref().clone();
+    deposit_contract_config.bridge_fee_asset_address =
+        Some(String::from("0xe688b84b23f322a994a53dbf8e15fa82cdb71127"));
+    new_raw_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
+    assert_eq!(
+        ChainConfig::new(
+            Arc::new(new_raw_config),
+            default_circuit_configs.as_ref(),
+            circuit_configs_by_name.as_ref()
+        )
+        .err()
+        .unwrap()
+        .to_string(),
+        "failed to find asset config 0xe688b84b23f322a994a53dbf8e15fa82cdb71127"
+    );
+}
+
+#[tokio::test]
+async fn test_missing_executor_asset_config() {
+    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) =
+        setup(SetupOptions::default()).await;
+    let mut new_raw_config = raw_config.as_ref().clone();
+    let mut deposit_contract_config = new_raw_config.deposit_contracts.remove(0).as_ref().clone();
+    deposit_contract_config.executor_fee_asset_address =
+        Some(String::from("0xe688b84b23f322a994a53dbf8e15fa82cdb71127"));
+    new_raw_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
+    assert_eq!(
+        ChainConfig::new(
+            Arc::new(new_raw_config),
+            default_circuit_configs.as_ref(),
+            circuit_configs_by_name.as_ref()
+        )
+        .err()
+        .unwrap()
+        .to_string(),
+        "failed to find asset config 0xe688b84b23f322a994a53dbf8e15fa82cdb71127"
+    );
+}
+
+#[tokio::test]
+async fn test_missing_pool_contract_config() {
+    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) =
+        setup(SetupOptions::default()).await;
+    let mut new_raw_config = raw_config.as_ref().clone();
+    let mut deposit_contract_config = new_raw_config.deposit_contracts.remove(0).as_ref().clone();
+    deposit_contract_config.pool_address =
+        String::from("0xe688b84b23f322a994a53dbf8e15fa82cdb71127");
+    new_raw_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
+    assert_eq!(
+        ChainConfig::new(
+            Arc::new(new_raw_config),
+            default_circuit_configs.as_ref(),
+            circuit_configs_by_name.as_ref()
+        )
+        .err()
+        .unwrap()
+        .to_string(),
+        "failed to find pool contract 0xe688b84b23f322a994a53dbf8e15fa82cdb71127"
+    );
+}
+
 #[derive(Default)]
 struct SetupOptions {
     full_config: bool,

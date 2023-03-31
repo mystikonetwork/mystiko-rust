@@ -146,6 +146,9 @@ async fn test_selectors() {
         .find_deposit_contract(5, 1024234, "MTT", &BridgeType::Celer)
         .is_none());
     assert!(config
+        .find_deposit_contract(1024234, 97, "MTT", &BridgeType::Celer)
+        .is_none());
+    assert!(config
         .find_deposit_contract_by_address(2342343, "0x9C33eaCc2F50E39940D3AfaF2c7B8246B681A374")
         .is_none());
     assert!(config
@@ -308,18 +311,25 @@ async fn test_validate_peer_bridge_type_mismatch() {
     let mut raw_config = create_raw_config(false).await;
     let mut chain_config = raw_config.chains.remove(1).as_ref().clone();
     let mut deposit_contract_config = chain_config.deposit_contracts.remove(0).as_ref().clone();
+    let mut pool_contract_config = chain_config.pool_contracts.remove(0).as_ref().clone();
     deposit_contract_config.bridge_type = BridgeType::Axelar;
+    pool_contract_config.bridge_type = BridgeType::Axelar;
     chain_config
         .deposit_contracts
         .push(Arc::new(deposit_contract_config));
+    chain_config
+        .pool_contracts
+        .push(Arc::new(pool_contract_config));
     raw_config.chains.push(Arc::new(chain_config));
     assert_eq!(
         MystikoConfig::from_raw(raw_config)
             .err()
             .unwrap()
             .to_string(),
-        "mismatched pool contract bridge_type Axelar vs Tbridge for \
-        deposit contract config at 0xd791049D0a154bC7860804e1A18ACD148Eb0afD9"
+        "mismatched bridge_types Axelar vs Tbridge for peer deposit contract config \
+        of chain_id 97 at 0xd791049D0a154bC7860804e1A18ACD148Eb0afD9 \
+        for deposit contract config of chain_id 5 \
+        at 0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
     );
 }
 

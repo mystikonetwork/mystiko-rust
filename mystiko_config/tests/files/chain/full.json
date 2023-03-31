@@ -30,6 +30,8 @@
       "disabled": true,
       "peerChainId": 97,
       "peerContractAddress": "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9",
+      "bridgeFeeAssetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+      "executorFeeAssetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
       "minAmount": "10000000000000000",
       "maxAmount": "10000000000000000000",
       "minBridgeFee": "20000000000000000",
