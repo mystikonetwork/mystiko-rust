@@ -1,6 +1,6 @@
 use crate::raw::chain::RawChainConfig;
-use crate::raw::create_raw_from_file;
 use crate::raw::mystiko::RawMystikoConfig;
+use crate::raw::{create_raw_from_file, create_raw_from_json};
 use crate::types::{BridgeType, CircuitType};
 use crate::wrapper::bridge::BridgeConfig;
 use crate::wrapper::chain::ChainConfig;
@@ -59,6 +59,10 @@ impl MystikoConfig {
         let config = MystikoConfig::new(raw)?;
         config.validate()?;
         Ok(config)
+    }
+
+    pub fn from_json_str(json: &str) -> Result<Self> {
+        MystikoConfig::from_raw(create_raw_from_json::<RawMystikoConfig>(json)?)
     }
 
     pub async fn from_json_file(json_file: &str) -> Result<Self> {
