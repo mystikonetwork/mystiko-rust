@@ -265,6 +265,12 @@ async fn test_selectors() {
 }
 
 #[tokio::test]
+async fn test_create_from_json_str() {
+    assert!(MystikoConfig::from_json_str("{}").is_err());
+    assert!(MystikoConfig::from_json_str("{ \"version\": \"0.1.0\"}").is_ok());
+}
+
+#[tokio::test]
 async fn test_duplicate_default_circuit_type() {
     let mut raw_config = create_raw_config(false).await;
     let mut circuit_config = raw_config.circuits.get(0).unwrap().as_ref().clone();
