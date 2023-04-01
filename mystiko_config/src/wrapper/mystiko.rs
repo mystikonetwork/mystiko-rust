@@ -120,8 +120,12 @@ impl MystikoConfig {
         }
     }
 
-    pub async fn from_remote_default() -> Result<Self> {
+    pub async fn from_remote_default_mainnet() -> Result<Self> {
         MystikoConfig::from_remote(&RemoteOptions::builder().build()).await
+    }
+
+    pub async fn from_remote_default_testnet() -> Result<Self> {
+        MystikoConfig::from_remote(&RemoteOptions::builder().is_testnet(true).build()).await
     }
 
     pub fn version(&self) -> &str {

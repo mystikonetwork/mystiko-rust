@@ -376,6 +376,15 @@ async fn test_create_from_remote() {
 }
 
 #[tokio::test]
+async fn test_create_from_remote_error() {
+    let server = Server::new_async().await;
+    let options = RemoteOptions::builder()
+        .base_url(format!("{}/config", server.url()))
+        .build();
+    assert!(MystikoConfig::from_remote(&options).await.is_err());
+}
+
+#[tokio::test]
 async fn test_duplicate_default_circuit_type() {
     let mut raw_config = create_raw_config(false).await;
     let mut circuit_config = raw_config.circuits.get(0).unwrap().as_ref().clone();
