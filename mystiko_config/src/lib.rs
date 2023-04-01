@@ -4,6 +4,7 @@ extern crate mystiko_utils;
 extern crate num_bigint;
 extern crate num_traits;
 extern crate regex;
+extern crate reqwest;
 extern crate serde;
 extern crate serde_json;
 extern crate tokio;
