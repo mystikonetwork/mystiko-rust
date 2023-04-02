@@ -3,6 +3,7 @@ members = [
     "mystiko_abi",
     "mystiko_abi_generate",
     "mystiko_config",
+    "mystiko_core",
     "mystiko_crypto",
     "mystiko_protocol",
     "mystiko_database",

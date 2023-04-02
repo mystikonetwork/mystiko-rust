@@ -1,0 +1,29 @@
+[package]
+name = "mystiko_core"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = { version = "1.0.69" }
+bip32 = { version = "0.5.0" }
+futures = { version = "0.3.26" }
+hex = { version = "0.4.3" }
+lazy_static = { version = "1.4.0" }
+log = { version = "0.4.17" }
+mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
+mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
+mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
+mystiko_database = { version = "0.1.0", path = "../mystiko_database" }
+mystiko_protocol = { version = "0.1.0", path = "../mystiko_protocol" }
+mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+rand_core = { version = "0.6.4", features = ["std"] }
+regex = { version = "1.7.3" }
+thiserror = { version = "1.0", default-features = false }
+typed-builder = { version = "0.14.0" }
+
+[dev-dependencies]
+mockito = { version = "0.32.4" }
+mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }

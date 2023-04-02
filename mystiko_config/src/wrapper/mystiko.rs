@@ -28,13 +28,13 @@ pub struct MystikoConfig {
 #[derive(Clone, Debug, TypedBuilder)]
 pub struct RemoteOptions {
     #[builder(default, setter(strip_option))]
-    base_url: Option<String>,
+    pub base_url: Option<String>,
     #[builder(default, setter(strip_option))]
-    git_revision: Option<String>,
+    pub git_revision: Option<String>,
     #[builder(default = false)]
-    is_testnet: bool,
+    pub is_testnet: bool,
     #[builder(default = false)]
-    is_staging: bool,
+    pub is_staging: bool,
 }
 
 const DEFAULT_REMOTE_BASE_URL: &str = "https://static.mystiko.network/config";

@@ -9,7 +9,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe438c63458706e03479442743baae6c88256498e6431708f6dfc520a26515d3"
 dependencies = [
  "lazy_static",
- "regex 1.7.1",
+ "regex 1.7.3",
 ]
 
 [[package]]
@@ -525,6 +525,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "bip32"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e40748d60a3296653e45e87e64c6989aebfad607bccce59cc4156c5d81b2f70"
+dependencies = [
+ "bs58",
+ "hmac",
+ "k256 0.13.0",
+ "once_cell",
+ "pbkdf2 0.12.1",
+ "rand_core 0.6.4",
+ "ripemd",
+ "sha2 0.10.6",
+ "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -1433,7 +1451,7 @@ dependencies = [
  "ethereum-types 0.13.1",
  "hex",
  "once_cell",
- "regex 1.7.1",
+ "regex 1.7.3",
  "serde",
  "serde_json",
  "sha3",
@@ -1450,7 +1468,7 @@ dependencies = [
  "ethereum-types 0.14.1",
  "hex",
  "once_cell",
- "regex 1.7.1",
+ "regex 1.7.3",
  "serde",
  "serde_json",
  "sha3",
@@ -1551,7 +1569,7 @@ dependencies = [
  "prettyplease",
  "proc-macro2 1.0.53",
  "quote 1.0.26",
- "regex 1.7.1",
+ "regex 1.7.3",
  "reqwest",
  "serde",
  "serde_json",
@@ -2488,9 +2506,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.139"
+version = "0.2.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "201de327520df007757c1f0adce6e827fe8562fbc28bfd9c15571c66ca1f5f79"
+checksum = "99227334921fae1a979cf0bfdfcc6b3e5ce376ef57e16fb6fb3ea2ed6095f80c"
 
 [[package]]
 name = "libsqlite3-sys"
@@ -2609,7 +2627,7 @@ dependencies = [
  "lazy_static",
  "log",
  "rand 0.8.5",
- "regex 1.7.1",
+ "regex 1.7.3",
  "serde_json",
  "serde_urlencoded",
  "similar",
@@ -2631,7 +2649,7 @@ name = "mystiko_abi_generate"
 version = "0.1.0"
 dependencies = [
  "ethers-contract-abigen",
- "regex 1.7.1",
+ "regex 1.7.3",
  "serde",
 ]
 
@@ -2647,13 +2665,38 @@ dependencies = [
  "mystiko_validator",
  "num-bigint 0.4.3",
  "num-traits 0.2.15",
- "regex 1.7.1",
+ "regex 1.7.3",
  "reqwest",
  "serde",
  "serde_json",
  "tokio",
  "typed-builder",
  "validator",
+]
+
+[[package]]
+name = "mystiko_core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bip32",
+ "futures",
+ "hex",
+ "lazy_static",
+ "log",
+ "mockito",
+ "mystiko_abi",
+ "mystiko_config",
+ "mystiko_crypto",
+ "mystiko_database",
+ "mystiko_protocol",
+ "mystiko_storage",
+ "mystiko_storage_sqlite",
+ "rand_core 0.6.4",
+ "regex 1.7.3",
+ "thiserror",
+ "tokio",
+ "typed-builder",
 ]
 
 [[package]]
@@ -3619,13 +3662,13 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.7.1"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48aaa5748ba571fb95cd2c85c09f629215d3a6ece942baa100950af03a34f733"
+checksum = "8b1f693b24f6ac912f4893ef08244d70b6067480d2f1a46e950c9691e6749d1d"
 dependencies = [
  "aho-corasick 0.7.20",
  "memchr",
- "regex-syntax 0.6.28",
+ "regex-syntax 0.6.29",
 ]
 
 [[package]]
@@ -3645,9 +3688,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.28"
+version = "0.6.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
+checksum = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1"
 
 [[package]]
 name = "rend"
@@ -4916,7 +4959,7 @@ checksum = "32ad5bf234c7d3ad1042e5252b7eddb2c4669ee23f32c7dd0e9b7705f07ef591"
 dependencies = [
  "idna 0.2.3",
  "lazy_static",
- "regex 1.7.1",
+ "regex 1.7.3",
  "serde",
  "serde_derive",
  "serde_json",
@@ -4935,7 +4978,7 @@ dependencies = [
  "proc-macro-error",
  "proc-macro2 1.0.53",
  "quote 1.0.26",
- "regex 1.7.1",
+ "regex 1.7.3",
  "syn 1.0.107",
  "validator_types",
 ]
