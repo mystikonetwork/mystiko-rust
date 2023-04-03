@@ -1,5 +1,6 @@
 use crate::raw::gas_cost::RawGasCostConfig;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
@@ -7,8 +8,8 @@ use validator::Validate;
 #[serde(rename_all = "camelCase")]
 pub struct RawTransactionInfoConfig {
     #[validate]
-    main_gas_cost: RawGasCostConfig,
+    pub main_gas_cost: Arc<RawGasCostConfig>,
 
     #[validate]
-    erc20_gas_cost: RawGasCostConfig,
+    pub erc20_gas_cost: Arc<RawGasCostConfig>,
 }

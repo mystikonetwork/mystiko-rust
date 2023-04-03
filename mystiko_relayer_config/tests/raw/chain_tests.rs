@@ -3,6 +3,7 @@ use mystiko_relayer_config::raw::contract::RawContractConfig;
 use mystiko_relayer_config::raw::gas_cost::RawGasCostConfig;
 use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
 use mystiko_relayer_config::raw::{create_raw, create_raw_from_file};
+use std::sync::Arc;
 use validator::Validate;
 
 fn default_config() -> RawChainConfig {
@@ -21,25 +22,31 @@ fn default_config() -> RawChainConfig {
             .asset_symbol("ETH".to_string())
             .relayer_contract_address("0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc".to_string())
             .contracts(vec![
-                RawContractConfig::builder()
-                    .asset_symbol("ETH".to_string())
-                    .relayer_fee_of_ten_thousandth(25)
-                    .build(),
-                RawContractConfig::builder()
-                    .asset_symbol("MTT".to_string())
-                    .relayer_fee_of_ten_thousandth(25)
-                    .build(),
-                RawContractConfig::builder()
-                    .asset_symbol("mUSD".to_string())
-                    .relayer_fee_of_ten_thousandth(25)
-                    .build(),
+                Arc::new(
+                    RawContractConfig::builder()
+                        .asset_symbol("ETH".to_string())
+                        .relayer_fee_of_ten_thousandth(25)
+                        .build(),
+                ),
+                Arc::new(
+                    RawContractConfig::builder()
+                        .asset_symbol("MTT".to_string())
+                        .relayer_fee_of_ten_thousandth(25)
+                        .build(),
+                ),
+                Arc::new(
+                    RawContractConfig::builder()
+                        .asset_symbol("mUSD".to_string())
+                        .relayer_fee_of_ten_thousandth(25)
+                        .build(),
+                ),
             ])
-            .transaction_info(
+            .transaction_info(Arc::new(
                 RawTransactionInfoConfig::builder()
-                    .main_gas_cost(raw_gas_cost_config.clone())
-                    .erc20_gas_cost(raw_gas_cost_config)
+                    .main_gas_cost(Arc::new(raw_gas_cost_config.clone()))
+                    .erc20_gas_cost(Arc::new(raw_gas_cost_config))
                     .build(),
-            )
+            ))
             .build(),
     )
     .unwrap()
@@ -99,12 +106,12 @@ fn test_default_values() {
             .chain_id(5)
             .asset_symbol("ETH".to_string())
             .relayer_contract_address("0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc".to_string())
-            .transaction_info(
+            .transaction_info(Arc::new(
                 RawTransactionInfoConfig::builder()
-                    .main_gas_cost(raw_gas_cost_config.clone())
-                    .erc20_gas_cost(raw_gas_cost_config)
+                    .main_gas_cost(Arc::new(raw_gas_cost_config.clone()))
+                    .erc20_gas_cost(Arc::new(raw_gas_cost_config))
                     .build(),
-            )
+            ))
             .build(),
     )
     .unwrap();

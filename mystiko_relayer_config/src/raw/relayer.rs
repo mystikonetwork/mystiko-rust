@@ -1,5 +1,6 @@
 use crate::raw::chain::RawChainConfig;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
@@ -10,5 +11,5 @@ pub struct RawRelayerConfig {
     pub version: String,
 
     #[validate]
-    pub chains: Vec<RawChainConfig>,
+    pub chains: Vec<Arc<RawChainConfig>>,
 }

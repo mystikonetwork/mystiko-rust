@@ -1,6 +1,7 @@
 use mystiko_relayer_config::raw::gas_cost::RawGasCostConfig;
 use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
 use mystiko_relayer_config::raw::{create_raw, create_raw_from_file};
+use std::sync::Arc;
 
 fn default_gas_cost_config() -> RawGasCostConfig {
     create_raw::<RawGasCostConfig>(
@@ -19,8 +20,8 @@ fn default_gas_cost_config() -> RawGasCostConfig {
 fn default_config() -> RawTransactionInfoConfig {
     create_raw::<RawTransactionInfoConfig>(
         RawTransactionInfoConfig::builder()
-            .main_gas_cost(default_gas_cost_config())
-            .erc20_gas_cost(default_gas_cost_config())
+            .main_gas_cost(Arc::new(default_gas_cost_config()))
+            .erc20_gas_cost(Arc::new(default_gas_cost_config()))
             .build(),
     )
     .unwrap()
