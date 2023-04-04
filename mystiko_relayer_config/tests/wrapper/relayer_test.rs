@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use mystiko_relayer_config::raw::chain::RawChainConfig;
 use mystiko_relayer_config::raw::create_raw_from_file;
 use mystiko_relayer_config::raw::relayer::RawRelayerConfig;
 use mystiko_relayer_config::wrapper::chain::ChainConfig;
 use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
+use std::sync::Arc;
 
 const VALID_CONFIG_FILE: &str = "tests/files/relayer.valid.json";
 const VALID_CHAIN_CONFIG_FILE: &str = "tests/files/chain.valid.json";

@@ -5,6 +5,7 @@ use mystiko_relayer_config::raw::relayer::RawRelayerConfig;
 use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
 use mystiko_relayer_config::raw::{create_raw, create_raw_from_file};
 use std::sync::Arc;
+use validator::Validate;
 
 fn default_chain_config() -> RawChainConfig {
     let raw_gas_cost_config = RawGasCostConfig::builder()
@@ -62,19 +63,19 @@ fn default_config() -> RawRelayerConfig {
     .unwrap()
 }
 
-// #[test]
-// fn test_invalid_version_0() {
-//     let mut config = default_config();
-//     config.version = "".to_string();
-//     assert!(config.validate().is_err());
-// }
-//
-// #[test]
-// fn test_invalid_version_1() {
-//     let mut config = default_config();
-//     config.version = "wrong version".to_string();
-//     assert!(config.validate().is_err());
-// }
+#[test]
+fn test_invalid_version_0() {
+    let mut config = default_config();
+    config.version = "".to_string();
+    assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_invalid_version_1() {
+    let mut config = default_config();
+    config.version = "wrong version".to_string();
+    assert!(config.validate().is_err());
+}
 
 #[tokio::test]
 async fn test_import_valid_json_file() {

@@ -2,7 +2,7 @@ use crate::raw::bridge::RawBridgeConfig;
 use crate::raw::chain::RawChainConfig;
 use crate::raw::circuit::RawCircuitConfig;
 use crate::raw::indexer::RawIndexerConfig;
-use crate::raw::validator::{
+use mystiko_validator::validate::{
     array_unique, is_git_revision, is_sem_ver, string_vec_each_not_empty, validate_nested_vec,
 };
 use serde::{Deserialize, Serialize};

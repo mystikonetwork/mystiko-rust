@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use mystiko_relayer_config::raw::chain::RawChainConfig;
 use mystiko_relayer_config::raw::contract::RawContractConfig;
 use mystiko_relayer_config::raw::create_raw_from_file;
@@ -7,6 +6,7 @@ use mystiko_relayer_config::types::{AssetType, CircuitType};
 use mystiko_relayer_config::wrapper::chain::ChainConfig;
 use mystiko_relayer_config::wrapper::contract::ContractConfig;
 use mystiko_relayer_config::wrapper::transaction_info::TransactionInfoConfig;
+use std::sync::Arc;
 
 const VALID_CONFIG_FILE: &str = "tests/files/chain.valid.json";
 const VALID_GAS_COST_CONFIG_FILE: &str = "tests/files/transaction_info.valid.json";
@@ -40,9 +40,15 @@ async fn test_create() {
     assert_eq!(config.name(), "Ethereum Goerli");
     assert_eq!(config.chain_id(), 5);
     assert_eq!(config.asset_symbol(), "ETH");
-    assert_eq!(config.relayer_contract_address(), "0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc");
+    assert_eq!(
+        config.relayer_contract_address(),
+        "0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc"
+    );
     assert_eq!(config.contracts().len(), 3);
-    assert_eq!(config.transaction_info(), &test_create_transaction_info().await);
+    assert_eq!(
+        config.transaction_info(),
+        &test_create_transaction_info().await
+    );
 
     let contract_option = config.find_contract("ETH");
     assert!(contract_option.is_some());

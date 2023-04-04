@@ -1,8 +1,8 @@
-use std::sync::Arc;
-use rust_decimal::Decimal;
 use mystiko_relayer_config::raw::contract::RawContractConfig;
 use mystiko_relayer_config::raw::create_raw_from_file;
 use mystiko_relayer_config::wrapper::contract::ContractConfig;
+use rust_decimal::Decimal;
+use std::sync::Arc;
 
 const VALID_CONFIG_FILE: &str = "tests/files/contract.valid.json";
 

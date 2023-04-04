@@ -1,5 +1,5 @@
-use crate::raw::validator::string_vec_each_not_empty;
 use crate::types::CircuitType;
+use mystiko_validator::validate::string_vec_each_not_empty;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;

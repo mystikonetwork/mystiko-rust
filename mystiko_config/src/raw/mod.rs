@@ -6,7 +6,6 @@ pub mod contract;
 pub mod indexer;
 pub mod mystiko;
 pub mod provider;
-pub mod validator;
 
 use ::validator::Validate;
 use anyhow::{bail, Result};
