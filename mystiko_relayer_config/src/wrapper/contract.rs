@@ -3,7 +3,7 @@ use rust_decimal::Decimal;
 use std::sync::Arc;
 use validator::Validate;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ContractConfig {
     raw: Arc<RawContractConfig>,
 }

@@ -9,7 +9,7 @@ use validator::Validate;
 fn default_config() -> RawChainConfig {
     let raw_gas_cost_config = RawGasCostConfig::builder()
         .transaction1x0(500704)
-        .transaction1x1(617592)
+        .transaction1x1(619966)
         .transaction1x2(705128)
         .transaction2x0(598799)
         .transaction2x1(708389)

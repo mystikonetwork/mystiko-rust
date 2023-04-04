@@ -2,10 +2,9 @@ use crate::raw::chain::RawChainConfig;
 use crate::raw::relayer::RawRelayerConfig;
 use crate::raw::{create_raw_from_file, create_raw_from_json};
 use crate::wrapper::chain::ChainConfig;
-use anyhow::{bail, Error, Result};
+use anyhow::{Error, Result};
 use std::collections::HashMap;
 use std::sync::Arc;
-use typed_builder::TypedBuilder;
 use validator::Validate;
 
 #[derive(Clone, Debug)]

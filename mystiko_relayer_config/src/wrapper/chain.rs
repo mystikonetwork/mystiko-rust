@@ -7,7 +7,7 @@ use anyhow::Result;
 use std::sync::Arc;
 use validator::Validate;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ChainConfig {
     raw: Arc<RawChainConfig>,
     contract_configs: Vec<Arc<ContractConfig>>,
