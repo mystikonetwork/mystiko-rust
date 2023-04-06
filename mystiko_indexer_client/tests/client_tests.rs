@@ -1,5 +1,4 @@
 use base64::{engine::general_purpose, Engine as _};
-
 use mockito::*;
 use mystiko_indexer_client::errors::ClientError;
 use mystiko_indexer_client::response::ApiResponse;
@@ -1303,5 +1302,47 @@ async fn test_find_commitments_for_contract() {
     assert!(resp.is_ok());
     assert_eq!(resp.as_ref().unwrap().len(), 1);
     assert_eq!(resp.unwrap()[0], resp_list[1]);
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_count_commitment_included_for_contract() {
+    let TestClientSetupData {
+        mut mocked_server,
+        indexer_client,
+    } = setup().await.unwrap();
+    let test_chain_id = 97;
+    let test_contract_address = String::from("address1");
+    let test_end_block = 2283020;
+    let test_resp = 3;
+    let mocked_api_resp = ApiResponse {
+        code: 0,
+        result: &test_resp,
+    };
+    let m = mocked_server
+        .mock(
+            "get",
+            format!(
+                "/chains/{}/contracts/{}/count/commitment-included?endBlock={}",
+                test_chain_id, &test_contract_address, test_end_block
+            )
+            .as_str(),
+        )
+        .with_status(200)
+        .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let resp = indexer_client
+        .count_commitment_included_for_contract(
+            test_chain_id,
+            test_contract_address,
+            test_end_block,
+        )
+        .await;
+    assert!(resp.is_ok());
+    let resp = resp.unwrap();
+    dbg!(&resp);
+    assert_eq!(resp, test_resp);
     m.assert_async().await;
 }
