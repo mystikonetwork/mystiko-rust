@@ -2644,6 +2644,7 @@ dependencies = [
  "lazy_static",
  "mockito",
  "mystiko_utils",
+ "mystiko_validator",
  "num-bigint 0.4.3",
  "num-traits 0.2.15",
  "regex 1.7.1",
@@ -2780,6 +2781,7 @@ name = "mystiko_relayer_config"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "mystiko_validator",
  "rust_decimal",
  "serde",
  "serde_json",
@@ -2821,6 +2823,15 @@ dependencies = [
  "num-bigint 0.4.3",
  "num-traits 0.2.15",
  "rust_decimal",
+]
+
+[[package]]
+name = "mystiko_validator"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "regex 1.7.1",
+ "validator",
 ]
 
 [[package]]

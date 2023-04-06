@@ -6,4 +6,3 @@ mod contract;
 mod indexer_tests;
 mod mystiko_tests;
 mod provider_tests;
-mod validator_tests;
