@@ -4,18 +4,18 @@ use anyhow::Result;
 use std::sync::Arc;
 use validator::Validate;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TransactionInfoConfig {
     main_gas_cost: MainGasCost,
     erc20_gas_cost: Erc20GasCost,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct MainGasCost {
     raw: Arc<RawGasCostConfig>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Erc20GasCost {
     raw: Arc<RawGasCostConfig>,
 }

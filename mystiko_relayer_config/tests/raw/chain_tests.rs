@@ -9,7 +9,7 @@ use validator::Validate;
 fn default_config() -> RawChainConfig {
     let raw_gas_cost_config = RawGasCostConfig::builder()
         .transaction1x0(500704)
-        .transaction1x1(617592)
+        .transaction1x1(619966)
         .transaction1x2(705128)
         .transaction2x0(598799)
         .transaction2x1(708389)
@@ -84,10 +84,8 @@ fn test_invalid_relayer_contract_address() {
     let mut config = default_config();
     config.relayer_contract_address = "".to_string();
     assert!(config.validate().is_err());
-    // TODO add validate
-    // config.relayer_contract_address =
-    //     "45B22A8CefDfF00989882CAE48Ad06D57938Efcc".to_string();
-    // assert!(config.validate().is_err());
+    config.relayer_contract_address = "45B22A8CefDfF00989882CAE48Ad06D57938Efcc".to_string();
+    assert!(config.validate().is_err());
 }
 
 #[test]

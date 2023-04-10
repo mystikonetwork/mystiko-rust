@@ -1,5 +1,5 @@
-use crate::raw::validator::{is_ethereum_address, is_number_string};
 use crate::types::{BridgeType, ContractType};
+use mystiko_validator::validate::{is_ethereum_address, is_number_string};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;

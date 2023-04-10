@@ -289,4 +289,19 @@ impl IndexerClient {
             .await?;
         Ok(response)
     }
+
+    pub async fn count_commitment_included_for_contract(
+        &self,
+        chain_id: u32,
+        contract_address: String,
+        end_block: u32,
+    ) -> Result<u32> {
+        let resp = self
+            .get_data::<u32>(&format!(
+                "{}/chains/{}/contracts/{}/count/commitment-included?endBlock={}",
+                &self.base_url, chain_id, contract_address, end_block
+            ))
+            .await?;
+        Ok(resp)
+    }
 }

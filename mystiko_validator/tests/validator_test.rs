@@ -1,4 +1,4 @@
-use mystiko_config::raw::validator::{
+use mystiko_validator::validate::{
     array_unique, is_ethereum_address, is_number_string, is_number_string_vec, is_numeric,
     is_sem_ver, string_vec_each_not_empty,
 };
