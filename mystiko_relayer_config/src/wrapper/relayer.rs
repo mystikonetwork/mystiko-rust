@@ -15,6 +15,20 @@ pub struct RelayerConfig {
     default_chain_configs: HashMap<u32, Arc<ChainConfig>>,
 }
 
+#[derive(Clone, Debug, TypedBuilder)]
+pub struct RemoteOptions {
+    #[builder(default, setter(strip_option))]
+    base_url: Option<String>,
+    #[builder(default, setter(strip_option))]
+    git_revision: Option<String>,
+    #[builder(default = false)]
+    is_testnet: bool,
+    #[builder(default = false)]
+    is_staging: bool,
+}
+
+const DEFAULT_REMOTE_BASE_URL: &str = "https://static.mystiko.network/relayer_config";
+
 impl RelayerConfig {
     fn new(raw: RawRelayerConfig) -> Result<Self> {
         let chain_configs = initialize_chain_configs(&raw.chains)?;
@@ -38,6 +52,50 @@ impl RelayerConfig {
 
     pub async fn from_json_file(json_file: &str) -> Result<Self> {
         RelayerConfig::from_raw(create_raw_from_file::<RawRelayerConfig>(json_file).await?)
+    }
+
+    pub async fn from_remote(options: &RemoteOptions) -> Result<Self> {
+        let base_url = options
+            .base_url
+            .as_deref()
+            .unwrap_or(DEFAULT_REMOTE_BASE_URL);
+        let environment = if options.is_staging {
+            "staging"
+        } else {
+            "production"
+        };
+        let network = if options.is_testnet {
+            "testnet"
+        } else {
+            "mainnet"
+        };
+        let url = if let Some(git_revision) = &options.git_revision {
+            format!(
+                "{}/{}/{}/{}/config.json",
+                base_url, environment, network, git_revision
+            )
+        } else {
+            format!("{}/{}/{}/latest.json", base_url, environment, network)
+        };
+        let response = reqwest::get(&url).await?;
+        if response.status().is_success() {
+            let content = response.text().await?;
+            RelayerConfig::from_json_str(&content)
+        } else {
+            Err(Error::msg(format!(
+                "Failed to fetch config from {}: status code {}",
+                &url,
+                response.status()
+            )))
+        }
+    }
+
+    pub async fn from_remote_default_mainnet() -> Result<Self> {
+        RelayerConfig::from_remote(&RemoteOptions::builder().build()).await
+    }
+
+    pub async fn from_remote_default_testnet() -> Result<Self> {
+        RelayerConfig::from_remote(&RemoteOptions::builder().is_testnet(true).build()).await
     }
 
     pub fn version(&self) -> &str {
