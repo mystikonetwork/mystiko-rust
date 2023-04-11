@@ -75,8 +75,15 @@ where
             .check_password(&options.wallet_password)
             .await?;
         let (raw_account, account_nonce) = self.create_raw_account(&wallet, options).await?;
-        self.insert_raw_account(&mut wallet, raw_account, account_nonce)
-            .await
+        let account = self
+            .insert_raw_account(&mut wallet, raw_account, account_nonce)
+            .await?;
+        log::info!(
+            "successfully created an account(id = \"{}\", name = \"{}\")",
+            &account.id,
+            &account.data.name
+        );
+        Ok(account)
     }
 
     pub async fn count(&mut self, filter: QueryFilter) -> Result<u64> {
@@ -161,7 +168,7 @@ where
         old_wallet_password: &str,
         new_wallet_password: &str,
     ) -> Result<Vec<Document<Account>>> {
-        self.wallets.check_password(old_wallet_password).await?;
+        let wallet = self.wallets.check_password(old_wallet_password).await?;
         let mut accounts = self.find_all().await?;
         for account in accounts.iter_mut() {
             let secret_key =
@@ -169,13 +176,19 @@ where
             account.data.encrypted_secret_key =
                 encrypt_symmetric(new_wallet_password, &secret_key)?;
         }
-        self.db
+        let accounts = self
+            .db
             .lock()
             .await
             .accounts
             .update_batch(&accounts)
             .await
-            .map_err(MystikoError::DatabaseError)
+            .map_err(MystikoError::DatabaseError)?;
+        log::info!(
+            "successfully updated the encryption of all accounts from wallet(id = \"{}\")",
+            &wallet.id
+        );
+        Ok(accounts)
     }
 
     pub async fn export_secret_key_by_id(
@@ -270,13 +283,20 @@ where
                 }
             }
             if has_update {
-                self.db
+                let updated_account = self
+                    .db
                     .lock()
                     .await
                     .accounts
                     .update(&account)
                     .map_err(MystikoError::DatabaseError)
-                    .await
+                    .await?;
+                log::info!(
+                    "successfully updated an account(id = \"{}\") with options: {:?}",
+                    &updated_account.id,
+                    options
+                );
+                Ok(updated_account)
             } else {
                 Ok(account)
             }

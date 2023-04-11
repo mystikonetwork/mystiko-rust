@@ -89,7 +89,7 @@ where
             .insert(&wallet)
             .await
             .map_err(MystikoError::DatabaseError)?;
-        log::info!("successfully created a wallet(id = {})", wallet.id);
+        log::info!("successfully created a wallet(id = \"{}\")", wallet.id);
         Ok(wallet)
     }
 
@@ -130,7 +130,7 @@ where
             .await
             .map_err(MystikoError::DatabaseError)?;
         log::info!(
-            "successfully updated the password of the wallet(id = {})",
+            "successfully updated the password of the wallet(id = \"{}\")",
             wallet.id
         );
         Ok(wallet)
