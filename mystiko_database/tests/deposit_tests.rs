@@ -1,6 +1,5 @@
 extern crate mystiko_database;
 
-use futures::lock::Mutex;
 use mystiko_database::collection::deposit::DepositCollection;
 use mystiko_database::document::deposit::{BridgeType, Deposit, DepositStatus};
 use mystiko_storage::collection::Collection;
@@ -11,6 +10,7 @@ use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder}
 use num_bigint::BigInt;
 use std::str::FromStr;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 async fn create_deposits() -> DepositCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();

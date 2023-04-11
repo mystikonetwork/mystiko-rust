@@ -9,13 +9,13 @@ use crate::collection::nullifier::NullifierCollection;
 use crate::collection::transaction::TransactionCollection;
 use crate::collection::wallet::WalletCollection;
 use anyhow::Result;
-use futures::lock::Mutex;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::{Document, DocumentRawData};
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub accounts: AccountCollection<F, R, S>,

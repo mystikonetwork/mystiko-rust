@@ -18,7 +18,7 @@ pub static WALLET_SCHEMA: DocumentSchema = DocumentSchema {
 pub struct Wallet {
     pub encrypted_entropy: String,
     pub hashed_password: String,
-    pub account_nonce: i32,
+    pub account_nonce: u32,
 }
 
 impl DocumentData for Wallet {

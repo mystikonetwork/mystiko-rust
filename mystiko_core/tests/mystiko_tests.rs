@@ -11,10 +11,8 @@ async fn test_create_with_config_file() {
     let mystiko_options = MystikoOptions::builder()
         .config_file_path(String::from("tests/files/config.json"))
         .build();
-    let mut mystiko = Mystiko::new(database, Some(mystiko_options)).await.unwrap();
-    mystiko.db().lock().await;
-    assert_eq!(mystiko.config().version(), "0.1.0");
-    assert!(mystiko.wallets().current().await.unwrap().is_none());
+    let mystiko = Mystiko::new(database, Some(mystiko_options)).await.unwrap();
+    assert_eq!(mystiko.config.version(), "0.1.0");
 }
 
 #[tokio::test]
@@ -35,5 +33,5 @@ async fn test_create_with_config_options() {
         .build();
     let mystiko = Mystiko::new(database, Some(mystiko_options)).await.unwrap();
     path.assert_async().await;
-    assert_eq!(mystiko.config().version(), "0.2.0");
+    assert_eq!(mystiko.config.version(), "0.2.0");
 }

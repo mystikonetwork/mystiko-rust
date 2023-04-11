@@ -1,0 +1,534 @@
+use crate::common::create_database;
+use mystiko_core::handler::account::{
+    AccountHandler, CreateAccountOptions, UpdateAccountOptions, DEFAULT_ACCOUNT_SCAN_SIZE,
+};
+use mystiko_core::handler::wallet::{CreateWalletOptions, WalletHandler};
+use mystiko_crypto::crypto::decrypt_symmetric;
+use mystiko_database::database::Database;
+use mystiko_database::document::account::{AccountStatus, SCAN_SIZE_FIELD_NAME};
+use mystiko_protocol::address::ShieldedAddress;
+use mystiko_protocol::key::full_public_key;
+use mystiko_protocol::types::{FullPk, FullSk};
+use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::formatter::SqlFormatter;
+use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
+use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+type TypedDatabase = Database<SqlFormatter, SqliteRawData, SqliteStorage>;
+type TypedWalletHandler = WalletHandler<SqlFormatter, SqliteRawData, SqliteStorage>;
+type TypedAccountHandler = AccountHandler<SqlFormatter, SqliteRawData, SqliteStorage>;
+
+const DEFAULT_WALLET_PASSWORD: &str = "P@ssw0rd";
+
+async fn setup() -> (
+    TypedAccountHandler,
+    TypedWalletHandler,
+    Arc<Mutex<TypedDatabase>>,
+) {
+    let database = Arc::new(Mutex::new(create_database().await));
+    database.lock().await.migrate().await.unwrap();
+    let mut wallet_handler = WalletHandler::new(database.clone());
+    wallet_handler
+        .create(
+            &CreateWalletOptions::builder()
+                .password(DEFAULT_WALLET_PASSWORD.to_string())
+                .build(),
+        )
+        .await
+        .unwrap();
+    (
+        AccountHandler::new(database.clone()),
+        wallet_handler,
+        database,
+    )
+}
+
+#[tokio::test]
+async fn test_create_default() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account = account_handler.create(&options).await.unwrap();
+    assert_eq!(account.data.name, "Account 1");
+    assert_eq!(account.data.scan_size, DEFAULT_ACCOUNT_SCAN_SIZE);
+    assert_eq!(account.data.status, AccountStatus::Created);
+    let full_pk: FullPk = decode_hex_with_length(&account.data.public_key).unwrap();
+    assert_eq!(
+        account.data.shielded_address,
+        ShieldedAddress::from_full_public_key(&full_pk).address()
+    );
+    let full_sk_str =
+        decrypt_symmetric(DEFAULT_WALLET_PASSWORD, &account.data.encrypted_secret_key).unwrap();
+    let full_sk: FullSk = decode_hex_with_length(&full_sk_str).unwrap();
+    assert_eq!(full_pk, full_public_key(&full_sk));
+}
+
+#[tokio::test]
+async fn test_create_with_name() {
+    let (mut account_handler, _, _) = setup().await;
+    let mut options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .name(String::from(""))
+        .build();
+    let account1 = account_handler.create(&options).await.unwrap();
+    assert_eq!(account1.data.name, "Account 1");
+    options.name = Some(String::from("Awesome Account 2"));
+    let account2 = account_handler.create(&options).await.unwrap();
+    assert_eq!(account2.data.name, "Awesome Account 2");
+    assert_ne!(
+        account1.data.shielded_address,
+        account2.data.shielded_address
+    );
+}
+
+#[tokio::test]
+async fn test_create_with_scan_size() {
+    let (mut account_handler, _, _) = setup().await;
+    let mut options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .scan_size(0)
+        .build();
+    let mut account = account_handler.create(&options).await.unwrap();
+    assert_eq!(account.data.scan_size, DEFAULT_ACCOUNT_SCAN_SIZE);
+    options.scan_size = Some(100);
+    account = account_handler.create(&options).await.unwrap();
+    assert_eq!(account.data.scan_size, 100);
+}
+
+#[tokio::test]
+async fn test_create_with_secret_key() {
+    let (mut account_handler, _, db) = setup().await;
+    let mut options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account1 = account_handler.create(&options).await.unwrap();
+    options.secret_key = Some(
+        account_handler
+            .export_secret_key_by_id(DEFAULT_WALLET_PASSWORD, &account1.id)
+            .await
+            .unwrap(),
+    );
+    let account2 = account_handler.create(&options).await.unwrap();
+    db.lock().await.accounts.delete_all().await.unwrap();
+    let account3 = account_handler.create(&options).await.unwrap();
+    assert_eq!(account1.id, account2.id);
+    assert_ne!(account2.id, account3.id);
+    assert_eq!(
+        account1.data.shielded_address,
+        account2.data.shielded_address
+    );
+    assert_eq!(
+        account2.data.shielded_address,
+        account3.data.shielded_address
+    );
+}
+
+#[tokio::test]
+async fn test_create_with_wrong_password() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(String::from("wrong password"))
+        .build();
+    let result = account_handler.create(&options).await;
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_create_with_no_wallet() {
+    let (mut account_handler, _, db) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    db.lock().await.wallets.delete_all().await.unwrap();
+    let result = account_handler.create(&options).await;
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_create_with_same_wallet_mnemonic_phrase() {
+    let (mut account_handler, mut wallet_handler, db) = setup().await;
+    let mut options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let wallet1 = wallet_handler.check_current().await.unwrap();
+    let mnemonic_phrase = wallet_handler
+        .export_mnemonic_phrase(DEFAULT_WALLET_PASSWORD)
+        .await
+        .unwrap();
+    let account1 = account_handler.create(&options).await.unwrap();
+    let account2 = account_handler.create(&options).await.unwrap();
+    db.lock().await.accounts.delete_all().await.unwrap();
+    db.lock().await.wallets.delete_all().await.unwrap();
+    let wallet_options = CreateWalletOptions::builder()
+        .password(String::from("newP@ssw0rd"))
+        .mnemonic_phrase(mnemonic_phrase)
+        .build();
+    let wallet2 = wallet_handler.create(&wallet_options).await.unwrap();
+    assert_ne!(wallet1.id, wallet2.id);
+    options.wallet_password = String::from("newP@ssw0rd");
+    let account3 = account_handler.create(&options).await.unwrap();
+    let account4 = account_handler.create(&options).await.unwrap();
+    assert_ne!(account1.id, account3.id);
+    assert_ne!(account2.id, account4.id);
+    assert_eq!(
+        account1.data.shielded_address,
+        account3.data.shielded_address
+    );
+    assert_eq!(
+        account2.data.shielded_address,
+        account4.data.shielded_address
+    );
+}
+
+#[tokio::test]
+async fn test_find() {
+    let (mut account_handler, _, _) = setup().await;
+    assert_eq!(account_handler.find_all().await.unwrap(), vec![]);
+    let mut options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account1 = account_handler.create(&options).await.unwrap();
+    let mut accounts = account_handler.find_all().await.unwrap();
+    assert_eq!(accounts, vec![account1.clone()]);
+    options.scan_size = Some(200);
+    let account2 = account_handler.create(&options).await.unwrap();
+    let filter = QueryFilterBuilder::new()
+        .filter(Condition::FILTER(SubFilter::LessEqual(
+            SCAN_SIZE_FIELD_NAME.to_string(),
+            String::from("200"),
+        )))
+        .build();
+    accounts = account_handler.find(filter).await.unwrap();
+    assert_eq!(accounts, vec![account2.clone()]);
+    accounts = account_handler.find_all().await.unwrap();
+    assert_eq!(accounts, vec![account1, account2]);
+}
+
+#[tokio::test]
+async fn test_find_by_id() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account1 = account_handler.create(&options).await.unwrap();
+    let account2 = account_handler.create(&options).await.unwrap();
+    let account3 = account_handler
+        .find_by_id(&account1.id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(account1, account3);
+    let account4 = account_handler
+        .find_by_id(&account2.id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(account2, account4);
+    assert!(account_handler
+        .find_by_id("non_existing_id")
+        .await
+        .unwrap()
+        .is_none());
+}
+
+#[tokio::test]
+async fn test_find_by_public_key() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account1 = account_handler.create(&options).await.unwrap();
+    let account2 = account_handler.create(&options).await.unwrap();
+    let account3 = account_handler
+        .find_by_public_key(&account1.data.public_key)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(account1, account3);
+    let account4 = account_handler
+        .find_by_public_key(&account2.data.public_key)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(account2, account4);
+    assert!(account_handler
+        .find_by_public_key("non_existing_public_key")
+        .await
+        .unwrap()
+        .is_none());
+}
+
+#[tokio::test]
+async fn test_find_by_shielded_address() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account1 = account_handler.create(&options).await.unwrap();
+    let account2 = account_handler.create(&options).await.unwrap();
+    let account3 = account_handler
+        .find_by_shielded_address(&account1.data.shielded_address)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(account1, account3);
+    let account4 = account_handler
+        .find_by_shielded_address(&account2.data.shielded_address)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(account2, account4);
+    assert!(account_handler
+        .find_by_shielded_address("non_existing_shielded_address")
+        .await
+        .unwrap()
+        .is_none());
+}
+
+#[tokio::test]
+async fn test_count() {
+    let (mut account_handler, _, _) = setup().await;
+    assert_eq!(account_handler.count_all().await.unwrap(), 0);
+    let mut options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    account_handler.create(&options).await.unwrap();
+    assert_eq!(account_handler.count_all().await.unwrap(), 1);
+    options.scan_size = Some(200);
+    account_handler.create(&options).await.unwrap();
+    assert_eq!(account_handler.count_all().await.unwrap(), 2);
+    let filter = QueryFilterBuilder::new()
+        .filter(Condition::FILTER(SubFilter::LessEqual(
+            SCAN_SIZE_FIELD_NAME.to_string(),
+            String::from("200"),
+        )))
+        .build();
+    assert_eq!(account_handler.count(filter).await.unwrap(), 1);
+}
+
+#[tokio::test]
+async fn test_update_name() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account = account_handler.create(&options).await.unwrap();
+    let mut update_options = UpdateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .name(String::new())
+        .build();
+    let mut updated_account = account_handler
+        .update_by_public_key(&account.data.public_key, &update_options)
+        .await
+        .unwrap();
+    assert_eq!(updated_account.data.name, account.data.name);
+    assert_eq!(updated_account.updated_at, account.updated_at);
+    update_options.name = Some(account.data.name.clone());
+    updated_account = account_handler
+        .update_by_shielded_address(&account.data.shielded_address, &update_options)
+        .await
+        .unwrap();
+    assert_eq!(updated_account.data.name, account.data.name);
+    assert_eq!(updated_account.updated_at, account.updated_at);
+    update_options.name = Some(String::from("Awesome Account Name"));
+    updated_account = account_handler
+        .update_by_shielded_address(&account.data.shielded_address, &update_options)
+        .await
+        .unwrap();
+    assert_eq!(updated_account.data.name, "Awesome Account Name");
+}
+
+#[tokio::test]
+async fn test_update_scan_size() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account = account_handler.create(&options).await.unwrap();
+    let mut update_options = UpdateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .scan_size(0)
+        .build();
+    let mut updated_account = account_handler
+        .update_by_public_key(&account.data.public_key, &update_options)
+        .await
+        .unwrap();
+    assert_eq!(updated_account.data.scan_size, account.data.scan_size);
+    assert_eq!(updated_account.updated_at, account.updated_at);
+    update_options.scan_size = Some(account.data.scan_size);
+    updated_account = account_handler
+        .update_by_shielded_address(&account.data.shielded_address, &update_options)
+        .await
+        .unwrap();
+    assert_eq!(updated_account.data.scan_size, account.data.scan_size);
+    assert_eq!(updated_account.updated_at, account.updated_at);
+    update_options.scan_size = Some(200);
+    updated_account = account_handler
+        .update_by_shielded_address(&account.data.shielded_address, &update_options)
+        .await
+        .unwrap();
+    assert_eq!(updated_account.data.scan_size, 200);
+}
+
+#[tokio::test]
+async fn test_update_status() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account = account_handler.create(&options).await.unwrap();
+    let mut update_options = UpdateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .status(account.data.status.clone())
+        .build();
+    let mut updated_account = account_handler
+        .update_by_public_key(&account.data.public_key, &update_options)
+        .await
+        .unwrap();
+    assert_eq!(updated_account.data.status, account.data.status);
+    assert_eq!(updated_account.updated_at, account.updated_at);
+    update_options.status = Some(AccountStatus::Scanning);
+    updated_account = account_handler
+        .update_by_shielded_address(&account.data.shielded_address, &update_options)
+        .await
+        .unwrap();
+    assert_eq!(updated_account.data.status, AccountStatus::Scanning);
+}
+
+#[tokio::test]
+async fn test_update_wrong_wallet_password() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account = account_handler.create(&options).await.unwrap();
+    let update_options = UpdateAccountOptions::builder()
+        .wallet_password(String::from("wrong_password"))
+        .build();
+    let mut result = account_handler
+        .update_by_id(&account.id, &update_options)
+        .await;
+    assert!(result.is_err());
+    result = account_handler
+        .update_by_public_key(&account.data.public_key, &update_options)
+        .await;
+    assert!(result.is_err());
+    result = account_handler
+        .update_by_shielded_address(&account.data.shielded_address, &update_options)
+        .await;
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_update_non_existing_account() {
+    let (mut account_handler, _, _) = setup().await;
+    let update_options = UpdateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let mut result = account_handler
+        .update_by_id("non_existing_id", &update_options)
+        .await;
+    assert!(result.is_err());
+    result = account_handler
+        .update_by_public_key("non_existing_public_key", &update_options)
+        .await;
+    assert!(result.is_err());
+    result = account_handler
+        .update_by_shielded_address("non_existing_address", &update_options)
+        .await;
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_export_secret_key() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account = account_handler.create(&options).await.unwrap();
+    let secret_key_str = account_handler
+        .export_secret_key_by_id(DEFAULT_WALLET_PASSWORD, &account.id)
+        .await
+        .unwrap();
+    let full_sk: FullSk = decode_hex_with_length(&secret_key_str).unwrap();
+    let full_pk = full_public_key(&full_sk);
+    assert_eq!(account.data.public_key, encode_hex(&full_pk));
+    assert_eq!(
+        account.data.shielded_address,
+        ShieldedAddress::from_full_public_key(&full_pk).address()
+    );
+}
+
+#[tokio::test]
+async fn test_export_secret_key_wrong_wallet_password() {
+    let (mut account_handler, _, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let account = account_handler.create(&options).await.unwrap();
+    let result = account_handler
+        .export_secret_key_by_public_key("wrong password", &account.data.public_key)
+        .await;
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_export_secret_key_non_existing_account() {
+    let (mut account_handler, _, _) = setup().await;
+    let result = account_handler
+        .export_secret_key_by_shielded_address(
+            DEFAULT_WALLET_PASSWORD,
+            "non_existing_shielded_address",
+        )
+        .await;
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_update_encryption() {
+    let (mut account_handler, mut wallet_handler, _) = setup().await;
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let new_wallet_password: &str = "newP@ssw0rd";
+    let account1 = account_handler.create(&options).await.unwrap();
+    let account2 = account_handler.create(&options).await.unwrap();
+    let sk1 = account_handler
+        .export_secret_key_by_id(DEFAULT_WALLET_PASSWORD, &account1.id)
+        .await
+        .unwrap();
+    let sk2 = account_handler
+        .export_secret_key_by_id(DEFAULT_WALLET_PASSWORD, &account2.id)
+        .await
+        .unwrap();
+    account_handler
+        .update_encryption(DEFAULT_WALLET_PASSWORD, new_wallet_password)
+        .await
+        .unwrap();
+    wallet_handler
+        .update_password(DEFAULT_WALLET_PASSWORD, new_wallet_password)
+        .await
+        .unwrap();
+    let sk3 = account_handler
+        .export_secret_key_by_id(new_wallet_password, &account1.id)
+        .await
+        .unwrap();
+    let sk4 = account_handler
+        .export_secret_key_by_id(new_wallet_password, &account2.id)
+        .await
+        .unwrap();
+    assert_eq!(sk1, sk3);
+    assert_eq!(sk2, sk4);
+}
+
+#[tokio::test]
+async fn test_update_encryption_wrong_wallet_password() {
+    let (mut account_handler, _, _) = setup().await;
+    let result = account_handler
+        .update_encryption("wrong password", "newP@ssw0rd")
+        .await;
+    assert!(result.is_err());
+}

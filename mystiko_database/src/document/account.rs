@@ -3,6 +3,14 @@ use anyhow::{Error, Result};
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
 use std::str::FromStr;
 
+pub static NAME_FIELD_NAME: &str = "name";
+pub static PUBLIC_KEY_FIELD_NAME: &str = "public_key";
+pub static ENCRYPTED_SECRET_KEY_FIELD_NAME: &str = "encrypted_secret_key";
+pub static STATUS_FIELD_NAME: &str = "status";
+pub static SHIELDED_ADDRESS_FIELD_NAME: &str = "shielded_address";
+pub static SCAN_SIZE_FIELD_NAME: &str = "scan_size";
+pub static WALLET_ID_FIELD_NAME: &str = "wallet_id";
+
 pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "accounts",
     migrations: &[
@@ -21,13 +29,13 @@ pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
         "CREATE INDEX `accounts_public_key_index` ON `accounts` (`public_key`);",
     ],
     field_names: &[
-        "name",
-        "shielded_address",
-        "public_key",
-        "encrypted_secret_key",
-        "status",
-        "scan_size",
-        "wallet_id",
+        NAME_FIELD_NAME,
+        SHIELDED_ADDRESS_FIELD_NAME,
+        PUBLIC_KEY_FIELD_NAME,
+        ENCRYPTED_SECRET_KEY_FIELD_NAME,
+        STATUS_FIELD_NAME,
+        SCAN_SIZE_FIELD_NAME,
+        WALLET_ID_FIELD_NAME,
     ],
 };
 

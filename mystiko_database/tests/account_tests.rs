@@ -1,4 +1,3 @@
-use futures::lock::Mutex;
 use mystiko_database::collection::account::AccountCollection;
 use mystiko_database::document::account::{Account, AccountStatus};
 use mystiko_storage::collection::Collection;
@@ -8,6 +7,7 @@ use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::str::FromStr;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 async fn create_accounts() -> AccountCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();

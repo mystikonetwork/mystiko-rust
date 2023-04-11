@@ -6,10 +6,10 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0.69" }
 async-trait = { version = "0.1.64" }
-futures = { version = "0.3.26" }
+mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 num-traits = { version = "0.2.15" }
 sqlx = { version = "0.6.2", features = [ "runtime-tokio-native-tls", "sqlite" ] }
-mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+tokio = { version = "1.26.0", features = ["sync"] }
 
 [dev-dependencies]
 tempfile = { version = "3.4.0" }

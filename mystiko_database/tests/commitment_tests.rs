@@ -1,7 +1,6 @@
 extern crate mystiko_database;
 extern crate num_bigint;
 
-use futures::lock::Mutex;
 use mystiko_database::collection::commitment::CommitmentCollection;
 use mystiko_database::document::commitment::{Commitment, CommitmentStatus};
 use mystiko_storage::collection::Collection;
@@ -12,6 +11,7 @@ use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder}
 use num_bigint::BigInt;
 use std::str::FromStr;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 async fn create_commitments() -> CommitmentCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();

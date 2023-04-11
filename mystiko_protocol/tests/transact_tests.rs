@@ -65,10 +65,18 @@ fn generate_transaction(
     for i in 0..num_inputs as usize {
         let raw_verify_sk = random_bytes(VERIFY_SK_SIZE);
         let raw_enc_sk = random_bytes(ENC_SK_SIZE);
-        in_verify_sks.push(verification_secret_key(raw_verify_sk.as_slice()));
-        in_verify_pks.push(verification_public_key(raw_verify_sk.as_slice()));
-        in_enc_sks.push(encryption_secret_key(raw_enc_sk.as_slice()));
-        in_enc_pks.push(encryption_public_key(raw_enc_sk.as_slice()));
+        in_verify_sks.push(verification_secret_key(
+            raw_verify_sk.as_slice().try_into().unwrap(),
+        ));
+        in_verify_pks.push(verification_public_key(
+            raw_verify_sk.as_slice().try_into().unwrap(),
+        ));
+        in_enc_sks.push(encryption_secret_key(
+            raw_enc_sk.as_slice().try_into().unwrap(),
+        ));
+        in_enc_pks.push(encryption_public_key(
+            raw_enc_sk.as_slice().try_into().unwrap(),
+        ));
         in_amounts.push(in_amount.clone());
 
         let cm = Commitment::new(
@@ -106,8 +114,12 @@ fn generate_transaction(
     for i in 0..num_outputs as usize {
         let raw_verify_sk = random_bytes(VERIFY_SK_SIZE);
         let raw_enc_sk = random_bytes(ENC_SK_SIZE);
-        out_verify_pks.push(verification_public_key(raw_verify_sk.as_slice()));
-        out_enc_pks.push(encryption_public_key(raw_enc_sk.as_slice()));
+        out_verify_pks.push(verification_public_key(
+            raw_verify_sk.as_slice().try_into().unwrap(),
+        ));
+        out_enc_pks.push(encryption_public_key(
+            raw_enc_sk.as_slice().try_into().unwrap(),
+        ));
         out_amounts.push(out_amount.clone());
         rollup_fee_amounts.push(rollup_fee_amount.clone());
 

@@ -18,9 +18,11 @@ mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
 mystiko_database = { version = "0.1.0", path = "../mystiko_database" }
 mystiko_protocol = { version = "0.1.0", path = "../mystiko_protocol" }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 rand_core = { version = "0.6.4", features = ["std"] }
 regex = { version = "1.7.3" }
 thiserror = { version = "1.0", default-features = false }
+tokio = { version = "1.26.0", features = ["sync"] }
 typed-builder = { version = "0.14.0" }
 
 [dev-dependencies]

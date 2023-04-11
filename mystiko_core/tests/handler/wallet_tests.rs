@@ -1,11 +1,11 @@
 use crate::common::create_database;
 use bip32::{Language, Mnemonic};
-use futures::lock::Mutex;
-use mystiko_core::handler::wallet::{WalletCreationOptions, WalletHandler};
+use mystiko_core::handler::wallet::{CreateWalletOptions, WalletHandler};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
 use rand_core::OsRng;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 async fn setup() -> WalletHandler<SqlFormatter, SqliteRawData, SqliteStorage> {
     let database = create_database().await;
@@ -16,7 +16,7 @@ async fn setup() -> WalletHandler<SqlFormatter, SqliteRawData, SqliteStorage> {
 #[tokio::test]
 async fn test_create() {
     let mut handler = setup().await;
-    let options = WalletCreationOptions::builder()
+    let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .build();
     let wallet = handler.create(&options).await.unwrap();
@@ -27,7 +27,7 @@ async fn test_create() {
 async fn test_create_with_mnemonic() {
     let mut handler = setup().await;
     let mnemonic = Mnemonic::random(OsRng, Language::English);
-    let options = WalletCreationOptions::builder()
+    let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .mnemonic_phrase(mnemonic.phrase().to_string())
         .build();
@@ -41,7 +41,7 @@ async fn test_create_with_mnemonic() {
 #[tokio::test]
 async fn test_create_with_invalid_password() {
     let mut handler = setup().await;
-    let mut options = WalletCreationOptions::builder()
+    let mut options = CreateWalletOptions::builder()
         .password(String::from("AAAAAAAA"))
         .build();
     assert!(handler.create(&options).await.is_err());
@@ -59,7 +59,7 @@ async fn test_create_with_invalid_password() {
 async fn test_current() {
     let mut handler = setup().await;
     assert!(handler.current().await.unwrap().is_none());
-    let options = WalletCreationOptions::builder()
+    let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .build();
     let wallet = handler.create(&options).await.unwrap();
@@ -70,7 +70,7 @@ async fn test_current() {
 async fn test_check_current() {
     let mut handler = setup().await;
     assert!(handler.check_current().await.is_err());
-    let options = WalletCreationOptions::builder()
+    let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .build();
     let wallet = handler.create(&options).await.unwrap();
@@ -81,7 +81,7 @@ async fn test_check_current() {
 async fn test_check_password() {
     let mut handler = setup().await;
     assert!(handler.check_password("P@ssw0rd").await.is_err());
-    let options = WalletCreationOptions::builder()
+    let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .build();
     handler.create(&options).await.unwrap();
@@ -93,7 +93,7 @@ async fn test_check_password() {
 async fn test_export_mnemonic_words() {
     let mut handler = setup().await;
     assert!(handler.export_mnemonic_phrase("P@ssw0rd").await.is_err());
-    let options = WalletCreationOptions::builder()
+    let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .build();
     handler.create(&options).await.unwrap();
@@ -112,7 +112,7 @@ async fn test_update_password() {
         .update_password("P@ssw0rd", "P@ssw0rd2")
         .await
         .is_err());
-    let options = WalletCreationOptions::builder()
+    let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .build();
     handler.create(&options).await.unwrap();

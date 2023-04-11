@@ -1,18 +1,17 @@
 #![forbid(unsafe_code)]
 extern crate anyhow;
 extern crate async_trait;
-extern crate futures;
 extern crate num_traits;
 extern crate sqlx;
 
 use anyhow::{Error, Result};
 use async_trait::async_trait;
-use futures::lock::Mutex;
 use num_traits::{Float, PrimInt};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteRow};
 use sqlx::{ConnectOptions, Executor, Row, SqliteConnection};
 use std::str::FromStr;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use mystiko_storage::document::DocumentRawData;
 use mystiko_storage::storage::Storage;

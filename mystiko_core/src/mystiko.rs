@@ -1,19 +1,21 @@
+use crate::error::MystikoError;
+use crate::handler::account::AccountHandler;
 use crate::handler::wallet::WalletHandler;
 use anyhow::Result;
-use futures::lock::Mutex;
 use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
 use mystiko_database::database::Database;
 use mystiko_storage::document::DocumentRawData;
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
-use thiserror::Error;
+use tokio::sync::Mutex;
 use typed_builder::TypedBuilder;
 
 pub struct Mystiko<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    db: Arc<Mutex<Database<F, R, S>>>,
-    config: Arc<MystikoConfig>,
-    wallets: WalletHandler<F, R, S>,
+    pub db: Arc<Mutex<Database<F, R, S>>>,
+    pub config: Arc<MystikoConfig>,
+    pub accounts: AccountHandler<F, R, S>,
+    pub wallets: WalletHandler<F, R, S>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -30,14 +32,6 @@ pub struct MystikoOptions {
     pub is_staging: bool,
 }
 
-#[derive(Error, Debug)]
-pub enum MystikoError {
-    #[error("config raised error: {0:?}")]
-    ConfigError(#[source] anyhow::Error),
-    #[error("failed to migrate database: {0:?}")]
-    MigrationError(#[source] anyhow::Error),
-}
-
 impl<F, R, S> Mystiko<F, R, S>
 where
     F: StatementFormatter,
@@ -52,13 +46,15 @@ where
         database
             .migrate()
             .await
-            .map_err(MystikoError::MigrationError)?;
+            .map_err(MystikoError::DatabaseMigrationError)?;
         let db = Arc::new(Mutex::new(database));
         let config = create_mystiko_config(&mystiko_options).await?;
+        let accounts = AccountHandler::new(db.clone());
         let wallets = WalletHandler::new(db.clone());
         let mystiko = Self {
             db,
             config: config.clone(),
+            accounts,
             wallets,
         };
         log::info!(
@@ -71,18 +67,6 @@ where
             config.git_revision().unwrap_or("unknown")
         );
         Ok(mystiko)
-    }
-
-    pub fn db(&self) -> &Mutex<Database<F, R, S>> {
-        self.db.as_ref()
-    }
-
-    pub fn config(&self) -> &MystikoConfig {
-        self.config.as_ref()
-    }
-
-    pub fn wallets(&mut self) -> &mut WalletHandler<F, R, S> {
-        &mut self.wallets
     }
 }
 
