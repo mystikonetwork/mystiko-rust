@@ -1,5 +1,6 @@
 {
   "version": "0.0.1",
+  "gitRevision": "3f25038",
   "chains": [
     {
       "name": "Ethereum Goerli",

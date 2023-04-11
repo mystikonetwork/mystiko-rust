@@ -57,6 +57,7 @@ fn test_create_from_json_str() {
     let json_str = r#"
         {
           "version": "0.0.1",
+          "gitRevision": "3f25038",
           "chains": []
         }
     "#;
@@ -187,5 +188,5 @@ async fn test_create_from_remote_error() {
     let options = RemoteOptions::builder()
         .base_url(format!("{}/relayer_config", server.url()))
         .build();
-    assert!(RelayerConfig::from_remote())
+    assert!(RelayerConfig::from_remote(&options).await.is_err());
 }
