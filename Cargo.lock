@@ -2873,7 +2873,7 @@ name = "mystiko_validator"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
- "regex 1.7.1",
+ "regex 1.7.3",
  "validator",
 ]
 
