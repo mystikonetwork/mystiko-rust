@@ -1,4 +1,3 @@
-use futures::lock::Mutex;
 use mystiko_database::collection::nullifier::NullifierCollection;
 use mystiko_database::document::nullifier::Nullifier;
 use mystiko_storage::collection::Collection;
@@ -7,6 +6,7 @@ use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 async fn create_nullifiers() -> NullifierCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();

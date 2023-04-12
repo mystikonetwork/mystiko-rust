@@ -1,6 +1,6 @@
 use crate::error::ProtocolError;
 use crate::key::combined_public_key;
-use crate::types::{EncPk, VerifyPk};
+use crate::types::{EncPk, FullPk, VerifyPk};
 use crate::types::{ENC_PK_SIZE, FULL_PK_SIZE, VERIFY_PK_SIZE};
 use bs58;
 
@@ -31,9 +31,13 @@ impl ShieldedAddress {
         })
     }
 
-    pub fn from_public_key(pk_verify: &VerifyPk, pk_enc: &EncPk) -> Self {
-        let addr = bs58::encode(combined_public_key(pk_verify, pk_enc)).into_string();
+    pub fn from_full_public_key(full_pk: &FullPk) -> Self {
+        let addr = bs58::encode(full_pk).into_string();
         Self { addr }
+    }
+
+    pub fn from_public_key(pk_verify: &VerifyPk, pk_enc: &EncPk) -> Self {
+        ShieldedAddress::from_full_public_key(&combined_public_key(pk_verify, pk_enc))
     }
 
     pub fn public_key(&self) -> (VerifyPk, EncPk) {

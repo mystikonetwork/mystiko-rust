@@ -5,10 +5,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0.69" }
-futures = { version = "0.3.26" }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 num-bigint = { version = "0.4" }
 serde_json = { version = "1.0" }
+tokio = { version = "1.26.0", features = ["sync"] }
 
 [dev-dependencies]
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }

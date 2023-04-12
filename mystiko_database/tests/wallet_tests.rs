@@ -1,4 +1,3 @@
-use futures::lock::Mutex;
 use mystiko_database::collection::wallet::WalletCollection;
 use mystiko_database::document::wallet::Wallet;
 use mystiko_storage::collection::Collection;
@@ -7,6 +6,7 @@ use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 async fn create_wallets() -> WalletCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
@@ -28,7 +28,7 @@ async fn test_wallets_crud() {
     inserted_wallets.push(
         wallets
             .insert(&Wallet {
-                encrypted_master_seed: String::from("encrypted master seed 01"),
+                encrypted_entropy: String::from("encrypted entropy 01"),
                 hashed_password: String::from("hashed password 01"),
                 account_nonce: 1,
             })
@@ -39,12 +39,12 @@ async fn test_wallets_crud() {
         wallets
             .insert_batch(&vec![
                 Wallet {
-                    encrypted_master_seed: String::from("encrypted master seed 02"),
+                    encrypted_entropy: String::from("encrypted entropy 02"),
                     hashed_password: String::from("hashed password 02"),
                     account_nonce: 2,
                 },
                 Wallet {
-                    encrypted_master_seed: String::from("encrypted master seed 03"),
+                    encrypted_entropy: String::from("encrypted entropy 03"),
                     hashed_password: String::from("hashed password 03"),
                     account_nonce: 3,
                 },
@@ -120,7 +120,7 @@ async fn test_wallets_crud() {
     assert_eq!(wallets.count_all().await.unwrap(), 1);
     wallets
         .insert(&Wallet {
-            encrypted_master_seed: String::from("encrypted master seed 01"),
+            encrypted_entropy: String::from("encrypted entropy 01"),
             hashed_password: String::from("hashed password 01"),
             account_nonce: 1,
         })

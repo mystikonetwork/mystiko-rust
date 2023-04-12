@@ -62,9 +62,9 @@ async fn test_build_commitment_compatible_with_js() {
         hex::decode("fe180cd06620582c0eb07de543ee105104fd6a15fe793f688f02b83440d1d2930d527a7dccc05dcd6a2b709c9b72bab3474d21c9d443157efe3a23287f383d37680d8e568f7bbd9f2d372b4581ed33d3db64b6d2284cf94fd303bcf2cdc12f66f968340f796da94c76db51baf17875312e559aa02f45b256f19b474c9ae42a0e42af4469e584f4800744dc332ea68fff6e9772bda20f8db127612735cdb2bdf15d69fbaee541fff61093ec76bc0e73509fed89e8188e101aec11775a9ae1b9b3a8e5cc2642c8b5291a99285132f756d06c")
             .unwrap();
 
-    let pk_verify = verification_public_key(&raw_verify_key);
-    let pk_enc = encryption_public_key(&raw_enc_key);
-    let sk_enc = encryption_secret_key(&raw_enc_key);
+    let pk_verify = verification_public_key(raw_verify_key.as_slice().try_into().unwrap());
+    let pk_enc = encryption_public_key(raw_enc_key.as_slice().try_into().unwrap());
+    let sk_enc = encryption_secret_key(raw_enc_key.as_slice().try_into().unwrap());
     let note = decrypt_asymmetric(&sk_enc, &js_encrypt_note).unwrap();
     let js_decrypt_note = Note::from_vec(note).unwrap();
 
@@ -97,9 +97,9 @@ async fn test_build_commitment_compatible_with_js() {
 async fn test_build_commitment() {
     let raw_verify_key = random_bytes(32);
     let raw_enc_key = random_bytes(32);
-    let pk_verify = verification_public_key(&raw_verify_key);
-    let pk_enc = encryption_public_key(&raw_enc_key);
-    let sk_enc = encryption_secret_key(&raw_enc_key);
+    let pk_verify = verification_public_key(raw_verify_key.as_slice().try_into().unwrap());
+    let pk_enc = encryption_public_key(raw_enc_key.as_slice().try_into().unwrap());
+    let sk_enc = encryption_secret_key(raw_enc_key.as_slice().try_into().unwrap());
     let amount = BigInt::from(10u32);
     let note = Note::new(Some(amount.clone()), None);
     let cm1 = Commitment::new(
@@ -136,7 +136,7 @@ async fn test_build_commitment() {
     assert_eq!(cm2.commitment_hash, cm1.commitment_hash);
 
     let raw_sk_enc_3 = random_bytes(32);
-    let sk_enc_3 = encryption_secret_key(&raw_sk_enc_3);
+    let sk_enc_3 = encryption_secret_key(&raw_sk_enc_3.try_into().unwrap());
     let cm3 = Commitment::new(
         ShieldedAddress::from_public_key(&pk_verify, &pk_enc),
         None,

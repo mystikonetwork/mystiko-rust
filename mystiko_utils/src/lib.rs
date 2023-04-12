@@ -4,3 +4,4 @@ extern crate num_traits;
 extern crate rust_decimal;
 
 pub mod convert;
+pub mod hex;

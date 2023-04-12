@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
 use crate::document::transaction::Transaction;
 use anyhow::Result;
-use futures::lock::Mutex;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::{Document, DocumentData, DocumentRawData};
 use mystiko_storage::filter::QueryFilter;
@@ -9,6 +8,7 @@ use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub struct TransactionCollection<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     collection: Arc<Mutex<Collection<F, R, S>>>,
