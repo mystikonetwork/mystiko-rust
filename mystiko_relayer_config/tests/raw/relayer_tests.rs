@@ -57,6 +57,7 @@ fn default_config() -> RawRelayerConfig {
     create_raw::<RawRelayerConfig>(
         RawRelayerConfig::builder()
             .version("0.0.1".to_string())
+            .git_revision(Some("3f25038".parse().unwrap()))
             .chains(vec![Arc::new(default_chain_config())])
             .build(),
     )

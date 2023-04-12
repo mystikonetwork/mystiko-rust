@@ -2879,7 +2879,9 @@ name = "mystiko_relayer_config"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "mockito",
  "mystiko_validator",
+ "reqwest",
  "rust_decimal",
  "serde",
  "serde_json",
