@@ -59,10 +59,10 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run tests
-        run: cargo llvm-cov --ignore-filename-regex=mystiko_abi --lcov --no-report
+        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-report
 
       - name: Generate coverage report
-        run: cargo llvm-cov --ignore-filename-regex=mystiko_abi --lcov --no-run --output-path lcov.info
+        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-run --output-path lcov.info
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v2
