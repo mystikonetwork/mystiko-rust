@@ -1,255 +1,159 @@
-use crate::provider::failover::FailoverProviderError::TimeoutError;
 use anyhow::Result;
 use async_trait::async_trait;
-use ethers_providers::{
-    Http, HttpClientError, JsonRpcClient, JsonRpcError, Provider, ProviderError, RpcError, Ws,
-    WsClientError,
-};
+use ethers_providers::{JsonRpcClient, ProviderError};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde_json::Value;
 use std::fmt::Debug;
-use std::str::FromStr;
-use std::time::Duration;
-use thiserror::Error;
-use tokio::time::timeout;
 
-pub const DEFAULT_TIMEOUT_MS: u32 = 10000;
-
-#[derive(Clone, Debug)]
-pub enum RawProvider {
-    Http(Http),
-    Websocket(Ws),
+#[derive(Debug, Clone)]
+pub enum FailoverParams {
+    Value(Value),
+    Zst,
 }
 
-#[derive(Clone, Debug)]
-pub struct Failover {
-    providers: Vec<(RawProvider, Duration)>,
+pub trait FailoverPolicy: Send + Sync + Debug {
+    fn should_failover(&self, error: &ProviderError) -> bool;
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct FailoverProviderBuilder {
-    providers: Vec<(String, Duration)>,
+#[derive(Debug, Default)]
+pub struct DefaultFailoverPolicy {}
+
+#[async_trait]
+pub trait JsonRpcClientWrapper: Send + Sync + Debug {
+    async fn request(&self, method: &str, params: FailoverParams) -> Result<Value, ProviderError>;
 }
 
-#[derive(Error, Debug)]
-pub enum FailoverProviderError {
-    #[error(transparent)]
-    HttpProviderError(#[from] HttpClientError),
-    #[error(transparent)]
-    WebsocketProviderError(#[from] WsClientError),
-    #[error(transparent)]
-    SerdeJsonError(#[from] serde_json::Error),
-    #[error("timed out after {0:?}")]
-    TimeoutError(Duration),
-    #[error("no provider is available")]
-    NoProviderError,
+#[derive(Debug)]
+pub struct FailoverProvider<T = Box<dyn JsonRpcClientWrapper>, P = Box<dyn FailoverPolicy>> {
+    failover_policy: P,
+    providers: Vec<T>,
 }
 
-impl FailoverProviderError {
-    pub fn is_retryable(&self) -> bool {
-        match self {
-            FailoverProviderError::HttpProviderError(error) => is_http_error_retryable(error),
-            FailoverProviderError::WebsocketProviderError(error) => is_ws_error_retryable(error),
-            FailoverProviderError::TimeoutError(_) => true,
-            _ => false,
-        }
+#[derive(Debug)]
+pub struct FailoverProviderBuilder<T> {
+    failover_policy: Option<Box<dyn FailoverPolicy>>,
+    providers: Vec<T>,
+}
+
+impl FailoverProvider<Box<dyn JsonRpcClientWrapper>> {
+    pub fn dyn_rpc() -> FailoverProviderBuilder<Box<dyn JsonRpcClientWrapper>> {
+        Self::builder()
     }
 }
 
-impl RpcError for FailoverProviderError {
-    fn as_error_response(&self) -> Option<&JsonRpcError> {
-        match self {
-            FailoverProviderError::HttpProviderError(error) => error.as_error_response(),
-            FailoverProviderError::WebsocketProviderError(error) => error.as_error_response(),
-            FailoverProviderError::SerdeJsonError(_) => None,
-            FailoverProviderError::TimeoutError(_) => None,
-            FailoverProviderError::NoProviderError => None,
-        }
-    }
-
-    fn as_serde_error(&self) -> Option<&serde_json::error::Error> {
-        todo!()
-    }
-}
-
-impl From<FailoverProviderError> for ProviderError {
-    fn from(value: FailoverProviderError) -> Self {
-        match value {
-            FailoverProviderError::HttpProviderError(error) => ProviderError::from(error),
-            FailoverProviderError::WebsocketProviderError(error) => ProviderError::from(error),
-            FailoverProviderError::SerdeJsonError(error) => ProviderError::SerdeJson(error),
-            FailoverProviderError::TimeoutError(error) => {
-                ProviderError::CustomError(format!("timed out after {:?}", error))
-            }
-            FailoverProviderError::NoProviderError => {
-                ProviderError::CustomError(String::from("no provider is available"))
-            }
-        }
-    }
-}
-
-impl Failover {
-    pub fn builder() -> FailoverProviderBuilder {
+impl<T> FailoverProvider<T> {
+    pub fn builder() -> FailoverProviderBuilder<T> {
         FailoverProviderBuilder::default()
     }
 
-    fn new(providers: Vec<(RawProvider, Duration)>) -> Self {
-        Self { providers }
+    pub fn providers(&self) -> &[T] {
+        &self.providers
     }
+}
 
-    async fn request_http<T, R>(
-        &self,
-        raw_provider: &Http,
-        timeout_duration: &Duration,
-        method: &str,
-        params: T,
-    ) -> Result<R, FailoverProviderError>
-    where
-        T: Debug + Serialize + Send + Sync,
-        R: DeserializeOwned + Send,
-    {
-        match timeout(
-            *timeout_duration,
-            raw_provider.request::<T, R>(method, params),
-        )
-        .await
-        {
-            Ok(result) => Ok(result?),
-            Err(_) => Err(TimeoutError(*timeout_duration)),
+impl<T> Default for FailoverProviderBuilder<T> {
+    fn default() -> Self {
+        Self {
+            failover_policy: None,
+            providers: Vec::new(),
         }
     }
+}
 
-    async fn request_ws<T, R>(
-        &self,
-        raw_provider: &Ws,
-        timeout_duration: &Duration,
-        method: &str,
-        params: T,
-    ) -> Result<R, FailoverProviderError>
-    where
-        T: Debug + Serialize + Send + Sync,
-        R: DeserializeOwned + Send,
-    {
-        match timeout(
-            *timeout_duration,
-            raw_provider.request::<T, R>(method, params),
-        )
-        .await
-        {
-            Ok(result) => Ok(result?),
-            Err(_) => Err(TimeoutError(*timeout_duration)),
-        }
+impl<T> FailoverProviderBuilder<T> {
+    pub fn failover_policy(mut self, policy: Box<dyn FailoverPolicy>) -> Self {
+        self.failover_policy = Some(policy);
+        self
     }
 
-    async fn request_raw<T, R>(
-        &self,
-        raw_provider: &RawProvider,
-        timeout_duration: &Duration,
-        method: &str,
-        params: T,
-    ) -> Result<R, FailoverProviderError>
-    where
-        T: Debug + Serialize + Send + Sync,
-        R: DeserializeOwned + Send,
-    {
-        match raw_provider {
-            RawProvider::Http(http_provider) => {
-                self.request_http(http_provider, timeout_duration, method, params)
-                    .await
-            }
-            RawProvider::Websocket(ws_provider) => {
-                self.request_ws(ws_provider, timeout_duration, method, params)
-                    .await
-            }
+    pub fn add_provider(mut self, provider: T) -> Self {
+        self.providers.push(provider);
+        self
+    }
+
+    pub fn add_providers(mut self, providers: impl IntoIterator<Item = T>) -> Self {
+        for provider in providers {
+            self.providers.push(provider);
+        }
+        self
+    }
+
+    pub fn build(self) -> FailoverProvider<T> {
+        FailoverProvider {
+            failover_policy: self
+                .failover_policy
+                .unwrap_or(Box::<DefaultFailoverPolicy>::default()),
+            providers: self.providers,
         }
     }
 }
 
 #[async_trait]
-impl JsonRpcClient for Failover {
-    type Error = FailoverProviderError;
+impl<C: JsonRpcClient> JsonRpcClientWrapper for C {
+    async fn request(&self, method: &str, params: FailoverParams) -> Result<Value, ProviderError> {
+        let fut = if let FailoverParams::Value(params) = params {
+            JsonRpcClient::request(self, method, params)
+        } else {
+            JsonRpcClient::request(self, method, ())
+        };
 
-    async fn request<T, R>(&self, method: &str, params: T) -> Result<R, Self::Error>
+        Ok(fut.await.map_err(C::Error::into)?)
+    }
+}
+
+#[async_trait]
+impl JsonRpcClientWrapper for Box<dyn JsonRpcClientWrapper> {
+    async fn request(&self, method: &str, params: FailoverParams) -> Result<Value, ProviderError> {
+        self.as_ref().request(method, params).await
+    }
+}
+
+#[async_trait]
+impl<C> JsonRpcClient for FailoverProvider<C>
+where
+    C: JsonRpcClientWrapper,
+{
+    type Error = ProviderError;
+
+    async fn request<T, R>(&self, method: &str, params: T) -> std::result::Result<R, Self::Error>
     where
         T: Debug + Serialize + Send + Sync,
         R: DeserializeOwned + Send,
     {
-        let params_value = serde_json::to_value(params)?;
-        for (index, (raw_provider, timeout_duration)) in self.providers.iter().enumerate() {
-            let result: Result<R, Self::Error> = self
-                .request_raw::<serde_json::Value, R>(
-                    raw_provider,
-                    timeout_duration,
-                    method,
-                    params_value.clone(),
-                )
-                .await;
-            match result {
-                Ok(response) => {
-                    return Ok(response);
-                }
-                Err(error) => {
-                    if index < self.providers.len() - 1 && error.is_retryable() {
+        let failover_params = if std::mem::size_of::<T>() == 0 {
+            FailoverParams::Zst
+        } else {
+            FailoverParams::Value(serde_json::to_value(params)?)
+        };
+        for (index, provider) in self.providers.iter().enumerate() {
+            match provider.request(method, failover_params.clone()).await {
+                Ok(resp) => return Ok(serde_json::from_value(resp)?),
+                Err(err) => {
+                    if index < self.providers.len() - 1
+                        && self.failover_policy.should_failover(&err)
+                    {
                         continue;
                     } else {
-                        return Err(error);
+                        return Err(err);
                     }
                 }
             }
         }
-        Err(FailoverProviderError::NoProviderError)
+        Err(ProviderError::CustomError(String::from(
+            "no available provider",
+        )))
     }
 }
 
-impl FailoverProviderBuilder {
-    pub fn provider(mut self, url: &str, timeout_ms: Option<u32>) -> Self {
-        self.providers.push((
-            url.to_string(),
-            Duration::from_millis(timeout_ms.unwrap_or(DEFAULT_TIMEOUT_MS) as u64),
-        ));
-        self
-    }
-
-    pub fn providers(mut self, provider_urls: &[(&str, Option<u32>)]) -> Self {
-        for (provider_url, timeout_ms) in provider_urls {
-            self.providers.push((
-                provider_url.to_string(),
-                Duration::from_millis(timeout_ms.unwrap_or(DEFAULT_TIMEOUT_MS) as u64),
-            ));
-        }
-        self
-    }
-
-    pub async fn build(self) -> Result<Provider<Failover>> {
-        let mut providers: Vec<(RawProvider, Duration)> = vec![];
-        for (provider_url, duration) in self.providers.iter() {
-            if provider_url.starts_with("http") || provider_url.starts_with("https") {
-                providers.push((
-                    RawProvider::Http(Http::from_str(provider_url.as_str())?),
-                    *duration,
-                ));
-            } else if provider_url.starts_with("ws") || provider_url.starts_with("wss") {
-                providers.push((
-                    RawProvider::Websocket(Ws::connect(provider_url.as_str()).await?),
-                    *duration,
-                ));
-            }
-        }
-        Ok(Provider::<Failover>::new(Failover::new(providers)))
-    }
-}
-
-fn is_http_error_retryable(error: &HttpClientError) -> bool {
-    match error {
-        HttpClientError::ReqwestError(_) => true,
-        HttpClientError::JsonRpcError(json_rpc_error) => !json_rpc_error.is_revert(),
-        _ => false,
-    }
-}
-
-fn is_ws_error_retryable(error: &WsClientError) -> bool {
-    match error {
-        WsClientError::JsonRpcError(json_rpc_error) => !json_rpc_error.is_revert(),
-        _ => false,
+impl FailoverPolicy for DefaultFailoverPolicy {
+    fn should_failover(&self, error: &ProviderError) -> bool {
+        matches!(
+            error,
+            ProviderError::JsonRpcClientError(_)
+                | ProviderError::HTTPError(_)
+                | ProviderError::UnsupportedRPC
+                | ProviderError::UnsupportedNodeClient
+        )
     }
 }

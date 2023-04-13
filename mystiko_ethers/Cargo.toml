@@ -8,8 +8,14 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0" }
 async-trait = { version = "0.1.64" }
+ethers-core = { version = "2.0.2" }
 ethers-providers = { version = "2.0.2", features = ["ws"] }
+futures-core = { version = "0.3.28" }
 serde = { version = "1.0.152" }
 serde_json = { version = "1.0.91" }
 thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.26.0", features = ["time"] }
+
+[dev-dependencies]
+reqwest = { version = "0.11.14" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
