@@ -1,0 +1,13 @@
+[package]
+name = "mystiko_relayer_abi"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ethers-core = { version = "2.0.0" }
+ethers-contract = { version = "2.0.0" }
+ethers-providers = { version = "2.0.0" }
+
+serde = { version = "1.0.152" }

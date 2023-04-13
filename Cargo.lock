@@ -2875,6 +2875,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_relayer_abi"
+version = "0.1.0"
+dependencies = [
+ "ethers-contract",
+ "ethers-core",
+ "ethers-providers",
+ "serde",
+]
+
+[[package]]
 name = "mystiko_relayer_config"
 version = "0.1.0"
 dependencies = [
