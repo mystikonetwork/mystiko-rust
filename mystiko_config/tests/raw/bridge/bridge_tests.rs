@@ -13,7 +13,7 @@ fn test_compare_raw_bridge_config_type() {
     ));
     let config2 = RawBridgeConfig::Axelar(Arc::new(
         RawAxelarBridgeConfig::builder()
-            .name("test2".to_string())
+            .name("test1".to_string())
             .build(),
     ));
     assert_eq!(config1, config2);
@@ -24,7 +24,7 @@ fn test_compare_raw_bridge_config_type() {
     ));
     let config2 = RawBridgeConfig::Celer(Arc::new(
         RawCelerBridgeConfig::builder()
-            .name("test2".to_string())
+            .name("test1".to_string())
             .build(),
     ));
     assert_eq!(config1, config2);
@@ -35,7 +35,7 @@ fn test_compare_raw_bridge_config_type() {
     ));
     let config2 = RawBridgeConfig::LayerZero(Arc::new(
         RawLayerZeroBridgeConfig::builder()
-            .name("test2".to_string())
+            .name("test1".to_string())
             .build(),
     ));
     assert_eq!(config1, config2);

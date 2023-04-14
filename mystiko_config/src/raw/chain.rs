@@ -2,6 +2,7 @@ use crate::raw::asset::RawAssetConfig;
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
+use crate::types::ProviderType;
 use mystiko_validator::validate::{array_unique, is_number_string_vec, validate_nested_vec};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -12,7 +13,7 @@ use validator::Validate;
 pub const EXPLORER_TX_PLACEHOLDER: &str = "%tx%";
 pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
 
-#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, Default)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RawChainConfig {
     #[validate(range(min = 1))]
@@ -47,8 +48,22 @@ pub struct RawChainConfig {
     #[validate(custom = "validate_nested_vec")]
     pub providers: Vec<Arc<RawProviderConfig>>,
 
+    #[serde(default = "default_provider_type")]
+    #[builder(default = default_provider_type())]
+    pub provider_type: ProviderType,
+
+    #[validate(range(min = 50, max = 100))]
+    #[serde(default = "default_quorum_percentage")]
+    #[builder(default = default_quorum_percentage())]
+    pub provider_quorum_percentage: u8,
+
     #[validate(url)]
     pub signer_endpoint: String,
+
+    #[validate(range(min = 0))]
+    #[serde(default = "default_event_filter_block_backoff")]
+    #[builder(default = default_event_filter_block_backoff())]
+    pub event_filter_block_backoff: u64,
 
     #[validate(range(min = 1))]
     #[serde(default = "default_event_filter_size")]
@@ -85,10 +100,8 @@ impl Hash for RawChainConfig {
     }
 }
 
-impl PartialEq for RawChainConfig {
-    fn eq(&self, other: &Self) -> bool {
-        self.chain_id == other.chain_id
-    }
+fn default_event_filter_block_backoff() -> u64 {
+    0
 }
 
 fn default_event_filter_size() -> u64 {
@@ -101,4 +114,12 @@ fn default_indexer_filter_size() -> u64 {
 
 fn default_explorer_prefix() -> String {
     EXPLORER_DEFAULT_PREFIX.to_string()
+}
+
+fn default_provider_type() -> ProviderType {
+    ProviderType::Failover
+}
+
+fn default_quorum_percentage() -> u8 {
+    50
 }

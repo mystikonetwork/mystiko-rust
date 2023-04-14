@@ -5,7 +5,7 @@ use mystiko_config::raw::contract::deposit::RawDepositContractConfig;
 use mystiko_config::raw::contract::pool::RawPoolContractConfig;
 use mystiko_config::raw::provider::RawProviderConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file};
-use mystiko_config::types::{AssetType, BridgeType, ContractType};
+use mystiko_config::types::{AssetType, BridgeType, ContractType, ProviderType};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
@@ -92,7 +92,12 @@ fn default_config() -> RawChainConfig {
         ])
         .explorer_url("https://goerli.etherscan.io".to_string())
         .explorer_prefix("/tx/%tx%".to_string())
+        .event_filter_block_backoff(200)
+        .event_filter_size(1000)
+        .indexer_filter_size(10000)
         .providers(vec![Arc::new(provider_config)])
+        .provider_type(ProviderType::Quorum)
+        .provider_quorum_percentage(80)
         .signer_endpoint("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string())
         .deposit_contracts(vec![Arc::new(deposit_contract_config)])
         .pool_contracts(vec![Arc::new(pool_contract_config)])
@@ -130,17 +135,6 @@ fn test_default_values() {
     assert_eq!(raw_config.event_filter_size, 200000);
     assert_eq!(raw_config.indexer_filter_size, 500000);
     assert_eq!(raw_config.explorer_prefix, EXPLORER_DEFAULT_PREFIX);
-}
-
-#[test]
-fn test_eq() {
-    let config1 = &RAW_CONFIG;
-    let mut config2 = default_config();
-    let mut config3 = default_config();
-    config2.name = "new name".to_string();
-    config3.chain_id = 97;
-    assert!(config1.eq(&config2));
-    assert!(config1.ne(&config3));
 }
 
 #[test]
@@ -242,6 +236,15 @@ fn test_invalid_providers_1() {
     let mut provider_config = (*config.providers.remove(0)).clone();
     provider_config.url = String::from("wrong url");
     config.providers.insert(0, Arc::new(provider_config));
+    assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_invalid_provider_quorum_percentage() {
+    let mut config = default_config();
+    config.provider_quorum_percentage = 10;
+    assert!(config.validate().is_err());
+    config.provider_quorum_percentage = 101;
     assert!(config.validate().is_err());
 }
 

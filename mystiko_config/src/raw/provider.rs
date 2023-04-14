@@ -17,6 +17,11 @@ pub struct RawProviderConfig {
     #[serde(default = "default_max_try_count")]
     #[builder(default = default_max_try_count())]
     pub max_try_count: u32,
+
+    #[validate(range(min = 1))]
+    #[serde(default = "default_quorum_weight")]
+    #[builder(default = default_quorum_weight())]
+    pub quorum_weight: u32,
 }
 
 fn default_timeout_ms() -> u32 {
@@ -25,4 +30,8 @@ fn default_timeout_ms() -> u32 {
 
 fn default_max_try_count() -> u32 {
     2
+}
+
+fn default_quorum_weight() -> u32 {
+    1
 }
