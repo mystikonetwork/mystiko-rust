@@ -43,6 +43,14 @@ pub enum CircuitType {
     Transaction2x2,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum ProviderType {
+    #[default]
+    Failover,
+    Quorum,
+}
+
 impl CircuitType {
     pub fn all() -> Vec<CircuitType> {
         vec![

@@ -1,7 +1,7 @@
 use mystiko_config::raw::chain::RawChainConfig;
 use mystiko_config::raw::circuit::RawCircuitConfig;
 use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::types::{AssetType, BridgeType, CircuitType};
+use mystiko_config::types::{AssetType, BridgeType, CircuitType, ProviderType};
 use mystiko_config::wrapper::chain::{ChainConfig, MAIN_ASSET_ADDRESS};
 use mystiko_config::wrapper::circuit::CircuitConfig;
 use num_bigint::BigInt;
@@ -56,6 +56,7 @@ async fn test_create() {
     );
     assert_eq!(config.explorer_url(), "https://goerli.etherscan.io");
     assert_eq!(config.explorer_prefix(), "/tx/%tx%");
+    assert_eq!(config.event_filter_block_backoff(), 200);
     assert_eq!(config.event_filter_size(), 1000);
     assert_eq!(config.indexer_filter_size(), 10000);
     assert_eq!(
@@ -72,6 +73,8 @@ async fn test_create() {
     );
     assert_eq!(config.assets().len(), 1);
     assert_eq!(config.providers().len(), 1);
+    assert_eq!(config.provider_type(), &ProviderType::Quorum);
+    assert_eq!(config.provider_quorum_percentage(), 80);
     assert_eq!(config.pool_contracts().len(), 1);
     assert_eq!(config.deposit_contracts().len(), 0);
     assert_eq!(config.deposit_contracts_with_disabled().len(), 1);

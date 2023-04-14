@@ -8,6 +8,7 @@ fn default_config() -> RawProviderConfig {
             .url("http://localhost:8545".to_string())
             .timeout_ms(100000)
             .max_try_count(5)
+            .quorum_weight(2)
             .build(),
     )
     .unwrap()
@@ -45,6 +46,13 @@ fn test_invalid_timeout_ms() {
 fn test_invalid_max_try_count() {
     let mut config = default_config();
     config.max_try_count = 0;
+    assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_invalid_quorum_weight() {
+    let mut config = default_config();
+    config.quorum_weight = 0;
     assert!(config.validate().is_err());
 }
 

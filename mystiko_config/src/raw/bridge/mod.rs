@@ -15,7 +15,7 @@ pub mod layer_zero;
 pub mod poly;
 pub mod tbridge;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(tag = "type")]
 #[serde(rename_all = "camelCase")]
 pub enum RawBridgeConfig {
@@ -59,11 +59,5 @@ impl Hash for RawBridgeConfig {
             RawBridgeConfig::Poly(conf) => conf.hash(state),
             RawBridgeConfig::Tbridge(conf) => conf.hash(state),
         }
-    }
-}
-
-impl PartialEq for RawBridgeConfig {
-    fn eq(&self, other: &Self) -> bool {
-        self.bridge_type() == other.bridge_type()
     }
 }

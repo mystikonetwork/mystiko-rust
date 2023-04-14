@@ -2,7 +2,7 @@ use crate::raw::asset::RawAssetConfig;
 use crate::raw::chain::{RawChainConfig, EXPLORER_TX_PLACEHOLDER};
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
-use crate::types::{AssetType, BridgeType, CircuitType};
+use crate::types::{AssetType, BridgeType, CircuitType, ProviderType};
 use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::deposit::DepositContractConfig;
@@ -116,8 +116,20 @@ impl ChainConfig {
         self.provider_configs.iter().map(|c| c.as_ref()).collect()
     }
 
+    pub fn provider_type(&self) -> &ProviderType {
+        &self.raw.provider_type
+    }
+
+    pub fn provider_quorum_percentage(&self) -> u8 {
+        self.raw.provider_quorum_percentage
+    }
+
     pub fn signer_endpoint(&self) -> &str {
         &self.raw.signer_endpoint
+    }
+
+    pub fn event_filter_block_backoff(&self) -> u64 {
+        self.raw.event_filter_block_backoff
     }
 
     pub fn event_filter_size(&self) -> u64 {

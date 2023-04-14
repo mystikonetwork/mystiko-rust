@@ -25,6 +25,10 @@ impl ProviderConfig {
         self.raw.max_try_count
     }
 
+    pub fn quorum_weight(&self) -> u32 {
+        self.raw.quorum_weight
+    }
+
     pub fn validate(&self) -> Result<()> {
         Ok(self.raw.validate()?)
     }

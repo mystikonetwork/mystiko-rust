@@ -5,7 +5,7 @@ use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
-#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, Default)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, Eq, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RawAssetConfig {
     #[serde(rename = "assetType")]
@@ -32,11 +32,5 @@ pub struct RawAssetConfig {
 impl Hash for RawAssetConfig {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.asset_address.hash(state)
-    }
-}
-
-impl PartialEq for RawAssetConfig {
-    fn eq(&self, other: &Self) -> bool {
-        self.asset_address == other.asset_address
     }
 }
