@@ -1,16 +1,10 @@
+use crate::provider::wrapper::{JsonRpcClientWrapper, JsonRpcParams};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_providers::{JsonRpcClient, ProviderError};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use serde_json::Value;
 use std::fmt::Debug;
-
-#[derive(Debug, Clone)]
-pub enum FailoverParams {
-    Value(Value),
-    Zst,
-}
 
 pub trait FailoverPolicy: Send + Sync + Debug {
     fn should_failover(&self, error: &ProviderError) -> bool;
@@ -18,11 +12,6 @@ pub trait FailoverPolicy: Send + Sync + Debug {
 
 #[derive(Debug, Default)]
 pub struct DefaultFailoverPolicy {}
-
-#[async_trait]
-pub trait JsonRpcClientWrapper: Send + Sync + Debug {
-    async fn request(&self, method: &str, params: FailoverParams) -> Result<Value, ProviderError>;
-}
 
 #[derive(Debug)]
 pub struct FailoverProvider<T = Box<dyn JsonRpcClientWrapper>, P = Box<dyn FailoverPolicy>> {
@@ -90,44 +79,24 @@ impl<T> FailoverProviderBuilder<T> {
 }
 
 #[async_trait]
-impl<C: JsonRpcClient> JsonRpcClientWrapper for C {
-    async fn request(&self, method: &str, params: FailoverParams) -> Result<Value, ProviderError> {
-        let fut = if let FailoverParams::Value(params) = params {
-            JsonRpcClient::request(self, method, params)
-        } else {
-            JsonRpcClient::request(self, method, ())
-        };
-
-        Ok(fut.await.map_err(C::Error::into)?)
-    }
-}
-
-#[async_trait]
-impl JsonRpcClientWrapper for Box<dyn JsonRpcClientWrapper> {
-    async fn request(&self, method: &str, params: FailoverParams) -> Result<Value, ProviderError> {
-        self.as_ref().request(method, params).await
-    }
-}
-
-#[async_trait]
 impl<C> JsonRpcClient for FailoverProvider<C>
 where
     C: JsonRpcClientWrapper,
 {
     type Error = ProviderError;
 
-    async fn request<T, R>(&self, method: &str, params: T) -> std::result::Result<R, Self::Error>
+    async fn request<T, R>(&self, method: &str, params: T) -> Result<R, Self::Error>
     where
         T: Debug + Serialize + Send + Sync,
         R: DeserializeOwned + Send,
     {
-        let failover_params = if std::mem::size_of::<T>() == 0 {
-            FailoverParams::Zst
+        let json_rpc_params = if std::mem::size_of::<T>() == 0 {
+            JsonRpcParams::Zst
         } else {
-            FailoverParams::Value(serde_json::to_value(params)?)
+            JsonRpcParams::Value(serde_json::to_value(params)?)
         };
         for (index, provider) in self.providers.iter().enumerate() {
-            match provider.request(method, failover_params.clone()).await {
+            match provider.request(method, json_rpc_params.clone()).await {
                 Ok(resp) => return Ok(serde_json::from_value(resp)?),
                 Err(err) => {
                     if index < self.providers.len() - 1
