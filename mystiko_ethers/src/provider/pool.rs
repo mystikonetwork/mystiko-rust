@@ -5,7 +5,6 @@ use anyhow::{Error, Result};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use typed_builder::TypedBuilder;
 
 pub trait ChainProvidersOptions: Debug {
@@ -18,18 +17,16 @@ pub struct ProviderPool {
     #[builder(default = default_provider_factory())]
     provider_factory: Box<dyn ProviderFactory>,
     #[builder(default = default_providers_map(), setter(skip))]
-    providers: Mutex<HashMap<u32, Arc<Provider>>>,
+    providers: HashMap<u32, Arc<Provider>>,
 }
 
 impl ProviderPool {
-    pub async fn get_provider(&self, chain_id: u32) -> Option<Arc<Provider>> {
-        let providers = self.providers.lock().await;
-        providers.get(&chain_id).cloned()
+    pub fn get_provider(&self, chain_id: u32) -> Option<Arc<Provider>> {
+        self.providers.get(&chain_id).cloned()
     }
 
     pub async fn get_or_create_provider(&mut self, chain_id: u32) -> Result<Arc<Provider>> {
-        let mut providers = self.providers.lock().await;
-        if let Some(provider) = providers.get(&chain_id) {
+        if let Some(provider) = self.providers.get(&chain_id) {
             return Ok(provider.clone());
         }
         if let Some(providers_options) = self.chain_providers_options.providers_options(chain_id) {
@@ -38,7 +35,7 @@ impl ProviderPool {
                     .create_provider(providers_options)
                     .await?,
             );
-            providers.insert(chain_id, provider.clone());
+            self.providers.insert(chain_id, provider.clone());
             return Ok(provider);
         }
         Err(Error::msg(format!(
@@ -47,12 +44,12 @@ impl ProviderPool {
         )))
     }
 
-    pub async fn has_provider(&self, chain_id: u32) -> bool {
-        self.get_provider(chain_id).await.is_some()
+    pub fn has_provider(&self, chain_id: u32) -> bool {
+        self.get_provider(chain_id).is_some()
     }
 
-    pub async fn check_provider(&self, chain_id: u32) -> Result<Arc<Provider>> {
-        match self.get_provider(chain_id).await {
+    pub fn check_provider(&self, chain_id: u32) -> Result<Arc<Provider>> {
+        match self.get_provider(chain_id) {
             Some(provider) => Ok(provider),
             None => Err(Error::msg(format!(
                 "No provider found for chain id {}",
@@ -61,15 +58,13 @@ impl ProviderPool {
         }
     }
 
-    pub async fn set_provider(&mut self, chain_id: u32, provider: Arc<Provider>) {
-        let mut providers = self.providers.lock().await;
-        providers.insert(chain_id, provider);
+    pub fn set_provider(&mut self, chain_id: u32, provider: Arc<Provider>) {
+        self.providers.insert(chain_id, provider);
     }
 
-    pub async fn delete_provider(&mut self, chain_id: u32) -> Option<Arc<Provider>> {
-        let mut providers = self.providers.lock().await;
-        if providers.contains_key(&chain_id) {
-            providers.remove(&chain_id)
+    pub fn delete_provider(&mut self, chain_id: u32) -> Option<Arc<Provider>> {
+        if self.providers.contains_key(&chain_id) {
+            self.providers.remove(&chain_id)
         } else {
             None
         }
@@ -84,6 +79,6 @@ fn default_provider_factory() -> Box<dyn ProviderFactory> {
     Box::<DefaultProviderFactory>::default()
 }
 
-fn default_providers_map() -> Mutex<HashMap<u32, Arc<Provider>>> {
-    Mutex::new(HashMap::new())
+fn default_providers_map() -> HashMap<u32, Arc<Provider>> {
+    HashMap::new()
 }
