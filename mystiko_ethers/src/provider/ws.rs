@@ -23,7 +23,7 @@ impl WsWithTimeout {
         let inner = Ws::connect(conn).await?;
         Ok(Self {
             inner,
-            timeout: timeout.unwrap_or(Duration::from_millis(DEFAULT_TIMEOUT_MS)),
+            timeout: unwrap_timeout(timeout),
         })
     }
 
@@ -35,7 +35,7 @@ impl WsWithTimeout {
         let inner = Ws::connect_with_reconnects(conn, reconnects).await?;
         Ok(Self {
             inner,
-            timeout: timeout.unwrap_or(Duration::from_millis(DEFAULT_TIMEOUT_MS)),
+            timeout: unwrap_timeout(timeout),
         })
     }
 }
@@ -61,4 +61,8 @@ impl JsonRpcClient for WsWithTimeout {
             }
         }
     }
+}
+
+fn unwrap_timeout(timeout: Option<Duration>) -> Duration {
+    timeout.unwrap_or(Duration::from_millis(DEFAULT_TIMEOUT_MS))
 }
