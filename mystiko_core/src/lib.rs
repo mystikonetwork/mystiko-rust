@@ -1,6 +1,7 @@
 extern crate anyhow;
 extern crate bip32;
 extern crate core;
+extern crate ethers_providers;
 extern crate futures;
 extern crate lazy_static;
 extern crate log;
@@ -19,5 +20,6 @@ extern crate typed_builder;
 
 pub mod error;
 pub mod handler;
+pub mod helper;
 pub mod mystiko;
 pub mod types;
