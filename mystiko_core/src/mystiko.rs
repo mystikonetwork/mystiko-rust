@@ -1,5 +1,6 @@
 use crate::error::MystikoError;
 use crate::handler::account::AccountHandler;
+use crate::handler::contract::ContractHandler;
 use crate::handler::wallet::WalletHandler;
 use crate::helper::provider::ProvidersConfig;
 use anyhow::Result;
@@ -18,6 +19,7 @@ pub struct Mystiko<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub db: Arc<Database<F, R, S>>,
     pub config: Arc<MystikoConfig>,
     pub accounts: AccountHandler<F, R, S>,
+    pub contracts: ContractHandler<F, R, S>,
     pub wallets: WalletHandler<F, R, S>,
     pub providers: Arc<RwLock<ProviderPool>>,
 }
@@ -56,12 +58,14 @@ where
         let db = Arc::new(database);
         let config = create_mystiko_config(&mystiko_options).await?;
         let accounts = AccountHandler::new(db.clone());
+        let contracts = ContractHandler::new(db.clone(), config.clone());
         let wallets = WalletHandler::new(db.clone());
         let providers = create_provider_pool(config.clone(), mystiko_options.provider_factory);
         let mystiko = Self {
             db,
             config: config.clone(),
             accounts,
+            contracts,
             wallets,
             providers,
         };
