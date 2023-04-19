@@ -1,15 +1,15 @@
 use crate::common::create_database;
 use mockito::Server;
 use mystiko_core::mystiko::{Mystiko, MystikoOptions};
+use mystiko_ethers::provider::factory::DefaultProviderFactory;
 
 mod common;
-mod handler;
 
 #[tokio::test]
 async fn test_create_with_config_file() {
     let database = create_database().await;
     let mystiko_options = MystikoOptions::builder()
-        .config_file_path(String::from("tests/files/config.json"))
+        .config_file_path(String::from("tests/files/mystiko/config.json"))
         .build();
     let mystiko = Mystiko::new(database, Some(mystiko_options)).await.unwrap();
     assert_eq!(mystiko.config.version(), "0.1.0");
@@ -34,4 +34,15 @@ async fn test_create_with_config_options() {
     let mystiko = Mystiko::new(database, Some(mystiko_options)).await.unwrap();
     path.assert_async().await;
     assert_eq!(mystiko.config.version(), "0.2.0");
+}
+
+#[tokio::test]
+async fn test_crete_with_provider_factory() {
+    let database = create_database().await;
+    let mystiko_options = MystikoOptions::builder()
+        .config_file_path(String::from("tests/files/mystiko/config.json"))
+        .provider_factory(Box::new(DefaultProviderFactory::new()))
+        .build();
+    let mystiko = Mystiko::new(database, Some(mystiko_options)).await.unwrap();
+    assert_eq!(mystiko.config.version(), "0.1.0");
 }
