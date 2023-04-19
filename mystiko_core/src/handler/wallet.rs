@@ -14,7 +14,6 @@ use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use rand_core::OsRng;
 use regex::Regex;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use typed_builder::TypedBuilder;
 
 lazy_static! {
@@ -33,7 +32,7 @@ const PASSWORD_HINT: &str = "\
     and the length should be as least 8";
 
 pub struct WalletHandler<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    db: Arc<Mutex<Database<F, R, S>>>,
+    db: Arc<Database<F, R, S>>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -49,24 +48,22 @@ where
     R: DocumentRawData,
     S: Storage<R>,
 {
-    pub fn new(db: Arc<Mutex<Database<F, R, S>>>) -> Self {
+    pub fn new(db: Arc<Database<F, R, S>>) -> Self {
         Self { db }
     }
 
-    pub async fn current(&mut self) -> Result<Option<Document<Wallet>>> {
+    pub async fn current(&self) -> Result<Option<Document<Wallet>>> {
         let filter = QueryFilterBuilder::new()
             .order_by(vec![DOCUMENT_CREATED_AT_FIELD.to_string()], Order::DESC)
             .build();
         self.db
-            .lock()
-            .await
             .wallets
             .find_one(filter)
             .await
             .map_err(MystikoError::DatabaseError)
     }
 
-    pub async fn create(&mut self, options: &CreateWalletOptions) -> Result<Document<Wallet>> {
+    pub async fn create(&self, options: &CreateWalletOptions) -> Result<Document<Wallet>> {
         validate_password(&options.password)?;
         let mnemonic = if let Some(mnemonic_words) = &options.mnemonic_phrase {
             Mnemonic::new(mnemonic_words, Language::English)?
@@ -83,8 +80,6 @@ where
         };
         let wallet = self
             .db
-            .lock()
-            .await
             .wallets
             .insert(&wallet)
             .await
@@ -93,7 +88,7 @@ where
         Ok(wallet)
     }
 
-    pub async fn check_current(&mut self) -> Result<Document<Wallet>> {
+    pub async fn check_current(&self) -> Result<Document<Wallet>> {
         if let Some(wallet) = self.current().await? {
             Ok(wallet)
         } else {
@@ -101,7 +96,7 @@ where
         }
     }
 
-    pub async fn check_password(&mut self, password: &str) -> Result<Document<Wallet>> {
+    pub async fn check_password(&self, password: &str) -> Result<Document<Wallet>> {
         let wallet = self.check_current().await?;
         let hashed_password = checksum(password, None);
         if wallet.data.hashed_password == hashed_password {
@@ -112,7 +107,7 @@ where
     }
 
     pub async fn update_password(
-        &mut self,
+        &self,
         old_password: &str,
         new_password: &str,
     ) -> Result<Document<Wallet>> {
@@ -123,8 +118,6 @@ where
         wallet.data.hashed_password = checksum(new_password, None);
         wallet = self
             .db
-            .lock()
-            .await
             .wallets
             .update(&wallet)
             .await
@@ -136,14 +129,14 @@ where
         Ok(wallet)
     }
 
-    pub async fn export_mnemonic(&mut self, password: &str) -> Result<Mnemonic> {
+    pub async fn export_mnemonic(&self, password: &str) -> Result<Mnemonic> {
         let wallet = self.check_password(password).await?;
         let entropy_string = decrypt_symmetric(password, &wallet.data.encrypted_entropy)?;
         let entropy: [u8; KEY_SIZE] = decode_hex_with_length(&entropy_string)?;
         Ok(Mnemonic::from_entropy(entropy, Language::English))
     }
 
-    pub async fn export_mnemonic_phrase(&mut self, password: &str) -> Result<String> {
+    pub async fn export_mnemonic_phrase(&self, password: &str) -> Result<String> {
         Ok(self.export_mnemonic(password).await?.phrase().to_string())
     }
 }

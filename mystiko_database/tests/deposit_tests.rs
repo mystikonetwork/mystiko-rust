@@ -10,14 +10,10 @@ use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder}
 use num_bigint::BigInt;
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 async fn create_deposits() -> DepositCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let deposits = DepositCollection::new(Arc::new(Mutex::new(Collection::new(
-        SqlFormatter {},
-        storage,
-    ))));
+    let deposits = DepositCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
     deposits.migrate().await.unwrap();
     assert!(deposits.collection_exists().await.unwrap());
     deposits

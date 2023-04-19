@@ -60,7 +60,7 @@ impl DocumentRawData for SqliteRawData {
 
 #[async_trait]
 impl Storage<SqliteRawData> for SqliteStorage {
-    async fn execute(&mut self, statement: String) -> Result<()> {
+    async fn execute(&self, statement: String) -> Result<()> {
         let mut connection = self.connection.lock().await;
         let result = connection.execute(sqlx::query(&statement)).await;
         match result {
@@ -69,7 +69,7 @@ impl Storage<SqliteRawData> for SqliteStorage {
         }
     }
 
-    async fn query(&mut self, statement: String) -> Result<Vec<SqliteRawData>> {
+    async fn query(&self, statement: String) -> Result<Vec<SqliteRawData>> {
         let mut connection = self.connection.lock().await;
         let results = connection.fetch_all(sqlx::query(&statement)).await;
         match results {
@@ -86,7 +86,7 @@ impl Storage<SqliteRawData> for SqliteStorage {
         }
     }
 
-    async fn collection_exists(&mut self, collection: &str) -> Result<bool> {
+    async fn collection_exists(&self, collection: &str) -> Result<bool> {
         let mut connection = self.connection.lock().await;
         let results = connection
             .fetch_all(

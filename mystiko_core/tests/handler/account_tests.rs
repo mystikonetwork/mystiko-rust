@@ -14,7 +14,6 @@ use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 type TypedDatabase = Database<SqlFormatter, SqliteRawData, SqliteStorage>;
 type TypedWalletHandler = WalletHandler<SqlFormatter, SqliteRawData, SqliteStorage>;
@@ -22,14 +21,10 @@ type TypedAccountHandler = AccountHandler<SqlFormatter, SqliteRawData, SqliteSto
 
 const DEFAULT_WALLET_PASSWORD: &str = "P@ssw0rd";
 
-async fn setup() -> (
-    TypedAccountHandler,
-    TypedWalletHandler,
-    Arc<Mutex<TypedDatabase>>,
-) {
-    let database = Arc::new(Mutex::new(create_database().await));
-    database.lock().await.migrate().await.unwrap();
-    let mut wallet_handler = WalletHandler::new(database.clone());
+async fn setup() -> (TypedAccountHandler, TypedWalletHandler, Arc<TypedDatabase>) {
+    let database = Arc::new(create_database().await);
+    database.migrate().await.unwrap();
+    let wallet_handler = WalletHandler::new(database.clone());
     wallet_handler
         .create(
             &CreateWalletOptions::builder()
@@ -47,7 +42,7 @@ async fn setup() -> (
 
 #[tokio::test]
 async fn test_create_default() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -68,7 +63,7 @@ async fn test_create_default() {
 
 #[tokio::test]
 async fn test_create_with_name() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let mut options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .name(String::from(""))
@@ -86,7 +81,7 @@ async fn test_create_with_name() {
 
 #[tokio::test]
 async fn test_create_with_scan_size() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let mut options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .scan_size(0)
@@ -100,7 +95,7 @@ async fn test_create_with_scan_size() {
 
 #[tokio::test]
 async fn test_create_with_secret_key() {
-    let (mut account_handler, _, db) = setup().await;
+    let (account_handler, _, db) = setup().await;
     let mut options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -112,7 +107,7 @@ async fn test_create_with_secret_key() {
             .unwrap(),
     );
     let account2 = account_handler.create(&options).await.unwrap();
-    db.lock().await.accounts.delete_all().await.unwrap();
+    db.accounts.delete_all().await.unwrap();
     let account3 = account_handler.create(&options).await.unwrap();
     assert_eq!(account1.id, account2.id);
     assert_ne!(account2.id, account3.id);
@@ -128,7 +123,7 @@ async fn test_create_with_secret_key() {
 
 #[tokio::test]
 async fn test_create_with_wrong_password() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(String::from("wrong password"))
         .build();
@@ -138,18 +133,18 @@ async fn test_create_with_wrong_password() {
 
 #[tokio::test]
 async fn test_create_with_no_wallet() {
-    let (mut account_handler, _, db) = setup().await;
+    let (account_handler, _, db) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
-    db.lock().await.wallets.delete_all().await.unwrap();
+    db.wallets.delete_all().await.unwrap();
     let result = account_handler.create(&options).await;
     assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn test_create_with_same_wallet_mnemonic_phrase() {
-    let (mut account_handler, mut wallet_handler, db) = setup().await;
+    let (account_handler, wallet_handler, db) = setup().await;
     let mut options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -160,8 +155,8 @@ async fn test_create_with_same_wallet_mnemonic_phrase() {
         .unwrap();
     let account1 = account_handler.create(&options).await.unwrap();
     let account2 = account_handler.create(&options).await.unwrap();
-    db.lock().await.accounts.delete_all().await.unwrap();
-    db.lock().await.wallets.delete_all().await.unwrap();
+    db.accounts.delete_all().await.unwrap();
+    db.wallets.delete_all().await.unwrap();
     let wallet_options = CreateWalletOptions::builder()
         .password(String::from("newP@ssw0rd"))
         .mnemonic_phrase(mnemonic_phrase)
@@ -185,7 +180,7 @@ async fn test_create_with_same_wallet_mnemonic_phrase() {
 
 #[tokio::test]
 async fn test_find() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     assert_eq!(account_handler.find_all().await.unwrap(), vec![]);
     let mut options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
@@ -209,7 +204,7 @@ async fn test_find() {
 
 #[tokio::test]
 async fn test_find_by_id() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -236,7 +231,7 @@ async fn test_find_by_id() {
 
 #[tokio::test]
 async fn test_find_by_public_key() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -263,7 +258,7 @@ async fn test_find_by_public_key() {
 
 #[tokio::test]
 async fn test_find_by_shielded_address() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -290,7 +285,7 @@ async fn test_find_by_shielded_address() {
 
 #[tokio::test]
 async fn test_count() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     assert_eq!(account_handler.count_all().await.unwrap(), 0);
     let mut options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
@@ -311,7 +306,7 @@ async fn test_count() {
 
 #[tokio::test]
 async fn test_update_name() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -343,7 +338,7 @@ async fn test_update_name() {
 
 #[tokio::test]
 async fn test_update_scan_size() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -375,7 +370,7 @@ async fn test_update_scan_size() {
 
 #[tokio::test]
 async fn test_update_status() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -400,7 +395,7 @@ async fn test_update_status() {
 
 #[tokio::test]
 async fn test_update_wrong_wallet_password() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -424,7 +419,7 @@ async fn test_update_wrong_wallet_password() {
 
 #[tokio::test]
 async fn test_update_non_existing_account() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let update_options = UpdateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -444,7 +439,7 @@ async fn test_update_non_existing_account() {
 
 #[tokio::test]
 async fn test_export_secret_key() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -464,7 +459,7 @@ async fn test_export_secret_key() {
 
 #[tokio::test]
 async fn test_export_secret_key_wrong_wallet_password() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -477,7 +472,7 @@ async fn test_export_secret_key_wrong_wallet_password() {
 
 #[tokio::test]
 async fn test_export_secret_key_non_existing_account() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let result = account_handler
         .export_secret_key_by_shielded_address(
             DEFAULT_WALLET_PASSWORD,
@@ -489,7 +484,7 @@ async fn test_export_secret_key_non_existing_account() {
 
 #[tokio::test]
 async fn test_update_encryption() {
-    let (mut account_handler, mut wallet_handler, _) = setup().await;
+    let (account_handler, wallet_handler, _) = setup().await;
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -526,7 +521,7 @@ async fn test_update_encryption() {
 
 #[tokio::test]
 async fn test_update_encryption_wrong_wallet_password() {
-    let (mut account_handler, _, _) = setup().await;
+    let (account_handler, _, _) = setup().await;
     let result = account_handler
         .update_encryption("wrong password", "newP@ssw0rd")
         .await;

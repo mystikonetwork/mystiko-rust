@@ -36,7 +36,7 @@ async fn test_collection_exists() {
 #[tokio::test]
 async fn test_insert() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let mut collection = Collection::new(SqlFormatter {}, storage);
+    let collection = Collection::new(SqlFormatter {}, storage);
     collection
         .migrate(TestDocumentData::schema())
         .await
@@ -65,7 +65,7 @@ async fn test_insert() {
 #[tokio::test]
 async fn test_update() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let mut collection = Collection::new(SqlFormatter {}, storage);
+    let collection = Collection::new(SqlFormatter {}, storage);
     collection
         .migrate(TestDocumentData::schema())
         .await
@@ -91,7 +91,7 @@ async fn test_update() {
 #[tokio::test]
 async fn test_delete() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let mut collection = Collection::new(SqlFormatter {}, storage);
+    let collection = Collection::new(SqlFormatter {}, storage);
     collection
         .migrate(TestDocumentData::schema())
         .await
@@ -139,7 +139,7 @@ async fn test_delete() {
 #[tokio::test]
 async fn test_find() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let mut collection = Collection::new(SqlFormatter {}, storage);
+    let collection = Collection::new(SqlFormatter {}, storage);
     collection
         .migrate(TestDocumentData::schema())
         .await
@@ -209,7 +209,7 @@ async fn test_file_db() {
         .build()
         .await
         .unwrap();
-    let mut collection = Collection::new(SqlFormatter {}, storage);
+    let collection = Collection::new(SqlFormatter {}, storage);
     collection
         .migrate(TestDocumentData::schema())
         .await

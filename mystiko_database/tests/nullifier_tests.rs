@@ -6,14 +6,10 @@ use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 async fn create_nullifiers() -> NullifierCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let nullifiers = NullifierCollection::new(Arc::new(Mutex::new(Collection::new(
-        SqlFormatter {},
-        storage,
-    ))));
+    let nullifiers = NullifierCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
     nullifiers.migrate().await.unwrap();
     assert!(nullifiers.collection_exists().await.unwrap());
     nullifiers

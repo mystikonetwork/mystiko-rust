@@ -7,14 +7,10 @@ use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 async fn create_accounts() -> AccountCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let accounts = AccountCollection::new(Arc::new(Mutex::new(Collection::new(
-        SqlFormatter {},
-        storage,
-    ))));
+    let accounts = AccountCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
     accounts.migrate().await.unwrap();
     assert!(accounts.collection_exists().await.unwrap());
     accounts

@@ -8,15 +8,12 @@ use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder}
 use num_bigint::BigInt;
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 async fn create_transactions() -> TransactionCollection<SqlFormatter, SqliteRawData, SqliteStorage>
 {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let transactions = TransactionCollection::new(Arc::new(Mutex::new(Collection::new(
-        SqlFormatter {},
-        storage,
-    ))));
+    let transactions =
+        TransactionCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
     transactions.migrate().await.unwrap();
     assert!(transactions.collection_exists().await.unwrap());
     transactions
