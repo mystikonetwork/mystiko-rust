@@ -11,11 +11,11 @@ use mystiko_storage::document::DocumentRawData;
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
 pub struct Mystiko<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    pub db: Arc<Mutex<Database<F, R, S>>>,
+    pub db: Arc<Database<F, R, S>>,
     pub config: Arc<MystikoConfig>,
     pub accounts: AccountHandler<F, R, S>,
     pub wallets: WalletHandler<F, R, S>,
@@ -53,7 +53,7 @@ where
             .migrate()
             .await
             .map_err(MystikoError::DatabaseMigrationError)?;
-        let db = Arc::new(Mutex::new(database));
+        let db = Arc::new(database);
         let config = create_mystiko_config(&mystiko_options).await?;
         let accounts = AccountHandler::new(db.clone());
         let wallets = WalletHandler::new(db.clone());

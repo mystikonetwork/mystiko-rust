@@ -10,6 +10,7 @@ use mystiko_storage::testing::TestDocumentData;
 use num_traits::{Float, PrimInt};
 use std::collections::HashMap;
 use std::str::FromStr;
+use tokio::sync::Mutex;
 
 #[derive(Clone)]
 struct TestDocumentRawData {
@@ -52,7 +53,7 @@ struct TestStorage {
     raise_error_on_query: bool,
     raise_error_on_execute: bool,
     expected_data: Vec<TestDocumentRawData>,
-    statements: Vec<String>,
+    statements: Mutex<Vec<String>>,
 }
 
 impl TestStorage {
@@ -63,15 +64,15 @@ impl TestStorage {
             raise_error_on_query: false,
             raise_error_on_execute: false,
             expected_data: vec![],
-            statements: vec![],
+            statements: Mutex::new(vec![]),
         }
     }
 }
 
 #[async_trait]
 impl Storage<TestDocumentRawData> for TestStorage {
-    async fn execute(&mut self, statement: String) -> Result<()> {
-        self.statements.push(statement);
+    async fn execute(&self, statement: String) -> Result<()> {
+        self.statements.lock().await.push(statement);
         if self.raise_error_on_execute {
             Err(Error::msg("expected error"))
         } else {
@@ -79,8 +80,8 @@ impl Storage<TestDocumentRawData> for TestStorage {
         }
     }
 
-    async fn query(&mut self, statement: String) -> Result<Vec<TestDocumentRawData>> {
-        self.statements.push(statement);
+    async fn query(&self, statement: String) -> Result<Vec<TestDocumentRawData>> {
+        self.statements.lock().await.push(statement);
         if self.raise_error_on_query {
             Err(Error::msg("expected error"))
         } else {
@@ -88,7 +89,7 @@ impl Storage<TestDocumentRawData> for TestStorage {
         }
     }
 
-    async fn collection_exists(&mut self, _collection: &str) -> Result<bool> {
+    async fn collection_exists(&self, _collection: &str) -> Result<bool> {
         if self.raise_error_on_collection_exists {
             Err(Error::msg("expected error"))
         } else {
@@ -117,7 +118,7 @@ async fn test_insert() {
     assert_eq!(doc.data.field3, None);
     assert_eq!(
         collection.formatter().format_insert(&doc),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_execute = true;
     let result = collection
@@ -154,7 +155,7 @@ async fn test_insert_batch() {
     let d2 = collection.insert_batch(&raw_data).await.unwrap();
     assert_eq!(
         collection.formatter().format_insert_batch(&d2),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     assert_ne!(d2[0].id, d2[1].id);
     assert_eq!(d2[0].created_at, d2[1].created_at);
@@ -191,7 +192,7 @@ async fn test_update() {
     assert!(doc.updated_at > 0);
     assert_eq!(
         collection.formatter().format_update(&doc),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_execute = true;
     let result = collection.update(&doc).await;
@@ -234,7 +235,7 @@ async fn test_update_batch() {
     assert_ne!(documents[1].updated_at, d2[1].updated_at);
     assert_eq!(
         collection.formatter().format_update_batch(&d2),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_execute = true;
     let result = collection.update_batch(&documents).await;
@@ -258,7 +259,7 @@ async fn test_delete() {
     collection.delete::<TestDocumentData>(&doc).await.unwrap();
     assert_eq!(
         collection.formatter().format_delete(&doc),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_execute = true;
     let result = collection.delete::<TestDocumentData>(&doc).await;
@@ -298,7 +299,7 @@ async fn test_delete_batch() {
     collection.delete_batch(&documents).await.unwrap();
     assert_eq!(
         collection.formatter().format_delete_batch(&documents),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_execute = true;
     let result = collection.delete_batch(&documents).await;
@@ -317,7 +318,7 @@ async fn test_delete_by_filter() {
         collection
             .formatter()
             .format_delete_by_filter::<TestDocumentData>(None),
-        collection.storage().statements[0],
+        collection.storage().statements.lock().await[0],
     );
     let filter = QueryFilterBuilder::new()
         .filter(Condition::FILTER(SubFilter::Equal(
@@ -333,7 +334,7 @@ async fn test_delete_by_filter() {
         collection
             .formatter()
             .format_delete_by_filter::<TestDocumentData>(Some(filter.clone())),
-        collection.storage().statements[1],
+        collection.storage().statements.lock().await[1],
     );
     collection.mut_storage().raise_error_on_execute = true;
     assert!(collection
@@ -350,7 +351,7 @@ async fn test_find() {
     assert!(d1.is_empty());
     assert_eq!(
         collection.formatter().format_find::<TestDocumentData>(None),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().expected_data = vec![
         TestDocumentRawData {
@@ -441,7 +442,7 @@ async fn test_find_by_id() {
         collection
             .formatter()
             .format_find::<TestDocumentData>(Some(filter)),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_query = true;
     let result = collection.find_by_id::<TestDocumentData>("1000").await;
@@ -469,7 +470,7 @@ async fn test_migrate_initialization() {
             TestDocumentData::schema().migrations.join(";"),
             collection.formatter().format_insert(&migration)
         ),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_execute = true;
     assert!(collection
@@ -517,7 +518,7 @@ async fn test_migrate_non_existing() {
         collection
             .formatter()
             .format_find::<Migration>(Some(filter)),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     assert_eq!(
         format!(
@@ -525,7 +526,7 @@ async fn test_migrate_non_existing() {
             TestDocumentData::schema().migrations.join(";"),
             collection.formatter().format_insert(&migration)
         ),
-        collection.storage().statements[1]
+        collection.storage().statements.lock().await[1]
     );
 }
 
@@ -561,7 +562,7 @@ async fn test_migrate_existing() {
         collection
             .formatter()
             .format_find::<Migration>(Some(filter)),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
     assert_eq!(
         format!(
@@ -569,7 +570,7 @@ async fn test_migrate_existing() {
             TestDocumentData::schema().migrations[1..].join(";"),
             collection.formatter().format_update(&migration)
         ),
-        collection.storage().statements[1]
+        collection.storage().statements.lock().await[1]
     );
 }
 
@@ -603,11 +604,11 @@ async fn test_migrate_skipping() {
             String::from(TestDocumentData::schema().collection_name),
         )))
         .build();
-    assert_eq!(collection.storage().statements.len(), 1);
+    assert_eq!(collection.storage().statements.lock().await.len(), 1);
     assert_eq!(
         collection
             .formatter()
             .format_find::<Migration>(Some(filter)),
-        collection.storage().statements[0]
+        collection.storage().statements.lock().await[0]
     );
 }

@@ -6,14 +6,10 @@ use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 async fn create_chains() -> ChainCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let chains = ChainCollection::new(Arc::new(Mutex::new(Collection::new(
-        SqlFormatter {},
-        storage,
-    ))));
+    let chains = ChainCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
     chains.migrate().await.unwrap();
     assert!(chains.collection_exists().await.unwrap());
     chains

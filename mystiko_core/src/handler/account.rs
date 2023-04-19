@@ -22,7 +22,6 @@ use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use typed_builder::TypedBuilder;
 
 pub const DEFAULT_ACCOUNT_SCAN_SIZE: u32 = 10000;
@@ -30,7 +29,7 @@ pub const DEFAULT_ACCOUNT_SCAN_SIZE: u32 = 10000;
 pub const DEFAULT_KEY_DERIVE_PATH: &str = "m/44'/94085'/0'";
 
 pub struct AccountHandler<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    db: Arc<Mutex<Database<F, R, S>>>,
+    db: Arc<Database<F, R, S>>,
     wallets: WalletHandler<F, R, S>,
 }
 
@@ -62,14 +61,14 @@ where
     R: DocumentRawData,
     S: Storage<R>,
 {
-    pub fn new(db: Arc<Mutex<Database<F, R, S>>>) -> Self {
+    pub fn new(db: Arc<Database<F, R, S>>) -> Self {
         Self {
             db: db.clone(),
             wallets: WalletHandler::new(db),
         }
     }
 
-    pub async fn create(&mut self, options: &CreateAccountOptions) -> Result<Document<Account>> {
+    pub async fn create(&self, options: &CreateAccountOptions) -> Result<Document<Account>> {
         let mut wallet = self
             .wallets
             .check_password(&options.wallet_password)
@@ -86,42 +85,38 @@ where
         Ok(account)
     }
 
-    pub async fn count(&mut self, filter: QueryFilter) -> Result<u64> {
+    pub async fn count(&self, filter: QueryFilter) -> Result<u64> {
         let filter = self.wrap_filter(Some(filter)).await?;
         self.db
-            .lock()
-            .await
             .accounts
             .count(filter)
             .await
             .map_err(MystikoError::DatabaseError)
     }
 
-    pub async fn count_all(&mut self) -> Result<u64> {
+    pub async fn count_all(&self) -> Result<u64> {
         self.count(QueryFilterBuilder::new().build()).await
     }
 
-    pub async fn find(&mut self, filter: QueryFilter) -> Result<Vec<Document<Account>>> {
+    pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Account>>> {
         let filter = self.wrap_filter(Some(filter)).await?;
         self.db
-            .lock()
-            .await
             .accounts
             .find(filter)
             .await
             .map_err(MystikoError::DatabaseError)
     }
 
-    pub async fn find_all(&mut self) -> Result<Vec<Document<Account>>> {
+    pub async fn find_all(&self) -> Result<Vec<Document<Account>>> {
         self.find(QueryFilterBuilder::new().build()).await
     }
 
-    pub async fn find_by_id(&mut self, id: &str) -> Result<Option<Document<Account>>> {
+    pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Account>>> {
         self.find_one_by_identifier(id, DOCUMENT_ID_FIELD).await
     }
 
     pub async fn find_by_shielded_address(
-        &mut self,
+        &self,
         shielded_address: &str,
     ) -> Result<Option<Document<Account>>> {
         self.find_one_by_identifier(shielded_address, SHIELDED_ADDRESS_FIELD_NAME)
@@ -129,7 +124,7 @@ where
     }
 
     pub async fn find_by_public_key(
-        &mut self,
+        &self,
         shielded_address: &str,
     ) -> Result<Option<Document<Account>>> {
         self.find_one_by_identifier(shielded_address, PUBLIC_KEY_FIELD_NAME)
@@ -137,7 +132,7 @@ where
     }
 
     pub async fn update_by_id(
-        &mut self,
+        &self,
         id: &str,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
@@ -146,7 +141,7 @@ where
     }
 
     pub async fn update_by_shielded_address(
-        &mut self,
+        &self,
         shielded_address: &str,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
@@ -155,7 +150,7 @@ where
     }
 
     pub async fn update_by_public_key(
-        &mut self,
+        &self,
         public_key: &str,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
@@ -164,7 +159,7 @@ where
     }
 
     pub async fn update_encryption(
-        &mut self,
+        &self,
         old_wallet_password: &str,
         new_wallet_password: &str,
     ) -> Result<Vec<Document<Account>>> {
@@ -178,8 +173,6 @@ where
         }
         let accounts = self
             .db
-            .lock()
-            .await
             .accounts
             .update_batch(&accounts)
             .await
@@ -191,17 +184,13 @@ where
         Ok(accounts)
     }
 
-    pub async fn export_secret_key_by_id(
-        &mut self,
-        wallet_password: &str,
-        id: &str,
-    ) -> Result<String> {
+    pub async fn export_secret_key_by_id(&self, wallet_password: &str, id: &str) -> Result<String> {
         self.export_secret_key_by_identifier(wallet_password, id, DOCUMENT_ID_FIELD)
             .await
     }
 
     pub async fn export_secret_key_by_public_key(
-        &mut self,
+        &self,
         wallet_password: &str,
         public_key: &str,
     ) -> Result<String> {
@@ -210,7 +199,7 @@ where
     }
 
     pub async fn export_secret_key_by_shielded_address(
-        &mut self,
+        &self,
         wallet_password: &str,
         shielded_address: &str,
     ) -> Result<String> {
@@ -222,7 +211,7 @@ where
         .await
     }
 
-    async fn wrap_filter(&mut self, filter: Option<QueryFilter>) -> Result<QueryFilter> {
+    async fn wrap_filter(&self, filter: Option<QueryFilter>) -> Result<QueryFilter> {
         let wallet = self.wallets.check_current().await?;
         let mut filter = filter.unwrap_or(QueryFilterBuilder::new().build());
         filter.conditions.push(Condition::FILTER(SubFilter::Equal(
@@ -233,7 +222,7 @@ where
     }
 
     async fn find_one_by_identifier(
-        &mut self,
+        &self,
         identifier: &str,
         field_name: &str,
     ) -> Result<Option<Document<Account>>> {
@@ -245,8 +234,6 @@ where
             .build();
         let wrapped_filter = self.wrap_filter(Some(filter)).await?;
         self.db
-            .lock()
-            .await
             .accounts
             .find_one(wrapped_filter)
             .await
@@ -254,7 +241,7 @@ where
     }
 
     async fn update_by_identifier(
-        &mut self,
+        &self,
         identifier: &str,
         field_name: &str,
         options: &UpdateAccountOptions,
@@ -285,8 +272,6 @@ where
             if has_update {
                 let updated_account = self
                     .db
-                    .lock()
-                    .await
                     .accounts
                     .update(&account)
                     .map_err(MystikoError::DatabaseError)
@@ -309,7 +294,7 @@ where
     }
 
     async fn export_secret_key_by_identifier(
-        &mut self,
+        &self,
         wallet_password: &str,
         identifier: &str,
         field_name: &str,
@@ -328,13 +313,13 @@ where
         }
     }
 
-    async fn default_account_name(&mut self) -> Result<String> {
+    async fn default_account_name(&self) -> Result<String> {
         let count = self.count_all().await?;
         Ok(format!("Account {}", count + 1))
     }
 
     async fn generate_secret_key(
-        &mut self,
+        &self,
         wallet: &Document<Wallet>,
         wallet_password: &str,
     ) -> Result<(VerifySk, EncSk, u32)> {
@@ -358,7 +343,7 @@ where
     }
 
     async fn create_raw_account(
-        &mut self,
+        &self,
         wallet: &Document<Wallet>,
         options: &CreateAccountOptions,
     ) -> Result<(Account, u32)> {
@@ -408,7 +393,7 @@ where
     }
 
     async fn insert_raw_account(
-        &mut self,
+        &self,
         wallet: &mut Document<Wallet>,
         account: Account,
         account_nonce: u32,
@@ -422,16 +407,12 @@ where
             if wallet.data.account_nonce != account_nonce {
                 wallet.data.account_nonce = account_nonce;
                 self.db
-                    .lock()
-                    .await
                     .wallets
                     .update(wallet)
                     .await
                     .map_err(MystikoError::DatabaseError)?;
             }
             self.db
-                .lock()
-                .await
                 .accounts
                 .insert(&account)
                 .await

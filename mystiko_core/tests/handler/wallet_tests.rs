@@ -5,17 +5,16 @@ use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
 use rand_core::OsRng;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 async fn setup() -> WalletHandler<SqlFormatter, SqliteRawData, SqliteStorage> {
     let database = create_database().await;
     database.migrate().await.unwrap();
-    WalletHandler::new(Arc::new(Mutex::new(database)))
+    WalletHandler::new(Arc::new(database))
 }
 
 #[tokio::test]
 async fn test_create() {
-    let mut handler = setup().await;
+    let handler = setup().await;
     let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .build();
@@ -25,7 +24,7 @@ async fn test_create() {
 
 #[tokio::test]
 async fn test_create_with_mnemonic() {
-    let mut handler = setup().await;
+    let handler = setup().await;
     let mnemonic = Mnemonic::random(OsRng, Language::English);
     let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
@@ -40,7 +39,7 @@ async fn test_create_with_mnemonic() {
 
 #[tokio::test]
 async fn test_create_with_invalid_password() {
-    let mut handler = setup().await;
+    let handler = setup().await;
     let mut options = CreateWalletOptions::builder()
         .password(String::from("AAAAAAAA"))
         .build();
@@ -57,7 +56,7 @@ async fn test_create_with_invalid_password() {
 
 #[tokio::test]
 async fn test_current() {
-    let mut handler = setup().await;
+    let handler = setup().await;
     assert!(handler.current().await.unwrap().is_none());
     let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
@@ -68,7 +67,7 @@ async fn test_current() {
 
 #[tokio::test]
 async fn test_check_current() {
-    let mut handler = setup().await;
+    let handler = setup().await;
     assert!(handler.check_current().await.is_err());
     let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
@@ -79,7 +78,7 @@ async fn test_check_current() {
 
 #[tokio::test]
 async fn test_check_password() {
-    let mut handler = setup().await;
+    let handler = setup().await;
     assert!(handler.check_password("P@ssw0rd").await.is_err());
     let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
@@ -91,7 +90,7 @@ async fn test_check_password() {
 
 #[tokio::test]
 async fn test_export_mnemonic_words() {
-    let mut handler = setup().await;
+    let handler = setup().await;
     assert!(handler.export_mnemonic_phrase("P@ssw0rd").await.is_err());
     let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
@@ -107,7 +106,7 @@ async fn test_export_mnemonic_words() {
 
 #[tokio::test]
 async fn test_update_password() {
-    let mut handler = setup().await;
+    let handler = setup().await;
     assert!(handler
         .update_password("P@ssw0rd", "P@ssw0rd2")
         .await

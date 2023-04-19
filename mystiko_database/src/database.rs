@@ -15,7 +15,6 @@ use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub accounts: AccountCollection<F, R, S>,
@@ -30,7 +29,7 @@ pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
 
 impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S> {
     pub fn new(formatter: F, storage: S) -> Self {
-        let collection = Arc::new(Mutex::new(Collection::new(formatter, storage)));
+        let collection = Arc::new(Collection::new(formatter, storage));
         Database {
             accounts: AccountCollection::new(collection.clone()),
             chains: ChainCollection::new(collection.clone()),
