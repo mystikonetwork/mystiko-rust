@@ -3,7 +3,7 @@ use crate::raw::bridge::celer::RawCelerBridgeConfig;
 use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
 use crate::raw::bridge::poly::RawPolyBridgeConfig;
 use crate::raw::bridge::tbridge::RawTBridgeConfig;
-use crate::types::BridgeType;
+use mystiko_types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;

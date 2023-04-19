@@ -1,5 +1,5 @@
 use crate::raw::chain::EXPLORER_DEFAULT_PREFIX;
-use crate::types::BridgeType;
+use mystiko_types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;
 use typed_builder::TypedBuilder;

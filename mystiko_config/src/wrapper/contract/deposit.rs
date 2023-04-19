@@ -1,9 +1,9 @@
 use crate::raw::contract::deposit::RawDepositContractConfig;
-use crate::types::{AssetType, BridgeType, ContractType};
 use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
 use anyhow::{Error, Result};
+use mystiko_types::{AssetType, BridgeType, ContractType};
 use mystiko_utils::convert::decimal_to_number;
 use num_bigint::BigInt;
 use num_traits::{NumCast, Zero};
@@ -198,7 +198,7 @@ impl DepositContractConfig {
         self.pool_contract().circuits()
     }
 
-    pub fn peer_chain_id(&self) -> &Option<u32> {
+    pub fn peer_chain_id(&self) -> &Option<u64> {
         &self.raw.peer_chain_id
     }
 

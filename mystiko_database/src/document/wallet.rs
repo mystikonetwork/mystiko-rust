@@ -2,6 +2,10 @@
 use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
 
+pub const ENCRYPTED_ENTROPY_FIELD_NAME: &str = "encrypted_entropy";
+pub const HASHED_PASSWORD_FIELD_NAME: &str = "hashed_password";
+pub const ACCOUNT_NONCE_FIELD_NAME: &str = "account_nonce";
+
 pub static WALLET_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "wallets",
     migrations: &["CREATE TABLE `wallets` (\
@@ -28,18 +32,20 @@ impl DocumentData for Wallet {
 
     fn field_value_string(&self, field: &str) -> Option<String> {
         match field {
-            "encrypted_entropy" => Some(self.encrypted_entropy.clone()),
-            "hashed_password" => Some(self.hashed_password.clone()),
-            "account_nonce" => Some(self.account_nonce.to_string()),
+            ENCRYPTED_ENTROPY_FIELD_NAME => Some(self.encrypted_entropy.clone()),
+            HASHED_PASSWORD_FIELD_NAME => Some(self.hashed_password.clone()),
+            ACCOUNT_NONCE_FIELD_NAME => Some(self.account_nonce.to_string()),
             _ => None,
         }
     }
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Wallet {
-            encrypted_entropy: raw.field_string_value("encrypted_entropy")?.unwrap(),
-            hashed_password: raw.field_string_value("hashed_password")?.unwrap(),
-            account_nonce: raw.field_integer_value("account_nonce")?.unwrap(),
+            encrypted_entropy: raw
+                .field_string_value(ENCRYPTED_ENTROPY_FIELD_NAME)?
+                .unwrap(),
+            hashed_password: raw.field_string_value(HASHED_PASSWORD_FIELD_NAME)?.unwrap(),
+            account_nonce: raw.field_integer_value(ACCOUNT_NONCE_FIELD_NAME)?.unwrap(),
         })
     }
 }

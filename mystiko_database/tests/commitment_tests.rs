@@ -2,14 +2,14 @@ extern crate mystiko_database;
 extern crate num_bigint;
 
 use mystiko_database::collection::commitment::CommitmentCollection;
-use mystiko_database::document::commitment::{Commitment, CommitmentStatus};
+use mystiko_database::document::commitment::Commitment;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_types::CommitmentStatus;
 use num_bigint::BigInt;
-use std::str::FromStr;
 use std::sync::Arc;
 
 async fn create_commitments() -> CommitmentCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
@@ -182,13 +182,4 @@ async fn test_commitments_crud() {
     // testing delete_all
     commitments.delete_all().await.unwrap();
     assert_eq!(commitments.count_all().await.unwrap(), 0);
-}
-
-#[tokio::test]
-async fn test_commitment_status_serde() {
-    assert!(CommitmentStatus::from_str("invalid").is_err());
-    assert_eq!(
-        CommitmentStatus::from_str("Queued").unwrap(),
-        CommitmentStatus::Queued
-    );
 }

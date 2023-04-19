@@ -1,7 +1,16 @@
 #![forbid(unsafe_code)]
-use anyhow::{Error, Result};
+use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::str::FromStr;
+use mystiko_types::ContractType;
+
+pub const CONTRACT_TYPE_FIELD_NAME: &str = "contract_type";
+pub const CHAIN_ID_FIELD_NAME: &str = "chain_id";
+pub const CONTRACT_ADDRESS_FIELD_NAME: &str = "contract_address";
+pub const DISABLED_FIELD_NAME: &str = "disabled";
+pub const SYNC_START_FIELD_NAME: &str = "sync_start";
+pub const SYNC_SIZE_FIELD_NAME: &str = "sync_size";
+pub const SYNCED_BLOCK_NUMBER_FIELD_NAME: &str = "synced_block_number";
+pub const CHECKED_LEAF_INDEX_FIELD_NAME: &str = "checked_leaf_index";
 
 pub static CONTRACT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "contracts",
@@ -11,44 +20,38 @@ pub static CONTRACT_SCHEMA: DocumentSchema = DocumentSchema {
             `created_at`          INT          NOT NULL,\
             `updated_at`          INT          NOT NULL,\
             `contract_type`       VARCHAR(64) NOT NULL,\
-            `chain_id`            INT          NOT NULL,\
+            `chain_id`            BIGINT      NOT NULL,\
             `contract_address`    VARCHAR(64)  NOT NULL,\
-            `disabled`            INT          NOT NULL,\
-            `sync_start`          INT NOT NULL,\
-            `sync_size`           INT NOT NULL,\
-            `synced_block_number` INT NOT NULL,\
-            `checked_leaf_index`  INT)",
+            `disabled`            TINYINT      NOT NULL,\
+            `sync_start`          BIGINT NOT NULL,\
+            `sync_size`           BIGINT NOT NULL,\
+            `synced_block_number` BIGINT NOT NULL,\
+            `checked_leaf_index`  BIGINT)",
         "CREATE INDEX `contracts_chain_id_index` ON `contracts` (`chain_id`)",
         "CREATE INDEX `contracts_contract_address_index` ON `contracts` (`contract_address`)",
     ],
     field_names: &[
-        "contract_type",
-        "chain_id",
-        "contract_address",
-        "disabled",
-        "sync_start",
-        "sync_size",
-        "synced_block_number",
-        "checked_leaf_index",
+        CONTRACT_TYPE_FIELD_NAME,
+        CHAIN_ID_FIELD_NAME,
+        CONTRACT_ADDRESS_FIELD_NAME,
+        DISABLED_FIELD_NAME,
+        SYNC_START_FIELD_NAME,
+        SYNC_SIZE_FIELD_NAME,
+        SYNCED_BLOCK_NUMBER_FIELD_NAME,
+        CHECKED_LEAF_INDEX_FIELD_NAME,
     ],
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum ContractType {
-    Deposit,
-    Pool,
-}
-
-#[derive(Clone, PartialEq, Debug)]
 pub struct Contract {
     pub contract_type: ContractType,
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub contract_address: String,
-    pub disabled: u32,
-    pub sync_start: u32,
-    pub sync_size: u32,
-    pub synced_block_number: u32,
-    pub checked_leaf_index: Option<u32>,
+    pub disabled: bool,
+    pub sync_start: u64,
+    pub sync_size: u64,
+    pub synced_block_number: u64,
+    pub checked_leaf_index: Option<u64>,
 }
 
 impl DocumentData for Contract {
@@ -58,51 +61,38 @@ impl DocumentData for Contract {
 
     fn field_value_string(&self, field: &str) -> Option<String> {
         match field {
-            "contract_type" => Some(self.contract_type.to_string()),
-            "chain_id" => Some(self.chain_id.to_string()),
-            "contract_address" => Some(self.contract_address.clone()),
-            "disabled" => Some(self.disabled.to_string()),
-            "sync_start" => Some(self.sync_start.to_string()),
-            "sync_size" => Some(self.sync_size.to_string()),
-            "synced_block_number" => Some(self.synced_block_number.to_string()),
-            "checked_leaf_index" => Some(self.checked_leaf_index?.to_string()),
+            CONTRACT_TYPE_FIELD_NAME => Some(serde_json::to_string(&self.contract_type).unwrap()),
+            CHAIN_ID_FIELD_NAME => Some(self.chain_id.to_string()),
+            CONTRACT_ADDRESS_FIELD_NAME => Some(self.contract_address.clone()),
+            DISABLED_FIELD_NAME => Some(if self.disabled {
+                String::from("1")
+            } else {
+                String::from("0")
+            }),
+            SYNC_START_FIELD_NAME => Some(self.sync_start.to_string()),
+            SYNC_SIZE_FIELD_NAME => Some(self.sync_size.to_string()),
+            SYNCED_BLOCK_NUMBER_FIELD_NAME => Some(self.synced_block_number.to_string()),
+            CHECKED_LEAF_INDEX_FIELD_NAME => Some(self.checked_leaf_index?.to_string()),
             _ => None,
         }
     }
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Contract {
-            contract_type: ContractType::from_str(
-                &raw.field_string_value("contract_type")?.unwrap(),
+            contract_type: serde_json::from_str(
+                &raw.field_string_value(CONTRACT_TYPE_FIELD_NAME)?.unwrap(),
             )?,
-            chain_id: raw.field_integer_value("chain_id")?.unwrap(),
-            contract_address: raw.field_string_value("contract_address")?.unwrap(),
-            disabled: raw.field_integer_value("disabled")?.unwrap(),
-            sync_start: raw.field_integer_value("sync_start")?.unwrap(),
-            sync_size: raw.field_integer_value("sync_size")?.unwrap(),
-            synced_block_number: raw.field_integer_value("synced_block_number")?.unwrap(),
-            checked_leaf_index: raw.field_integer_value("checked_leaf_index")?,
+            chain_id: raw.field_integer_value(CHAIN_ID_FIELD_NAME)?.unwrap(),
+            contract_address: raw
+                .field_string_value(CONTRACT_ADDRESS_FIELD_NAME)?
+                .unwrap(),
+            disabled: raw.field_integer_value::<u8>(DISABLED_FIELD_NAME)?.unwrap() != 0,
+            sync_start: raw.field_integer_value(SYNC_START_FIELD_NAME)?.unwrap(),
+            sync_size: raw.field_integer_value(SYNC_SIZE_FIELD_NAME)?.unwrap(),
+            synced_block_number: raw
+                .field_integer_value(SYNCED_BLOCK_NUMBER_FIELD_NAME)?
+                .unwrap(),
+            checked_leaf_index: raw.field_integer_value(CHECKED_LEAF_INDEX_FIELD_NAME)?,
         })
-    }
-}
-
-impl ToString for ContractType {
-    fn to_string(&self) -> String {
-        match self {
-            ContractType::Deposit => String::from("Deposit"),
-            ContractType::Pool => String::from("Pool"),
-        }
-    }
-}
-
-impl FromStr for ContractType {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Deposit" => Ok(ContractType::Deposit),
-            "Pool" => Ok(ContractType::Pool),
-            _ => Err(Error::msg(format!("invalid contract type string {}", s))),
-        }
     }
 }

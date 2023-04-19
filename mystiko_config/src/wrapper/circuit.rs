@@ -1,6 +1,6 @@
 use crate::raw::circuit::RawCircuitConfig;
-use crate::types::CircuitType;
 use anyhow::Result;
+use mystiko_types::CircuitType;
 use std::sync::Arc;
 use validator::Validate;
 

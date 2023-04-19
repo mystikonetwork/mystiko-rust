@@ -1,6 +1,6 @@
 use crate::raw::bridge::tbridge::RawTBridgeConfig;
-use crate::types::BridgeType;
 use anyhow::Result;
+use mystiko_types::BridgeType;
 use std::sync::Arc;
 use validator::Validate;
 

@@ -9,13 +9,13 @@ pub static CHAIN_SCHEMA: DocumentSchema = DocumentSchema {
             `id`                  VARCHAR(64) NOT NULL PRIMARY KEY,\
             `created_at`          INT          NOT NULL,\
             `updated_at`          INT          NOT NULL,\
-            `chain_id`            INT          NOT NULL,\
+            `chain_id`            BIGINT       NOT NULL,\
             `name`                VARCHAR(64) NOT NULL,\
-            `name_override`       INT,\
+            `name_override`       TINYINT,\
             `providers`           TEXT         NOT NULL,\
-            `provider_override`   INT,\
-            `event_filter_size`   INT          NOT NULL,\
-            `synced_block_number` INT          NOT NULL)",
+            `provider_override`   TINYINT,\
+            `event_filter_size`   BIGINT       NOT NULL,\
+            `synced_block_number` BIGINT       NOT NULL)",
         "CREATE INDEX chains_chain_id_index ON chains (chain_id)",
     ],
     field_names: &[
@@ -31,13 +31,13 @@ pub static CHAIN_SCHEMA: DocumentSchema = DocumentSchema {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Chain {
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub name: String,
-    pub name_override: u32,
+    pub name_override: bool,
     pub providers: Vec<String>,
-    pub provider_override: u32,
-    pub event_filter_size: u32,
-    pub synced_block_number: u32,
+    pub provider_override: bool,
+    pub event_filter_size: u64,
+    pub synced_block_number: u64,
 }
 
 impl DocumentData for Chain {
@@ -49,9 +49,17 @@ impl DocumentData for Chain {
         match field {
             "chain_id" => Some(self.chain_id.to_string()),
             "name" => Some(self.name.clone()),
-            "name_override" => Some(self.name_override.to_string()),
+            "name_override" => Some(if self.name_override {
+                String::from("1")
+            } else {
+                String::from("0")
+            }),
             "providers" => Some(serde_json::to_string(&self.providers.clone()).unwrap()),
-            "provider_override" => Some(self.provider_override.to_string()),
+            "provider_override" => Some(if self.provider_override {
+                String::from("1")
+            } else {
+                String::from("0")
+            }),
             "event_filter_size" => Some(self.event_filter_size.to_string()),
             "synced_block_number" => Some(self.synced_block_number.to_string()),
             _ => None,
@@ -62,9 +70,9 @@ impl DocumentData for Chain {
         Ok(Chain {
             chain_id: raw.field_integer_value("chain_id")?.unwrap(),
             name: raw.field_string_value("name")?.unwrap(),
-            name_override: raw.field_integer_value("name_override")?.unwrap(),
+            name_override: raw.field_integer_value::<u8>("name_override")?.unwrap() != 0,
             providers: serde_json::from_str(&raw.field_string_value("providers")?.unwrap())?,
-            provider_override: raw.field_integer_value("provider_override")?.unwrap(),
+            provider_override: raw.field_integer_value::<u8>("provider_override")?.unwrap() != 0,
             event_filter_size: raw.field_integer_value("event_filter_size")?.unwrap(),
             synced_block_number: raw.field_integer_value("synced_block_number")?.unwrap(),
         })

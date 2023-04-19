@@ -1,9 +1,8 @@
 #![forbid(unsafe_code)]
-use anyhow::{Error, Result};
+use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigInt;
-use serde_json;
-use std::str::FromStr;
 
 pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "transactions",
@@ -11,7 +10,7 @@ pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
             `id` VARCHAR(64) NOT NULL PRIMARY KEY,\
             `created_at` INT NOT NULL,\
             `updated_at` INT NOT NULL,\
-            `chain_id` INT NOT NULL,\
+            `chain_id` BIGINT NOT NULL,\
             `contract_address` VARCHAR(64) NOT NULL,\
             `asset_symbol` VARCHAR(16) NOT NULL,\
             `asset_decimals` INT NOT NULL,\
@@ -81,77 +80,8 @@ pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum TransactionStatus {
-    Init,
-    ProofGenerating,
-    ProofGenerated,
-    Pending,
-    Succeeded,
-    Failed,
-}
-
-impl ToString for TransactionStatus {
-    fn to_string(&self) -> String {
-        match self {
-            TransactionStatus::Init => String::from("Init"),
-            TransactionStatus::ProofGenerating => String::from("ProofGenerating"),
-            TransactionStatus::ProofGenerated => String::from("ProofGenerated"),
-            TransactionStatus::Pending => String::from("Pending"),
-            TransactionStatus::Succeeded => String::from("Succeeded"),
-            TransactionStatus::Failed => String::from("Failed"),
-        }
-    }
-}
-
-impl FromStr for TransactionStatus {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Init" => Ok(TransactionStatus::Init),
-            "ProofGenerating" => Ok(TransactionStatus::ProofGenerating),
-            "ProofGenerated" => Ok(TransactionStatus::ProofGenerated),
-            "Pending" => Ok(TransactionStatus::Pending),
-            "Succeeded" => Ok(TransactionStatus::Succeeded),
-            "Failed" => Ok(TransactionStatus::Failed),
-            _ => Err(Error::msg(format!(
-                "invalid transaction status string {}",
-                s
-            ))),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub enum TransactionType {
-    Transfer,
-    Withdraw,
-}
-
-impl ToString for TransactionType {
-    fn to_string(&self) -> String {
-        match self {
-            TransactionType::Transfer => String::from("Transfer"),
-            TransactionType::Withdraw => String::from("Withdraw"),
-        }
-    }
-}
-
-impl FromStr for TransactionType {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Transfer" => Ok(TransactionType::Transfer),
-            "Withdraw" => Ok(TransactionType::Withdraw),
-            _ => Err(Error::msg(format!("invalid transaction type string {}", s))),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Debug)]
 pub struct Transaction {
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub contract_address: String,
     pub asset_symbol: String,
     pub asset_decimals: u32,
@@ -217,8 +147,8 @@ impl DocumentData for Transaction {
             "encrypted_auditor_notes" => {
                 Some(serde_json::to_string(&self.encrypted_auditor_notes.clone()).unwrap())
             }
-            "transaction_type" => Some(self.transaction_type.to_string()),
-            "status" => Some(self.status.to_string()),
+            "transaction_type" => Some(serde_json::to_string(&self.transaction_type).unwrap()),
+            "status" => Some(serde_json::to_string(&self.status).unwrap()),
             "error_message" => self.error_message.clone(),
             "transaction_hash" => self.transaction_hash.clone(),
             "wallet_id" => Some(self.wallet_id.clone()),
@@ -228,7 +158,7 @@ impl DocumentData for Transaction {
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Transaction {
-            chain_id: raw.field_integer_value::<u32>("chain_id")?.unwrap(),
+            chain_id: raw.field_integer_value::<u64>("chain_id")?.unwrap(),
             contract_address: raw.field_string_value("contract_address")?.unwrap(),
             asset_symbol: raw.field_string_value("asset_symbol")?.unwrap(),
             asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
@@ -278,10 +208,10 @@ impl DocumentData for Transaction {
             encrypted_auditor_notes: serde_json::from_str(
                 &raw.field_string_value("encrypted_auditor_notes")?.unwrap(),
             )?,
-            transaction_type: TransactionType::from_str(
+            transaction_type: serde_json::from_str(
                 &raw.field_string_value("transaction_type")?.unwrap(),
             )?,
-            status: TransactionStatus::from_str(&raw.field_string_value("status")?.unwrap())?,
+            status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
             error_message: Some(raw.field_string_value("error_message")?.unwrap()),
             transaction_hash: Some(raw.field_string_value("transaction_hash")?.unwrap()),
             wallet_id: raw.field_string_value("wallet_id")?.unwrap(),

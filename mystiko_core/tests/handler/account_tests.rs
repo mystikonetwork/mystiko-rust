@@ -5,13 +5,14 @@ use mystiko_core::handler::account::{
 use mystiko_core::handler::wallet::{CreateWalletOptions, WalletHandler};
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_database::database::Database;
-use mystiko_database::document::account::{AccountStatus, SCAN_SIZE_FIELD_NAME};
+use mystiko_database::document::account::SCAN_SIZE_FIELD_NAME;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::full_public_key;
 use mystiko_protocol::types::{FullPk, FullSk};
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
+use mystiko_types::AccountStatus;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
 

@@ -1,9 +1,9 @@
 use mystiko_config::raw::chain::RawChainConfig;
 use mystiko_config::raw::circuit::RawCircuitConfig;
 use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::types::{AssetType, BridgeType, CircuitType, ProviderType};
 use mystiko_config::wrapper::chain::{ChainConfig, MAIN_ASSET_ADDRESS};
 use mystiko_config::wrapper::circuit::CircuitConfig;
+use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
 use num_bigint::BigInt;
 use std::collections::HashMap;
 use std::path::PathBuf;

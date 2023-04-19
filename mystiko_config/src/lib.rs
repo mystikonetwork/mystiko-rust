@@ -12,5 +12,4 @@ extern crate typed_builder;
 extern crate validator;
 
 pub mod raw;
-pub mod types;
 pub mod wrapper;

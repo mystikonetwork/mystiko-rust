@@ -1,16 +1,16 @@
 #![forbid(unsafe_code)]
-use anyhow::{Error, Result};
+use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigInt;
-use std::str::FromStr;
 
 pub static DEPOSIT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "deposits",
     migrations: &["CREATE TABLE `deposits` (\
             `id` VARCHAR(64) NOT NULL PRIMARY KEY,\
-            `created_at` INT NOT NULL,\
-            `updated_at` INT NOT NULL,\
-            `chain_id` INT NOT NULL,\
+            `created_at` INT    NOT NULL,\
+            `updated_at` INT    NOT NULL,\
+            `chain_id`   BIGINT NOT NULL,\
             `contract_address` VARCHAR(64) NOT NULL,\
             `pool_address` VARCHAR(64) NOT NULL,\
             `commitment_hash` VARCHAR(128) NOT NULL,\
@@ -32,7 +32,7 @@ pub static DEPOSIT_SCHEMA: DocumentSchema = DocumentSchema {
             `status` VARCHAR(32) NOT NULL,\
             `error_message` TEXT,\
             `wallet_id` VARCHAR(64) NOT NULL,\
-            `dst_chain_id` INT NOT NULL,\
+            `dst_chain_id` BIGINT NOT NULL,\
             `dst_chain_contract_address` VARCHAR(64) NOT NULL,\
             `dst_pool_address` VARCHAR(64) NOT NULL,\
             `asset_approve_transaction_hash` VARCHAR(128),\
@@ -85,91 +85,8 @@ pub static DEPOSIT_SCHEMA: DocumentSchema = DocumentSchema {
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum DepositStatus {
-    Init,
-    AssetApproving,
-    AssetApproved,
-    SrcPending,
-    SrcSucceeded,
-    Queued,
-    Included,
-    Failed,
-}
-
-impl ToString for DepositStatus {
-    fn to_string(&self) -> String {
-        match self {
-            DepositStatus::Init => String::from("Init"),
-            DepositStatus::AssetApproving => String::from("AssetApproving"),
-            DepositStatus::AssetApproved => String::from("AssetApproved"),
-            DepositStatus::SrcPending => String::from("SrcPending"),
-            DepositStatus::SrcSucceeded => String::from("SrcSucceeded"),
-            DepositStatus::Queued => String::from("Queued"),
-            DepositStatus::Included => String::from("Included"),
-            DepositStatus::Failed => String::from("Failed"),
-        }
-    }
-}
-
-impl FromStr for DepositStatus {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Init" => Ok(DepositStatus::Init),
-            "AssetApproving" => Ok(DepositStatus::AssetApproving),
-            "AssetApproved" => Ok(DepositStatus::AssetApproved),
-            "SrcPending" => Ok(DepositStatus::SrcPending),
-            "SrcSucceeded" => Ok(DepositStatus::SrcSucceeded),
-            "Queued" => Ok(DepositStatus::Queued),
-            "Included" => Ok(DepositStatus::Included),
-            "Failed" => Ok(DepositStatus::Failed),
-            _ => Err(Error::msg(format!("invalid deposit status string {}", s))),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub enum BridgeType {
-    Loop,
-    Poly,
-    Tbridge,
-    Celer,
-    LayerZero,
-    Axelar,
-}
-impl ToString for BridgeType {
-    fn to_string(&self) -> String {
-        match self {
-            BridgeType::Loop => String::from("Loop"),
-            BridgeType::Poly => String::from("Poly"),
-            BridgeType::Tbridge => String::from("Tbridge"),
-            BridgeType::Celer => String::from("Celer"),
-            BridgeType::LayerZero => String::from("LayerZero"),
-            BridgeType::Axelar => String::from("Axelar"),
-        }
-    }
-}
-
-impl FromStr for BridgeType {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Loop" => Ok(BridgeType::Loop),
-            "Poly" => Ok(BridgeType::Poly),
-            "Tbridge" => Ok(BridgeType::Tbridge),
-            "Celer" => Ok(BridgeType::Celer),
-            "LayerZero" => Ok(BridgeType::LayerZero),
-            "Axelar" => Ok(BridgeType::Axelar),
-            _ => Err(Error::msg(format!("invalid bridge type string {}", s))),
-        }
-    }
-}
-
-#[derive(Clone, PartialEq, Debug)]
 pub struct Deposit {
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub contract_address: String,
     pub pool_address: String,
     pub commitment_hash: String,
@@ -191,7 +108,7 @@ pub struct Deposit {
     pub status: DepositStatus,
     pub error_message: Option<String>,
     pub wallet_id: String,
-    pub dst_chain_id: u32,
+    pub dst_chain_id: u64,
     pub dst_chain_contract_address: String,
     pub dst_pool_address: String,
     pub asset_approve_transaction_hash: Option<String>,
@@ -217,7 +134,7 @@ impl DocumentData for Deposit {
             "asset_symbol" => Some(self.asset_symbol.clone()),
             "asset_decimals" => Some(self.asset_decimals.to_string()),
             "asset_address" => self.asset_address.clone(),
-            "bridge_type" => Some(self.bridge_type.to_string()),
+            "bridge_type" => Some(serde_json::to_string(&self.bridge_type).unwrap()),
             "amount" => Some(self.amount.to_string()),
             "rollup_fee_amount" => Some(self.rollup_fee_amount.to_string()),
             "bridge_fee_amount" => Some(self.bridge_fee_amount.to_string()),
@@ -226,7 +143,7 @@ impl DocumentData for Deposit {
             "executor_fee_asset_address" => self.executor_fee_asset_address.clone(),
             "service_fee_amount" => Some(self.service_fee_amount.to_string()),
             "shielded_recipient_address" => Some(self.shielded_recipient_address.clone()),
-            "status" => Some(self.status.to_string()),
+            "status" => Some(serde_json::to_string(&self.status).unwrap()),
             "error_message" => self.error_message.clone(),
             "wallet_id" => Some(self.wallet_id.to_string()),
             "dst_chain_id" => Some(self.dst_chain_id.to_string()),
@@ -242,7 +159,7 @@ impl DocumentData for Deposit {
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Deposit {
-            chain_id: raw.field_integer_value::<u32>("chain_id")?.unwrap(),
+            chain_id: raw.field_integer_value::<u64>("chain_id")?.unwrap(),
             contract_address: raw.field_string_value("contract_address")?.unwrap(),
             pool_address: raw.field_string_value("pool_address")?.unwrap(),
             commitment_hash: raw.field_string_value("commitment_hash")?.unwrap(),
@@ -252,7 +169,7 @@ impl DocumentData for Deposit {
             asset_symbol: raw.field_string_value("asset_symbol")?.unwrap(),
             asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
             asset_address: raw.field_string_value("asset_address")?,
-            bridge_type: BridgeType::from_str(&raw.field_string_value("bridge_type")?.unwrap())?,
+            bridge_type: serde_json::from_str(&raw.field_string_value("bridge_type")?.unwrap())?,
             amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10)
                 .unwrap(),
             rollup_fee_amount: BigInt::parse_bytes(
@@ -288,10 +205,10 @@ impl DocumentData for Deposit {
             shielded_recipient_address: raw
                 .field_string_value("shielded_recipient_address")?
                 .unwrap(),
-            status: DepositStatus::from_str(&raw.field_string_value("status")?.unwrap())?,
+            status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
             error_message: raw.field_string_value("error_message")?,
             wallet_id: raw.field_string_value("wallet_id")?.unwrap(),
-            dst_chain_id: raw.field_integer_value::<u32>("dst_chain_id")?.unwrap(),
+            dst_chain_id: raw.field_integer_value::<u64>("dst_chain_id")?.unwrap(),
             dst_chain_contract_address: raw
                 .field_string_value("dst_chain_contract_address")?
                 .unwrap(),

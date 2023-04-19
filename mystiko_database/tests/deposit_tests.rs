@@ -1,14 +1,14 @@
 extern crate mystiko_database;
 
 use mystiko_database::collection::deposit::DepositCollection;
-use mystiko_database::document::deposit::{BridgeType, Deposit, DepositStatus};
+use mystiko_database::document::deposit::Deposit;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigInt;
-use std::str::FromStr;
 use std::sync::Arc;
 
 async fn create_deposits() -> DepositCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
@@ -162,10 +162,7 @@ async fn test_deposits_crud() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(
-        found_first_deposit.data.status.to_string(),
-        "Init".to_string()
-    );
+    assert_eq!(found_first_deposit.data.status, DepositStatus::Init,);
     found_deposits = deposits
         .find(QueryFilterBuilder::new().limit(2).offset(1).build())
         .await
@@ -227,9 +224,4 @@ async fn test_deposits_crud() {
     assert_eq!(deposits.count_all().await.unwrap(), 1);
     deposits.delete_all().await.unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 0);
-}
-
-#[tokio::test]
-async fn test_deposit_status_serde() {
-    assert!(DepositStatus::from_str("invalid").is_err());
 }

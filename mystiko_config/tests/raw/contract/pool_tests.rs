@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use mystiko_config::raw::contract::pool::RawPoolContractConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json};
-use mystiko_config::types::{BridgeType, ContractType};
+use mystiko_types::{BridgeType, ContractType};
 use validator::Validate;
 
 fn default_config() -> RawPoolContractConfig {

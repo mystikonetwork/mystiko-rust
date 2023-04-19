@@ -1,7 +1,7 @@
 use mystiko_config::raw::bridge::poly::RawPolyBridgeConfig;
 use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::types::BridgeType;
 use mystiko_config::wrapper::bridge::poly::PolyBridgeConfig;
+use mystiko_types::BridgeType;
 use std::sync::Arc;
 
 const VALID_CONFIG_FILE: &str = "tests/files/bridge/poly/valid.json";

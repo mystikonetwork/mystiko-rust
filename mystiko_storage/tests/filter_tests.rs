@@ -31,7 +31,7 @@ fn test_sub_filter() {
             String::from("v14"),
         ],
     );
-    assert_eq!(sf10.to_sql(), "`c10` IN ['v12', 'v13', 'v14']");
+    assert_eq!(sf10.to_sql(), "`c10` IN ('v12', 'v13', 'v14')");
 }
 
 #[test]
@@ -142,7 +142,7 @@ fn test_query_filter() {
     assert_eq!(
         qf8.to_sql(),
         "\
-            (`c10` = 'v10' OR `c11` IN ['v11', 'v12']) \
+            (`c10` = 'v10' OR `c11` IN ('v11', 'v12')) \
             AND (`c12` BETWEEN 'v13' AND 'v14' AND `c13` >= 'v15') \
             ORDER BY `c15` ASC LIMIT 30 OFFSET 40"
     );
