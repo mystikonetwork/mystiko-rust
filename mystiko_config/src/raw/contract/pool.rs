@@ -1,4 +1,4 @@
-use crate::types::{BridgeType, ContractType};
+use mystiko_types::{BridgeType, ContractType};
 use mystiko_validator::validate::{
     is_ethereum_address, is_number_string, string_vec_each_not_empty,
 };

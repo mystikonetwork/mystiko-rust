@@ -1,9 +1,9 @@
 use ethers_providers::Quorum;
-use mystiko_config::types::ProviderType;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_ethers::provider::factory::ProvidersOptions;
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
+use mystiko_types::ProviderType;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -19,7 +19,7 @@ impl ProvidersConfig {
 }
 
 impl ChainProvidersOptions for ProvidersConfig {
-    fn providers_options(&self, chain_id: u32) -> Option<ProvidersOptions> {
+    fn providers_options(&self, chain_id: u64) -> Option<ProvidersOptions> {
         if let Some(chain_config) = self.config.find_chain(chain_id) {
             let mut providers_options: Vec<ProviderOptions> = vec![];
             for provider_config in chain_config.providers() {

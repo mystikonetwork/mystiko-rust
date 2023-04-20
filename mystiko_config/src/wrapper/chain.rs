@@ -2,13 +2,13 @@ use crate::raw::asset::RawAssetConfig;
 use crate::raw::chain::{RawChainConfig, EXPLORER_TX_PLACEHOLDER};
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
-use crate::types::{AssetType, BridgeType, CircuitType, ProviderType};
 use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
 use crate::wrapper::provider::ProviderConfig;
 use anyhow::{Error, Result};
+use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
 use num_bigint::BigInt;
 use num_traits::{NumCast, Zero};
 use std::collections::{HashMap, HashSet};
@@ -73,7 +73,7 @@ impl ChainConfig {
         })
     }
 
-    pub fn chain_id(&self) -> u32 {
+    pub fn chain_id(&self) -> u64 {
         self.raw.chain_id
     }
 
@@ -165,8 +165,8 @@ impl ChainConfig {
         self.asset_configs.iter().map(|c| c.as_ref()).collect()
     }
 
-    pub fn find_peer_chain_ids(&self) -> Vec<u32> {
-        let mut ids: HashSet<u32> = HashSet::new();
+    pub fn find_peer_chain_ids(&self) -> Vec<u64> {
+        let mut ids: HashSet<u64> = HashSet::new();
         for deposit_contract_config in self.deposit_contracts() {
             if deposit_contract_config.bridge_type() == &BridgeType::Loop {
                 ids.insert(self.chain_id());
@@ -177,7 +177,7 @@ impl ChainConfig {
         ids.into_iter().collect()
     }
 
-    pub fn find_asset_symbols(&self, peer_chain_id: u32) -> Vec<&str> {
+    pub fn find_asset_symbols(&self, peer_chain_id: u64) -> Vec<&str> {
         let mut asset_symbols: HashSet<&str> = HashSet::new();
         for deposit_contract_config in self.deposit_contracts() {
             if peer_chain_id == self.chain_id() {
@@ -195,7 +195,7 @@ impl ChainConfig {
         asset_symbols.into_iter().collect()
     }
 
-    pub fn find_bridges(&self, peer_chain_id: u32, asset_symbol: &str) -> Vec<&BridgeType> {
+    pub fn find_bridges(&self, peer_chain_id: u64, asset_symbol: &str) -> Vec<&BridgeType> {
         let mut bridges: HashSet<&BridgeType> = HashSet::new();
         for deposit_contract_config in self.deposit_contracts() {
             if peer_chain_id == self.chain_id() {
@@ -215,7 +215,7 @@ impl ChainConfig {
 
     pub fn find_deposit_contract(
         &self,
-        peer_chain_id: u32,
+        peer_chain_id: u64,
         asset_symbol: &str,
         bridge_type: &BridgeType,
     ) -> Option<&DepositContractConfig> {

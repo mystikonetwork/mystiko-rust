@@ -26,16 +26,16 @@ async fn test_chains_crud() {
             .insert(&Chain {
                 chain_id: 5,
                 name: String::from("Ethereum Goerli"),
-                name_override: 0,
+                name_override: false,
                 providers: vec![
-                String::from(
-                    "{\"url\": \"wss://goerli.infura.io/ws/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}",
-                ),
-                String::from(
-                    "{\"url\": \"https://goerli.infura.io/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}",
-                ),
-            ],
-                provider_override: 1,
+                    String::from(
+                        "{\"url\": \"wss://goerli.infura.io/ws/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}",
+                    ),
+                    String::from(
+                        "{\"url\": \"https://goerli.infura.io/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}",
+                    ),
+                ],
+                provider_override: true,
                 event_filter_size: 2000,
                 synced_block_number: 8497095,
             })
@@ -47,25 +47,28 @@ async fn test_chains_crud() {
     inserted_chains.extend(
         chains.insert_batch(&vec![
             Chain {
-                chain_id:97,
-                name:String::from("BSC Testnet"),
-                name_override:0,
-                providers:vec![String::from("{\"url\": \"wss://ws-nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}"),String::from("{\"url\": \"https://nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}")],
-                provider_override:0,
-                event_filter_size:100000,
-                synced_block_number:27265360,
+                chain_id: 97,
+                name: String::from("BSC Testnet"),
+                name_override: false,
+                providers: vec![
+                    String::from("{\"url\": \"wss://ws-nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}"),
+                    String::from("{\"url\": \"https://nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}"),
+                ],
+                provider_override: false,
+                event_filter_size: 100000,
+                synced_block_number: 27265360,
             },
             Chain {
-                chain_id:80001,
-                name:String::from("Polygon"),
-                name_override:1,
-                providers:vec![String::from("{\"url\": \"https://matic-mumbai.chainstacklabs.com\"}")],
-                provider_override:1,
-                event_filter_size:10000,
-                synced_block_number:32076637,
+                chain_id: 80001,
+                name: String::from("Polygon"),
+                name_override: true,
+                providers: vec![String::from("{\"url\": \"https://matic-mumbai.chainstacklabs.com\"}")],
+                provider_override: true,
+                event_filter_size: 10000,
+                synced_block_number: 32076637,
             },
         ]).await
-        .unwrap(),
+            .unwrap(),
     );
     assert_eq!(chains.count_all().await.unwrap(), 3);
 
@@ -76,7 +79,7 @@ async fn test_chains_crud() {
                 QueryFilterBuilder::new()
                     .filter(Condition::FILTER(SubFilter::Equal(
                         String::from("name_override"),
-                        1.to_string()
+                        1.to_string(),
                     )))
                     .build()
             )
@@ -118,7 +121,7 @@ async fn test_chains_crud() {
 
     // testing update
     found_chain.data.name = String::from("BSC");
-    found_chain.data.name_override = 1;
+    found_chain.data.name_override = true;
     let updated_chain = chains.update(&found_chain).await.unwrap();
     assert_eq!(updated_chain.data, found_chain.data);
     // testing update_batch

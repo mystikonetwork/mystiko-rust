@@ -1,11 +1,11 @@
 use mystiko_database::collection::account::AccountCollection;
-use mystiko_database::document::account::{Account, AccountStatus};
+use mystiko_database::document::account::Account;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
-use std::str::FromStr;
+use mystiko_types::AccountStatus;
 use std::sync::Arc;
 
 async fn create_accounts() -> AccountCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
@@ -143,9 +143,4 @@ async fn test_accounts_crud() {
     assert_eq!(accounts.count_all().await.unwrap(), 1);
     accounts.delete_all().await.unwrap();
     assert_eq!(accounts.count_all().await.unwrap(), 0);
-}
-
-#[test]
-fn test_account_status_serde() {
-    assert!(AccountStatus::from_str("invalid").is_err());
 }

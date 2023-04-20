@@ -2,7 +2,7 @@ use crate::raw::asset::RawAssetConfig;
 use crate::raw::contract::deposit::RawDepositContractConfig;
 use crate::raw::contract::pool::RawPoolContractConfig;
 use crate::raw::provider::RawProviderConfig;
-use crate::types::ProviderType;
+use mystiko_types::ProviderType;
 use mystiko_validator::validate::{array_unique, is_number_string_vec, validate_nested_vec};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -17,7 +17,7 @@ pub const EXPLORER_DEFAULT_PREFIX: &str = "/tx/%tx%";
 #[serde(rename_all = "camelCase")]
 pub struct RawChainConfig {
     #[validate(range(min = 1))]
-    pub chain_id: u32,
+    pub chain_id: u64,
 
     #[validate(length(min = 1))]
     pub name: String,
@@ -26,6 +26,8 @@ pub struct RawChainConfig {
     pub asset_symbol: String,
 
     #[validate(range(min = 1))]
+    #[serde(default = "default_asset_decimals")]
+    #[builder(default = default_asset_decimals())]
     pub asset_decimals: u32,
 
     #[validate(
@@ -122,4 +124,8 @@ fn default_provider_type() -> ProviderType {
 
 fn default_quorum_percentage() -> u8 {
     50
+}
+
+fn default_asset_decimals() -> u32 {
+    18
 }

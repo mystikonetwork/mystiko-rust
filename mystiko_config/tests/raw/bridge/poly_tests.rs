@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use mystiko_config::raw::bridge::poly::RawPolyBridgeConfig;
 use mystiko_config::raw::chain::EXPLORER_DEFAULT_PREFIX;
 use mystiko_config::raw::{create_raw, create_raw_from_file, create_raw_from_json};
-use mystiko_config::types::BridgeType;
+use mystiko_types::BridgeType;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use validator::Validate;

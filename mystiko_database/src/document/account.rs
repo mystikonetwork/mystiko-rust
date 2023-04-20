@@ -1,15 +1,15 @@
 #![forbid(unsafe_code)]
-use anyhow::{Error, Result};
+use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
-use std::str::FromStr;
+use mystiko_types::AccountStatus;
 
-pub static NAME_FIELD_NAME: &str = "name";
-pub static PUBLIC_KEY_FIELD_NAME: &str = "public_key";
-pub static ENCRYPTED_SECRET_KEY_FIELD_NAME: &str = "encrypted_secret_key";
-pub static STATUS_FIELD_NAME: &str = "status";
-pub static SHIELDED_ADDRESS_FIELD_NAME: &str = "shielded_address";
-pub static SCAN_SIZE_FIELD_NAME: &str = "scan_size";
-pub static WALLET_ID_FIELD_NAME: &str = "wallet_id";
+pub const NAME_FIELD_NAME: &str = "name";
+pub const PUBLIC_KEY_FIELD_NAME: &str = "public_key";
+pub const ENCRYPTED_SECRET_KEY_FIELD_NAME: &str = "encrypted_secret_key";
+pub const STATUS_FIELD_NAME: &str = "status";
+pub const SHIELDED_ADDRESS_FIELD_NAME: &str = "shielded_address";
+pub const SCAN_SIZE_FIELD_NAME: &str = "scan_size";
+pub const WALLET_ID_FIELD_NAME: &str = "wallet_id";
 
 pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "accounts",
@@ -40,13 +40,6 @@ pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum AccountStatus {
-    Created,
-    Scanning,
-    Scanned,
-}
-
-#[derive(Clone, PartialEq, Debug)]
 pub struct Account {
     pub name: String,
     pub shielded_address: String,
@@ -64,49 +57,32 @@ impl DocumentData for Account {
 
     fn field_value_string(&self, field: &str) -> Option<String> {
         match field {
-            "name" => Some(self.name.clone()),
-            "shielded_address" => Some(self.shielded_address.clone()),
-            "public_key" => Some(self.public_key.clone()),
-            "encrypted_secret_key" => Some(self.encrypted_secret_key.clone()),
-            "status" => Some(self.status.to_string()),
-            "scan_size" => Some(self.scan_size.to_string()),
-            "wallet_id" => Some(self.wallet_id.to_string()),
+            NAME_FIELD_NAME => Some(self.name.clone()),
+            SHIELDED_ADDRESS_FIELD_NAME => Some(self.shielded_address.clone()),
+            PUBLIC_KEY_FIELD_NAME => Some(self.public_key.clone()),
+            ENCRYPTED_SECRET_KEY_FIELD_NAME => Some(self.encrypted_secret_key.clone()),
+            STATUS_FIELD_NAME => Some(serde_json::to_string(&self.status).unwrap()),
+            SCAN_SIZE_FIELD_NAME => Some(self.scan_size.to_string()),
+            WALLET_ID_FIELD_NAME => Some(self.wallet_id.to_string()),
             _ => None,
         }
     }
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Account {
-            name: raw.field_string_value("name")?.unwrap(),
-            shielded_address: raw.field_string_value("shielded_address")?.unwrap(),
-            public_key: raw.field_string_value("public_key")?.unwrap(),
-            encrypted_secret_key: raw.field_string_value("encrypted_secret_key")?.unwrap(),
-            status: AccountStatus::from_str(&raw.field_string_value("status")?.unwrap())?,
-            scan_size: raw.field_integer_value::<u32>("scan_size")?.unwrap(),
-            wallet_id: raw.field_string_value("wallet_id")?.unwrap(),
+            name: raw.field_string_value(NAME_FIELD_NAME)?.unwrap(),
+            shielded_address: raw
+                .field_string_value(SHIELDED_ADDRESS_FIELD_NAME)?
+                .unwrap(),
+            public_key: raw.field_string_value(PUBLIC_KEY_FIELD_NAME)?.unwrap(),
+            encrypted_secret_key: raw
+                .field_string_value(ENCRYPTED_SECRET_KEY_FIELD_NAME)?
+                .unwrap(),
+            status: serde_json::from_str(&raw.field_string_value(STATUS_FIELD_NAME)?.unwrap())?,
+            scan_size: raw
+                .field_integer_value::<u32>(SCAN_SIZE_FIELD_NAME)?
+                .unwrap(),
+            wallet_id: raw.field_string_value(WALLET_ID_FIELD_NAME)?.unwrap(),
         })
-    }
-}
-
-impl ToString for AccountStatus {
-    fn to_string(&self) -> String {
-        match self {
-            AccountStatus::Created => String::from("Created"),
-            AccountStatus::Scanning => String::from("Scanning"),
-            AccountStatus::Scanned => String::from("Scanned"),
-        }
-    }
-}
-
-impl FromStr for AccountStatus {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Created" => Ok(AccountStatus::Created),
-            "Scanning" => Ok(AccountStatus::Scanning),
-            "Scanned" => Ok(AccountStatus::Scanned),
-            _ => Err(Error::msg(format!("invalid account status string {}", s))),
-        }
     }
 }

@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
-use anyhow::{Error, Result};
+use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use mystiko_types::CommitmentStatus;
 use num_bigint::BigInt;
-use std::str::FromStr;
 
 pub static COMMITMENT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "commitments",
@@ -11,7 +11,7 @@ pub static COMMITMENT_SCHEMA: DocumentSchema = DocumentSchema {
             `id`                        VARCHAR(64) NOT NULL PRIMARY KEY,\
             `created_at`                INT          NOT NULL,\
             `updated_at`                INT          NOT NULL,\
-            `chain_id`                  INT          NOT NULL,\
+            `chain_id`                  BIGINT       NOT NULL,\
             `contract_address`          VARCHAR(64)  NOT NULL,\
             `commitment_hash`           VARCHAR(128) NOT NULL,\
             `asset_symbol`              VARCHAR(16) NOT NULL,\
@@ -57,18 +57,8 @@ pub static COMMITMENT_SCHEMA: DocumentSchema = DocumentSchema {
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum CommitmentStatus {
-    Init,
-    SrcSucceeded,
-    Queued,
-    Included,
-    Spent,
-    Failed,
-}
-
-#[derive(Clone, PartialEq, Debug)]
 pub struct Commitment {
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub contract_address: String,
     pub commitment_hash: String,
     pub asset_symbol: String,
@@ -99,7 +89,7 @@ impl DocumentData for Commitment {
             "asset_symbol" => Some(self.asset_symbol.clone()),
             "asset_decimals" => Some(self.asset_decimals.to_string()),
             "asset_address" => self.asset_address.clone(),
-            "status" => Some(self.status.to_string()),
+            "status" => Some(serde_json::to_string(&self.status).unwrap()),
             "rollup_fee_amount" => self.rollup_fee_amount.as_ref().map(|r| r.to_string()),
             "encrypted_note" => self.encrypted_note.clone(),
             "leaf_index" => self.leaf_index.clone(),
@@ -121,7 +111,7 @@ impl DocumentData for Commitment {
             asset_symbol: raw.field_string_value("asset_symbol")?.unwrap(),
             asset_decimals: raw.field_integer_value("asset_decimals")?.unwrap(),
             asset_address: raw.field_string_value("asset_address")?,
-            status: CommitmentStatus::from_str(&raw.field_string_value("status")?.unwrap())?,
+            status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
             rollup_fee_amount: BigInt::parse_bytes(
                 raw.field_string_value("rollup_fee_amount")?
                     .unwrap()
@@ -137,37 +127,5 @@ impl DocumentData for Commitment {
             spending_transaction_hash: raw.field_string_value("spending_transaction_hash")?,
             rollup_transaction_hash: raw.field_string_value("rollup_transaction_hash")?,
         })
-    }
-}
-
-impl ToString for CommitmentStatus {
-    fn to_string(&self) -> String {
-        match self {
-            CommitmentStatus::Init => String::from("Init"),
-            CommitmentStatus::SrcSucceeded => String::from("SrcSucceeded"),
-            CommitmentStatus::Queued => String::from("Queued"),
-            CommitmentStatus::Included => String::from("Included"),
-            CommitmentStatus::Spent => String::from("Spent"),
-            CommitmentStatus::Failed => String::from("Failed"),
-        }
-    }
-}
-
-impl FromStr for CommitmentStatus {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Init" => Ok(CommitmentStatus::Init),
-            "SrcSucceeded" => Ok(CommitmentStatus::SrcSucceeded),
-            "Queued" => Ok(CommitmentStatus::Queued),
-            "Included" => Ok(CommitmentStatus::Included),
-            "Spent" => Ok(CommitmentStatus::Spent),
-            "Failed" => Ok(CommitmentStatus::Failed),
-            _ => Err(Error::msg(format!(
-                "invalid commitment status string {}",
-                s
-            ))),
-        }
     }
 }

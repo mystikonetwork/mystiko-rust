@@ -6,8 +6,7 @@ use futures::TryFutureExt;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_database::database::Database;
 use mystiko_database::document::account::{
-    Account, AccountStatus, PUBLIC_KEY_FIELD_NAME, SHIELDED_ADDRESS_FIELD_NAME,
-    WALLET_ID_FIELD_NAME,
+    Account, PUBLIC_KEY_FIELD_NAME, SHIELDED_ADDRESS_FIELD_NAME, WALLET_ID_FIELD_NAME,
 };
 use mystiko_database::document::wallet::Wallet;
 use mystiko_protocol::address::ShieldedAddress;
@@ -20,6 +19,7 @@ use mystiko_storage::document::{Document, DocumentRawData, DOCUMENT_ID_FIELD};
 use mystiko_storage::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
+use mystiko_types::AccountStatus;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;

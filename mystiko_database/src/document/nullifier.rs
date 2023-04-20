@@ -9,7 +9,7 @@ pub static NULLIFIER_SCHEMA: DocumentSchema = DocumentSchema {
             `id` VARCHAR(64) NOT NULL PRIMARY KEY,\
             `created_at` INT NOT NULL,\
             `updated_at` INT NOT NULL,\
-            `chain_id` INT NOT NULL,\
+            `chain_id`   BIGINT NOT NULL,\
             `contract_address` VARCHAR(64) NOT NULL,\
             `serial_number` VARCHAR(128) NOT NULL,\
             `transaction_hash` VARCHAR(128) NOT NULL)",
@@ -30,7 +30,7 @@ pub static NULLIFIER_SCHEMA: DocumentSchema = DocumentSchema {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Nullifier {
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub contract_address: String,
     pub serial_number: String,
     pub transaction_hash: String,
@@ -53,7 +53,7 @@ impl DocumentData for Nullifier {
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Nullifier {
-            chain_id: raw.field_integer_value::<u32>("chain_id")?.unwrap(),
+            chain_id: raw.field_integer_value::<u64>("chain_id")?.unwrap(),
             contract_address: raw.field_string_value("contract_address")?.unwrap(),
             serial_number: raw.field_string_value("serial_number")?.unwrap(),
             transaction_hash: raw.field_string_value("transaction_hash")?.unwrap(),

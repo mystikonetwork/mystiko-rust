@@ -1,8 +1,8 @@
 use crate::raw::contract::pool::RawPoolContractConfig;
-use crate::types::{AssetType, BridgeType, CircuitType, ContractType};
 use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use anyhow::{Error, Result};
+use mystiko_types::{AssetType, BridgeType, CircuitType, ContractType};
 use mystiko_utils::convert::decimal_to_number;
 use num_bigint::BigInt;
 use num_traits::{NumCast, Zero};

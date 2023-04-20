@@ -2769,6 +2769,7 @@ dependencies = [
  "async_once",
  "lazy_static",
  "mockito",
+ "mystiko_types",
  "mystiko_utils",
  "mystiko_validator",
  "num-bigint 0.4.3",
@@ -2803,6 +2804,7 @@ dependencies = [
  "mystiko_protocol",
  "mystiko_storage",
  "mystiko_storage_sqlite",
+ "mystiko_types",
  "mystiko_utils",
  "rand_core 0.6.4",
  "regex 1.7.3",
@@ -2857,7 +2859,9 @@ dependencies = [
  "anyhow",
  "mystiko_storage",
  "mystiko_storage_sqlite",
+ "mystiko_types",
  "num-bigint 0.4.3",
+ "serde",
  "serde_json",
  "tokio",
 ]
@@ -3001,6 +3005,13 @@ dependencies = [
  "sqlx",
  "tempfile",
  "tokio",
+]
+
+[[package]]
+name = "mystiko_types"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

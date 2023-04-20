@@ -1,3 +1,4 @@
+extern crate serde;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone, Default)]
@@ -49,6 +50,56 @@ pub enum ProviderType {
     #[default]
     Failover,
     Quorum,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum AccountStatus {
+    Created,
+    Scanning,
+    Scanned,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum CommitmentStatus {
+    Init,
+    SrcSucceeded,
+    Queued,
+    Included,
+    Spent,
+    Failed,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum DepositStatus {
+    Init,
+    AssetApproving,
+    AssetApproved,
+    SrcPending,
+    SrcSucceeded,
+    Queued,
+    Included,
+    Failed,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum TransactionStatus {
+    Init,
+    ProofGenerating,
+    ProofGenerated,
+    Pending,
+    Succeeded,
+    Failed,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum TransactionType {
+    Transfer,
+    Withdraw,
 }
 
 impl CircuitType {

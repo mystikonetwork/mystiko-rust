@@ -5,8 +5,8 @@ use mystiko_config::raw::bridge::poly::RawPolyBridgeConfig;
 use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
 use mystiko_config::raw::bridge::RawBridgeConfig;
 use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::types::BridgeType;
 use mystiko_config::wrapper::bridge::BridgeConfig;
+use mystiko_types::BridgeType;
 use std::sync::Arc;
 
 const AXELAR_CONFIG_FILE: &str = "tests/files/bridge/axelar/valid.json";

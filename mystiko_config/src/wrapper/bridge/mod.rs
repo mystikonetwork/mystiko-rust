@@ -1,11 +1,11 @@
 use crate::raw::bridge::RawBridgeConfig;
-use crate::types::BridgeType;
 use crate::wrapper::bridge::axelar::AxelarBridgeConfig;
 use crate::wrapper::bridge::celer::CelerBridgeConfig;
 use crate::wrapper::bridge::layer_zero::LayerZeroBridgeConfig;
 use crate::wrapper::bridge::poly::PolyBridgeConfig;
 use crate::wrapper::bridge::tbridge::TBridgeConfig;
 use anyhow::Result;
+use mystiko_types::BridgeType;
 use std::sync::Arc;
 
 pub mod axelar;

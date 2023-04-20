@@ -1,4 +1,4 @@
-use crate::types::BridgeType;
+use mystiko_types::BridgeType;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 use validator::{Validate, ValidationError};

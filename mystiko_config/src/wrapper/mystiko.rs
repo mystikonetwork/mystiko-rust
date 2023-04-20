@@ -1,7 +1,6 @@
 use crate::raw::chain::RawChainConfig;
 use crate::raw::mystiko::RawMystikoConfig;
 use crate::raw::{create_raw_from_file, create_raw_from_json};
-use crate::types::{BridgeType, CircuitType};
 use crate::wrapper::bridge::BridgeConfig;
 use crate::wrapper::chain::ChainConfig;
 use crate::wrapper::circuit::CircuitConfig;
@@ -9,6 +8,7 @@ use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
 use crate::wrapper::indexer::IndexerConfig;
 use anyhow::{Error, Result};
+use mystiko_types::{BridgeType, CircuitType};
 use std::collections::HashMap;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
@@ -172,11 +172,11 @@ impl MystikoConfig {
             .map(|c| c.as_ref())
     }
 
-    pub fn find_chain(&self, chain_id: u32) -> Option<&ChainConfig> {
+    pub fn find_chain(&self, chain_id: u64) -> Option<&ChainConfig> {
         self.chains().into_iter().find(|c| c.chain_id() == chain_id)
     }
 
-    pub fn find_peer_chains(&self, chain_id: u32) -> Vec<&ChainConfig> {
+    pub fn find_peer_chains(&self, chain_id: u64) -> Vec<&ChainConfig> {
         let mut peer_chains: Vec<&ChainConfig> = Vec::new();
         if let Some(peer_chain_ids) = self.find_chain(chain_id).map(|c| c.find_peer_chain_ids()) {
             for peer_chain_id in peer_chain_ids {
@@ -188,7 +188,7 @@ impl MystikoConfig {
         peer_chains
     }
 
-    pub fn find_asset_symbols(&self, chain_id: u32, peer_chain_id: u32) -> Vec<&str> {
+    pub fn find_asset_symbols(&self, chain_id: u64, peer_chain_id: u64) -> Vec<&str> {
         self.find_chain(chain_id)
             .map(|c| c.find_asset_symbols(peer_chain_id))
             .unwrap_or(vec![])
@@ -196,8 +196,8 @@ impl MystikoConfig {
 
     pub fn find_bridges(
         &self,
-        chain_id: u32,
-        peer_chain_id: u32,
+        chain_id: u64,
+        peer_chain_id: u64,
         asset_symbol: &str,
     ) -> Vec<&BridgeType> {
         self.find_chain(chain_id)
@@ -213,8 +213,8 @@ impl MystikoConfig {
 
     pub fn find_deposit_contract(
         &self,
-        chain_id: u32,
-        peer_chain_id: u32,
+        chain_id: u64,
+        peer_chain_id: u64,
         asset_symbol: &str,
         bridge_type: &BridgeType,
     ) -> Option<&DepositContractConfig> {
@@ -227,7 +227,7 @@ impl MystikoConfig {
 
     pub fn find_deposit_contract_by_address(
         &self,
-        chain_id: u32,
+        chain_id: u64,
         address: &str,
     ) -> Option<&DepositContractConfig> {
         if let Some(chain_config) = self.find_chain(chain_id) {
@@ -239,7 +239,7 @@ impl MystikoConfig {
 
     pub fn find_pool_contracts(
         &self,
-        chain_id: u32,
+        chain_id: u64,
         asset_symbol: &str,
         bridge_type: &BridgeType,
     ) -> Vec<&PoolContractConfig> {
@@ -250,7 +250,7 @@ impl MystikoConfig {
 
     pub fn find_pool_contract(
         &self,
-        chain_id: u32,
+        chain_id: u64,
         asset_symbol: &str,
         bridge_type: &BridgeType,
         version: u32,
@@ -264,7 +264,7 @@ impl MystikoConfig {
 
     pub fn find_pool_contract_by_address(
         &self,
-        chain_id: u32,
+        chain_id: u64,
         address: &str,
     ) -> Option<&PoolContractConfig> {
         if let Some(chain_config) = self.find_chain(chain_id) {
@@ -274,7 +274,7 @@ impl MystikoConfig {
         }
     }
 
-    pub fn transaction_url(&self, chain_id: u32, tx_hash: &str) -> Option<String> {
+    pub fn transaction_url(&self, chain_id: u64, tx_hash: &str) -> Option<String> {
         self.find_chain(chain_id)
             .map(|c| c.transaction_url(tx_hash))
     }

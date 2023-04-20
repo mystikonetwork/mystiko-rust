@@ -1,6 +1,6 @@
 use crate::raw::asset::RawAssetConfig;
-use crate::types::AssetType;
 use anyhow::Result;
+use mystiko_types::AssetType;
 use mystiko_utils::convert::decimal_to_number;
 use num_bigint::BigInt;
 use num_traits::{NumCast, Zero};

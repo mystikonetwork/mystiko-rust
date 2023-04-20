@@ -1,12 +1,13 @@
 extern crate mystiko_database;
 
 use mystiko_database::collection::contract::ContractCollection;
-use mystiko_database::document::contract::{Contract, ContractType};
+use mystiko_database::document::contract::Contract;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_types::ContractType;
 use std::sync::Arc;
 
 async fn create_contracts() -> ContractCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
@@ -29,7 +30,7 @@ async fn test_contracts_crud() {
                 contract_type: ContractType::Deposit,
                 chain_id: 5,
                 contract_address: String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
-                disabled: 0,
+                disabled: false,
                 sync_start: 1000000,
                 sync_size: 10000,
                 synced_block_number: 1100000,
@@ -47,7 +48,7 @@ async fn test_contracts_crud() {
                     contract_type: ContractType::Deposit,
                     chain_id: 5,
                     contract_address: String::from("0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
-                    disabled: 1,
+                    disabled: true,
                     sync_start: 2000000,
                     sync_size: 20000,
                     synced_block_number: 2200000,
@@ -57,7 +58,7 @@ async fn test_contracts_crud() {
                     contract_type: ContractType::Pool,
                     chain_id: 5,
                     contract_address: String::from("0xEd95f2F493687dFaeefD33C00C6Bc4dF0fbB3404"),
-                    disabled: 0,
+                    disabled: false,
                     sync_start: 3000000,
                     sync_size: 30000,
                     synced_block_number: 3300000,

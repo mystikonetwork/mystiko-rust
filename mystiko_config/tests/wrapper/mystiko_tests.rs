@@ -1,8 +1,8 @@
 use mockito::Server;
 use mystiko_config::raw::create_raw_from_file;
 use mystiko_config::raw::mystiko::RawMystikoConfig;
-use mystiko_config::types::{BridgeType, CircuitType};
 use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
+use mystiko_types::{BridgeType, CircuitType};
 use std::sync::Arc;
 
 const VALID_CONFIG_FILE: &str = "tests/files/mystiko/valid.json";
@@ -16,7 +16,7 @@ async fn test_create() {
     config.validate().unwrap();
     assert_eq!(config.version(), "0.1.0");
     assert_eq!(config.git_revision().unwrap(), "b6b5b5b");
-    let mut chain_ids: Vec<u32> = config.chains().into_iter().map(|c| c.chain_id()).collect();
+    let mut chain_ids: Vec<u64> = config.chains().into_iter().map(|c| c.chain_id()).collect();
     chain_ids.sort();
     assert_eq!(chain_ids, vec![5, 97]);
     let mut bridge_names: Vec<&str> = config.bridges().into_iter().map(|b| b.name()).collect();
@@ -79,7 +79,7 @@ async fn test_selectors() {
     assert!(config.find_circuit("zokrates-3.0-rollup1").is_none());
     assert!(config.find_chain(3829375345).is_none());
     assert_eq!(config.find_chain(5).unwrap().name(), "Ethereum Goerli");
-    let mut peer_chain_ids: Vec<u32> = config
+    let mut peer_chain_ids: Vec<u64> = config
         .find_peer_chains(5)
         .into_iter()
         .map(|c| c.chain_id())

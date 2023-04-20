@@ -12,7 +12,7 @@ mock! {
     #[derive(Debug)]
     ChainConfig {}
     impl ChainProvidersOptions for ChainConfig {
-         fn providers_options(&self, chain_id: u32) -> Option<ProvidersOptions>;
+         fn providers_options(&self, chain_id: u64) -> Option<ProvidersOptions>;
     }
 }
 

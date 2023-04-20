@@ -8,7 +8,7 @@ use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 pub trait ChainProvidersOptions: Debug {
-    fn providers_options(&self, chain_id: u32) -> Option<ProvidersOptions>;
+    fn providers_options(&self, chain_id: u64) -> Option<ProvidersOptions>;
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -17,15 +17,15 @@ pub struct ProviderPool {
     #[builder(default = default_provider_factory())]
     provider_factory: Box<dyn ProviderFactory>,
     #[builder(default = default_providers_map(), setter(skip))]
-    providers: HashMap<u32, Arc<Provider>>,
+    providers: HashMap<u64, Arc<Provider>>,
 }
 
 impl ProviderPool {
-    pub fn get_provider(&self, chain_id: u32) -> Option<Arc<Provider>> {
+    pub fn get_provider(&self, chain_id: u64) -> Option<Arc<Provider>> {
         self.providers.get(&chain_id).cloned()
     }
 
-    pub async fn get_or_create_provider(&mut self, chain_id: u32) -> Result<Arc<Provider>> {
+    pub async fn get_or_create_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>> {
         if let Some(provider) = self.providers.get(&chain_id) {
             return Ok(provider.clone());
         }
@@ -44,11 +44,11 @@ impl ProviderPool {
         )))
     }
 
-    pub fn has_provider(&self, chain_id: u32) -> bool {
+    pub fn has_provider(&self, chain_id: u64) -> bool {
         self.get_provider(chain_id).is_some()
     }
 
-    pub fn check_provider(&self, chain_id: u32) -> Result<Arc<Provider>> {
+    pub fn check_provider(&self, chain_id: u64) -> Result<Arc<Provider>> {
         match self.get_provider(chain_id) {
             Some(provider) => Ok(provider),
             None => Err(Error::msg(format!(
@@ -58,11 +58,11 @@ impl ProviderPool {
         }
     }
 
-    pub fn set_provider(&mut self, chain_id: u32, provider: Arc<Provider>) {
+    pub fn set_provider(&mut self, chain_id: u64, provider: Arc<Provider>) {
         self.providers.insert(chain_id, provider);
     }
 
-    pub fn delete_provider(&mut self, chain_id: u32) -> Option<Arc<Provider>> {
+    pub fn delete_provider(&mut self, chain_id: u64) -> Option<Arc<Provider>> {
         if self.providers.contains_key(&chain_id) {
             self.providers.remove(&chain_id)
         } else {
@@ -79,6 +79,6 @@ fn default_provider_factory() -> Box<dyn ProviderFactory> {
     Box::<DefaultProviderFactory>::default()
 }
 
-fn default_providers_map() -> HashMap<u32, Arc<Provider>> {
+fn default_providers_map() -> HashMap<u64, Arc<Provider>> {
     HashMap::new()
 }

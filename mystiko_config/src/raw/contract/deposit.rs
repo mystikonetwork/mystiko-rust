@@ -1,4 +1,4 @@
-use crate::types::{BridgeType, ContractType};
+use mystiko_types::{BridgeType, ContractType};
 use mystiko_validator::validate::{is_ethereum_address, is_number_string};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -45,7 +45,7 @@ pub struct RawDepositContractConfig {
 
     #[validate(range(min = 1))]
     #[builder(default = None)]
-    pub peer_chain_id: Option<u32>,
+    pub peer_chain_id: Option<u64>,
 
     #[validate(custom = "is_ethereum_address")]
     #[builder(default = None)]

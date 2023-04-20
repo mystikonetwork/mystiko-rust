@@ -1,12 +1,12 @@
 use mystiko_database::collection::transaction::TransactionCollection;
-use mystiko_database::document::transaction::{Transaction, TransactionStatus, TransactionType};
+use mystiko_database::document::transaction::Transaction;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigInt;
-use std::str::FromStr;
 use std::sync::Arc;
 
 async fn create_transactions() -> TransactionCollection<SqlFormatter, SqliteRawData, SqliteStorage>
@@ -153,10 +153,7 @@ async fn test_transactions_crud() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(
-        found_first_transaction.data.status.to_string(),
-        "Init".to_string()
-    );
+    assert_eq!(found_first_transaction.data.status, TransactionStatus::Init,);
     found_transactions = transactions
         .find(QueryFilterBuilder::new().limit(2).offset(1).build())
         .await
@@ -227,9 +224,4 @@ async fn test_transactions_crud() {
     assert_eq!(transactions.count_all().await.unwrap(), 1);
     transactions.delete_all().await.unwrap();
     assert_eq!(transactions.count_all().await.unwrap(), 0);
-}
-
-#[tokio::test]
-async fn test_transaction_status_serde() {
-    assert!(TransactionStatus::from_str("invalid").is_err());
 }

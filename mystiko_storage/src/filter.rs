@@ -66,7 +66,7 @@ impl SubFilter {
             SubFilter::IN(column, values) => {
                 let wrapped_values: Vec<String> =
                     values.iter().map(|v| format!("'{}'", v)).collect();
-                format!("`{}` IN [{}]", column, wrapped_values.join(", "))
+                format!("`{}` IN ({})", column, wrapped_values.join(", "))
             }
         }
     }
