@@ -355,27 +355,19 @@ fn compare_providers(
 ) -> bool {
     if update_provider_options.len() == previous_providers.len() {
         for index in 0..previous_providers.len() {
-            if update_provider_options[index].url != previous_providers[index].url {
-                return false;
-            }
-            if update_provider_options[index]
-                .timeout_ms
-                .unwrap_or(previous_providers[index].timeout_ms)
-                != previous_providers[index].timeout_ms
-            {
-                return false;
-            }
-            if update_provider_options[index]
-                .max_try_count
-                .unwrap_or(previous_providers[index].max_try_count)
-                != previous_providers[index].max_try_count
-            {
-                return false;
-            }
-            if update_provider_options[index]
-                .quorum_weight
-                .unwrap_or(previous_providers[index].quorum_weight)
-                != previous_providers[index].quorum_weight
+            if update_provider_options[index].url != previous_providers[index].url
+                || update_provider_options[index]
+                    .timeout_ms
+                    .unwrap_or(previous_providers[index].timeout_ms)
+                    != previous_providers[index].timeout_ms
+                || update_provider_options[index]
+                    .max_try_count
+                    .unwrap_or(previous_providers[index].max_try_count)
+                    != previous_providers[index].max_try_count
+                || update_provider_options[index]
+                    .quorum_weight
+                    .unwrap_or(previous_providers[index].quorum_weight)
+                    != previous_providers[index].quorum_weight
             {
                 return false;
             }

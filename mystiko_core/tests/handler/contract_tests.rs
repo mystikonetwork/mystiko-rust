@@ -189,4 +189,9 @@ async fn test_contract_reset_synced_block() {
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
     assert_eq!(found_contract.data.synced_block_number, 100);
     assert!(handler.find_by_id("wrong_id").await.unwrap().is_none());
+    assert!(handler
+        .reset_synced_block(11155111, "wrong_address")
+        .await
+        .unwrap()
+        .is_none());
 }
