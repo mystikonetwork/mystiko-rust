@@ -9,6 +9,7 @@ use async_trait::async_trait;
 use num_traits::{Float, PrimInt};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteRow};
 use sqlx::{ConnectOptions, Executor, Row, SqliteConnection};
+use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -20,8 +21,15 @@ pub struct SqliteRawData {
     row: SqliteRow,
 }
 
+#[derive(Debug)]
 pub struct SqliteStorage {
     connection: Arc<Mutex<SqliteConnection>>,
+}
+
+impl Debug for SqliteRawData {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.row.columns().fmt(f)
+    }
 }
 
 impl DocumentRawData for SqliteRawData {

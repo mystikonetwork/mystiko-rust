@@ -160,6 +160,15 @@ async fn test_selectors() {
     assert!(config
         .find_deposit_contract_by_address(97, "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9")
         .is_some());
+    assert!(config
+        .find_contract_by_address(2342343, "0x9C33eaCc2F50E39940D3AfaF2c7B8246B681A374")
+        .is_none());
+    assert!(config
+        .find_contract_by_address(5, "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67")
+        .is_some());
+    assert!(config
+        .find_contract_by_address(97, "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9")
+        .is_some());
     assert_eq!(
         config
             .find_pool_contract(5, "MTT", &BridgeType::Celer, 2)
@@ -210,6 +219,12 @@ async fn test_selectors() {
         .is_some());
     assert!(config
         .find_pool_contract_by_address(2342342, "0xBe2C9c8a00951662dF3a978b25F448968F0595AE")
+        .is_none());
+    assert!(config
+        .find_contract_by_address(5, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
+        .is_some());
+    assert!(config
+        .find_contract_by_address(2342342, "0xBe2C9c8a00951662dF3a978b25F448968F0595AE")
         .is_none());
     let mut pool_contract_address: Vec<&str> = config
         .find_pool_contracts(5, "MTT", &BridgeType::Celer)

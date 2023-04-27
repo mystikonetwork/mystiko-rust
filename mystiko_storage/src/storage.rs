@@ -1,11 +1,13 @@
 #![forbid(unsafe_code)]
+
 use crate::document::DocumentRawData;
 use anyhow::Result;
 use async_trait::async_trait;
+use std::fmt::Debug;
 use ulid::Ulid;
 
 #[async_trait]
-pub trait Storage<R: DocumentRawData>: Send + Sync {
+pub trait Storage<R: DocumentRawData>: Send + Sync + Debug {
     async fn uuid(&self) -> Result<String> {
         Ok(Ulid::new().to_string())
     }

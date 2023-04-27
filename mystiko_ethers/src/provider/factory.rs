@@ -14,8 +14,8 @@ use reqwest::{Client, Url};
 use std::fmt::Debug;
 
 lazy_static! {
-    static ref HTTP_REGEX: regex::Regex = regex::Regex::new(r"^http(s)?://").unwrap();
-    static ref WS_REGEX: regex::Regex = regex::Regex::new(r"^ws(s)?://").unwrap();
+    pub static ref HTTP_REGEX: regex::Regex = regex::Regex::new(r"^http(s)?://").unwrap();
+    pub static ref WS_REGEX: regex::Regex = regex::Regex::new(r"^ws(s)?://").unwrap();
 }
 
 pub type Provider = ethers_providers::Provider<ProviderWrapper<Box<dyn JsonRpcClientWrapper>>>;

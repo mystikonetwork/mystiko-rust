@@ -8,6 +8,7 @@ use anyhow::Result;
 use std::marker::PhantomData;
 use std::time::SystemTime;
 
+#[derive(Debug)]
 pub struct Collection<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     formatter: F,
     storage: S,

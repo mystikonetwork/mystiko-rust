@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use tokio::sync::Mutex;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct TestDocumentRawData {
     data: HashMap<String, String>,
 }
@@ -47,6 +47,7 @@ impl DocumentRawData for TestDocumentRawData {
     }
 }
 
+#[derive(Debug)]
 struct TestStorage {
     collection_exists: bool,
     raise_error_on_collection_exists: bool,

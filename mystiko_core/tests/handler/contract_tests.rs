@@ -137,6 +137,8 @@ async fn test_contract_find() {
         .unwrap()
         .unwrap();
     assert_eq!(found_contract, contracts[0]);
+    assert_eq!(handler.find_by_chain_id(11155111).await.unwrap().len(), 6);
+    assert_eq!(handler.find_by_chain_id(97).await.unwrap().len(), 13);
 }
 
 #[tokio::test]
@@ -151,4 +153,45 @@ async fn test_contract_count() {
         )))
         .build();
     assert_eq!(handler.count(filter).await.unwrap(), 2);
+}
+
+#[tokio::test]
+async fn test_contract_reset_synced_block() {
+    let (handler, db, _) = setup().await;
+    let mut contracts = handler.initialize().await.unwrap();
+    contracts[0].data.synced_block_number *= 2;
+    db.contracts.update(&contracts[0]).await.unwrap();
+    let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
+    assert_ne!(
+        found_contract.data.synced_block_number,
+        contracts[0].data.sync_start
+    );
+    handler
+        .reset_synced_block(
+            contracts[0].data.chain_id,
+            &contracts[0].data.contract_address,
+        )
+        .await
+        .unwrap();
+    let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
+    assert_eq!(
+        found_contract.data.synced_block_number,
+        contracts[0].data.sync_start
+    );
+    handler
+        .reset_synced_block_to(
+            contracts[0].data.chain_id,
+            &contracts[0].data.contract_address,
+            100,
+        )
+        .await
+        .unwrap();
+    let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
+    assert_eq!(found_contract.data.synced_block_number, 100);
+    assert!(handler.find_by_id("wrong_id").await.unwrap().is_none());
+    assert!(handler
+        .reset_synced_block(11155111, "wrong_address")
+        .await
+        .unwrap()
+        .is_none());
 }

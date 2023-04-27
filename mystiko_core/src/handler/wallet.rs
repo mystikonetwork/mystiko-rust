@@ -31,6 +31,7 @@ const PASSWORD_HINT: &str = "\
     one special character in [#?!@$%^&*-], \
     and the length should be as least 8";
 
+#[derive(Debug)]
 pub struct WalletHandler<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     db: Arc<Database<F, R, S>>,
 }

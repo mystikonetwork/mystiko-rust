@@ -1,13 +1,13 @@
 use crate::error::MystikoError;
 use crate::handler::account::AccountHandler;
+use crate::handler::chain::ChainHandler;
 use crate::handler::contract::ContractHandler;
 use crate::handler::wallet::WalletHandler;
-use crate::helper::provider::ProvidersConfig;
 use anyhow::Result;
 use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
 use mystiko_database::database::Database;
 use mystiko_ethers::provider::factory::ProviderFactory;
-use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
+use mystiko_ethers::provider::pool::ProviderPool;
 use mystiko_storage::document::DocumentRawData;
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
@@ -19,6 +19,7 @@ pub struct Mystiko<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub db: Arc<Database<F, R, S>>,
     pub config: Arc<MystikoConfig>,
     pub accounts: AccountHandler<F, R, S>,
+    pub chains: ChainHandler<F, R, S>,
     pub contracts: ContractHandler<F, R, S>,
     pub wallets: WalletHandler<F, R, S>,
     pub providers: Arc<RwLock<ProviderPool>>,
@@ -42,9 +43,9 @@ pub struct MystikoOptions {
 
 impl<F, R, S> Mystiko<F, R, S>
 where
-    F: StatementFormatter,
-    R: DocumentRawData,
-    S: Storage<R>,
+    F: StatementFormatter + 'static,
+    R: DocumentRawData + 'static,
+    S: Storage<R> + 'static,
 {
     pub async fn new(
         database: Database<F, R, S>,
@@ -58,17 +59,30 @@ where
         let db = Arc::new(database);
         let config = create_mystiko_config(&mystiko_options).await?;
         let accounts = AccountHandler::new(db.clone());
+        let chains = ChainHandler::new(db.clone(), config.clone());
         let contracts = ContractHandler::new(db.clone(), config.clone());
         let wallets = WalletHandler::new(db.clone());
-        let providers = create_provider_pool(config.clone(), mystiko_options.provider_factory);
+        let providers = if let Some(provider_factory) = mystiko_options.provider_factory {
+            ProviderPool::builder()
+                .chain_providers_options(Box::new(ChainHandler::new(db.clone(), config.clone())))
+                .provider_factory(provider_factory)
+                .build()
+        } else {
+            ProviderPool::builder()
+                .chain_providers_options(Box::new(ChainHandler::new(db.clone(), config.clone())))
+                .build()
+        };
         let mystiko = Self {
             db,
             config: config.clone(),
             accounts,
+            chains,
             contracts,
             wallets,
-            providers,
+            providers: Arc::new(RwLock::new(providers)),
         };
+        mystiko.chains.initialize().await?;
+        mystiko.contracts.initialize().await?;
         log::info!(
             "mystiko on {} has been initialized, config git revision {}",
             if mystiko_options.is_testnet {
@@ -101,22 +115,4 @@ async fn create_mystiko_config(
             .map_err(MystikoError::ConfigError)?
     };
     Ok(Arc::new(config))
-}
-
-fn create_provider_pool(
-    config: Arc<MystikoConfig>,
-    provider_factory: Option<Box<dyn ProviderFactory>>,
-) -> Arc<RwLock<ProviderPool>> {
-    let chain_config_options: Box<dyn ChainProvidersOptions> =
-        Box::new(ProvidersConfig::new(config));
-    let provider_pool_builder =
-        ProviderPool::builder().chain_providers_options(chain_config_options);
-    let provider_pool = if let Some(provider_factory) = provider_factory {
-        provider_pool_builder
-            .provider_factory(provider_factory)
-            .build()
-    } else {
-        provider_pool_builder.build()
-    };
-    Arc::new(RwLock::new(provider_pool))
 }
