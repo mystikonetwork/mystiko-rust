@@ -17,9 +17,7 @@ fn test_builder() {
     assert_eq!(builder.auth_username, Some(String::from("test_username")));
     assert_eq!(builder.auth_password, Some(String::from("test_password")));
     let second_base_url = "http://test_domain:3099";
-    builder = builder
-        .base_url(second_base_url)
-        .timeout(Duration::from_secs(30));
+    builder = builder.base_url(second_base_url).timeout(Duration::from_secs(30));
     assert_eq!(builder.timeout, Duration::from_secs(30));
     assert_eq!(builder.base_url, second_base_url);
     let client = builder.build().unwrap();
@@ -32,10 +30,7 @@ fn test_builder_with_error() {
     let builder = IndexerClientBuilder::new(base_url);
     let client = builder.build();
     assert!(client.is_err());
-    assert_eq!(
-        client.err().unwrap().to_string(),
-        ParseError::InvalidPort.to_string()
-    );
+    assert_eq!(client.err().unwrap().to_string(), ParseError::InvalidPort.to_string());
     let base_url2 = "error_domain_error_port";
     let builder2 = IndexerClientBuilder::new(base_url2);
     let client2 = builder2.build();

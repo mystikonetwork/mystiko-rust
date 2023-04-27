@@ -23,10 +23,7 @@ where
     let validate = raw.validate();
     match validate {
         Ok(_) => Ok(()),
-        Err(validation) => bail!(
-            "failed to validate config object: \n {:?}",
-            validation.errors()
-        ),
+        Err(validation) => bail!("failed to validate config object: \n {:?}", validation.errors()),
     }
 }
 

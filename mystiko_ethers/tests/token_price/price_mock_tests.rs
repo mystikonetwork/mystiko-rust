@@ -10,19 +10,27 @@ use mystiko_ethers::token_price::price::TokenPrice;
 use mystiko_ethers::token_price::query::{CurrencyMapResponse, CurrencyQuoteResponse};
 use mystiko_fs::read_file_bytes;
 use serde_json::json;
+use std::env;
+use std::sync::Once;
+
+static INIT: Once = Once::new();
+fn setup() {
+    INIT.call_once(|| {
+        env::set_var("COIN_MARKET_CAP_API_KEY", "mock");
+    });
+}
 
 #[tokio::test]
 async fn test_get_token_id() {
+    setup();
+
     let id_bytes = read_file_bytes("./tests/token_price/files/token_ids.json")
         .await
         .unwrap();
     let currency_map: CurrencyMapResponse = serde_json::from_slice(&id_bytes).unwrap();
     let resp_json = json_encoded(currency_map);
     let server = Server::run();
-    server.expect(
-        Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map"))
-            .respond_with(resp_json),
-    );
+    server.expect(Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map")).respond_with(resp_json));
 
     let mut default_cfg = TokenPriceConfig::default();
     let url = server.url("").to_string();
@@ -35,10 +43,11 @@ async fn test_get_token_id() {
 
 #[tokio::test]
 async fn test_get_token_id_error() {
+    setup();
+
     let server = Server::run();
     server.expect(
-        Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map"))
-            .respond_with(status_code(401)),
+        Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map")).respond_with(status_code(401)),
     );
     let mut default_cfg = TokenPriceConfig::default();
     let url = server.url("").to_string();
@@ -46,43 +55,30 @@ async fn test_get_token_id_error() {
 
     let tp = TokenPrice::new(default_cfg).unwrap();
     let id = tp.get_token_id("ETH").await;
-    assert!(matches!(
-        id.err().unwrap(),
-        TokenPriceError::ReqwestError(_)
-    ));
+    assert!(matches!(id.err().unwrap(), TokenPriceError::ReqwestError(_)));
 
     let currency_map = json!({
         "date": 10,
     });
     let resp_json = json_encoded(currency_map);
-    server.expect(
-        Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map"))
-            .respond_with(resp_json),
-    );
+    server.expect(Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map")).respond_with(resp_json));
     let id = tp.get_token_id("ETH").await;
-    assert!(matches!(
-        id.err().unwrap(),
-        TokenPriceError::ReqwestError(_)
-    ));
+    assert!(matches!(id.err().unwrap(), TokenPriceError::ReqwestError(_)));
 
     let id_bytes = read_file_bytes("./tests/token_price/files/token_ids_status_error.json")
         .await
         .unwrap();
     let currency_map: CurrencyMapResponse = serde_json::from_slice(&id_bytes).unwrap();
     let resp_json = json_encoded(currency_map);
-    server.expect(
-        Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map"))
-            .respond_with(resp_json),
-    );
+    server.expect(Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map")).respond_with(resp_json));
     let id = tp.get_token_id("ETH").await;
-    assert!(matches!(
-        id.err().unwrap(),
-        TokenPriceError::ResponseError(_)
-    ));
+    assert!(matches!(id.err().unwrap(), TokenPriceError::ResponseError(_)));
 }
 
 #[tokio::test]
 async fn test_price() {
+    setup();
+
     let id_bytes = read_file_bytes("./tests/token_price/files/token_price.json")
         .await
         .unwrap();
@@ -91,11 +87,7 @@ async fn test_price() {
     let resp_json = json_encoded(currency_quote);
     let server = Server::run();
     server.expect(
-        Expectation::matching(request::method_path(
-            "GET",
-            "/v2/cryptocurrency/quotes/latest",
-        ))
-        .respond_with(resp_json),
+        Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
     let mut default_cfg = TokenPriceConfig::default();
@@ -109,13 +101,12 @@ async fn test_price() {
 
 #[tokio::test]
 async fn test_price_error() {
+    setup();
+
     let server = Server::run();
     server.expect(
-        Expectation::matching(request::method_path(
-            "GET",
-            "/v2/cryptocurrency/quotes/latest",
-        ))
-        .respond_with(status_code(401)),
+        Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest"))
+            .respond_with(status_code(401)),
     );
 
     let mut default_cfg = TokenPriceConfig::default();
@@ -124,27 +115,17 @@ async fn test_price_error() {
 
     let mut tp = TokenPrice::new(default_cfg).unwrap();
     let price = tp.price("ETH").await;
-    assert!(matches!(
-        price.err().unwrap(),
-        TokenPriceError::ReqwestError(_)
-    ));
+    assert!(matches!(price.err().unwrap(), TokenPriceError::ReqwestError(_)));
 
     let currency_map = json!({
         "date": 10,
     });
     let resp_json = json_encoded(currency_map);
     server.expect(
-        Expectation::matching(request::method_path(
-            "GET",
-            "/v2/cryptocurrency/quotes/latest",
-        ))
-        .respond_with(resp_json),
+        Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
     let price = tp.price("ETH").await;
-    assert!(matches!(
-        price.err().unwrap(),
-        TokenPriceError::ReqwestError(_)
-    ));
+    assert!(matches!(price.err().unwrap(), TokenPriceError::ReqwestError(_)));
 
     let id_bytes = read_file_bytes("./tests/token_price/files/token_price_status_error.json")
         .await
@@ -152,21 +133,16 @@ async fn test_price_error() {
     let currency_quote: CurrencyQuoteResponse = serde_json::from_slice(&id_bytes).unwrap();
     let resp_json = json_encoded(currency_quote);
     server.expect(
-        Expectation::matching(request::method_path(
-            "GET",
-            "/v2/cryptocurrency/quotes/latest",
-        ))
-        .respond_with(resp_json),
+        Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
     let price = tp.price("ETH").await;
-    assert!(matches!(
-        price.err().unwrap(),
-        TokenPriceError::ResponseError(_)
-    ));
+    assert!(matches!(price.err().unwrap(), TokenPriceError::ResponseError(_)));
 }
 
 #[tokio::test]
 async fn test_swap() {
+    setup();
+
     let id_bytes = read_file_bytes("./tests/token_price/files/token_price.json")
         .await
         .unwrap();
@@ -175,11 +151,7 @@ async fn test_swap() {
     let resp_json = json_encoded(currency_quote);
     let server = Server::run();
     server.expect(
-        Expectation::matching(request::method_path(
-            "GET",
-            "/v2/cryptocurrency/quotes/latest",
-        ))
-        .respond_with(resp_json),
+        Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
     let mut default_cfg = TokenPriceConfig::default();
@@ -208,6 +180,8 @@ async fn test_swap() {
 
 #[tokio::test]
 async fn test_internal_error() {
+    setup();
+
     let id_bytes = read_file_bytes("./tests/token_price/files/token_price.json")
         .await
         .unwrap();
@@ -216,11 +190,7 @@ async fn test_internal_error() {
     let resp_json = json_encoded(currency_quote);
     let server = Server::run();
     server.expect(
-        Expectation::matching(request::method_path(
-            "GET",
-            "/v2/cryptocurrency/quotes/latest",
-        ))
-        .respond_with(resp_json),
+        Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
     let mut default_cfg = TokenPriceConfig::default();
@@ -232,8 +202,4 @@ async fn test_internal_error() {
     assert_eq!(price.err().unwrap(), TokenPriceError::TokenNotSupport);
     let price = tp.price("mMATIC").await;
     assert_eq!(price.err().unwrap(), TokenPriceError::InternalError);
-
-    // let mut coin_ids = HashMap::new();
-    // coin_ids.insert("ETH".to_string(), 1027);
-    // default_cfg.coin_market_cap_ids = coin_ids;
 }

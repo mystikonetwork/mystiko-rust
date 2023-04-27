@@ -96,10 +96,7 @@ async fn test_export_mnemonic_words() {
         .password(String::from("P@ssw0rd"))
         .build();
     handler.create(&options).await.unwrap();
-    assert!(handler
-        .export_mnemonic_phrase("wrong_password")
-        .await
-        .is_err());
+    assert!(handler.export_mnemonic_phrase("wrong_password").await.is_err());
     let mnemonic_words = handler.export_mnemonic_phrase("P@ssw0rd").await.unwrap();
     assert!(Mnemonic::new(mnemonic_words, Language::English).is_ok());
 }
@@ -107,27 +104,15 @@ async fn test_export_mnemonic_words() {
 #[tokio::test]
 async fn test_update_password() {
     let handler = setup().await;
-    assert!(handler
-        .update_password("P@ssw0rd", "P@ssw0rd2")
-        .await
-        .is_err());
+    assert!(handler.update_password("P@ssw0rd", "P@ssw0rd2").await.is_err());
     let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
         .build();
     handler.create(&options).await.unwrap();
     let mnemonic_words = handler.export_mnemonic_phrase("P@ssw0rd").await.unwrap();
-    assert!(handler
-        .update_password("wrong_password", "P@ssw0rd2")
-        .await
-        .is_err());
-    assert!(handler
-        .update_password("P@ssw0rd", "invalid_password")
-        .await
-        .is_err());
-    assert!(handler
-        .update_password("P@ssw0rd", "newP@ssw0rd")
-        .await
-        .is_ok());
+    assert!(handler.update_password("wrong_password", "P@ssw0rd2").await.is_err());
+    assert!(handler.update_password("P@ssw0rd", "invalid_password").await.is_err());
+    assert!(handler.update_password("P@ssw0rd", "newP@ssw0rd").await.is_ok());
     assert!(handler.check_password("newP@ssw0rd").await.is_ok());
     assert_eq!(
         handler.export_mnemonic_phrase("newP@ssw0rd").await.unwrap(),

@@ -11,8 +11,7 @@ use mystiko_database::document::account::{
 use mystiko_database::document::wallet::Wallet;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::{
-    combined_public_key, combined_secret_key, encryption_public_key, separate_secret_keys,
-    verification_public_key,
+    combined_public_key, combined_secret_key, encryption_public_key, separate_secret_keys, verification_public_key,
 };
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_storage::document::{Document, DocumentRawData, DOCUMENT_ID_FIELD};
@@ -69,14 +68,9 @@ where
     }
 
     pub async fn create(&self, options: &CreateAccountOptions) -> Result<Document<Account>> {
-        let mut wallet = self
-            .wallets
-            .check_password(&options.wallet_password)
-            .await?;
+        let mut wallet = self.wallets.check_password(&options.wallet_password).await?;
         let (raw_account, account_nonce) = self.create_raw_account(&wallet, options).await?;
-        let account = self
-            .insert_raw_account(&mut wallet, raw_account, account_nonce)
-            .await?;
+        let account = self.insert_raw_account(&mut wallet, raw_account, account_nonce).await?;
         log::info!(
             "successfully created an account(id = \"{}\", name = \"{}\")",
             &account.id,
@@ -100,11 +94,7 @@ where
 
     pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Account>>> {
         let filter = self.wrap_filter(Some(filter)).await?;
-        self.db
-            .accounts
-            .find(filter)
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.accounts.find(filter).await.map_err(MystikoError::DatabaseError)
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Account>>> {
@@ -115,29 +105,18 @@ where
         self.find_one_by_identifier(id, DOCUMENT_ID_FIELD).await
     }
 
-    pub async fn find_by_shielded_address(
-        &self,
-        shielded_address: &str,
-    ) -> Result<Option<Document<Account>>> {
+    pub async fn find_by_shielded_address(&self, shielded_address: &str) -> Result<Option<Document<Account>>> {
         self.find_one_by_identifier(shielded_address, SHIELDED_ADDRESS_FIELD_NAME)
             .await
     }
 
-    pub async fn find_by_public_key(
-        &self,
-        shielded_address: &str,
-    ) -> Result<Option<Document<Account>>> {
+    pub async fn find_by_public_key(&self, shielded_address: &str) -> Result<Option<Document<Account>>> {
         self.find_one_by_identifier(shielded_address, PUBLIC_KEY_FIELD_NAME)
             .await
     }
 
-    pub async fn update_by_id(
-        &self,
-        id: &str,
-        options: &UpdateAccountOptions,
-    ) -> Result<Document<Account>> {
-        self.update_by_identifier(id, DOCUMENT_ID_FIELD, options)
-            .await
+    pub async fn update_by_id(&self, id: &str, options: &UpdateAccountOptions) -> Result<Document<Account>> {
+        self.update_by_identifier(id, DOCUMENT_ID_FIELD, options).await
     }
 
     pub async fn update_by_shielded_address(
@@ -166,10 +145,8 @@ where
         let wallet = self.wallets.check_password(old_wallet_password).await?;
         let mut accounts = self.find_all().await?;
         for account in accounts.iter_mut() {
-            let secret_key =
-                decrypt_symmetric(old_wallet_password, &account.data.encrypted_secret_key)?;
-            account.data.encrypted_secret_key =
-                encrypt_symmetric(new_wallet_password, &secret_key)?;
+            let secret_key = decrypt_symmetric(old_wallet_password, &account.data.encrypted_secret_key)?;
+            account.data.encrypted_secret_key = encrypt_symmetric(new_wallet_password, &secret_key)?;
         }
         let accounts = self
             .db
@@ -189,11 +166,7 @@ where
             .await
     }
 
-    pub async fn export_secret_key_by_public_key(
-        &self,
-        wallet_password: &str,
-        public_key: &str,
-    ) -> Result<String> {
+    pub async fn export_secret_key_by_public_key(&self, wallet_password: &str, public_key: &str) -> Result<String> {
         self.export_secret_key_by_identifier(wallet_password, public_key, PUBLIC_KEY_FIELD_NAME)
             .await
     }
@@ -203,12 +176,8 @@ where
         wallet_password: &str,
         shielded_address: &str,
     ) -> Result<String> {
-        self.export_secret_key_by_identifier(
-            wallet_password,
-            shielded_address,
-            SHIELDED_ADDRESS_FIELD_NAME,
-        )
-        .await
+        self.export_secret_key_by_identifier(wallet_password, shielded_address, SHIELDED_ADDRESS_FIELD_NAME)
+            .await
     }
 
     async fn wrap_filter(&self, filter: Option<QueryFilter>) -> Result<QueryFilter> {
@@ -221,11 +190,7 @@ where
         Ok(filter)
     }
 
-    async fn find_one_by_identifier(
-        &self,
-        identifier: &str,
-        field_name: &str,
-    ) -> Result<Option<Document<Account>>> {
+    async fn find_one_by_identifier(&self, identifier: &str, field_name: &str) -> Result<Option<Document<Account>>> {
         let filter = QueryFilterBuilder::new()
             .filter(Condition::FILTER(SubFilter::Equal(
                 field_name.to_string(),
@@ -246,9 +211,7 @@ where
         field_name: &str,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
-        self.wallets
-            .check_password(&options.wallet_password)
-            .await?;
+        self.wallets.check_password(&options.wallet_password).await?;
         if let Some(mut account) = self.find_one_by_identifier(identifier, field_name).await? {
             let mut has_update = false;
             if let Some(new_name) = &options.name {
@@ -301,10 +264,7 @@ where
     ) -> Result<String> {
         self.wallets.check_password(wallet_password).await?;
         if let Some(account) = self.find_one_by_identifier(identifier, field_name).await? {
-            Ok(decrypt_symmetric(
-                wallet_password,
-                &account.data.encrypted_secret_key,
-            )?)
+            Ok(decrypt_symmetric(wallet_password, &account.data.encrypted_secret_key)?)
         } else {
             Err(MystikoError::NoSuchAccountError(
                 field_name.to_string(),
@@ -325,21 +285,11 @@ where
     ) -> Result<(VerifySk, EncSk, u32)> {
         let mnemonic_words = self.wallets.export_mnemonic(wallet_password).await?;
         let master_seed = mnemonic_words.to_seed("");
-        let sk_verify_path = format!(
-            "{}/{}/{}",
-            DEFAULT_KEY_DERIVE_PATH, 0, wallet.data.account_nonce
-        );
-        let sk_enc_path = format!(
-            "{}/{}/{}",
-            DEFAULT_KEY_DERIVE_PATH, 1, wallet.data.account_nonce
-        );
+        let sk_verify_path = format!("{}/{}/{}", DEFAULT_KEY_DERIVE_PATH, 0, wallet.data.account_nonce);
+        let sk_enc_path = format!("{}/{}/{}", DEFAULT_KEY_DERIVE_PATH, 1, wallet.data.account_nonce);
         let sk_verify = XPrv::derive_from_path(&master_seed, &sk_verify_path.parse()?)?;
         let sk_enc = XPrv::derive_from_path(&master_seed, &sk_enc_path.parse()?)?;
-        Ok((
-            sk_verify.to_bytes(),
-            sk_enc.to_bytes(),
-            wallet.data.account_nonce + 1,
-        ))
+        Ok((sk_verify.to_bytes(), sk_enc.to_bytes(), wallet.data.account_nonce + 1))
     }
 
     async fn create_raw_account(
@@ -352,8 +302,7 @@ where
             let (verify_sk, enc_sk) = separate_secret_keys(&secret_key_bytes);
             (verify_sk, enc_sk, wallet.data.account_nonce)
         } else {
-            self.generate_secret_key(wallet, &options.wallet_password)
-                .await?
+            self.generate_secret_key(wallet, &options.wallet_password).await?
         };
         let pk_verify = verification_public_key(&sk_verify);
         let pk_enc = encryption_public_key(&sk_enc);
@@ -398,10 +347,7 @@ where
         account: Account,
         account_nonce: u32,
     ) -> Result<Document<Account>> {
-        if let Some(existing_account) = self
-            .find_by_shielded_address(&account.shielded_address)
-            .await?
-        {
+        if let Some(existing_account) = self.find_by_shielded_address(&account.shielded_address).await? {
             Ok(existing_account)
         } else {
             if wallet.data.account_nonce != account_nonce {

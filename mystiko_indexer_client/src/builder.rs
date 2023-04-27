@@ -55,9 +55,7 @@ impl IndexerClientBuilder {
         } = self;
         Url::parse(&base_url)?;
         let mut is_auth: Option<String> = None;
-        if let (Some(auth_username), Some(auth_password)) =
-            (&self.auth_username, &self.auth_password)
-        {
+        if let (Some(auth_username), Some(auth_password)) = (&self.auth_username, &self.auth_password) {
             let username = auth_username.clone();
             let password = auth_password.clone();
             let auth_str = username + ":" + &password;

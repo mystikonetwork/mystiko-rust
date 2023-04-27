@@ -22,10 +22,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
         self.collection.insert(transaction).await
     }
 
-    pub async fn insert_batch(
-        &self,
-        transactions: &Vec<Transaction>,
-    ) -> Result<Vec<Document<Transaction>>> {
+    pub async fn insert_batch(&self, transactions: &Vec<Transaction>) -> Result<Vec<Document<Transaction>>> {
         self.collection.insert_batch(transactions).await
     }
 
@@ -53,17 +50,11 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
         self.collection.count::<Transaction>(None).await
     }
 
-    pub async fn update(
-        &self,
-        transaction: &Document<Transaction>,
-    ) -> Result<Document<Transaction>> {
+    pub async fn update(&self, transaction: &Document<Transaction>) -> Result<Document<Transaction>> {
         self.collection.update(transaction).await
     }
 
-    pub async fn update_batch(
-        &self,
-        transactions: &Vec<Document<Transaction>>,
-    ) -> Result<Vec<Document<Transaction>>> {
+    pub async fn update_batch(&self, transactions: &Vec<Document<Transaction>>) -> Result<Vec<Document<Transaction>>> {
         self.collection.update_batch(transactions).await
     }
 
@@ -80,9 +71,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
     }
 
     pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection
-            .delete_by_filter::<Transaction>(Some(filter))
-            .await
+        self.collection.delete_by_filter::<Transaction>(Some(filter)).await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {
@@ -90,8 +79,6 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
     }
 
     pub async fn collection_exists(&self) -> Result<bool> {
-        self.collection
-            .collection_exists(Transaction::schema())
-            .await
+        self.collection.collection_exists(Transaction::schema()).await
     }
 }

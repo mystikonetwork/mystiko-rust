@@ -45,10 +45,7 @@ impl PartialEq for ZkpError {
             (self, other),
             (Self::SerdeJsonError(_), Self::SerdeJsonError(_))
                 | (Self::AbiParseError(_), Self::AbiParseError(_))
-                | (
-                    Self::DeserializeProgramError(_),
-                    Self::DeserializeProgramError(_)
-                )
+                | (Self::DeserializeProgramError(_), Self::DeserializeProgramError(_))
                 | (Self::ComputeWitnessError(_), Self::ComputeWitnessError(_))
                 | (Self::ProofError(_), Self::ProofError(_))
                 | (Self::VKError(_), Self::VKError(_))

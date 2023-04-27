@@ -141,10 +141,7 @@ impl ChainConfig {
     }
 
     pub fn pool_contracts(&self) -> Vec<&PoolContractConfig> {
-        self.pool_contract_configs
-            .iter()
-            .map(|c| c.as_ref())
-            .collect()
+        self.pool_contract_configs.iter().map(|c| c.as_ref()).collect()
     }
 
     pub fn deposit_contracts(&self) -> Vec<&DepositContractConfig> {
@@ -155,10 +152,7 @@ impl ChainConfig {
     }
 
     pub fn deposit_contracts_with_disabled(&self) -> Vec<&DepositContractConfig> {
-        self.deposit_contract_configs
-            .iter()
-            .map(|c| c.as_ref())
-            .collect()
+        self.deposit_contract_configs.iter().map(|c| c.as_ref()).collect()
     }
 
     pub fn assets(&self) -> Vec<&AssetConfig> {
@@ -242,18 +236,12 @@ impl ChainConfig {
         bridge_type: &BridgeType,
         version: u32,
     ) -> Option<&PoolContractConfig> {
-        self.pool_contracts().into_iter().find(|r| {
-            r.asset_symbol() == asset_symbol
-                && r.bridge_type() == bridge_type
-                && r.version() == version
-        })
+        self.pool_contracts()
+            .into_iter()
+            .find(|r| r.asset_symbol() == asset_symbol && r.bridge_type() == bridge_type && r.version() == version)
     }
 
-    pub fn find_pool_contracts(
-        &self,
-        asset_symbol: &str,
-        bridge_type: &BridgeType,
-    ) -> Vec<&PoolContractConfig> {
+    pub fn find_pool_contracts(&self, asset_symbol: &str, bridge_type: &BridgeType) -> Vec<&PoolContractConfig> {
         self.pool_contracts()
             .into_iter()
             .filter(|r| r.asset_symbol() == asset_symbol && r.bridge_type() == bridge_type)
@@ -261,35 +249,24 @@ impl ChainConfig {
     }
 
     pub fn find_pool_contract_by_address(&self, address: &str) -> Option<&PoolContractConfig> {
-        self.pool_contracts()
-            .into_iter()
-            .find(|c| c.address() == address)
+        self.pool_contracts().into_iter().find(|c| c.address() == address)
     }
 
-    pub fn find_deposit_contract_by_address(
-        &self,
-        address: &str,
-    ) -> Option<&DepositContractConfig> {
+    pub fn find_deposit_contract_by_address(&self, address: &str) -> Option<&DepositContractConfig> {
         self.deposit_contracts_with_disabled()
             .into_iter()
             .find(|c| c.address() == address)
     }
 
     pub fn find_asset(&self, address: &str) -> Option<&AssetConfig> {
-        self.assets()
-            .into_iter()
-            .find(|c| c.asset_address() == address)
+        self.assets().into_iter().find(|c| c.asset_address() == address)
     }
 
     pub fn contract_event_filter_size(&self, address: &str) -> u64 {
         if let Some(deposit_contract) = self.find_deposit_contract_by_address(address) {
-            deposit_contract
-                .event_filter_size()
-                .unwrap_or(self.event_filter_size())
+            deposit_contract.event_filter_size().unwrap_or(self.event_filter_size())
         } else if let Some(pool_contract) = self.find_pool_contract_by_address(address) {
-            pool_contract
-                .event_filter_size()
-                .unwrap_or(self.event_filter_size())
+            pool_contract.event_filter_size().unwrap_or(self.event_filter_size())
         } else {
             self.event_filter_size()
         }
@@ -310,23 +287,17 @@ impl ChainConfig {
     }
 
     pub fn transaction_url(&self, tx_hash: &str) -> String {
-        format!("{}{}", self.explorer_url(), self.explorer_prefix())
-            .replace(EXPLORER_TX_PLACEHOLDER, tx_hash)
+        format!("{}{}", self.explorer_url(), self.explorer_prefix()).replace(EXPLORER_TX_PLACEHOLDER, tx_hash)
     }
 
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
         self.main_asset_config.validate()?;
-        let mut pool_contracts_versions =
-            HashMap::<&str, HashMap<&BridgeType, HashSet<u32>>>::new();
+        let mut pool_contracts_versions = HashMap::<&str, HashMap<&BridgeType, HashSet<u32>>>::new();
         for pool_contract in self.pool_contracts() {
             pool_contract.validate()?;
-            if let Some(pool_contracts_bridges) =
-                pool_contracts_versions.get_mut(pool_contract.asset_symbol())
-            {
-                if let Some(all_versions) =
-                    pool_contracts_bridges.get_mut(pool_contract.bridge_type())
-                {
+            if let Some(pool_contracts_bridges) = pool_contracts_versions.get_mut(pool_contract.asset_symbol()) {
+                if let Some(all_versions) = pool_contracts_bridges.get_mut(pool_contract.bridge_type()) {
                     if all_versions.contains(&pool_contract.version()) {
                         return Err(Error::msg(format!(
                             "only one pool contract is allowed for \
@@ -417,24 +388,20 @@ fn initialize_deposit_contracts(
 ) -> Result<Vec<Arc<DepositContractConfig>>> {
     let mut deposit_contracts: Vec<Arc<DepositContractConfig>> = Vec::new();
     for raw_deposit_contract in raw_deposit_contracts {
-        let pool_contract =
-            pool_contract_by_address(pool_contracts, &raw_deposit_contract.pool_address)?;
-        let bridge_fee_asset = if let Some(bridge_fee_asset_address) =
-            &raw_deposit_contract.bridge_fee_asset_address
-        {
+        let pool_contract = pool_contract_by_address(pool_contracts, &raw_deposit_contract.pool_address)?;
+        let bridge_fee_asset = if let Some(bridge_fee_asset_address) = &raw_deposit_contract.bridge_fee_asset_address {
             asset_config_by_address(asset_configs, bridge_fee_asset_address)?
         } else {
             main_asset_config.clone()
         };
-        let executor_fee_asset = if let Some(executor_fee_asset_address) =
-            &raw_deposit_contract.executor_fee_asset_address
-        {
-            asset_config_by_address(asset_configs, executor_fee_asset_address)?
-        } else if let Some(asset_address) = pool_contract.asset_address() {
-            asset_config_by_address(asset_configs, asset_address)?
-        } else {
-            main_asset_config.clone()
-        };
+        let executor_fee_asset =
+            if let Some(executor_fee_asset_address) = &raw_deposit_contract.executor_fee_asset_address {
+                asset_config_by_address(asset_configs, executor_fee_asset_address)?
+            } else if let Some(asset_address) = pool_contract.asset_address() {
+                asset_config_by_address(asset_configs, asset_address)?
+            } else {
+                main_asset_config.clone()
+            };
         deposit_contracts.push(Arc::new(DepositContractConfig::new(
             raw_deposit_contract.clone(),
             bridge_fee_asset,
@@ -445,17 +412,11 @@ fn initialize_deposit_contracts(
     Ok(deposit_contracts)
 }
 
-fn asset_config_by_address(
-    asset_configs: &[Arc<AssetConfig>],
-    address: &str,
-) -> Result<Arc<AssetConfig>> {
+fn asset_config_by_address(asset_configs: &[Arc<AssetConfig>], address: &str) -> Result<Arc<AssetConfig>> {
     if let Some(asset_config) = asset_configs.iter().find(|c| c.asset_address() == address) {
         Ok(asset_config.clone())
     } else {
-        Err(Error::msg(format!(
-            "failed to find asset config {}",
-            address
-        )))
+        Err(Error::msg(format!("failed to find asset config {}", address)))
     }
 }
 
@@ -466,9 +427,6 @@ fn pool_contract_by_address(
     if let Some(pool_contract_config) = pool_contracts.iter().find(|c| c.address() == address) {
         Ok(pool_contract_config.clone())
     } else {
-        Err(Error::msg(format!(
-            "failed to find pool contract {}",
-            address
-        )))
+        Err(Error::msg(format!("failed to find pool contract {}", address)))
     }
 }

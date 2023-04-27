@@ -30,9 +30,7 @@ async fn test_send_1559_tx() {
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     let gas = U256::from(100_000_000_000u64);
-    let tx_hash =
-        H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d")
-            .unwrap();
+    let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
     let cfg = TxManagerConfig::default();
@@ -65,10 +63,7 @@ async fn test_send_1559_tx() {
     mock.push(nonce).unwrap();
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let _ = tx
-        .send(vec![].as_slice(), value, max_gas_price)
-        .await
-        .unwrap();
+    let _ = tx.send(vec![].as_slice(), value, max_gas_price).await.unwrap();
     let _ = tx.confirm().await.unwrap();
 }
 
@@ -83,9 +78,7 @@ async fn test_send_legacy_tx() {
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     let gas = U256::from(100_000_000_000u64);
-    let tx_hash =
-        H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d")
-            .unwrap();
+    let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
     let cfg = TxManagerConfig::default();
@@ -115,10 +108,7 @@ async fn test_send_legacy_tx() {
     mock.push(tx_hash).unwrap();
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
-    let _ = tx
-        .send(vec![].as_slice(), value, max_gas_price)
-        .await
-        .unwrap();
+    let _ = tx.send(vec![].as_slice(), value, max_gas_price).await.unwrap();
     let _ = tx.confirm().await.unwrap();
 }
 
@@ -146,10 +136,7 @@ async fn test_1559_tx_with_error() {
     assert!(tx.is_1559_tx());
 
     let gas_price = tx.gas_price().await;
-    assert_eq!(
-        gas_price.err().unwrap(),
-        TxManagerError::GasPriceError("".into())
-    );
+    assert_eq!(gas_price.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let gas = tx.estimate_gas(vec![].as_slice(), value).await;
@@ -158,17 +145,11 @@ async fn test_1559_tx_with_error() {
     mock.push(nonce).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let gas = tx.estimate_gas(vec![].as_slice(), value).await;
-    assert_eq!(
-        gas.err().unwrap(),
-        TxManagerError::EstimateGasError("".into())
-    );
+    assert_eq!(gas.err().unwrap(), TxManagerError::EstimateGasError("".into()));
 
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
-    assert_eq!(
-        tx_hash.err().unwrap(),
-        TxManagerError::GasPriceError("".into())
-    );
+    assert_eq!(tx_hash.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     let max_gas_price = Some(U256::from(1u64));
     mock.push(history.clone()).unwrap();
@@ -183,19 +164,13 @@ async fn test_1559_tx_with_error() {
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
     let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
-    assert_eq!(
-        tx_hash.err().unwrap(),
-        TxManagerError::NonceError("".into())
-    );
+    assert_eq!(tx_hash.err().unwrap(), TxManagerError::NonceError("".into()));
 
     mock.push(nonce).unwrap();
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
     let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
-    assert_eq!(
-        tx_hash.err().unwrap(),
-        TxManagerError::SendTxError("".into())
-    );
+    assert_eq!(tx_hash.err().unwrap(), TxManagerError::SendTxError("".into()));
 }
 
 #[tokio::test]
@@ -218,10 +193,7 @@ async fn test_legacy_tx_with_error() {
     assert!(!tx.is_1559_tx());
 
     let gas_price = tx.gas_price().await;
-    assert_eq!(
-        gas_price.err().unwrap(),
-        TxManagerError::GasPriceError("".into())
-    );
+    assert_eq!(gas_price.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     mock.push(price).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
@@ -232,17 +204,11 @@ async fn test_legacy_tx_with_error() {
     mock.push(price).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let gas = tx.estimate_gas(vec![].as_slice(), value).await;
-    assert_eq!(
-        gas.err().unwrap(),
-        TxManagerError::EstimateGasError("".into())
-    );
+    assert_eq!(gas.err().unwrap(), TxManagerError::EstimateGasError("".into()));
 
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
-    assert_eq!(
-        tx_hash.err().unwrap(),
-        TxManagerError::GasPriceError("".into())
-    );
+    assert_eq!(tx_hash.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     mock.push(price).unwrap();
     let max_gas_price = Some(U256::from(1u64));
@@ -255,18 +221,12 @@ async fn test_legacy_tx_with_error() {
     mock.push(price).unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
-    assert_eq!(
-        tx_hash.err().unwrap(),
-        TxManagerError::NonceError("".into())
-    );
+    assert_eq!(tx_hash.err().unwrap(), TxManagerError::NonceError("".into()));
 
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
     let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
-    assert_eq!(
-        tx_hash.err().unwrap(),
-        TxManagerError::SendTxError("".into())
-    );
+    assert_eq!(tx_hash.err().unwrap(), TxManagerError::SendTxError("".into()));
 }
 
 #[tokio::test]
@@ -300,9 +260,7 @@ async fn test_confirm_with_error() {
 
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash =
-        H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d")
-            .unwrap();
+    let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
     mock.push(tx_hash).unwrap();
     mock.push(tx_hash).unwrap();
     mock.push(nonce).unwrap();
@@ -310,10 +268,7 @@ async fn test_confirm_with_error() {
     let _ = tx.send(vec![].as_slice(), value, max_gas_price).await;
 
     let receipt = tx.confirm().await;
-    assert_eq!(
-        receipt.err().unwrap(),
-        TxManagerError::ConfirmTxError("".into())
-    );
+    assert_eq!(receipt.err().unwrap(), TxManagerError::ConfirmTxError("".into()));
 
     mock.push(json!(null)).unwrap();
     let receipt = tx.confirm().await;
@@ -321,19 +276,13 @@ async fn test_confirm_with_error() {
 
     mock.push(transaction.clone()).unwrap();
     let receipt = tx.confirm().await;
-    assert_eq!(
-        receipt.err().unwrap(),
-        TxManagerError::ConfirmTxError("".into())
-    );
+    assert_eq!(receipt.err().unwrap(), TxManagerError::ConfirmTxError("".into()));
 
     transaction_receipt.status = Some(U64::from(0));
     mock.push(transaction_receipt.clone()).unwrap();
     mock.push(transaction.clone()).unwrap();
     let receipt = tx.confirm().await;
-    assert_eq!(
-        receipt.err().unwrap(),
-        TxManagerError::ConfirmTxError("".into())
-    );
+    assert_eq!(receipt.err().unwrap(), TxManagerError::ConfirmTxError("".into()));
 
     for _ in 0..cfg.max_confirm_count {
         mock.push(json!(null)).unwrap();
@@ -384,13 +333,9 @@ fn get_1559_block() -> Block<()> {
 
 fn get_transaction() -> Transaction {
     Transaction {
-        hash: H256::from_str("5e2fc091e15119c97722e9b63d5d32b043d077d834f377b91f80d32872c78109")
-            .unwrap(),
+        hash: H256::from_str("5e2fc091e15119c97722e9b63d5d32b043d077d834f377b91f80d32872c78109").unwrap(),
         nonce: 65.into(),
-        block_hash: Some(
-            H256::from_str("f43869e67c02c57d1f9a07bb897b54bec1cfa1feb704d91a2ee087566de5df2c")
-                .unwrap(),
-        ),
+        block_hash: Some(H256::from_str("f43869e67c02c57d1f9a07bb897b54bec1cfa1feb704d91a2ee087566de5df2c").unwrap()),
         block_number: Some(6203173.into()),
         transaction_index: Some(10.into()),
         from: Address::from_str("e66b278fa9fbb181522f6916ec2f6d66ab846e04").unwrap(),

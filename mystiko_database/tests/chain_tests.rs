@@ -28,12 +28,8 @@ async fn test_chains_crud() {
                 name: String::from("Ethereum Goerli"),
                 name_override: false,
                 providers: vec![
-                    String::from(
-                        "{\"url\": \"wss://goerli.infura.io/ws/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}",
-                    ),
-                    String::from(
-                        "{\"url\": \"https://goerli.infura.io/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}",
-                    ),
+                    String::from("{\"url\": \"wss://goerli.infura.io/ws/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}"),
+                    String::from("{\"url\": \"https://goerli.infura.io/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}"),
                 ],
                 provider_override: true,
                 event_filter_size: 2000,
@@ -45,29 +41,35 @@ async fn test_chains_crud() {
     assert_eq!(chains.count_all().await.unwrap(), 1);
     // testing insert_batch
     inserted_chains.extend(
-        chains.insert_batch(&vec![
-            Chain {
-                chain_id: 97,
-                name: String::from("BSC Testnet"),
-                name_override: false,
-                providers: vec![
-                    String::from("{\"url\": \"wss://ws-nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}"),
-                    String::from("{\"url\": \"https://nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}"),
-                ],
-                provider_override: false,
-                event_filter_size: 100000,
-                synced_block_number: 27265360,
-            },
-            Chain {
-                chain_id: 80001,
-                name: String::from("Polygon"),
-                name_override: true,
-                providers: vec![String::from("{\"url\": \"https://matic-mumbai.chainstacklabs.com\"}")],
-                provider_override: true,
-                event_filter_size: 10000,
-                synced_block_number: 32076637,
-            },
-        ]).await
+        chains
+            .insert_batch(&vec![
+                Chain {
+                    chain_id: 97,
+                    name: String::from("BSC Testnet"),
+                    name_override: false,
+                    providers: vec![
+                        String::from(
+                            "{\"url\": \"wss://ws-nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}",
+                        ),
+                        String::from(
+                            "{\"url\": \"https://nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}",
+                        ),
+                    ],
+                    provider_override: false,
+                    event_filter_size: 100000,
+                    synced_block_number: 27265360,
+                },
+                Chain {
+                    chain_id: 80001,
+                    name: String::from("Polygon"),
+                    name_override: true,
+                    providers: vec![String::from("{\"url\": \"https://matic-mumbai.chainstacklabs.com\"}")],
+                    provider_override: true,
+                    event_filter_size: 10000,
+                    synced_block_number: 32076637,
+                },
+            ])
+            .await
             .unwrap(),
     );
     assert_eq!(chains.count_all().await.unwrap(), 3);
@@ -112,11 +114,7 @@ async fn test_chains_crud() {
         .unwrap();
     assert_eq!(found_chain, inserted_chains[2]);
     // testing find_by_id
-    found_chain = chains
-        .find_by_id(&inserted_chains[1].id)
-        .await
-        .unwrap()
-        .unwrap();
+    found_chain = chains.find_by_id(&inserted_chains[1].id).await.unwrap().unwrap();
     assert_eq!(found_chain, inserted_chains[1]);
 
     // testing update
@@ -137,10 +135,7 @@ async fn test_chains_crud() {
     chains.delete(&inserted_chains[0]).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 2);
     // testing delete_batch
-    chains
-        .delete_batch(&vec![inserted_chains[1].clone()])
-        .await
-        .unwrap();
+    chains.delete_batch(&vec![inserted_chains[1].clone()]).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 1);
     // testing delete_by_filter
     chains.insert(&inserted_chains[0].data).await.unwrap();

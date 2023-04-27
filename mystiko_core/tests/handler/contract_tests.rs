@@ -32,27 +32,20 @@ async fn test_contract_initialize() {
     let contracts = handler.initialize().await.unwrap();
     for contract in contracts.iter() {
         let chain_config = config.find_chain(contract.data.chain_id).unwrap();
-        if let Some(deposit_contract_config) = config.find_deposit_contract_by_address(
-            contract.data.chain_id,
-            &contract.data.contract_address,
-        ) {
+        if let Some(deposit_contract_config) =
+            config.find_deposit_contract_by_address(contract.data.chain_id, &contract.data.contract_address)
+        {
             assert_eq!(contract.data.contract_type, ContractType::Deposit);
             assert_eq!(contract.data.disabled, deposit_contract_config.disabled());
             assert_eq!(
                 contract.data.sync_size,
                 chain_config.contract_event_filter_size(&contract.data.contract_address)
             );
-            assert_eq!(
-                contract.data.sync_start,
-                deposit_contract_config.start_block()
-            );
-            assert_eq!(
-                contract.data.synced_block_number,
-                deposit_contract_config.start_block()
-            );
+            assert_eq!(contract.data.sync_start, deposit_contract_config.start_block());
+            assert_eq!(contract.data.synced_block_number, deposit_contract_config.start_block());
             assert_eq!(contract.data.checked_leaf_index, None);
-        } else if let Some(pool_contract_config) = config
-            .find_pool_contract_by_address(contract.data.chain_id, &contract.data.contract_address)
+        } else if let Some(pool_contract_config) =
+            config.find_pool_contract_by_address(contract.data.chain_id, &contract.data.contract_address)
         {
             assert_eq!(contract.data.contract_type, ContractType::Pool);
             assert!(!contract.data.disabled);
@@ -61,10 +54,7 @@ async fn test_contract_initialize() {
                 chain_config.contract_event_filter_size(&contract.data.contract_address)
             );
             assert_eq!(contract.data.sync_start, pool_contract_config.start_block());
-            assert_eq!(
-                contract.data.synced_block_number,
-                pool_contract_config.start_block()
-            );
+            assert_eq!(contract.data.synced_block_number, pool_contract_config.start_block());
             assert_eq!(contract.data.checked_leaf_index, None);
         } else {
             panic!("Contract not found in config");
@@ -77,10 +67,9 @@ async fn test_contract_initialize_upsert() {
     let (handler, database, _) = setup().await;
     handler.initialize().await.unwrap();
     let count = handler.count_all().await.unwrap();
-    let mut raw_config =
-        create_raw_from_file::<RawMystikoConfig>("tests/files/handler/contract/config.json")
-            .await
-            .unwrap();
+    let mut raw_config = create_raw_from_file::<RawMystikoConfig>("tests/files/handler/contract/config.json")
+        .await
+        .unwrap();
     let mut chain_config = raw_config.chains.remove(2).as_ref().clone();
     let mut deposit_contract_config = chain_config.deposit_contracts.remove(0).as_ref().clone();
     deposit_contract_config.disabled = true;
@@ -91,10 +80,7 @@ async fn test_contract_initialize_upsert() {
         .deposit_contracts
         .insert(0, Arc::new(deposit_contract_config));
     raw_config.chains.insert(2, Arc::new(chain_config));
-    let new_handler = TypedContractHandler::new(
-        database,
-        Arc::new(MystikoConfig::from_raw(raw_config).unwrap()),
-    );
+    let new_handler = TypedContractHandler::new(database, Arc::new(MystikoConfig::from_raw(raw_config).unwrap()));
     new_handler.initialize().await.unwrap();
     let contract = new_handler
         .find_by_address(chain_id, &contract_address)
@@ -129,10 +115,7 @@ async fn test_contract_find() {
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
     assert_eq!(found_contract, contracts[0]);
     let found_contract = handler
-        .find_by_address(
-            contracts[0].data.chain_id,
-            &contracts[0].data.contract_address,
-        )
+        .find_by_address(contracts[0].data.chain_id, &contracts[0].data.contract_address)
         .await
         .unwrap()
         .unwrap();

@@ -135,10 +135,7 @@ async fn test_insert() {
 async fn test_insert_batch() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection
-        .insert_batch::<TestDocumentData>(&vec![])
-        .await
-        .unwrap();
+    let d1 = collection.insert_batch::<TestDocumentData>(&vec![]).await.unwrap();
     assert!(d1.is_empty());
     let raw_data: Vec<TestDocumentData> = vec![
         TestDocumentData {
@@ -203,10 +200,7 @@ async fn test_update() {
 async fn test_update_batch() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection
-        .update_batch::<TestDocumentData>(&vec![])
-        .await
-        .unwrap();
+    let d1 = collection.update_batch::<TestDocumentData>(&vec![]).await.unwrap();
     assert!(d1.is_empty());
     let documents = vec![
         Document {
@@ -270,10 +264,7 @@ async fn test_delete() {
 async fn test_delete_batch() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    collection
-        .delete_batch::<TestDocumentData>(&vec![])
-        .await
-        .unwrap();
+    collection.delete_batch::<TestDocumentData>(&vec![]).await.unwrap();
     let documents = vec![
         Document {
             id: String::from("1000"),
@@ -310,14 +301,9 @@ async fn test_delete_batch() {
 async fn test_delete_by_filter() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    collection
-        .delete_by_filter::<TestDocumentData>(None)
-        .await
-        .unwrap();
+    collection.delete_by_filter::<TestDocumentData>(None).await.unwrap();
     assert_eq!(
-        collection
-            .formatter()
-            .format_delete_by_filter::<TestDocumentData>(None),
+        collection.formatter().format_delete_by_filter::<TestDocumentData>(None),
         collection.storage().statements.lock().await[0],
     );
     let filter = QueryFilterBuilder::new()
@@ -408,11 +394,7 @@ async fn test_find_one() {
             (String::from("field2"), String::from("1000")),
         ]),
     }];
-    let d2 = collection
-        .find_one::<TestDocumentData>(None)
-        .await
-        .unwrap()
-        .unwrap();
+    let d2 = collection.find_one::<TestDocumentData>(None).await.unwrap().unwrap();
     assert_eq!(d2.created_at, 1);
     assert_eq!(d2.updated_at, 1);
     assert_eq!(d2.data.field1, "doc1 field1");
@@ -427,10 +409,7 @@ async fn test_find_one() {
 async fn test_find_by_id() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection
-        .find_by_id::<TestDocumentData>("1000")
-        .await
-        .unwrap();
+    let d1 = collection.find_by_id::<TestDocumentData>("1000").await.unwrap();
     assert!(d1.is_none());
     let filter = QueryFilterBuilder::new()
         .filter(Condition::FILTER(SubFilter::Equal(
@@ -439,9 +418,7 @@ async fn test_find_by_id() {
         )))
         .build();
     assert_eq!(
-        collection
-            .formatter()
-            .format_find::<TestDocumentData>(Some(filter)),
+        collection.formatter().format_find::<TestDocumentData>(Some(filter)),
         collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_query = true;
@@ -454,15 +431,9 @@ async fn test_migrate_initialization() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     collection.mut_storage().raise_error_on_collection_exists = true;
-    assert!(collection
-        .migrate(TestDocumentData::schema())
-        .await
-        .is_err());
+    assert!(collection.migrate(TestDocumentData::schema()).await.is_err());
     collection.mut_storage().raise_error_on_collection_exists = false;
-    let migration = collection
-        .migrate(TestDocumentData::schema())
-        .await
-        .unwrap();
+    let migration = collection.migrate(TestDocumentData::schema()).await.unwrap();
     assert_eq!(
         format!(
             "{};{};{}",
@@ -473,10 +444,7 @@ async fn test_migrate_initialization() {
         collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_execute = true;
-    assert!(collection
-        .migrate(TestDocumentData::schema())
-        .await
-        .is_err());
+    assert!(collection.migrate(TestDocumentData::schema()).await.is_err());
 }
 
 #[tokio::test]
@@ -504,10 +472,7 @@ async fn test_migrate_non_existing() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
     collection.mut_storage().collection_exists = true;
-    let migration = collection
-        .migrate(TestDocumentData::schema())
-        .await
-        .unwrap();
+    let migration = collection.migrate(TestDocumentData::schema()).await.unwrap();
     let filter = QueryFilterBuilder::new()
         .filter(Condition::FILTER(SubFilter::Equal(
             String::from(MIGRATION_SCHEMA.field_names[0]),
@@ -515,9 +480,7 @@ async fn test_migrate_non_existing() {
         )))
         .build();
     assert_eq!(
-        collection
-            .formatter()
-            .format_find::<Migration>(Some(filter)),
+        collection.formatter().format_find::<Migration>(Some(filter)),
         collection.storage().statements.lock().await[0]
     );
     assert_eq!(
@@ -547,10 +510,7 @@ async fn test_migrate_existing() {
             (String::from("version"), String::from("1")),
         ]),
     }];
-    let mut migration = collection
-        .migrate(TestDocumentData::schema())
-        .await
-        .unwrap();
+    let mut migration = collection.migrate(TestDocumentData::schema()).await.unwrap();
     let filter = QueryFilterBuilder::new()
         .filter(Condition::FILTER(SubFilter::Equal(
             String::from(MIGRATION_SCHEMA.field_names[0]),
@@ -559,9 +519,7 @@ async fn test_migrate_existing() {
         .build();
     migration.data.version = TestDocumentData::schema().version();
     assert_eq!(
-        collection
-            .formatter()
-            .format_find::<Migration>(Some(filter)),
+        collection.formatter().format_find::<Migration>(Some(filter)),
         collection.storage().statements.lock().await[0]
     );
     assert_eq!(
@@ -594,10 +552,7 @@ async fn test_migrate_skipping() {
             ),
         ]),
     }];
-    collection
-        .migrate(TestDocumentData::schema())
-        .await
-        .unwrap();
+    collection.migrate(TestDocumentData::schema()).await.unwrap();
     let filter = QueryFilterBuilder::new()
         .filter(Condition::FILTER(SubFilter::Equal(
             String::from(MIGRATION_SCHEMA.field_names[0]),
@@ -606,9 +561,7 @@ async fn test_migrate_skipping() {
         .build();
     assert_eq!(collection.storage().statements.lock().await.len(), 1);
     assert_eq!(
-        collection
-            .formatter()
-            .format_find::<Migration>(Some(filter)),
+        collection.formatter().format_find::<Migration>(Some(filter)),
         collection.storage().statements.lock().await[0]
     );
 }

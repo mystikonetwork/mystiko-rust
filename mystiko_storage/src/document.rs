@@ -52,18 +52,12 @@ impl<T: DocumentData> Document<T> {
         }
     }
     pub fn field_names() -> Vec<&'static str> {
-        let mut names = vec![
-            DOCUMENT_ID_FIELD,
-            DOCUMENT_CREATED_AT_FIELD,
-            DOCUMENT_UPDATED_AT_FIELD,
-        ];
+        let mut names = vec![DOCUMENT_ID_FIELD, DOCUMENT_CREATED_AT_FIELD, DOCUMENT_UPDATED_AT_FIELD];
         names.extend(T::schema().field_names);
         names
     }
     pub fn field_index(field: &str) -> Option<usize> {
-        Document::<T>::field_names()
-            .iter()
-            .position(|f| f.eq(&field))
+        Document::<T>::field_names().iter().position(|f| f.eq(&field))
     }
     pub fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Document {

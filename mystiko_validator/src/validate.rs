@@ -7,7 +7,10 @@ use validator::{Validate, ValidationError};
 
 lazy_static! {
     static ref ETHEREUM_ADDRESS_REGEX: Regex = Regex::new(r"^(0x)[0-9a-fA-F]{40}$").unwrap();
-    static ref IS_SEM_VER: Regex = Regex::new(r"^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$").unwrap();
+    static ref IS_SEM_VER: Regex = Regex::new(
+        r"^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
+    )
+    .unwrap();
     static ref NO_SYMBOL_NUMERIC: Regex = Regex::new(r"^[0-9]+$").unwrap();
     static ref NUMERIC_WITH_SYMBOL: Regex = Regex::new(r"^[+-]?([0-9]*[.])?[0-9]+$").unwrap();
     static ref IS_GIT_REVISION: Regex = Regex::new(r"\b[0-9a-f]{7,40}\b").unwrap();

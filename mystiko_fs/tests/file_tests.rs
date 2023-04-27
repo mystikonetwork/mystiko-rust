@@ -9,8 +9,6 @@ async fn test_read_file_bytes() {
 
 #[test]
 async fn test_read_gzip_file_bytes() {
-    let content = read_gzip_file_bytes("./tests/files/file2.txt.gz")
-        .await
-        .unwrap();
+    let content = read_gzip_file_bytes("./tests/files/file2.txt.gz").await.unwrap();
     assert_eq!(content, "GZIP file\n".as_bytes().to_vec());
 }

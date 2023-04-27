@@ -16,17 +16,13 @@ const VALID_CONFIG_FILE: &str = "tests/files/contract/pool/valid.json";
 
 #[tokio::test]
 async fn test_create() {
-    let (main_asset_config, asset_config, circuit_configs, raw_config, config) =
-        setup(SetupOptions::default()).await;
+    let (main_asset_config, asset_config, circuit_configs, raw_config, config) = setup(SetupOptions::default()).await;
     config.validate().unwrap();
     assert_eq!(config.version(), 2);
     assert_eq!(config.name(), "CommitmentPool");
     assert_eq!(config.pool_name(), "A Pool(since 07/20/2022)");
     assert_eq!(config.bridge_type(), &BridgeType::Tbridge);
-    assert_eq!(
-        config.address(),
-        "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
-    );
+    assert_eq!(config.address(), "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
     assert_eq!(config.contract_type(), &ContractType::Pool);
     assert_eq!(config.start_block(), 1000000);
     assert!(config.event_filter_size().is_none());
@@ -49,10 +45,7 @@ async fn test_create() {
             BigInt::from_str("10000000000000000000").unwrap(),
         ]
     );
-    assert_eq!(
-        config.recommended_amounts_number::<u32>().unwrap(),
-        vec![1, 10]
-    );
+    assert_eq!(config.recommended_amounts_number::<u32>().unwrap(), vec![1, 10]);
     assert_eq!(
         config.min_rollup_fee().unwrap(),
         BigInt::from_str("120000000000000000").unwrap()
@@ -61,28 +54,17 @@ async fn test_create() {
     assert_eq!(config.circuits_names(), &vec![String::from("circuit-1.0")]);
     assert_eq!(config.circuits().len(), circuit_configs.len());
     assert_eq!(
-        config
-            .circuit_by_type(&CircuitType::Rollup1)
-            .unwrap()
-            .name(),
+        config.circuit_by_type(&CircuitType::Rollup1).unwrap().name(),
         "circuit-1.0"
     );
     assert_eq!(
-        config
-            .circuit_by_name("circuit-1.0")
-            .unwrap()
-            .circuit_type(),
+        config.circuit_by_name("circuit-1.0").unwrap().circuit_type(),
         &CircuitType::Rollup1
     );
     let mut raw_config1 = raw_config.as_ref().clone();
     raw_config1.event_filter_size = Some(1000);
     raw_config1.indexer_filter_size = Some(10000);
-    let config1 = PoolContractConfig::new(
-        Arc::new(raw_config1),
-        main_asset_config,
-        asset_config,
-        circuit_configs,
-    );
+    let config1 = PoolContractConfig::new(Arc::new(raw_config1), main_asset_config, asset_config, circuit_configs);
     assert_eq!(config1.event_filter_size().unwrap(), 1000);
     assert_eq!(config1.indexer_filter_size().unwrap(), 10000);
 }
@@ -194,9 +176,7 @@ async fn setup(
             .await
             .unwrap(),
     );
-    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(
-        create_raw_main_asset_config().await,
-    )));
+    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(create_raw_main_asset_config().await)));
     let mut raw_asset_config = create_raw_asset_config(
         &options
             .asset_address
@@ -230,13 +210,7 @@ async fn setup(
         asset_config.clone(),
         circuit_configs.clone(),
     );
-    (
-        main_asset_config,
-        asset_config,
-        circuit_configs,
-        raw_config,
-        config,
-    )
+    (main_asset_config, asset_config, circuit_configs, raw_config, config)
 }
 
 async fn create_raw_main_asset_config() -> RawAssetConfig {

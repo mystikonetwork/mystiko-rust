@@ -73,10 +73,7 @@ pub fn random_bytes(size: usize) -> Vec<u8> {
 }
 
 pub fn random_utf8_string(size: usize) -> String {
-    let data: Vec<u8> = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(size)
-        .collect();
+    let data: Vec<u8> = rand::thread_rng().sample_iter(&Alphanumeric).take(size).collect();
     let utf_chars: Vec<char> = data
         .into_iter()
         .filter_map(|b| std::char::from_u32(b as u32))

@@ -7,10 +7,7 @@ async fn test_read_config() {
     assert_eq!(cfg.err().unwrap(), TxManagerError::FileError("".into()));
 
     let cfg = read_config_from_file("./tests/tx_manager/files/tx_manager_wrong.json").await;
-    assert!(matches!(
-        cfg.err().unwrap(),
-        TxManagerError::SerdeJsonError(_)
-    ));
+    assert!(matches!(cfg.err().unwrap(), TxManagerError::SerdeJsonError(_)));
 
     let cfg = read_config_from_file("./src/tx_manager/config/config.json").await;
     assert!(cfg.is_ok());

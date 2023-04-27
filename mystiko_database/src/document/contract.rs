@@ -79,19 +79,13 @@ impl DocumentData for Contract {
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Contract {
-            contract_type: serde_json::from_str(
-                &raw.field_string_value(CONTRACT_TYPE_FIELD_NAME)?.unwrap(),
-            )?,
+            contract_type: serde_json::from_str(&raw.field_string_value(CONTRACT_TYPE_FIELD_NAME)?.unwrap())?,
             chain_id: raw.field_integer_value(CHAIN_ID_FIELD_NAME)?.unwrap(),
-            contract_address: raw
-                .field_string_value(CONTRACT_ADDRESS_FIELD_NAME)?
-                .unwrap(),
+            contract_address: raw.field_string_value(CONTRACT_ADDRESS_FIELD_NAME)?.unwrap(),
             disabled: raw.field_integer_value::<u8>(DISABLED_FIELD_NAME)?.unwrap() != 0,
             sync_start: raw.field_integer_value(SYNC_START_FIELD_NAME)?.unwrap(),
             sync_size: raw.field_integer_value(SYNC_SIZE_FIELD_NAME)?.unwrap(),
-            synced_block_number: raw
-                .field_integer_value(SYNCED_BLOCK_NUMBER_FIELD_NAME)?
-                .unwrap(),
+            synced_block_number: raw.field_integer_value(SYNCED_BLOCK_NUMBER_FIELD_NAME)?.unwrap(),
             checked_leaf_index: raw.field_integer_value(CHECKED_LEAF_INDEX_FIELD_NAME)?,
         })
     }

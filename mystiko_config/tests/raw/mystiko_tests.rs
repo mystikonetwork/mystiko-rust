@@ -15,8 +15,7 @@ async fn default_config() -> RawMystikoConfig {
 }
 
 lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<RawMystikoConfig> =
-        AsyncOnce::new(async { default_config().await });
+    static ref CONFIG_CREATER: AsyncOnce<RawMystikoConfig> = AsyncOnce::new(async { default_config().await });
 }
 
 #[tokio::test]
@@ -66,9 +65,7 @@ async fn test_invalid_bridges_0() {
 async fn test_invalid_bridges_1() {
     let mut config = default_config().await;
     let bridge_config = Arc::new(RawTBridgeConfig::builder().name("".to_string()).build());
-    config
-        .bridges
-        .push(Arc::new(RawBridgeConfig::Tbridge(bridge_config)));
+    config.bridges.push(Arc::new(RawBridgeConfig::Tbridge(bridge_config)));
     assert!(config.validate().is_err());
 }
 
@@ -102,14 +99,12 @@ async fn test_invalid_indexer() {
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config =
-        create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko/invalid.json").await;
+    let file_config = create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko/invalid.json").await;
     assert!(file_config.is_err());
 }
 
 #[tokio::test]
 async fn test_empty_file() {
-    let file_config =
-        create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko/empty.json").await;
+    let file_config = create_raw_from_file::<RawMystikoConfig>("tests/files/mystiko/empty.json").await;
     assert!(file_config.is_ok());
 }

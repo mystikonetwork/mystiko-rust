@@ -5,9 +5,7 @@ use mystiko_config::wrapper::contract::deposit::DepositContractConfig;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_database::database::Database;
-use mystiko_database::document::contract::{
-    Contract, CHAIN_ID_FIELD_NAME, CONTRACT_ADDRESS_FIELD_NAME,
-};
+use mystiko_database::document::contract::{Contract, CHAIN_ID_FIELD_NAME, CONTRACT_ADDRESS_FIELD_NAME};
 use mystiko_storage::document::{Document, DocumentRawData, DOCUMENT_ID_FIELD};
 use mystiko_storage::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::StatementFormatter;
@@ -39,11 +37,7 @@ where
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Contract>>> {
-        self.db
-            .contracts
-            .find_all()
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.contracts.find_all().await.map_err(MystikoError::DatabaseError)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Contract>>> {
@@ -60,11 +54,7 @@ where
             .map_err(MystikoError::DatabaseError)
     }
 
-    pub async fn find_by_address(
-        &self,
-        chain_id: u64,
-        address: &str,
-    ) -> Result<Option<Document<Contract>>> {
+    pub async fn find_by_address(&self, chain_id: u64, address: &str) -> Result<Option<Document<Contract>>> {
         let query_filter = QueryFilterBuilder::new()
             .filter(Condition::FILTER(SubFilter::Equal(
                 CHAIN_ID_FIELD_NAME.to_string(),
@@ -91,11 +81,7 @@ where
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.db
-            .contracts
-            .count_all()
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.contracts.count_all().await.map_err(MystikoError::DatabaseError)
     }
 
     pub async fn initialize(&self) -> Result<Vec<Document<Contract>>> {
@@ -108,9 +94,7 @@ where
                 contracts.push(contract);
             }
             for pool_contract_config in chain_config.pool_contracts() {
-                let contract = self
-                    .upsert_pool_contract(chain_config, pool_contract_config)
-                    .await?;
+                let contract = self.upsert_pool_contract(chain_config, pool_contract_config).await?;
                 contracts.push(contract);
             }
         }

@@ -5,20 +5,18 @@ use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::{
     client::IndexerClient,
     types::{
-        commitment::{
-            CommitmentFilter, CommitmentResponse, CommitmentsForContractRequest, DepositStatus,
-        },
+        commitment::{CommitmentFilter, CommitmentResponse, CommitmentsForContractRequest, DepositStatus},
         commitment_included::{
-            CommitmentIncludedFilter, CommitmentIncludedForChainRequest,
-            CommitmentIncludedForContractRequest, CommitmentIncludedResponse,
+            CommitmentIncludedFilter, CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest,
+            CommitmentIncludedResponse,
         },
         commitment_queued::{
-            CommitmentQueuedFilter, CommitmentQueuedForChainRequest,
-            CommitmentQueuedForContractRequest, CommitmentQueuedResponse,
+            CommitmentQueuedFilter, CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest,
+            CommitmentQueuedResponse,
         },
         commitment_spent::{
-            CommitmentSpentFilter, CommitmentSpentForChainRequest,
-            CommitmentSpentForContractRequest, CommitmentSpentResponse,
+            CommitmentSpentFilter, CommitmentSpentForChainRequest, CommitmentSpentForContractRequest,
+            CommitmentSpentResponse,
         },
         sync_response::{ChainSyncRepsonse, ContractSyncResponse},
     },
@@ -269,9 +267,7 @@ async fn test_find_commitment_queued_for_chain() {
             Matcher::UrlEncoded("startBlock".into(), "100".into()),
             Matcher::UrlEncoded("endBlock".into(), "10000".into()),
         ]))
-        .match_body(Matcher::JsonString(
-            serde_json::to_string(&where_filter).unwrap(),
-        ))
+        .match_body(Matcher::JsonString(serde_json::to_string(&where_filter).unwrap()))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
@@ -301,11 +297,7 @@ async fn test_find_commitment_queued_for_chain() {
         .create_async()
         .await;
     let resp = indexer_client
-        .find_commitment_queued_for_chain(
-            &CommitmentQueuedForChainRequest::builder()
-                .chain_id(chain_id)
-                .build(),
-        )
+        .find_commitment_queued_for_chain(&CommitmentQueuedForChainRequest::builder().chain_id(chain_id).build())
         .await;
     assert!(resp.is_err());
     m.assert_async().await;
@@ -362,11 +354,7 @@ async fn test_find_commitment_queued_for_contract() {
     let m = mocked_server
         .mock(
             "post",
-            format!(
-                "/chains/{}/contracts/{}/events/commitment-queued",
-                &chain_id, &address
-            )
-            .as_str(),
+            format!("/chains/{}/contracts/{}/events/commitment-queued", &chain_id, &address).as_str(),
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
@@ -405,20 +393,14 @@ async fn test_find_commitment_queued_for_contract() {
     let m = mocked_server
         .mock(
             "post",
-            format!(
-                "/chains/{}/contracts/{}/events/commitment-queued",
-                chain_id, &address
-            )
-            .as_str(),
+            format!("/chains/{}/contracts/{}/events/commitment-queued", chain_id, &address).as_str(),
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
             Matcher::UrlEncoded("startBlock".into(), "100".into()),
             Matcher::UrlEncoded("endBlock".into(), "10000".into()),
         ]))
-        .match_body(Matcher::JsonString(
-            serde_json::to_string(&where_filter).unwrap(),
-        ))
+        .match_body(Matcher::JsonString(serde_json::to_string(&where_filter).unwrap()))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
@@ -448,11 +430,7 @@ async fn test_find_commitment_queued_for_contract() {
     let m = mocked_server
         .mock(
             "post",
-            format!(
-                "/chains/{}/contracts/{}/events/commitment-queued",
-                chain_id, &address
-            )
-            .as_str(),
+            format!("/chains/{}/contracts/{}/events/commitment-queued", chain_id, &address).as_str(),
         )
         .with_status(200)
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
@@ -577,9 +555,7 @@ async fn test_find_commitment_included_for_chain() {
             Matcher::UrlEncoded("startBlock".into(), "0".into()),
             Matcher::UrlEncoded("endBlock".into(), "21716247".into()),
         ]))
-        .match_body(Matcher::JsonString(
-            serde_json::to_string(&where_filter).unwrap(),
-        ))
+        .match_body(Matcher::JsonString(serde_json::to_string(&where_filter).unwrap()))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
@@ -612,11 +588,7 @@ async fn test_find_commitment_included_for_chain() {
         .create_async()
         .await;
     let resp = indexer_client
-        .find_commitment_included_for_chain(
-            &CommitmentIncludedForChainRequest::builder()
-                .chain_id(chain_id)
-                .build(),
-        )
+        .find_commitment_included_for_chain(&CommitmentIncludedForChainRequest::builder().chain_id(chain_id).build())
         .await;
     assert!(resp.is_err());
     m.assert_async().await;
@@ -731,9 +703,7 @@ async fn test_find_commitment_included_for_contract() {
             Matcher::UrlEncoded("startBlock".into(), start_block.to_string()),
             Matcher::UrlEncoded("endBlock".into(), end_block.to_string()),
         ]))
-        .match_body(Matcher::JsonString(
-            serde_json::to_string(&where_filter).unwrap(),
-        ))
+        .match_body(Matcher::JsonString(serde_json::to_string(&where_filter).unwrap()))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
@@ -904,9 +874,7 @@ async fn test_find_commitment_spent_for_chain() {
             Matcher::UrlEncoded("startBlock".into(), "0".into()),
             Matcher::UrlEncoded("endBlock".into(), "21716247".into()),
         ]))
-        .match_body(Matcher::JsonString(
-            serde_json::to_string(&where_filter).unwrap(),
-        ))
+        .match_body(Matcher::JsonString(serde_json::to_string(&where_filter).unwrap()))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
@@ -939,11 +907,7 @@ async fn test_find_commitment_spent_for_chain() {
         .create_async()
         .await;
     let resp = indexer_client
-        .find_commitment_spent_for_chain(
-            &CommitmentSpentForChainRequest::builder()
-                .chain_id(chain_id)
-                .build(),
-        )
+        .find_commitment_spent_for_chain(&CommitmentSpentForChainRequest::builder().chain_id(chain_id).build())
         .await;
     assert!(resp.is_err());
     m.assert_async().await;
@@ -1009,11 +973,7 @@ async fn test_find_commitment_spent_for_contract() {
     let m = mocked_server
         .mock(
             "post",
-            format!(
-                "/chains/{}/contracts/{}/events/commitment-spent",
-                &chain_id, &address
-            )
-            .as_str(),
+            format!("/chains/{}/contracts/{}/events/commitment-spent", &chain_id, &address).as_str(),
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
@@ -1052,20 +1012,14 @@ async fn test_find_commitment_spent_for_contract() {
     let m = mocked_server
         .mock(
             "post",
-            format!(
-                "/chains/{}/contracts/{}/events/commitment-spent",
-                &chain_id, &address
-            )
-            .as_str(),
+            format!("/chains/{}/contracts/{}/events/commitment-spent", &chain_id, &address).as_str(),
         )
         .with_status(200)
         .match_query(Matcher::AllOf(vec![
             Matcher::UrlEncoded("startBlock".into(), start_block.to_string()),
             Matcher::UrlEncoded("endBlock".into(), end_block.to_string()),
         ]))
-        .match_body(Matcher::JsonString(
-            serde_json::to_string(&where_filter).unwrap(),
-        ))
+        .match_body(Matcher::JsonString(serde_json::to_string(&where_filter).unwrap()))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
@@ -1095,11 +1049,7 @@ async fn test_find_commitment_spent_for_contract() {
     let m = mocked_server
         .mock(
             "post",
-            format!(
-                "/chains/{}/contracts/{}/events/commitment-spent",
-                &chain_id, &address
-            )
-            .as_str(),
+            format!("/chains/{}/contracts/{}/events/commitment-spent", &chain_id, &address).as_str(),
         )
         .with_status(200)
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
@@ -1188,9 +1138,7 @@ async fn test_query_contract_sync_response() {
         .with_header("content-type", "application/json")
         .create_async()
         .await;
-    let resp = indexer_client
-        .query_contract_sync_response(5, "address1")
-        .await;
+    let resp = indexer_client.query_contract_sync_response(5, "address1").await;
     assert!(resp.is_ok());
     let resp = resp.unwrap();
     dbg!(&resp);
@@ -1281,9 +1229,7 @@ async fn test_find_commitments_for_contract() {
             Matcher::UrlEncoded("startBlock".into(), "0".into()),
             Matcher::UrlEncoded("endBlock".into(), "21716247".into()),
         ]))
-        .match_body(Matcher::JsonString(
-            serde_json::to_string(&where_filter).unwrap(),
-        ))
+        .match_body(Matcher::JsonString(serde_json::to_string(&where_filter).unwrap()))
         .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
@@ -1334,11 +1280,7 @@ async fn test_count_commitment_included_for_contract() {
         .create_async()
         .await;
     let resp = indexer_client
-        .count_commitment_included_for_contract(
-            test_chain_id,
-            test_contract_address,
-            test_end_block,
-        )
+        .count_commitment_included_for_contract(test_chain_id, test_contract_address, test_end_block)
         .await;
     assert!(resp.is_ok());
     let resp = resp.unwrap();

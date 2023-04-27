@@ -7,10 +7,7 @@ async fn test_read_config() {
     assert_eq!(cfg.err().unwrap(), TokenPriceError::FileError("".into()));
 
     let cfg = read_config_from_file("./tests/token_price/files/token_price_wrong.json").await;
-    assert!(matches!(
-        cfg.err().unwrap(),
-        TokenPriceError::SerdeJsonError(_)
-    ));
+    assert!(matches!(cfg.err().unwrap(), TokenPriceError::SerdeJsonError(_)));
 
     let cfg = read_config_from_file("./src/token_price/config/config.json").await;
     assert!(cfg.is_ok());

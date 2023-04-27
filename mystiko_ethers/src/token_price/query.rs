@@ -54,11 +54,7 @@ pub struct QueryApiInstance {
 }
 
 impl QueryApiInstance {
-    pub fn new(
-        api_key: &str,
-        base_url: String,
-        timeout_secs: u32,
-    ) -> Result<QueryApiInstance, reqwest::Error> {
+    pub fn new(api_key: &str, base_url: String, timeout_secs: u32) -> Result<QueryApiInstance, reqwest::Error> {
         let mut headers = HeaderMap::new();
         headers.insert("X-CMC_PRO_API_KEY", HeaderValue::from_str(api_key).unwrap());
 
@@ -89,21 +85,11 @@ impl QueryApiInstance {
         Ok(response.data.iter().map(|d| d.id).collect())
     }
 
-    pub async fn get_latest_price(
-        &self,
-        ids: &[u32],
-    ) -> Result<HashMap<u32, f64>, TokenPriceError> {
-        let ids_str = ids
-            .iter()
-            .map(|&id| id.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
+    pub async fn get_latest_price(&self, ids: &[u32]) -> Result<HashMap<u32, f64>, TokenPriceError> {
+        let ids_str = ids.iter().map(|&id| id.to_string()).collect::<Vec<_>>().join(",");
         let response = self
             .client
-            .get(&format!(
-                "{}{}",
-                self.base_url, "/v2/cryptocurrency/quotes/latest"
-            ))
+            .get(&format!("{}{}", self.base_url, "/v2/cryptocurrency/quotes/latest"))
             .query(&[("id", ids_str)])
             .send()
             .await?

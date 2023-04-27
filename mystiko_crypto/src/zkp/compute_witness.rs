@@ -8,10 +8,9 @@ use zokrates_field::Field;
 fn convert_args<T: Field>(abi_spec: &Abi, json_args_str: &str) -> Result<Vec<T>, ZkpError> {
     let signature = abi_spec.signature();
 
-    let args_abi: zokrates_abi::Inputs<T> =
-        zokrates_abi::parse_strict(json_args_str, signature.inputs)
-            .map(zokrates_abi::Inputs::Abi)
-            .map_err(|why| ZkpError::AbiParseError(why.to_string()))?;
+    let args_abi: zokrates_abi::Inputs<T> = zokrates_abi::parse_strict(json_args_str, signature.inputs)
+        .map(zokrates_abi::Inputs::Abi)
+        .map_err(|why| ZkpError::AbiParseError(why.to_string()))?;
 
     Ok(args_abi.encode())
 }
