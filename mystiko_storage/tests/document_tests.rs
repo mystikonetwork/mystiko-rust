@@ -57,6 +57,7 @@ fn test_document_definition() {
 
 #[test]
 fn test_document_deserialize() {
+    #[derive(Debug)]
     struct TestDocumentRawData {
         field3: Option<f64>,
     }

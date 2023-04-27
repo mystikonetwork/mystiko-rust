@@ -16,6 +16,7 @@ use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     pub accounts: AccountCollection<F, R, S>,
     pub chains: ChainCollection<F, R, S>,

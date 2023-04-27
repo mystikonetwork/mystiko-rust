@@ -21,6 +21,7 @@
           "url": "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
         }
       ],
+      "providerType": "failover",
       "signerEndpoint": "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       "depositContracts": [
         {
@@ -189,9 +190,22 @@
           "url": "wss://ws-nd-302-890-317.p2pify.com/430c98aabb1fe49ec6517602e1e40f01"
         }
       ],
+      "providerType": "quorum",
+      "providerQuorumPercentage": 75,
       "signerEndpoint": "https://data-seed-prebsc-2-s2.binance.org:8545",
       "eventFilterSize": 100000,
       "depositContracts": [
+        {
+          "version": 2,
+          "name": "MystikoV2WithLoopERC20",
+          "address": "0xdf5c4c3bceff7deba3e3df89b6b8d0e5a7716ffc",
+          "startBlock": 18751788,
+          "bridgeType": "loop",
+          "poolAddress": "0x222fE48c7E56eD21f468AD1d190Be74E54C38b9F",
+          "minAmount": "100000",
+          "maxAmount": "100000000",
+          "disabled": true
+        },
         {
           "version": 2,
           "name": "MystikoV2WithLoopERC20",

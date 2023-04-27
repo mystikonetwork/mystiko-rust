@@ -2,13 +2,15 @@ use crate::provider::factory::{
     DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions,
 };
 use anyhow::{Error, Result};
+use async_trait::async_trait;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
+#[async_trait]
 pub trait ChainProvidersOptions: Debug {
-    fn providers_options(&self, chain_id: u64) -> Option<ProvidersOptions>;
+    async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>>;
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -29,7 +31,11 @@ impl ProviderPool {
         if let Some(provider) = self.providers.get(&chain_id) {
             return Ok(provider.clone());
         }
-        if let Some(providers_options) = self.chain_providers_options.providers_options(chain_id) {
+        if let Some(providers_options) = self
+            .chain_providers_options
+            .providers_options(chain_id)
+            .await?
+        {
             let provider: Arc<Provider> = Arc::new(
                 self.provider_factory
                     .create_provider(providers_options)

@@ -24,4 +24,6 @@ pub enum MystikoError {
     NoExistingWalletError,
     #[error("no such account where {0:?} = {1:?}")]
     NoSuchAccountError(String, String),
+    #[error("invalid provider url provided: {0:?}")]
+    InvalidProviderUrlError(String),
 }

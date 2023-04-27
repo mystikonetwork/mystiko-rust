@@ -5,6 +5,7 @@ use mystiko_config::raw::create_raw_from_file;
 use mystiko_config::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
 use mystiko_config::wrapper::circuit::CircuitConfig;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
+use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_types::{AssetType, BridgeType, CircuitType, ContractType};
 use num_bigint::BigInt;
 use std::path::PathBuf;
@@ -85,6 +86,52 @@ async fn test_create() {
     );
     assert_eq!(config1.event_filter_size().unwrap(), 1000);
     assert_eq!(config1.indexer_filter_size().unwrap(), 10000);
+}
+
+#[tokio::test]
+async fn test_create_contract_config() {
+    let (_, _, _, _, config) = setup(SetupOptions::default()).await;
+    let config = ContractConfig::Pool(Arc::new(config));
+    config.validate().unwrap();
+    assert_eq!(config.version(), 2);
+    assert_eq!(config.name(), "CommitmentPool");
+    assert_eq!(config.bridge_type(), &BridgeType::Tbridge);
+    assert_eq!(
+        config.address(),
+        "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
+    );
+    assert_eq!(config.contract_type(), &ContractType::Pool);
+    assert!(!config.disabled());
+    assert_eq!(config.start_block(), 1000000);
+    assert!(config.event_filter_size().is_none());
+    assert!(config.indexer_filter_size().is_none());
+    assert_eq!(
+        config.asset().asset_address(),
+        "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"
+    );
+    assert_eq!(
+        config.asset_address().unwrap(),
+        "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"
+    );
+    assert_eq!(config.asset_type(), &AssetType::Erc20);
+    assert_eq!(config.asset_decimals(), 18);
+    assert_eq!(config.asset_symbol(), "MTT");
+    assert_eq!(
+        config.recommended_amounts().unwrap(),
+        vec![
+            BigInt::from_str("1000000000000000000").unwrap(),
+            BigInt::from_str("10000000000000000000").unwrap(),
+        ]
+    );
+    assert_eq!(
+        config.recommended_amounts_number::<u32>().unwrap(),
+        vec![1, 10]
+    );
+    assert_eq!(
+        config.min_rollup_fee().unwrap(),
+        BigInt::from_str("120000000000000000").unwrap()
+    );
+    assert_eq!(config.min_rollup_fee_number::<f64>().unwrap(), 0.12);
 }
 
 #[tokio::test]
