@@ -3,22 +3,28 @@ name = "mystiko_ethers"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 anyhow = { version = "1.0" }
 async-trait = { version = "0.1.64" }
 ethers-core = { version = "2.0.2" }
 ethers-providers = { version = "2.0.2", features = ["ws"] }
+ethers-signers = { version = "2.0.0"}
+ethers-middleware = { version = "2.0.0" }
 futures-core = { version = "0.3.28" }
 lazy_static = { version = "1.4.0" }
 regex = { version = "1.7.1" }
-reqwest = { version = "0.11.14" }
+reqwest = { version = "0.11.14", features = ["json"]}
 serde = { version = "1.0.152" }
-serde_json = { version = "1.0.91" }
+serde_json = { version = "1.0.91", features = ["preserve_order"] }
 thiserror = { version = "1.0", default-features = false }
-tokio = { version = "1.26.0", features = ["time"] }
+ff = { package = "ff_ce", version = "0.11", features = ["derive"] }
 typed-builder = { version = "0.14.0" }
+generic-array = { version = "0.14.6" }
+dotenv = { version = "0.15.0" }
+tokio = { version = "1.26.0", features = ["time"] }
+
+# mystiko
+mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
 
 [dev-dependencies]
 futures-util = { version = "0.3.28", features = ["sink"] }
@@ -26,3 +32,5 @@ mockall = { version = "0.11.4" }
 mockito = { version = "0.32.4" }
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
 tokio-tungstenite = { version = "0.18.0" }
+rand = { version = "0.8.5" }
+httptest= { version = "0.15.4" }

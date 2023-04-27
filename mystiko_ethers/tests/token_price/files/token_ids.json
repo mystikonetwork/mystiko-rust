@@ -1,0 +1,21 @@
+{
+  "data": [
+    {
+      "id": 1027,
+      "rank": 1027,
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "slug": "ethereum",
+      "is_active": 1,
+      "first_historical_data": "2013-04-28T18:47:21.000Z",
+      "last_historical_data": "2020-05-05T20:44:01.000Z",
+      "platform": null
+    }
+  ],
+  "status": {
+    "error_code": 0,
+    "error_message": null,
+    "elapsed": 10,
+    "credit_count": 1
+  }
+}
