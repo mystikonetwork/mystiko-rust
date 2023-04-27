@@ -26,13 +26,21 @@ pub enum BridgeConfig {
 impl BridgeConfig {
     pub fn new(raw: Arc<RawBridgeConfig>) -> Self {
         match raw.as_ref() {
-            RawBridgeConfig::Axelar(axelar_raw) => BridgeConfig::Axelar(AxelarBridgeConfig::new(axelar_raw.clone())),
-            RawBridgeConfig::Celer(celer_raw) => BridgeConfig::Celer(CelerBridgeConfig::new(celer_raw.clone())),
+            RawBridgeConfig::Axelar(axelar_raw) => {
+                BridgeConfig::Axelar(AxelarBridgeConfig::new(axelar_raw.clone()))
+            }
+            RawBridgeConfig::Celer(celer_raw) => {
+                BridgeConfig::Celer(CelerBridgeConfig::new(celer_raw.clone()))
+            }
             RawBridgeConfig::LayerZero(layer_zero_raw) => {
                 BridgeConfig::LayerZero(LayerZeroBridgeConfig::new(layer_zero_raw.clone()))
             }
-            RawBridgeConfig::Poly(poly_raw) => BridgeConfig::Poly(PolyBridgeConfig::new(poly_raw.clone())),
-            RawBridgeConfig::Tbridge(tbridge_raw) => BridgeConfig::TBridge(TBridgeConfig::new(tbridge_raw.clone())),
+            RawBridgeConfig::Poly(poly_raw) => {
+                BridgeConfig::Poly(PolyBridgeConfig::new(poly_raw.clone()))
+            }
+            RawBridgeConfig::Tbridge(tbridge_raw) => {
+                BridgeConfig::TBridge(TBridgeConfig::new(tbridge_raw.clone()))
+            }
         }
     }
 

@@ -21,17 +21,32 @@ fn test_document_definition() {
     assert_eq!(doc.data.field1, "field value");
     assert_eq!(doc.data.field2, 0xbaad);
     assert!(doc.data.field3.is_none());
-    assert_eq!(TestDocumentData::schema().version(), TEST_DOCUMENT_SCHEMA.version());
-    assert_eq!(TestDocumentData::schema().field_names, TEST_DOCUMENT_SCHEMA.field_names);
+    assert_eq!(
+        TestDocumentData::schema().version(),
+        TEST_DOCUMENT_SCHEMA.version()
+    );
+    assert_eq!(
+        TestDocumentData::schema().field_names,
+        TEST_DOCUMENT_SCHEMA.field_names
+    );
     assert_eq!(
         TestDocumentData::schema().collection_name,
         TEST_DOCUMENT_SCHEMA.collection_name
     );
     assert_eq!(doc.field_value_string("id").unwrap(), "1234");
-    assert_eq!(doc.field_value_string("created_at").unwrap(), 0xdead.to_string());
-    assert_eq!(doc.field_value_string("updated_at").unwrap(), 0xbeef.to_string());
+    assert_eq!(
+        doc.field_value_string("created_at").unwrap(),
+        0xdead.to_string()
+    );
+    assert_eq!(
+        doc.field_value_string("updated_at").unwrap(),
+        0xbeef.to_string()
+    );
     assert_eq!(doc.field_value_string("field1").unwrap(), "field value");
-    assert_eq!(doc.field_value_string("field2").unwrap(), 0xbaad.to_string());
+    assert_eq!(
+        doc.field_value_string("field2").unwrap(),
+        0xbaad.to_string()
+    );
     assert!(doc.field_value_string("field3").is_none());
     doc.data.field3 = Some(std::f64::consts::PI);
     assert_eq!(
@@ -76,7 +91,8 @@ fn test_document_deserialize() {
             }
         }
     }
-    let doc1: Document<TestDocumentData> = Document::deserialize(&TestDocumentRawData { field3: None }).unwrap();
+    let doc1: Document<TestDocumentData> =
+        Document::deserialize(&TestDocumentRawData { field3: None }).unwrap();
     assert_eq!(doc1.id, "1234");
     assert_eq!(doc1.created_at, 0xdead);
     assert_eq!(doc1.updated_at, 0xbeef);
@@ -99,7 +115,10 @@ fn test_document_deserialize() {
 
 #[test]
 fn test_field_index() {
-    assert_eq!(Document::<TestDocumentData>::field_index(DOCUMENT_ID_FIELD).unwrap(), 0);
+    assert_eq!(
+        Document::<TestDocumentData>::field_index(DOCUMENT_ID_FIELD).unwrap(),
+        0
+    );
     assert_eq!(
         Document::<TestDocumentData>::field_index(DOCUMENT_CREATED_AT_FIELD).unwrap(),
         1
@@ -108,8 +127,17 @@ fn test_field_index() {
         Document::<TestDocumentData>::field_index(DOCUMENT_UPDATED_AT_FIELD).unwrap(),
         2
     );
-    assert_eq!(Document::<TestDocumentData>::field_index("field1").unwrap(), 3);
-    assert_eq!(Document::<TestDocumentData>::field_index("field2").unwrap(), 4);
-    assert_eq!(Document::<TestDocumentData>::field_index("field3").unwrap(), 5);
+    assert_eq!(
+        Document::<TestDocumentData>::field_index("field1").unwrap(),
+        3
+    );
+    assert_eq!(
+        Document::<TestDocumentData>::field_index("field2").unwrap(),
+        4
+    );
+    assert_eq!(
+        Document::<TestDocumentData>::field_index("field3").unwrap(),
+        5
+    );
     assert!(Document::<TestDocumentData>::field_index("wrong field").is_none());
 }

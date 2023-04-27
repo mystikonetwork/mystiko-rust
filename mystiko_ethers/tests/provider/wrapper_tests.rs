@@ -10,7 +10,10 @@ async fn test_provider_wrapper() {
     };
     let wrapper = ProviderWrapper::new(inner);
     let provider = Provider::new(wrapper);
-    assert_eq!(provider.get_block_number().await.unwrap().as_u64(), 0xdeadbeef);
+    assert_eq!(
+        provider.get_block_number().await.unwrap().as_u64(),
+        0xdeadbeef
+    );
 }
 
 #[tokio::test]
@@ -21,7 +24,10 @@ async fn test_provider_wrapper_with_params() {
     };
     let wrapper = ProviderWrapper::new(inner);
     let provider = Provider::new(wrapper);
-    assert_eq!(provider.get_uncle_count(1224).await.unwrap().as_u64(), 0xdeadbeef);
+    assert_eq!(
+        provider.get_uncle_count(1224).await.unwrap().as_u64(),
+        0xdeadbeef
+    );
 }
 
 #[tokio::test]

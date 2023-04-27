@@ -54,7 +54,10 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> WalletCollection<
         self.collection.update(wallet).await
     }
 
-    pub async fn update_batch(&self, wallets: &Vec<Document<Wallet>>) -> Result<Vec<Document<Wallet>>> {
+    pub async fn update_batch(
+        &self,
+        wallets: &Vec<Document<Wallet>>,
+    ) -> Result<Vec<Document<Wallet>>> {
         self.collection.update_batch(wallets).await
     }
 
@@ -71,7 +74,9 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> WalletCollection<
     }
 
     pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection.delete_by_filter::<Wallet>(Some(filter)).await
+        self.collection
+            .delete_by_filter::<Wallet>(Some(filter))
+            .await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {

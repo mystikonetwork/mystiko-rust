@@ -34,7 +34,11 @@ async fn setup() -> (TypedAccountHandler, TypedWalletHandler, Arc<TypedDatabase>
         )
         .await
         .unwrap();
-    (AccountHandler::new(database.clone()), wallet_handler, database)
+    (
+        AccountHandler::new(database.clone()),
+        wallet_handler,
+        database,
+    )
 }
 
 #[tokio::test]
@@ -52,7 +56,8 @@ async fn test_create_default() {
         account.data.shielded_address,
         ShieldedAddress::from_full_public_key(&full_pk).address()
     );
-    let full_sk_str = decrypt_symmetric(DEFAULT_WALLET_PASSWORD, &account.data.encrypted_secret_key).unwrap();
+    let full_sk_str =
+        decrypt_symmetric(DEFAULT_WALLET_PASSWORD, &account.data.encrypted_secret_key).unwrap();
     let full_sk: FullSk = decode_hex_with_length(&full_sk_str).unwrap();
     assert_eq!(full_pk, full_public_key(&full_sk));
 }
@@ -69,7 +74,10 @@ async fn test_create_with_name() {
     options.name = Some(String::from("Awesome Account 2"));
     let account2 = account_handler.create(&options).await.unwrap();
     assert_eq!(account2.data.name, "Awesome Account 2");
-    assert_ne!(account1.data.shielded_address, account2.data.shielded_address);
+    assert_ne!(
+        account1.data.shielded_address,
+        account2.data.shielded_address
+    );
 }
 
 #[tokio::test]
@@ -104,8 +112,14 @@ async fn test_create_with_secret_key() {
     let account3 = account_handler.create(&options).await.unwrap();
     assert_eq!(account1.id, account2.id);
     assert_ne!(account2.id, account3.id);
-    assert_eq!(account1.data.shielded_address, account2.data.shielded_address);
-    assert_eq!(account2.data.shielded_address, account3.data.shielded_address);
+    assert_eq!(
+        account1.data.shielded_address,
+        account2.data.shielded_address
+    );
+    assert_eq!(
+        account2.data.shielded_address,
+        account3.data.shielded_address
+    );
 }
 
 #[tokio::test]
@@ -155,8 +169,14 @@ async fn test_create_with_same_wallet_mnemonic_phrase() {
     let account4 = account_handler.create(&options).await.unwrap();
     assert_ne!(account1.id, account3.id);
     assert_ne!(account2.id, account4.id);
-    assert_eq!(account1.data.shielded_address, account3.data.shielded_address);
-    assert_eq!(account2.data.shielded_address, account4.data.shielded_address);
+    assert_eq!(
+        account1.data.shielded_address,
+        account3.data.shielded_address
+    );
+    assert_eq!(
+        account2.data.shielded_address,
+        account4.data.shielded_address
+    );
 }
 
 #[tokio::test]
@@ -191,11 +211,23 @@ async fn test_find_by_id() {
         .build();
     let account1 = account_handler.create(&options).await.unwrap();
     let account2 = account_handler.create(&options).await.unwrap();
-    let account3 = account_handler.find_by_id(&account1.id).await.unwrap().unwrap();
+    let account3 = account_handler
+        .find_by_id(&account1.id)
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(account1, account3);
-    let account4 = account_handler.find_by_id(&account2.id).await.unwrap().unwrap();
+    let account4 = account_handler
+        .find_by_id(&account2.id)
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(account2, account4);
-    assert!(account_handler.find_by_id("non_existing_id").await.unwrap().is_none());
+    assert!(account_handler
+        .find_by_id("non_existing_id")
+        .await
+        .unwrap()
+        .is_none());
 }
 
 #[tokio::test]
@@ -372,7 +404,9 @@ async fn test_update_wrong_wallet_password() {
     let update_options = UpdateAccountOptions::builder()
         .wallet_password(String::from("wrong_password"))
         .build();
-    let mut result = account_handler.update_by_id(&account.id, &update_options).await;
+    let mut result = account_handler
+        .update_by_id(&account.id, &update_options)
+        .await;
     assert!(result.is_err());
     result = account_handler
         .update_by_public_key(&account.data.public_key, &update_options)
@@ -390,7 +424,9 @@ async fn test_update_non_existing_account() {
     let update_options = UpdateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
-    let mut result = account_handler.update_by_id("non_existing_id", &update_options).await;
+    let mut result = account_handler
+        .update_by_id("non_existing_id", &update_options)
+        .await;
     assert!(result.is_err());
     result = account_handler
         .update_by_public_key("non_existing_public_key", &update_options)
@@ -439,7 +475,10 @@ async fn test_export_secret_key_wrong_wallet_password() {
 async fn test_export_secret_key_non_existing_account() {
     let (account_handler, _, _) = setup().await;
     let result = account_handler
-        .export_secret_key_by_shielded_address(DEFAULT_WALLET_PASSWORD, "non_existing_shielded_address")
+        .export_secret_key_by_shielded_address(
+            DEFAULT_WALLET_PASSWORD,
+            "non_existing_shielded_address",
+        )
         .await;
     assert!(result.is_err());
 }
@@ -484,6 +523,8 @@ async fn test_update_encryption() {
 #[tokio::test]
 async fn test_update_encryption_wrong_wallet_password() {
     let (account_handler, _, _) = setup().await;
-    let result = account_handler.update_encryption("wrong password", "newP@ssw0rd").await;
+    let result = account_handler
+        .update_encryption("wrong password", "newP@ssw0rd")
+        .await;
     assert!(result.is_err());
 }

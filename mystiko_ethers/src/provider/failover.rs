@@ -70,7 +70,9 @@ impl<T> FailoverProviderBuilder<T> {
 
     pub fn build(self) -> FailoverProvider<T> {
         FailoverProvider {
-            failover_policy: self.failover_policy.unwrap_or(Box::<DefaultFailoverPolicy>::default()),
+            failover_policy: self
+                .failover_policy
+                .unwrap_or(Box::<DefaultFailoverPolicy>::default()),
             providers: self.providers,
         }
     }
@@ -97,7 +99,9 @@ where
             match provider.request(method, json_rpc_params.clone()).await {
                 Ok(resp) => return Ok(serde_json::from_value(resp)?),
                 Err(err) => {
-                    if index < self.providers.len() - 1 && self.failover_policy.should_failover(&err) {
+                    if index < self.providers.len() - 1
+                        && self.failover_policy.should_failover(&err)
+                    {
                         continue;
                     } else {
                         return Err(err);
@@ -105,7 +109,9 @@ where
                 }
             }
         }
-        Err(ProviderError::CustomError(String::from("no available provider")))
+        Err(ProviderError::CustomError(String::from(
+            "no available provider",
+        )))
     }
 }
 

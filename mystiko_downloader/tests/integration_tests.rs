@@ -55,7 +55,10 @@ async fn test_download_skip_cache() {
         skip_cache: true,
         ..DownloadOptions::default()
     };
-    let file_path1 = downloader.download(url, Some(options.clone())).await.unwrap();
+    let file_path1 = downloader
+        .download(url, Some(options.clone()))
+        .await
+        .unwrap();
     let file_path2 = downloader.download(url, Some(options)).await.unwrap();
     path.assert_async().await;
     assert_eq!(file_path1, file_path2);
@@ -190,7 +193,10 @@ async fn test_download_failover() {
         .unwrap();
     path1.assert_async().await;
     path2.assert_async().await;
-    assert_eq!(fs::read_to_string(&file_path).await.unwrap(), "file content");
+    assert_eq!(
+        fs::read_to_string(&file_path).await.unwrap(),
+        "file content"
+    );
 }
 
 #[tokio::test]

@@ -50,17 +50,21 @@ fn test_invalid_type() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config = create_raw_from_file::<RawLayerZeroBridgeConfig>("tests/files/bridge/layer_zero/valid.json")
-        .await
-        .unwrap();
+    let file_config = create_raw_from_file::<RawLayerZeroBridgeConfig>(
+        "tests/files/bridge/layer_zero/valid.json",
+    )
+    .await
+    .unwrap();
     assert_eq!(file_config, default_config());
     assert_eq!(file_config.bridge_type, BridgeType::LayerZero);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config =
-        create_raw_from_file::<RawLayerZeroBridgeConfig>("tests/files/bridge/layer_zero/invalid.json").await;
+    let file_config = create_raw_from_file::<RawLayerZeroBridgeConfig>(
+        "tests/files/bridge/layer_zero/invalid.json",
+    )
+    .await;
     assert!(file_config.is_err());
 }
 

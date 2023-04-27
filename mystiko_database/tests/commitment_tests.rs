@@ -14,7 +14,8 @@ use std::sync::Arc;
 
 async fn create_commitments() -> CommitmentCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let commitments = CommitmentCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
+    let commitments =
+        CommitmentCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
     commitments.migrate().await.unwrap();
     assert!(commitments.collection_exists().await.unwrap());
     commitments
@@ -148,7 +149,10 @@ async fn test_commitments_crud() {
     inserted_commitments[2].data.creation_transaction_hash = Some(String::from(
         "0xdc8208b5670c42266587330a4cfc796fa795830e73e9732da4faa884d77caeec",
     ));
-    found_commitments = commitments.update_batch(&inserted_commitments).await.unwrap();
+    found_commitments = commitments
+        .update_batch(&inserted_commitments)
+        .await
+        .unwrap();
     assert_eq!(found_commitments[0].data, inserted_commitments[0].data);
     assert_eq!(found_commitments[2].data, inserted_commitments[2].data);
 
@@ -162,7 +166,10 @@ async fn test_commitments_crud() {
         .unwrap();
     assert_eq!(commitments.count_all().await.unwrap(), 1);
     // testing delete_by_filter
-    commitments.insert(&inserted_commitments[1].data).await.unwrap();
+    commitments
+        .insert(&inserted_commitments[1].data)
+        .await
+        .unwrap();
     assert_eq!(commitments.count_all().await.unwrap(), 2);
     commitments
         .delete_by_filter(

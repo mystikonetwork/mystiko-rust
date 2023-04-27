@@ -30,7 +30,10 @@ pub struct RawChainConfig {
     #[builder(default = default_asset_decimals())]
     pub asset_decimals: u32,
 
-    #[validate(custom(function = "array_unique"), custom(function = "is_number_string_vec::<true>"))]
+    #[validate(
+        custom(function = "array_unique"),
+        custom(function = "is_number_string_vec::<true>")
+    )]
     #[serde(default)]
     #[builder(default = vec ! [])]
     pub recommended_amounts: Vec<String>,

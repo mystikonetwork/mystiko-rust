@@ -36,13 +36,18 @@ pub mod i_mystiko_loop {
     }
     impl<M> ::core::fmt::Debug for IMystikoLoop<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(IMystikoLoop)).field(&self.address()).finish()
+            f.debug_tuple(stringify!(IMystikoLoop))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> IMystikoLoop<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 IMYSTIKOLOOP_ABI.clone(),
@@ -50,7 +55,10 @@ pub mod i_mystiko_loop {
             ))
         }
         ///Calls the contract's `deposit` (0xf6afe88f) function
-        pub fn deposit(&self, request: DepositRequest) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn deposit(
+            &self,
+            request: DepositRequest,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([246, 175, 232, 143], (request,))
                 .expect("method not found (this should never happen)")
@@ -74,7 +82,10 @@ pub mod i_mystiko_loop {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "deposit", abi = "deposit((uint256,uint256,uint256,uint128,bytes,uint256))")]
+    #[ethcall(
+        name = "deposit",
+        abi = "deposit((uint256,uint256,uint256,uint128,bytes,uint256))"
+    )]
     pub struct DepositCall {
         pub request: DepositRequest,
     }

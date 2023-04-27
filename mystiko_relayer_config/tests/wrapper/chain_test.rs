@@ -32,7 +32,9 @@ async fn test_create_contract() -> ContractConfig {
 
 #[tokio::test]
 async fn test_create() {
-    let raw_config = create_raw_from_file::<RawChainConfig>(VALID_CONFIG_FILE).await.unwrap();
+    let raw_config = create_raw_from_file::<RawChainConfig>(VALID_CONFIG_FILE)
+        .await
+        .unwrap();
     let config = ChainConfig::new(Arc::new(raw_config)).unwrap();
     config.validate().unwrap();
     assert_eq!(config.name(), "Ethereum Goerli");
@@ -43,7 +45,10 @@ async fn test_create() {
         "0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc"
     );
     assert_eq!(config.contracts().len(), 3);
-    assert_eq!(config.transaction_info(), &test_create_transaction_info().await);
+    assert_eq!(
+        config.transaction_info(),
+        &test_create_transaction_info().await
+    );
 
     let contract_option = config.find_contract("ETH");
     assert!(contract_option.is_some());

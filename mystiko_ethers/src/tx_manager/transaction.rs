@@ -110,11 +110,13 @@ impl<'a, P: JsonRpcClient> Tx<'a, P> {
         let typed_tx = match self.is_1559_tx {
             true => {
                 let tx = self.build_1559_tx(&gas_price).await?;
-                TypedTransaction::try_from(tx).expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
+                TypedTransaction::try_from(tx)
+                    .expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
             }
             false => {
                 let tx = self.build_legacy_tx(&gas_price).await?;
-                TypedTransaction::try_from(tx).expect("Failed to convert TransactionRequest to TypedTransaction")
+                TypedTransaction::try_from(tx)
+                    .expect("Failed to convert TransactionRequest to TypedTransaction")
             }
         };
 
@@ -172,16 +174,24 @@ impl<'a, P: JsonRpcClient> Tx<'a, P> {
 
             if let Some(receipt) = receipt {
                 if receipt.status == Some(U64::from(0)) {
-                    return Err(TxManagerError::ConfirmTxError(format!("failed: {:?}", receipt)));
+                    return Err(TxManagerError::ConfirmTxError(format!(
+                        "failed: {:?}",
+                        receipt
+                    )));
                 }
                 return Ok(receipt);
             }
         }
 
-        Err(TxManagerError::ConfirmTxError("reach max confirm count".into()))
+        Err(TxManagerError::ConfirmTxError(
+            "reach max confirm count".into(),
+        ))
     }
 
-    async fn build_legacy_tx(&self, gas_price: &U256) -> Result<TransactionRequest, TxManagerError> {
+    async fn build_legacy_tx(
+        &self,
+        gas_price: &U256,
+    ) -> Result<TransactionRequest, TxManagerError> {
         let curr_nonce = self.get_current_nonce().await?;
 
         Ok(TransactionRequest::new()
@@ -208,7 +218,10 @@ impl<'a, P: JsonRpcClient> Tx<'a, P> {
         Ok(pending_tx.tx_hash())
     }
 
-    async fn build_1559_tx(&self, max_gas_price: &U256) -> Result<Eip1559TransactionRequest, TxManagerError> {
+    async fn build_1559_tx(
+        &self,
+        max_gas_price: &U256,
+    ) -> Result<Eip1559TransactionRequest, TxManagerError> {
         let curr_nonce = self.get_current_nonce().await?;
 
         Ok(Eip1559TransactionRequest::new()

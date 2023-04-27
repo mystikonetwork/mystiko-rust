@@ -8,6 +8,10 @@ pub async fn create_database() -> Database<SqlFormatter, SqliteRawData, SqliteSt
         .is_test(true)
         .try_init();
     let formatter = SqlFormatter {};
-    let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
+    let storage = SqliteStorageBuilder::new()
+        .in_memory()
+        .build()
+        .await
+        .unwrap();
     Database::new(formatter, storage)
 }

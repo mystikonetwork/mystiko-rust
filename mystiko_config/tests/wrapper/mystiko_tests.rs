@@ -10,7 +10,9 @@ const FULL_CONFIG_FILE: &str = "tests/files/mystiko/full.json";
 
 #[tokio::test]
 async fn test_create() {
-    let config = MystikoConfig::from_json_file(VALID_CONFIG_FILE).await.unwrap();
+    let config = MystikoConfig::from_json_file(VALID_CONFIG_FILE)
+        .await
+        .unwrap();
     config.validate().unwrap();
     assert_eq!(config.version(), "0.1.0");
     assert_eq!(config.git_revision().unwrap(), "b6b5b5b");
@@ -51,7 +53,10 @@ async fn test_create() {
     assert_eq!(config.indexer().unwrap().url(), "https://example.com");
     assert_eq!(
         config
-            .transaction_url(5, "0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e")
+            .transaction_url(
+                5,
+                "0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e"
+            )
             .unwrap(),
         "https://goerli.etherscan.io/tx/\
         0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e"
@@ -64,14 +69,21 @@ async fn test_create() {
 async fn test_selectors() {
     let config = MystikoConfig::from_raw(create_raw_config(true).await).unwrap();
     assert_eq!(
-        config.find_default_circuit(&CircuitType::Rollup1).unwrap().name(),
+        config
+            .find_default_circuit(&CircuitType::Rollup1)
+            .unwrap()
+            .name(),
         "zokrates-1.0-rollup1"
     );
     assert!(config.find_circuit("zokrates-2.0-rollup1").is_some());
     assert!(config.find_circuit("zokrates-3.0-rollup1").is_none());
     assert!(config.find_chain(3829375345).is_none());
     assert_eq!(config.find_chain(5).unwrap().name(), "Ethereum Goerli");
-    let mut peer_chain_ids: Vec<u64> = config.find_peer_chains(5).into_iter().map(|c| c.chain_id()).collect();
+    let mut peer_chain_ids: Vec<u64> = config
+        .find_peer_chains(5)
+        .into_iter()
+        .map(|c| c.chain_id())
+        .collect();
     peer_chain_ids.sort();
     assert_eq!(peer_chain_ids, vec![5, 97]);
     assert!(config.find_peer_chains(24355).is_empty());
@@ -248,7 +260,9 @@ async fn test_selectors() {
         pool_contract_address,
         vec!["0xBe2C9c8a00951662dF3a978b25F448968F0595AE"]
     );
-    assert!(config.find_pool_contracts(234234, "MTT", &BridgeType::Celer).is_empty());
+    assert!(config
+        .find_pool_contracts(234234, "MTT", &BridgeType::Celer)
+        .is_empty());
 }
 
 #[tokio::test]
@@ -378,7 +392,10 @@ async fn test_duplicate_default_circuit_type() {
     circuit_config.name = String::from("duplicate default circuit type");
     raw_config.circuits.push(Arc::new(circuit_config));
     assert_eq!(
-        MystikoConfig::from_raw(raw_config).err().unwrap().to_string(),
+        MystikoConfig::from_raw(raw_config)
+            .err()
+            .unwrap()
+            .to_string(),
         "duplicate default circuit config for circuit_type Rollup1"
     );
 }
@@ -390,7 +407,10 @@ async fn test_duplicate_circuit_name() {
     circuit_config.is_default = false;
     raw_config.circuits.push(Arc::new(circuit_config));
     assert_eq!(
-        MystikoConfig::from_raw(raw_config).err().unwrap().to_string(),
+        MystikoConfig::from_raw(raw_config)
+            .err()
+            .unwrap()
+            .to_string(),
         "duplicate circuit config for name zokrates-1.0-rollup1"
     );
 }
@@ -400,7 +420,10 @@ async fn test_validate_non_existing_bridge_config() {
     let mut raw_config = create_raw_config(false).await;
     raw_config.bridges.remove(1);
     assert_eq!(
-        MystikoConfig::from_raw(raw_config).err().unwrap().to_string(),
+        MystikoConfig::from_raw(raw_config)
+            .err()
+            .unwrap()
+            .to_string(),
         "no bridge config for bridge_type Tbridge"
     );
 }
@@ -413,11 +436,18 @@ async fn test_validate_peer_bridge_type_mismatch() {
     let mut pool_contract_config = chain_config.pool_contracts.remove(0).as_ref().clone();
     deposit_contract_config.bridge_type = BridgeType::Axelar;
     pool_contract_config.bridge_type = BridgeType::Axelar;
-    chain_config.deposit_contracts.push(Arc::new(deposit_contract_config));
-    chain_config.pool_contracts.push(Arc::new(pool_contract_config));
+    chain_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
+    chain_config
+        .pool_contracts
+        .push(Arc::new(pool_contract_config));
     raw_config.chains.push(Arc::new(chain_config));
     assert_eq!(
-        MystikoConfig::from_raw(raw_config).err().unwrap().to_string(),
+        MystikoConfig::from_raw(raw_config)
+            .err()
+            .unwrap()
+            .to_string(),
         "mismatched bridge_types Axelar vs Tbridge for peer deposit contract config \
         of chain_id 97 at 0xd791049D0a154bC7860804e1A18ACD148Eb0afD9 \
         for deposit contract config of chain_id 5 \
@@ -431,10 +461,15 @@ async fn test_validate_peer_chain_id_mismatch() {
     let mut chain_config = raw_config.chains.remove(1).as_ref().clone();
     let mut deposit_contract_config = chain_config.deposit_contracts.remove(0).as_ref().clone();
     deposit_contract_config.peer_chain_id = Some(23423);
-    chain_config.deposit_contracts.push(Arc::new(deposit_contract_config));
+    chain_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
     raw_config.chains.push(Arc::new(chain_config));
     assert_eq!(
-        MystikoConfig::from_raw(raw_config).err().unwrap().to_string(),
+        MystikoConfig::from_raw(raw_config)
+            .err()
+            .unwrap()
+            .to_string(),
         "peer_chain_id for peer deposit contract config \
         of chain_id 97 at 0xd791049D0a154bC7860804e1A18ACD148Eb0afD9 should be 5"
     );
@@ -445,11 +480,17 @@ async fn test_validate_peer_contract_address_mismatch() {
     let mut raw_config = create_raw_config(false).await;
     let mut chain_config = raw_config.chains.remove(1).as_ref().clone();
     let mut deposit_contract_config = chain_config.deposit_contracts.remove(0).as_ref().clone();
-    deposit_contract_config.peer_contract_address = Some(String::from("0xdef9507710e6f69352ea9bcc4bb68f45c15550d9"));
-    chain_config.deposit_contracts.push(Arc::new(deposit_contract_config));
+    deposit_contract_config.peer_contract_address =
+        Some(String::from("0xdef9507710e6f69352ea9bcc4bb68f45c15550d9"));
+    chain_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
     raw_config.chains.push(Arc::new(chain_config));
     assert_eq!(
-        MystikoConfig::from_raw(raw_config).err().unwrap().to_string(),
+        MystikoConfig::from_raw(raw_config)
+            .err()
+            .unwrap()
+            .to_string(),
         "peer_contract_address for peer deposit contract config \
         of chain_id 97 at 0xd791049D0a154bC7860804e1A18ACD148Eb0afD9 \
         should be 0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
@@ -463,7 +504,10 @@ async fn validate_missing_peer_contract_config() {
     chain_config.deposit_contracts.remove(0);
     raw_config.chains.push(Arc::new(chain_config));
     assert_eq!(
-        MystikoConfig::from_raw(raw_config).err().unwrap().to_string(),
+        MystikoConfig::from_raw(raw_config)
+            .err()
+            .unwrap()
+            .to_string(),
         "cannot find peer deposit contract config \
         of chain_id 97 at 0xd791049D0a154bC7860804e1A18ACD148Eb0afD9 \
         for deposit contract config of chain_id 5 \
@@ -476,7 +520,10 @@ async fn validate_missing_peer_chain_config() {
     let mut raw_config = create_raw_config(false).await;
     raw_config.chains.remove(1);
     assert_eq!(
-        MystikoConfig::from_raw(raw_config).err().unwrap().to_string(),
+        MystikoConfig::from_raw(raw_config)
+            .err()
+            .unwrap()
+            .to_string(),
         "cannot find chain config of \
         peer_chain_id 97 for deposit contract config \
         at 0x961f315a836542e603a3df2e0dd9d4ecd06ebc67 chain_id 5"

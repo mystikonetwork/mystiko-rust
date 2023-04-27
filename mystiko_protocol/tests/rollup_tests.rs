@@ -72,7 +72,10 @@ async fn test_rollup2() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup4() {
-    let in_initial_elements = (100..=400).step_by(100).map(BigInt::from).collect::<Vec<BigInt>>();
+    let in_initial_elements = (100..=400)
+        .step_by(100)
+        .map(BigInt::from)
+        .collect::<Vec<BigInt>>();
     let new_leaves = (1..=4).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
     let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup4.program.gz"))
@@ -101,7 +104,10 @@ async fn test_rollup4() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup8() {
-    let in_initial_elements = (100..=800).step_by(100).map(BigInt::from).collect::<Vec<BigInt>>();
+    let in_initial_elements = (100..=800)
+        .step_by(100)
+        .map(BigInt::from)
+        .collect::<Vec<BigInt>>();
     let new_leaves = (1..=8).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
     let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup8.program.gz"))
@@ -130,7 +136,10 @@ async fn test_rollup8() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup16() {
-    let in_initial_elements = (100..=1600).step_by(100).map(BigInt::from).collect::<Vec<BigInt>>();
+    let in_initial_elements = (100..=1600)
+        .step_by(100)
+        .map(BigInt::from)
+        .collect::<Vec<BigInt>>();
     let new_leaves = (1..=16).map(BigInt::from).collect::<Vec<BigInt>>();
     let tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
     let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup16.program.gz"))

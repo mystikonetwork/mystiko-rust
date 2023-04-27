@@ -36,13 +36,18 @@ pub mod mystiko_v2_loop {
     }
     impl<M> ::core::fmt::Debug for MystikoV2Loop<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(MystikoV2Loop)).field(&self.address()).finish()
+            f.debug_tuple(stringify!(MystikoV2Loop))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> MystikoV2Loop<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 MYSTIKOV2LOOP_ABI.clone(),
@@ -56,7 +61,9 @@ pub mod mystiko_v2_loop {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `bridgeType` (0x2421e155) function
-        pub fn bridge_type(&self) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
+        pub fn bridge_type(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
             self.0
                 .method_hash([36, 33, 225, 85], ())
                 .expect("method not found (this should never happen)")
@@ -71,7 +78,10 @@ pub mod mystiko_v2_loop {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `deposit` (0xf6afe88f) function
-        pub fn deposit(&self, request: DepositRequest) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn deposit(
+            &self,
+            request: DepositRequest,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([246, 175, 232, 143], (request,))
                 .expect("method not found (this should never happen)")
@@ -97,13 +107,17 @@ pub mod mystiko_v2_loop {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getMaxAmount` (0x0ba95909) function
-        pub fn get_max_amount(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_max_amount(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([11, 169, 89, 9], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getMinAmount` (0xcfc7e2da) function
-        pub fn get_min_amount(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_min_amount(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([207, 199, 226, 218], ())
                 .expect("method not found (this should never happen)")
@@ -121,7 +135,9 @@ pub mod mystiko_v2_loop {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `sanctionsList` (0xec571c6a) function
-        pub fn sanctions_list(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
+        pub fn sanctions_list(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([236, 87, 28, 106], ())
                 .expect("method not found (this should never happen)")
@@ -136,7 +152,10 @@ pub mod mystiko_v2_loop {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setDepositsDisabled` (0xea0cde85) function
-        pub fn set_deposits_disabled(&self, state: bool) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn set_deposits_disabled(
+            &self,
+            state: bool,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([234, 12, 222, 133], state)
                 .expect("method not found (this should never happen)")
@@ -163,36 +182,45 @@ pub mod mystiko_v2_loop {
         ///Gets the contract's `DepositAmountLimits` event
         pub fn deposit_amount_limits_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, DepositAmountLimitsFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, DepositAmountLimitsFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `DepositsDisabled` event
         pub fn deposits_disabled_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, DepositsDisabledFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, DepositsDisabledFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `OperatorChanged` event
         pub fn operator_changed_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `SanctionsCheck` event
         pub fn sanctions_check_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsCheckFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsCheckFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `SanctionsList` event
         pub fn sanctions_list_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsListFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsListFilter>
+        {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, MystikoV2LoopEvents> {
-            self.0.event_with_filter(::core::default::Default::default())
+        pub fn events(
+            &self,
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, MystikoV2LoopEvents>
+        {
+            self.0
+                .event_with_filter(::core::default::Default::default())
         }
     }
     impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for MystikoV2Loop<M> {
@@ -273,7 +301,10 @@ pub mod mystiko_v2_loop {
         Eq,
         Hash,
     )]
-    #[etherror(name = "HashKGreaterThanFieldSize", abi = "HashKGreaterThanFieldSize()")]
+    #[etherror(
+        name = "HashKGreaterThanFieldSize",
+        abi = "HashKGreaterThanFieldSize()"
+    )]
     pub struct HashKGreaterThanFieldSize;
     ///Custom Error type `MinAmountGreaterThanMaxAmount` with signature `MinAmountGreaterThanMaxAmount()` and selector `0xc007d042`
     #[derive(
@@ -288,7 +319,10 @@ pub mod mystiko_v2_loop {
         Eq,
         Hash,
     )]
-    #[etherror(name = "MinAmountGreaterThanMaxAmount", abi = "MinAmountGreaterThanMaxAmount()")]
+    #[etherror(
+        name = "MinAmountGreaterThanMaxAmount",
+        abi = "MinAmountGreaterThanMaxAmount()"
+    )]
     pub struct MinAmountGreaterThanMaxAmount;
     ///Custom Error type `NotChanged` with signature `NotChanged()` and selector `0x36a1c33f`
     #[derive(
@@ -333,7 +367,10 @@ pub mod mystiko_v2_loop {
         Eq,
         Hash,
     )]
-    #[etherror(name = "RandomSGreaterThanFieldSize", abi = "RandomSGreaterThanFieldSize()")]
+    #[etherror(
+        name = "RandomSGreaterThanFieldSize",
+        abi = "RandomSGreaterThanFieldSize()"
+    )]
     pub struct RandomSGreaterThanFieldSize;
     ///Custom Error type `SanctionedAddress` with signature `SanctionedAddress()` and selector `0x2e70c0b1`
     #[derive(
@@ -352,7 +389,14 @@ pub mod mystiko_v2_loop {
     pub struct SanctionedAddress;
     ///Container type for all of the contract's custom errors
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub enum MystikoV2LoopErrors {
         AmountTooLarge(AmountTooLarge),
@@ -370,9 +414,13 @@ pub mod mystiko_v2_loop {
         RevertString(::std::string::String),
     }
     impl ::ethers_core::abi::AbiDecode for MystikoV2LoopErrors {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded) = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::RevertString(decoded));
             }
             if let Ok(decoded) = <AmountTooLarge as ::ethers_core::abi::AbiDecode>::decode(data) {
@@ -381,16 +429,22 @@ pub mod mystiko_v2_loop {
             if let Ok(decoded) = <AmountTooSmall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AmountTooSmall(decoded));
             }
-            if let Ok(decoded) = <CommitmentHashIncorrect as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <CommitmentHashIncorrect as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::CommitmentHashIncorrect(decoded));
             }
             if let Ok(decoded) = <DepositsDisabled as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::DepositsDisabled(decoded));
             }
-            if let Ok(decoded) = <HashKGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <HashKGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::HashKGreaterThanFieldSize(decoded));
             }
-            if let Ok(decoded) = <MinAmountGreaterThanMaxAmount as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <MinAmountGreaterThanMaxAmount as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::MinAmountGreaterThanMaxAmount(decoded));
             }
             if let Ok(decoded) = <NotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
@@ -399,10 +453,13 @@ pub mod mystiko_v2_loop {
             if let Ok(decoded) = <OnlyOperator as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::OnlyOperator(decoded));
             }
-            if let Ok(decoded) = <RandomSGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <RandomSGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::RandomSGreaterThanFieldSize(decoded));
             }
-            if let Ok(decoded) = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SanctionedAddress(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -413,13 +470,21 @@ pub mod mystiko_v2_loop {
             match self {
                 Self::AmountTooLarge(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::AmountTooSmall(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::CommitmentHashIncorrect(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::CommitmentHashIncorrect(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::DepositsDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::HashKGreaterThanFieldSize(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::MinAmountGreaterThanMaxAmount(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::HashKGreaterThanFieldSize(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::MinAmountGreaterThanMaxAmount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::NotChanged(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::OnlyOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RandomSGreaterThanFieldSize(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::RandomSGreaterThanFieldSize(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::SanctionedAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::RevertString(s) => ::ethers_core::abi::AbiEncode::encode(s),
             }
@@ -429,16 +494,41 @@ pub mod mystiko_v2_loop {
         fn valid_selector(selector: [u8; 4]) -> bool {
             match selector {
                 [0x08, 0xc3, 0x79, 0xa0] => true,
-                _ if selector == <AmountTooLarge as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <AmountTooSmall as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <CommitmentHashIncorrect as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <DepositsDisabled as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <HashKGreaterThanFieldSize as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <MinAmountGreaterThanMaxAmount as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <AmountTooLarge as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector == <AmountTooSmall as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <CommitmentHashIncorrect as ::ethers_contract::EthError>::selector() =>
+                {
+                    true
+                }
+                _ if selector == <DepositsDisabled as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <HashKGreaterThanFieldSize as ::ethers_contract::EthError>::selector() =>
+                {
+                    true
+                }
+                _ if selector
+                    == <MinAmountGreaterThanMaxAmount as ::ethers_contract::EthError>::selector(
+                    ) =>
+                {
+                    true
+                }
                 _ if selector == <NotChanged as ::ethers_contract::EthError>::selector() => true,
                 _ if selector == <OnlyOperator as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <RandomSGreaterThanFieldSize as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <SanctionedAddress as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <RandomSGreaterThanFieldSize as ::ethers_contract::EthError>::selector() =>
+                {
+                    true
+                }
+                _ if selector == <SanctionedAddress as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
                 _ => false,
             }
         }
@@ -451,7 +541,9 @@ pub mod mystiko_v2_loop {
                 Self::CommitmentHashIncorrect(element) => ::core::fmt::Display::fmt(element, f),
                 Self::DepositsDisabled(element) => ::core::fmt::Display::fmt(element, f),
                 Self::HashKGreaterThanFieldSize(element) => ::core::fmt::Display::fmt(element, f),
-                Self::MinAmountGreaterThanMaxAmount(element) => ::core::fmt::Display::fmt(element, f),
+                Self::MinAmountGreaterThanMaxAmount(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::NotChanged(element) => ::core::fmt::Display::fmt(element, f),
                 Self::OnlyOperator(element) => ::core::fmt::Display::fmt(element, f),
                 Self::RandomSGreaterThanFieldSize(element) => ::core::fmt::Display::fmt(element, f),
@@ -527,7 +619,10 @@ pub mod mystiko_v2_loop {
         Eq,
         Hash,
     )]
-    #[ethevent(name = "DepositAmountLimits", abi = "DepositAmountLimits(uint256,uint256)")]
+    #[ethevent(
+        name = "DepositAmountLimits",
+        abi = "DepositAmountLimits(uint256,uint256)"
+    )]
     pub struct DepositAmountLimitsFilter {
         pub max_amount: ::ethers_core::types::U256,
         pub min_amount: ::ethers_core::types::U256,
@@ -599,7 +694,14 @@ pub mod mystiko_v2_loop {
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub enum MystikoV2LoopEvents {
         DepositAmountLimitsFilter(DepositAmountLimitsFilter),
@@ -609,7 +711,9 @@ pub mod mystiko_v2_loop {
         SanctionsListFilter(SanctionsListFilter),
     }
     impl ::ethers_contract::EthLogDecode for MystikoV2LoopEvents {
-        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+        fn decode_log(
+            log: &::ethers_core::abi::RawLog,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = DepositAmountLimitsFilter::decode_log(log) {
                 return Ok(MystikoV2LoopEvents::DepositAmountLimitsFilter(decoded));
             }
@@ -724,7 +828,10 @@ pub mod mystiko_v2_loop {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "deposit", abi = "deposit((uint256,uint256,uint256,uint128,bytes,uint256))")]
+    #[ethcall(
+        name = "deposit",
+        abi = "deposit((uint256,uint256,uint256,uint128,bytes,uint256))"
+    )]
     pub struct DepositCall {
         pub request: DepositRequest,
     }
@@ -771,7 +878,10 @@ pub mod mystiko_v2_loop {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "getAssociatedCommitmentPool", abi = "getAssociatedCommitmentPool()")]
+    #[ethcall(
+        name = "getAssociatedCommitmentPool",
+        abi = "getAssociatedCommitmentPool()"
+    )]
     pub struct GetAssociatedCommitmentPoolCall;
     ///Container type for all input parameters for the `getMaxAmount` function with signature `getMaxAmount()` and selector `0x0ba95909`
     #[derive(
@@ -861,7 +971,10 @@ pub mod mystiko_v2_loop {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "setAssociatedCommitmentPool", abi = "setAssociatedCommitmentPool(address)")]
+    #[ethcall(
+        name = "setAssociatedCommitmentPool",
+        abi = "setAssociatedCommitmentPool(address)"
+    )]
     pub struct SetAssociatedCommitmentPoolCall {
         pub commitment_pool_address: ::ethers_core::types::Address,
     }
@@ -916,13 +1029,23 @@ pub mod mystiko_v2_loop {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "updateSanctionsListAddress", abi = "updateSanctionsListAddress(address)")]
+    #[ethcall(
+        name = "updateSanctionsListAddress",
+        abi = "updateSanctionsListAddress(address)"
+    )]
     pub struct UpdateSanctionsListAddressCall {
         pub sanction: ::ethers_core::types::Address,
     }
     ///Container type for all of the contract's call
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub enum MystikoV2LoopCalls {
         AssetType(AssetTypeCall),
@@ -943,7 +1066,9 @@ pub mod mystiko_v2_loop {
         UpdateSanctionsListAddress(UpdateSanctionsListAddressCall),
     }
     impl ::ethers_core::abi::AbiDecode for MystikoV2LoopCalls {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
             if let Ok(decoded) = <AssetTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AssetType(decoded));
@@ -951,19 +1076,26 @@ pub mod mystiko_v2_loop {
             if let Ok(decoded) = <BridgeTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::BridgeType(decoded));
             }
-            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::ChangeOperator(decoded));
             }
             if let Ok(decoded) = <DepositCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Deposit(decoded));
             }
-            if let Ok(decoded) = <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::DisableSanctionsCheck(decoded));
             }
-            if let Ok(decoded) = <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::EnableSanctionsCheck(decoded));
             }
-            if let Ok(decoded) = <GetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <GetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::GetAssociatedCommitmentPool(decoded));
             }
             if let Ok(decoded) = <GetMaxAmountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
@@ -972,25 +1104,37 @@ pub mod mystiko_v2_loop {
             if let Ok(decoded) = <GetMinAmountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetMinAmount(decoded));
             }
-            if let Ok(decoded) = <IsDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <IsDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::IsDepositsDisabled(decoded));
             }
-            if let Ok(decoded) = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SanctionsCheck(decoded));
             }
-            if let Ok(decoded) = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SanctionsList(decoded));
             }
-            if let Ok(decoded) = <SetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <SetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SetAssociatedCommitmentPool(decoded));
             }
-            if let Ok(decoded) = <SetDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <SetDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SetDepositsDisabled(decoded));
             }
-            if let Ok(decoded) = <UpdateDepositAmountLimitsCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <UpdateDepositAmountLimitsCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::UpdateDepositAmountLimits(decoded));
             }
-            if let Ok(decoded) = <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::UpdateSanctionsListAddress(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -1003,18 +1147,32 @@ pub mod mystiko_v2_loop {
                 Self::BridgeType(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::ChangeOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::Deposit(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::DisableSanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::EnableSanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetAssociatedCommitmentPool(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::DisableSanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::EnableSanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetAssociatedCommitmentPool(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::GetMaxAmount(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::GetMinAmount(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::IsDepositsDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::SanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::SanctionsList(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetAssociatedCommitmentPool(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetDepositsDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::UpdateDepositAmountLimits(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::UpdateSanctionsListAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetAssociatedCommitmentPool(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetDepositsDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::UpdateDepositAmountLimits(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::UpdateSanctionsListAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }

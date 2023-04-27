@@ -26,7 +26,9 @@ impl ShieldedAddress {
             return Err(ProtocolError::InvalidShieldedAddress);
         }
 
-        Ok(Self { addr: addr.to_string() })
+        Ok(Self {
+            addr: addr.to_string(),
+        })
     }
 
     pub fn from_full_public_key(full_pk: &FullPk) -> Self {

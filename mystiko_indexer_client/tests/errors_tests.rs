@@ -125,7 +125,10 @@ async fn test_with_content_type_err() {
 async fn test_with_custom_err() {
     let resp = func_with_custom_error(None);
     assert!(resp.is_err());
-    assert_eq!(resp.err(), Some(ClientError::CustomError(String::from("test error"))));
+    assert_eq!(
+        resp.err(),
+        Some(ClientError::CustomError(String::from("test error")))
+    );
     let resp2 = func_with_custom_error(Some(String::from("hello")));
     assert!(resp2.is_ok());
     assert_eq!(resp2.unwrap(), String::from("hello"));
@@ -157,5 +160,8 @@ fn test_with_api_response_error_eq() {
     assert_eq!(resp2.unwrap(), String::from("hello"));
     let resp3 = func_with_api_response_error_eq(None);
     assert!(resp3.is_err());
-    assert_ne!(resp3.err(), Some(ClientError::CustomError(String::from("unknow"))));
+    assert_ne!(
+        resp3.err(),
+        Some(ClientError::CustomError(String::from("unknow")))
+    );
 }

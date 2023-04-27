@@ -54,7 +54,10 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> ChainCollection<F
         self.collection.update(chain).await
     }
 
-    pub async fn update_batch(&self, chains: &Vec<Document<Chain>>) -> Result<Vec<Document<Chain>>> {
+    pub async fn update_batch(
+        &self,
+        chains: &Vec<Document<Chain>>,
+    ) -> Result<Vec<Document<Chain>>> {
         self.collection.update_batch(chains).await
     }
 
@@ -71,7 +74,9 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> ChainCollection<F
     }
 
     pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection.delete_by_filter::<Chain>(Some(filter)).await
+        self.collection
+            .delete_by_filter::<Chain>(Some(filter))
+            .await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {

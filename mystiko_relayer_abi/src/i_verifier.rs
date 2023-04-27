@@ -13,9 +13,10 @@ pub mod i_verifier {
     #[rustfmt::skip]
     const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"struct IVerifier.Proof\",\"name\":\"proof\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"a\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G2Point\",\"name\":\"b\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\",\"components\":[]},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\",\"components\":[]}]},{\"internalType\":\"struct IVerifier.G1Point\",\"name\":\"c\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\",\"components\":[]}]}]},{\"internalType\":\"uint256[]\",\"name\":\"input\",\"type\":\"uint256[]\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"verifyTx\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]";
     ///The parsed JSON ABI of the contract.
-    pub static IVERIFIER_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(|| {
-        ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid")
-    });
+    pub static IVERIFIER_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
+        ::ethers_contract::Lazy::new(|| {
+            ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid")
+        });
     pub struct IVerifier<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for IVerifier<M> {
         fn clone(&self) -> Self {
@@ -35,13 +36,18 @@ pub mod i_verifier {
     }
     impl<M> ::core::fmt::Debug for IVerifier<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(IVerifier)).field(&self.address()).finish()
+            f.debug_tuple(stringify!(IVerifier))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> IVerifier<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 IVERIFIER_ABI.clone(),

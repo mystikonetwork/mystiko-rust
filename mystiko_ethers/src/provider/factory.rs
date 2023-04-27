@@ -5,7 +5,8 @@ use crate::provider::ws::WsWithTimeout;
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_providers::{
-    Http, HttpRateLimitRetryPolicy, Quorum, QuorumProvider, RetryClient, RetryClientBuilder, WeightedProvider,
+    Http, HttpRateLimitRetryPolicy, Quorum, QuorumProvider, RetryClient, RetryClientBuilder,
+    WeightedProvider,
 };
 use lazy_static::lazy_static;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
@@ -46,27 +47,28 @@ impl ProviderFactory for DefaultProviderFactory {
         match providers_options {
             ProvidersOptions::Failover(options) => {
                 let failover_provider = create_raw_failover_provider(options).await?;
-                Ok(ethers_providers::Provider::new(ProviderWrapper::new(Box::new(
-                    failover_provider,
-                ))))
+                Ok(ethers_providers::Provider::new(ProviderWrapper::new(
+                    Box::new(failover_provider),
+                )))
             }
             ProvidersOptions::Quorum(options, quorum_options) => {
-                let quorum_provider = create_raw_quorum_provider(options, Some(quorum_options)).await?;
-                Ok(ethers_providers::Provider::new(ProviderWrapper::new(Box::new(
-                    quorum_provider,
-                ))))
+                let quorum_provider =
+                    create_raw_quorum_provider(options, Some(quorum_options)).await?;
+                Ok(ethers_providers::Provider::new(ProviderWrapper::new(
+                    Box::new(quorum_provider),
+                )))
             }
             ProvidersOptions::Http(options) => {
                 let http_provider = create_raw_http_provider(options)?;
-                Ok(ethers_providers::Provider::new(ProviderWrapper::new(Box::new(
-                    http_provider,
-                ))))
+                Ok(ethers_providers::Provider::new(ProviderWrapper::new(
+                    Box::new(http_provider),
+                )))
             }
             ProvidersOptions::Ws(options) => {
                 let ws_provider = create_raw_ws_provider(options).await?;
-                Ok(ethers_providers::Provider::new(ProviderWrapper::new(Box::new(
-                    ws_provider,
-                ))))
+                Ok(ethers_providers::Provider::new(ProviderWrapper::new(
+                    Box::new(ws_provider),
+                )))
             }
         }
     }
@@ -77,10 +79,12 @@ async fn create_raw_failover_provider(options: Vec<ProviderOptions>) -> Result<F
     for provider_options in options.into_iter() {
         if HTTP_REGEX.is_match(&provider_options.url) {
             let inner_provider = create_raw_http_provider(provider_options)?;
-            failover_provider_builder = failover_provider_builder.add_provider(Box::new(inner_provider));
+            failover_provider_builder =
+                failover_provider_builder.add_provider(Box::new(inner_provider));
         } else if WS_REGEX.is_match(&provider_options.url) {
             let inner_provider = create_raw_ws_provider(provider_options).await?;
-            failover_provider_builder = failover_provider_builder.add_provider(Box::new(inner_provider));
+            failover_provider_builder =
+                failover_provider_builder.add_provider(Box::new(inner_provider));
         }
     }
     Ok(failover_provider_builder.build())
@@ -96,10 +100,16 @@ async fn create_raw_quorum_provider(
         let weight = provider_options.quorum_weight.unwrap_or(1);
         if HTTP_REGEX.is_match(&provider_options.url) {
             let inner_provider = create_raw_http_provider(provider_options)?;
-            builder = builder.add_provider(WeightedProvider::with_weight(Box::new(inner_provider), weight));
+            builder = builder.add_provider(WeightedProvider::with_weight(
+                Box::new(inner_provider),
+                weight,
+            ));
         } else if WS_REGEX.is_match(&provider_options.url) {
             let inner_provider = create_raw_ws_provider(provider_options).await?;
-            builder = builder.add_provider(WeightedProvider::with_weight(Box::new(inner_provider), weight));
+            builder = builder.add_provider(WeightedProvider::with_weight(
+                Box::new(inner_provider),
+                weight,
+            ));
         }
     }
     builder = builder.quorum(quorum_options.quorum.unwrap_or(Quorum::Majority));
@@ -131,7 +141,8 @@ fn create_raw_http_provider(options: ProviderOptions) -> Result<RetryClient<Http
         retry_provider_builder = retry_provider_builder.initial_backoff(initial_backoff);
     }
     if let Some(compute_units_per_second) = options.compute_units_per_second {
-        retry_provider_builder = retry_provider_builder.compute_units_per_second(compute_units_per_second);
+        retry_provider_builder =
+            retry_provider_builder.compute_units_per_second(compute_units_per_second);
     }
     let provider = if let Some(retry_policy) = options.http_retry_policy {
         retry_provider_builder.build(http_provider, retry_policy)

@@ -44,7 +44,10 @@ pub mod i_commitment_pool {
     impl<M: ::ethers_providers::Middleware> ICommitmentPool<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 ICOMMITMENTPOOL_ABI.clone(),
@@ -62,7 +65,10 @@ pub mod i_commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `rollup` (0x14a7737d) function
-        pub fn rollup(&self, request: RollupRequest) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn rollup(
+            &self,
+            request: RollupRequest,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([20, 167, 115, 125], (request,))
                 .expect("method not found (this should never happen)")
@@ -78,7 +84,9 @@ pub mod i_commitment_pool {
                 .expect("method not found (this should never happen)")
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for ICommitmentPool<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+        for ICommitmentPool<M>
+    {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -96,7 +104,10 @@ pub mod i_commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "enqueue", abi = "enqueue((uint256,uint256,uint256,uint256,bytes),address)")]
+    #[ethcall(
+        name = "enqueue",
+        abi = "enqueue((uint256,uint256,uint256,uint256,bytes),address)"
+    )]
     pub struct EnqueueCall {
         pub request: CommitmentRequest,
         pub executor: ::ethers_core::types::Address,
@@ -123,7 +134,11 @@ pub mod i_commitment_pool {
     }
     ///Container type for all input parameters for the `transact` function with signature `transact((((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256[],uint256[],bytes32,uint256,uint256,uint256[],uint256[],address,address,bytes[],uint256,uint256[]),bytes)` and selector `0x72082971`
     #[derive(
-        Clone, ::ethers_contract::EthCall, ::ethers_contract::EthDisplay, serde::Serialize, serde::Deserialize,
+        Clone,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
     )]
     #[ethcall(
         name = "transact",
@@ -141,7 +156,9 @@ pub mod i_commitment_pool {
         Transact(TransactCall),
     }
     impl ::ethers_core::abi::AbiDecode for ICommitmentPoolCalls {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
             if let Ok(decoded) = <EnqueueCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Enqueue(decoded));

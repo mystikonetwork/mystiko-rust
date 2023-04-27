@@ -172,37 +172,51 @@ impl DocumentData for Deposit {
             asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
             asset_address: raw.field_string_value("asset_address")?,
             bridge_type: serde_json::from_str(&raw.field_string_value("bridge_type")?.unwrap())?,
-            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10).unwrap(),
+            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10)
+                .unwrap(),
             rollup_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("rollup_fee_amount")?.unwrap().as_bytes(),
+                raw.field_string_value("rollup_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
                 10,
             )
             .unwrap(),
             bridge_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("bridge_fee_amount")?.unwrap().as_bytes(),
+                raw.field_string_value("bridge_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
                 10,
             )
             .unwrap(),
             bridge_fee_asset_address: raw.field_string_value("bridge_fee_asset_address")?,
             executor_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("executor_fee_amount")?.unwrap().as_bytes(),
+                raw.field_string_value("executor_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
                 10,
             )
             .unwrap(),
             executor_fee_asset_address: raw.field_string_value("executor_fee_asset_address")?,
             service_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("service_fee_amount")?.unwrap().as_bytes(),
+                raw.field_string_value("service_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
                 10,
             )
             .unwrap(),
-            shielded_recipient_address: raw.field_string_value("shielded_recipient_address")?.unwrap(),
+            shielded_recipient_address: raw
+                .field_string_value("shielded_recipient_address")?
+                .unwrap(),
             status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
             error_message: raw.field_string_value("error_message")?,
             wallet_id: raw.field_string_value("wallet_id")?.unwrap(),
             dst_chain_id: raw.field_integer_value::<u64>("dst_chain_id")?.unwrap(),
-            dst_chain_contract_address: raw.field_string_value("dst_chain_contract_address")?.unwrap(),
+            dst_chain_contract_address: raw
+                .field_string_value("dst_chain_contract_address")?
+                .unwrap(),
             dst_pool_address: raw.field_string_value("dst_pool_address")?.unwrap(),
-            asset_approve_transaction_hash: raw.field_string_value("asset_approve_transaction_hash")?,
+            asset_approve_transaction_hash: raw
+                .field_string_value("asset_approve_transaction_hash")?,
             transaction_hash: raw.field_string_value("transaction_hash")?,
             relay_transaction_hash: raw.field_string_value("relay_transaction_hash")?,
             rollup_transaction_hash: raw.field_string_value("rollup_transaction_hash")?,

@@ -14,7 +14,9 @@ fn default_config() -> RawPoolContractConfig {
             .start_block(1000000)
             .pool_name("A Pool(since 07/20/2022)".to_string())
             .bridge_type(BridgeType::Tbridge)
-            .asset_address(Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()))
+            .asset_address(Some(
+                "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
+            ))
             .min_rollup_fee("120000000000000000".to_string())
             .circuits(vec![String::from("circuit-1.0")])
             .build(),
@@ -35,7 +37,9 @@ fn test_default_values() {
         .start_block(1000000)
         .pool_name("A Pool(since 07/20/2022)".to_string())
         .bridge_type(BridgeType::Tbridge)
-        .asset_address(Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()))
+        .asset_address(Some(
+            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
+        ))
         .circuits(vec![String::from("circuit-1.0")])
         .build();
     assert_eq!(raw_config.min_rollup_fee, "0");
@@ -114,16 +118,19 @@ fn test_invalid_circuits() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config = create_raw_from_file::<RawPoolContractConfig>("tests/files/contract/pool/valid.json")
-        .await
-        .unwrap();
+    let file_config =
+        create_raw_from_file::<RawPoolContractConfig>("tests/files/contract/pool/valid.json")
+            .await
+            .unwrap();
     assert_eq!(file_config, default_config());
     assert_eq!(file_config.contract_type, ContractType::Pool);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config = create_raw_from_file::<RawPoolContractConfig>("tests/files/contract/pool/invalid.json").await;
+    let file_config =
+        create_raw_from_file::<RawPoolContractConfig>("tests/files/contract/pool/invalid.json")
+            .await;
     assert!(file_config.is_err());
 }
 

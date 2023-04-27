@@ -33,7 +33,9 @@ fn init_deposit_contract_config() -> RawDepositContractConfig {
         .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
         .disabled(true)
         .peer_chain_id(Some(97))
-        .peer_contract_address(Some("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string()))
+        .peer_contract_address(Some(
+            "0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string(),
+        ))
         .min_amount("10000000000000000".to_string())
         .max_amount("100000000000000000".to_string())
         .min_bridge_fee("20000000000000000".to_string())
@@ -52,7 +54,9 @@ fn init_pool_contract_config() -> RawPoolContractConfig {
             .start_block(1000000)
             .pool_name("A Pool(since 07/20/2022)".to_string())
             .bridge_type(BridgeType::Tbridge)
-            .asset_address(Some(String::from("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")))
+            .asset_address(Some(String::from(
+                "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+            )))
             .min_rollup_fee("40000000000000000".to_string())
             .circuits(vec![String::from("circuit-1.0")])
             .build(),
@@ -282,7 +286,9 @@ fn test_invalid_indexer_filter_size() {
 #[test]
 fn test_invalid_pool_contracts_0() {
     let mut config = default_config();
-    config.pool_contracts.push(Arc::new(init_pool_contract_config()));
+    config
+        .pool_contracts
+        .push(Arc::new(init_pool_contract_config()));
     assert!(config.validate().is_err());
 }
 
@@ -298,7 +304,9 @@ fn test_invalid_pool_contracts_1() {
 #[test]
 fn test_invalid_deposit_contracts() {
     let mut config = default_config();
-    config.deposit_contracts.push(Arc::new(init_deposit_contract_config()));
+    config
+        .deposit_contracts
+        .push(Arc::new(init_deposit_contract_config()));
     assert!(config.validate().is_err());
 }
 
@@ -319,6 +327,7 @@ async fn test_import_valid_json_file() {
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config = create_raw_from_file::<RawChainConfig>("tests/files/chain/invalid.json").await;
+    let file_config =
+        create_raw_from_file::<RawChainConfig>("tests/files/chain/invalid.json").await;
     assert!(file_config.is_err());
 }

@@ -110,7 +110,11 @@ async fn test_contracts_crud() {
         .unwrap();
     assert_eq!(found_contract, inserted_contracts[0]);
     // testing find_by_id
-    found_contract = contracts.find_by_id(&inserted_contracts[1].id).await.unwrap().unwrap();
+    found_contract = contracts
+        .find_by_id(&inserted_contracts[1].id)
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(found_contract, inserted_contracts[1]);
 
     // testing update

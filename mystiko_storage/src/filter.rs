@@ -64,7 +64,8 @@ impl SubFilter {
                 format!("`{}` BETWEEN '{}' AND '{}'", column, values[0], values[1])
             }
             SubFilter::IN(column, values) => {
-                let wrapped_values: Vec<String> = values.iter().map(|v| format!("'{}'", v)).collect();
+                let wrapped_values: Vec<String> =
+                    values.iter().map(|v| format!("'{}'", v)).collect();
                 format!("`{}` IN ({})", column, wrapped_values.join(", "))
             }
         }
@@ -93,8 +94,13 @@ impl Order {
 impl OrderBy {
     pub fn to_sql(&self) -> String {
         if !self.columns.is_empty() {
-            let columns_quote: Vec<String> = self.columns.iter().map(|c| format!("`{}`", c)).collect();
-            format!("ORDER BY {} {}", columns_quote.join(", "), self.order.as_str())
+            let columns_quote: Vec<String> =
+                self.columns.iter().map(|c| format!("`{}`", c)).collect();
+            format!(
+                "ORDER BY {} {}",
+                columns_quote.join(", "),
+                self.order.as_str()
+            )
         } else {
             String::new()
         }

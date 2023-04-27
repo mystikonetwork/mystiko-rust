@@ -31,7 +31,10 @@ async fn test_providers_config() {
             assert_eq!(options[0].timeout_retries, Some(3));
             assert_eq!(options[0].rate_limit_retries, Some(3));
             assert_eq!(options[0].quorum_weight, Some(2));
-            assert_eq!(options[0].request_timeout, Some(Duration::from_millis(20000)));
+            assert_eq!(
+                options[0].request_timeout,
+                Some(Duration::from_millis(20000))
+            );
             assert_eq!(options[1].url, "http://localhost:8546");
             match quorum_options.quorum.unwrap() {
                 Quorum::Percentage(percentage) => assert_eq!(percentage, 75),

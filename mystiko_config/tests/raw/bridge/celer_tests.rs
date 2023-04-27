@@ -7,8 +7,12 @@ use std::hash::{Hash, Hasher};
 use validator::Validate;
 
 fn default_config() -> RawCelerBridgeConfig {
-    create_raw::<RawCelerBridgeConfig>(RawCelerBridgeConfig::builder().name("Celer Bridge".to_string()).build())
-        .unwrap()
+    create_raw::<RawCelerBridgeConfig>(
+        RawCelerBridgeConfig::builder()
+            .name("Celer Bridge".to_string())
+            .build(),
+    )
+    .unwrap()
 }
 
 lazy_static! {
@@ -46,16 +50,18 @@ fn test_invalid_type() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config = create_raw_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer/valid.json")
-        .await
-        .unwrap();
+    let file_config =
+        create_raw_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer/valid.json")
+            .await
+            .unwrap();
     assert_eq!(file_config, default_config());
     assert_eq!(BridgeType::Celer, file_config.bridge_type);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config = create_raw_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer/invalid.json").await;
+    let file_config =
+        create_raw_from_file::<RawCelerBridgeConfig>("tests/files/bridge/celer/invalid.json").await;
     assert!(file_config.is_err());
 }
 

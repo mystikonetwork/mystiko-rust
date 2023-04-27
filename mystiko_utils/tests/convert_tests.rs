@@ -23,9 +23,21 @@ fn test_decimal_to_number() {
 #[test]
 fn test_number_to_decimal() {
     assert!(number_to_decimal(0, None).unwrap().is_zero());
-    assert_eq!(number_to_decimal(2, Some(4)).unwrap().to_i32().unwrap(), 20000);
-    assert_eq!(number_to_decimal(0.1, Some(2)).unwrap().to_i32().unwrap(), 10);
-    assert_eq!(number_to_decimal(0.01, Some(4)).unwrap().to_i32().unwrap(), 100);
-    assert_eq!(number_to_decimal(-0.01, Some(5)).unwrap().to_i32().unwrap(), -1000);
+    assert_eq!(
+        number_to_decimal(2, Some(4)).unwrap().to_i32().unwrap(),
+        20000
+    );
+    assert_eq!(
+        number_to_decimal(0.1, Some(2)).unwrap().to_i32().unwrap(),
+        10
+    );
+    assert_eq!(
+        number_to_decimal(0.01, Some(4)).unwrap().to_i32().unwrap(),
+        100
+    );
+    assert_eq!(
+        number_to_decimal(-0.01, Some(5)).unwrap().to_i32().unwrap(),
+        -1000
+    );
     assert_eq!(number_to_decimal(1e-18, None).unwrap().to_i32().unwrap(), 1);
 }

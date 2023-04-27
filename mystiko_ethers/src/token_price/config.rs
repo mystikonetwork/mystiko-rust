@@ -88,7 +88,9 @@ fn default_market_cap_ids() -> HashMap<String, u32> {
     coin_market_cap_ids
 }
 
-pub async fn read_config_from_file(file_path_str: &str) -> Result<TokenPriceConfig, TokenPriceError> {
+pub async fn read_config_from_file(
+    file_path_str: &str,
+) -> Result<TokenPriceConfig, TokenPriceError> {
     let file = read_file_bytes(file_path_str)
         .await
         .map_err(|why| TokenPriceError::FileError(why.to_string()))?;

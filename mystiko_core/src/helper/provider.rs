@@ -36,7 +36,9 @@ impl ChainProvidersOptions for ProvidersConfig {
                 ProviderType::Failover => Some(ProvidersOptions::Failover(providers_options)),
                 ProviderType::Quorum => {
                     let quorum_options = QuorumProviderOptions::builder()
-                        .quorum(Quorum::Percentage(chain_config.provider_quorum_percentage()))
+                        .quorum(Quorum::Percentage(
+                            chain_config.provider_quorum_percentage(),
+                        ))
                         .build();
                     Some(ProvidersOptions::Quorum(providers_options, quorum_options))
                 }

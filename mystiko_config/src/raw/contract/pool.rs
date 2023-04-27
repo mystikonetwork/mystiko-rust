@@ -1,5 +1,7 @@
 use mystiko_types::{BridgeType, ContractType};
-use mystiko_validator::validate::{is_ethereum_address, is_number_string, string_vec_each_not_empty};
+use mystiko_validator::validate::{
+    is_ethereum_address, is_number_string, string_vec_each_not_empty,
+};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use typed_builder::TypedBuilder;

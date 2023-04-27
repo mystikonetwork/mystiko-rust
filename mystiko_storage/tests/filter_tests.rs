@@ -18,11 +18,18 @@ fn test_sub_filter() {
     assert_eq!(sf7.to_sql(), "`c7` < 'v7'");
     let sf8 = SubFilter::LessEqual(String::from("c8"), String::from("v8"));
     assert_eq!(sf8.to_sql(), "`c8` <= 'v8'");
-    let sf9 = SubFilter::BetweenAnd(String::from("c9"), [String::from("v10"), String::from("v11")]);
+    let sf9 = SubFilter::BetweenAnd(
+        String::from("c9"),
+        [String::from("v10"), String::from("v11")],
+    );
     assert_eq!(sf9.to_sql(), "`c9` BETWEEN 'v10' AND 'v11'");
     let sf10 = SubFilter::IN(
         String::from("c10"),
-        vec![String::from("v12"), String::from("v13"), String::from("v14")],
+        vec![
+            String::from("v12"),
+            String::from("v13"),
+            String::from("v14"),
+        ],
     );
     assert_eq!(sf10.to_sql(), "`c10` IN ('v12', 'v13', 'v14')");
 }
@@ -107,15 +114,24 @@ fn test_query_filter() {
             ),
         ])
         .build();
-    assert_eq!(qf7.to_sql(), "`c7` = 'v7' AND (`c8` IS NOT NULL OR `c9` < 'v9')");
+    assert_eq!(
+        qf7.to_sql(),
+        "`c7` = 'v7' AND (`c8` IS NOT NULL OR `c9` < 'v9')"
+    );
     let qf8 = QueryFilterBuilder::new()
         .filters(vec![
             Condition::OR(
                 SubFilter::Equal(String::from("c10"), String::from("v10")),
-                SubFilter::IN(String::from("c11"), vec![String::from("v11"), String::from("v12")]),
+                SubFilter::IN(
+                    String::from("c11"),
+                    vec![String::from("v11"), String::from("v12")],
+                ),
             ),
             Condition::AND(
-                SubFilter::BetweenAnd(String::from("c12"), [String::from("v13"), String::from("v14")]),
+                SubFilter::BetweenAnd(
+                    String::from("c12"),
+                    [String::from("v13"), String::from("v14")],
+                ),
                 SubFilter::GreaterEqual(String::from("c13"), String::from("v15")),
             ),
         ])

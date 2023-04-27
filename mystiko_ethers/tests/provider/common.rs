@@ -90,7 +90,9 @@ impl MockWebSocketServer {
                             }
                         }
                     } else {
-                        stream.send(Message::Text("No more response".into())).await?;
+                        stream
+                            .send(Message::Text("No more response".into()))
+                            .await?;
                     }
                 }
                 Message::Close(_) => break,

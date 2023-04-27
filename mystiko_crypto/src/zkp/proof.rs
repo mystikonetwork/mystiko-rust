@@ -96,7 +96,8 @@ impl ZKProof {
     pub fn from_json_string(proof: &str) -> Result<Self, ZkpError> {
         let proof_json: serde_json::Value = serde_json::from_str(proof)?;
 
-        let proof: ZKProof = serde_json::from_value(proof_json).map_err(|why| ZkpError::ProofError(why.to_string()))?;
+        let proof: ZKProof = serde_json::from_value(proof_json)
+            .map_err(|why| ZkpError::ProofError(why.to_string()))?;
         Ok(proof)
     }
 
@@ -154,12 +155,16 @@ impl ZKProof {
     fn do_verify(&self, vk: serde_json::Value) -> Result<bool, ZkpError> {
         let vk_curve = vk
             .get("curve")
-            .ok_or_else(|| ZkpError::VKError("Field `curve` not found in verification key".to_string()))?
+            .ok_or_else(|| {
+                ZkpError::VKError("Field `curve` not found in verification key".to_string())
+            })?
             .as_str()
             .ok_or_else(|| ZkpError::VKError("`curve` should be a string".to_string()))?;
         let vk_scheme = vk
             .get("scheme")
-            .ok_or_else(|| ZkpError::VKError("Field `scheme` not found in verification key".to_string()))?
+            .ok_or_else(|| {
+                ZkpError::VKError("Field `scheme` not found in verification key".to_string())
+            })?
             .as_str()
             .ok_or_else(|| ZkpError::VKError("`scheme` should be a string".to_string()))?;
 

@@ -44,7 +44,10 @@ pub mod i_mystiko_bridge {
     impl<M: ::ethers_providers::Middleware> IMystikoBridge<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 IMYSTIKOBRIDGE_ABI.clone(),
@@ -52,7 +55,10 @@ pub mod i_mystiko_bridge {
             ))
         }
         ///Calls the contract's `deposit` (0x9a03636c) function
-        pub fn deposit(&self, request: DepositRequest) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn deposit(
+            &self,
+            request: DepositRequest,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([154, 3, 99, 108], (request,))
                 .expect("method not found (this should never happen)")

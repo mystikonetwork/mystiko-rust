@@ -1,6 +1,8 @@
 use crate::commitment::{EncryptedNote, Note};
 use crate::error::ProtocolError;
-use crate::types::{AuditingPk, AuditingSk, EncPk, EncSk, RandomSk, SigPk, TxAmount, VerifyPk, VerifySk};
+use crate::types::{
+    AuditingPk, AuditingSk, EncPk, EncSk, RandomSk, SigPk, TxAmount, VerifyPk, VerifySk,
+};
 use crate::types::{AUDITING_THRESHOLD, DECRYPTED_NOTE_SIZE, NUM_OF_AUDITORS};
 use crate::utils::{compute_serial_number, compute_sig_pk_hash};
 use anyhow::Result;
@@ -64,14 +66,18 @@ impl Transaction {
         let mut sig_hashes = vec![];
 
         for i in 0..self.num_inputs as usize {
-            let note = decrypt_asymmetric(&self.in_enc_sks[i], self.in_private_notes[i].as_slice())?;
+            let note =
+                decrypt_asymmetric(&self.in_enc_sks[i], self.in_private_notes[i].as_slice())?;
             assert_eq!(note.len(), DECRYPTED_NOTE_SIZE);
             let note = Note::from_vec(note)?;
             in_random_p.push(note.random_p);
             in_random_r.push(note.random_r);
             in_random_s.push(note.random_s);
             in_amount.push(note.amount);
-            serial_numbers.push(compute_serial_number(&self.in_verify_sks[i], &note.random_p));
+            serial_numbers.push(compute_serial_number(
+                &self.in_verify_sks[i],
+                &note.random_p,
+            ));
             sig_hashes.push(compute_sig_pk_hash(&self.sig_pk, &self.in_verify_sks[i]));
         }
 
@@ -116,10 +122,12 @@ impl Transaction {
             let mut encrypted_shares = vec![];
             for j in 0..s_shares.shares.len() {
                 let pk = self.auditor_public_keys[j];
-                let encrypted_share = ecies::encrypt(&s_shares.shares[j].y, &pk, &random_auditing_sk);
+                let encrypted_share =
+                    ecies::encrypt(&s_shares.shares[j].y, &pk, &random_auditing_sk);
                 encrypted_shares.push(encrypted_share.to_string());
             }
-            let encrypted_shares: [String; NUM_OF_AUDITORS as usize] = encrypted_shares.try_into().unwrap();
+            let encrypted_shares: [String; NUM_OF_AUDITORS as usize] =
+                encrypted_shares.try_into().unwrap();
             encrypted_commitment_shares.push(encrypted_shares);
         }
 
@@ -136,8 +144,12 @@ impl Transaction {
         array.push(serde_json::json!(hex::encode(self.sig_pk)));
         array.push(serde_json::json!(self.public_amount.to_string()));
         array.push(serde_json::json!(self.relayer_fee_amount.to_string()));
-        array.push(serde_json::json!(bigint_slice_to_strings(&self.out_commitments)));
-        array.push(serde_json::json!(bigint_slice_to_strings(&self.rollup_fee_amounts)));
+        array.push(serde_json::json!(bigint_slice_to_strings(
+            &self.out_commitments
+        )));
+        array.push(serde_json::json!(bigint_slice_to_strings(
+            &self.rollup_fee_amounts
+        )));
         array.push(serde_json::json!(is_neg(&unpacked_random_auditing_pk.0)));
         array.push(serde_json::json!(BigInt::from_bytes_le(
             Sign::Plus,
@@ -147,7 +159,9 @@ impl Transaction {
         array.push(serde_json::json!(auditor_public_key_x_signs));
         array.push(serde_json::json!(bytes_to_strings(&auditor_public_key_ys)));
         array.push(serde_json::json!(encrypted_commitment_shares));
-        array.push(serde_json::json!(bigint_slice_to_strings(&self.in_commitments)));
+        array.push(serde_json::json!(bigint_slice_to_strings(
+            &self.in_commitments
+        )));
         array.push(serde_json::json!(bigint_slice_to_strings(&in_amount)));
         array.push(serde_json::json!(bytes_to_strings(&in_random_p)));
         array.push(serde_json::json!(bytes_to_strings(&in_random_r)));
@@ -160,7 +174,9 @@ impl Transaction {
             .map(|n| bigint_slice_to_strings(n))
             .collect::<Vec<_>>()));
         array.push(serde_json::json!(in_path_indices));
-        array.push(serde_json::json!(bigint_slice_to_strings(&self.out_amounts)));
+        array.push(serde_json::json!(bigint_slice_to_strings(
+            &self.out_amounts
+        )));
         array.push(serde_json::json!(bytes_to_strings(&self.out_random_ps)));
         array.push(serde_json::json!(bytes_to_strings(&self.out_random_rs)));
         array.push(serde_json::json!(bytes_to_strings(&self.out_random_ss)));

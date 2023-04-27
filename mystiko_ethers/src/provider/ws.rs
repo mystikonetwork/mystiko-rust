@@ -16,7 +16,10 @@ pub struct WsWithTimeout {
 }
 
 impl WsWithTimeout {
-    pub async fn connect(conn: impl Into<ConnectionDetails>, timeout: Option<Duration>) -> Result<Self, WsClientError> {
+    pub async fn connect(
+        conn: impl Into<ConnectionDetails>,
+        timeout: Option<Duration>,
+    ) -> Result<Self, WsClientError> {
         let inner = Ws::connect(conn).await?;
         Ok(Self {
             inner,

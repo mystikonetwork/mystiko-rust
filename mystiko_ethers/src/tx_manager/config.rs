@@ -49,7 +49,12 @@ fn default_confirm_interval_secs() -> u64 {
 }
 
 fn default_force_gas_price_chains() -> Vec<U64> {
-    vec![U64::from(250), U64::from(4002), U64::from(137), U64::from(80001)]
+    vec![
+        U64::from(250),
+        U64::from(4002),
+        U64::from(137),
+        U64::from(80001),
+    ]
 }
 
 pub async fn read_config_from_file(file_path_str: &str) -> Result<TxManagerConfig, TxManagerError> {

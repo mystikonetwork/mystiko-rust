@@ -46,9 +46,15 @@ where
     R: DocumentRawData,
     S: Storage<R>,
 {
-    pub async fn new(database: Database<F, R, S>, options: Option<MystikoOptions>) -> Result<Self, MystikoError> {
+    pub async fn new(
+        database: Database<F, R, S>,
+        options: Option<MystikoOptions>,
+    ) -> Result<Self, MystikoError> {
         let mystiko_options = options.unwrap_or(MystikoOptions::builder().build());
-        database.migrate().await.map_err(MystikoError::DatabaseMigrationError)?;
+        database
+            .migrate()
+            .await
+            .map_err(MystikoError::DatabaseMigrationError)?;
         let db = Arc::new(database);
         let config = create_mystiko_config(&mystiko_options).await?;
         let accounts = AccountHandler::new(db.clone());
@@ -76,7 +82,9 @@ where
     }
 }
 
-async fn create_mystiko_config(mystiko_options: &MystikoOptions) -> Result<Arc<MystikoConfig>, MystikoError> {
+async fn create_mystiko_config(
+    mystiko_options: &MystikoOptions,
+) -> Result<Arc<MystikoConfig>, MystikoError> {
     let config = if let Some(config_file_path) = &mystiko_options.config_file_path {
         MystikoConfig::from_json_file(config_file_path)
             .await
@@ -99,10 +107,14 @@ fn create_provider_pool(
     config: Arc<MystikoConfig>,
     provider_factory: Option<Box<dyn ProviderFactory>>,
 ) -> Arc<RwLock<ProviderPool>> {
-    let chain_config_options: Box<dyn ChainProvidersOptions> = Box::new(ProvidersConfig::new(config));
-    let provider_pool_builder = ProviderPool::builder().chain_providers_options(chain_config_options);
+    let chain_config_options: Box<dyn ChainProvidersOptions> =
+        Box::new(ProvidersConfig::new(config));
+    let provider_pool_builder =
+        ProviderPool::builder().chain_providers_options(chain_config_options);
     let provider_pool = if let Some(provider_factory) = provider_factory {
-        provider_pool_builder.provider_factory(provider_factory).build()
+        provider_pool_builder
+            .provider_factory(provider_factory)
+            .build()
     } else {
         provider_pool_builder.build()
     };

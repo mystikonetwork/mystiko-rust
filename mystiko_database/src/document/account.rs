@@ -71,11 +71,17 @@ impl DocumentData for Account {
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Account {
             name: raw.field_string_value(NAME_FIELD_NAME)?.unwrap(),
-            shielded_address: raw.field_string_value(SHIELDED_ADDRESS_FIELD_NAME)?.unwrap(),
+            shielded_address: raw
+                .field_string_value(SHIELDED_ADDRESS_FIELD_NAME)?
+                .unwrap(),
             public_key: raw.field_string_value(PUBLIC_KEY_FIELD_NAME)?.unwrap(),
-            encrypted_secret_key: raw.field_string_value(ENCRYPTED_SECRET_KEY_FIELD_NAME)?.unwrap(),
+            encrypted_secret_key: raw
+                .field_string_value(ENCRYPTED_SECRET_KEY_FIELD_NAME)?
+                .unwrap(),
             status: serde_json::from_str(&raw.field_string_value(STATUS_FIELD_NAME)?.unwrap())?,
-            scan_size: raw.field_integer_value::<u32>(SCAN_SIZE_FIELD_NAME)?.unwrap(),
+            scan_size: raw
+                .field_integer_value::<u32>(SCAN_SIZE_FIELD_NAME)?
+                .unwrap(),
             wallet_id: raw.field_string_value(WALLET_ID_FIELD_NAME)?.unwrap(),
         })
     }

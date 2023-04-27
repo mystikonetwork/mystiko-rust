@@ -53,7 +53,9 @@ async fn test_deposits_crud() {
                 dst_chain_id: 11,
                 dst_chain_contract_address: String::from("dst_chain_contract_address 1"),
                 dst_pool_address: String::from("dst_pool_address 1"),
-                asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
+                asset_approve_transaction_hash: Some(String::from(
+                    "asset_approve_transaction_hash 1",
+                )),
                 transaction_hash: Some(String::from("transaction_hash 1")),
                 relay_transaction_hash: Some(String::from("relay_transaction_hash 1")),
                 rollup_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
@@ -90,7 +92,9 @@ async fn test_deposits_crud() {
                     dst_chain_id: 22,
                     dst_chain_contract_address: String::from("dst_chain_contract_address 2"),
                     dst_pool_address: String::from("dst_pool_address 2"),
-                    asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 2")),
+                    asset_approve_transaction_hash: Some(String::from(
+                        "asset_approve_transaction_hash 2",
+                    )),
                     transaction_hash: Some(String::from("transaction_hash 2")),
                     relay_transaction_hash: Some(String::from("relay_transaction_hash 2")),
                     rollup_transaction_hash: Some(String::from("rollup_transaction_hash 2")),
@@ -121,7 +125,9 @@ async fn test_deposits_crud() {
                     dst_chain_id: 33,
                     dst_chain_contract_address: String::from("dst_chain_contract_address 3"),
                     dst_pool_address: String::from("dst_pool_address 3"),
-                    asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 3")),
+                    asset_approve_transaction_hash: Some(String::from(
+                        "asset_approve_transaction_hash 3",
+                    )),
                     transaction_hash: Some(String::from("transaction_hash 3")),
                     relay_transaction_hash: Some(String::from("relay_transaction_hash 3")),
                     rollup_transaction_hash: Some(String::from("rollup_transaction_hash 3")),
@@ -175,7 +181,11 @@ async fn test_deposits_crud() {
         .unwrap()
         .unwrap();
     assert_eq!(found_deposit, inserted_deposits[1]);
-    found_deposit = deposits.find_by_id(&inserted_deposits[2].id).await.unwrap().unwrap();
+    found_deposit = deposits
+        .find_by_id(&inserted_deposits[2].id)
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(found_deposit, inserted_deposits[2]);
 
     // testing update/update_batch

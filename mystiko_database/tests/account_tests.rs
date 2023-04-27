@@ -100,7 +100,11 @@ async fn test_accounts_crud() {
         .unwrap()
         .unwrap();
     assert_eq!(found_account, inserted_accounts[1]);
-    found_account = accounts.find_by_id(&inserted_accounts[2].id).await.unwrap().unwrap();
+    found_account = accounts
+        .find_by_id(&inserted_accounts[2].id)
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(found_account, inserted_accounts[2]);
 
     // testing update/update_batch

@@ -126,8 +126,12 @@ impl DocumentData for Transaction {
             "asset_address" => self.asset_address.clone(),
             "proof" => self.proof.clone(),
             "root_hash" => Some(self.root_hash.clone()),
-            "input_commitments" => Some(serde_json::to_string(&self.input_commitments.clone()).unwrap()),
-            "output_commitments" => Some(serde_json::to_string(&self.output_commitments.clone()).unwrap()),
+            "input_commitments" => {
+                Some(serde_json::to_string(&self.input_commitments.clone()).unwrap())
+            }
+            "output_commitments" => {
+                Some(serde_json::to_string(&self.output_commitments.clone()).unwrap())
+            }
             "serial_numbers" => Some(serde_json::to_string(&self.serial_numbers.clone()).unwrap()),
             "signature_public_key" => self.signature_public_key.clone(),
             "signature_public_key_hashes" => {
@@ -142,7 +146,9 @@ impl DocumentData for Transaction {
             "gas_relayer_address" => self.gas_relayer_address.clone(),
             "signature" => self.signature.clone(),
             "random_auditing_public_key" => self.random_auditing_public_key.clone(),
-            "encrypted_auditor_notes" => Some(serde_json::to_string(&self.encrypted_auditor_notes.clone()).unwrap()),
+            "encrypted_auditor_notes" => {
+                Some(serde_json::to_string(&self.encrypted_auditor_notes.clone()).unwrap())
+            }
             "transaction_type" => Some(serde_json::to_string(&self.transaction_type).unwrap()),
             "status" => Some(serde_json::to_string(&self.status).unwrap()),
             "error_message" => self.error_message.clone(),
@@ -161,23 +167,38 @@ impl DocumentData for Transaction {
             asset_address: raw.field_string_value("asset_address")?,
             proof: raw.field_string_value("proof")?,
             root_hash: raw.field_string_value("root_hash")?.unwrap(),
-            input_commitments: serde_json::from_str(&raw.field_string_value("input_commitments")?.unwrap())?,
-            output_commitments: serde_json::from_str(&raw.field_string_value("output_commitments")?.unwrap())?,
-            serial_numbers: serde_json::from_str(&raw.field_string_value("serial_numbers")?.unwrap())?,
+            input_commitments: serde_json::from_str(
+                &raw.field_string_value("input_commitments")?.unwrap(),
+            )?,
+            output_commitments: serde_json::from_str(
+                &raw.field_string_value("output_commitments")?.unwrap(),
+            )?,
+            serial_numbers: serde_json::from_str(
+                &raw.field_string_value("serial_numbers")?.unwrap(),
+            )?,
             signature_public_key: raw.field_string_value("signature_public_key")?,
             signature_public_key_hashes: serde_json::from_str(
-                &raw.field_string_value("signature_public_key_hashes")?.unwrap(),
+                &raw.field_string_value("signature_public_key_hashes")?
+                    .unwrap(),
             )?,
-            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10).unwrap(),
-            public_amount: BigInt::parse_bytes(raw.field_string_value("public_amount")?.unwrap().as_bytes(), 10)
+            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10)
                 .unwrap(),
+            public_amount: BigInt::parse_bytes(
+                raw.field_string_value("public_amount")?.unwrap().as_bytes(),
+                10,
+            )
+            .unwrap(),
             rollup_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("rollup_fee_amount")?.unwrap().as_bytes(),
+                raw.field_string_value("rollup_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
                 10,
             )
             .unwrap(),
             gas_relayer_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("gas_relayer_fee_amount")?.unwrap().as_bytes(),
+                raw.field_string_value("gas_relayer_fee_amount")?
+                    .unwrap()
+                    .as_bytes(),
                 10,
             )
             .unwrap(),
@@ -189,7 +210,9 @@ impl DocumentData for Transaction {
             encrypted_auditor_notes: serde_json::from_str(
                 &raw.field_string_value("encrypted_auditor_notes")?.unwrap(),
             )?,
-            transaction_type: serde_json::from_str(&raw.field_string_value("transaction_type")?.unwrap())?,
+            transaction_type: serde_json::from_str(
+                &raw.field_string_value("transaction_type")?.unwrap(),
+            )?,
             status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
             error_message: Some(raw.field_string_value("error_message")?.unwrap()),
             transaction_hash: Some(raw.field_string_value("transaction_hash")?.unwrap()),

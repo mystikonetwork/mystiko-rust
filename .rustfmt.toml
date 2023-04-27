@@ -7,4 +7,4 @@ reorder_imports = true
 
 # Sets the maximum width of a single line of code.
 # Defaults 100.
-max_width = 120
+max_width = 100

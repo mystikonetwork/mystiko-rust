@@ -2,7 +2,9 @@ extern crate mystiko_crypto;
 extern crate num_bigint;
 
 use mystiko_crypto::constants::FIELD_SIZE;
-use mystiko_crypto::hash::{blake2b_512, checksum, keccak256, poseidon, poseidon_bigint, sha256_mod};
+use mystiko_crypto::hash::{
+    blake2b_512, checksum, keccak256, poseidon, poseidon_bigint, sha256_mod,
+};
 use mystiko_crypto::utils::{random_bigint, random_bytes};
 use num_bigint::BigInt;
 
@@ -10,8 +12,8 @@ use num_bigint::BigInt;
 async fn test_keccak256() {
     let msg = b"mystiko is ansome";
     let expect = [
-        177, 73, 3, 90, 48, 15, 126, 207, 23, 0, 195, 9, 161, 60, 15, 218, 149, 186, 80, 255, 219, 169, 248, 92, 210,
-        82, 54, 254, 36, 133, 94, 49,
+        177, 73, 3, 90, 48, 15, 126, 207, 23, 0, 195, 9, 161, 60, 15, 218, 149, 186, 80, 255, 219,
+        169, 248, 92, 210, 82, 54, 254, 36, 133, 94, 49,
     ];
     let k1 = keccak256(msg);
     assert_eq!(k1, expect);

@@ -44,7 +44,10 @@ pub mod commitment_pool {
     impl<M: ::ethers_providers::Middleware> CommitmentPool<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 COMMITMENTPOOL_ABI.clone(),
@@ -86,7 +89,9 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `auditorCount` (0x115f574c) function
-        pub fn auditor_count(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn auditor_count(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([17, 95, 87, 76], ())
                 .expect("method not found (this should never happen)")
@@ -101,7 +106,10 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `disableRollupVerifier` (0x9b0a6fea) function
-        pub fn disable_rollup_verifier(&self, rollup_size: u32) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn disable_rollup_verifier(
+            &self,
+            rollup_size: u32,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([155, 10, 111, 234], rollup_size)
                 .expect("method not found (this should never happen)")
@@ -146,7 +154,10 @@ pub mod commitment_pool {
             transact_verifier: ::ethers_core::types::Address,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([127, 164, 176, 156], (num_inputs, num_outputs, transact_verifier))
+                .method_hash(
+                    [127, 164, 176, 156],
+                    (num_inputs, num_outputs, transact_verifier),
+                )
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `enqueue` (0x78d60cd7) function
@@ -162,7 +173,8 @@ pub mod commitment_pool {
         ///Calls the contract's `getAllAuditorPublicKeys` (0x63bc7d32) function
         pub fn get_all_auditor_public_keys(
             &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::std::vec::Vec<::ethers_core::types::U256>> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::std::vec::Vec<::ethers_core::types::U256>>
+        {
             self.0
                 .method_hash([99, 188, 125, 50], ())
                 .expect("method not found (this should never happen)")
@@ -185,13 +197,17 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getMinRollupFee` (0xb08892d0) function
-        pub fn get_min_rollup_fee(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_min_rollup_fee(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([176, 136, 146, 208], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getTreeCapacity` (0x484eb652) function
-        pub fn get_tree_capacity(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_tree_capacity(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([72, 78, 182, 82], ())
                 .expect("method not found (this should never happen)")
@@ -215,7 +231,9 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `isRollupWhitelistDisabled` (0xffa89b88) function
-        pub fn is_rollup_whitelist_disabled(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn is_rollup_whitelist_disabled(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([255, 168, 155, 136], ())
                 .expect("method not found (this should never happen)")
@@ -230,7 +248,9 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `isVerifierUpdateDisabled` (0x4eb069f7) function
-        pub fn is_verifier_update_disabled(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn is_verifier_update_disabled(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([78, 176, 105, 247], ())
                 .expect("method not found (this should never happen)")
@@ -254,7 +274,10 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `rollup` (0x14a7737d) function
-        pub fn rollup(&self, request: RollupRequest) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn rollup(
+            &self,
+            request: RollupRequest,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([20, 167, 115, 125], (request,))
                 .expect("method not found (this should never happen)")
@@ -266,7 +289,9 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `sanctionsList` (0xec571c6a) function
-        pub fn sanctions_list(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
+        pub fn sanctions_list(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([236, 87, 28, 106], ())
                 .expect("method not found (this should never happen)")
@@ -281,13 +306,19 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setRollupWhitelistDisabled` (0xf8f05388) function
-        pub fn set_rollup_whitelist_disabled(&self, state: bool) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn set_rollup_whitelist_disabled(
+            &self,
+            state: bool,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([248, 240, 83, 136], state)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setVerifierUpdateDisabled` (0xb3b75631) function
-        pub fn set_verifier_update_disabled(&self, state: bool) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn set_verifier_update_disabled(
+            &self,
+            state: bool,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([179, 183, 86, 49], state)
                 .expect("method not found (this should never happen)")
@@ -324,72 +355,87 @@ pub mod commitment_pool {
         ///Gets the contract's `AuditorPublicKey` event
         pub fn auditor_public_key_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, AuditorPublicKeyFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, AuditorPublicKeyFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `CommitmentIncluded` event
         pub fn commitment_included_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentIncludedFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentIncludedFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `CommitmentQueued` event
         pub fn commitment_queued_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentQueuedFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentQueuedFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `CommitmentSpent` event
         pub fn commitment_spent_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentSpentFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentSpentFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `EncryptedAuditorNote` event
         pub fn encrypted_auditor_note_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, EncryptedAuditorNoteFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, EncryptedAuditorNoteFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `EncryptedAuditorNotes` event
         pub fn encrypted_auditor_notes_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, EncryptedAuditorNotesFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, EncryptedAuditorNotesFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `OperatorChanged` event
         pub fn operator_changed_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `RollupWhitelistDisabled` event
         pub fn rollup_whitelist_disabled_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, RollupWhitelistDisabledFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, RollupWhitelistDisabledFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `SanctionsCheck` event
         pub fn sanctions_check_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsCheckFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsCheckFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `SanctionsList` event
         pub fn sanctions_list_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsListFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsListFilter>
+        {
             self.0.event()
         }
         ///Gets the contract's `VerifierUpdateDisabled` event
         pub fn verifier_update_disabled_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, VerifierUpdateDisabledFilter> {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, VerifierUpdateDisabledFilter>
+        {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentPoolEvents> {
-            self.0.event_with_filter(::core::default::Default::default())
+        pub fn events(
+            &self,
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentPoolEvents>
+        {
+            self.0
+                .event_with_filter(::core::default::Default::default())
         }
     }
     impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for CommitmentPool<M> {
@@ -440,7 +486,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[etherror(name = "AuditorPublicKeyNotChanged", abi = "AuditorPublicKeyNotChanged()")]
+    #[etherror(
+        name = "AuditorPublicKeyNotChanged",
+        abi = "AuditorPublicKeyNotChanged()"
+    )]
     pub struct AuditorPublicKeyNotChanged;
     ///Custom Error type `CommitmentHasBeenSubmitted` with signature `CommitmentHasBeenSubmitted()` and selector `0xe38cd14d`
     #[derive(
@@ -455,7 +504,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[etherror(name = "CommitmentHasBeenSubmitted", abi = "CommitmentHasBeenSubmitted()")]
+    #[etherror(
+        name = "CommitmentHasBeenSubmitted",
+        abi = "CommitmentHasBeenSubmitted()"
+    )]
     pub struct CommitmentHasBeenSubmitted;
     ///Custom Error type `Duplicated` with signature `Duplicated(string)` and selector `0xbee36111`
     #[derive(
@@ -729,11 +781,21 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[etherror(name = "VerifierUpdatesHasBeenDisabled", abi = "VerifierUpdatesHasBeenDisabled()")]
+    #[etherror(
+        name = "VerifierUpdatesHasBeenDisabled",
+        abi = "VerifierUpdatesHasBeenDisabled()"
+    )]
     pub struct VerifierUpdatesHasBeenDisabled;
     ///Container type for all of the contract's custom errors
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub enum CommitmentPoolErrors {
         AuditorIndexError(AuditorIndexError),
@@ -763,21 +825,32 @@ pub mod commitment_pool {
         RevertString(::std::string::String),
     }
     impl ::ethers_core::abi::AbiDecode for CommitmentPoolErrors {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded) = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::RevertString(decoded));
             }
-            if let Ok(decoded) = <AuditorIndexError as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AuditorIndexError as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::AuditorIndexError(decoded));
             }
-            if let Ok(decoded) = <AuditorNotesLengthError as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <AuditorNotesLengthError as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::AuditorNotesLengthError(decoded));
             }
-            if let Ok(decoded) = <AuditorPublicKeyNotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <AuditorPublicKeyNotChanged as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::AuditorPublicKeyNotChanged(decoded));
             }
-            if let Ok(decoded) = <CommitmentHasBeenSubmitted as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <CommitmentHasBeenSubmitted as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::CommitmentHasBeenSubmitted(decoded));
             }
             if let Ok(decoded) = <Duplicated as ::ethers_core::abi::AbiDecode>::decode(data) {
@@ -789,7 +862,9 @@ pub mod commitment_pool {
             if let Ok(decoded) = <Invalid as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Invalid(decoded));
             }
-            if let Ok(decoded) = <NewRootIsDuplicated as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <NewRootIsDuplicated as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::NewRootIsDuplicated(decoded));
             }
             if let Ok(decoded) = <NotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
@@ -798,40 +873,57 @@ pub mod commitment_pool {
             if let Ok(decoded) = <NoteHasBeenSpent as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::NoteHasBeenSpent(decoded));
             }
-            if let Ok(decoded) = <NumInputsGreaterThanZero as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <NumInputsGreaterThanZero as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::NumInputsGreaterThanZero(decoded));
             }
             if let Ok(decoded) = <OnlyOperator as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::OnlyOperator(decoded));
             }
-            if let Ok(decoded) = <OnlyWhitelistedRoller as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <OnlyWhitelistedRoller as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::OnlyWhitelistedRoller(decoded));
             }
-            if let Ok(decoded) = <OnlyWhitelistedSender as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <OnlyWhitelistedSender as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::OnlyWhitelistedSender(decoded));
             }
-            if let Ok(decoded) = <OutputNotesLessThanThree as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <OutputNotesLessThanThree as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::OutputNotesLessThanThree(decoded));
             }
             if let Ok(decoded) = <RollupFeeToFew as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RollupFeeToFew(decoded));
             }
-            if let Ok(decoded) = <RollupSizeNotPowerOfTwo as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <RollupSizeNotPowerOfTwo as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::RollupSizeNotPowerOfTwo(decoded));
             }
-            if let Ok(decoded) = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SanctionedAddress(decoded));
             }
-            if let Ok(decoded) = <TreeHeightLessThanZero as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <TreeHeightLessThanZero as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::TreeHeightLessThanZero(decoded));
             }
-            if let Ok(decoded) = <TreeHeightOutOfBounds as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <TreeHeightOutOfBounds as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::TreeHeightOutOfBounds(decoded));
             }
             if let Ok(decoded) = <TreeIsFull as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::TreeIsFull(decoded));
             }
-            if let Ok(decoded) = <VerifierUpdatesHasBeenDisabled as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <VerifierUpdatesHasBeenDisabled as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::VerifierUpdatesHasBeenDisabled(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -841,27 +933,51 @@ pub mod commitment_pool {
         fn encode(self) -> ::std::vec::Vec<u8> {
             match self {
                 Self::AuditorIndexError(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AuditorNotesLengthError(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AuditorPublicKeyNotChanged(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::CommitmentHasBeenSubmitted(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AuditorNotesLengthError(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AuditorPublicKeyNotChanged(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::CommitmentHasBeenSubmitted(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::Duplicated(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::IndexOutOfBound(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::Invalid(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::NewRootIsDuplicated(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::NewRootIsDuplicated(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::NotChanged(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::NoteHasBeenSpent(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::NumInputsGreaterThanZero(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::NumInputsGreaterThanZero(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::OnlyOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::OnlyWhitelistedRoller(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::OnlyWhitelistedSender(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::OutputNotesLessThanThree(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::OnlyWhitelistedRoller(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::OnlyWhitelistedSender(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::OutputNotesLessThanThree(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::RollupFeeToFew(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RollupSizeNotPowerOfTwo(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::RollupSizeNotPowerOfTwo(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::SanctionedAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::TreeHeightLessThanZero(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::TreeHeightOutOfBounds(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::TreeHeightLessThanZero(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TreeHeightOutOfBounds(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::TreeIsFull(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::VerifierUpdatesHasBeenDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::VerifierUpdatesHasBeenDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::RevertString(s) => ::ethers_core::abi::AbiEncode::encode(s),
             }
         }
@@ -920,7 +1036,9 @@ pub mod commitment_pool {
                 Self::TreeHeightLessThanZero(element) => ::core::fmt::Display::fmt(element, f),
                 Self::TreeHeightOutOfBounds(element) => ::core::fmt::Display::fmt(element, f),
                 Self::TreeIsFull(element) => ::core::fmt::Display::fmt(element, f),
-                Self::VerifierUpdatesHasBeenDisabled(element) => ::core::fmt::Display::fmt(element, f),
+                Self::VerifierUpdatesHasBeenDisabled(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::RevertString(s) => ::core::fmt::Display::fmt(s, f),
             }
         }
@@ -1087,7 +1205,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethevent(name = "CommitmentQueued", abi = "CommitmentQueued(uint256,uint256,uint256,bytes)")]
+    #[ethevent(
+        name = "CommitmentQueued",
+        abi = "CommitmentQueued(uint256,uint256,uint256,bytes)"
+    )]
     pub struct CommitmentQueuedFilter {
         #[ethevent(indexed)]
         pub commitment: ::ethers_core::types::U256,
@@ -1126,7 +1247,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethevent(name = "EncryptedAuditorNote", abi = "EncryptedAuditorNote(uint64,uint256,uint256)")]
+    #[ethevent(
+        name = "EncryptedAuditorNote",
+        abi = "EncryptedAuditorNote(uint64,uint256,uint256)"
+    )]
     pub struct EncryptedAuditorNoteFilter {
         pub id: u64,
         pub auditor_public_key: ::ethers_core::types::U256,
@@ -1180,7 +1304,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethevent(name = "RollupWhitelistDisabled", abi = "RollupWhitelistDisabled(bool)")]
+    #[ethevent(
+        name = "RollupWhitelistDisabled",
+        abi = "RollupWhitelistDisabled(bool)"
+    )]
     pub struct RollupWhitelistDisabledFilter {
         pub state: bool,
     }
@@ -1234,7 +1361,14 @@ pub mod commitment_pool {
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub enum CommitmentPoolEvents {
         AuditorPublicKeyFilter(AuditorPublicKeyFilter),
@@ -1250,7 +1384,9 @@ pub mod commitment_pool {
         VerifierUpdateDisabledFilter(VerifierUpdateDisabledFilter),
     }
     impl ::ethers_contract::EthLogDecode for CommitmentPoolEvents {
-        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+        fn decode_log(
+            log: &::ethers_core::abi::RawLog,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = AuditorPublicKeyFilter::decode_log(log) {
                 return Ok(CommitmentPoolEvents::AuditorPublicKeyFilter(decoded));
             }
@@ -1297,10 +1433,14 @@ pub mod commitment_pool {
                 Self::EncryptedAuditorNoteFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::EncryptedAuditorNotesFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::OperatorChangedFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::RollupWhitelistDisabledFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RollupWhitelistDisabledFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::SanctionsCheckFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SanctionsListFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::VerifierUpdateDisabledFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::VerifierUpdateDisabledFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
             }
         }
     }
@@ -1503,7 +1643,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "disableTransactVerifier", abi = "disableTransactVerifier(uint32,uint32)")]
+    #[ethcall(
+        name = "disableTransactVerifier",
+        abi = "disableTransactVerifier(uint32,uint32)"
+    )]
     pub struct DisableTransactVerifierCall {
         pub num_inputs: u32,
         pub num_outputs: u32,
@@ -1521,7 +1664,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "enableRollupVerifier", abi = "enableRollupVerifier(uint32,address)")]
+    #[ethcall(
+        name = "enableRollupVerifier",
+        abi = "enableRollupVerifier(uint32,address)"
+    )]
     pub struct EnableRollupVerifierCall {
         pub rollup_size: u32,
         pub rollup_verifier: ::ethers_core::types::Address,
@@ -1576,7 +1722,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "enqueue", abi = "enqueue((uint256,uint256,uint256,uint256,bytes),address)")]
+    #[ethcall(
+        name = "enqueue",
+        abi = "enqueue((uint256,uint256,uint256,uint256,bytes),address)"
+    )]
     pub struct EnqueueCall {
         pub request: CommitmentRequest,
         pub executor: ::ethers_core::types::Address,
@@ -1626,7 +1775,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "getCommitmentIncludedCount", abi = "getCommitmentIncludedCount()")]
+    #[ethcall(
+        name = "getCommitmentIncludedCount",
+        abi = "getCommitmentIncludedCount()"
+    )]
     pub struct GetCommitmentIncludedCountCall;
     ///Container type for all input parameters for the `getMinRollupFee` function with signature `getMinRollupFee()` and selector `0xb08892d0`
     #[derive(
@@ -1705,7 +1857,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "isRollupWhitelistDisabled", abi = "isRollupWhitelistDisabled()")]
+    #[ethcall(
+        name = "isRollupWhitelistDisabled",
+        abi = "isRollupWhitelistDisabled()"
+    )]
     pub struct IsRollupWhitelistDisabledCall;
     ///Container type for all input parameters for the `isSpentSerialNumber` function with signature `isSpentSerialNumber(uint256)` and selector `0x3bb8d1b4`
     #[derive(
@@ -1752,7 +1907,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "removeEnqueueWhitelist", abi = "removeEnqueueWhitelist(address)")]
+    #[ethcall(
+        name = "removeEnqueueWhitelist",
+        abi = "removeEnqueueWhitelist(address)"
+    )]
     pub struct RemoveEnqueueWhitelistCall {
         pub actor: ::ethers_core::types::Address,
     }
@@ -1853,7 +2011,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "setRollupWhitelistDisabled", abi = "setRollupWhitelistDisabled(bool)")]
+    #[ethcall(
+        name = "setRollupWhitelistDisabled",
+        abi = "setRollupWhitelistDisabled(bool)"
+    )]
     pub struct SetRollupWhitelistDisabledCall {
         pub state: bool,
     }
@@ -1870,13 +2031,20 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "setVerifierUpdateDisabled", abi = "setVerifierUpdateDisabled(bool)")]
+    #[ethcall(
+        name = "setVerifierUpdateDisabled",
+        abi = "setVerifierUpdateDisabled(bool)"
+    )]
     pub struct SetVerifierUpdateDisabledCall {
         pub state: bool,
     }
     ///Container type for all input parameters for the `transact` function with signature `transact((((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256[],uint256[],bytes32,uint256,uint256,uint256[],uint256[],address,address,bytes[],uint256,uint256[]),bytes)` and selector `0x72082971`
     #[derive(
-        Clone, ::ethers_contract::EthCall, ::ethers_contract::EthDisplay, serde::Serialize, serde::Deserialize,
+        Clone,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
     )]
     #[ethcall(
         name = "transact",
@@ -1899,7 +2067,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "updateAuditorPublicKey", abi = "updateAuditorPublicKey(uint256,uint256)")]
+    #[ethcall(
+        name = "updateAuditorPublicKey",
+        abi = "updateAuditorPublicKey(uint256,uint256)"
+    )]
     pub struct UpdateAuditorPublicKeyCall {
         pub index: ::ethers_core::types::U256,
         pub public_key: ::ethers_core::types::U256,
@@ -1917,7 +2088,10 @@ pub mod commitment_pool {
         Eq,
         Hash,
     )]
-    #[ethcall(name = "updateSanctionsListAddress", abi = "updateSanctionsListAddress(address)")]
+    #[ethcall(
+        name = "updateSanctionsListAddress",
+        abi = "updateSanctionsListAddress(address)"
+    )]
     pub struct UpdateSanctionsListAddressCall {
         pub sanction: ::ethers_core::types::Address,
     }
@@ -1960,15 +2134,21 @@ pub mod commitment_pool {
         UpdateSanctionsListAddress(UpdateSanctionsListAddressCall),
     }
     impl ::ethers_core::abi::AbiDecode for CommitmentPoolCalls {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
             if let Ok(decoded) = <PathIndicesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PathIndices(decoded));
             }
-            if let Ok(decoded) = <AddEnqueueWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <AddEnqueueWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::AddEnqueueWhitelist(decoded));
             }
-            if let Ok(decoded) = <AddRollupWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <AddRollupWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::AddRollupWhitelist(decoded));
             }
             if let Ok(decoded) = <AssetTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
@@ -1977,91 +2157,138 @@ pub mod commitment_pool {
             if let Ok(decoded) = <AuditorCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AuditorCount(decoded));
             }
-            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::ChangeOperator(decoded));
             }
-            if let Ok(decoded) = <DisableRollupVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <DisableRollupVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::DisableRollupVerifier(decoded));
             }
-            if let Ok(decoded) = <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::DisableSanctionsCheck(decoded));
             }
-            if let Ok(decoded) = <DisableTransactVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <DisableTransactVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::DisableTransactVerifier(decoded));
             }
-            if let Ok(decoded) = <EnableRollupVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <EnableRollupVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::EnableRollupVerifier(decoded));
             }
-            if let Ok(decoded) = <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::EnableSanctionsCheck(decoded));
             }
-            if let Ok(decoded) = <EnableTransactVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <EnableTransactVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::EnableTransactVerifier(decoded));
             }
             if let Ok(decoded) = <EnqueueCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Enqueue(decoded));
             }
-            if let Ok(decoded) = <GetAllAuditorPublicKeysCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <GetAllAuditorPublicKeysCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::GetAllAuditorPublicKeys(decoded));
             }
-            if let Ok(decoded) = <GetAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <GetAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::GetAuditorPublicKey(decoded));
             }
-            if let Ok(decoded) = <GetCommitmentIncludedCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <GetCommitmentIncludedCountCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::GetCommitmentIncludedCount(decoded));
             }
-            if let Ok(decoded) = <GetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <GetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::GetMinRollupFee(decoded));
             }
-            if let Ok(decoded) = <GetTreeCapacityCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <GetTreeCapacityCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::GetTreeCapacity(decoded));
             }
-            if let Ok(decoded) = <IsHistoricCommitmentCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <IsHistoricCommitmentCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::IsHistoricCommitment(decoded));
             }
             if let Ok(decoded) = <IsKnownRootCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IsKnownRoot(decoded));
             }
-            if let Ok(decoded) = <IsRollupWhitelistDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <IsRollupWhitelistDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::IsRollupWhitelistDisabled(decoded));
             }
-            if let Ok(decoded) = <IsSpentSerialNumberCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <IsSpentSerialNumberCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::IsSpentSerialNumber(decoded));
             }
-            if let Ok(decoded) = <IsVerifierUpdateDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <IsVerifierUpdateDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::IsVerifierUpdateDisabled(decoded));
             }
-            if let Ok(decoded) = <RemoveEnqueueWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <RemoveEnqueueWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::RemoveEnqueueWhitelist(decoded));
             }
-            if let Ok(decoded) = <RemoveRollupWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <RemoveRollupWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::RemoveRollupWhitelist(decoded));
             }
             if let Ok(decoded) = <RollupCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Rollup(decoded));
             }
-            if let Ok(decoded) = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SanctionsCheck(decoded));
             }
-            if let Ok(decoded) = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SanctionsList(decoded));
             }
-            if let Ok(decoded) = <SetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <SetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SetMinRollupFee(decoded));
             }
-            if let Ok(decoded) = <SetRollupWhitelistDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <SetRollupWhitelistDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SetRollupWhitelistDisabled(decoded));
             }
-            if let Ok(decoded) = <SetVerifierUpdateDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <SetVerifierUpdateDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::SetVerifierUpdateDisabled(decoded));
             }
             if let Ok(decoded) = <TransactCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Transact(decoded));
             }
-            if let Ok(decoded) = <UpdateAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <UpdateAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::UpdateAuditorPublicKey(decoded));
             }
-            if let Ok(decoded) = <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::UpdateSanctionsListAddress(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -2071,39 +2298,79 @@ pub mod commitment_pool {
         fn encode(self) -> Vec<u8> {
             match self {
                 Self::PathIndices(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AddEnqueueWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AddEnqueueWhitelist(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::AddRollupWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::AssetType(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::AuditorCount(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::ChangeOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::DisableRollupVerifier(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::DisableSanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::DisableTransactVerifier(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::EnableRollupVerifier(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::EnableSanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::EnableTransactVerifier(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::DisableRollupVerifier(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::DisableSanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::DisableTransactVerifier(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::EnableRollupVerifier(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::EnableSanctionsCheck(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::EnableTransactVerifier(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::Enqueue(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetAllAuditorPublicKeys(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetAuditorPublicKey(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetCommitmentIncludedCount(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetAllAuditorPublicKeys(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetAuditorPublicKey(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetCommitmentIncludedCount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::GetMinRollupFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::GetTreeCapacity(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsHistoricCommitment(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::IsHistoricCommitment(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::IsKnownRoot(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsRollupWhitelistDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsSpentSerialNumber(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsVerifierUpdateDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RemoveEnqueueWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RemoveRollupWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::IsRollupWhitelistDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsSpentSerialNumber(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsVerifierUpdateDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RemoveEnqueueWhitelist(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RemoveRollupWhitelist(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::Rollup(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::SanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::SanctionsList(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::SetMinRollupFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetRollupWhitelistDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetVerifierUpdateDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetRollupWhitelistDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetVerifierUpdateDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::Transact(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::UpdateAuditorPublicKey(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::UpdateSanctionsListAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::UpdateAuditorPublicKey(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::UpdateSanctionsListAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }

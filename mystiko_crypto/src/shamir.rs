@@ -120,7 +120,13 @@ fn sum(values: &[BigInt]) -> BigInt {
 fn lagrange_interpolate(x: &BigInt, points: &[Point], prime: &BigInt) -> BigInt {
     let k = points.len();
     let mut hashset = HashSet::new();
-    assert_eq!(k, points.iter().filter(|p| hashset.insert(p.x.clone())).count());
+    assert_eq!(
+        k,
+        points
+            .iter()
+            .filter(|p| hashset.insert(p.x.clone()))
+            .count()
+    );
 
     let mut nums: Vec<BigInt> = vec![];
     let mut dens: Vec<BigInt> = vec![];
@@ -143,7 +149,10 @@ fn lagrange_interpolate(x: &BigInt, points: &[Point], prime: &BigInt) -> BigInt 
     let den = batch_mul(&dens);
     let mut num_values: Vec<BigInt> = vec![];
     for i in 0..k {
-        let num = mod_floor(&(nums[i].clone() * den.clone() * points[i].y.clone()), prime);
+        let num = mod_floor(
+            &(nums[i].clone() * den.clone() * points[i].y.clone()),
+            prime,
+        );
         num_values.push(div_mod(&num, &dens[i], prime));
     }
     let num = sum(num_values.as_slice());

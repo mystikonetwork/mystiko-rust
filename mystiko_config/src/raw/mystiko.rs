@@ -19,15 +19,24 @@ pub struct RawMystikoConfig {
     #[serde(default)]
     pub git_revision: Option<String>,
 
-    #[validate(custom(function = "array_unique"), custom(function = "validate_nested_vec"))]
+    #[validate(
+        custom(function = "array_unique"),
+        custom(function = "validate_nested_vec")
+    )]
     #[serde(default)]
     pub chains: Vec<Arc<RawChainConfig>>,
 
-    #[validate(custom(function = "array_unique"), custom(function = "validate_nested_vec"))]
+    #[validate(
+        custom(function = "array_unique"),
+        custom(function = "validate_nested_vec")
+    )]
     #[serde(default)]
     pub bridges: Vec<Arc<RawBridgeConfig>>,
 
-    #[validate(custom(function = "array_unique"), custom(function = "validate_nested_vec"))]
+    #[validate(
+        custom(function = "array_unique"),
+        custom(function = "validate_nested_vec")
+    )]
     #[serde(default)]
     pub circuits: Vec<Arc<RawCircuitConfig>>,
 
@@ -35,7 +44,10 @@ pub struct RawMystikoConfig {
     #[serde(default)]
     pub indexer: Option<Arc<RawIndexerConfig>>,
 
-    #[validate(custom(function = "array_unique"), custom(function = "string_vec_each_not_empty"))]
+    #[validate(
+        custom(function = "array_unique"),
+        custom(function = "string_vec_each_not_empty")
+    )]
     #[serde(default)]
     pub country_blacklist: Vec<String>,
 }

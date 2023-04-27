@@ -1,4 +1,6 @@
-use crate::constants::{ECIES_IV_LENGTH, ECIES_KEY_LENGTH, ECIES_MAGIC_DATA, KDF_MAGIC_DATA_LENGTH, KDF_SALT_LENGTH};
+use crate::constants::{
+    ECIES_IV_LENGTH, ECIES_KEY_LENGTH, ECIES_MAGIC_DATA, KDF_MAGIC_DATA_LENGTH, KDF_SALT_LENGTH,
+};
 use crate::error::CryptoError;
 use crate::utils::random_bytes;
 use aes::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
@@ -10,7 +12,8 @@ pub fn encrypt_str(password: &str, plain_text: &str) -> Result<String, CryptoErr
     let salt = random_bytes(KDF_SALT_LENGTH);
     let (key, iv) = password_to_key(password.as_bytes(), salt.as_slice());
     let cipher_text = encrypt(&iv, &key, plain_text.as_bytes());
-    let full_encrypted_data = stringify_cipher_data_with_salt(cipher_text.as_slice(), salt.as_slice());
+    let full_encrypted_data =
+        stringify_cipher_data_with_salt(cipher_text.as_slice(), salt.as_slice());
     Ok(general_purpose::STANDARD.encode(full_encrypted_data))
 }
 
@@ -21,7 +24,8 @@ pub fn decrypt_str(password: &str, cipher_data: &str) -> Result<String, CryptoEr
     let (salt, cipher_text) = parse_salt_from_cipher_data(cipher_data_raw.as_slice());
     let (key, iv) = password_to_key(password.as_bytes(), salt.as_slice());
     let decrypted_data = decrypt(iv.as_slice(), key.as_slice(), cipher_text.as_slice())?;
-    let text = String::from_utf8(decrypted_data).map_err(|why| CryptoError::DecryptError(why.to_string()))?;
+    let text = String::from_utf8(decrypted_data)
+        .map_err(|why| CryptoError::DecryptError(why.to_string()))?;
     Ok(text)
 }
 

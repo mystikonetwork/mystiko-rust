@@ -13,9 +13,10 @@ pub mod erc20 {
     #[rustfmt::skip]
     const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name_\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol_\",\"type\":\"string\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"Approval\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"Transfer\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"subtractedValue\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"decreaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"addedValue\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"increaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]";
     ///The parsed JSON ABI of the contract.
-    pub static ERC20_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(|| {
-        ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid")
-    });
+    pub static ERC20_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
+        ::ethers_contract::Lazy::new(|| {
+            ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid")
+        });
     #[rustfmt::skip]
     const __BYTECODE: &[u8] = &[
         96,
@@ -3035,7 +3036,8 @@ pub mod erc20 {
         51,
     ];
     ///The bytecode of the contract.
-    pub static ERC20_BYTECODE: ::ethers_core::types::Bytes = ::ethers_core::types::Bytes::from_static(__BYTECODE);
+    pub static ERC20_BYTECODE: ::ethers_core::types::Bytes =
+        ::ethers_core::types::Bytes::from_static(__BYTECODE);
     #[rustfmt::skip]
     const __DEPLOYED_BYTECODE: &[u8] = &[
         96,
@@ -5418,13 +5420,18 @@ pub mod erc20 {
     }
     impl<M> ::core::fmt::Debug for ERC20<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(ERC20)).field(&self.address()).finish()
+            f.debug_tuple(stringify!(ERC20))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> ERC20<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 ERC20_ABI.clone(),
@@ -5461,8 +5468,11 @@ pub mod erc20 {
             ::ethers_contract::builders::ContractDeployer<M, Self>,
             ::ethers_contract::ContractError<M>,
         > {
-            let factory =
-                ::ethers_contract::ContractFactory::new(ERC20_ABI.clone(), ERC20_BYTECODE.clone().into(), client);
+            let factory = ::ethers_contract::ContractFactory::new(
+                ERC20_ABI.clone(),
+                ERC20_BYTECODE.clone().into(),
+                client,
+            );
             let deployer = factory.deploy(constructor_args)?;
             let deployer = ::ethers_contract::ContractDeployer::new(deployer);
             Ok(deployer)
@@ -5529,13 +5539,17 @@ pub mod erc20 {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `symbol` (0x95d89b41) function
-        pub fn symbol(&self) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
+        pub fn symbol(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
             self.0
                 .method_hash([149, 216, 155, 65], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `totalSupply` (0x18160ddd) function
-        pub fn total_supply(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn total_supply(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([24, 22, 13, 221], ())
                 .expect("method not found (this should never happen)")
@@ -5562,16 +5576,23 @@ pub mod erc20 {
                 .expect("method not found (this should never happen)")
         }
         ///Gets the contract's `Approval` event
-        pub fn approval_filter(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, ApprovalFilter> {
+        pub fn approval_filter(
+            &self,
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, ApprovalFilter> {
             self.0.event()
         }
         ///Gets the contract's `Transfer` event
-        pub fn transfer_filter(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, TransferFilter> {
+        pub fn transfer_filter(
+            &self,
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, TransferFilter> {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, ERC20Events> {
-            self.0.event_with_filter(::core::default::Default::default())
+        pub fn events(
+            &self,
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, ERC20Events> {
+            self.0
+                .event_with_filter(::core::default::Default::default())
         }
     }
     impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for ERC20<M> {
@@ -5621,14 +5642,23 @@ pub mod erc20 {
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub enum ERC20Events {
         ApprovalFilter(ApprovalFilter),
         TransferFilter(TransferFilter),
     }
     impl ::ethers_contract::EthLogDecode for ERC20Events {
-        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+        fn decode_log(
+            log: &::ethers_core::abi::RawLog,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = ApprovalFilter::decode_log(log) {
                 return Ok(ERC20Events::ApprovalFilter(decoded));
             }
@@ -5844,7 +5874,14 @@ pub mod erc20 {
     }
     ///Container type for all of the contract's call
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
     )]
     pub enum ERC20Calls {
         Allowance(AllowanceCall),
@@ -5860,7 +5897,9 @@ pub mod erc20 {
         TransferFrom(TransferFromCall),
     }
     impl ::ethers_core::abi::AbiDecode for ERC20Calls {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
             if let Ok(decoded) = <AllowanceCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Allowance(decoded));
@@ -5874,10 +5913,14 @@ pub mod erc20 {
             if let Ok(decoded) = <DecimalsCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Decimals(decoded));
             }
-            if let Ok(decoded) = <DecreaseAllowanceCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <DecreaseAllowanceCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::DecreaseAllowance(decoded));
             }
-            if let Ok(decoded) = <IncreaseAllowanceCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) =
+                <IncreaseAllowanceCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::IncreaseAllowance(decoded));
             }
             if let Ok(decoded) = <NameCall as ::ethers_core::abi::AbiDecode>::decode(data) {

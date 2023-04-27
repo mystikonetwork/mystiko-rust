@@ -9,9 +9,11 @@ use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigInt;
 use std::sync::Arc;
 
-async fn create_transactions() -> TransactionCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
+async fn create_transactions() -> TransactionCollection<SqlFormatter, SqliteRawData, SqliteStorage>
+{
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let transactions = TransactionCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
+    let transactions =
+        TransactionCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
     transactions.migrate().await.unwrap();
     assert!(transactions.collection_exists().await.unwrap());
     transactions
@@ -37,7 +39,10 @@ async fn test_transactions_crud() {
                 output_commitments: Some(vec![String::from("oc1"), String::from("oc2")]),
                 serial_numbers: Some(vec![String::from("sn1"), String::from("sn2")]),
                 signature_public_key: Some(String::from("signature_public_key 1")),
-                signature_public_key_hashes: Some(vec![String::from("spkh1"), String::from("spkh2")]),
+                signature_public_key_hashes: Some(vec![
+                    String::from("spkh1"),
+                    String::from("spkh2"),
+                ]),
                 amount: BigInt::from(101),
                 public_amount: BigInt::from(102),
                 rollup_fee_amount: BigInt::from(103),
@@ -181,20 +186,29 @@ async fn test_transactions_crud() {
     inserted_transactions[0].data.asset_decimals = 11;
     inserted_transactions[1].data.asset_decimals = 22;
     inserted_transactions[2].data.asset_decimals = 33;
-    found_transactions = transactions.update_batch(&inserted_transactions).await.unwrap();
+    found_transactions = transactions
+        .update_batch(&inserted_transactions)
+        .await
+        .unwrap();
     assert_eq!(found_transactions[0].data, inserted_transactions[0].data);
     assert_eq!(found_transactions[1].data, inserted_transactions[1].data);
     assert_eq!(found_transactions[2].data, inserted_transactions[2].data);
 
     // testing delete/delete_batch/delete_by_filter/delete_all
-    transactions.delete(&inserted_transactions[0]).await.unwrap();
+    transactions
+        .delete(&inserted_transactions[0])
+        .await
+        .unwrap();
     assert_eq!(transactions.count_all().await.unwrap(), 2);
     transactions
         .delete_batch(&vec![inserted_transactions[1].clone()])
         .await
         .unwrap();
     assert_eq!(transactions.count_all().await.unwrap(), 1);
-    transactions.insert(&inserted_transactions[0].data).await.unwrap();
+    transactions
+        .insert(&inserted_transactions[0].data)
+        .await
+        .unwrap();
     assert_eq!(transactions.count_all().await.unwrap(), 2);
     transactions
         .delete_by_filter(

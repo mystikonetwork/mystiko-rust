@@ -32,18 +32,27 @@ async fn test_create() {
         ]
     );
     assert_eq!(
-        config.main_asset().recommended_amounts_number::<u32>().unwrap(),
+        config
+            .main_asset()
+            .recommended_amounts_number::<u32>()
+            .unwrap(),
         vec![1, 10]
     );
     assert_eq!(config.asset_symbol(), config.main_asset().asset_symbol());
-    assert_eq!(config.asset_decimals(), config.main_asset().asset_decimals());
+    assert_eq!(
+        config.asset_decimals(),
+        config.main_asset().asset_decimals()
+    );
     assert_eq!(
         config.recommended_amounts().unwrap(),
         config.main_asset().recommended_amounts().unwrap()
     );
     assert_eq!(
         config.recommended_amounts_number::<u32>().unwrap(),
-        config.main_asset().recommended_amounts_number::<u32>().unwrap()
+        config
+            .main_asset()
+            .recommended_amounts_number::<u32>()
+            .unwrap()
     );
     assert_eq!(config.explorer_url(), "https://goerli.etherscan.io");
     assert_eq!(config.explorer_prefix(), "/tx/%tx%");
@@ -73,13 +82,22 @@ async fn test_create() {
     let provider = *config.providers().get(0).unwrap();
     let pool_contract = *config.pool_contracts().get(0).unwrap();
     let deposit_contract = *config.deposit_contracts_with_disabled().get(0).unwrap();
-    assert_eq!(asset.asset_address(), "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a");
+    assert_eq!(
+        asset.asset_address(),
+        "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"
+    );
     assert_eq!(
         provider.url(),
         "wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161"
     );
-    assert_eq!(pool_contract.address(), "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d");
-    assert_eq!(deposit_contract.address(), "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
+    assert_eq!(
+        pool_contract.address(),
+        "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
+    );
+    assert_eq!(
+        deposit_contract.address(),
+        "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
+    );
 }
 
 #[tokio::test]
@@ -109,14 +127,18 @@ async fn test_selectors() {
             &BridgeType::Tbridge
         ]
     );
-    let deposit_contract1 = config.find_deposit_contract(5, "ETH", &BridgeType::Loop).unwrap();
+    let deposit_contract1 = config
+        .find_deposit_contract(5, "ETH", &BridgeType::Loop)
+        .unwrap();
     assert_eq!(
         deposit_contract1.address(),
         "0x390d485f4d43212d4ae8cdd967a711514ed5a54f"
     );
     let deposit_contract2 = config.find_deposit_contract(5, "MTT", &BridgeType::Loop);
     assert!(deposit_contract2.is_none());
-    let deposit_contract3 = config.find_deposit_contract(97, "MTT", &BridgeType::Axelar).unwrap();
+    let deposit_contract3 = config
+        .find_deposit_contract(97, "MTT", &BridgeType::Axelar)
+        .unwrap();
     assert_eq!(
         deposit_contract3.address(),
         "0xF0850b2a2EC6e9E214D077658A95c4745a8B8aAf"
@@ -132,8 +154,14 @@ async fn test_selectors() {
     assert_eq!(pool_contracts.len(), 2);
     let pool_contract1 = *pool_contracts.get(0).unwrap();
     let pool_contract2 = *pool_contracts.get(1).unwrap();
-    assert_eq!(pool_contract1.address(), "0x9b42ec45f6fb6c7d252c66741e960585888de7b6");
-    assert_eq!(pool_contract2.address(), "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d");
+    assert_eq!(
+        pool_contract1.address(),
+        "0x9b42ec45f6fb6c7d252c66741e960585888de7b6"
+    );
+    assert_eq!(
+        pool_contract2.address(),
+        "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
+    );
     assert_eq!(
         config
             .find_pool_contract("MTT", &BridgeType::Tbridge, 1)
@@ -141,7 +169,9 @@ async fn test_selectors() {
             .address(),
         "0x9b42ec45f6fb6c7d252c66741e960585888de7b6"
     );
-    assert!(config.find_pool_contract("MTT", &BridgeType::Tbridge, 3).is_none());
+    assert!(config
+        .find_pool_contract("MTT", &BridgeType::Tbridge, 3)
+        .is_none());
     assert!(config
         .find_pool_contract_by_address("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")
         .is_none());
@@ -227,11 +257,15 @@ async fn test_validate_invalid_peer_chain_id() {
 
 #[tokio::test]
 async fn test_missing_bridge_asset_config() {
-    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) = setup(SetupOptions::default()).await;
+    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) =
+        setup(SetupOptions::default()).await;
     let mut new_raw_config = raw_config.as_ref().clone();
     let mut deposit_contract_config = new_raw_config.deposit_contracts.remove(0).as_ref().clone();
-    deposit_contract_config.bridge_fee_asset_address = Some(String::from("0xe688b84b23f322a994a53dbf8e15fa82cdb71127"));
-    new_raw_config.deposit_contracts.push(Arc::new(deposit_contract_config));
+    deposit_contract_config.bridge_fee_asset_address =
+        Some(String::from("0xe688b84b23f322a994a53dbf8e15fa82cdb71127"));
+    new_raw_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
     assert_eq!(
         ChainConfig::new(
             Arc::new(new_raw_config),
@@ -247,12 +281,15 @@ async fn test_missing_bridge_asset_config() {
 
 #[tokio::test]
 async fn test_missing_executor_asset_config() {
-    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) = setup(SetupOptions::default()).await;
+    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) =
+        setup(SetupOptions::default()).await;
     let mut new_raw_config = raw_config.as_ref().clone();
     let mut deposit_contract_config = new_raw_config.deposit_contracts.remove(0).as_ref().clone();
     deposit_contract_config.executor_fee_asset_address =
         Some(String::from("0xe688b84b23f322a994a53dbf8e15fa82cdb71127"));
-    new_raw_config.deposit_contracts.push(Arc::new(deposit_contract_config));
+    new_raw_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
     assert_eq!(
         ChainConfig::new(
             Arc::new(new_raw_config),
@@ -268,11 +305,15 @@ async fn test_missing_executor_asset_config() {
 
 #[tokio::test]
 async fn test_missing_pool_contract_config() {
-    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) = setup(SetupOptions::default()).await;
+    let (default_circuit_configs, circuit_configs_by_name, raw_config, _) =
+        setup(SetupOptions::default()).await;
     let mut new_raw_config = raw_config.as_ref().clone();
     let mut deposit_contract_config = new_raw_config.deposit_contracts.remove(0).as_ref().clone();
-    deposit_contract_config.pool_address = String::from("0xe688b84b23f322a994a53dbf8e15fa82cdb71127");
-    new_raw_config.deposit_contracts.push(Arc::new(deposit_contract_config));
+    deposit_contract_config.pool_address =
+        String::from("0xe688b84b23f322a994a53dbf8e15fa82cdb71127");
+    new_raw_config
+        .deposit_contracts
+        .push(Arc::new(deposit_contract_config));
     assert_eq!(
         ChainConfig::new(
             Arc::new(new_raw_config),
@@ -302,9 +343,13 @@ async fn setup(
     ChainConfig,
 ) {
     let mut raw_config = if options.full_config {
-        create_raw_from_file::<RawChainConfig>(FULL_CONFIG_FILE).await.unwrap()
+        create_raw_from_file::<RawChainConfig>(FULL_CONFIG_FILE)
+            .await
+            .unwrap()
     } else {
-        create_raw_from_file::<RawChainConfig>(VALID_CONFIG_FILE).await.unwrap()
+        create_raw_from_file::<RawChainConfig>(VALID_CONFIG_FILE)
+            .await
+            .unwrap()
     };
     if options.duplicate_pool_contract_version {
         let mut raw_pool_contract = raw_config.pool_contracts.get(0).unwrap().as_ref().clone();
@@ -314,7 +359,9 @@ async fn setup(
     if options.invalid_peer_chain_id {
         let mut raw_deposit_contract = raw_config.deposit_contracts.remove(0).as_ref().clone();
         raw_deposit_contract.peer_chain_id = Some(5);
-        raw_config.deposit_contracts.push(Arc::new(raw_deposit_contract));
+        raw_config
+            .deposit_contracts
+            .push(Arc::new(raw_deposit_contract));
     }
     let raw_config_arc = Arc::new(raw_config);
     let raw_circuit_configs: Vec<Arc<CircuitConfig>> = create_raw_circuit_configs()

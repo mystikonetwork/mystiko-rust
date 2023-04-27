@@ -39,7 +39,8 @@ fn load_api_key_from_env() -> Result<String, TokenPriceError> {
 impl TokenPrice {
     pub fn new(cfg: TokenPriceConfig) -> Result<Self, TokenPriceError> {
         let api_key = load_api_key_from_env()?;
-        let instance = QueryApiInstance::new(&api_key, cfg.base_url.clone(), cfg.query_timeout_secs)?;
+        let instance =
+            QueryApiInstance::new(&api_key, cfg.base_url.clone(), cfg.query_timeout_secs)?;
         Ok(TokenPrice {
             ids: cfg.ids(),
             record_time: instant_init(cfg.price_cache_ttl),
@@ -101,6 +102,11 @@ impl TokenPrice {
             .coin_market_cap_ids
             .get(symbol)
             .ok_or(TokenPriceError::TokenNotSupport)
-            .and_then(|id| self.prices.get(id).copied().ok_or(TokenPriceError::InternalError))
+            .and_then(|id| {
+                self.prices
+                    .get(id)
+                    .copied()
+                    .ok_or(TokenPriceError::InternalError)
+            })
     }
 }

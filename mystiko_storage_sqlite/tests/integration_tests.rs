@@ -11,14 +11,21 @@ use tempfile::tempdir;
 
 #[tokio::test]
 async fn test_collection_exists() {
-    let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
+    let storage = SqliteStorageBuilder::new()
+        .in_memory()
+        .build()
+        .await
+        .unwrap();
     let mut collection = Collection::new(SqlFormatter {}, storage);
     assert!(!collection
         .mut_storage()
         .collection_exists(TestDocumentData::schema().collection_name)
         .await
         .unwrap());
-    collection.migrate(TestDocumentData::schema()).await.unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
     assert!(collection
         .mut_storage()
         .collection_exists(TestDocumentData::schema().collection_name)
@@ -30,7 +37,10 @@ async fn test_collection_exists() {
 async fn test_insert() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
     let collection = Collection::new(SqlFormatter {}, storage);
-    collection.migrate(TestDocumentData::schema()).await.unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
     let d1 = collection
         .insert(&TestDocumentData {
             field1: String::from("field1 value"),
@@ -56,7 +66,10 @@ async fn test_insert() {
 async fn test_update() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
     let collection = Collection::new(SqlFormatter {}, storage);
-    collection.migrate(TestDocumentData::schema()).await.unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
     let mut d1 = collection
         .insert(&TestDocumentData {
             field1: String::from("field1 value"),
@@ -79,7 +92,10 @@ async fn test_update() {
 async fn test_delete() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
     let collection = Collection::new(SqlFormatter {}, storage);
-    collection.migrate(TestDocumentData::schema()).await.unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
     let d1 = collection
         .insert(&TestDocumentData {
             field1: String::from("field1 value1"),
@@ -97,7 +113,10 @@ async fn test_delete() {
         .await
         .unwrap();
     collection.delete(&d1).await.unwrap();
-    let d3 = collection.find_by_id::<TestDocumentData>(&d1.id).await.unwrap();
+    let d3 = collection
+        .find_by_id::<TestDocumentData>(&d1.id)
+        .await
+        .unwrap();
     assert!(d3.is_none());
     collection
         .delete_by_filter::<TestDocumentData>(Some(
@@ -110,7 +129,10 @@ async fn test_delete() {
         ))
         .await
         .unwrap();
-    let d4 = collection.find_by_id::<TestDocumentData>(&d2.id).await.unwrap();
+    let d4 = collection
+        .find_by_id::<TestDocumentData>(&d2.id)
+        .await
+        .unwrap();
     assert!(d4.is_none());
 }
 
@@ -118,7 +140,10 @@ async fn test_delete() {
 async fn test_find() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
     let collection = Collection::new(SqlFormatter {}, storage);
-    collection.migrate(TestDocumentData::schema()).await.unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
     let docs = collection
         .insert_batch(&vec![
             TestDocumentData {
@@ -155,7 +180,10 @@ async fn test_find() {
             .unwrap(),
         1
     );
-    let d2 = collection.find::<TestDocumentData>(Some(filter1)).await.unwrap();
+    let d2 = collection
+        .find::<TestDocumentData>(Some(filter1))
+        .await
+        .unwrap();
     assert_eq!(d2.len(), 1);
     assert_eq!(d2[0].id, docs[1].id);
     let filter2 = QueryFilterBuilder::new()
@@ -163,7 +191,10 @@ async fn test_find() {
         .limit(2)
         .order_by(vec![String::from("field1")], Order::DESC)
         .build();
-    let d3 = collection.find::<TestDocumentData>(Some(filter2)).await.unwrap();
+    let d3 = collection
+        .find::<TestDocumentData>(Some(filter2))
+        .await
+        .unwrap();
     assert_eq!(d3.len(), 2);
     assert_eq!(d3[0].id, docs[1].id);
     assert_eq!(d3[1].id, docs[0].id);
@@ -179,6 +210,9 @@ async fn test_file_db() {
         .await
         .unwrap();
     let collection = Collection::new(SqlFormatter {}, storage);
-    collection.migrate(TestDocumentData::schema()).await.unwrap();
+    collection
+        .migrate(TestDocumentData::schema())
+        .await
+        .unwrap();
     std::fs::remove_dir_all(db_dir).unwrap();
 }
