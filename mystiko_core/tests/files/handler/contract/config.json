@@ -13,6 +13,7 @@
       ],
       "chainId": 11155111,
       "explorerUrl": "https://sepolia.etherscan.io",
+      "explorerApiUrl": "https://api-sepolia.etherscan.io",
       "providers": [
         {
           "url": "wss://sepolia.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161"
@@ -152,6 +153,7 @@
       "assetSymbol": "ETH",
       "chainId": 5,
       "explorerUrl": "https://goerli.etherscan.io",
+      "explorerApiUrl": "https://api-goerli.etherscan.io",
       "recommendedAmounts": [
         "100000000000000000",
         "1000000000000000000",
@@ -182,6 +184,7 @@
       "assetSymbol": "BNB",
       "chainId": 97,
       "explorerUrl": "https://testnet.bscscan.com",
+      "explorerApiUrl": "https://api-testnet.bscscan.com",
       "providers": [
         {
           "url": "https://nd-302-890-317.p2pify.com/430c98aabb1fe49ec6517602e1e40f01"
@@ -390,6 +393,7 @@
       "assetSymbol": "MATIC",
       "chainId": 80001,
       "explorerUrl": "https://mumbai.polygonscan.com",
+      "explorerApiUrl": "https://api-testnet.polygonscan.com",
       "providers": [
         {
           "url": "wss://ws-nd-448-055-606.p2pify.com/235d7c0709c9a00b39395cd0bfbf4948"
@@ -414,6 +418,7 @@
       "assetSymbol": "AVAX",
       "chainId": 43113,
       "explorerUrl": "https://testnet.snowtrace.io",
+      "explorerApiUrl": "https://api-testnet.snowtrace.io",
       "providers": [
         {
           "url": "wss://ws-nd-238-781-681.p2pify.com/796ca43c7ddc3121534c97e104d7a369/ext/bc/C/ws"

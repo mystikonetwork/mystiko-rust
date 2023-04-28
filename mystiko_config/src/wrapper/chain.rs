@@ -109,6 +109,10 @@ impl ChainConfig {
         &self.raw.explorer_url
     }
 
+    pub fn explorer_api_url(&self) -> &str {
+        &self.raw.explorer_api_url
+    }
+
     pub fn explorer_prefix(&self) -> &str {
         &self.raw.explorer_prefix
     }

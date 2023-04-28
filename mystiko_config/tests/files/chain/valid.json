@@ -8,6 +8,7 @@
     "10000000000000000000"
   ],
   "explorerUrl": "https://goerli.etherscan.io",
+  "explorerApiUrl": "https://api-goerli.etherscan.io",
   "explorerPrefix": "/tx/%tx%",
   "eventFilterBlockBackoff": 200,
   "eventFilterSize": 1000,

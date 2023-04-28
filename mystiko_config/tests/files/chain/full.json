@@ -4,6 +4,7 @@
   "assetSymbol": "ETH",
   "assetDecimals": 18,
   "explorerUrl": "https://goerli.etherscan.io",
+  "explorerApiUrl": "https://api-goerli.etherscan.io",
   "explorerPrefix": "/tx/%tx%",
   "eventFilterSize": 1000,
   "indexerFilterSize": 10000,

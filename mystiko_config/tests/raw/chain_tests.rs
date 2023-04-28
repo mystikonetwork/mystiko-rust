@@ -87,6 +87,7 @@ fn default_config() -> RawChainConfig {
             "10000000000000000000".to_string(),
         ])
         .explorer_url("https://goerli.etherscan.io".to_string())
+        .explorer_api_url("https://api-goerli.etherscan.io".to_string())
         .explorer_prefix("/tx/%tx%".to_string())
         .event_filter_block_backoff(200)
         .event_filter_size(1000)
@@ -122,6 +123,7 @@ fn test_default_values() {
             "10000000000000000000".to_string(),
         ])
         .explorer_url("https://goerli.etherscan.io".to_string())
+        .explorer_api_url("https://api-goerli.etherscan.io".to_string())
         .providers(vec![Arc::new(provider_config)])
         .signer_endpoint("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string())
         .deposit_contracts(vec![Arc::new(deposit_contract_config)])
@@ -202,6 +204,20 @@ fn test_invalid_explore_url_0() {
 fn test_invalid_explore_url_1() {
     let mut config = default_config();
     config.explorer_url = String::from("wrong url");
+    assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_invalid_explore_api_url_0() {
+    let mut config = default_config();
+    config.explorer_api_url = String::from("");
+    assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_invalid_explore_api_url_1() {
+    let mut config = default_config();
+    config.explorer_api_url = String::from("wrong url");
     assert!(config.validate().is_err());
 }
 
