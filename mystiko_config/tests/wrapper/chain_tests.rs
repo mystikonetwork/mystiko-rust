@@ -78,6 +78,8 @@ async fn test_create() {
     assert_eq!(config.pool_contracts().len(), 1);
     assert_eq!(config.deposit_contracts().len(), 0);
     assert_eq!(config.deposit_contracts_with_disabled().len(), 1);
+    assert_eq!(config.contracts().len(), 1);
+    assert_eq!(config.contracts_with_disabled().len(), 2);
     let asset = *config.assets().get(0).unwrap();
     let provider = *config.providers().get(0).unwrap();
     let pool_contract = *config.pool_contracts().get(0).unwrap();
@@ -108,6 +110,8 @@ async fn test_selectors() {
     })
     .await;
     config.validate().unwrap();
+    assert_eq!(config.contracts().len(), 11);
+    assert_eq!(config.contracts_with_disabled().len(), 12);
     let mut peer_chain_ids = config.find_peer_chain_ids();
     peer_chain_ids.sort();
     assert_eq!(peer_chain_ids, vec![5, 97]);
@@ -149,6 +153,12 @@ async fn test_selectors() {
     assert!(config
         .find_deposit_contract_by_address("0xF0850b2a2EC6e9E214D077658A95c4745a8B8aAf")
         .is_some());
+    assert!(config
+        .find_contract_by_address("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")
+        .is_none());
+    assert!(config
+        .find_contract_by_address("0xF0850b2a2EC6e9E214D077658A95c4745a8B8aAf")
+        .is_some());
     let mut pool_contracts = config.find_pool_contracts("MTT", &BridgeType::Tbridge);
     pool_contracts.sort_by_key(|c| c.version());
     assert_eq!(pool_contracts.len(), 2);
@@ -177,6 +187,12 @@ async fn test_selectors() {
         .is_none());
     assert!(config
         .find_pool_contract_by_address("0x9b42ec45f6fb6c7d252c66741e960585888de7b6")
+        .is_some());
+    assert!(config
+        .find_contract_by_address("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")
+        .is_none());
+    assert!(config
+        .find_contract_by_address("0x9b42ec45f6fb6c7d252c66741e960585888de7b6")
         .is_some());
     assert!(config
         .find_asset("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")

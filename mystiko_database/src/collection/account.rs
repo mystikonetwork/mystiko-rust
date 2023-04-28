@@ -9,6 +9,7 @@ use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct AccountCollection<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     collection: Arc<Collection<F, R, S>>,
 }

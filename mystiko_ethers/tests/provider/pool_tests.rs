@@ -11,8 +11,10 @@ use std::sync::Arc;
 mock! {
     #[derive(Debug)]
     ChainConfig {}
+
+    #[async_trait]
     impl ChainProvidersOptions for ChainConfig {
-         fn providers_options(&self, chain_id: u64) -> Option<ProvidersOptions>;
+         async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>>;
     }
 }
 
@@ -34,16 +36,16 @@ async fn test_provider_pool() {
         .with(predicate::eq(56))
         .times(2)
         .returning(|_| {
-            Some(ProvidersOptions::Http(
+            Ok(Some(ProvidersOptions::Http(
                 ProviderOptions::builder()
                     .url(String::from("https://localhost:8545"))
                     .build(),
-            ))
+            )))
         });
     mock_chain_config
         .expect_providers_options()
         .with(predicate::ne(56))
-        .returning(|_| None);
+        .returning(|_| Ok(None));
     let mut pool = ProviderPool::builder()
         .chain_providers_options(Box::new(mock_chain_config))
         .build();

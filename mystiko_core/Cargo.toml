@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0.69" }
+async-trait = { version = "0.1.64" }
 bip32 = { version = "0.5.0" }
 ethers-providers = { version = "2.0.2", features = ["ws"] }
 futures = { version = "0.3.26" }

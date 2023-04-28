@@ -6,6 +6,7 @@ use crate::wrapper::chain::ChainConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
+use crate::wrapper::contract::ContractConfig;
 use crate::wrapper::indexer::IndexerConfig;
 use anyhow::{Error, Result};
 use mystiko_types::{BridgeType, CircuitType};
@@ -269,6 +270,14 @@ impl MystikoConfig {
     ) -> Option<&PoolContractConfig> {
         if let Some(chain_config) = self.find_chain(chain_id) {
             chain_config.find_pool_contract_by_address(address)
+        } else {
+            None
+        }
+    }
+
+    pub fn find_contract_by_address(&self, chain_id: u64, address: &str) -> Option<ContractConfig> {
+        if let Some(chain_config) = self.find_chain(chain_id) {
+            chain_config.find_contract_by_address(address)
         } else {
             None
         }

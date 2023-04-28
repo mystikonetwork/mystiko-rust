@@ -28,6 +28,7 @@ pub const DEFAULT_ACCOUNT_SCAN_SIZE: u32 = 10000;
 // m/purpose/coin_type/account/key_type/address_index
 pub const DEFAULT_KEY_DERIVE_PATH: &str = "m/44'/94085'/0'";
 
+#[derive(Debug)]
 pub struct AccountHandler<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     db: Arc<Database<F, R, S>>,
     wallets: WalletHandler<F, R, S>,

@@ -1,20 +1,17 @@
 use crate::error::MystikoError;
 use crate::types::Result;
-use mystiko_config::wrapper::chain::ChainConfig;
-use mystiko_config::wrapper::contract::deposit::DepositContractConfig;
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_database::database::Database;
 use mystiko_database::document::contract::{
-    Contract, CHAIN_ID_FIELD_NAME, CONTRACT_ADDRESS_FIELD_NAME,
+    Contract, CHAIN_ID_FIELD_NAME, CONTRACT_ADDRESS_FIELD_NAME, DISABLED_FIELD_NAME,
 };
-use mystiko_storage::document::{Document, DocumentRawData, DOCUMENT_ID_FIELD};
+use mystiko_storage::document::{Document, DocumentRawData};
 use mystiko_storage::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
-use mystiko_types::ContractType;
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct ContractHandler<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
     db: Arc<Database<F, R, S>>,
     config: Arc<MystikoConfig>,
@@ -46,16 +43,24 @@ where
             .map_err(MystikoError::DatabaseError)
     }
 
-    pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Contract>>> {
+    pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Vec<Document<Contract>>> {
         let query_filter = QueryFilterBuilder::new()
             .filter(Condition::FILTER(SubFilter::Equal(
-                DOCUMENT_ID_FIELD.to_string(),
-                id.to_string(),
+                CHAIN_ID_FIELD_NAME.to_string(),
+                chain_id.to_string(),
+            )))
+            .filter(Condition::FILTER(SubFilter::Equal(
+                DISABLED_FIELD_NAME.to_string(),
+                String::from("0"),
             )))
             .build();
+        self.find(query_filter).await
+    }
+
+    pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Contract>>> {
         self.db
             .contracts
-            .find_one(query_filter)
+            .find_by_id(id)
             .await
             .map_err(MystikoError::DatabaseError)
     }
@@ -99,100 +104,78 @@ where
     }
 
     pub async fn initialize(&self) -> Result<Vec<Document<Contract>>> {
+        let mut insert_contracts: Vec<Contract> = vec![];
+        let mut update_contracts: Vec<Document<Contract>> = vec![];
         let mut contracts: Vec<Document<Contract>> = vec![];
         for chain_config in self.config.chains() {
-            for deposit_contract_config in chain_config.deposit_contracts_with_disabled() {
-                let contract = self
-                    .upsert_deposit_contract(chain_config, deposit_contract_config)
-                    .await?;
-                contracts.push(contract);
-            }
-            for pool_contract_config in chain_config.pool_contracts() {
-                let contract = self
-                    .upsert_pool_contract(chain_config, pool_contract_config)
-                    .await?;
-                contracts.push(contract);
+            for contract_config in chain_config.contracts_with_disabled().iter() {
+                let event_filter_size =
+                    chain_config.contract_event_filter_size(contract_config.address());
+                if let Some(mut existing_contract) = self
+                    .find_by_address(chain_config.chain_id(), contract_config.address())
+                    .await?
+                {
+                    existing_contract.data.sync_size = event_filter_size;
+                    existing_contract.data.disabled = contract_config.disabled();
+                    update_contracts.push(existing_contract);
+                } else {
+                    insert_contracts.push(Contract {
+                        chain_id: chain_config.chain_id(),
+                        contract_address: contract_config.address().to_string(),
+                        contract_type: contract_config.contract_type().clone(),
+                        sync_size: event_filter_size,
+                        sync_start: contract_config.start_block(),
+                        synced_block_number: contract_config.start_block(),
+                        disabled: contract_config.disabled(),
+                        checked_leaf_index: None,
+                    });
+                }
             }
         }
+        contracts.extend(
+            self.db
+                .contracts
+                .insert_batch(&insert_contracts)
+                .await
+                .map_err(MystikoError::DatabaseError)?,
+        );
+        contracts.extend(
+            self.db
+                .contracts
+                .update_batch(&update_contracts)
+                .await
+                .map_err(MystikoError::DatabaseError)?,
+        );
         Ok(contracts)
     }
 
-    async fn upsert_deposit_contract(
-        &self,
-        chain_config: &ChainConfig,
-        contract_config: &DepositContractConfig,
-    ) -> Result<Document<Contract>> {
-        let event_filter_size = chain_config.contract_event_filter_size(contract_config.address());
-        if let Some(existing_contract) = self
-            .update_contract(
-                chain_config.chain_id(),
-                contract_config.address(),
-                event_filter_size,
-                contract_config.disabled(),
-            )
-            .await?
-        {
-            return Ok(existing_contract);
-        }
-        self.db
-            .contracts
-            .insert(&Contract {
-                chain_id: chain_config.chain_id(),
-                contract_address: contract_config.address().to_string(),
-                contract_type: ContractType::Deposit,
-                sync_size: event_filter_size,
-                sync_start: contract_config.start_block(),
-                synced_block_number: contract_config.start_block(),
-                disabled: contract_config.disabled(),
-                checked_leaf_index: None,
-            })
-            .await
-            .map_err(MystikoError::DatabaseError)
-    }
-
-    async fn upsert_pool_contract(
-        &self,
-        chain_config: &ChainConfig,
-        contract_config: &PoolContractConfig,
-    ) -> Result<Document<Contract>> {
-        let event_filter_size = chain_config.contract_event_filter_size(contract_config.address());
-        if let Some(existing_contract) = self
-            .update_contract(
-                chain_config.chain_id(),
-                contract_config.address(),
-                event_filter_size,
-                false,
-            )
-            .await?
-        {
-            return Ok(existing_contract);
-        }
-        self.db
-            .contracts
-            .insert(&Contract {
-                chain_id: chain_config.chain_id(),
-                contract_address: contract_config.address().to_string(),
-                contract_type: ContractType::Pool,
-                sync_size: event_filter_size,
-                sync_start: contract_config.start_block(),
-                synced_block_number: contract_config.start_block(),
-                disabled: false,
-                checked_leaf_index: None,
-            })
-            .await
-            .map_err(MystikoError::DatabaseError)
-    }
-
-    async fn update_contract(
+    pub async fn reset_synced_block(
         &self,
         chain_id: u64,
         address: &str,
-        event_filter_size: u64,
-        disabled: bool,
+    ) -> Result<Option<Document<Contract>>> {
+        self.rs_synced_block(chain_id, address, None).await
+    }
+
+    pub async fn reset_synced_block_to(
+        &self,
+        chain_id: u64,
+        address: &str,
+        to_block: u64,
+    ) -> Result<Option<Document<Contract>>> {
+        self.rs_synced_block(chain_id, address, Some(to_block))
+            .await
+    }
+
+    async fn rs_synced_block(
+        &self,
+        chain_id: u64,
+        address: &str,
+        to_block: Option<u64>,
     ) -> Result<Option<Document<Contract>>> {
         if let Some(mut existing_contract) = self.find_by_address(chain_id, address).await? {
-            existing_contract.data.sync_size = event_filter_size;
-            existing_contract.data.disabled = disabled;
+            existing_contract.data.synced_block_number =
+                to_block.unwrap_or(existing_contract.data.sync_start);
             return Ok(Some(
                 self.db
                     .contracts

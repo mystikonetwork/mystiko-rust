@@ -1,10 +1,12 @@
 #![forbid(unsafe_code)]
+
 use crate::document::{
     Document, DocumentData, DOCUMENT_CREATED_AT_FIELD, DOCUMENT_ID_FIELD, DOCUMENT_UPDATED_AT_FIELD,
 };
 use crate::filter::QueryFilter;
+use std::fmt::Debug;
 
-pub trait StatementFormatter: Send + Sync {
+pub trait StatementFormatter: Send + Sync + Debug {
     fn format_insert<T: DocumentData>(&self, doc: &Document<T>) -> String;
     fn format_insert_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String;
     fn format_update<T: DocumentData>(&self, doc: &Document<T>) -> String;
@@ -19,6 +21,7 @@ pub trait StatementFormatter: Send + Sync {
     fn format_find<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
 }
 
+#[derive(Debug)]
 pub struct SqlFormatter {}
 
 impl StatementFormatter for SqlFormatter {

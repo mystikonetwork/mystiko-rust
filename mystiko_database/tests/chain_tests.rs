@@ -1,5 +1,5 @@
 use mystiko_database::collection::chain::ChainCollection;
-use mystiko_database::document::chain::Chain;
+use mystiko_database::document::chain::{Chain, Provider};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
@@ -28,11 +28,20 @@ async fn test_chains_crud() {
                 name: String::from("Ethereum Goerli"),
                 name_override: false,
                 providers: vec![
-                    String::from("{\"url\": \"wss://goerli.infura.io/ws/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}"),
-                    String::from("{\"url\": \"https://goerli.infura.io/v3/9aa4d95b3bc440fa88ea12eaa4456161\"}"),
+                    Provider {
+                        url: String::from("http://localhost:8545"),
+                        timeout_ms: 10000,
+                        max_try_count: 3,
+                        quorum_weight: 2,
+                    },
+                    Provider {
+                        url: String::from("http://localhost:8546"),
+                        timeout_ms: 20000,
+                        max_try_count: 4,
+                        quorum_weight: 3,
+                    },
                 ],
                 provider_override: true,
-                event_filter_size: 2000,
                 synced_block_number: 8497095,
             })
             .await
@@ -48,24 +57,33 @@ async fn test_chains_crud() {
                     name: String::from("BSC Testnet"),
                     name_override: false,
                     providers: vec![
-                        String::from(
-                            "{\"url\": \"wss://ws-nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}",
-                        ),
-                        String::from(
-                            "{\"url\": \"https://nd-302-890-317.p2pify.com/430d98aabb1fe49ec6517602e1e40f01\"}",
-                        ),
+                        Provider {
+                            url: String::from("http://localhost:8547"),
+                            timeout_ms: 30000,
+                            max_try_count: 5,
+                            quorum_weight: 4,
+                        },
+                        Provider {
+                            url: String::from("http://localhost:8548"),
+                            timeout_ms: 40000,
+                            max_try_count: 6,
+                            quorum_weight: 5,
+                        },
                     ],
                     provider_override: false,
-                    event_filter_size: 100000,
                     synced_block_number: 27265360,
                 },
                 Chain {
                     chain_id: 80001,
                     name: String::from("Polygon"),
                     name_override: true,
-                    providers: vec![String::from("{\"url\": \"https://matic-mumbai.chainstacklabs.com\"}")],
+                    providers: vec![Provider {
+                        url: String::from("http://localhost:8549"),
+                        timeout_ms: 50000,
+                        max_try_count: 7,
+                        quorum_weight: 6,
+                    }],
                     provider_override: true,
-                    event_filter_size: 10000,
                     synced_block_number: 32076637,
                 },
             ])
@@ -127,9 +145,9 @@ async fn test_chains_crud() {
     let updated_chain = chains.update(&found_chain).await.unwrap();
     assert_eq!(updated_chain.data, found_chain.data);
     // testing update_batch
-    inserted_chains[0].data.event_filter_size = 10000;
-    inserted_chains[1].data.event_filter_size = 20000;
-    inserted_chains[2].data.event_filter_size = 30000;
+    inserted_chains[0].data.synced_block_number = 10000;
+    inserted_chains[1].data.synced_block_number = 20000;
+    inserted_chains[2].data.synced_block_number = 30000;
     found_chains = chains.update_batch(&inserted_chains).await.unwrap();
     assert_eq!(found_chains[0].data, inserted_chains[0].data);
     assert_eq!(found_chains[1].data, inserted_chains[1].data);

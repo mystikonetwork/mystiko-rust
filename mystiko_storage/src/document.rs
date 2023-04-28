@@ -18,7 +18,7 @@ impl DocumentSchema {
     }
 }
 
-pub trait DocumentRawData: Send + Sync {
+pub trait DocumentRawData: Send + Sync + Debug {
     fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>>;
     fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>>;
     fn field_string_value(&self, field: &str) -> Result<Option<String>>;

@@ -6,6 +6,7 @@ use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::circuit::CircuitConfig;
 use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
+use crate::wrapper::contract::ContractConfig;
 use crate::wrapper::provider::ProviderConfig;
 use anyhow::{Error, Result};
 use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
@@ -161,6 +162,30 @@ impl ChainConfig {
             .collect()
     }
 
+    pub fn contracts(&self) -> Vec<ContractConfig> {
+        let mut contracts: Vec<ContractConfig> = Vec::new();
+        for deposit_contract_config in self.deposit_contract_configs.iter() {
+            if !deposit_contract_config.disabled() {
+                contracts.push(ContractConfig::Deposit(deposit_contract_config.clone()));
+            }
+        }
+        for pool_contract_config in self.pool_contract_configs.iter() {
+            contracts.push(ContractConfig::Pool(pool_contract_config.clone()));
+        }
+        contracts
+    }
+
+    pub fn contracts_with_disabled(&self) -> Vec<ContractConfig> {
+        let mut contracts: Vec<ContractConfig> = Vec::new();
+        for deposit_contract_config in self.deposit_contract_configs.iter() {
+            contracts.push(ContractConfig::Deposit(deposit_contract_config.clone()));
+        }
+        for pool_contract_config in self.pool_contract_configs.iter() {
+            contracts.push(ContractConfig::Pool(pool_contract_config.clone()));
+        }
+        contracts
+    }
+
     pub fn assets(&self) -> Vec<&AssetConfig> {
         self.asset_configs.iter().map(|c| c.as_ref()).collect()
     }
@@ -273,6 +298,21 @@ impl ChainConfig {
         self.deposit_contracts_with_disabled()
             .into_iter()
             .find(|c| c.address() == address)
+    }
+
+    pub fn find_contract_by_address(&self, address: &str) -> Option<ContractConfig> {
+        if let Some(deposit_contract) = self
+            .deposit_contract_configs
+            .iter()
+            .find(|c| c.address() == address)
+        {
+            Some(ContractConfig::Deposit(deposit_contract.clone()))
+        } else {
+            self.pool_contract_configs
+                .iter()
+                .find(|c| c.address() == address)
+                .map(|pool_contract| ContractConfig::Pool(pool_contract.clone()))
+        }
     }
 
     pub fn find_asset(&self, address: &str) -> Option<&AssetConfig> {
