@@ -50,10 +50,7 @@ impl AssetConfig {
     {
         let mut amounts: Vec<T> = Vec::new();
         for amount_str in &self.raw.recommended_amounts {
-            amounts.push(decimal_to_number::<T, String>(
-                amount_str,
-                Some(self.asset_decimals()),
-            )?);
+            amounts.push(decimal_to_number::<T, String>(amount_str, Some(self.asset_decimals()))?);
         }
         Ok(amounts)
     }

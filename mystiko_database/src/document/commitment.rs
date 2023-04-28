@@ -113,9 +113,7 @@ impl DocumentData for Commitment {
             asset_address: raw.field_string_value("asset_address")?,
             status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
             rollup_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("rollup_fee_amount")?
-                    .unwrap()
-                    .as_bytes(),
+                raw.field_string_value("rollup_fee_amount")?.unwrap().as_bytes(),
                 10,
             ),
             encrypted_note: raw.field_string_value("encrypted_note")?,

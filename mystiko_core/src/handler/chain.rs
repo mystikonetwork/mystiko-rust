@@ -72,19 +72,11 @@ where
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Chain>>> {
-        self.db
-            .chains
-            .find_all()
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.chains.find_all().await.map_err(MystikoError::DatabaseError)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Chain>>> {
-        self.db
-            .chains
-            .find_by_id(id)
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.chains.find_by_id(id).await.map_err(MystikoError::DatabaseError)
     }
 
     pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
@@ -110,11 +102,7 @@ where
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.db
-            .chains
-            .count_all()
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.chains.count_all().await.map_err(MystikoError::DatabaseError)
     }
 
     pub async fn initialize(&self) -> Result<Vec<Document<Chain>>> {
@@ -122,8 +110,7 @@ where
         let mut update_chains: Vec<Document<Chain>> = vec![];
         let mut chains: Vec<Document<Chain>> = vec![];
         for chain_config in self.config.chains() {
-            if let Some(mut existing_chain) = self.find_by_chain_id(chain_config.chain_id()).await?
-            {
+            if let Some(mut existing_chain) = self.find_by_chain_id(chain_config.chain_id()).await? {
                 if !existing_chain.data.name_override {
                     existing_chain.data.name = chain_config.name().to_string();
                 }
@@ -160,10 +147,9 @@ where
     }
 
     pub async fn reset_name_and_providers(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
-        if let (Some(chain_config), Some(mut existing_chain)) = (
-            self.config.find_chain(chain_id),
-            self.find_by_chain_id(chain_id).await?,
-        ) {
+        if let (Some(chain_config), Some(mut existing_chain)) =
+            (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
+        {
             existing_chain.data.name = chain_config.name().to_string();
             existing_chain.data.name_override = false;
             existing_chain.data.providers = convert_providers(&chain_config.providers());
@@ -180,11 +166,7 @@ where
         }
     }
 
-    pub async fn update_by_id(
-        &self,
-        id: &str,
-        options: &UpdateChainOptions,
-    ) -> Result<Option<Document<Chain>>> {
+    pub async fn update_by_id(&self, id: &str, options: &UpdateChainOptions) -> Result<Option<Document<Chain>>> {
         self.update(self.find_by_id(id).await?, options).await
     }
 
@@ -193,19 +175,14 @@ where
         chain_id: u64,
         options: &UpdateChainOptions,
     ) -> Result<Option<Document<Chain>>> {
-        self.update(self.find_by_chain_id(chain_id).await?, options)
-            .await
+        self.update(self.find_by_chain_id(chain_id).await?, options).await
     }
 
     pub async fn reset_synced_block(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
         self.rs_synced_block(chain_id, None).await
     }
 
-    pub async fn reset_synced_block_to(
-        &self,
-        chain_id: u64,
-        to_block: u64,
-    ) -> Result<Option<Document<Chain>>> {
+    pub async fn reset_synced_block_to(&self, chain_id: u64, to_block: u64) -> Result<Option<Document<Chain>>> {
         self.rs_synced_block(chain_id, Some(to_block)).await
     }
 
@@ -218,12 +195,8 @@ where
             if let Some(chain_config) = self.config.find_chain(existing_chain.data.chain_id) {
                 if let Some(new_providers) = &options.providers {
                     for new_provider in new_providers {
-                        if !HTTP_REGEX.is_match(&new_provider.url)
-                            && !WS_REGEX.is_match(&new_provider.url)
-                        {
-                            return Err(MystikoError::InvalidProviderUrlError(
-                                new_provider.url.clone(),
-                            ));
+                        if !HTTP_REGEX.is_match(&new_provider.url) && !WS_REGEX.is_match(&new_provider.url) {
+                            return Err(MystikoError::InvalidProviderUrlError(new_provider.url.clone()));
                         }
                     }
                 }
@@ -237,10 +210,7 @@ where
                 }
                 if let Some(update_provider_options) = &options.providers {
                     if !update_provider_options.is_empty()
-                        && !compare_providers(
-                            update_provider_options,
-                            &existing_chain.data.providers,
-                        )
+                        && !compare_providers(update_provider_options, &existing_chain.data.providers)
                     {
                         existing_chain.data.providers = wrap_providers(
                             update_provider_options,
@@ -267,15 +237,10 @@ where
         Ok(None)
     }
 
-    async fn rs_synced_block(
-        &self,
-        chain_id: u64,
-        to_block: Option<u64>,
-    ) -> Result<Option<Document<Chain>>> {
-        if let (Some(chain_config), Some(mut chain)) = (
-            self.config.find_chain(chain_id),
-            self.find_by_chain_id(chain_id).await?,
-        ) {
+    async fn rs_synced_block(&self, chain_id: u64, to_block: Option<u64>) -> Result<Option<Document<Chain>>> {
+        if let (Some(chain_config), Some(mut chain)) =
+            (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
+        {
             chain.data.synced_block_number = to_block.unwrap_or(0);
             let updated_chain = self
                 .db
@@ -290,8 +255,7 @@ where
                     .find_by_address(chain_id, contract_config.address())
                     .await?
                 {
-                    contract.data.synced_block_number =
-                        to_block.unwrap_or(contract_config.start_block());
+                    contract.data.synced_block_number = to_block.unwrap_or(contract_config.start_block());
                     contracts.push(contract);
                 }
             }
@@ -314,10 +278,9 @@ where
     S: Storage<R>,
 {
     async fn providers_options(&self, chain_id: u64) -> anyhow::Result<Option<ProvidersOptions>> {
-        if let (Some(chain_config), Some(chain)) = (
-            self.config.find_chain(chain_id),
-            self.find_by_chain_id(chain_id).await?,
-        ) {
+        if let (Some(chain_config), Some(chain)) =
+            (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
+        {
             let mut providers_options: Vec<ProviderOptions> = vec![];
             for provider_config in chain.data.providers {
                 let provider_options = ProviderOptions::builder()
@@ -333,14 +296,9 @@ where
                 ProviderType::Failover => Ok(Some(ProvidersOptions::Failover(providers_options))),
                 ProviderType::Quorum => {
                     let quorum_options = QuorumProviderOptions::builder()
-                        .quorum(Quorum::Percentage(
-                            chain_config.provider_quorum_percentage(),
-                        ))
+                        .quorum(Quorum::Percentage(chain_config.provider_quorum_percentage()))
                         .build();
-                    Ok(Some(ProvidersOptions::Quorum(
-                        providers_options,
-                        quorum_options,
-                    )))
+                    Ok(Some(ProvidersOptions::Quorum(providers_options, quorum_options)))
                 }
             }
         } else {
@@ -349,10 +307,7 @@ where
     }
 }
 
-fn compare_providers(
-    update_provider_options: &[UpdateProviderOptions],
-    previous_providers: &[Provider],
-) -> bool {
+fn compare_providers(update_provider_options: &[UpdateProviderOptions], previous_providers: &[Provider]) -> bool {
     if update_provider_options.len() == previous_providers.len() {
         for index in 0..previous_providers.len() {
             if update_provider_options[index].url != previous_providers[index].url

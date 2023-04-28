@@ -13,10 +13,7 @@ pub trait StatementFormatter: Send + Sync + Debug {
     fn format_update_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String;
     fn format_delete<T: DocumentData>(&self, doc: &Document<T>) -> String;
     fn format_delete_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String;
-    fn format_delete_by_filter<T: DocumentData>(
-        &self,
-        filter_option: Option<QueryFilter>,
-    ) -> String;
+    fn format_delete_by_filter<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
     fn format_count<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
     fn format_find<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
 }
@@ -54,10 +51,7 @@ impl StatementFormatter for SqlFormatter {
 
     fn format_update<T: DocumentData>(&self, doc: &Document<T>) -> String {
         let mut updates: Vec<String> = Vec::new();
-        updates.push(format!(
-            "`{}` = '{}'",
-            DOCUMENT_UPDATED_AT_FIELD, doc.updated_at,
-        ));
+        updates.push(format!("`{}` = '{}'", DOCUMENT_UPDATED_AT_FIELD, doc.updated_at,));
         for field_name in T::schema().field_names {
             let value = doc.field_value_string(field_name);
             if value.is_some() {
@@ -94,27 +88,16 @@ impl StatementFormatter for SqlFormatter {
         statements.join(";")
     }
 
-    fn format_delete_by_filter<T: DocumentData>(
-        &self,
-        filter_option: Option<QueryFilter>,
-    ) -> String {
+    fn format_delete_by_filter<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String {
         match filter_option {
             Some(filter) => {
                 let filter_sql = filter.to_sql();
                 if filter_sql.is_empty() {
                     format!("DELETE FROM `{}`", T::schema().collection_name)
                 } else if filter.conditions.is_empty() {
-                    format!(
-                        "DELETE FROM `{}` {}",
-                        T::schema().collection_name,
-                        filter_sql
-                    )
+                    format!("DELETE FROM `{}` {}", T::schema().collection_name, filter_sql)
                 } else {
-                    format!(
-                        "DELETE FROM `{}` WHERE {}",
-                        T::schema().collection_name,
-                        filter_sql
-                    )
+                    format!("DELETE FROM `{}` WHERE {}", T::schema().collection_name, filter_sql)
                 }
             }
             None => format!("DELETE FROM `{}`", T::schema().collection_name),
@@ -128,11 +111,7 @@ impl StatementFormatter for SqlFormatter {
                 if filter_sql.is_empty() {
                     format!("SELECT COUNT(*) FROM `{}`", T::schema().collection_name)
                 } else if filter.conditions.is_empty() {
-                    format!(
-                        "SELECT COUNT(*) FROM `{}` {}",
-                        T::schema().collection_name,
-                        filter_sql
-                    )
+                    format!("SELECT COUNT(*) FROM `{}` {}", T::schema().collection_name, filter_sql)
                 } else {
                     format!(
                         "SELECT COUNT(*) FROM `{}` WHERE {}",
@@ -151,11 +130,7 @@ impl StatementFormatter for SqlFormatter {
             format!("`{}`", DOCUMENT_CREATED_AT_FIELD),
             format!("`{}`", DOCUMENT_UPDATED_AT_FIELD),
         ];
-        let fields: Vec<String> = T::schema()
-            .field_names
-            .iter()
-            .map(|f| format!("`{}`", f))
-            .collect();
+        let fields: Vec<String> = T::schema().field_names.iter().map(|f| format!("`{}`", f)).collect();
         basic_fields.extend(fields);
         match &filter_option {
             Some(filter) => {

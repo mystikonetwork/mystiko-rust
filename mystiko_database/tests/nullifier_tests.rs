@@ -117,10 +117,7 @@ async fn test_nullifiers_crud() {
         .await
         .unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 1);
-    nullifiers
-        .insert(&inserted_nullifiers[0].data)
-        .await
-        .unwrap();
+    nullifiers.insert(&inserted_nullifiers[0].data).await.unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 2);
     nullifiers
         .delete_by_filter(

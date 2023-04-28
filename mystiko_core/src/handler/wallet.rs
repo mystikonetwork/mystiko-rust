@@ -71,8 +71,7 @@ where
         } else {
             Mnemonic::random(OsRng, Language::English)
         };
-        let encrypted_entropy =
-            encrypt_symmetric(&options.password, &encode_hex(mnemonic.entropy()))?;
+        let encrypted_entropy = encrypt_symmetric(&options.password, &encode_hex(mnemonic.entropy()))?;
         let hashed_password = checksum(&options.password, None);
         let wallet = Wallet {
             hashed_password,
@@ -107,11 +106,7 @@ where
         }
     }
 
-    pub async fn update_password(
-        &self,
-        old_password: &str,
-        new_password: &str,
-    ) -> Result<Document<Wallet>> {
+    pub async fn update_password(&self, old_password: &str, new_password: &str) -> Result<Document<Wallet>> {
         let mut wallet = self.check_password(old_password).await?;
         validate_password(new_password)?;
         let entropy_string = decrypt_symmetric(old_password, &wallet.data.encrypted_entropy)?;
@@ -151,8 +146,6 @@ fn validate_password(password: &str) -> Result<()> {
     {
         Ok(())
     } else {
-        Err(MystikoError::InvalidPasswordError(
-            PASSWORD_HINT.to_string(),
-        ))
+        Err(MystikoError::InvalidPasswordError(PASSWORD_HINT.to_string()))
     }
 }

@@ -1,9 +1,7 @@
 use mystiko_relayer_config::raw::create_raw_from_file;
 use mystiko_relayer_config::raw::gas_cost::RawGasCostConfig;
 use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
-use mystiko_relayer_config::wrapper::transaction_info::{
-    Erc20GasCost, MainGasCost, TransactionInfoConfig,
-};
+use mystiko_relayer_config::wrapper::transaction_info::{Erc20GasCost, MainGasCost, TransactionInfoConfig};
 use std::sync::Arc;
 
 const VALID_CONFIG_FILE: &str = "tests/files/transaction_info.valid.json";

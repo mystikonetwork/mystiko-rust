@@ -5,9 +5,7 @@ use std::hash::Hash;
 use typed_builder::TypedBuilder;
 use validator::{Validate, ValidationError};
 
-#[derive(
-    TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default, Hash,
-)]
+#[derive(TypedBuilder, Validate, Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default, Hash)]
 #[serde(rename_all = "camelCase")]
 pub struct RawPolyBridgeConfig {
     #[validate(length(min = 1))]

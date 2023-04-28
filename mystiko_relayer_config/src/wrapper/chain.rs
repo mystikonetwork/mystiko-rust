@@ -83,9 +83,7 @@ impl ChainConfig {
     }
 }
 
-fn initialize_contract_configs(
-    raw_contract_configs: &[Arc<RawContractConfig>],
-) -> Result<Vec<Arc<ContractConfig>>> {
+fn initialize_contract_configs(raw_contract_configs: &[Arc<RawContractConfig>]) -> Result<Vec<Arc<ContractConfig>>> {
     let mut contract_configs: Vec<Arc<ContractConfig>> = Vec::new();
     for raw_contract_config in raw_contract_configs {
         contract_configs.push(Arc::new(ContractConfig::new(raw_contract_config.clone())));

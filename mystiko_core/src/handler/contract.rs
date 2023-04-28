@@ -36,11 +36,7 @@ where
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Contract>>> {
-        self.db
-            .contracts
-            .find_all()
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.contracts.find_all().await.map_err(MystikoError::DatabaseError)
     }
 
     pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Vec<Document<Contract>>> {
@@ -65,11 +61,7 @@ where
             .map_err(MystikoError::DatabaseError)
     }
 
-    pub async fn find_by_address(
-        &self,
-        chain_id: u64,
-        address: &str,
-    ) -> Result<Option<Document<Contract>>> {
+    pub async fn find_by_address(&self, chain_id: u64, address: &str) -> Result<Option<Document<Contract>>> {
         let query_filter = QueryFilterBuilder::new()
             .filter(Condition::FILTER(SubFilter::Equal(
                 CHAIN_ID_FIELD_NAME.to_string(),
@@ -96,11 +88,7 @@ where
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.db
-            .contracts
-            .count_all()
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.contracts.count_all().await.map_err(MystikoError::DatabaseError)
     }
 
     pub async fn initialize(&self) -> Result<Vec<Document<Contract>>> {
@@ -109,8 +97,7 @@ where
         let mut contracts: Vec<Document<Contract>> = vec![];
         for chain_config in self.config.chains() {
             for contract_config in chain_config.contracts_with_disabled().iter() {
-                let event_filter_size =
-                    chain_config.contract_event_filter_size(contract_config.address());
+                let event_filter_size = chain_config.contract_event_filter_size(contract_config.address());
                 if let Some(mut existing_contract) = self
                     .find_by_address(chain_config.chain_id(), contract_config.address())
                     .await?
@@ -149,11 +136,7 @@ where
         Ok(contracts)
     }
 
-    pub async fn reset_synced_block(
-        &self,
-        chain_id: u64,
-        address: &str,
-    ) -> Result<Option<Document<Contract>>> {
+    pub async fn reset_synced_block(&self, chain_id: u64, address: &str) -> Result<Option<Document<Contract>>> {
         self.rs_synced_block(chain_id, address, None).await
     }
 
@@ -163,8 +146,7 @@ where
         address: &str,
         to_block: u64,
     ) -> Result<Option<Document<Contract>>> {
-        self.rs_synced_block(chain_id, address, Some(to_block))
-            .await
+        self.rs_synced_block(chain_id, address, Some(to_block)).await
     }
 
     async fn rs_synced_block(
@@ -174,8 +156,7 @@ where
         to_block: Option<u64>,
     ) -> Result<Option<Document<Contract>>> {
         if let Some(mut existing_contract) = self.find_by_address(chain_id, address).await? {
-            existing_contract.data.synced_block_number =
-                to_block.unwrap_or(existing_contract.data.sync_start);
+            existing_contract.data.synced_block_number = to_block.unwrap_or(existing_contract.data.sync_start);
             return Ok(Some(
                 self.db
                     .contracts

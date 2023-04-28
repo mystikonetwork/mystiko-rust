@@ -3,9 +3,7 @@ extern crate k256;
 extern crate mystiko_crypto;
 
 use k256::SecretKey;
-use mystiko_crypto::crypto::{
-    decrypt_asymmetric, decrypt_symmetric, encrypt_asymmetric, encrypt_symmetric,
-};
+use mystiko_crypto::crypto::{decrypt_asymmetric, decrypt_symmetric, encrypt_asymmetric, encrypt_symmetric};
 use mystiko_crypto::eccrypto::public_key_to_vec;
 use mystiko_crypto::error::CryptoError;
 use mystiko_crypto::utils::{random_bytes, random_utf8_string};
@@ -32,17 +30,11 @@ async fn test_random_encrypt_symmetric() {
 
     let cipher_text_wrong = "%$##";
     let dec_text = decrypt_symmetric(&password, cipher_text_wrong);
-    assert!(matches!(
-        dec_text.err().unwrap(),
-        CryptoError::DecryptError(_)
-    ));
+    assert!(matches!(dec_text.err().unwrap(), CryptoError::DecryptError(_)));
 
     let password = random_utf8_string((size[0] % 64 + 1) as usize);
     let dec_text = decrypt_symmetric(&password, &cipher_text);
-    assert!(matches!(
-        dec_text.err().unwrap(),
-        CryptoError::DecryptError(_)
-    ));
+    assert!(matches!(dec_text.err().unwrap(), CryptoError::DecryptError(_)));
 }
 
 #[tokio::test]

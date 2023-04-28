@@ -18,8 +18,5 @@ async fn test_create() {
     assert_eq!(config.explorer_url(), "https://explorer.poly.network");
     assert_eq!(config.explorer_prefix(), "/tx/%tx%");
     assert_eq!(config.api_url(), "https://explorer.poly.network");
-    assert_eq!(
-        config.api_prefix(),
-        "/testnet/api/v1/getcrosstx?txhash=%tx%"
-    );
+    assert_eq!(config.api_prefix(), "/testnet/api/v1/getcrosstx?txhash=%tx%");
 }

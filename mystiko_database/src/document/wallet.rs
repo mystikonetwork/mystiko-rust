@@ -41,9 +41,7 @@ impl DocumentData for Wallet {
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
         Ok(Wallet {
-            encrypted_entropy: raw
-                .field_string_value(ENCRYPTED_ENTROPY_FIELD_NAME)?
-                .unwrap(),
+            encrypted_entropy: raw.field_string_value(ENCRYPTED_ENTROPY_FIELD_NAME)?.unwrap(),
             hashed_password: raw.field_string_value(HASHED_PASSWORD_FIELD_NAME)?.unwrap(),
             account_nonce: raw.field_integer_value(ACCOUNT_NONCE_FIELD_NAME)?.unwrap(),
         })

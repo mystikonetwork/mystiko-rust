@@ -14,19 +14,13 @@ fn default_config() -> RawDepositContractConfig {
         .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
         .disabled(true)
         .peer_chain_id(Some(97))
-        .peer_contract_address(Some(
-            "0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string(),
-        ))
+        .peer_contract_address(Some("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string()))
         .min_amount("10000000000000000".to_string())
         .max_amount("100000000000000000".to_string())
         .min_bridge_fee("20000000000000000".to_string())
         .min_executor_fee("30000000000000000".to_string())
-        .bridge_fee_asset_address(Some(
-            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
-        ))
-        .executor_fee_asset_address(Some(
-            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
-        ))
+        .bridge_fee_asset_address(Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()))
+        .executor_fee_asset_address(Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()))
         .service_fee(2)
         .service_fee_divider(1000)
         .build();
@@ -44,17 +38,11 @@ fn test_default_values() {
         .bridge_type(BridgeType::Tbridge)
         .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
         .peer_chain_id(Some(97))
-        .peer_contract_address(Some(
-            "0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string(),
-        ))
+        .peer_contract_address(Some("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string()))
         .min_amount("10000000000000000".to_string())
         .max_amount("100000000000000000".to_string())
-        .bridge_fee_asset_address(Some(
-            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
-        ))
-        .executor_fee_asset_address(Some(
-            "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string(),
-        ))
+        .bridge_fee_asset_address(Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()))
+        .executor_fee_asset_address(Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()))
         .service_fee(2)
         .service_fee_divider(1000)
         .build();
@@ -247,20 +235,17 @@ fn test_invalid_executor_fee_asset_address_1() {
 
 #[tokio::test]
 async fn test_import_valid_json_file() {
-    let file_config =
-        create_raw_from_file::<RawDepositContractConfig>("tests/files/contract/deposit/valid.json")
-            .await
-            .unwrap();
+    let file_config = create_raw_from_file::<RawDepositContractConfig>("tests/files/contract/deposit/valid.json")
+        .await
+        .unwrap();
     assert_eq!(file_config, default_config());
     assert_eq!(file_config.contract_type, ContractType::Deposit);
 }
 
 #[tokio::test]
 async fn test_import_invalid_json_file() {
-    let file_config = create_raw_from_file::<RawDepositContractConfig>(
-        "tests/files/contract/deposit/invalid.json",
-    )
-    .await;
+    let file_config =
+        create_raw_from_file::<RawDepositContractConfig>("tests/files/contract/deposit/invalid.json").await;
     assert!(file_config.is_err());
 }
 

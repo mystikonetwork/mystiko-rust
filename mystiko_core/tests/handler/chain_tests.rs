@@ -47,10 +47,7 @@ async fn test_chain_initialize() {
             assert!(!chain.data.name_override);
             assert_eq!(chain.data.providers.len(), provider_configs.len());
             for (index, _) in chain.data.providers.iter().enumerate() {
-                assert_eq!(
-                    &chain.data.providers[index].url,
-                    provider_configs[index].url()
-                );
+                assert_eq!(&chain.data.providers[index].url, provider_configs[index].url());
                 assert_eq!(
                     chain.data.providers[index].timeout_ms,
                     provider_configs[index].timeout_ms()
@@ -86,10 +83,9 @@ async fn test_chain_initialize_upsert() {
     }];
     chains[1].data.provider_override = true;
     db.chains.update_batch(&chains).await.unwrap();
-    let mut raw_config =
-        create_raw_from_file::<RawMystikoConfig>("tests/files/handler/contract/config.json")
-            .await
-            .unwrap();
+    let mut raw_config = create_raw_from_file::<RawMystikoConfig>("tests/files/handler/contract/config.json")
+        .await
+        .unwrap();
     let mut raw_chain_config_0 = raw_config.chains.remove(0).as_ref().clone();
     raw_chain_config_0.name = String::from("Chain #1.1");
     let mut raw_chain_config_1 = raw_config.chains.remove(0).as_ref().clone();
@@ -177,10 +173,7 @@ async fn test_chains_reset_name_and_providers() {
     }];
     chains[0].data.provider_override = true;
     db.chains.update(&chains[0]).await.unwrap();
-    handler
-        .reset_name_and_providers(chains[0].data.chain_id)
-        .await
-        .unwrap();
+    handler.reset_name_and_providers(chains[0].data.chain_id).await.unwrap();
     let found_chain = handler
         .find_by_chain_id(chains[0].data.chain_id)
         .await
@@ -193,18 +186,10 @@ async fn test_chains_reset_name_and_providers() {
     assert!(!found_chain.data.name_override);
     assert_eq!(
         found_chain.data.providers.len(),
-        config
-            .find_chain(found_chain.data.chain_id)
-            .unwrap()
-            .providers()
-            .len()
+        config.find_chain(found_chain.data.chain_id).unwrap().providers().len()
     );
     assert!(!found_chain.data.provider_override);
-    assert!(handler
-        .reset_name_and_providers(1242342345)
-        .await
-        .unwrap()
-        .is_none());
+    assert!(handler.reset_name_and_providers(1242342345).await.unwrap().is_none());
     db.chains.delete(&chains[0]).await.unwrap();
     assert!(handler
         .reset_name_and_providers(chains[0].data.chain_id)
@@ -238,9 +223,7 @@ async fn test_chains_update_name() {
     let chain = handler
         .update_by_chain_id(
             chains[0].data.chain_id,
-            &UpdateChainOptions::builder()
-                .name(previous_name.clone())
-                .build(),
+            &UpdateChainOptions::builder().name(previous_name.clone()).build(),
         )
         .await
         .unwrap()
@@ -250,9 +233,7 @@ async fn test_chains_update_name() {
     let chain = handler
         .update_by_chain_id(
             chains[0].data.chain_id,
-            &UpdateChainOptions::builder()
-                .name(String::from("Chain #1"))
-                .build(),
+            &UpdateChainOptions::builder().name(String::from("Chain #1")).build(),
         )
         .await
         .unwrap()
@@ -406,10 +387,7 @@ async fn test_chains_reset_synced_block() {
     db.contracts.update_batch(&contracts).await.unwrap();
     chains[0].data.synced_block_number = 10;
     db.chains.update(&chains[0]).await.unwrap();
-    handler
-        .reset_synced_block(chains[0].data.chain_id)
-        .await
-        .unwrap();
+    handler.reset_synced_block(chains[0].data.chain_id).await.unwrap();
     let chain = handler
         .find_by_chain_id(chains[0].data.chain_id)
         .await
@@ -440,11 +418,7 @@ async fn test_chains_reset_synced_block() {
     for contract in contracts.iter() {
         assert_eq!(contract.data.synced_block_number, 20);
     }
-    assert!(handler
-        .reset_synced_block(23423432)
-        .await
-        .unwrap()
-        .is_none());
+    assert!(handler.reset_synced_block(23423432).await.unwrap().is_none());
     db.chains.delete(&chains[0]).await.unwrap();
     assert!(handler
         .reset_synced_block(chains[0].data.chain_id)
@@ -515,11 +489,7 @@ async fn test_chains_providers_options() {
         }
         _ => panic!("unexpected provider options type"),
     }
-    assert!(handler
-        .providers_options(123234234)
-        .await
-        .unwrap()
-        .is_none());
+    assert!(handler.providers_options(123234234).await.unwrap().is_none());
     db.chains.delete(&chains[0]).await.unwrap();
     assert!(handler
         .providers_options(chains[0].data.chain_id)

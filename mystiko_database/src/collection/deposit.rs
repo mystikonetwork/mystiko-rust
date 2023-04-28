@@ -55,10 +55,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> DepositCollection
         self.collection.update(deposit).await
     }
 
-    pub async fn update_batch(
-        &self,
-        deposits: &Vec<Document<Deposit>>,
-    ) -> Result<Vec<Document<Deposit>>> {
+    pub async fn update_batch(&self, deposits: &Vec<Document<Deposit>>) -> Result<Vec<Document<Deposit>>> {
         self.collection.update_batch(deposits).await
     }
 
@@ -75,9 +72,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> DepositCollection
     }
 
     pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection
-            .delete_by_filter::<Deposit>(Some(filter))
-            .await
+        self.collection.delete_by_filter::<Deposit>(Some(filter)).await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {

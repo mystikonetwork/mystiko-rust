@@ -66,9 +66,7 @@ fn test_create_from_json_str() {
 
 #[tokio::test]
 async fn test_create_from_json_file() {
-    let config = RelayerConfig::from_json_file(VALID_CONFIG_FILE)
-        .await
-        .unwrap();
+    let config = RelayerConfig::from_json_file(VALID_CONFIG_FILE).await.unwrap();
     config.validate().unwrap();
 }
 
@@ -81,10 +79,7 @@ async fn test_create_from_remote() {
         .create_async()
         .await;
     let path2 = server
-        .mock(
-            "GET",
-            "/relayer_config/production/mainnet/b5214a4/config.json",
-        )
+        .mock("GET", "/relayer_config/production/mainnet/b5214a4/config.json")
         .with_body("{\"version\": \"0.3.0\"}")
         .create_async()
         .await;
@@ -94,10 +89,7 @@ async fn test_create_from_remote() {
         .create_async()
         .await;
     let path4 = server
-        .mock(
-            "GET",
-            "/relayer_config/production/testnet/b5214a4/config.json",
-        )
+        .mock("GET", "/relayer_config/production/testnet/b5214a4/config.json")
         .with_body("{\"version\": \"0.5.0\"}")
         .create_async()
         .await;

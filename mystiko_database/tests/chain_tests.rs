@@ -132,11 +132,7 @@ async fn test_chains_crud() {
         .unwrap();
     assert_eq!(found_chain, inserted_chains[2]);
     // testing find_by_id
-    found_chain = chains
-        .find_by_id(&inserted_chains[1].id)
-        .await
-        .unwrap()
-        .unwrap();
+    found_chain = chains.find_by_id(&inserted_chains[1].id).await.unwrap().unwrap();
     assert_eq!(found_chain, inserted_chains[1]);
 
     // testing update
@@ -157,10 +153,7 @@ async fn test_chains_crud() {
     chains.delete(&inserted_chains[0]).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 2);
     // testing delete_batch
-    chains
-        .delete_batch(&vec![inserted_chains[1].clone()])
-        .await
-        .unwrap();
+    chains.delete_batch(&vec![inserted_chains[1].clone()]).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 1);
     // testing delete_by_filter
     chains.insert(&inserted_chains[0].data).await.unwrap();

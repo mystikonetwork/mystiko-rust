@@ -23,29 +23,20 @@ async fn test_create() {
     let raw_celer_config = create_raw_from_file::<RawCelerBridgeConfig>(CELER_CONFIG_FILE)
         .await
         .unwrap();
-    let raw_layer_zero_config =
-        create_raw_from_file::<RawLayerZeroBridgeConfig>(LAYER_ZERO_CONFIG_FILE)
-            .await
-            .unwrap();
+    let raw_layer_zero_config = create_raw_from_file::<RawLayerZeroBridgeConfig>(LAYER_ZERO_CONFIG_FILE)
+        .await
+        .unwrap();
     let raw_poly_config = create_raw_from_file::<RawPolyBridgeConfig>(POLY_CONFIG_FILE)
         .await
         .unwrap();
     let raw_tbridge_config = create_raw_from_file::<RawTBridgeConfig>(TBRIDGE_CONFIG_FILE)
         .await
         .unwrap();
-    let bridge_config1 = BridgeConfig::new(Arc::new(RawBridgeConfig::Axelar(Arc::new(
-        raw_axelar_config,
-    ))));
-    let bridge_config2 =
-        BridgeConfig::new(Arc::new(RawBridgeConfig::Celer(Arc::new(raw_celer_config))));
-    let bridge_config3 = BridgeConfig::new(Arc::new(RawBridgeConfig::LayerZero(Arc::new(
-        raw_layer_zero_config,
-    ))));
-    let bridge_config4 =
-        BridgeConfig::new(Arc::new(RawBridgeConfig::Poly(Arc::new(raw_poly_config))));
-    let bridge_config5 = BridgeConfig::new(Arc::new(RawBridgeConfig::Tbridge(Arc::new(
-        raw_tbridge_config,
-    ))));
+    let bridge_config1 = BridgeConfig::new(Arc::new(RawBridgeConfig::Axelar(Arc::new(raw_axelar_config))));
+    let bridge_config2 = BridgeConfig::new(Arc::new(RawBridgeConfig::Celer(Arc::new(raw_celer_config))));
+    let bridge_config3 = BridgeConfig::new(Arc::new(RawBridgeConfig::LayerZero(Arc::new(raw_layer_zero_config))));
+    let bridge_config4 = BridgeConfig::new(Arc::new(RawBridgeConfig::Poly(Arc::new(raw_poly_config))));
+    let bridge_config5 = BridgeConfig::new(Arc::new(RawBridgeConfig::Tbridge(Arc::new(raw_tbridge_config))));
     bridge_config1.validate().unwrap();
     bridge_config2.validate().unwrap();
     bridge_config3.validate().unwrap();

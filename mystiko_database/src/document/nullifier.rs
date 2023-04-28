@@ -20,12 +20,7 @@ pub static NULLIFIER_SCHEMA: DocumentSchema = DocumentSchema {
         "CREATE INDEX `nullifiers_serial_number_index` ON `nullifiers` (`serial_number`)",
         "CREATE INDEX `nullifiers_transaction_hash_index` ON `nullifiers` (`transaction_hash`)",
     ],
-    field_names: &[
-        "chain_id",
-        "contract_address",
-        "serial_number",
-        "transaction_hash",
-    ],
+    field_names: &["chain_id", "contract_address", "serial_number", "transaction_hash"],
 };
 
 #[derive(Clone, PartialEq, Debug)]

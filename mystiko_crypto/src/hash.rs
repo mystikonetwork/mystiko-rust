@@ -10,10 +10,7 @@ use sha2::{Sha256, Sha512};
 use sha3::{Digest, Keccak256};
 
 pub fn poseidon_bigint(arr: &[BigInt]) -> BigInt {
-    let arr_fr: Vec<Fr> = arr
-        .iter()
-        .map(|n| Fr::from_str(&n.to_string()).unwrap())
-        .collect();
+    let arr_fr: Vec<Fr> = arr.iter().map(|n| Fr::from_str(&n.to_string()).unwrap()).collect();
 
     poseidon_fr(arr_fr.as_slice())
 }
