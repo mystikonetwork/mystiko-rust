@@ -38,6 +38,9 @@ pub struct RawChainConfig {
     #[validate(url)]
     pub explorer_url: String,
 
+    #[validate(url)]
+    pub explorer_api_url: String,
+
     #[validate(contains = "%tx%")]
     #[serde(default = "default_explorer_prefix")]
     #[builder(default = default_explorer_prefix())]
