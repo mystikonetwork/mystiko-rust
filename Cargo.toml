@@ -13,6 +13,7 @@ members = [
     "mystiko_protocol",
     "mystiko_relayer_abi",
     "mystiko_relayer_config",
+    "mystiko_server_utils",
     "mystiko_storage",
     "mystiko_storage_sqlite",
     "mystiko_types",
