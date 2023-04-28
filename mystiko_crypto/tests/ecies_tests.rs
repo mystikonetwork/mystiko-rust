@@ -5,8 +5,7 @@ use num_bigint::{BigInt, Sign};
 
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::ecies::{
-    decrypt, encrypt, generate_secret_key, public_key, public_key_from_unpack_point,
-    unpack_public_key,
+    decrypt, encrypt, generate_secret_key, public_key, public_key_from_unpack_point, unpack_public_key,
 };
 use mystiko_crypto::utils::bigint_to_32_bytes;
 

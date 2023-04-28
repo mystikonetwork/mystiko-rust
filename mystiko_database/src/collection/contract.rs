@@ -55,10 +55,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> ContractCollectio
         self.collection.update(contract).await
     }
 
-    pub async fn update_batch(
-        &self,
-        contracts: &Vec<Document<Contract>>,
-    ) -> Result<Vec<Document<Contract>>> {
+    pub async fn update_batch(&self, contracts: &Vec<Document<Contract>>) -> Result<Vec<Document<Contract>>> {
         self.collection.update_batch(contracts).await
     }
 
@@ -75,9 +72,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> ContractCollectio
     }
 
     pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection
-            .delete_by_filter::<Contract>(Some(filter))
-            .await
+        self.collection.delete_by_filter::<Contract>(Some(filter)).await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {

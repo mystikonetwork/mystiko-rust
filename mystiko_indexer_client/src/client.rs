@@ -4,16 +4,12 @@ use crate::response::ApiResponse;
 use crate::types::{
     commitment::{CommitmentResponse, CommitmentsForContractRequest},
     commitment_included::{
-        CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest,
-        CommitmentIncludedResponse,
+        CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest, CommitmentIncludedResponse,
     },
     commitment_queued::{
-        CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest,
-        CommitmentQueuedResponse,
+        CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest, CommitmentQueuedResponse,
     },
-    commitment_spent::{
-        CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse,
-    },
+    commitment_spent::{CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse},
     sync_response::{ChainSyncRepsonse, ContractSyncResponse},
 };
 use anyhow::{anyhow, Result};
@@ -114,33 +110,21 @@ impl IndexerClient {
 
     pub async fn ping(&self, message: &str) -> Result<String> {
         let resp = self
-            .get_data::<String>(&format!(
-                "{}{}{}",
-                &self.base_url, "/ping?message=", message
-            ))
+            .get_data::<String>(&format!("{}{}{}", &self.base_url, "/ping?message=", message))
             .await?;
         Ok(resp)
     }
 
     pub async fn auth_ping(&self, message: &str) -> Result<String> {
         let resp = self
-            .get_data::<String>(&format!(
-                "{}{}{}",
-                &self.base_url, "/auth-ping?message=", message
-            ))
+            .get_data::<String>(&format!("{}{}{}", &self.base_url, "/auth-ping?message=", message))
             .await?;
         Ok(resp)
     }
 
-    pub async fn query_chain_sync_repsonse_by_id(
-        &self,
-        chain_id: u32,
-    ) -> Result<ChainSyncRepsonse> {
+    pub async fn query_chain_sync_repsonse_by_id(&self, chain_id: u32) -> Result<ChainSyncRepsonse> {
         let resp = self
-            .get_data::<ChainSyncRepsonse>(&format!(
-                "{}/chains/{}/block-number",
-                &self.base_url, chain_id
-            ))
+            .get_data::<ChainSyncRepsonse>(&format!("{}/chains/{}/block-number", &self.base_url, chain_id))
             .await?;
         Ok(resp)
     }
@@ -168,13 +152,9 @@ impl IndexerClient {
             &self.base_url, &request.chain_id
         ));
         let params_map: HashMap<String, String> = HashMap::new();
-        let params_map =
-            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
-        request_builder =
-            self.build_request_builder(request_builder, params_map, &request.where_filter);
-        let response = self
-            .post_data::<Vec<CommitmentQueuedResponse>>(request_builder)
-            .await?;
+        let params_map = self.build_block_params_map(params_map, &request.start_block, &request.end_block);
+        request_builder = self.build_request_builder(request_builder, params_map, &request.where_filter);
+        let response = self.post_data::<Vec<CommitmentQueuedResponse>>(request_builder).await?;
         Ok(response)
     }
 
@@ -187,13 +167,9 @@ impl IndexerClient {
             &self.base_url, &request.chain_id, &request.address
         ));
         let params_map: HashMap<String, String> = HashMap::new();
-        let params_map =
-            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
-        request_builder =
-            self.build_request_builder(request_builder, params_map, &request.where_filter);
-        let response = self
-            .post_data::<Vec<CommitmentQueuedResponse>>(request_builder)
-            .await?;
+        let params_map = self.build_block_params_map(params_map, &request.start_block, &request.end_block);
+        request_builder = self.build_request_builder(request_builder, params_map, &request.where_filter);
+        let response = self.post_data::<Vec<CommitmentQueuedResponse>>(request_builder).await?;
         Ok(response)
     }
 
@@ -206,10 +182,8 @@ impl IndexerClient {
             &self.base_url, &request.chain_id
         ));
         let params_map: HashMap<String, String> = HashMap::new();
-        let params_map =
-            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
-        request_builder =
-            self.build_request_builder(request_builder, params_map, &request.where_filter);
+        let params_map = self.build_block_params_map(params_map, &request.start_block, &request.end_block);
+        request_builder = self.build_request_builder(request_builder, params_map, &request.where_filter);
         let response = self
             .post_data::<Vec<CommitmentIncludedResponse>>(request_builder)
             .await?;
@@ -225,10 +199,8 @@ impl IndexerClient {
             &self.base_url, &request.chain_id, &request.address
         ));
         let params_map: HashMap<String, String> = HashMap::new();
-        let params_map =
-            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
-        request_builder =
-            self.build_request_builder(request_builder, params_map, &request.where_filter);
+        let params_map = self.build_block_params_map(params_map, &request.start_block, &request.end_block);
+        request_builder = self.build_request_builder(request_builder, params_map, &request.where_filter);
         let response = self
             .post_data::<Vec<CommitmentIncludedResponse>>(request_builder)
             .await?;
@@ -243,13 +215,9 @@ impl IndexerClient {
             &self.base_url, &request.chain_id
         ));
         let params_map: HashMap<String, String> = HashMap::new();
-        let params_map =
-            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
-        request_builder =
-            self.build_request_builder(request_builder, params_map, &request.where_filter);
-        let response = self
-            .post_data::<Vec<CommitmentSpentResponse>>(request_builder)
-            .await?;
+        let params_map = self.build_block_params_map(params_map, &request.start_block, &request.end_block);
+        request_builder = self.build_request_builder(request_builder, params_map, &request.where_filter);
+        let response = self.post_data::<Vec<CommitmentSpentResponse>>(request_builder).await?;
         Ok(response)
     }
     pub async fn find_commitment_spent_for_contract(
@@ -261,13 +229,9 @@ impl IndexerClient {
             &self.base_url, &request.chain_id, &request.address
         ));
         let params_map: HashMap<String, String> = HashMap::new();
-        let params_map =
-            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
-        request_builder =
-            self.build_request_builder(request_builder, params_map, &request.where_filter);
-        let response = self
-            .post_data::<Vec<CommitmentSpentResponse>>(request_builder)
-            .await?;
+        let params_map = self.build_block_params_map(params_map, &request.start_block, &request.end_block);
+        request_builder = self.build_request_builder(request_builder, params_map, &request.where_filter);
+        let response = self.post_data::<Vec<CommitmentSpentResponse>>(request_builder).await?;
         Ok(response)
     }
 
@@ -280,13 +244,9 @@ impl IndexerClient {
             &self.base_url, &request.chain_id, &request.contract_address
         ));
         let params_map: HashMap<String, String> = HashMap::new();
-        let params_map =
-            self.build_block_params_map(params_map, &request.start_block, &request.end_block);
-        request_builder =
-            self.build_request_builder(request_builder, params_map, &request.where_filter);
-        let response = self
-            .post_data::<Vec<CommitmentResponse>>(request_builder)
-            .await?;
+        let params_map = self.build_block_params_map(params_map, &request.start_block, &request.end_block);
+        request_builder = self.build_request_builder(request_builder, params_map, &request.where_filter);
+        let response = self.post_data::<Vec<CommitmentResponse>>(request_builder).await?;
         Ok(response)
     }
 

@@ -1,6 +1,4 @@
-use crate::provider::factory::{
-    DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions,
-};
+use crate::provider::factory::{DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions};
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use std::collections::HashMap;
@@ -31,16 +29,8 @@ impl ProviderPool {
         if let Some(provider) = self.providers.get(&chain_id) {
             return Ok(provider.clone());
         }
-        if let Some(providers_options) = self
-            .chain_providers_options
-            .providers_options(chain_id)
-            .await?
-        {
-            let provider: Arc<Provider> = Arc::new(
-                self.provider_factory
-                    .create_provider(providers_options)
-                    .await?,
-            );
+        if let Some(providers_options) = self.chain_providers_options.providers_options(chain_id).await? {
+            let provider: Arc<Provider> = Arc::new(self.provider_factory.create_provider(providers_options).await?);
             self.providers.insert(chain_id, provider.clone());
             return Ok(provider);
         }
@@ -57,10 +47,7 @@ impl ProviderPool {
     pub fn check_provider(&self, chain_id: u64) -> Result<Arc<Provider>> {
         match self.get_provider(chain_id) {
             Some(provider) => Ok(provider),
-            None => Err(Error::msg(format!(
-                "No provider found for chain id {}",
-                chain_id
-            ))),
+            None => Err(Error::msg(format!("No provider found for chain id {}", chain_id))),
         }
     }
 

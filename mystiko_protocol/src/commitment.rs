@@ -35,11 +35,7 @@ impl Note {
         let amount = amount.unwrap_or(BigInt::zero());
         let (random_p, random_r, random_s) = match r {
             Some(r) => (r.0, r.1, r.2),
-            None => (
-                generate_random_sk(),
-                generate_random_sk(),
-                generate_random_sk(),
-            ),
+            None => (generate_random_sk(), generate_random_sk(), generate_random_sk()),
         };
 
         Self {

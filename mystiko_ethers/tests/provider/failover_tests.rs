@@ -16,13 +16,11 @@ impl FailoverPolicy for DoNotFailoverPolicy {
 async fn test_failover_provider() {
     let test_provider1 = TestProvider {
         error: Some(|| {
-            ProviderError::JsonRpcClientError(Box::new(HttpClientError::JsonRpcError(
-                JsonRpcError {
-                    code: -1,
-                    message: String::from("something is wrong"),
-                    data: None,
-                },
-            )))
+            ProviderError::JsonRpcClientError(Box::new(HttpClientError::JsonRpcError(JsonRpcError {
+                code: -1,
+                message: String::from("something is wrong"),
+                data: None,
+            })))
         }),
         ..TestProvider::default()
     };
@@ -94,9 +92,7 @@ async fn test_failover_request_with_params() {
     };
     let failure_providers: Vec<Box<dyn JsonRpcClientWrapper>> =
         vec![Box::new(test_provider1), Box::new(test_provider2)];
-    let failover = FailoverProvider::dyn_rpc()
-        .add_providers(failure_providers)
-        .build();
+    let failover = FailoverProvider::dyn_rpc().add_providers(failure_providers).build();
     let provider = Provider::<FailoverProvider>::new(failover);
     let uncle_count = provider.get_uncle_count(0xbaadbabeu64).await.unwrap();
     assert_eq!(uncle_count.as_u64(), 0xdeadbeef);

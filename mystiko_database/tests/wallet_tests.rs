@@ -87,11 +87,7 @@ async fn test_wallets_crud() {
         .unwrap()
         .unwrap();
     assert_eq!(found_wallet, inserted_wallets[1]);
-    found_wallet = wallets
-        .find_by_id(&inserted_wallets[2].id)
-        .await
-        .unwrap()
-        .unwrap();
+    found_wallet = wallets.find_by_id(&inserted_wallets[2].id).await.unwrap().unwrap();
     assert_eq!(found_wallet, inserted_wallets[2]);
 
     // testing update/update_batch
@@ -109,10 +105,7 @@ async fn test_wallets_crud() {
     // testing delete/delete_batch/delete_by_filter/delete_all
     wallets.delete(&inserted_wallets[0]).await.unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 2);
-    wallets
-        .delete_batch(&vec![inserted_wallets[1].clone()])
-        .await
-        .unwrap();
+    wallets.delete_batch(&vec![inserted_wallets[1].clone()]).await.unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 1);
     wallets
         .insert(&Wallet {

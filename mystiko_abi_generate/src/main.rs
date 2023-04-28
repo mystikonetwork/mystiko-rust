@@ -14,10 +14,8 @@ fn abi_file_replace_package(input_filename: &str) -> Result<(), Box<dyn Error>> 
     let contents = fs::read_to_string(input_filename)?;
 
     let replaced_contents = contents.replace("::ethers::core::", "::ethers_core::");
-    let replaced_contents =
-        replaced_contents.replace("::ethers::contract::", "::ethers_contract::");
-    let replaced_contents =
-        replaced_contents.replace("::ethers::providers::", "::ethers_providers::");
+    let replaced_contents = replaced_contents.replace("::ethers::contract::", "::ethers_contract::");
+    let replaced_contents = replaced_contents.replace("::ethers::providers::", "::ethers_providers::");
 
     // Write the replaced contents to the output Rust file
     let mut file = fs::File::create(input_filename)?;

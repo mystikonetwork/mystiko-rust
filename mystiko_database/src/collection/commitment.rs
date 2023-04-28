@@ -23,10 +23,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> CommitmentCollect
         self.collection.insert(commitment).await
     }
 
-    pub async fn insert_batch(
-        &self,
-        commitments: &Vec<Commitment>,
-    ) -> Result<Vec<Document<Commitment>>> {
+    pub async fn insert_batch(&self, commitments: &Vec<Commitment>) -> Result<Vec<Document<Commitment>>> {
         self.collection.insert_batch(commitments).await
     }
 
@@ -58,10 +55,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> CommitmentCollect
         self.collection.update(commitment).await
     }
 
-    pub async fn update_batch(
-        &self,
-        commitments: &Vec<Document<Commitment>>,
-    ) -> Result<Vec<Document<Commitment>>> {
+    pub async fn update_batch(&self, commitments: &Vec<Document<Commitment>>) -> Result<Vec<Document<Commitment>>> {
         self.collection.update_batch(commitments).await
     }
 
@@ -78,9 +72,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> CommitmentCollect
     }
 
     pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection
-            .delete_by_filter::<Commitment>(Some(filter))
-            .await
+        self.collection.delete_by_filter::<Commitment>(Some(filter)).await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {
@@ -88,8 +80,6 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> CommitmentCollect
     }
 
     pub async fn collection_exists(&self) -> Result<bool> {
-        self.collection
-            .collection_exists(Commitment::schema())
-            .await
+        self.collection.collection_exists(Commitment::schema()).await
     }
 }

@@ -23,10 +23,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> NullifierCollecti
         self.collection.insert(nullifier).await
     }
 
-    pub async fn insert_batch(
-        &self,
-        nullifiers: &Vec<Nullifier>,
-    ) -> Result<Vec<Document<Nullifier>>> {
+    pub async fn insert_batch(&self, nullifiers: &Vec<Nullifier>) -> Result<Vec<Document<Nullifier>>> {
         self.collection.insert_batch(nullifiers).await
     }
 
@@ -58,10 +55,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> NullifierCollecti
         self.collection.update(nullifier).await
     }
 
-    pub async fn update_batch(
-        &self,
-        nullifiers: &Vec<Document<Nullifier>>,
-    ) -> Result<Vec<Document<Nullifier>>> {
+    pub async fn update_batch(&self, nullifiers: &Vec<Document<Nullifier>>) -> Result<Vec<Document<Nullifier>>> {
         self.collection.update_batch(nullifiers).await
     }
 
@@ -78,9 +72,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> NullifierCollecti
     }
 
     pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection
-            .delete_by_filter::<Nullifier>(Some(filter))
-            .await
+        self.collection.delete_by_filter::<Nullifier>(Some(filter)).await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {

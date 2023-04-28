@@ -1,6 +1,6 @@
 use mystiko_validator::validate::{
-    array_unique, is_ethereum_address, is_number_string, is_number_string_vec, is_numeric,
-    is_sem_ver, string_vec_each_not_empty,
+    array_unique, is_ethereum_address, is_number_string, is_number_string_vec, is_numeric, is_sem_ver,
+    string_vec_each_not_empty,
 };
 
 #[test]
@@ -21,10 +21,7 @@ fn test_array_unique() {
 
 #[test]
 fn test_is_number_string() {
-    let mut number_vec = vec![
-        String::from("10000000000000000"),
-        String::from("100000000000000000"),
-    ];
+    let mut number_vec = vec![String::from("10000000000000000"), String::from("100000000000000000")];
     let is_number = is_number_string_vec::<true>(&number_vec);
     assert!(is_number.is_ok());
 

@@ -43,16 +43,8 @@ async fn test_new_merkle_tree() {
 
     assert_eq!(tree1.elements(), vec![]);
 
-    let e1 = BigInt::parse_bytes(
-        b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
-        16,
-    )
-    .unwrap();
-    let e2 = BigInt::parse_bytes(
-        b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
-        16,
-    )
-    .unwrap();
+    let e1 = BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
+    let e2 = BigInt::parse_bytes(b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3", 16).unwrap();
 
     let elements = vec![e1.clone(), e2.clone()];
     let tree2 = MerkleTree::new(Some(elements.clone()), None, None).unwrap();
@@ -83,16 +75,8 @@ async fn test_new_merkle_tree() {
 
 #[tokio::test]
 async fn test_insert() {
-    let e1 = BigInt::parse_bytes(
-        b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
-        16,
-    )
-    .unwrap();
-    let e2 = BigInt::parse_bytes(
-        b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
-        16,
-    )
-    .unwrap();
+    let e1 = BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
+    let e2 = BigInt::parse_bytes(b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3", 16).unwrap();
     let elements = vec![e1.clone()];
     let mut tree = MerkleTree::new(Some(elements), Some(0), None).unwrap();
     let result = tree.insert(e2.clone());
@@ -113,37 +97,17 @@ async fn test_insert() {
 
 #[tokio::test]
 async fn test_bulk_insert() {
-    let e1 = BigInt::parse_bytes(
-        b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
-        16,
-    )
-    .unwrap();
-    let e2 = BigInt::parse_bytes(
-        b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
-        16,
-    )
-    .unwrap();
+    let e1 = BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
+    let e2 = BigInt::parse_bytes(b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3", 16).unwrap();
     let elements = vec![e1];
     let mut tree = MerkleTree::new(Some(elements), Some(0), None).unwrap();
     let result = tree.bulk_insert(vec![e2]);
     assert_eq!(result.err().unwrap(), MerkleTreeError::MerkleTreeIsFull);
 
     let mut tree = MerkleTree::new(None, None, None).unwrap();
-    let e1 = BigInt::parse_bytes(
-        b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
-        16,
-    )
-    .unwrap();
-    let e2 = BigInt::parse_bytes(
-        b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
-        16,
-    )
-    .unwrap();
-    let e3 = BigInt::parse_bytes(
-        b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
-        16,
-    )
-    .unwrap();
+    let e1 = BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
+    let e2 = BigInt::parse_bytes(b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3", 16).unwrap();
+    let e3 = BigInt::parse_bytes(b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707", 16).unwrap();
 
     tree.bulk_insert(vec![e1, e2, e3]).unwrap();
     assert_eq!(
@@ -158,16 +122,8 @@ async fn test_bulk_insert() {
 
 #[tokio::test]
 async fn test_update() {
-    let e1 = BigInt::parse_bytes(
-        b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
-        16,
-    )
-    .unwrap();
-    let e2 = BigInt::parse_bytes(
-        b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
-        16,
-    )
-    .unwrap();
+    let e1 = BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
+    let e2 = BigInt::parse_bytes(b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707", 16).unwrap();
 
     let mut tree = MerkleTree::new(Some(vec![e1]), None, None).unwrap();
     tree.update(0, e2.clone()).unwrap();
@@ -186,28 +142,11 @@ async fn test_update() {
 
 #[tokio::test]
 async fn test_path() {
-    let e1 = BigInt::parse_bytes(
-        b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6",
-        16,
-    )
-    .unwrap();
-    let e2 = BigInt::parse_bytes(
-        b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3",
-        16,
-    )
-    .unwrap();
-    let e3 = BigInt::parse_bytes(
-        b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707",
-        16,
-    )
-    .unwrap();
+    let e1 = BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
+    let e2 = BigInt::parse_bytes(b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3", 16).unwrap();
+    let e3 = BigInt::parse_bytes(b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707", 16).unwrap();
 
-    let tree = MerkleTree::new(
-        Some(vec![e1.clone(), e2.clone(), e3.clone()]),
-        Some(2),
-        None,
-    )
-    .unwrap();
+    let tree = MerkleTree::new(Some(vec![e1.clone(), e2.clone(), e3.clone()]), Some(2), None).unwrap();
     let default_zero = calc_default_zero_element();
     let result1 = tree.path(0).unwrap();
     assert_eq!(result1.1, vec![0, 0]);

@@ -55,25 +55,11 @@ impl RelayerConfig {
     }
 
     pub async fn from_remote(options: &RemoteOptions) -> Result<Self> {
-        let base_url = options
-            .base_url
-            .as_deref()
-            .unwrap_or(DEFAULT_REMOTE_BASE_URL);
-        let environment = if options.is_staging {
-            "staging"
-        } else {
-            "production"
-        };
-        let network = if options.is_testnet {
-            "testnet"
-        } else {
-            "mainnet"
-        };
+        let base_url = options.base_url.as_deref().unwrap_or(DEFAULT_REMOTE_BASE_URL);
+        let environment = if options.is_staging { "staging" } else { "production" };
+        let network = if options.is_testnet { "testnet" } else { "mainnet" };
         let url = if let Some(git_revision) = &options.git_revision {
-            format!(
-                "{}/{}/{}/{}/config.json",
-                base_url, environment, network, git_revision
-            )
+            format!("{}/{}/{}/{}/config.json", base_url, environment, network, git_revision)
         } else {
             format!("{}/{}/{}/latest.json", base_url, environment, network)
         };
@@ -103,9 +89,7 @@ impl RelayerConfig {
     }
 
     pub fn find_chain_config(&self, chain_id: u32) -> Option<&ChainConfig> {
-        self.default_chain_configs
-            .get(&chain_id)
-            .map(|c| c.as_ref())
+        self.default_chain_configs.get(&chain_id).map(|c| c.as_ref())
     }
 
     pub fn chains(&self) -> Vec<&ChainConfig> {
@@ -121,9 +105,7 @@ impl RelayerConfig {
     }
 }
 
-fn initialize_chain_configs(
-    raw_chain_configs: &[Arc<RawChainConfig>],
-) -> Result<Vec<Arc<ChainConfig>>> {
+fn initialize_chain_configs(raw_chain_configs: &[Arc<RawChainConfig>]) -> Result<Vec<Arc<ChainConfig>>> {
     let mut chain_configs: Vec<Arc<ChainConfig>> = Vec::new();
     for raw_chain_config in raw_chain_configs {
         chain_configs.push(Arc::new(ChainConfig::new(raw_chain_config.clone())?));
@@ -131,9 +113,7 @@ fn initialize_chain_configs(
     Ok(chain_configs)
 }
 
-fn initialize_default_chain_configs(
-    chain_configs: &[Arc<ChainConfig>],
-) -> Result<HashMap<u32, Arc<ChainConfig>>> {
+fn initialize_default_chain_configs(chain_configs: &[Arc<ChainConfig>]) -> Result<HashMap<u32, Arc<ChainConfig>>> {
     let mut configs: HashMap<u32, Arc<ChainConfig>> = HashMap::new();
     for chain_config in chain_configs.iter() {
         if configs.contains_key(&chain_config.chain_id()) {

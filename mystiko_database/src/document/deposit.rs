@@ -6,7 +6,8 @@ use num_bigint::BigInt;
 
 pub static DEPOSIT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "deposits",
-    migrations: &["CREATE TABLE `deposits` (\
+    migrations: &[
+        "CREATE TABLE `deposits` (\
             `id` VARCHAR(64) NOT NULL PRIMARY KEY,\
             `created_at` INT    NOT NULL,\
             `updated_at` INT    NOT NULL,\
@@ -39,18 +40,19 @@ pub static DEPOSIT_SCHEMA: DocumentSchema = DocumentSchema {
             `transaction_hash` VARCHAR(128),\
             `relay_transaction_hash` VARCHAR(128),\
             `rollup_transaction_hash` VARCHAR(128))",
-            "CREATE INDEX `deposits_created_at_index` ON `deposits` (`created_at`)",
-            "CREATE INDEX `deposits_updated_at_index` ON `deposits` (`updated_at`)",
-            "CREATE INDEX `deposits_chain_id_index` ON `deposits` (`chain_id`)",
-            "CREATE INDEX `deposits_contract_address_index` ON `deposits` (`contract_address`)",
-            "CREATE INDEX `deposits_commitment_hash_index` ON `deposits` (`commitment_hash`)",
-            "CREATE INDEX `deposits_dst_chain_id_index` ON `deposits` (`dst_chain_id`)",
-            "CREATE INDEX `deposits_dst_chain_contract_address_index` ON `deposits` (`dst_chain_contract_address`)",
-            "CREATE INDEX `deposits_shielded_recipient_address_index` ON `deposits` (`shielded_recipient_address`)",
-            "CREATE INDEX `deposits_asset_approve_transaction_hash_index` ON `deposits` (`asset_approve_transaction_hash`)",
-            "CREATE INDEX `deposits_transaction_hash_index` ON `deposits` (`transaction_hash`)",
-            "CREATE INDEX `deposits_relay_transaction_hash_index` ON `deposits` (`relay_transaction_hash`)",
-            "CREATE INDEX `deposits_rollup_transaction_hash_index` ON `deposits` (`rollup_transaction_hash`)"],
+        "CREATE INDEX `deposits_created_at_index` ON `deposits` (`created_at`)",
+        "CREATE INDEX `deposits_updated_at_index` ON `deposits` (`updated_at`)",
+        "CREATE INDEX `deposits_chain_id_index` ON `deposits` (`chain_id`)",
+        "CREATE INDEX `deposits_contract_address_index` ON `deposits` (`contract_address`)",
+        "CREATE INDEX `deposits_commitment_hash_index` ON `deposits` (`commitment_hash`)",
+        "CREATE INDEX `deposits_dst_chain_id_index` ON `deposits` (`dst_chain_id`)",
+        "CREATE INDEX `deposits_dst_chain_contract_address_index` ON `deposits` (`dst_chain_contract_address`)",
+        "CREATE INDEX `deposits_shielded_recipient_address_index` ON `deposits` (`shielded_recipient_address`)",
+        "CREATE INDEX `deposits_asset_approve_transaction_hash_index` ON `deposits` (`asset_approve_transaction_hash`)",
+        "CREATE INDEX `deposits_transaction_hash_index` ON `deposits` (`transaction_hash`)",
+        "CREATE INDEX `deposits_relay_transaction_hash_index` ON `deposits` (`relay_transaction_hash`)",
+        "CREATE INDEX `deposits_rollup_transaction_hash_index` ON `deposits` (`rollup_transaction_hash`)",
+    ],
     field_names: &[
         "chain_id",
         "contract_address",
@@ -170,51 +172,37 @@ impl DocumentData for Deposit {
             asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
             asset_address: raw.field_string_value("asset_address")?,
             bridge_type: serde_json::from_str(&raw.field_string_value("bridge_type")?.unwrap())?,
-            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10)
-                .unwrap(),
+            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10).unwrap(),
             rollup_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("rollup_fee_amount")?
-                    .unwrap()
-                    .as_bytes(),
+                raw.field_string_value("rollup_fee_amount")?.unwrap().as_bytes(),
                 10,
             )
             .unwrap(),
             bridge_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("bridge_fee_amount")?
-                    .unwrap()
-                    .as_bytes(),
+                raw.field_string_value("bridge_fee_amount")?.unwrap().as_bytes(),
                 10,
             )
             .unwrap(),
             bridge_fee_asset_address: raw.field_string_value("bridge_fee_asset_address")?,
             executor_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("executor_fee_amount")?
-                    .unwrap()
-                    .as_bytes(),
+                raw.field_string_value("executor_fee_amount")?.unwrap().as_bytes(),
                 10,
             )
             .unwrap(),
             executor_fee_asset_address: raw.field_string_value("executor_fee_asset_address")?,
             service_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("service_fee_amount")?
-                    .unwrap()
-                    .as_bytes(),
+                raw.field_string_value("service_fee_amount")?.unwrap().as_bytes(),
                 10,
             )
             .unwrap(),
-            shielded_recipient_address: raw
-                .field_string_value("shielded_recipient_address")?
-                .unwrap(),
+            shielded_recipient_address: raw.field_string_value("shielded_recipient_address")?.unwrap(),
             status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
             error_message: raw.field_string_value("error_message")?,
             wallet_id: raw.field_string_value("wallet_id")?.unwrap(),
             dst_chain_id: raw.field_integer_value::<u64>("dst_chain_id")?.unwrap(),
-            dst_chain_contract_address: raw
-                .field_string_value("dst_chain_contract_address")?
-                .unwrap(),
+            dst_chain_contract_address: raw.field_string_value("dst_chain_contract_address")?.unwrap(),
             dst_pool_address: raw.field_string_value("dst_pool_address")?.unwrap(),
-            asset_approve_transaction_hash: raw
-                .field_string_value("asset_approve_transaction_hash")?,
+            asset_approve_transaction_hash: raw.field_string_value("asset_approve_transaction_hash")?,
             transaction_hash: raw.field_string_value("transaction_hash")?,
             relay_transaction_hash: raw.field_string_value("relay_transaction_hash")?,
             rollup_transaction_hash: raw.field_string_value("rollup_transaction_hash")?,

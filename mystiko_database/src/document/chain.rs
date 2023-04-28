@@ -84,20 +84,10 @@ impl DocumentData for Chain {
         Ok(Chain {
             chain_id: raw.field_integer_value(CHAIN_ID_FIELD_NAME)?.unwrap(),
             name: raw.field_string_value(NAME_FIELD_NAME)?.unwrap(),
-            name_override: raw
-                .field_integer_value::<u8>(NAME_OVERRIDE_FIELD_NAME)?
-                .unwrap()
-                != 0,
-            providers: serde_json::from_str(
-                &raw.field_string_value(PROVIDERS_FIELD_NAME)?.unwrap(),
-            )?,
-            provider_override: raw
-                .field_integer_value::<u8>(PROVIDER_OVERRIDE_FIELD_NAME)?
-                .unwrap()
-                != 0,
-            synced_block_number: raw
-                .field_integer_value(SYNCED_BLOCK_NUMBER_FIELD_NAME)?
-                .unwrap(),
+            name_override: raw.field_integer_value::<u8>(NAME_OVERRIDE_FIELD_NAME)?.unwrap() != 0,
+            providers: serde_json::from_str(&raw.field_string_value(PROVIDERS_FIELD_NAME)?.unwrap())?,
+            provider_override: raw.field_integer_value::<u8>(PROVIDER_OVERRIDE_FIELD_NAME)?.unwrap() != 0,
+            synced_block_number: raw.field_integer_value(SYNCED_BLOCK_NUMBER_FIELD_NAME)?.unwrap(),
         })
     }
 }

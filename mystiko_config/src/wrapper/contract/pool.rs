@@ -127,15 +127,11 @@ impl PoolContractConfig {
     }
 
     pub fn circuit_by_type(&self, circuit_type: &CircuitType) -> Option<&CircuitConfig> {
-        self.circuits()
-            .into_iter()
-            .find(|c| c.circuit_type() == circuit_type)
+        self.circuits().into_iter().find(|c| c.circuit_type() == circuit_type)
     }
 
     pub fn circuit_by_name(&self, circuit_name: &str) -> Option<&CircuitConfig> {
-        self.circuits()
-            .into_iter()
-            .find(|c| c.name() == circuit_name)
+        self.circuits().into_iter().find(|c| c.name() == circuit_name)
     }
 
     pub fn validate(&self) -> Result<()> {

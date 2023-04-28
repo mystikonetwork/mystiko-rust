@@ -200,8 +200,7 @@ fn test_sql_format_delete_by_filter() {
         "DELETE FROM `test_documents`",
     );
     assert_eq!(
-        formatter
-            .format_delete_by_filter::<TestDocumentData>(Some(QueryFilterBuilder::new().build())),
+        formatter.format_delete_by_filter::<TestDocumentData>(Some(QueryFilterBuilder::new().build())),
         "DELETE FROM `test_documents`",
     );
     assert_eq!(
@@ -214,9 +213,8 @@ fn test_sql_format_delete_by_filter() {
     );
 
     assert_eq!(
-        formatter.format_delete_by_filter::<TestDocumentData>(Some(
-            QueryFilterBuilder::new().limit(10).offset(20).build(),
-        )),
+        formatter
+            .format_delete_by_filter::<TestDocumentData>(Some(QueryFilterBuilder::new().limit(10).offset(20).build(),)),
         "DELETE FROM `test_documents` LIMIT 10 OFFSET 20",
     );
 }
@@ -242,9 +240,7 @@ fn test_sql_format_count() {
     );
 
     assert_eq!(
-        formatter.format_count::<TestDocumentData>(Some(
-            QueryFilterBuilder::new().limit(10).offset(20).build(),
-        )),
+        formatter.format_count::<TestDocumentData>(Some(QueryFilterBuilder::new().limit(10).offset(20).build(),)),
         "SELECT COUNT(*) FROM `test_documents` LIMIT 10 OFFSET 20",
     );
 }

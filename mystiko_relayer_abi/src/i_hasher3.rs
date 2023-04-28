@@ -13,10 +13,9 @@ pub mod i_hasher_3 {
     #[rustfmt::skip]
     const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"uint256[3]\",\"name\":\"data\",\"type\":\"uint256[3]\",\"components\":[]}],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"poseidon\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]}]";
     ///The parsed JSON ABI of the contract.
-    pub static IHASHER3_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
-        ::ethers_contract::Lazy::new(|| {
-            ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid")
-        });
+    pub static IHASHER3_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(|| {
+        ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid")
+    });
     pub struct IHasher3<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for IHasher3<M> {
         fn clone(&self) -> Self {
@@ -36,18 +35,13 @@ pub mod i_hasher_3 {
     }
     impl<M> ::core::fmt::Debug for IHasher3<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(IHasher3))
-                .field(&self.address())
-                .finish()
+            f.debug_tuple(stringify!(IHasher3)).field(&self.address()).finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> IHasher3<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 IHASHER3_ABI.clone(),

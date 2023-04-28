@@ -23,10 +23,7 @@ async fn test_create() {
     config.validate().unwrap();
     assert_eq!(config.version(), 2);
     assert_eq!(config.name(), "MystikoWithPolyERC20");
-    assert_eq!(
-        config.address(),
-        "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
-    );
+    assert_eq!(config.address(), "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
     assert_eq!(config.contract_type(), &ContractType::Deposit);
     assert_eq!(config.start_block(), 1000000);
     assert!(config.event_filter_size().is_none());
@@ -82,10 +79,7 @@ async fn test_create() {
             BigInt::from_str("10000000000000000000").unwrap(),
         ]
     );
-    assert_eq!(
-        config.recommended_amounts_number::<u32>().unwrap(),
-        vec![1, 10]
-    );
+    assert_eq!(config.recommended_amounts_number::<u32>().unwrap(), vec![1, 10]);
     assert_eq!(config.peer_chain_id().unwrap(), 97);
     assert_eq!(
         config.peer_contract_address().unwrap(),
@@ -117,10 +111,7 @@ async fn test_create_contract_config() {
     config.validate().unwrap();
     assert_eq!(config.version(), 2);
     assert_eq!(config.name(), "MystikoWithPolyERC20");
-    assert_eq!(
-        config.address(),
-        "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"
-    );
+    assert_eq!(config.address(), "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
     assert_eq!(config.contract_type(), &ContractType::Deposit);
     assert!(config.disabled());
     assert_eq!(config.start_block(), 1000000);
@@ -150,10 +141,7 @@ async fn test_create_contract_config() {
             BigInt::from_str("10000000000000000000").unwrap(),
         ]
     );
-    assert_eq!(
-        config.recommended_amounts_number::<u32>().unwrap(),
-        vec![1, 10]
-    );
+    assert_eq!(config.recommended_amounts_number::<u32>().unwrap(), vec![1, 10]);
 }
 
 #[tokio::test]
@@ -201,9 +189,7 @@ async fn test_validate_bridge_asset_address_mismatch() {
 #[tokio::test]
 async fn test_validate_executor_asset_address_mismatch() {
     let (_, _, _, _, config) = setup(SetupOptions {
-        executor_fee_asset_address: Some(String::from(
-            "0x388c818ca8b9251b393131c08a736a67ccb19297",
-        )),
+        executor_fee_asset_address: Some(String::from("0x388c818ca8b9251b393131c08a736a67ccb19297")),
         ..SetupOptions::default()
     })
     .await;
@@ -310,17 +296,13 @@ async fn setup(
     DepositContractConfig,
 ) {
     let raw_pool_contract_config = Arc::new(create_raw_pool_contract_config().await);
-    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(
-        create_raw_main_asset_config().await,
-    )));
+    let main_asset_config = Arc::new(AssetConfig::new(Arc::new(create_raw_main_asset_config().await)));
     let asset_address = if let Some(address) = &raw_pool_contract_config.asset_address {
         address
     } else {
         MAIN_ASSET_ADDRESS
     };
-    let asset_config = Arc::new(AssetConfig::new(Arc::new(
-        create_raw_asset_config(asset_address).await,
-    )));
+    let asset_config = Arc::new(AssetConfig::new(Arc::new(create_raw_asset_config(asset_address).await)));
     let circuit_configs: Vec<Arc<CircuitConfig>> = create_raw_circuit_configs()
         .await
         .into_iter()
@@ -333,18 +315,16 @@ async fn setup(
         circuit_configs,
     ));
     let mut raw_config = create_raw_deposit_contract_config().await;
-    let bridge_fee_asset_address =
-        if let Some(bridge_fee_asset_address) = &options.bridge_fee_asset_address {
-            Some(bridge_fee_asset_address.clone())
-        } else {
-            raw_config.bridge_fee_asset_address.clone()
-        };
-    let executor_fee_asset_address =
-        if let Some(executor_fee_asset_address) = &options.executor_fee_asset_address {
-            Some(executor_fee_asset_address.clone())
-        } else {
-            raw_config.executor_fee_asset_address.clone()
-        };
+    let bridge_fee_asset_address = if let Some(bridge_fee_asset_address) = &options.bridge_fee_asset_address {
+        Some(bridge_fee_asset_address.clone())
+    } else {
+        raw_config.bridge_fee_asset_address.clone()
+    };
+    let executor_fee_asset_address = if let Some(executor_fee_asset_address) = &options.executor_fee_asset_address {
+        Some(executor_fee_asset_address.clone())
+    } else {
+        raw_config.executor_fee_asset_address.clone()
+    };
     let bridge_fee_asset = if let Some(bridge_fee_asset_address) = &bridge_fee_asset_address {
         Arc::new(AssetConfig::new(Arc::new(
             create_raw_asset_config(bridge_fee_asset_address).await,

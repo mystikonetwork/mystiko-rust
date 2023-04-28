@@ -39,18 +39,12 @@ pub struct DownloaderBuilder {
 }
 
 impl Downloader {
-    pub async fn download(
-        &mut self,
-        url: &str,
-        download_options: Option<DownloadOptions>,
-    ) -> Result<PathBuf> {
+    pub async fn download(&mut self, url: &str, download_options: Option<DownloadOptions>) -> Result<PathBuf> {
         let options = download_options.unwrap_or(DownloadOptions::default());
-        let is_compressed =
-            url.ends_with(".gz") || url.ends_with(".tgz") || url.ends_with(".tar.gz");
+        let is_compressed = url.ends_with(".gz") || url.ends_with(".tgz") || url.ends_with(".tar.gz");
         let file_path = self.download_raw(url, options.clone()).await?;
         if is_compressed && !options.skip_decompression {
-            let decompressed_file_path =
-                PathBuf::from(format!("{}_decompressed", file_path.to_str().unwrap()));
+            let decompressed_file_path = PathBuf::from(format!("{}_decompressed", file_path.to_str().unwrap()));
             if try_exists(&decompressed_file_path).await? {
                 if options.skip_cache {
                     remove_file(&decompressed_file_path).await?;
@@ -70,11 +64,7 @@ impl Downloader {
         }
     }
 
-    pub async fn download_failover(
-        &mut self,
-        urls: &Vec<String>,
-        options: Option<DownloadOptions>,
-    ) -> Result<PathBuf> {
+    pub async fn download_failover(&mut self, urls: &Vec<String>, options: Option<DownloadOptions>) -> Result<PathBuf> {
         for (index, url) in urls.iter().enumerate() {
             let result = self.download(url, options.clone()).await;
             if result.is_err() && index < urls.len() - 1 {
@@ -86,11 +76,7 @@ impl Downloader {
         Err(Error::msg("urls cannot be empty"))
     }
 
-    pub async fn read_bytes(
-        &mut self,
-        url: &str,
-        options: Option<DownloadOptions>,
-    ) -> Result<Vec<u8>> {
+    pub async fn read_bytes(&mut self, url: &str, options: Option<DownloadOptions>) -> Result<Vec<u8>> {
         Ok(read(self.download(url, options).await?).await?)
     }
 
@@ -116,9 +102,9 @@ impl Downloader {
                     remove_file(&file_path).await?;
                 }
                 let file = File::create(&file_path).await?;
-                let stream = response.bytes_stream().map(|result| {
-                    result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
-                });
+                let stream = response
+                    .bytes_stream()
+                    .map(|result| result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)));
                 let mut file_reader = StreamReader::new(stream);
                 let mut file_writer = BufWriter::new(file);
                 copy(&mut file_reader, &mut file_writer).await?;

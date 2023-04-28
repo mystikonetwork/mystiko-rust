@@ -55,11 +55,7 @@ impl MystikoConfig {
         let indexer_config = raw.indexer.as_ref().map(|r| IndexerConfig::new(r.clone()));
         let default_circuit_configs = initialize_default_circuit_configs(&circuit_configs)?;
         let circuit_configs_by_name = initialize_circuit_configs_by_name(&circuit_configs)?;
-        let chain_configs = initialize_chain_configs(
-            &raw.chains,
-            &default_circuit_configs,
-            &circuit_configs_by_name,
-        )?;
+        let chain_configs = initialize_chain_configs(&raw.chains, &default_circuit_configs, &circuit_configs_by_name)?;
         Ok(MystikoConfig {
             raw,
             chain_configs,
@@ -86,25 +82,11 @@ impl MystikoConfig {
     }
 
     pub async fn from_remote(options: &RemoteOptions) -> Result<Self> {
-        let base_url = options
-            .base_url
-            .as_deref()
-            .unwrap_or(DEFAULT_REMOTE_BASE_URL);
-        let environment = if options.is_staging {
-            "staging"
-        } else {
-            "production"
-        };
-        let network = if options.is_testnet {
-            "testnet"
-        } else {
-            "mainnet"
-        };
+        let base_url = options.base_url.as_deref().unwrap_or(DEFAULT_REMOTE_BASE_URL);
+        let environment = if options.is_staging { "staging" } else { "production" };
+        let network = if options.is_testnet { "testnet" } else { "mainnet" };
         let url = if let Some(git_revision) = &options.git_revision {
-            format!(
-                "{}/{}/{}/{}/config.json",
-                base_url, environment, network, git_revision
-            )
+            format!("{}/{}/{}/{}/config.json", base_url, environment, network, git_revision)
         } else {
             format!("{}/{}/{}/latest.json", base_url, environment, network)
         };
@@ -154,23 +136,15 @@ impl MystikoConfig {
     }
 
     pub fn country_blacklist(&self) -> Vec<&str> {
-        self.raw
-            .country_blacklist
-            .iter()
-            .map(|c| c.as_str())
-            .collect()
+        self.raw.country_blacklist.iter().map(|c| c.as_str()).collect()
     }
 
     pub fn find_default_circuit(&self, circuit_type: &CircuitType) -> Option<&CircuitConfig> {
-        self.default_circuit_configs
-            .get(circuit_type)
-            .map(|c| c.as_ref())
+        self.default_circuit_configs.get(circuit_type).map(|c| c.as_ref())
     }
 
     pub fn find_circuit(&self, circuit_name: &str) -> Option<&CircuitConfig> {
-        self.circuit_configs_by_name
-            .get(circuit_name)
-            .map(|c| c.as_ref())
+        self.circuit_configs_by_name.get(circuit_name).map(|c| c.as_ref())
     }
 
     pub fn find_chain(&self, chain_id: u64) -> Option<&ChainConfig> {
@@ -195,21 +169,14 @@ impl MystikoConfig {
             .unwrap_or(vec![])
     }
 
-    pub fn find_bridges(
-        &self,
-        chain_id: u64,
-        peer_chain_id: u64,
-        asset_symbol: &str,
-    ) -> Vec<&BridgeType> {
+    pub fn find_bridges(&self, chain_id: u64, peer_chain_id: u64, asset_symbol: &str) -> Vec<&BridgeType> {
         self.find_chain(chain_id)
             .map(|c| c.find_bridges(peer_chain_id, asset_symbol))
             .unwrap_or(vec![])
     }
 
     pub fn find_bridge(&self, bridge_type: &BridgeType) -> Option<&BridgeConfig> {
-        self.bridges()
-            .into_iter()
-            .find(|c| c.bridge_type() == bridge_type)
+        self.bridges().into_iter().find(|c| c.bridge_type() == bridge_type)
     }
 
     pub fn find_deposit_contract(
@@ -226,11 +193,7 @@ impl MystikoConfig {
         }
     }
 
-    pub fn find_deposit_contract_by_address(
-        &self,
-        chain_id: u64,
-        address: &str,
-    ) -> Option<&DepositContractConfig> {
+    pub fn find_deposit_contract_by_address(&self, chain_id: u64, address: &str) -> Option<&DepositContractConfig> {
         if let Some(chain_config) = self.find_chain(chain_id) {
             chain_config.find_deposit_contract_by_address(address)
         } else {
@@ -263,11 +226,7 @@ impl MystikoConfig {
         }
     }
 
-    pub fn find_pool_contract_by_address(
-        &self,
-        chain_id: u64,
-        address: &str,
-    ) -> Option<&PoolContractConfig> {
+    pub fn find_pool_contract_by_address(&self, chain_id: u64, address: &str) -> Option<&PoolContractConfig> {
         if let Some(chain_config) = self.find_chain(chain_id) {
             chain_config.find_pool_contract_by_address(address)
         } else {
@@ -284,8 +243,7 @@ impl MystikoConfig {
     }
 
     pub fn transaction_url(&self, chain_id: u64, tx_hash: &str) -> Option<String> {
-        self.find_chain(chain_id)
-            .map(|c| c.transaction_url(tx_hash))
+        self.find_chain(chain_id).map(|c| c.transaction_url(tx_hash))
     }
 
     pub fn validate(&self) -> Result<()> {
@@ -296,9 +254,7 @@ impl MystikoConfig {
         for chain_config in self.chains() {
             for deposit_contract_config in chain_config.deposit_contracts_with_disabled() {
                 if deposit_contract_config.bridge_type() != &BridgeType::Loop
-                    && self
-                        .find_bridge(deposit_contract_config.bridge_type())
-                        .is_none()
+                    && self.find_bridge(deposit_contract_config.bridge_type()).is_none()
                 {
                     return Err(Error::msg(format!(
                         "no bridge config for bridge_type {:?}",
@@ -310,11 +266,10 @@ impl MystikoConfig {
                     deposit_contract_config.peer_contract_address(),
                 ) {
                     if self.find_chain(*peer_chain_id).is_some() {
-                        if let Some(peer_contract) = self
-                            .find_deposit_contract_by_address(*peer_chain_id, peer_chain_address)
+                        if let Some(peer_contract) =
+                            self.find_deposit_contract_by_address(*peer_chain_id, peer_chain_address)
                         {
-                            if peer_contract.bridge_type() != deposit_contract_config.bridge_type()
-                            {
+                            if peer_contract.bridge_type() != deposit_contract_config.bridge_type() {
                                 return Err(Error::msg(format!(
                                     "mismatched bridge_types {:?} vs {:?} \
                                     for peer deposit contract config of \
@@ -338,9 +293,7 @@ impl MystikoConfig {
                                     chain_config.chain_id(),
                                 )));
                             }
-                            if peer_contract.peer_contract_address()
-                                != Some(deposit_contract_config.address())
-                            {
+                            if peer_contract.peer_contract_address() != Some(deposit_contract_config.address()) {
                                 return Err(Error::msg(format!(
                                     "peer_contract_address for peer deposit contract config of \
                                     chain_id {} at {} \

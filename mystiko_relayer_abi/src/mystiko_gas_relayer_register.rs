@@ -44,10 +44,7 @@ pub mod mystiko_gas_relayer_register {
     impl<M: ::ethers_providers::Middleware> MystikoGasRelayerRegister<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
             Self(::ethers_contract::Contract::new(
                 address.into(),
                 MYSTIKOGASRELAYERREGISTER_ABI.clone(),
@@ -97,10 +94,7 @@ pub mod mystiko_gas_relayer_register {
         pub fn get_relayer_url_and_name(
             &self,
             worker: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            (::std::string::String, ::std::string::String),
-        > {
+        ) -> ::ethers_contract::builders::ContractCall<M, (::std::string::String, ::std::string::String)> {
             self.0
                 .method_hash([221, 148, 94, 79], worker)
                 .expect("method not found (this should never happen)")
@@ -115,9 +109,7 @@ pub mod mystiko_gas_relayer_register {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `operator` (0x570ca735) function
-        pub fn operator(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
+        pub fn operator(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([87, 12, 167, 53], ())
                 .expect("method not found (this should never happen)")
@@ -130,10 +122,7 @@ pub mod mystiko_gas_relayer_register {
             relayer_workers: ::std::vec::Vec<::ethers_core::types::Address>,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash(
-                    [222, 155, 251, 141],
-                    (relayer_url, relayer_name, relayer_workers),
-                )
+                .method_hash([222, 155, 251, 141], (relayer_url, relayer_name, relayer_workers))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `registerWorker` (0x2e650649) function
@@ -150,10 +139,7 @@ pub mod mystiko_gas_relayer_register {
         pub fn relayer_meta_map(
             &self,
             p0: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            (::std::string::String, ::std::string::String),
-        > {
+        ) -> ::ethers_contract::builders::ContractCall<M, (::std::string::String, ::std::string::String)> {
             self.0
                 .method_hash([215, 184, 245, 38], p0)
                 .expect("method not found (this should never happen)")
@@ -168,10 +154,7 @@ pub mod mystiko_gas_relayer_register {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `relayerUrlMap` (0x194e578f) function
-        pub fn relayer_url_map(
-            &self,
-            p0: ::std::string::String,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn relayer_url_map(&self, p0: ::std::string::String) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([25, 78, 87, 143], p0)
                 .expect("method not found (this should never happen)")
@@ -226,73 +209,53 @@ pub mod mystiko_gas_relayer_register {
         ///Gets the contract's `GasRelayerDeRegistered` event
         pub fn gas_relayer_de_registered_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerDeRegisteredFilter>
-        {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerDeRegisteredFilter> {
             self.0.event()
         }
         ///Gets the contract's `GasRelayerNameUpdate` event
         pub fn gas_relayer_name_update_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerNameUpdateFilter>
-        {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerNameUpdateFilter> {
             self.0.event()
         }
         ///Gets the contract's `GasRelayerRegistered` event
         pub fn gas_relayer_registered_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerRegisteredFilter>
-        {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerRegisteredFilter> {
             self.0.event()
         }
         ///Gets the contract's `GasRelayerUrlUpdate` event
         pub fn gas_relayer_url_update_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerUrlUpdateFilter>
-        {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerUrlUpdateFilter> {
             self.0.event()
         }
         ///Gets the contract's `GasRelayerWorkerDeRegistered` event
         pub fn gas_relayer_worker_de_registered_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            GasRelayerWorkerDeRegisteredFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerWorkerDeRegisteredFilter> {
             self.0.event()
         }
         ///Gets the contract's `GasRelayerWorkerRegistered` event
         pub fn gas_relayer_worker_registered_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            GasRelayerWorkerRegisteredFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasRelayerWorkerRegisteredFilter> {
             self.0.event()
         }
         ///Gets the contract's `OperatorChanged` event
         pub fn operator_changed_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter>
-        {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter> {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
         pub fn events(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            MystikoGasRelayerRegisterEvents,
-        > {
-            self.0
-                .event_with_filter(::core::default::Default::default())
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, MystikoGasRelayerRegisterEvents> {
+            self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-        for MystikoGasRelayerRegister<M>
-    {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for MystikoGasRelayerRegister<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -331,10 +294,7 @@ pub mod mystiko_gas_relayer_register {
         Eq,
         Hash,
     )]
-    #[ethevent(
-        name = "GasRelayerNameUpdate",
-        abi = "GasRelayerNameUpdate(address,string)"
-    )]
+    #[ethevent(name = "GasRelayerNameUpdate", abi = "GasRelayerNameUpdate(address,string)")]
     pub struct GasRelayerNameUpdateFilter {
         #[ethevent(indexed)]
         pub relayer: ::ethers_core::types::Address,
@@ -352,10 +312,7 @@ pub mod mystiko_gas_relayer_register {
         Eq,
         Hash,
     )]
-    #[ethevent(
-        name = "GasRelayerRegistered",
-        abi = "GasRelayerRegistered(address,string,string)"
-    )]
+    #[ethevent(name = "GasRelayerRegistered", abi = "GasRelayerRegistered(address,string,string)")]
     pub struct GasRelayerRegisteredFilter {
         #[ethevent(indexed)]
         pub relayer: ::ethers_core::types::Address,
@@ -374,10 +331,7 @@ pub mod mystiko_gas_relayer_register {
         Eq,
         Hash,
     )]
-    #[ethevent(
-        name = "GasRelayerUrlUpdate",
-        abi = "GasRelayerUrlUpdate(address,string)"
-    )]
+    #[ethevent(name = "GasRelayerUrlUpdate", abi = "GasRelayerUrlUpdate(address,string)")]
     pub struct GasRelayerUrlUpdateFilter {
         #[ethevent(indexed)]
         pub relayer: ::ethers_core::types::Address,
@@ -444,14 +398,7 @@ pub mod mystiko_gas_relayer_register {
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum MystikoGasRelayerRegisterEvents {
         GasRelayerDeRegisteredFilter(GasRelayerDeRegisteredFilter),
@@ -463,41 +410,31 @@ pub mod mystiko_gas_relayer_register {
         OperatorChangedFilter(OperatorChangedFilter),
     }
     impl ::ethers_contract::EthLogDecode for MystikoGasRelayerRegisterEvents {
-        fn decode_log(
-            log: &::ethers_core::abi::RawLog,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = GasRelayerDeRegisteredFilter::decode_log(log) {
                 return Ok(MystikoGasRelayerRegisterEvents::GasRelayerDeRegisteredFilter(decoded));
             }
             if let Ok(decoded) = GasRelayerNameUpdateFilter::decode_log(log) {
-                return Ok(MystikoGasRelayerRegisterEvents::GasRelayerNameUpdateFilter(
-                    decoded,
-                ));
+                return Ok(MystikoGasRelayerRegisterEvents::GasRelayerNameUpdateFilter(decoded));
             }
             if let Ok(decoded) = GasRelayerRegisteredFilter::decode_log(log) {
-                return Ok(MystikoGasRelayerRegisterEvents::GasRelayerRegisteredFilter(
-                    decoded,
-                ));
+                return Ok(MystikoGasRelayerRegisterEvents::GasRelayerRegisteredFilter(decoded));
             }
             if let Ok(decoded) = GasRelayerUrlUpdateFilter::decode_log(log) {
-                return Ok(MystikoGasRelayerRegisterEvents::GasRelayerUrlUpdateFilter(
-                    decoded,
-                ));
+                return Ok(MystikoGasRelayerRegisterEvents::GasRelayerUrlUpdateFilter(decoded));
             }
             if let Ok(decoded) = GasRelayerWorkerDeRegisteredFilter::decode_log(log) {
-                return Ok(
-                    MystikoGasRelayerRegisterEvents::GasRelayerWorkerDeRegisteredFilter(decoded),
-                );
-            }
-            if let Ok(decoded) = GasRelayerWorkerRegisteredFilter::decode_log(log) {
-                return Ok(
-                    MystikoGasRelayerRegisterEvents::GasRelayerWorkerRegisteredFilter(decoded),
-                );
-            }
-            if let Ok(decoded) = OperatorChangedFilter::decode_log(log) {
-                return Ok(MystikoGasRelayerRegisterEvents::OperatorChangedFilter(
+                return Ok(MystikoGasRelayerRegisterEvents::GasRelayerWorkerDeRegisteredFilter(
                     decoded,
                 ));
+            }
+            if let Ok(decoded) = GasRelayerWorkerRegisteredFilter::decode_log(log) {
+                return Ok(MystikoGasRelayerRegisterEvents::GasRelayerWorkerRegisteredFilter(
+                    decoded,
+                ));
+            }
+            if let Ok(decoded) = OperatorChangedFilter::decode_log(log) {
+                return Ok(MystikoGasRelayerRegisterEvents::OperatorChangedFilter(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData)
         }
@@ -505,18 +442,12 @@ pub mod mystiko_gas_relayer_register {
     impl ::core::fmt::Display for MystikoGasRelayerRegisterEvents {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::GasRelayerDeRegisteredFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::GasRelayerDeRegisteredFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GasRelayerNameUpdateFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GasRelayerRegisteredFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GasRelayerUrlUpdateFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GasRelayerWorkerDeRegisteredFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::GasRelayerWorkerRegisteredFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::GasRelayerWorkerDeRegisteredFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GasRelayerWorkerRegisteredFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::OperatorChangedFilter(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
@@ -682,10 +613,7 @@ pub mod mystiko_gas_relayer_register {
         Eq,
         Hash,
     )]
-    #[ethcall(
-        name = "registerRelayer",
-        abi = "registerRelayer(string,string,address[])"
-    )]
+    #[ethcall(name = "registerRelayer", abi = "registerRelayer(string,string,address[])")]
     pub struct RegisterRelayerCall {
         pub relayer_url: ::std::string::String,
         pub relayer_name: ::std::string::String,
@@ -839,14 +767,7 @@ pub mod mystiko_gas_relayer_register {
     pub struct WorkerMapCall(pub ::ethers_core::types::Address);
     ///Container type for all of the contract's call
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum MystikoGasRelayerRegisterCalls {
         ChangeOperator(ChangeOperatorCall),
@@ -868,78 +789,54 @@ pub mod mystiko_gas_relayer_register {
         WorkerMap(WorkerMapCall),
     }
     impl ::ethers_core::abi::AbiDecode for MystikoGasRelayerRegisterCalls {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ChangeOperator(decoded));
             }
-            if let Ok(decoded) =
-                <DeregisterRelayerCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <DeregisterRelayerCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::DeregisterRelayer(decoded));
             }
-            if let Ok(decoded) =
-                <DeregisterWorkerCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <DeregisterWorkerCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::DeregisterWorker(decoded));
             }
-            if let Ok(decoded) =
-                <GetAllRelayerInfoCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <GetAllRelayerInfoCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetAllRelayerInfo(decoded));
             }
-            if let Ok(decoded) =
-                <GetRelayerUrlAndNameCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <GetRelayerUrlAndNameCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetRelayerUrlAndName(decoded));
             }
-            if let Ok(decoded) =
-                <IsWorkerRegisteredCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <IsWorkerRegisteredCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IsWorkerRegistered(decoded));
             }
             if let Ok(decoded) = <OperatorCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Operator(decoded));
             }
-            if let Ok(decoded) =
-                <RegisterRelayerCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <RegisterRelayerCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RegisterRelayer(decoded));
             }
-            if let Ok(decoded) = <RegisterWorkerCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <RegisterWorkerCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RegisterWorker(decoded));
             }
-            if let Ok(decoded) = <RelayerMetaMapCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <RelayerMetaMapCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RelayerMetaMap(decoded));
             }
-            if let Ok(decoded) = <RelayerNameMapCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <RelayerNameMapCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RelayerNameMap(decoded));
             }
-            if let Ok(decoded) = <RelayerUrlMapCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <RelayerUrlMapCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RelayerUrlMap(decoded));
             }
             if let Ok(decoded) = <RelayersCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Relayers(decoded));
             }
-            if let Ok(decoded) = <RemoveRelayerCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <RemoveRelayerCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RemoveRelayer(decoded));
             }
-            if let Ok(decoded) =
-                <UpdateRelayerNameCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <UpdateRelayerNameCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::UpdateRelayerName(decoded));
             }
-            if let Ok(decoded) =
-                <UpdateRelayerUrlCall as ::ethers_core::abi::AbiDecode>::decode(data)
-            {
+            if let Ok(decoded) = <UpdateRelayerUrlCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::UpdateRelayerUrl(decoded));
             }
             if let Ok(decoded) = <WorkerMapCall as ::ethers_core::abi::AbiDecode>::decode(data) {
@@ -955,9 +852,7 @@ pub mod mystiko_gas_relayer_register {
                 Self::DeregisterRelayer(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::DeregisterWorker(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::GetAllRelayerInfo(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetRelayerUrlAndName(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::GetRelayerUrlAndName(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::IsWorkerRegistered(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::Operator(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::RegisterRelayer(element) => ::ethers_core::abi::AbiEncode::encode(element),

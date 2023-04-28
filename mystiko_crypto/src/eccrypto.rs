@@ -1,8 +1,6 @@
 // compatible with nodejs eccrypto
 use crate::aes_cbc;
-use crate::constants::{
-    ECIES_IV_LENGTH, ECIES_MAC_LENGTH, ECIES_META_LENGTH, ECIES_UNCOMPRESSED_PK_LENGTH,
-};
+use crate::constants::{ECIES_IV_LENGTH, ECIES_MAC_LENGTH, ECIES_META_LENGTH, ECIES_UNCOMPRESSED_PK_LENGTH};
 use crate::error::CryptoError;
 use crate::hash::{hmac_sha256, sha512};
 use crate::utils::random_bytes;
@@ -77,10 +75,7 @@ fn decrypt_derive_shared_secret(pk_a: &[u8], sk_b: &[u8]) -> Vec<u8> {
     let public_key_a = PublicKey::from_sec1_bytes(pk_a).unwrap();
     let secret_key_b = SecretKey::from_be_bytes(sk_b).unwrap();
 
-    let shared = elliptic_curve::ecdh::diffie_hellman(
-        secret_key_b.to_nonzero_scalar(),
-        public_key_a.as_affine(),
-    );
+    let shared = elliptic_curve::ecdh::diffie_hellman(secret_key_b.to_nonzero_scalar(), public_key_a.as_affine());
 
     let shared_bytes = shared.raw_secret_bytes();
     let shared_bytes = shared_bytes.as_ref() as &[u8];
