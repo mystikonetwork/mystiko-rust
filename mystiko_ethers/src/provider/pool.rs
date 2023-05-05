@@ -7,7 +7,7 @@ use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[async_trait]
-pub trait ChainProvidersOptions: Debug {
+pub trait ChainProvidersOptions: Debug + Send + Sync {
     async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>>;
 }
 
