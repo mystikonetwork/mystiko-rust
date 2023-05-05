@@ -27,7 +27,7 @@ pub enum ProvidersOptions {
 }
 
 #[async_trait]
-pub trait ProviderFactory: Debug {
+pub trait ProviderFactory: Debug + Send + Sync {
     async fn create_provider(&self, providers_options: ProvidersOptions) -> Result<Provider>;
 }
 
