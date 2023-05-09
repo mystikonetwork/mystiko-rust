@@ -24,7 +24,9 @@ pub static ACCOUNT_SCHEMA: DocumentSchema = DocumentSchema {
             `encrypted_secret_key` TEXT NOT NULL,\
             `status` VARCHAR(32) NOT NULL,\
             `scan_size` INT NOT NULL,\
-            `wallet_id` VARCHAR(64) NOT NULL)",
+            `wallet_id` VARCHAR(64) NOT NULL,\
+            CONSTRAINT `accounts_shielded_address_unique` UNIQUE (`wallet_id`, `shielded_address`),\
+            CONSTRAINT `accounts_public_key_unique` UNIQUE (`wallet_id`, `public_key`))",
         "CREATE INDEX `accounts_shielded_address_index` ON `accounts` (`shielded_address`);",
         "CREATE INDEX `accounts_public_key_index` ON `accounts` (`public_key`);",
     ],

@@ -31,9 +31,9 @@ async fn test_deposits_crud() {
                 chain_id: 1,
                 contract_address: String::from("contract_address 1"),
                 pool_address: String::from("pool_address 1"),
-                commitment_hash: String::from("commitment_hash 1"),
-                hash_k: String::from("hash_k 1"),
-                random_s: String::from("random_s 1"),
+                commitment_hash: BigInt::from(1),
+                hash_k: BigInt::from(11),
+                random_s: BigInt::from(111),
                 encrypted_note: String::from("encrypted_note 1"),
                 asset_symbol: String::from("asset_symbol 1"),
                 asset_decimals: 6,
@@ -68,9 +68,9 @@ async fn test_deposits_crud() {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
                     pool_address: String::from("pool_address 2"),
-                    commitment_hash: String::from("commitment_hash 2"),
-                    hash_k: String::from("hash_k 2"),
-                    random_s: String::from("random_s 2"),
+                    commitment_hash: BigInt::from(2),
+                    hash_k: BigInt::from(22),
+                    random_s: BigInt::from(222),
                     encrypted_note: String::from("encrypted_note 2"),
                     asset_symbol: String::from("asset_symbol 2"),
                     asset_decimals: 12,
@@ -99,9 +99,9 @@ async fn test_deposits_crud() {
                     chain_id: 3,
                     contract_address: String::from("contract_address 3"),
                     pool_address: String::from("pool_address 3"),
-                    commitment_hash: String::from("commitment_hash 3"),
-                    hash_k: String::from("hash_k 3"),
-                    random_s: String::from("random_s 3"),
+                    commitment_hash: BigInt::from(3),
+                    hash_k: BigInt::from(33),
+                    random_s: BigInt::from(333),
                     encrypted_note: String::from("encrypted_note 3"),
                     asset_symbol: String::from("asset_symbol 3"),
                     asset_decimals: 18,
@@ -139,7 +139,7 @@ async fn test_deposits_crud() {
                 QueryFilterBuilder::new()
                     .filter(Condition::FILTER(SubFilter::Equal(
                         String::from("hash_k"),
-                        "hash_k 2".to_string()
+                        22.to_string()
                     )))
                     .build()
             )
@@ -167,7 +167,7 @@ async fn test_deposits_crud() {
             QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
                     String::from("random_s"),
-                    String::from("random_s 2"),
+                    222.to_string(),
                 )))
                 .build(),
         )

@@ -1,8 +1,10 @@
 #![forbid(unsafe_code)]
+
 use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
 use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigInt;
+use std::str::FromStr;
 
 pub static DEPOSIT_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "deposits",
@@ -39,7 +41,8 @@ pub static DEPOSIT_SCHEMA: DocumentSchema = DocumentSchema {
             `asset_approve_transaction_hash` VARCHAR(128),\
             `transaction_hash` VARCHAR(128),\
             `relay_transaction_hash` VARCHAR(128),\
-            `rollup_transaction_hash` VARCHAR(128))",
+            `rollup_transaction_hash` VARCHAR(128),\
+            CONSTRAINT `deposits_commitment_hash_unique` UNIQUE (`chain_id`, `contract_address`, `commitment_hash`))",
         "CREATE INDEX `deposits_created_at_index` ON `deposits` (`created_at`)",
         "CREATE INDEX `deposits_updated_at_index` ON `deposits` (`updated_at`)",
         "CREATE INDEX `deposits_chain_id_index` ON `deposits` (`chain_id`)",
@@ -91,9 +94,9 @@ pub struct Deposit {
     pub chain_id: u64,
     pub contract_address: String,
     pub pool_address: String,
-    pub commitment_hash: String,
-    pub hash_k: String,
-    pub random_s: String,
+    pub commitment_hash: BigInt,
+    pub hash_k: BigInt,
+    pub random_s: BigInt,
     pub encrypted_note: String,
     pub asset_symbol: String,
     pub asset_decimals: u32,
@@ -129,9 +132,9 @@ impl DocumentData for Deposit {
             "chain_id" => Some(self.chain_id.to_string()),
             "contract_address" => Some(self.contract_address.clone()),
             "pool_address" => Some(self.pool_address.clone()),
-            "commitment_hash" => Some(self.commitment_hash.clone()),
-            "hash_k" => Some(self.hash_k.clone()),
-            "random_s" => Some(self.random_s.clone()),
+            "commitment_hash" => Some(self.commitment_hash.to_string()),
+            "hash_k" => Some(self.hash_k.to_string()),
+            "random_s" => Some(self.random_s.to_string()),
             "encrypted_note" => Some(self.encrypted_note.clone()),
             "asset_symbol" => Some(self.asset_symbol.clone()),
             "asset_decimals" => Some(self.asset_decimals.to_string()),
@@ -164,37 +167,21 @@ impl DocumentData for Deposit {
             chain_id: raw.field_integer_value::<u64>("chain_id")?.unwrap(),
             contract_address: raw.field_string_value("contract_address")?.unwrap(),
             pool_address: raw.field_string_value("pool_address")?.unwrap(),
-            commitment_hash: raw.field_string_value("commitment_hash")?.unwrap(),
-            hash_k: raw.field_string_value("hash_k")?.unwrap(),
-            random_s: raw.field_string_value("random_s")?.unwrap(),
+            commitment_hash: BigInt::from_str(&raw.field_string_value("commitment_hash")?.unwrap())?,
+            hash_k: BigInt::from_str(&raw.field_string_value("hash_k")?.unwrap())?,
+            random_s: BigInt::from_str(&raw.field_string_value("random_s")?.unwrap())?,
             encrypted_note: raw.field_string_value("encrypted_note")?.unwrap(),
             asset_symbol: raw.field_string_value("asset_symbol")?.unwrap(),
             asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
             asset_address: raw.field_string_value("asset_address")?,
             bridge_type: serde_json::from_str(&raw.field_string_value("bridge_type")?.unwrap())?,
-            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10).unwrap(),
-            rollup_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("rollup_fee_amount")?.unwrap().as_bytes(),
-                10,
-            )
-            .unwrap(),
-            bridge_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("bridge_fee_amount")?.unwrap().as_bytes(),
-                10,
-            )
-            .unwrap(),
+            amount: BigInt::from_str(&raw.field_string_value("amount")?.unwrap()).unwrap(),
+            rollup_fee_amount: BigInt::from_str(&raw.field_string_value("rollup_fee_amount")?.unwrap())?,
+            bridge_fee_amount: BigInt::from_str(&raw.field_string_value("bridge_fee_amount")?.unwrap())?,
             bridge_fee_asset_address: raw.field_string_value("bridge_fee_asset_address")?,
-            executor_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("executor_fee_amount")?.unwrap().as_bytes(),
-                10,
-            )
-            .unwrap(),
+            executor_fee_amount: BigInt::from_str(&raw.field_string_value("executor_fee_amount")?.unwrap())?,
             executor_fee_asset_address: raw.field_string_value("executor_fee_asset_address")?,
-            service_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("service_fee_amount")?.unwrap().as_bytes(),
-                10,
-            )
-            .unwrap(),
+            service_fee_amount: BigInt::from_str(&raw.field_string_value("service_fee_amount")?.unwrap())?,
             shielded_recipient_address: raw.field_string_value("shielded_recipient_address")?.unwrap(),
             status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
             error_message: raw.field_string_value("error_message")?,

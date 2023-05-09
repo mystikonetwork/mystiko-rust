@@ -3222,6 +3222,7 @@ dependencies = [
  "num-integer",
  "num-traits 0.2.15",
  "rand 0.8.5",
+ "serde",
 ]
 
 [[package]]
