@@ -1,5 +1,5 @@
 use mystiko_database::collection::wallet::WalletCollection;
-use mystiko_database::document::wallet::Wallet;
+use mystiko_database::document::wallet::{Wallet, ACCOUNT_NONCE_FIELD_NAME, HASHED_PASSWORD_FIELD_NAME};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
@@ -53,7 +53,7 @@ async fn test_wallets_crud() {
     assert_eq!(wallets.count_all().await.unwrap(), 3);
     assert_eq!(
         wallets
-            .count(SubFilter::Equal(String::from("account_nonce"), 2.to_string()))
+            .count(SubFilter::Equal(ACCOUNT_NONCE_FIELD_NAME.into(), 2.to_string()))
             .await
             .unwrap(),
         1
@@ -69,7 +69,7 @@ async fn test_wallets_crud() {
     assert_eq!(found_wallets, inserted_wallets[1..]);
     let mut found_wallet = wallets
         .find_one(SubFilter::Equal(
-            String::from("hashed_password"),
+            HASHED_PASSWORD_FIELD_NAME.into(),
             String::from("hashed password 02"),
         ))
         .await
@@ -107,7 +107,7 @@ async fn test_wallets_crud() {
     assert_eq!(wallets.count_all().await.unwrap(), 2);
     wallets
         .delete_by_filter(SubFilter::Equal(
-            String::from("hashed_password"),
+            HASHED_PASSWORD_FIELD_NAME.into(),
             String::from("hashed password 01"),
         ))
         .await

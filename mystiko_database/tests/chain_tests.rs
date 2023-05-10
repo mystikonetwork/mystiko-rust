@@ -1,5 +1,5 @@
 use mystiko_database::collection::chain::ChainCollection;
-use mystiko_database::document::chain::{Chain, Provider};
+use mystiko_database::document::chain::{Chain, Provider, NAME_FIELD_NAME, NAME_OVERRIDE_FIELD_NAME};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
@@ -95,7 +95,7 @@ async fn test_chains_crud() {
     // testing count
     assert_eq!(
         chains
-            .count(SubFilter::Equal(String::from("name_override"), 1.to_string(),))
+            .count(SubFilter::Equal(NAME_OVERRIDE_FIELD_NAME.into(), 1.to_string(),))
             .await
             .unwrap(),
         1
@@ -112,7 +112,7 @@ async fn test_chains_crud() {
     assert_eq!(found_chains, inserted_chains[1..]);
     // testing find_one
     let mut found_chain = chains
-        .find_one(SubFilter::Equal(String::from("name"), String::from("Polygon")))
+        .find_one(SubFilter::Equal(NAME_FIELD_NAME.into(), String::from("Polygon")))
         .await
         .unwrap()
         .unwrap();
@@ -145,7 +145,10 @@ async fn test_chains_crud() {
     chains.insert(&inserted_chains[0].data).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 2);
     chains
-        .delete_by_filter(SubFilter::Equal(String::from("name"), String::from("Ethereum Goerli")))
+        .delete_by_filter(SubFilter::Equal(
+            NAME_FIELD_NAME.into(),
+            String::from("Ethereum Goerli"),
+        ))
         .await
         .unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 1);

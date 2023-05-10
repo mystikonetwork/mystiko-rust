@@ -1,5 +1,7 @@
 use mystiko_database::collection::account::AccountCollection;
-use mystiko_database::document::account::Account;
+use mystiko_database::document::account::{
+    Account, PUBLIC_KEY_FIELD_NAME, SCAN_SIZE_FIELD_NAME, SHIELDED_ADDRESS_FIELD_NAME,
+};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
@@ -66,7 +68,7 @@ async fn test_accounts_crud() {
     assert_eq!(accounts.count_all().await.unwrap(), 3);
     assert_eq!(
         accounts
-            .count(SubFilter::Equal(String::from("scan_size"), 2.to_string()))
+            .count(SubFilter::Equal(SCAN_SIZE_FIELD_NAME.into(), 2.to_string()))
             .await
             .unwrap(),
         1
@@ -82,7 +84,7 @@ async fn test_accounts_crud() {
     assert_eq!(found_accounts, inserted_accounts[1..]);
     let mut found_account = accounts
         .find_one(SubFilter::Equal(
-            String::from("shielded_address"),
+            SHIELDED_ADDRESS_FIELD_NAME.into(),
             String::from("shielded address 2"),
         ))
         .await
@@ -116,7 +118,7 @@ async fn test_accounts_crud() {
     assert_eq!(accounts.count_all().await.unwrap(), 2);
     accounts
         .delete_by_filter(SubFilter::Equal(
-            String::from("public_key"),
+            PUBLIC_KEY_FIELD_NAME.into(),
             String::from("public key 1"),
         ))
         .await

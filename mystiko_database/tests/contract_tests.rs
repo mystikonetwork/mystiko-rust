@@ -1,7 +1,7 @@
 extern crate mystiko_database;
 
 use mystiko_database::collection::contract::ContractCollection;
-use mystiko_database::document::contract::Contract;
+use mystiko_database::document::contract::{Contract, CONTRACT_ADDRESS_FIELD_NAME, DISABLED_FIELD_NAME};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
@@ -73,7 +73,7 @@ async fn test_contracts_crud() {
     // testing count
     assert_eq!(
         contracts
-            .count(SubFilter::Equal(String::from("disabled"), 1.to_string()))
+            .count(SubFilter::Equal(DISABLED_FIELD_NAME.into(), 1.to_string()))
             .await
             .unwrap(),
         1
@@ -91,7 +91,7 @@ async fn test_contracts_crud() {
     // testing find_one
     let mut found_contract = contracts
         .find_one(SubFilter::Equal(
-            String::from("contract_address"),
+            CONTRACT_ADDRESS_FIELD_NAME.into(),
             String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
         ))
         .await
@@ -127,7 +127,7 @@ async fn test_contracts_crud() {
     assert_eq!(contracts.count_all().await.unwrap(), 2);
     contracts
         .delete_by_filter(SubFilter::Equal(
-            String::from("contract_address"),
+            CONTRACT_ADDRESS_FIELD_NAME.into(),
             String::from("0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
         ))
         .await

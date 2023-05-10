@@ -10,6 +10,7 @@ mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 num-bigint = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }
+thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.26.0", features = ["sync"] }
 
 [dev-dependencies]

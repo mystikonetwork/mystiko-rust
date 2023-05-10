@@ -1,5 +1,7 @@
 use mystiko_database::collection::transaction::TransactionCollection;
-use mystiko_database::document::transaction::Transaction;
+use mystiko_database::document::transaction::{
+    Transaction, ASSET_SYMBOL_FIELD_NAME, SHIELDED_ADDRESS_FIELD_NAME, SIGNATURE_PUBLIC_KEY_FIELD_NAME,
+};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
@@ -128,7 +130,7 @@ async fn test_transactions_crud() {
     assert_eq!(
         transactions
             .count(SubFilter::Equal(
-                String::from("signature_public_key"),
+                SIGNATURE_PUBLIC_KEY_FIELD_NAME.into(),
                 "signature_public_key 2".to_string()
             ))
             .await
@@ -152,7 +154,7 @@ async fn test_transactions_crud() {
     assert_eq!(found_transactions, inserted_transactions[1..]);
     let mut found_transaction = transactions
         .find_one(SubFilter::Equal(
-            String::from("asset_symbol"),
+            ASSET_SYMBOL_FIELD_NAME.into(),
             String::from("asset_symbol 2"),
         ))
         .await
@@ -190,7 +192,7 @@ async fn test_transactions_crud() {
     assert_eq!(transactions.count_all().await.unwrap(), 2);
     transactions
         .delete_by_filter(SubFilter::Equal(
-            String::from("shielded_address"),
+            SHIELDED_ADDRESS_FIELD_NAME.into(),
             String::from("shielded_address 1"),
         ))
         .await

@@ -2,9 +2,37 @@
 
 use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use mystiko_storage::error::StorageError;
 use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigInt;
-use std::str::FromStr;
+
+pub const CHAIN_ID_FIELD_NAME: &str = "chain_id";
+pub const CONTRACT_ADDRESS_FIELD_NAME: &str = "contract_address";
+pub const ASSET_SYMBOL_FIELD_NAME: &str = "asset_symbol";
+pub const ASSET_DECIMALS_FIELD_NAME: &str = "asset_decimals";
+pub const ASSET_ADDRESS_FIELD_NAME: &str = "asset_address";
+pub const PROOF_FIELD_NAME: &str = "proof";
+pub const ROOT_HASH_FIELD_NAME: &str = "root_hash";
+pub const INPUT_COMMITMENTS_FIELD_NAME: &str = "input_commitments";
+pub const OUTPUT_COMMITMENTS_FIELD_NAME: &str = "output_commitments";
+pub const NULLIFIERS_FIELD_NAME: &str = "nullifiers";
+pub const SIGNATURE_PUBLIC_KEY_FIELD_NAME: &str = "signature_public_key";
+pub const SIGNATURE_PUBLIC_KEY_HASHES_FIELD_NAME: &str = "signature_public_key_hashes";
+pub const AMOUNT_FIELD_NAME: &str = "amount";
+pub const PUBLIC_AMOUNT_FIELD_NAME: &str = "public_amount";
+pub const ROLLUP_FEE_AMOUNT_FIELD_NAME: &str = "rollup_fee_amount";
+pub const GAS_RELAYER_FEE_AMOUNT_FIELD_NAME: &str = "gas_relayer_fee_amount";
+pub const SHIELDED_ADDRESS_FIELD_NAME: &str = "shielded_address";
+pub const PUBLIC_ADDRESS_FIELD_NAME: &str = "public_address";
+pub const GAS_RELAYER_ADDRESS_FIELD_NAME: &str = "gas_relayer_address";
+pub const SIGNATURE_FIELD_NAME: &str = "signature";
+pub const RANDOM_AUDITING_PUBLIC_KEY_FIELD_NAME: &str = "random_auditing_public_key";
+pub const ENCRYPTED_AUDITOR_NOTES_FIELD_NAME: &str = "encrypted_auditor_notes";
+pub const TRANSACTION_TYPE_FIELD_NAME: &str = "transaction_type";
+pub const STATUS_FIELD_NAME: &str = "status";
+pub const ERROR_MESSAGE_FIELD_NAME: &str = "error_message";
+pub const TRANSACTION_HASH_FIELD_NAME: &str = "transaction_hash";
+pub const WALLET_ID_FIELD_NAME: &str = "wallet_id";
 
 pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "transactions",
@@ -53,33 +81,33 @@ pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
         "CREATE INDEX `transactions_wallet_id_index` ON `transactions` (`wallet_id`)",
     ],
     field_names: &[
-        "chain_id",
-        "contract_address",
-        "asset_symbol",
-        "asset_decimals",
-        "asset_address",
-        "proof",
-        "root_hash",
-        "input_commitments",
-        "output_commitments",
-        "nullifiers",
-        "signature_public_key",
-        "signature_public_key_hashes",
-        "amount",
-        "public_amount",
-        "rollup_fee_amount",
-        "gas_relayer_fee_amount",
-        "shielded_address",
-        "public_address",
-        "gas_relayer_address",
-        "signature",
-        "random_auditing_public_key",
-        "encrypted_auditor_notes",
-        "transaction_type",
-        "status",
-        "error_message",
-        "transaction_hash",
-        "wallet_id",
+        CHAIN_ID_FIELD_NAME,
+        CONTRACT_ADDRESS_FIELD_NAME,
+        ASSET_SYMBOL_FIELD_NAME,
+        ASSET_DECIMALS_FIELD_NAME,
+        ASSET_ADDRESS_FIELD_NAME,
+        PROOF_FIELD_NAME,
+        ROOT_HASH_FIELD_NAME,
+        INPUT_COMMITMENTS_FIELD_NAME,
+        OUTPUT_COMMITMENTS_FIELD_NAME,
+        NULLIFIERS_FIELD_NAME,
+        SIGNATURE_PUBLIC_KEY_FIELD_NAME,
+        SIGNATURE_PUBLIC_KEY_HASHES_FIELD_NAME,
+        AMOUNT_FIELD_NAME,
+        PUBLIC_AMOUNT_FIELD_NAME,
+        ROLLUP_FEE_AMOUNT_FIELD_NAME,
+        GAS_RELAYER_FEE_AMOUNT_FIELD_NAME,
+        SHIELDED_ADDRESS_FIELD_NAME,
+        PUBLIC_ADDRESS_FIELD_NAME,
+        GAS_RELAYER_ADDRESS_FIELD_NAME,
+        SIGNATURE_FIELD_NAME,
+        RANDOM_AUDITING_PUBLIC_KEY_FIELD_NAME,
+        ENCRYPTED_AUDITOR_NOTES_FIELD_NAME,
+        TRANSACTION_TYPE_FIELD_NAME,
+        STATUS_FIELD_NAME,
+        ERROR_MESSAGE_FIELD_NAME,
+        TRANSACTION_HASH_FIELD_NAME,
+        WALLET_ID_FIELD_NAME,
     ],
 };
 
@@ -121,75 +149,72 @@ impl DocumentData for Transaction {
 
     fn field_value_string(&self, field: &str) -> Option<String> {
         match field {
-            "chain_id" => Some(self.chain_id.to_string()),
-            "contract_address" => Some(self.contract_address.clone()),
-            "asset_symbol" => Some(self.asset_symbol.clone()),
-            "asset_decimals" => Some(self.asset_decimals.to_string()),
-            "asset_address" => self.asset_address.clone(),
-            "proof" => self.proof.clone(),
-            "root_hash" => Some(self.root_hash.to_string()),
-            "input_commitments" => Some(serde_json::to_string(&self.input_commitments).unwrap()),
-            "output_commitments" => Some(serde_json::to_string(&self.output_commitments).unwrap()),
-            "nullifiers" => Some(serde_json::to_string(&self.nullifiers).unwrap()),
-            "signature_public_key" => self.signature_public_key.clone(),
-            "signature_public_key_hashes" => {
+            CHAIN_ID_FIELD_NAME => Some(self.chain_id.to_string()),
+            CONTRACT_ADDRESS_FIELD_NAME => Some(self.contract_address.clone()),
+            ASSET_SYMBOL_FIELD_NAME => Some(self.asset_symbol.clone()),
+            ASSET_DECIMALS_FIELD_NAME => Some(self.asset_decimals.to_string()),
+            ASSET_ADDRESS_FIELD_NAME => self.asset_address.clone(),
+            PROOF_FIELD_NAME => self.proof.clone(),
+            ROOT_HASH_FIELD_NAME => Some(self.root_hash.to_string()),
+            INPUT_COMMITMENTS_FIELD_NAME => Some(serde_json::to_string(&self.input_commitments).unwrap()),
+            OUTPUT_COMMITMENTS_FIELD_NAME => Some(serde_json::to_string(&self.output_commitments).unwrap()),
+            NULLIFIERS_FIELD_NAME => Some(serde_json::to_string(&self.nullifiers).unwrap()),
+            SIGNATURE_PUBLIC_KEY_FIELD_NAME => self.signature_public_key.clone(),
+            SIGNATURE_PUBLIC_KEY_HASHES_FIELD_NAME => {
                 Some(serde_json::to_string(&self.signature_public_key_hashes.clone()).unwrap())
             }
-            "amount" => Some(self.amount.to_string()),
-            "public_amount" => Some(self.public_amount.to_string()),
-            "rollup_fee_amount" => Some(self.rollup_fee_amount.to_string()),
-            "gas_relayer_fee_amount" => Some(self.gas_relayer_fee_amount.to_string()),
-            "shielded_address" => self.shielded_address.clone(),
-            "public_address" => self.public_address.clone(),
-            "gas_relayer_address" => self.gas_relayer_address.clone(),
-            "signature" => self.signature.clone(),
-            "random_auditing_public_key" => self.random_auditing_public_key.as_ref().map(|pk| pk.to_string()),
-            "encrypted_auditor_notes" => Some(serde_json::to_string(&self.encrypted_auditor_notes).unwrap()),
-            "transaction_type" => Some(serde_json::to_string(&self.transaction_type).unwrap()),
-            "status" => Some(serde_json::to_string(&self.status).unwrap()),
-            "error_message" => self.error_message.clone(),
-            "transaction_hash" => self.transaction_hash.clone(),
-            "wallet_id" => Some(self.wallet_id.clone()),
+            AMOUNT_FIELD_NAME => Some(self.amount.to_string()),
+            PUBLIC_AMOUNT_FIELD_NAME => Some(self.public_amount.to_string()),
+            ROLLUP_FEE_AMOUNT_FIELD_NAME => Some(self.rollup_fee_amount.to_string()),
+            GAS_RELAYER_FEE_AMOUNT_FIELD_NAME => Some(self.gas_relayer_fee_amount.to_string()),
+            SHIELDED_ADDRESS_FIELD_NAME => self.shielded_address.clone(),
+            PUBLIC_ADDRESS_FIELD_NAME => self.public_address.clone(),
+            GAS_RELAYER_ADDRESS_FIELD_NAME => self.gas_relayer_address.clone(),
+            SIGNATURE_FIELD_NAME => self.signature.clone(),
+            RANDOM_AUDITING_PUBLIC_KEY_FIELD_NAME => self.random_auditing_public_key.as_ref().map(|pk| pk.to_string()),
+            ENCRYPTED_AUDITOR_NOTES_FIELD_NAME => Some(serde_json::to_string(&self.encrypted_auditor_notes).unwrap()),
+            TRANSACTION_TYPE_FIELD_NAME => Some(serde_json::to_string(&self.transaction_type).unwrap()),
+            STATUS_FIELD_NAME => Some(serde_json::to_string(&self.status).unwrap()),
+            ERROR_MESSAGE_FIELD_NAME => self.error_message.clone(),
+            TRANSACTION_HASH_FIELD_NAME => self.transaction_hash.clone(),
+            WALLET_ID_FIELD_NAME => Some(self.wallet_id.clone()),
             _ => None,
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, StorageError> {
         Ok(Transaction {
-            chain_id: raw.field_integer_value::<u64>("chain_id")?.unwrap(),
-            contract_address: raw.field_string_value("contract_address")?.unwrap(),
-            asset_symbol: raw.field_string_value("asset_symbol")?.unwrap(),
-            asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
-            asset_address: raw.field_string_value("asset_address")?,
-            proof: raw.field_string_value("proof")?,
-            root_hash: BigInt::from_str(&raw.field_string_value("root_hash")?.unwrap())?,
-            input_commitments: serde_json::from_str(&raw.field_string_value("input_commitments")?.unwrap())?,
-            output_commitments: serde_json::from_str(&raw.field_string_value("output_commitments")?.unwrap())?,
-            nullifiers: serde_json::from_str(&raw.field_string_value("nullifiers")?.unwrap())?,
-            signature_public_key: raw.field_string_value("signature_public_key")?,
+            chain_id: raw.required_field_integer_value::<u64>(CHAIN_ID_FIELD_NAME)?,
+            contract_address: raw.required_field_string_value(CONTRACT_ADDRESS_FIELD_NAME)?,
+            asset_symbol: raw.required_field_string_value(ASSET_SYMBOL_FIELD_NAME)?,
+            asset_decimals: raw.required_field_integer_value::<u32>(ASSET_DECIMALS_FIELD_NAME)?,
+            asset_address: raw.field_string_value(ASSET_ADDRESS_FIELD_NAME)?,
+            proof: raw.field_string_value(PROOF_FIELD_NAME)?,
+            root_hash: raw.required_bigint_value(ROOT_HASH_FIELD_NAME)?,
+            input_commitments: serde_json::from_str(&raw.required_field_string_value(INPUT_COMMITMENTS_FIELD_NAME)?)?,
+            output_commitments: serde_json::from_str(&raw.required_field_string_value(OUTPUT_COMMITMENTS_FIELD_NAME)?)?,
+            nullifiers: serde_json::from_str(&raw.required_field_string_value(NULLIFIERS_FIELD_NAME)?)?,
+            signature_public_key: raw.field_string_value(SIGNATURE_PUBLIC_KEY_FIELD_NAME)?,
             signature_public_key_hashes: serde_json::from_str(
-                &raw.field_string_value("signature_public_key_hashes")?.unwrap(),
+                &raw.required_field_string_value(SIGNATURE_PUBLIC_KEY_HASHES_FIELD_NAME)?,
             )?,
-            amount: BigInt::from_str(&raw.field_string_value("amount")?.unwrap())?,
-            public_amount: BigInt::from_str(&raw.field_string_value("public_amount")?.unwrap())?,
-            rollup_fee_amount: BigInt::from_str(&raw.field_string_value("rollup_fee_amount")?.unwrap())?,
-            gas_relayer_fee_amount: BigInt::from_str(&raw.field_string_value("gas_relayer_fee_amount")?.unwrap())?,
-            shielded_address: raw.field_string_value("shielded_address")?,
-            public_address: raw.field_string_value("public_address")?,
-            gas_relayer_address: raw.field_string_value("gas_relayer_address")?,
-            signature: raw.field_string_value("signature")?,
-            random_auditing_public_key: match raw.field_string_value("random_auditing_public_key")? {
-                Some(random_auditing_public_key_str) => Some(BigInt::from_str(&random_auditing_public_key_str)?),
-                None => None,
-            },
+            amount: raw.required_bigint_value(AMOUNT_FIELD_NAME)?,
+            public_amount: raw.required_bigint_value(PUBLIC_AMOUNT_FIELD_NAME)?,
+            rollup_fee_amount: raw.required_bigint_value(ROLLUP_FEE_AMOUNT_FIELD_NAME)?,
+            gas_relayer_fee_amount: raw.required_bigint_value(GAS_RELAYER_FEE_AMOUNT_FIELD_NAME)?,
+            shielded_address: raw.field_string_value(SHIELDED_ADDRESS_FIELD_NAME)?,
+            public_address: raw.field_string_value(PUBLIC_ADDRESS_FIELD_NAME)?,
+            gas_relayer_address: raw.field_string_value(GAS_RELAYER_ADDRESS_FIELD_NAME)?,
+            signature: raw.field_string_value(SIGNATURE_FIELD_NAME)?,
+            random_auditing_public_key: raw.field_bigint_value(RANDOM_AUDITING_PUBLIC_KEY_FIELD_NAME)?,
             encrypted_auditor_notes: serde_json::from_str(
-                &raw.field_string_value("encrypted_auditor_notes")?.unwrap(),
+                &raw.required_field_string_value(ENCRYPTED_AUDITOR_NOTES_FIELD_NAME)?,
             )?,
-            transaction_type: serde_json::from_str(&raw.field_string_value("transaction_type")?.unwrap())?,
-            status: serde_json::from_str(&raw.field_string_value("status")?.unwrap())?,
-            error_message: Some(raw.field_string_value("error_message")?.unwrap()),
-            transaction_hash: Some(raw.field_string_value("transaction_hash")?.unwrap()),
-            wallet_id: raw.field_string_value("wallet_id")?.unwrap(),
+            transaction_type: serde_json::from_str(&raw.required_field_string_value(TRANSACTION_TYPE_FIELD_NAME)?)?,
+            status: serde_json::from_str(&raw.required_field_string_value(STATUS_FIELD_NAME)?)?,
+            error_message: Some(raw.required_field_string_value(ERROR_MESSAGE_FIELD_NAME)?),
+            transaction_hash: Some(raw.required_field_string_value(TRANSACTION_HASH_FIELD_NAME)?),
+            wallet_id: raw.required_field_string_value(WALLET_ID_FIELD_NAME)?,
         })
     }
 }

@@ -2,6 +2,7 @@ use anyhow::{Error, Result};
 use async_trait::async_trait;
 use mystiko_storage::collection::*;
 use mystiko_storage::document::{Document, DocumentData, DocumentRawData, DOCUMENT_ID_FIELD};
+use mystiko_storage::error::StorageError;
 use mystiko_storage::filter::{QueryFilter, SubFilter};
 use mystiko_storage::formatter::{SqlFormatter, StatementFormatter};
 use mystiko_storage::migration::{Migration, MIGRATION_SCHEMA};
@@ -18,31 +19,31 @@ struct TestDocumentRawData {
 }
 
 impl DocumentRawData for TestDocumentRawData {
-    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>> {
+    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>, StorageError> {
         let value = self.data.get(field);
         if let Some(..) = value {
             match value.unwrap().parse() {
                 Ok(parsed) => Ok(Some(parsed)),
-                Err(_) => Err(Error::msg("parsed error")),
+                Err(_) => Err(StorageError::CorruptedDataError("parsed error".into())),
             }
         } else {
             Ok(None)
         }
     }
 
-    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>> {
+    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>, StorageError> {
         let value = self.data.get(field);
         if let Some(..) = value {
             match value.unwrap().parse() {
                 Ok(parsed) => Ok(Some(parsed)),
-                Err(_) => Err(Error::msg("parsed error")),
+                Err(_) => Err(StorageError::CorruptedDataError("parsed error".into())),
             }
         } else {
             Ok(None)
         }
     }
 
-    fn field_string_value(&self, field: &str) -> Result<Option<String>> {
+    fn field_string_value(&self, field: &str) -> Result<Option<String>, StorageError> {
         Ok(self.data.get(field).cloned())
     }
 }
@@ -72,27 +73,27 @@ impl TestStorage {
 
 #[async_trait]
 impl Storage<TestDocumentRawData> for TestStorage {
-    async fn execute(&self, statement: String) -> Result<()> {
+    async fn execute(&self, statement: String) -> Result<(), StorageError> {
         self.statements.lock().await.push(statement);
         if self.raise_error_on_execute {
-            Err(Error::msg("expected error"))
+            Err(StorageError::DatabaseError(Error::msg("expected error")))
         } else {
             Ok(())
         }
     }
 
-    async fn query(&self, statement: String) -> Result<Vec<TestDocumentRawData>> {
+    async fn query(&self, statement: String) -> Result<Vec<TestDocumentRawData>, StorageError> {
         self.statements.lock().await.push(statement);
         if self.raise_error_on_query {
-            Err(Error::msg("expected error"))
+            Err(StorageError::DatabaseError(Error::msg("expected error")))
         } else {
             Ok(self.expected_data.clone())
         }
     }
 
-    async fn collection_exists(&self, _collection: &str) -> Result<bool> {
+    async fn collection_exists(&self, _collection: &str) -> Result<bool, StorageError> {
         if self.raise_error_on_collection_exists {
-            Err(Error::msg("expected error"))
+            Err(StorageError::DatabaseError(Error::msg("expected error")))
         } else {
             Ok(self.collection_exists)
         }

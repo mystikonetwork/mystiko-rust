@@ -2,7 +2,8 @@ extern crate mystiko_database;
 extern crate num_bigint;
 
 use mystiko_database::collection::commitment::CommitmentCollection;
-use mystiko_database::document::commitment::Commitment;
+use mystiko_database::document::commitment::{Commitment, LEAF_INDEX_FIELD_NAME};
+use mystiko_database::document::deposit::COMMITMENT_HASH_FIELD_NAME;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
@@ -96,7 +97,7 @@ async fn test_commitments_crud() {
     // testing count
     assert_eq!(
         commitments
-            .count(SubFilter::Equal(String::from("leaf_index"), String::from("1")))
+            .count(SubFilter::Equal(LEAF_INDEX_FIELD_NAME.into(), String::from("1")))
             .await
             .unwrap(),
         1
@@ -114,7 +115,7 @@ async fn test_commitments_crud() {
     // testing find_one
     let mut found_commitment = commitments
         .find_one(SubFilter::Equal(
-            String::from("commitment_hash"),
+            COMMITMENT_HASH_FIELD_NAME.into(),
             String::from("9709495941671889428395361755215352896616366060066411186055604144562505250548"),
         ))
         .await
@@ -156,7 +157,7 @@ async fn test_commitments_crud() {
     assert_eq!(commitments.count_all().await.unwrap(), 2);
     commitments
         .delete_by_filter(SubFilter::Equal(
-            String::from("commitment_hash"),
+            COMMITMENT_HASH_FIELD_NAME.into(),
             String::from("9709505941671889428395361755215352896616366060066411186055604144562505250548"),
         ))
         .await

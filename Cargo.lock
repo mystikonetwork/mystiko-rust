@@ -2939,6 +2939,7 @@ dependencies = [
  "num-bigint 0.4.3",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
 ]
 
@@ -3090,8 +3091,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "num-bigint 0.4.3",
  "num-traits 0.2.15",
+ "serde_json",
+ "thiserror",
  "tokio",
+ "typed-builder",
  "ulid",
 ]
 

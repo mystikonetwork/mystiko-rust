@@ -2,9 +2,9 @@
 
 use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use mystiko_storage::error::StorageError;
 use mystiko_types::CommitmentStatus;
 use num_bigint::BigInt;
-use std::str::FromStr;
 
 pub const CHAIN_ID_FIELD_NAME: &str = "chain_id";
 pub const CONTRACT_ADDRESS_FIELD_NAME: &str = "contract_address";
@@ -123,34 +123,20 @@ impl DocumentData for Commitment {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, StorageError> {
         Ok(Commitment {
-            chain_id: raw.field_integer_value(CHAIN_ID_FIELD_NAME)?.unwrap(),
-            contract_address: raw.field_string_value(CONTRACT_ADDRESS_FIELD_NAME)?.unwrap(),
-            commitment_hash: BigInt::from_str(&raw.field_string_value(COMMITMENT_HASH_FIELD_NAME)?.unwrap())?,
-            asset_symbol: raw.field_string_value(ASSET_SYMBOL_FIELD_NAME)?.unwrap(),
-            asset_decimals: raw.field_integer_value(ASSET_DECIMALS_FIELD_NAME)?.unwrap(),
+            chain_id: raw.required_field_integer_value(CHAIN_ID_FIELD_NAME)?,
+            contract_address: raw.required_field_string_value(CONTRACT_ADDRESS_FIELD_NAME)?,
+            commitment_hash: raw.required_bigint_value(COMMITMENT_HASH_FIELD_NAME)?,
+            asset_symbol: raw.required_field_string_value(ASSET_SYMBOL_FIELD_NAME)?,
+            asset_decimals: raw.required_field_integer_value(ASSET_DECIMALS_FIELD_NAME)?,
             asset_address: raw.field_string_value(ASSET_ADDRESS_FIELD_NAME)?,
-            status: serde_json::from_str(&raw.field_string_value(STATUS_FIELD_NAME)?.unwrap())?,
-            rollup_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value(ROLLUP_FEE_AMOUNT_FIELD_NAME)?
-                    .unwrap()
-                    .as_bytes(),
-                10,
-            ),
+            status: serde_json::from_str(&raw.required_field_string_value(STATUS_FIELD_NAME)?)?,
+            rollup_fee_amount: raw.field_bigint_value(ROLLUP_FEE_AMOUNT_FIELD_NAME)?,
             encrypted_note: raw.field_string_value(ENCRYPTED_NOTE_FIELD_NAME)?,
-            leaf_index: match raw.field_string_value(LEAF_INDEX_FIELD_NAME)? {
-                Some(leaf_index_str) => Some(BigInt::from_str(&leaf_index_str)?),
-                None => None,
-            },
-            amount: match raw.field_string_value(AMOUNT_FIELD_NAME)? {
-                Some(amount_str) => Some(BigInt::from_str(&amount_str)?),
-                None => None,
-            },
-            nullifier: match raw.field_string_value(NULLIFIER_FIELD_NAME)? {
-                Some(nullifier_str) => Some(BigInt::from_str(&nullifier_str)?),
-                None => None,
-            },
+            leaf_index: raw.field_bigint_value(LEAF_INDEX_FIELD_NAME)?,
+            amount: raw.field_bigint_value(AMOUNT_FIELD_NAME)?,
+            nullifier: raw.field_bigint_value(NULLIFIER_FIELD_NAME)?,
             shielded_address: raw.field_string_value(SHIELDED_ADDRESS_FIELD_NAME)?,
             creation_transaction_hash: raw.field_string_value(CREATION_TRANSACTION_HASH_FIELD_NAME)?,
             spending_transaction_hash: raw.field_string_value(SPENDING_TRANSACTION_HASH_FIELD_NAME)?,

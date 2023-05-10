@@ -1,7 +1,9 @@
 extern crate mystiko_database;
 
 use mystiko_database::collection::deposit::DepositCollection;
-use mystiko_database::document::deposit::Deposit;
+use mystiko_database::document::deposit::{
+    Deposit, HASH_K_FIELD_NAME, RANDOM_S_FIELD_NAME, SHIELDED_RECIPIENT_ADDRESS_FIELD_NAME,
+};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
@@ -135,7 +137,7 @@ async fn test_deposits_crud() {
     assert_eq!(deposits.count_all().await.unwrap(), 3);
     assert_eq!(
         deposits
-            .count(SubFilter::Equal(String::from("hash_k"), 22.to_string()))
+            .count(SubFilter::Equal(HASH_K_FIELD_NAME.into(), 22.to_string()))
             .await
             .unwrap(),
         1
@@ -156,7 +158,7 @@ async fn test_deposits_crud() {
         .unwrap();
     assert_eq!(found_deposits, inserted_deposits[1..]);
     let mut found_deposit = deposits
-        .find_one(SubFilter::Equal(String::from("random_s"), 222.to_string()))
+        .find_one(SubFilter::Equal(RANDOM_S_FIELD_NAME.into(), 222.to_string()))
         .await
         .unwrap()
         .unwrap();
@@ -188,7 +190,7 @@ async fn test_deposits_crud() {
     assert_eq!(deposits.count_all().await.unwrap(), 2);
     deposits
         .delete_by_filter(SubFilter::Equal(
-            String::from("shielded_recipient_address"),
+            SHIELDED_RECIPIENT_ADDRESS_FIELD_NAME.into(),
             String::from("shielded_recipient_address 1"),
         ))
         .await
