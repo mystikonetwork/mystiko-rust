@@ -5,6 +5,7 @@ use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use num_bigint::BigInt;
 use std::sync::Arc;
 
 async fn create_nullifiers() -> NullifierCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
@@ -26,7 +27,7 @@ async fn test_nullifiers_crud() {
             .insert(&Nullifier {
                 chain_id: 1,
                 contract_address: String::from("contract_address 1"),
-                serial_number: String::from("serial_number 1"),
+                nullifier: BigInt::from(1),
                 transaction_hash: String::from("transaction_hash 1"),
             })
             .await
@@ -38,13 +39,13 @@ async fn test_nullifiers_crud() {
                 Nullifier {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
-                    serial_number: String::from("serial_number 2"),
+                    nullifier: BigInt::from(2),
                     transaction_hash: String::from("transaction_hash 2"),
                 },
                 Nullifier {
                     chain_id: 3,
                     contract_address: String::from("contract_address 3"),
-                    serial_number: String::from("serial_number 3"),
+                    nullifier: BigInt::from(3),
                     transaction_hash: String::from("transaction_hash 3"),
                 },
             ])
@@ -123,8 +124,8 @@ async fn test_nullifiers_crud() {
         .delete_by_filter(
             QueryFilterBuilder::new()
                 .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("serial_number"),
-                    String::from("serial_number 1"),
+                    String::from("nullifier"),
+                    1.to_string(),
                 )))
                 .build(),
         )

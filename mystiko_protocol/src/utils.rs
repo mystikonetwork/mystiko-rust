@@ -2,7 +2,7 @@ use crate::types::{RandomSk, SigPk, VerifySk};
 use mystiko_crypto::hash::poseidon;
 use num_bigint::{BigInt, Sign};
 
-pub fn compute_serial_number(sk_verify: &VerifySk, random_p: &RandomSk) -> BigInt {
+pub fn compute_nullifier(sk_verify: &VerifySk, random_p: &RandomSk) -> BigInt {
     let sk = BigInt::from_bytes_le(Sign::Plus, sk_verify);
     let rp = BigInt::from_bytes_le(Sign::Plus, random_p);
     let nullifier_key = poseidon(&[sk]);

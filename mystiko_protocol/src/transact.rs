@@ -2,7 +2,7 @@ use crate::commitment::{EncryptedNote, Note};
 use crate::error::ProtocolError;
 use crate::types::{AuditingPk, AuditingSk, EncPk, EncSk, RandomSk, SigPk, TxAmount, VerifyPk, VerifySk};
 use crate::types::{AUDITING_THRESHOLD, DECRYPTED_NOTE_SIZE, NUM_OF_AUDITORS};
-use crate::utils::{compute_serial_number, compute_sig_pk_hash};
+use crate::utils::{compute_nullifier, compute_sig_pk_hash};
 use anyhow::Result;
 use ff::hex;
 use mystiko_crypto::constants::FIELD_SIZE;
@@ -60,7 +60,7 @@ impl Transaction {
         let mut in_random_r = vec![];
         let mut in_random_s = vec![];
         let mut in_amount = vec![];
-        let mut serial_numbers = vec![];
+        let mut nullifiers = vec![];
         let mut sig_hashes = vec![];
 
         for i in 0..self.num_inputs as usize {
@@ -71,7 +71,7 @@ impl Transaction {
             in_random_r.push(note.random_r);
             in_random_s.push(note.random_s);
             in_amount.push(note.amount);
-            serial_numbers.push(compute_serial_number(&self.in_verify_sks[i], &note.random_p));
+            nullifiers.push(compute_nullifier(&self.in_verify_sks[i], &note.random_p));
             sig_hashes.push(compute_sig_pk_hash(&self.sig_pk, &self.in_verify_sks[i]));
         }
 
@@ -131,7 +131,7 @@ impl Transaction {
             .collect();
 
         let mut array: Vec<serde_json::Value> = vec![serde_json::json!(self.tree_root.to_string())];
-        array.push(serde_json::json!(bigint_slice_to_strings(&serial_numbers)));
+        array.push(serde_json::json!(bigint_slice_to_strings(&nullifiers)));
         array.push(serde_json::json!(bigint_slice_to_strings(&sig_hashes)));
         array.push(serde_json::json!(hex::encode(self.sig_pk)));
         array.push(serde_json::json!(self.public_amount.to_string()));

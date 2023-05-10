@@ -6,7 +6,7 @@ extern crate num_bigint;
 use ff::hex;
 use num_bigint::BigInt;
 
-use crate::mystiko_protocol::utils::{compute_serial_number, compute_sig_pk_hash};
+use crate::mystiko_protocol::utils::{compute_nullifier, compute_sig_pk_hash};
 use mystiko_crypto::crypto::decrypt_asymmetric;
 use mystiko_crypto::utils::random_bytes;
 use mystiko_protocol::address::ShieldedAddress;
@@ -17,7 +17,7 @@ use mystiko_protocol::key::{
 };
 
 #[tokio::test]
-async fn test_serial_number_compatible_with_js() {
+async fn test_nullifier_compatible_with_js() {
     let raw_key = [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2,
     ];
@@ -26,7 +26,7 @@ async fn test_serial_number_compatible_with_js() {
 
     let sk = verification_secret_key(&raw_key);
     let random_p = b"1234567812345678";
-    let sn = compute_serial_number(&sk, random_p);
+    let sn = compute_nullifier(&sk, random_p);
     assert_eq!(sn, expect_sn);
 }
 

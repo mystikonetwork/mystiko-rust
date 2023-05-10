@@ -180,6 +180,7 @@ async fn test_find() {
     accounts = account_handler.find(filter).await.unwrap();
     assert_eq!(accounts, vec![account2.clone()]);
     accounts = account_handler.find_all().await.unwrap();
+    accounts.sort_by_key(|a| a.id.to_string());
     assert_eq!(accounts, vec![account1, account2]);
 }
 

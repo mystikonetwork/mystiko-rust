@@ -1,8 +1,10 @@
 #![forbid(unsafe_code)]
+
 use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
 use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigInt;
+use std::str::FromStr;
 
 pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "transactions",
@@ -20,7 +22,7 @@ pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
             `root_hash` VARCHAR(128) NOT NULL,\
             `input_commitments` TEXT NOT NULL,\
             `output_commitments` TEXT,\
-            `serial_numbers` TEXT,\
+            `nullifiers` TEXT,\
             `signature_public_key` VARCHAR(255),\
             `signature_public_key_hashes` TEXT,\
             `amount` VARCHAR(128) NOT NULL,\
@@ -60,7 +62,7 @@ pub static TRANSACTION_SCHEMA: DocumentSchema = DocumentSchema {
         "root_hash",
         "input_commitments",
         "output_commitments",
-        "serial_numbers",
+        "nullifiers",
         "signature_public_key",
         "signature_public_key_hashes",
         "amount",
@@ -89,10 +91,10 @@ pub struct Transaction {
     pub asset_decimals: u32,
     pub asset_address: Option<String>,
     pub proof: Option<String>,
-    pub root_hash: String,
-    pub input_commitments: Vec<String>,
-    pub output_commitments: Option<Vec<String>>,
-    pub serial_numbers: Option<Vec<String>>,
+    pub root_hash: BigInt,
+    pub input_commitments: Vec<BigInt>,
+    pub output_commitments: Option<Vec<BigInt>>,
+    pub nullifiers: Option<Vec<BigInt>>,
     pub signature_public_key: Option<String>,
     pub signature_public_key_hashes: Option<Vec<String>>,
     pub amount: BigInt,
@@ -103,7 +105,7 @@ pub struct Transaction {
     pub public_address: Option<String>,
     pub gas_relayer_address: Option<String>,
     pub signature: Option<String>,
-    pub random_auditing_public_key: Option<String>,
+    pub random_auditing_public_key: Option<BigInt>,
     pub encrypted_auditor_notes: Option<Vec<String>>,
     pub transaction_type: TransactionType,
     pub status: TransactionStatus,
@@ -125,10 +127,10 @@ impl DocumentData for Transaction {
             "asset_decimals" => Some(self.asset_decimals.to_string()),
             "asset_address" => self.asset_address.clone(),
             "proof" => self.proof.clone(),
-            "root_hash" => Some(self.root_hash.clone()),
-            "input_commitments" => Some(serde_json::to_string(&self.input_commitments.clone()).unwrap()),
-            "output_commitments" => Some(serde_json::to_string(&self.output_commitments.clone()).unwrap()),
-            "serial_numbers" => Some(serde_json::to_string(&self.serial_numbers.clone()).unwrap()),
+            "root_hash" => Some(self.root_hash.to_string()),
+            "input_commitments" => Some(serde_json::to_string(&self.input_commitments).unwrap()),
+            "output_commitments" => Some(serde_json::to_string(&self.output_commitments).unwrap()),
+            "nullifiers" => Some(serde_json::to_string(&self.nullifiers).unwrap()),
             "signature_public_key" => self.signature_public_key.clone(),
             "signature_public_key_hashes" => {
                 Some(serde_json::to_string(&self.signature_public_key_hashes.clone()).unwrap())
@@ -141,8 +143,8 @@ impl DocumentData for Transaction {
             "public_address" => self.public_address.clone(),
             "gas_relayer_address" => self.gas_relayer_address.clone(),
             "signature" => self.signature.clone(),
-            "random_auditing_public_key" => self.random_auditing_public_key.clone(),
-            "encrypted_auditor_notes" => Some(serde_json::to_string(&self.encrypted_auditor_notes.clone()).unwrap()),
+            "random_auditing_public_key" => self.random_auditing_public_key.as_ref().map(|pk| pk.to_string()),
+            "encrypted_auditor_notes" => Some(serde_json::to_string(&self.encrypted_auditor_notes).unwrap()),
             "transaction_type" => Some(serde_json::to_string(&self.transaction_type).unwrap()),
             "status" => Some(serde_json::to_string(&self.status).unwrap()),
             "error_message" => self.error_message.clone(),
@@ -160,32 +162,26 @@ impl DocumentData for Transaction {
             asset_decimals: raw.field_integer_value::<u32>("asset_decimals")?.unwrap(),
             asset_address: raw.field_string_value("asset_address")?,
             proof: raw.field_string_value("proof")?,
-            root_hash: raw.field_string_value("root_hash")?.unwrap(),
+            root_hash: BigInt::from_str(&raw.field_string_value("root_hash")?.unwrap())?,
             input_commitments: serde_json::from_str(&raw.field_string_value("input_commitments")?.unwrap())?,
             output_commitments: serde_json::from_str(&raw.field_string_value("output_commitments")?.unwrap())?,
-            serial_numbers: serde_json::from_str(&raw.field_string_value("serial_numbers")?.unwrap())?,
+            nullifiers: serde_json::from_str(&raw.field_string_value("nullifiers")?.unwrap())?,
             signature_public_key: raw.field_string_value("signature_public_key")?,
             signature_public_key_hashes: serde_json::from_str(
                 &raw.field_string_value("signature_public_key_hashes")?.unwrap(),
             )?,
-            amount: BigInt::parse_bytes(raw.field_string_value("amount")?.unwrap().as_bytes(), 10).unwrap(),
-            public_amount: BigInt::parse_bytes(raw.field_string_value("public_amount")?.unwrap().as_bytes(), 10)
-                .unwrap(),
-            rollup_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("rollup_fee_amount")?.unwrap().as_bytes(),
-                10,
-            )
-            .unwrap(),
-            gas_relayer_fee_amount: BigInt::parse_bytes(
-                raw.field_string_value("gas_relayer_fee_amount")?.unwrap().as_bytes(),
-                10,
-            )
-            .unwrap(),
+            amount: BigInt::from_str(&raw.field_string_value("amount")?.unwrap())?,
+            public_amount: BigInt::from_str(&raw.field_string_value("public_amount")?.unwrap())?,
+            rollup_fee_amount: BigInt::from_str(&raw.field_string_value("rollup_fee_amount")?.unwrap())?,
+            gas_relayer_fee_amount: BigInt::from_str(&raw.field_string_value("gas_relayer_fee_amount")?.unwrap())?,
             shielded_address: raw.field_string_value("shielded_address")?,
             public_address: raw.field_string_value("public_address")?,
             gas_relayer_address: raw.field_string_value("gas_relayer_address")?,
             signature: raw.field_string_value("signature")?,
-            random_auditing_public_key: raw.field_string_value("random_auditing_public_key")?,
+            random_auditing_public_key: match raw.field_string_value("random_auditing_public_key")? {
+                Some(random_auditing_public_key_str) => Some(BigInt::from_str(&random_auditing_public_key_str)?),
+                None => None,
+            },
             encrypted_auditor_notes: serde_json::from_str(
                 &raw.field_string_value("encrypted_auditor_notes")?.unwrap(),
             )?,

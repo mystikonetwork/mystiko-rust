@@ -17,8 +17,14 @@ pub enum SubFilter {
 #[derive(Clone)]
 pub enum Condition {
     FILTER(SubFilter),
-    AND(SubFilter, SubFilter),
-    OR(SubFilter, SubFilter),
+    AND(Vec<SubFilter>),
+    OR(Vec<SubFilter>),
+}
+
+#[derive(Clone)]
+pub enum ConditionOperator {
+    AND,
+    OR,
 }
 
 #[derive(Clone)]
@@ -36,6 +42,7 @@ pub struct OrderBy {
 #[derive(Clone)]
 pub struct QueryFilter {
     pub conditions: Vec<Condition>,
+    pub conditions_operator: Option<ConditionOperator>,
     pub limit: Option<u64>,
     pub offset: Option<u64>,
     pub order_by: Option<OrderBy>,
@@ -44,6 +51,7 @@ pub struct QueryFilter {
 #[derive(Default)]
 pub struct QueryFilterBuilder {
     conditions: Vec<Condition>,
+    conditions_operator: Option<ConditionOperator>,
     limit: Option<u64>,
     offset: Option<u64>,
     order_by: Option<OrderBy>,
@@ -75,8 +83,14 @@ impl Condition {
     pub fn to_sql(&self) -> String {
         match self {
             Condition::FILTER(filter) => filter.to_sql(),
-            Condition::AND(left, right) => format!("{} AND {}", left.to_sql(), right.to_sql()),
-            Condition::OR(left, right) => format!("{} OR {}", left.to_sql(), right.to_sql()),
+            Condition::AND(filters) => {
+                let filters_sql: Vec<String> = filters.iter().map(|f| f.to_sql()).collect();
+                filters_sql.join(" AND ")
+            }
+            Condition::OR(filters) => {
+                let filters_sql: Vec<String> = filters.iter().map(|f| f.to_sql()).collect();
+                filters_sql.join(" OR ")
+            }
         }
     }
 }
@@ -108,18 +122,24 @@ impl QueryFilter {
             let condition_sqls: Vec<String> = self
                 .conditions
                 .iter()
-                .map(|c| match c {
-                    Condition::FILTER(_) => c.to_sql(),
+                .map(|c| (c, c.to_sql()))
+                .filter(|(_, s)| !s.is_empty())
+                .map(|(c, s)| match c {
+                    Condition::FILTER(_) => s,
                     _ => {
                         if self.conditions.len() > 1 {
-                            format!("({})", c.to_sql())
+                            format!("({})", s)
                         } else {
-                            c.to_sql()
+                            s
                         }
                     }
                 })
                 .collect();
-            sqls.push(condition_sqls.join(" AND "));
+            let conditions_operator = match self.conditions_operator.as_ref().unwrap_or(&ConditionOperator::AND) {
+                ConditionOperator::AND => "AND",
+                ConditionOperator::OR => "OR",
+            };
+            sqls.push(condition_sqls.join(&format!(" {} ", conditions_operator)));
         }
         if let Some(order_by) = &self.order_by {
             if !order_by.columns.is_empty() {
@@ -140,6 +160,7 @@ impl QueryFilterBuilder {
     pub fn new() -> QueryFilterBuilder {
         QueryFilterBuilder {
             conditions: vec![],
+            conditions_operator: None,
             limit: None,
             offset: None,
             order_by: None,
@@ -153,6 +174,11 @@ impl QueryFilterBuilder {
 
     pub fn filters(mut self, conditions: Vec<Condition>) -> Self {
         self.conditions.extend(conditions);
+        self
+    }
+
+    pub fn filter_operator(mut self, operator: ConditionOperator) -> Self {
+        self.conditions_operator = Some(operator);
         self
     }
 
@@ -174,6 +200,7 @@ impl QueryFilterBuilder {
     pub fn build(self) -> QueryFilter {
         QueryFilter {
             conditions: self.conditions,
+            conditions_operator: self.conditions_operator,
             limit: self.limit,
             offset: self.offset,
             order_by: self.order_by,

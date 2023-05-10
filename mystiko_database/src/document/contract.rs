@@ -26,7 +26,8 @@ pub static CONTRACT_SCHEMA: DocumentSchema = DocumentSchema {
             `sync_start`          BIGINT NOT NULL,\
             `sync_size`           BIGINT NOT NULL,\
             `synced_block_number` BIGINT NOT NULL,\
-            `checked_leaf_index`  BIGINT)",
+            `checked_leaf_index`  BIGINT,\
+            CONSTRAINT `contracts_address_unique` UNIQUE (`chain_id`, `contract_address`))",
         "CREATE INDEX `contracts_chain_id_index` ON `contracts` (`chain_id`)",
         "CREATE INDEX `contracts_contract_address_index` ON `contracts` (`contract_address`)",
     ],
