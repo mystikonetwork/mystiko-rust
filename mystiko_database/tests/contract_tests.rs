@@ -4,7 +4,7 @@ use mystiko_database::collection::contract::ContractCollection;
 use mystiko_database::document::contract::Contract;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::ContractType;
@@ -73,14 +73,7 @@ async fn test_contracts_crud() {
     // testing count
     assert_eq!(
         contracts
-            .count(
-                QueryFilterBuilder::new()
-                    .filter(Condition::FILTER(SubFilter::Equal(
-                        String::from("disabled"),
-                        1.to_string()
-                    )))
-                    .build()
-            )
+            .count(SubFilter::Equal(String::from("disabled"), 1.to_string()))
             .await
             .unwrap(),
         1
@@ -97,14 +90,10 @@ async fn test_contracts_crud() {
     assert_eq!(found_contracts, inserted_contracts[1..]);
     // testing find_one
     let mut found_contract = contracts
-        .find_one(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("contract_address"),
-                    String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
-                )))
-                .build(),
-        )
+        .find_one(SubFilter::Equal(
+            String::from("contract_address"),
+            String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
+        ))
         .await
         .unwrap()
         .unwrap();
@@ -137,14 +126,10 @@ async fn test_contracts_crud() {
     contracts.insert(&inserted_contracts[1].data).await.unwrap();
     assert_eq!(contracts.count_all().await.unwrap(), 2);
     contracts
-        .delete_by_filter(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("contract_address"),
-                    String::from("0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
-                )))
-                .build(),
-        )
+        .delete_by_filter(SubFilter::Equal(
+            String::from("contract_address"),
+            String::from("0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
+        ))
         .await
         .unwrap();
     assert_eq!(contracts.count_all().await.unwrap(), 1);

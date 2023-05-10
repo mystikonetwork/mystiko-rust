@@ -15,7 +15,7 @@ use mystiko_protocol::key::{
 };
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_storage::document::{Document, DocumentRawData, DOCUMENT_ID_FIELD};
-use mystiko_storage::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{QueryFilter, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_types::AccountStatus;
@@ -80,7 +80,7 @@ where
         Ok(account)
     }
 
-    pub async fn count(&self, filter: QueryFilter) -> Result<u64> {
+    pub async fn count<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<u64> {
         let filter = self.wrap_filter(Some(filter)).await?;
         self.db
             .accounts
@@ -93,7 +93,7 @@ where
         self.count(QueryFilterBuilder::new().build()).await
     }
 
-    pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Account>>> {
+    pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<Document<Account>>> {
         let filter = self.wrap_filter(Some(filter)).await?;
         self.db.accounts.find(filter).await.map_err(MystikoError::DatabaseError)
     }
@@ -181,23 +181,20 @@ where
             .await
     }
 
-    async fn wrap_filter(&self, filter: Option<QueryFilter>) -> Result<QueryFilter> {
+    async fn wrap_filter<Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<QueryFilter> {
         let wallet = self.wallets.check_current().await?;
-        let mut filter = filter.unwrap_or(QueryFilterBuilder::new().build());
-        filter.conditions.push(Condition::FILTER(SubFilter::Equal(
-            WALLET_ID_FIELD_NAME.to_string(),
-            wallet.id,
-        )));
+        let mut filter: QueryFilter = match filter {
+            Some(filter) => filter.into(),
+            None => QueryFilterBuilder::new().build(),
+        };
+        filter
+            .conditions
+            .push(SubFilter::Equal(WALLET_ID_FIELD_NAME.to_string(), wallet.id).into());
         Ok(filter)
     }
 
     async fn find_one_by_identifier(&self, identifier: &str, field_name: &str) -> Result<Option<Document<Account>>> {
-        let filter = QueryFilterBuilder::new()
-            .filter(Condition::FILTER(SubFilter::Equal(
-                field_name.to_string(),
-                identifier.to_string(),
-            )))
-            .build();
+        let filter = SubFilter::Equal(field_name.to_string(), identifier.to_string());
         let wrapped_filter = self.wrap_filter(Some(filter)).await?;
         self.db
             .accounts

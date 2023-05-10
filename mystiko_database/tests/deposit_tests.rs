@@ -4,7 +4,7 @@ use mystiko_database::collection::deposit::DepositCollection;
 use mystiko_database::document::deposit::Deposit;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{BridgeType, DepositStatus};
@@ -135,14 +135,7 @@ async fn test_deposits_crud() {
     assert_eq!(deposits.count_all().await.unwrap(), 3);
     assert_eq!(
         deposits
-            .count(
-                QueryFilterBuilder::new()
-                    .filter(Condition::FILTER(SubFilter::Equal(
-                        String::from("hash_k"),
-                        22.to_string()
-                    )))
-                    .build()
-            )
+            .count(SubFilter::Equal(String::from("hash_k"), 22.to_string()))
             .await
             .unwrap(),
         1
@@ -163,14 +156,7 @@ async fn test_deposits_crud() {
         .unwrap();
     assert_eq!(found_deposits, inserted_deposits[1..]);
     let mut found_deposit = deposits
-        .find_one(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("random_s"),
-                    222.to_string(),
-                )))
-                .build(),
-        )
+        .find_one(SubFilter::Equal(String::from("random_s"), 222.to_string()))
         .await
         .unwrap()
         .unwrap();
@@ -201,14 +187,10 @@ async fn test_deposits_crud() {
     deposits.insert(&inserted_deposits[0].data).await.unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 2);
     deposits
-        .delete_by_filter(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("shielded_recipient_address"),
-                    String::from("shielded_recipient_address 1"),
-                )))
-                .build(),
-        )
+        .delete_by_filter(SubFilter::Equal(
+            String::from("shielded_recipient_address"),
+            String::from("shielded_recipient_address 1"),
+        ))
         .await
         .unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 1);

@@ -2,7 +2,7 @@ use mystiko_database::collection::nullifier::NullifierCollection;
 use mystiko_database::document::nullifier::Nullifier;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use num_bigint::BigInt;
@@ -57,14 +57,7 @@ async fn test_nullifiers_crud() {
     assert_eq!(nullifiers.count_all().await.unwrap(), 3);
     assert_eq!(
         nullifiers
-            .count(
-                QueryFilterBuilder::new()
-                    .filter(Condition::FILTER(SubFilter::Equal(
-                        String::from("chain_id"),
-                        2.to_string()
-                    )))
-                    .build()
-            )
+            .count(SubFilter::Equal(String::from("chain_id"), 2.to_string()))
             .await
             .unwrap(),
         1
@@ -79,14 +72,10 @@ async fn test_nullifiers_crud() {
         .unwrap();
     assert_eq!(found_nullifiers, inserted_nullifiers[1..]);
     let mut found_nullifier = nullifiers
-        .find_one(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("contract_address"),
-                    String::from("contract_address 2"),
-                )))
-                .build(),
-        )
+        .find_one(SubFilter::Equal(
+            String::from("contract_address"),
+            String::from("contract_address 2"),
+        ))
         .await
         .unwrap()
         .unwrap();
@@ -121,14 +110,7 @@ async fn test_nullifiers_crud() {
     nullifiers.insert(&inserted_nullifiers[0].data).await.unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 2);
     nullifiers
-        .delete_by_filter(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("nullifier"),
-                    1.to_string(),
-                )))
-                .build(),
-        )
+        .delete_by_filter(SubFilter::Equal(String::from("nullifier"), 1.to_string()))
         .await
         .unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 1);

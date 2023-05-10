@@ -27,15 +27,15 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> DepositCollection
         self.collection.insert_batch(deposits).await
     }
 
-    pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Deposit>>> {
-        self.collection.find::<Deposit>(Some(filter)).await
+    pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<Document<Deposit>>> {
+        self.collection.find::<Deposit, Q>(Some(filter)).await
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Deposit>>> {
-        self.collection.find::<Deposit>(None).await
+        self.collection.find::<Deposit, QueryFilter>(None).await
     }
 
-    pub async fn find_one(&self, filter: QueryFilter) -> Result<Option<Document<Deposit>>> {
+    pub async fn find_one<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Option<Document<Deposit>>> {
         self.collection.find_one(Some(filter)).await
     }
 
@@ -43,12 +43,12 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> DepositCollection
         self.collection.find_by_id(id).await
     }
 
-    pub async fn count(&self, filter: QueryFilter) -> Result<u64> {
-        self.collection.count::<Deposit>(Some(filter)).await
+    pub async fn count<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<u64> {
+        self.collection.count::<Deposit, Q>(Some(filter)).await
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.collection.count::<Deposit>(None).await
+        self.collection.count::<Deposit, QueryFilter>(None).await
     }
 
     pub async fn update(&self, deposit: &Document<Deposit>) -> Result<Document<Deposit>> {
@@ -68,11 +68,11 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> DepositCollection
     }
 
     pub async fn delete_all(&self) -> Result<()> {
-        self.collection.delete_by_filter::<Deposit>(None).await
+        self.collection.delete_by_filter::<Deposit, QueryFilter>(None).await
     }
 
-    pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection.delete_by_filter::<Deposit>(Some(filter)).await
+    pub async fn delete_by_filter<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<()> {
+        self.collection.delete_by_filter::<Deposit, Q>(Some(filter)).await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {

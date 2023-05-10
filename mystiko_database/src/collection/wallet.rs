@@ -27,15 +27,15 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> WalletCollection<
         self.collection.insert_batch(wallets).await
     }
 
-    pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Wallet>>> {
-        self.collection.find::<Wallet>(Some(filter)).await
+    pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<Document<Wallet>>> {
+        self.collection.find::<Wallet, Q>(Some(filter)).await
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Wallet>>> {
-        self.collection.find::<Wallet>(None).await
+        self.collection.find::<Wallet, QueryFilter>(None).await
     }
 
-    pub async fn find_one(&self, filter: QueryFilter) -> Result<Option<Document<Wallet>>> {
+    pub async fn find_one<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Option<Document<Wallet>>> {
         self.collection.find_one(Some(filter)).await
     }
 
@@ -43,12 +43,12 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> WalletCollection<
         self.collection.find_by_id(id).await
     }
 
-    pub async fn count(&self, filter: QueryFilter) -> Result<u64> {
-        self.collection.count::<Wallet>(Some(filter)).await
+    pub async fn count<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<u64> {
+        self.collection.count::<Wallet, Q>(Some(filter)).await
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.collection.count::<Wallet>(None).await
+        self.collection.count::<Wallet, QueryFilter>(None).await
     }
 
     pub async fn update(&self, wallet: &Document<Wallet>) -> Result<Document<Wallet>> {
@@ -68,11 +68,11 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> WalletCollection<
     }
 
     pub async fn delete_all(&self) -> Result<()> {
-        self.collection.delete_by_filter::<Wallet>(None).await
+        self.collection.delete_by_filter::<Wallet, QueryFilter>(None).await
     }
 
-    pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection.delete_by_filter::<Wallet>(Some(filter)).await
+    pub async fn delete_by_filter<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<()> {
+        self.collection.delete_by_filter::<Wallet, Q>(Some(filter)).await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {

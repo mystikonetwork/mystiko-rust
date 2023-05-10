@@ -1,7 +1,7 @@
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::DocumentData;
 use mystiko_storage::filter::SubFilter::IsNull;
-use mystiko_storage::filter::{Condition, Order, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{Order, QueryFilter, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_storage::testing::TestDocumentData;
@@ -100,14 +100,10 @@ async fn test_delete() {
     let d3 = collection.find_by_id::<TestDocumentData>(&d1.id).await.unwrap();
     assert!(d3.is_none());
     collection
-        .delete_by_filter::<TestDocumentData>(Some(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("field1"),
-                    String::from("field1 value2"),
-                )))
-                .build(),
-        ))
+        .delete_by_filter::<TestDocumentData, SubFilter>(Some(SubFilter::Equal(
+            String::from("field1"),
+            String::from("field1 value2"),
+        )))
         .await
         .unwrap();
     let d4 = collection.find_by_id::<TestDocumentData>(&d2.id).await.unwrap();
@@ -139,23 +135,27 @@ async fn test_find() {
         ])
         .await
         .unwrap();
-    assert_eq!(collection.count::<TestDocumentData>(None).await.unwrap(), 3);
-    let d1 = collection.find::<TestDocumentData>(None).await.unwrap();
+    assert_eq!(
+        collection.count::<TestDocumentData, QueryFilter>(None).await.unwrap(),
+        3
+    );
+    let d1 = collection.find::<TestDocumentData, QueryFilter>(None).await.unwrap();
     assert_eq!(d1.len(), docs.len());
     for (i, doc) in d1.iter().enumerate() {
         assert_eq!(doc.id, docs[i].id);
     }
-    let filter1 = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(IsNull(String::from("field3"))))
-        .build();
+    let filter1 = IsNull(String::from("field3"));
     assert_eq!(
         collection
-            .count::<TestDocumentData>(Some(filter1.clone()))
+            .count::<TestDocumentData, SubFilter>(Some(filter1.clone()))
             .await
             .unwrap(),
         1
     );
-    let d2 = collection.find::<TestDocumentData>(Some(filter1)).await.unwrap();
+    let d2 = collection
+        .find::<TestDocumentData, SubFilter>(Some(filter1))
+        .await
+        .unwrap();
     assert_eq!(d2.len(), 1);
     assert_eq!(d2[0].id, docs[1].id);
     let filter2 = QueryFilterBuilder::new()
@@ -163,7 +163,10 @@ async fn test_find() {
         .limit(2)
         .order_by(vec![String::from("field1")], Order::DESC)
         .build();
-    let d3 = collection.find::<TestDocumentData>(Some(filter2)).await.unwrap();
+    let d3 = collection
+        .find::<TestDocumentData, QueryFilter>(Some(filter2))
+        .await
+        .unwrap();
     assert_eq!(d3.len(), 2);
     assert_eq!(d3[0].id, docs[1].id);
     assert_eq!(d3[1].id, docs[0].id);

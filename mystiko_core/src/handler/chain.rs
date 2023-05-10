@@ -12,7 +12,7 @@ use mystiko_ethers::provider::factory::{ProvidersOptions, HTTP_REGEX, WS_REGEX};
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
 use mystiko_storage::document::{Document, DocumentRawData};
-use mystiko_storage::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{QueryFilter, SubFilter};
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_types::ProviderType;
@@ -63,7 +63,7 @@ where
         }
     }
 
-    pub async fn find(&self, query_filter: QueryFilter) -> Result<Vec<Document<Chain>>> {
+    pub async fn find<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<Vec<Document<Chain>>> {
         self.db
             .chains
             .find(query_filter)
@@ -80,12 +80,7 @@ where
     }
 
     pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
-        let query_filter = QueryFilterBuilder::new()
-            .filter(Condition::FILTER(SubFilter::Equal(
-                CHAIN_ID_FIELD_NAME.to_string(),
-                chain_id.to_string(),
-            )))
-            .build();
+        let query_filter = SubFilter::Equal(CHAIN_ID_FIELD_NAME.to_string(), chain_id.to_string());
         self.db
             .chains
             .find_one(query_filter)
@@ -93,7 +88,7 @@ where
             .map_err(MystikoError::DatabaseError)
     }
 
-    pub async fn count(&self, query_filter: QueryFilter) -> Result<u64> {
+    pub async fn count<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<u64> {
         self.db
             .chains
             .count(query_filter)

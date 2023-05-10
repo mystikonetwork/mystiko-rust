@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 use crate::document::{Document, DocumentData, DocumentRawData, DocumentSchema, DOCUMENT_ID_FIELD};
-use crate::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
+use crate::filter::{QueryFilter, SubFilter};
 use crate::formatter::StatementFormatter;
 use crate::migration::{Migration, MIGRATION_SCHEMA};
 use crate::storage::Storage;
@@ -56,15 +56,18 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             Ok(documents)
         }
     }
-    pub async fn find<D: DocumentData>(&self, filter: Option<QueryFilter>) -> Result<Vec<Document<D>>> {
-        let raw_documents = self.storage.query(self.formatter.format_find::<D>(filter)).await?;
+    pub async fn find<D: DocumentData, Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<Vec<Document<D>>> {
+        let raw_documents = self.storage.query(self.formatter.format_find::<D, Q>(filter)).await?;
         let mut documents: Vec<Document<D>> = Vec::new();
         for raw_document in raw_documents.iter() {
             documents.push(Document::<D>::deserialize(raw_document)?);
         }
         Ok(documents)
     }
-    pub async fn find_one<D: DocumentData>(&self, filter: Option<QueryFilter>) -> Result<Option<Document<D>>> {
+    pub async fn find_one<D: DocumentData, Q: Into<QueryFilter>>(
+        &self,
+        filter: Option<Q>,
+    ) -> Result<Option<Document<D>>> {
         let mut documents = self.find(filter).await?;
         if documents.is_empty() {
             Ok(None)
@@ -73,12 +76,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
         }
     }
     pub async fn find_by_id<D: DocumentData>(&self, id: &str) -> Result<Option<Document<D>>> {
-        let query_filter = QueryFilterBuilder::new()
-            .filter(Condition::FILTER(SubFilter::Equal(
-                String::from(DOCUMENT_ID_FIELD),
-                String::from(id),
-            )))
-            .build();
+        let query_filter = SubFilter::Equal(String::from(DOCUMENT_ID_FIELD), String::from(id));
         self.find_one(Some(query_filter)).await
     }
     pub async fn update<D: DocumentData>(&self, document: &Document<D>) -> Result<Document<D>> {
@@ -106,8 +104,8 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             Ok(documents_new)
         }
     }
-    pub async fn count<D: DocumentData>(&self, filter: Option<QueryFilter>) -> Result<u64> {
-        let counts = self.storage.query(self.formatter.format_count::<D>(filter)).await?;
+    pub async fn count<D: DocumentData, Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<u64> {
+        let counts = self.storage.query(self.formatter.format_count::<D, Q>(filter)).await?;
         if counts.is_empty() {
             Ok(0)
         } else {
@@ -126,20 +124,18 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
                 .await
         }
     }
-    pub async fn delete_by_filter<D: DocumentData>(&self, filter: Option<QueryFilter>) -> Result<()> {
+    pub async fn delete_by_filter<D: DocumentData, Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<()> {
         self.storage
-            .execute(self.formatter.format_delete_by_filter::<D>(filter))
+            .execute(self.formatter.format_delete_by_filter::<D, Q>(filter))
             .await
     }
     pub async fn migrate(&self, schema: &DocumentSchema) -> Result<Document<Migration>> {
         let collection_exists = self.collection_exists(&MIGRATION_SCHEMA).await?;
         let existing: Option<Document<Migration>> = if collection_exists {
-            let query_filter = QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from(MIGRATION_SCHEMA.field_names[0]),
-                    String::from(schema.collection_name),
-                )))
-                .build();
+            let query_filter = SubFilter::Equal(
+                String::from(MIGRATION_SCHEMA.field_names[0]),
+                String::from(schema.collection_name),
+            );
             self.find_one(Some(query_filter)).await?
         } else {
             None

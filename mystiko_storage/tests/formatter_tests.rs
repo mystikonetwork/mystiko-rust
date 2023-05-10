@@ -1,5 +1,5 @@
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{Condition, Order, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{Order, QueryFilter, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::*;
 use mystiko_storage::testing::TestDocumentData;
 
@@ -196,25 +196,23 @@ fn test_sql_format_delete_batch() {
 fn test_sql_format_delete_by_filter() {
     let formatter = SqlFormatter {};
     assert_eq!(
-        formatter.format_delete_by_filter::<TestDocumentData>(None),
+        formatter.format_delete_by_filter::<TestDocumentData, QueryFilter>(None),
         "DELETE FROM `test_documents`",
     );
     assert_eq!(
-        formatter.format_delete_by_filter::<TestDocumentData>(Some(QueryFilterBuilder::new().build())),
+        formatter.format_delete_by_filter::<TestDocumentData, QueryFilter>(Some(QueryFilterBuilder::new().build())),
         "DELETE FROM `test_documents`",
     );
     assert_eq!(
-        formatter.format_delete_by_filter::<TestDocumentData>(Some(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::IsNull(String::from("field3"))))
-                .build()
-        )),
+        formatter
+            .format_delete_by_filter::<TestDocumentData, SubFilter>(Some(SubFilter::IsNull(String::from("field3")))),
         "DELETE FROM `test_documents` WHERE `field3` IS NULL",
     );
 
     assert_eq!(
-        formatter
-            .format_delete_by_filter::<TestDocumentData>(Some(QueryFilterBuilder::new().limit(10).offset(20).build(),)),
+        formatter.format_delete_by_filter::<TestDocumentData, QueryFilter>(Some(
+            QueryFilterBuilder::new().limit(10).offset(20).build(),
+        )),
         "DELETE FROM `test_documents` LIMIT 10 OFFSET 20",
     );
 }
@@ -223,24 +221,22 @@ fn test_sql_format_delete_by_filter() {
 fn test_sql_format_count() {
     let formatter = SqlFormatter {};
     assert_eq!(
-        formatter.format_count::<TestDocumentData>(None),
+        formatter.format_count::<TestDocumentData, QueryFilter>(None),
         "SELECT COUNT(*) FROM `test_documents`",
     );
     assert_eq!(
-        formatter.format_count::<TestDocumentData>(Some(QueryFilterBuilder::new().build())),
+        formatter.format_count::<TestDocumentData, QueryFilter>(Some(QueryFilterBuilder::new().build())),
         "SELECT COUNT(*) FROM `test_documents`",
     );
     assert_eq!(
-        formatter.format_count::<TestDocumentData>(Some(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::IsNull(String::from("field3"))))
-                .build()
-        )),
+        formatter.format_count::<TestDocumentData, SubFilter>(Some(SubFilter::IsNull(String::from("field3")))),
         "SELECT COUNT(*) FROM `test_documents` WHERE `field3` IS NULL",
     );
 
     assert_eq!(
-        formatter.format_count::<TestDocumentData>(Some(QueryFilterBuilder::new().limit(10).offset(20).build(),)),
+        formatter.format_count::<TestDocumentData, QueryFilter>(Some(
+            QueryFilterBuilder::new().limit(10).offset(20).build(),
+        )),
         "SELECT COUNT(*) FROM `test_documents` LIMIT 10 OFFSET 20",
     );
 }
@@ -249,26 +245,22 @@ fn test_sql_format_count() {
 fn test_sql_format_find() {
     let formatter = SqlFormatter {};
     assert_eq!(
-        formatter.format_find::<TestDocumentData>(None),
+        formatter.format_find::<TestDocumentData, QueryFilter>(None),
         "SELECT `id`, `created_at`, `updated_at`, `field1`, `field2`, `field3` \
         FROM `test_documents`",
     );
     assert_eq!(
-        formatter.format_find::<TestDocumentData>(Some(QueryFilterBuilder::new().build())),
+        formatter.format_find::<TestDocumentData, QueryFilter>(Some(QueryFilterBuilder::new().build())),
         "SELECT `id`, `created_at`, `updated_at`, `field1`, `field2`, `field3` \
         FROM `test_documents`",
     );
     assert_eq!(
-        formatter.format_find::<TestDocumentData>(Some(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::IsNull(String::from("field3"))))
-                .build()
-        )),
+        formatter.format_find::<TestDocumentData, SubFilter>(Some(SubFilter::IsNull(String::from("field3")))),
         "SELECT `id`, `created_at`, `updated_at`, `field1`, `field2`, `field3` \
         FROM `test_documents` WHERE `field3` IS NULL",
     );
     assert_eq!(
-        formatter.format_find::<TestDocumentData>(Some(
+        formatter.format_find::<TestDocumentData, QueryFilter>(Some(
             QueryFilterBuilder::new()
                 .limit(10)
                 .offset(20)

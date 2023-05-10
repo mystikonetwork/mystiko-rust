@@ -27,15 +27,15 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> ContractCollectio
         self.collection.insert_batch(contracts).await
     }
 
-    pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Contract>>> {
-        self.collection.find::<Contract>(Some(filter)).await
+    pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<Document<Contract>>> {
+        self.collection.find::<Contract, Q>(Some(filter)).await
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Contract>>> {
-        self.collection.find::<Contract>(None).await
+        self.collection.find::<Contract, QueryFilter>(None).await
     }
 
-    pub async fn find_one(&self, filter: QueryFilter) -> Result<Option<Document<Contract>>> {
+    pub async fn find_one<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Option<Document<Contract>>> {
         self.collection.find_one(Some(filter)).await
     }
 
@@ -43,12 +43,12 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> ContractCollectio
         self.collection.find_by_id(id).await
     }
 
-    pub async fn count(&self, filter: QueryFilter) -> Result<u64> {
-        self.collection.count::<Contract>(Some(filter)).await
+    pub async fn count<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<u64> {
+        self.collection.count::<Contract, Q>(Some(filter)).await
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.collection.count::<Contract>(None).await
+        self.collection.count::<Contract, QueryFilter>(None).await
     }
 
     pub async fn update(&self, contract: &Document<Contract>) -> Result<Document<Contract>> {
@@ -68,11 +68,11 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> ContractCollectio
     }
 
     pub async fn delete_all(&self) -> Result<()> {
-        self.collection.delete_by_filter::<Contract>(None).await
+        self.collection.delete_by_filter::<Contract, QueryFilter>(None).await
     }
 
-    pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection.delete_by_filter::<Contract>(Some(filter)).await
+    pub async fn delete_by_filter<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<()> {
+        self.collection.delete_by_filter::<Contract, Q>(Some(filter)).await
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {

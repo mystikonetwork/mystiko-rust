@@ -39,7 +39,7 @@ pub static COMMITMENT_SCHEMA: DocumentSchema = DocumentSchema {
             `status`                    VARCHAR(32) NOT NULL,\
             `rollup_fee_amount`         VARCHAR(128),\
             `encrypted_note`            TEXT,\
-            `leaf_index`                VARCHAR(64),\
+            `leaf_index`                VARCHAR(128),\
             `amount`                    VARCHAR(128),\
             `nullifier`                 VARCHAR(128),\
             `shielded_address`          VARCHAR(128),\
@@ -87,7 +87,7 @@ pub struct Commitment {
     pub status: CommitmentStatus,
     pub rollup_fee_amount: Option<BigInt>,
     pub encrypted_note: Option<String>,
-    pub leaf_index: Option<String>,
+    pub leaf_index: Option<BigInt>,
     pub amount: Option<BigInt>,
     pub nullifier: Option<BigInt>,
     pub shielded_address: Option<String>,
@@ -112,7 +112,7 @@ impl DocumentData for Commitment {
             STATUS_FIELD_NAME => Some(serde_json::to_string(&self.status).unwrap()),
             ROLLUP_FEE_AMOUNT_FIELD_NAME => self.rollup_fee_amount.as_ref().map(|r| r.to_string()),
             ENCRYPTED_NOTE_FIELD_NAME => self.encrypted_note.clone(),
-            LEAF_INDEX_FIELD_NAME => self.leaf_index.clone(),
+            LEAF_INDEX_FIELD_NAME => self.leaf_index.as_ref().map(|r| r.to_string()),
             AMOUNT_FIELD_NAME => self.amount.as_ref().map(|r| r.to_string()),
             NULLIFIER_FIELD_NAME => self.nullifier.as_ref().map(|sn| sn.to_string()),
             SHIELDED_ADDRESS_FIELD_NAME => self.shielded_address.clone(),
@@ -139,7 +139,10 @@ impl DocumentData for Commitment {
                 10,
             ),
             encrypted_note: raw.field_string_value(ENCRYPTED_NOTE_FIELD_NAME)?,
-            leaf_index: raw.field_string_value(LEAF_INDEX_FIELD_NAME)?,
+            leaf_index: match raw.field_string_value(LEAF_INDEX_FIELD_NAME)? {
+                Some(leaf_index_str) => Some(BigInt::from_str(&leaf_index_str)?),
+                None => None,
+            },
             amount: match raw.field_string_value(AMOUNT_FIELD_NAME)? {
                 Some(amount_str) => Some(BigInt::from_str(&amount_str)?),
                 None => None,

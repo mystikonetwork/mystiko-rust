@@ -14,7 +14,7 @@ use mystiko_database::document::chain::Provider;
 use mystiko_ethers::provider::factory::ProvidersOptions;
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_storage::document::DOCUMENT_ID_FIELD;
-use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::SubFilter;
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
 use std::sync::Arc;
@@ -126,12 +126,10 @@ async fn test_chains_find() {
         handler.count_all().await.unwrap()
     );
     chains.sort_by_key(|c| c.data.chain_id);
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::IN(
-            DOCUMENT_ID_FIELD.to_string(),
-            vec![chains[0].id.clone(), chains[1].id.clone()],
-        )))
-        .build();
+    let filter = SubFilter::IN(
+        DOCUMENT_ID_FIELD.to_string(),
+        vec![chains[0].id.clone(), chains[1].id.clone()],
+    );
     let mut found_chains = handler.find(filter).await.unwrap();
     found_chains.sort_by_key(|c| c.data.chain_id);
     assert_eq!(found_chains[0], chains[0]);
@@ -150,12 +148,10 @@ async fn test_chains_find() {
 async fn test_chains_count() {
     let (handler, _, _) = setup().await;
     let chains = handler.initialize().await.unwrap();
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::IN(
-            DOCUMENT_ID_FIELD.to_string(),
-            vec![chains[0].id.clone(), chains[1].id.clone()],
-        )))
-        .build();
+    let filter = SubFilter::IN(
+        DOCUMENT_ID_FIELD.to_string(),
+        vec![chains[0].id.clone(), chains[1].id.clone()],
+    );
     assert_eq!(handler.count(filter).await.unwrap(), 2);
 }
 
