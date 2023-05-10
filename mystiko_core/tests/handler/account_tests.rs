@@ -9,7 +9,7 @@ use mystiko_database::document::account::SCAN_SIZE_FIELD_NAME;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::full_public_key;
 use mystiko_protocol::types::{FullPk, FullSk};
-use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::SubFilter;
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
 use mystiko_types::AccountStatus;
@@ -171,12 +171,7 @@ async fn test_find() {
     assert_eq!(accounts, vec![account1.clone()]);
     options.scan_size = Some(200);
     let account2 = account_handler.create(&options).await.unwrap();
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::LessEqual(
-            SCAN_SIZE_FIELD_NAME.to_string(),
-            String::from("200"),
-        )))
-        .build();
+    let filter = SubFilter::LessEqual(SCAN_SIZE_FIELD_NAME.to_string(), String::from("200"));
     accounts = account_handler.find(filter).await.unwrap();
     assert_eq!(accounts, vec![account2.clone()]);
     accounts = account_handler.find_all().await.unwrap();
@@ -265,12 +260,7 @@ async fn test_count() {
     options.scan_size = Some(200);
     account_handler.create(&options).await.unwrap();
     assert_eq!(account_handler.count_all().await.unwrap(), 2);
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::LessEqual(
-            SCAN_SIZE_FIELD_NAME.to_string(),
-            String::from("200"),
-        )))
-        .build();
+    let filter = SubFilter::LessEqual(SCAN_SIZE_FIELD_NAME.to_string(), String::from("200"));
     assert_eq!(account_handler.count(filter).await.unwrap(), 1);
 }
 

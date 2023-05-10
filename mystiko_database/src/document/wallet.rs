@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use mystiko_storage::error::StorageError;
 
 pub const ENCRYPTED_ENTROPY_FIELD_NAME: &str = "encrypted_entropy";
 pub const HASHED_PASSWORD_FIELD_NAME: &str = "hashed_password";
@@ -39,11 +40,11 @@ impl DocumentData for Wallet {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, StorageError> {
         Ok(Wallet {
-            encrypted_entropy: raw.field_string_value(ENCRYPTED_ENTROPY_FIELD_NAME)?.unwrap(),
-            hashed_password: raw.field_string_value(HASHED_PASSWORD_FIELD_NAME)?.unwrap(),
-            account_nonce: raw.field_integer_value(ACCOUNT_NONCE_FIELD_NAME)?.unwrap(),
+            encrypted_entropy: raw.required_field_string_value(ENCRYPTED_ENTROPY_FIELD_NAME)?,
+            hashed_password: raw.required_field_string_value(HASHED_PASSWORD_FIELD_NAME)?,
+            account_nonce: raw.required_field_integer_value(ACCOUNT_NONCE_FIELD_NAME)?,
         })
     }
 }

@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 use crate::document::{Document, DocumentData, DocumentRawData, DocumentSchema, DOCUMENT_ID_FIELD};
-use crate::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
+use crate::error::StorageError;
+use crate::filter::{QueryFilter, SubFilter};
 use crate::formatter::StatementFormatter;
 use crate::migration::{Migration, MIGRATION_SCHEMA};
 use crate::storage::Storage;
@@ -23,7 +24,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             _phantom: Default::default(),
         }
     }
-    pub async fn insert<D: DocumentData>(&self, data: &D) -> Result<Document<D>> {
+    pub async fn insert<D: DocumentData>(&self, data: &D) -> Result<Document<D>, StorageError> {
         let now = current_timestamp();
         let document: Document<D> = Document {
             id: self.storage.uuid().await?,
@@ -35,7 +36,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
         self.storage.execute(sql).await?;
         Ok(document)
     }
-    pub async fn insert_batch<D: DocumentData>(&self, data: &Vec<D>) -> Result<Vec<Document<D>>> {
+    pub async fn insert_batch<D: DocumentData>(&self, data: &Vec<D>) -> Result<Vec<Document<D>>, StorageError> {
         if data.is_empty() {
             Ok(vec![])
         } else {
@@ -56,15 +57,21 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             Ok(documents)
         }
     }
-    pub async fn find<D: DocumentData>(&self, filter: Option<QueryFilter>) -> Result<Vec<Document<D>>> {
-        let raw_documents = self.storage.query(self.formatter.format_find::<D>(filter)).await?;
+    pub async fn find<D: DocumentData, Q: Into<QueryFilter>>(
+        &self,
+        filter: Option<Q>,
+    ) -> Result<Vec<Document<D>>, StorageError> {
+        let raw_documents = self.storage.query(self.formatter.format_find::<D, Q>(filter)).await?;
         let mut documents: Vec<Document<D>> = Vec::new();
         for raw_document in raw_documents.iter() {
             documents.push(Document::<D>::deserialize(raw_document)?);
         }
         Ok(documents)
     }
-    pub async fn find_one<D: DocumentData>(&self, filter: Option<QueryFilter>) -> Result<Option<Document<D>>> {
+    pub async fn find_one<D: DocumentData, Q: Into<QueryFilter>>(
+        &self,
+        filter: Option<Q>,
+    ) -> Result<Option<Document<D>>, StorageError> {
         let mut documents = self.find(filter).await?;
         if documents.is_empty() {
             Ok(None)
@@ -72,16 +79,11 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             Ok(Some(documents.remove(0)))
         }
     }
-    pub async fn find_by_id<D: DocumentData>(&self, id: &str) -> Result<Option<Document<D>>> {
-        let query_filter = QueryFilterBuilder::new()
-            .filter(Condition::FILTER(SubFilter::Equal(
-                String::from(DOCUMENT_ID_FIELD),
-                String::from(id),
-            )))
-            .build();
+    pub async fn find_by_id<D: DocumentData>(&self, id: &str) -> Result<Option<Document<D>>, StorageError> {
+        let query_filter = SubFilter::Equal(String::from(DOCUMENT_ID_FIELD), String::from(id));
         self.find_one(Some(query_filter)).await
     }
-    pub async fn update<D: DocumentData>(&self, document: &Document<D>) -> Result<Document<D>> {
+    pub async fn update<D: DocumentData>(&self, document: &Document<D>) -> Result<Document<D>, StorageError> {
         let mut document_new = document.clone();
         document_new.updated_at = current_timestamp();
         self.storage
@@ -89,7 +91,10 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             .await?;
         Ok(document_new)
     }
-    pub async fn update_batch<D: DocumentData>(&self, documents: &Vec<Document<D>>) -> Result<Vec<Document<D>>> {
+    pub async fn update_batch<D: DocumentData>(
+        &self,
+        documents: &Vec<Document<D>>,
+    ) -> Result<Vec<Document<D>>, StorageError> {
         if documents.is_empty() {
             Ok(vec![])
         } else {
@@ -106,18 +111,18 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             Ok(documents_new)
         }
     }
-    pub async fn count<D: DocumentData>(&self, filter: Option<QueryFilter>) -> Result<u64> {
-        let counts = self.storage.query(self.formatter.format_count::<D>(filter)).await?;
+    pub async fn count<D: DocumentData, Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<u64, StorageError> {
+        let counts = self.storage.query(self.formatter.format_count::<D, Q>(filter)).await?;
         if counts.is_empty() {
             Ok(0)
         } else {
             Ok(counts[0].field_integer_value::<u64>("COUNT(*)")?.unwrap_or(0))
         }
     }
-    pub async fn delete<D: DocumentData>(&self, document: &Document<D>) -> Result<()> {
+    pub async fn delete<D: DocumentData>(&self, document: &Document<D>) -> Result<(), StorageError> {
         self.storage.execute(self.formatter.format_delete(document)).await
     }
-    pub async fn delete_batch<D: DocumentData>(&self, documents: &Vec<Document<D>>) -> Result<()> {
+    pub async fn delete_batch<D: DocumentData>(&self, documents: &Vec<Document<D>>) -> Result<(), StorageError> {
         if documents.is_empty() {
             Ok(())
         } else {
@@ -126,20 +131,21 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
                 .await
         }
     }
-    pub async fn delete_by_filter<D: DocumentData>(&self, filter: Option<QueryFilter>) -> Result<()> {
+    pub async fn delete_by_filter<D: DocumentData, Q: Into<QueryFilter>>(
+        &self,
+        filter: Option<Q>,
+    ) -> Result<(), StorageError> {
         self.storage
-            .execute(self.formatter.format_delete_by_filter::<D>(filter))
+            .execute(self.formatter.format_delete_by_filter::<D, Q>(filter))
             .await
     }
-    pub async fn migrate(&self, schema: &DocumentSchema) -> Result<Document<Migration>> {
+    pub async fn migrate(&self, schema: &DocumentSchema) -> Result<Document<Migration>, StorageError> {
         let collection_exists = self.collection_exists(&MIGRATION_SCHEMA).await?;
         let existing: Option<Document<Migration>> = if collection_exists {
-            let query_filter = QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from(MIGRATION_SCHEMA.field_names[0]),
-                    String::from(schema.collection_name),
-                )))
-                .build();
+            let query_filter = SubFilter::Equal(
+                String::from(MIGRATION_SCHEMA.field_names[0]),
+                String::from(schema.collection_name),
+            );
             self.find_one(Some(query_filter)).await?
         } else {
             None
@@ -191,7 +197,7 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
         }
     }
 
-    pub async fn collection_exists(&self, schema: &DocumentSchema) -> Result<bool> {
+    pub async fn collection_exists(&self, schema: &DocumentSchema) -> Result<bool, StorageError> {
         self.storage.collection_exists(schema.collection_name).await
     }
 

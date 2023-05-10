@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use mystiko_storage::error::StorageError;
 use serde::{Deserialize, Serialize};
 
 pub const CHAIN_ID_FIELD_NAME: &str = "chain_id";
@@ -80,14 +81,14 @@ impl DocumentData for Chain {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, StorageError> {
         Ok(Chain {
-            chain_id: raw.field_integer_value(CHAIN_ID_FIELD_NAME)?.unwrap(),
-            name: raw.field_string_value(NAME_FIELD_NAME)?.unwrap(),
-            name_override: raw.field_integer_value::<u8>(NAME_OVERRIDE_FIELD_NAME)?.unwrap() != 0,
-            providers: serde_json::from_str(&raw.field_string_value(PROVIDERS_FIELD_NAME)?.unwrap())?,
-            provider_override: raw.field_integer_value::<u8>(PROVIDER_OVERRIDE_FIELD_NAME)?.unwrap() != 0,
-            synced_block_number: raw.field_integer_value(SYNCED_BLOCK_NUMBER_FIELD_NAME)?.unwrap(),
+            chain_id: raw.required_field_integer_value(CHAIN_ID_FIELD_NAME)?,
+            name: raw.required_field_string_value(NAME_FIELD_NAME)?,
+            name_override: raw.required_field_integer_value::<u8>(NAME_OVERRIDE_FIELD_NAME)? != 0,
+            providers: serde_json::from_str(&raw.required_field_string_value(PROVIDERS_FIELD_NAME)?)?,
+            provider_override: raw.required_field_integer_value::<u8>(PROVIDER_OVERRIDE_FIELD_NAME)? != 0,
+            synced_block_number: raw.required_field_integer_value(SYNCED_BLOCK_NUMBER_FIELD_NAME)?,
         })
     }
 }

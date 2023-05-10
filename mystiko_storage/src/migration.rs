@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 use crate::document::{DocumentData, DocumentRawData, DocumentSchema};
 
+use crate::error::StorageError;
 use anyhow::Result;
 
 static MIGRATION_COLLECTION_NAME: &str = "__migrations__";
@@ -36,10 +37,10 @@ impl DocumentData for Migration {
             None
         }
     }
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, StorageError> {
         Ok(Migration {
-            collection_name: raw.field_string_value(MIGRATION_FIELDS[0])?.unwrap(),
-            version: raw.field_integer_value(MIGRATION_FIELDS[1])?.unwrap(),
+            collection_name: raw.required_field_string_value(MIGRATION_FIELDS[0])?,
+            version: raw.required_field_integer_value(MIGRATION_FIELDS[1])?,
         })
     }
 }

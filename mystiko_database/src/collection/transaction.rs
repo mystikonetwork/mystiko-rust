@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 use crate::document::transaction::Transaction;
-use anyhow::Result;
+use crate::error::DatabaseError;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::{Document, DocumentData, DocumentRawData};
 use mystiko_storage::filter::QueryFilter;
@@ -8,6 +8,8 @@ use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::migration::Migration;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
+
+pub type Result<T> = anyhow::Result<T, DatabaseError>;
 
 #[derive(Debug)]
 pub struct TransactionCollection<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
@@ -20,66 +22,114 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> TransactionCollec
     }
 
     pub async fn insert(&self, transaction: &Transaction) -> Result<Document<Transaction>> {
-        self.collection.insert(transaction).await
+        self.collection
+            .insert(transaction)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn insert_batch(&self, transactions: &Vec<Transaction>) -> Result<Vec<Document<Transaction>>> {
-        self.collection.insert_batch(transactions).await
+        self.collection
+            .insert_batch(transactions)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
-    pub async fn find(&self, filter: QueryFilter) -> Result<Vec<Document<Transaction>>> {
-        self.collection.find::<Transaction>(Some(filter)).await
+    pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<Document<Transaction>>> {
+        self.collection
+            .find::<Transaction, Q>(Some(filter))
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Transaction>>> {
-        self.collection.find::<Transaction>(None).await
+        self.collection
+            .find::<Transaction, QueryFilter>(None)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
-    pub async fn find_one(&self, filter: QueryFilter) -> Result<Option<Document<Transaction>>> {
-        self.collection.find_one(Some(filter)).await
+    pub async fn find_one<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Option<Document<Transaction>>> {
+        self.collection
+            .find_one(Some(filter))
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Transaction>>> {
-        self.collection.find_by_id(id).await
+        self.collection
+            .find_by_id(id)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
-    pub async fn count(&self, filter: QueryFilter) -> Result<u64> {
-        self.collection.count::<Transaction>(Some(filter)).await
+    pub async fn count<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<u64> {
+        self.collection
+            .count::<Transaction, Q>(Some(filter))
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.collection.count::<Transaction>(None).await
+        self.collection
+            .count::<Transaction, QueryFilter>(None)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn update(&self, transaction: &Document<Transaction>) -> Result<Document<Transaction>> {
-        self.collection.update(transaction).await
+        self.collection
+            .update(transaction)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn update_batch(&self, transactions: &Vec<Document<Transaction>>) -> Result<Vec<Document<Transaction>>> {
-        self.collection.update_batch(transactions).await
+        self.collection
+            .update_batch(transactions)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn delete(&self, transaction: &Document<Transaction>) -> Result<()> {
-        self.collection.delete(transaction).await
+        self.collection
+            .delete(transaction)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn delete_batch(&self, transactions: &Vec<Document<Transaction>>) -> Result<()> {
-        self.collection.delete_batch(transactions).await
+        self.collection
+            .delete_batch(transactions)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn delete_all(&self) -> Result<()> {
-        self.collection.delete_by_filter::<Transaction>(None).await
+        self.collection
+            .delete_by_filter::<Transaction, QueryFilter>(None)
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
-    pub async fn delete_by_filter(&self, filter: QueryFilter) -> Result<()> {
-        self.collection.delete_by_filter::<Transaction>(Some(filter)).await
+    pub async fn delete_by_filter<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<()> {
+        self.collection
+            .delete_by_filter::<Transaction, Q>(Some(filter))
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn migrate(&self) -> Result<Document<Migration>> {
-        self.collection.migrate(Transaction::schema()).await
+        self.collection
+            .migrate(Transaction::schema())
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 
     pub async fn collection_exists(&self) -> Result<bool> {
-        self.collection.collection_exists(Transaction::schema()).await
+        self.collection
+            .collection_exists(Transaction::schema())
+            .await
+            .map_err(DatabaseError::StorageError)
     }
 }

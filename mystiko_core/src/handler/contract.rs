@@ -6,7 +6,7 @@ use mystiko_database::document::contract::{
     Contract, CHAIN_ID_FIELD_NAME, CONTRACT_ADDRESS_FIELD_NAME, DISABLED_FIELD_NAME,
 };
 use mystiko_storage::document::{Document, DocumentRawData};
-use mystiko_storage::filter::{Condition, QueryFilter, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{Condition, QueryFilter, SubFilter};
 use mystiko_storage::formatter::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
@@ -27,7 +27,7 @@ where
         Self { db, config }
     }
 
-    pub async fn find(&self, query_filter: QueryFilter) -> Result<Vec<Document<Contract>>> {
+    pub async fn find<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<Vec<Document<Contract>>> {
         self.db
             .contracts
             .find(query_filter)
@@ -40,17 +40,11 @@ where
     }
 
     pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Vec<Document<Contract>>> {
-        let query_filter = QueryFilterBuilder::new()
-            .filter(Condition::FILTER(SubFilter::Equal(
-                CHAIN_ID_FIELD_NAME.to_string(),
-                chain_id.to_string(),
-            )))
-            .filter(Condition::FILTER(SubFilter::Equal(
-                DISABLED_FIELD_NAME.to_string(),
-                String::from("0"),
-            )))
-            .build();
-        self.find(query_filter).await
+        let filters: Vec<Condition> = vec![
+            SubFilter::Equal(CHAIN_ID_FIELD_NAME.to_string(), chain_id.to_string()).into(),
+            SubFilter::Equal(DISABLED_FIELD_NAME.to_string(), String::from("0")).into(),
+        ];
+        self.find(filters).await
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Contract>>> {
@@ -62,24 +56,18 @@ where
     }
 
     pub async fn find_by_address(&self, chain_id: u64, address: &str) -> Result<Option<Document<Contract>>> {
-        let query_filter = QueryFilterBuilder::new()
-            .filter(Condition::FILTER(SubFilter::Equal(
-                CHAIN_ID_FIELD_NAME.to_string(),
-                format!("{}", chain_id),
-            )))
-            .filter(Condition::FILTER(SubFilter::Equal(
-                CONTRACT_ADDRESS_FIELD_NAME.to_string(),
-                address.to_string(),
-            )))
-            .build();
+        let filters: Vec<Condition> = vec![
+            SubFilter::Equal(CHAIN_ID_FIELD_NAME.to_string(), format!("{}", chain_id)).into(),
+            SubFilter::Equal(CONTRACT_ADDRESS_FIELD_NAME.to_string(), address.to_string()).into(),
+        ];
         self.db
             .contracts
-            .find_one(query_filter)
+            .find_one(filters)
             .await
             .map_err(MystikoError::DatabaseError)
     }
 
-    pub async fn count(&self, query_filter: QueryFilter) -> Result<u64> {
+    pub async fn count<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<u64> {
         self.db
             .contracts
             .count(query_filter)

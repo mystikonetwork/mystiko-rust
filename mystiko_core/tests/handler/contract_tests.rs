@@ -5,7 +5,7 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_core::handler::contract::ContractHandler;
 use mystiko_database::database::Database;
 use mystiko_storage::document::DOCUMENT_ID_FIELD;
-use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::SubFilter;
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
 use mystiko_types::ContractType;
@@ -102,12 +102,10 @@ async fn test_contract_find() {
     );
     contracts.sort_by_key(|c| c.id.to_string());
 
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::IN(
-            DOCUMENT_ID_FIELD.to_string(),
-            vec![contracts[0].id.clone(), contracts[1].id.clone()],
-        )))
-        .build();
+    let filter = SubFilter::IN(
+        DOCUMENT_ID_FIELD.to_string(),
+        vec![contracts[0].id.clone(), contracts[1].id.clone()],
+    );
     let mut found_contracts = handler.find(filter).await.unwrap();
     found_contracts.sort_by_key(|c| c.id.to_string());
     assert_eq!(found_contracts[0], contracts[0]);
@@ -129,12 +127,10 @@ async fn test_contract_count() {
     let (handler, _, _) = setup().await;
     let contracts = handler.initialize().await.unwrap();
     assert_eq!(contracts.len() as u64, handler.count_all().await.unwrap());
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::IN(
-            DOCUMENT_ID_FIELD.to_string(),
-            vec![contracts[0].id.clone(), contracts[1].id.clone()],
-        )))
-        .build();
+    let filter = SubFilter::IN(
+        DOCUMENT_ID_FIELD.to_string(),
+        vec![contracts[0].id.clone(), contracts[1].id.clone()],
+    );
     assert_eq!(handler.count(filter).await.unwrap(), 2);
 }
 

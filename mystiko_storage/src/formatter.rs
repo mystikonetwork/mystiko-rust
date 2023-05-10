@@ -13,9 +13,9 @@ pub trait StatementFormatter: Send + Sync + Debug {
     fn format_update_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String;
     fn format_delete<T: DocumentData>(&self, doc: &Document<T>) -> String;
     fn format_delete_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> String;
-    fn format_delete_by_filter<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
-    fn format_count<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
-    fn format_find<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String;
+    fn format_delete_by_filter<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> String;
+    fn format_count<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> String;
+    fn format_find<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> String;
 }
 
 #[derive(Debug)]
@@ -88,9 +88,10 @@ impl StatementFormatter for SqlFormatter {
         statements.join(";")
     }
 
-    fn format_delete_by_filter<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String {
+    fn format_delete_by_filter<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> String {
         match filter_option {
             Some(filter) => {
+                let filter: QueryFilter = filter.into();
                 let filter_sql = filter.to_sql();
                 if filter_sql.is_empty() {
                     format!("DELETE FROM `{}`", T::schema().collection_name)
@@ -104,9 +105,10 @@ impl StatementFormatter for SqlFormatter {
         }
     }
 
-    fn format_count<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String {
+    fn format_count<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> String {
         match filter_option {
             Some(filter) => {
+                let filter: QueryFilter = filter.into();
                 let filter_sql = filter.to_sql();
                 if filter_sql.is_empty() {
                     format!("SELECT COUNT(*) FROM `{}`", T::schema().collection_name)
@@ -124,7 +126,7 @@ impl StatementFormatter for SqlFormatter {
         }
     }
 
-    fn format_find<T: DocumentData>(&self, filter_option: Option<QueryFilter>) -> String {
+    fn format_find<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> String {
         let mut basic_fields: Vec<String> = vec![
             format!("`{}`", DOCUMENT_ID_FIELD),
             format!("`{}`", DOCUMENT_CREATED_AT_FIELD),
@@ -132,8 +134,9 @@ impl StatementFormatter for SqlFormatter {
         ];
         let fields: Vec<String> = T::schema().field_names.iter().map(|f| format!("`{}`", f)).collect();
         basic_fields.extend(fields);
-        match &filter_option {
+        match filter_option {
             Some(filter) => {
+                let filter: QueryFilter = filter.into();
                 let filter_sql = filter.to_sql();
                 if filter_sql.is_empty() {
                     format!(

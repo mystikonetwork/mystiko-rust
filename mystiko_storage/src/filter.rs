@@ -207,3 +207,63 @@ impl QueryFilterBuilder {
         }
     }
 }
+
+impl From<SubFilter> for Condition {
+    fn from(sub_filter: SubFilter) -> Self {
+        Condition::FILTER(sub_filter)
+    }
+}
+
+impl From<Vec<SubFilter>> for Condition {
+    fn from(sub_filters: Vec<SubFilter>) -> Self {
+        Condition::AND(sub_filters)
+    }
+}
+
+impl From<(Vec<SubFilter>, ConditionOperator)> for Condition {
+    fn from((sub_filters, operator): (Vec<SubFilter>, ConditionOperator)) -> Self {
+        match operator {
+            ConditionOperator::AND => Condition::AND(sub_filters),
+            ConditionOperator::OR => Condition::OR(sub_filters),
+        }
+    }
+}
+
+impl From<SubFilter> for QueryFilter {
+    fn from(sub_filter: SubFilter) -> Self {
+        QueryFilterBuilder::new().filter(sub_filter.into()).build()
+    }
+}
+
+impl From<Vec<SubFilter>> for QueryFilter {
+    fn from(sub_filters: Vec<SubFilter>) -> Self {
+        QueryFilterBuilder::new().filter(sub_filters.into()).build()
+    }
+}
+
+impl From<(Vec<SubFilter>, ConditionOperator)> for QueryFilter {
+    fn from(sub_filters: (Vec<SubFilter>, ConditionOperator)) -> Self {
+        QueryFilterBuilder::new().filter(sub_filters.into()).build()
+    }
+}
+
+impl From<Condition> for QueryFilter {
+    fn from(condition: Condition) -> Self {
+        QueryFilterBuilder::new().filter(condition).build()
+    }
+}
+
+impl From<Vec<Condition>> for QueryFilter {
+    fn from(conditions: Vec<Condition>) -> Self {
+        QueryFilterBuilder::new().filters(conditions).build()
+    }
+}
+
+impl From<(Vec<Condition>, ConditionOperator)> for QueryFilter {
+    fn from((conditions, operator): (Vec<Condition>, ConditionOperator)) -> Self {
+        QueryFilterBuilder::new()
+            .filters(conditions)
+            .filter_operator(operator)
+            .build()
+    }
+}

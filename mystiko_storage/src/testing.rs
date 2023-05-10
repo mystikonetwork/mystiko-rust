@@ -1,5 +1,6 @@
 use crate::document::{DocumentData, DocumentRawData, DocumentSchema};
 
+use crate::error::StorageError;
 use anyhow::Result;
 
 pub static TEST_DOCUMENT_SCHEMA: DocumentSchema = DocumentSchema {
@@ -37,10 +38,10 @@ impl DocumentData for TestDocumentData {
             _ => None,
         }
     }
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, StorageError> {
         Ok(TestDocumentData {
-            field1: raw.field_string_value("field1")?.unwrap(),
-            field2: raw.field_integer_value("field2")?.unwrap(),
+            field1: raw.required_field_string_value("field1")?,
+            field2: raw.required_field_integer_value("field2")?,
             field3: raw.field_float_value("field3")?,
         })
     }

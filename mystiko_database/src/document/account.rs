@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
+use mystiko_storage::error::StorageError;
 use mystiko_types::AccountStatus;
 
 pub const NAME_FIELD_NAME: &str = "name";
@@ -70,15 +71,15 @@ impl DocumentData for Account {
         }
     }
 
-    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self> {
+    fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, StorageError> {
         Ok(Account {
-            name: raw.field_string_value(NAME_FIELD_NAME)?.unwrap(),
-            shielded_address: raw.field_string_value(SHIELDED_ADDRESS_FIELD_NAME)?.unwrap(),
-            public_key: raw.field_string_value(PUBLIC_KEY_FIELD_NAME)?.unwrap(),
-            encrypted_secret_key: raw.field_string_value(ENCRYPTED_SECRET_KEY_FIELD_NAME)?.unwrap(),
-            status: serde_json::from_str(&raw.field_string_value(STATUS_FIELD_NAME)?.unwrap())?,
-            scan_size: raw.field_integer_value::<u32>(SCAN_SIZE_FIELD_NAME)?.unwrap(),
-            wallet_id: raw.field_string_value(WALLET_ID_FIELD_NAME)?.unwrap(),
+            name: raw.required_field_string_value(NAME_FIELD_NAME)?,
+            shielded_address: raw.required_field_string_value(SHIELDED_ADDRESS_FIELD_NAME)?,
+            public_key: raw.required_field_string_value(PUBLIC_KEY_FIELD_NAME)?,
+            encrypted_secret_key: raw.required_field_string_value(ENCRYPTED_SECRET_KEY_FIELD_NAME)?,
+            status: serde_json::from_str(&raw.required_field_string_value(STATUS_FIELD_NAME)?)?,
+            scan_size: raw.required_field_integer_value::<u32>(SCAN_SIZE_FIELD_NAME)?,
+            wallet_id: raw.required_field_string_value(WALLET_ID_FIELD_NAME)?,
         })
     }
 }

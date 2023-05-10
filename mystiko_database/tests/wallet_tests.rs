@@ -1,8 +1,8 @@
 use mystiko_database::collection::wallet::WalletCollection;
-use mystiko_database::document::wallet::Wallet;
+use mystiko_database::document::wallet::{Wallet, ACCOUNT_NONCE_FIELD_NAME, HASHED_PASSWORD_FIELD_NAME};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
@@ -53,14 +53,7 @@ async fn test_wallets_crud() {
     assert_eq!(wallets.count_all().await.unwrap(), 3);
     assert_eq!(
         wallets
-            .count(
-                QueryFilterBuilder::new()
-                    .filter(Condition::FILTER(SubFilter::Equal(
-                        String::from("account_nonce"),
-                        2.to_string()
-                    )))
-                    .build()
-            )
+            .count(SubFilter::Equal(ACCOUNT_NONCE_FIELD_NAME.into(), 2.to_string()))
             .await
             .unwrap(),
         1
@@ -75,14 +68,10 @@ async fn test_wallets_crud() {
         .unwrap();
     assert_eq!(found_wallets, inserted_wallets[1..]);
     let mut found_wallet = wallets
-        .find_one(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("hashed_password"),
-                    String::from("hashed password 02"),
-                )))
-                .build(),
-        )
+        .find_one(SubFilter::Equal(
+            HASHED_PASSWORD_FIELD_NAME.into(),
+            String::from("hashed password 02"),
+        ))
         .await
         .unwrap()
         .unwrap();
@@ -117,14 +106,10 @@ async fn test_wallets_crud() {
         .unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 2);
     wallets
-        .delete_by_filter(
-            QueryFilterBuilder::new()
-                .filter(Condition::FILTER(SubFilter::Equal(
-                    String::from("hashed_password"),
-                    String::from("hashed password 01"),
-                )))
-                .build(),
-        )
+        .delete_by_filter(SubFilter::Equal(
+            HASHED_PASSWORD_FIELD_NAME.into(),
+            String::from("hashed password 01"),
+        ))
         .await
         .unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 1);

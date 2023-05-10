@@ -2,7 +2,8 @@ use anyhow::{Error, Result};
 use async_trait::async_trait;
 use mystiko_storage::collection::*;
 use mystiko_storage::document::{Document, DocumentData, DocumentRawData, DOCUMENT_ID_FIELD};
-use mystiko_storage::filter::{Condition, QueryFilterBuilder, SubFilter};
+use mystiko_storage::error::StorageError;
+use mystiko_storage::filter::{QueryFilter, SubFilter};
 use mystiko_storage::formatter::{SqlFormatter, StatementFormatter};
 use mystiko_storage::migration::{Migration, MIGRATION_SCHEMA};
 use mystiko_storage::storage::Storage;
@@ -18,31 +19,31 @@ struct TestDocumentRawData {
 }
 
 impl DocumentRawData for TestDocumentRawData {
-    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>> {
+    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>, StorageError> {
         let value = self.data.get(field);
         if let Some(..) = value {
             match value.unwrap().parse() {
                 Ok(parsed) => Ok(Some(parsed)),
-                Err(_) => Err(Error::msg("parsed error")),
+                Err(_) => Err(StorageError::CorruptedDataError("parsed error".into())),
             }
         } else {
             Ok(None)
         }
     }
 
-    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>> {
+    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>, StorageError> {
         let value = self.data.get(field);
         if let Some(..) = value {
             match value.unwrap().parse() {
                 Ok(parsed) => Ok(Some(parsed)),
-                Err(_) => Err(Error::msg("parsed error")),
+                Err(_) => Err(StorageError::CorruptedDataError("parsed error".into())),
             }
         } else {
             Ok(None)
         }
     }
 
-    fn field_string_value(&self, field: &str) -> Result<Option<String>> {
+    fn field_string_value(&self, field: &str) -> Result<Option<String>, StorageError> {
         Ok(self.data.get(field).cloned())
     }
 }
@@ -72,27 +73,27 @@ impl TestStorage {
 
 #[async_trait]
 impl Storage<TestDocumentRawData> for TestStorage {
-    async fn execute(&self, statement: String) -> Result<()> {
+    async fn execute(&self, statement: String) -> Result<(), StorageError> {
         self.statements.lock().await.push(statement);
         if self.raise_error_on_execute {
-            Err(Error::msg("expected error"))
+            Err(StorageError::DatabaseError(Error::msg("expected error")))
         } else {
             Ok(())
         }
     }
 
-    async fn query(&self, statement: String) -> Result<Vec<TestDocumentRawData>> {
+    async fn query(&self, statement: String) -> Result<Vec<TestDocumentRawData>, StorageError> {
         self.statements.lock().await.push(statement);
         if self.raise_error_on_query {
-            Err(Error::msg("expected error"))
+            Err(StorageError::DatabaseError(Error::msg("expected error")))
         } else {
             Ok(self.expected_data.clone())
         }
     }
 
-    async fn collection_exists(&self, _collection: &str) -> Result<bool> {
+    async fn collection_exists(&self, _collection: &str) -> Result<bool, StorageError> {
         if self.raise_error_on_collection_exists {
-            Err(Error::msg("expected error"))
+            Err(StorageError::DatabaseError(Error::msg("expected error")))
         } else {
             Ok(self.collection_exists)
         }
@@ -302,30 +303,30 @@ async fn test_delete_batch() {
 async fn test_delete_by_filter() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    collection.delete_by_filter::<TestDocumentData>(None).await.unwrap();
-    assert_eq!(
-        collection.formatter().format_delete_by_filter::<TestDocumentData>(None),
-        collection.storage().statements.lock().await[0],
-    );
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::Equal(
-            String::from(DOCUMENT_ID_FIELD),
-            String::from("1000"),
-        )))
-        .build();
     collection
-        .delete_by_filter::<TestDocumentData>(Some(filter.clone()))
+        .delete_by_filter::<TestDocumentData, QueryFilter>(None)
         .await
         .unwrap();
     assert_eq!(
         collection
             .formatter()
-            .format_delete_by_filter::<TestDocumentData>(Some(filter.clone())),
+            .format_delete_by_filter::<TestDocumentData, QueryFilter>(None),
+        collection.storage().statements.lock().await[0],
+    );
+    let filter = SubFilter::Equal(String::from(DOCUMENT_ID_FIELD), String::from("1000"));
+    collection
+        .delete_by_filter::<TestDocumentData, SubFilter>(Some(filter.clone()))
+        .await
+        .unwrap();
+    assert_eq!(
+        collection
+            .formatter()
+            .format_delete_by_filter::<TestDocumentData, SubFilter>(Some(filter.clone())),
         collection.storage().statements.lock().await[1],
     );
     collection.mut_storage().raise_error_on_execute = true;
     assert!(collection
-        .delete_by_filter::<TestDocumentData>(Some(filter))
+        .delete_by_filter::<TestDocumentData, SubFilter>(Some(filter))
         .await
         .is_err());
 }
@@ -334,10 +335,12 @@ async fn test_delete_by_filter() {
 async fn test_find() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection.find::<TestDocumentData>(None).await.unwrap();
+    let d1 = collection.find::<TestDocumentData, QueryFilter>(None).await.unwrap();
     assert!(d1.is_empty());
     assert_eq!(
-        collection.formatter().format_find::<TestDocumentData>(None),
+        collection
+            .formatter()
+            .format_find::<TestDocumentData, QueryFilter>(None),
         collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().expected_data = vec![
@@ -361,7 +364,7 @@ async fn test_find() {
             ]),
         },
     ];
-    let d2 = collection.find::<TestDocumentData>(None).await.unwrap();
+    let d2 = collection.find::<TestDocumentData, QueryFilter>(None).await.unwrap();
     assert_eq!(d2.len(), 2);
     assert_eq!(d2[0].id, "1");
     assert_eq!(d2[0].created_at, 1);
@@ -376,7 +379,7 @@ async fn test_find() {
     assert_eq!(d2[1].data.field2, 2000);
     assert_eq!(d2[1].data.field3, Some(0.433));
     collection.mut_storage().raise_error_on_query = true;
-    let result = collection.find::<TestDocumentData>(None).await;
+    let result = collection.find::<TestDocumentData, QueryFilter>(None).await;
     assert!(result.is_err());
 }
 
@@ -384,7 +387,10 @@ async fn test_find() {
 async fn test_find_one() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection.find_one::<TestDocumentData>(None).await.unwrap();
+    let d1 = collection
+        .find_one::<TestDocumentData, QueryFilter>(None)
+        .await
+        .unwrap();
     assert!(d1.is_none());
     collection.mut_storage().expected_data = vec![TestDocumentRawData {
         data: HashMap::from([
@@ -395,14 +401,18 @@ async fn test_find_one() {
             (String::from("field2"), String::from("1000")),
         ]),
     }];
-    let d2 = collection.find_one::<TestDocumentData>(None).await.unwrap().unwrap();
+    let d2 = collection
+        .find_one::<TestDocumentData, QueryFilter>(None)
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(d2.created_at, 1);
     assert_eq!(d2.updated_at, 1);
     assert_eq!(d2.data.field1, "doc1 field1");
     assert_eq!(d2.data.field2, 1000);
     assert_eq!(d2.data.field3, None);
     collection.mut_storage().raise_error_on_query = true;
-    let result = collection.find_one::<TestDocumentData>(None).await;
+    let result = collection.find_one::<TestDocumentData, QueryFilter>(None).await;
     assert!(result.is_err());
 }
 
@@ -412,14 +422,11 @@ async fn test_find_by_id() {
         Collection::new(SqlFormatter {}, TestStorage::new());
     let d1 = collection.find_by_id::<TestDocumentData>("1000").await.unwrap();
     assert!(d1.is_none());
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::Equal(
-            String::from(DOCUMENT_ID_FIELD),
-            String::from("1000"),
-        )))
-        .build();
+    let filter = SubFilter::Equal(String::from(DOCUMENT_ID_FIELD), String::from("1000"));
     assert_eq!(
-        collection.formatter().format_find::<TestDocumentData>(Some(filter)),
+        collection
+            .formatter()
+            .format_find::<TestDocumentData, SubFilter>(Some(filter)),
         collection.storage().statements.lock().await[0]
     );
     collection.mut_storage().raise_error_on_query = true;
@@ -452,20 +459,20 @@ async fn test_migrate_initialization() {
 async fn test_count() {
     let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
         Collection::new(SqlFormatter {}, TestStorage::new());
-    let mut count = collection.count::<TestDocumentData>(None).await.unwrap();
+    let mut count = collection.count::<TestDocumentData, QueryFilter>(None).await.unwrap();
     assert_eq!(count, 0);
     collection.mut_storage().expected_data = vec![TestDocumentRawData {
         data: HashMap::from([(String::from("COUNT(*)"), 123.to_string())]),
     }];
-    count = collection.count::<TestDocumentData>(None).await.unwrap();
+    count = collection.count::<TestDocumentData, QueryFilter>(None).await.unwrap();
     assert_eq!(count, 123);
     collection.mut_storage().expected_data = vec![TestDocumentRawData {
         data: HashMap::from([]),
     }];
-    count = collection.count::<TestDocumentData>(None).await.unwrap();
+    count = collection.count::<TestDocumentData, QueryFilter>(None).await.unwrap();
     assert_eq!(count, 0);
     collection.mut_storage().raise_error_on_query = true;
-    assert!(collection.count::<TestDocumentData>(None).await.is_err());
+    assert!(collection.count::<TestDocumentData, QueryFilter>(None).await.is_err());
 }
 
 #[tokio::test]
@@ -474,14 +481,12 @@ async fn test_migrate_non_existing() {
         Collection::new(SqlFormatter {}, TestStorage::new());
     collection.mut_storage().collection_exists = true;
     let migration = collection.migrate(TestDocumentData::schema()).await.unwrap();
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::Equal(
-            String::from(MIGRATION_SCHEMA.field_names[0]),
-            String::from(TestDocumentData::schema().collection_name),
-        )))
-        .build();
+    let filter = SubFilter::Equal(
+        String::from(MIGRATION_SCHEMA.field_names[0]),
+        String::from(TestDocumentData::schema().collection_name),
+    );
     assert_eq!(
-        collection.formatter().format_find::<Migration>(Some(filter)),
+        collection.formatter().format_find::<Migration, SubFilter>(Some(filter)),
         collection.storage().statements.lock().await[0]
     );
     assert_eq!(
@@ -512,15 +517,13 @@ async fn test_migrate_existing() {
         ]),
     }];
     let mut migration = collection.migrate(TestDocumentData::schema()).await.unwrap();
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::Equal(
-            String::from(MIGRATION_SCHEMA.field_names[0]),
-            String::from(TestDocumentData::schema().collection_name),
-        )))
-        .build();
+    let filter = SubFilter::Equal(
+        String::from(MIGRATION_SCHEMA.field_names[0]),
+        String::from(TestDocumentData::schema().collection_name),
+    );
     migration.data.version = TestDocumentData::schema().version();
     assert_eq!(
-        collection.formatter().format_find::<Migration>(Some(filter)),
+        collection.formatter().format_find::<Migration, SubFilter>(Some(filter)),
         collection.storage().statements.lock().await[0]
     );
     assert_eq!(
@@ -554,15 +557,13 @@ async fn test_migrate_skipping() {
         ]),
     }];
     collection.migrate(TestDocumentData::schema()).await.unwrap();
-    let filter = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::Equal(
-            String::from(MIGRATION_SCHEMA.field_names[0]),
-            String::from(TestDocumentData::schema().collection_name),
-        )))
-        .build();
+    let filter = SubFilter::Equal(
+        String::from(MIGRATION_SCHEMA.field_names[0]),
+        String::from(TestDocumentData::schema().collection_name),
+    );
     assert_eq!(collection.storage().statements.lock().await.len(), 1);
     assert_eq!(
-        collection.formatter().format_find::<Migration>(Some(filter)),
+        collection.formatter().format_find::<Migration, SubFilter>(Some(filter)),
         collection.storage().statements.lock().await[0]
     );
 }

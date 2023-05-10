@@ -1,5 +1,6 @@
 use hex::FromHexError;
 use mystiko_crypto::error::CryptoError;
+use mystiko_database::error::DatabaseError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -14,8 +15,8 @@ pub enum MystikoError {
     MnemonicError(#[from] bip32::Error),
     #[error(transparent)]
     HexStringError(#[from] FromHexError),
-    #[error("database raised error: {0:?}")]
-    DatabaseError(#[source] anyhow::Error),
+    #[error(transparent)]
+    DatabaseError(#[from] DatabaseError),
     #[error("invalid password: {0:?}")]
     InvalidPasswordError(String),
     #[error("password is wrong")]
