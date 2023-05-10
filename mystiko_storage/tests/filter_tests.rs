@@ -137,13 +137,14 @@ fn test_query_filter() {
             AND (`c12` BETWEEN 'v13' AND 'v14' AND `c13` >= 'v15') \
             ORDER BY `c15` ASC LIMIT 30 OFFSET 40"
     );
-    let mut qf9 = qf8;
-    qf9.conditions_operator = Some(ConditionOperator::OR);
+    let qf9 = QueryFilterBuilder::new()
+        .filters(qf8.conditions)
+        .filter_operator(ConditionOperator::OR)
+        .build();
     assert_eq!(
         qf9.to_sql(),
         "\
             (`c10` = 'v10' OR `c11` IN ('v11', 'v12')) \
-            OR (`c12` BETWEEN 'v13' AND 'v14' AND `c13` >= 'v15') \
-            ORDER BY `c15` ASC LIMIT 30 OFFSET 40"
+            OR (`c12` BETWEEN 'v13' AND 'v14' AND `c13` >= 'v15')"
     );
 }
