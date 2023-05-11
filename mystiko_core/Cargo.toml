@@ -9,7 +9,7 @@ edition = "2021"
 anyhow = { version = "1.0.69" }
 async-trait = { version = "0.1.64" }
 bip32 = { version = "0.5.0" }
-ethers-providers = { version = "2.0.2", features = ["ws"] }
+ethers-providers = { version = "2.0.4", features = ["ws"] }
 futures = { version = "0.3.26" }
 hex = { version = "0.4.3" }
 lazy_static = { version = "1.4.0" }
