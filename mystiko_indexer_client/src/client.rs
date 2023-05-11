@@ -253,7 +253,7 @@ impl IndexerClient {
     pub async fn count_commitment_included_for_contract(
         &self,
         chain_id: u64,
-        contract_address: String,
+        contract_address: &str,
         end_block: u64,
     ) -> Result<u32> {
         let resp = self
