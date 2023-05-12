@@ -5,7 +5,7 @@ use typed_builder::TypedBuilder;
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentSpentFilter {
     #[builder(setter(strip_option), default=None)]
-    pub chain_id: Option<u32>,
+    pub chain_id: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub contract_address: Option<String>,
     #[builder(setter(strip_option), default=None)]
@@ -15,7 +15,7 @@ pub struct CommitmentSpentFilter {
     #[builder(setter(strip_option), default=None)]
     pub serial_num: Option<String>,
     #[builder(setter(strip_option), default=None)]
-    pub block_num: Option<u32>,
+    pub block_num: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub create_at: Option<u64>,
     #[builder(setter(strip_option), default=None)]
@@ -28,23 +28,23 @@ pub struct CommitmentSpentFilter {
 
 #[derive(Deserialize, Serialize, TypedBuilder)]
 pub struct CommitmentSpentForChainRequest {
-    pub chain_id: u32,
+    pub chain_id: u64,
     #[builder(setter(strip_option), default=None)]
-    pub start_block: Option<u32>,
+    pub start_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
-    pub end_block: Option<u32>,
+    pub end_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub where_filter: Option<CommitmentSpentFilter>,
 }
 
 #[derive(Deserialize, Serialize, TypedBuilder)]
 pub struct CommitmentSpentForContractRequest {
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub address: String,
     #[builder(setter(strip_option), default=None)]
-    pub start_block: Option<u32>,
+    pub start_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
-    pub end_block: Option<u32>,
+    pub end_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub where_filter: Option<CommitmentSpentFilter>,
 }
@@ -53,12 +53,12 @@ pub struct CommitmentSpentForContractRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentSpentResponse {
     pub id: u64,
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub contract_address: String,
     pub root_hash: String,
     pub tx_hash: String,
     pub serial_num: String,
-    pub block_num: u32,
+    pub block_num: u64,
     pub create_at: u64,
     pub update_at: u64,
     pub status: u32,

@@ -1258,7 +1258,7 @@ async fn test_count_commitment_included_for_contract() {
         indexer_client,
     } = setup().await.unwrap();
     let test_chain_id = 97;
-    let test_contract_address = String::from("address1");
+    let test_contract_address = "address1";
     let test_end_block = 2283020;
     let test_resp = 3;
     let mocked_api_resp = ApiResponse {
@@ -1269,8 +1269,8 @@ async fn test_count_commitment_included_for_contract() {
         .mock(
             "get",
             format!(
-                "/chains/{}/contracts/{}/count/commitment-included?endBlock={}",
-                test_chain_id, &test_contract_address, test_end_block
+                "/chains/{}/address/{}/count/commitment-included?endBlock={}",
+                test_chain_id, test_contract_address, test_end_block
             )
             .as_str(),
         )
@@ -1284,7 +1284,6 @@ async fn test_count_commitment_included_for_contract() {
         .await;
     assert!(resp.is_ok());
     let resp = resp.unwrap();
-    dbg!(&resp);
     assert_eq!(resp, test_resp);
     m.assert_async().await;
 }

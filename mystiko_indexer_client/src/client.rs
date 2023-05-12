@@ -80,8 +80,8 @@ impl IndexerClient {
     fn build_block_params_map(
         &self,
         mut params_map: HashMap<String, String>,
-        start_block: &Option<u32>,
-        end_block: &Option<u32>,
+        start_block: &Option<u64>,
+        end_block: &Option<u64>,
     ) -> HashMap<String, String> {
         if let Some(start_block_num) = start_block {
             params_map.insert(String::from("startBlock"), start_block_num.to_string());
@@ -131,7 +131,7 @@ impl IndexerClient {
 
     pub async fn query_contract_sync_response(
         &self,
-        chain_id: u32,
+        chain_id: u64,
         contract_address: &str,
     ) -> Result<ContractSyncResponse> {
         let resp = self
@@ -252,13 +252,13 @@ impl IndexerClient {
 
     pub async fn count_commitment_included_for_contract(
         &self,
-        chain_id: u32,
-        contract_address: String,
-        end_block: u32,
+        chain_id: u64,
+        contract_address: &str,
+        end_block: u64,
     ) -> Result<u32> {
         let resp = self
             .get_data::<u32>(&format!(
-                "{}/chains/{}/contracts/{}/count/commitment-included?endBlock={}",
+                "{}/chains/{}/address/{}/count/commitment-included?endBlock={}",
                 &self.base_url, chain_id, contract_address, end_block
             ))
             .await?;
