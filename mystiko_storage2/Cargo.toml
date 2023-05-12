@@ -1,0 +1,15 @@
+[package]
+name = "mystiko_storage2"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = { version = "1.0.69" }
+async-trait = { version = "0.1.64" }
+num-bigint = { version = "0.4", features = ["serde"] }
+serde = { version = "1.0.152", features = ["derive", "rc"] }
+serde_json = { version = "1.0.91" }
+thiserror = { version = "1.0", default-features = false }
+ulid = { version = "1.0.0" }

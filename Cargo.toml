@@ -15,6 +15,8 @@ members = [
     "mystiko_relayer_config",
     "mystiko_server_utils",
     "mystiko_storage",
+    "mystiko_storage2",
+    "mystiko_storage_macros",
     "mystiko_storage_sqlite",
     "mystiko_types",
     "mystiko_utils",
