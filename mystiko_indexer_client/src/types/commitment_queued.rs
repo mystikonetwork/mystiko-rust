@@ -22,23 +22,23 @@ pub struct CommitmentQueuedFilter {
 
 #[derive(Deserialize, Serialize, TypedBuilder)]
 pub struct CommitmentQueuedForChainRequest {
-    pub chain_id: u32,
+    pub chain_id: u64,
     #[builder(setter(strip_option), default=None)]
-    pub start_block: Option<u32>,
+    pub start_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
-    pub end_block: Option<u32>,
+    pub end_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub where_filter: Option<CommitmentQueuedFilter>,
 }
 
 #[derive(Deserialize, Serialize, TypedBuilder)]
 pub struct CommitmentQueuedForContractRequest {
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub address: String,
     #[builder(setter(strip_option), default=None)]
-    pub start_block: Option<u32>,
+    pub start_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
-    pub end_block: Option<u32>,
+    pub end_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub where_filter: Option<CommitmentQueuedFilter>,
 }
@@ -47,7 +47,7 @@ pub struct CommitmentQueuedForContractRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentQueuedResponse {
     pub id: u64,
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub contract_address: String,
     pub commit_hash: String,
     pub tx_hash: String,

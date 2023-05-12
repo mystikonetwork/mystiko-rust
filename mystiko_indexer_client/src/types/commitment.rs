@@ -19,7 +19,7 @@ pub struct CommitmentFilter {
     #[builder(setter(strip_option), default=None)]
     pub status: Option<DepositStatus>,
     #[builder(setter(strip_option), default=None)]
-    pub chain_id: Option<u32>,
+    pub chain_id: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub contract_address: Option<String>,
     #[builder(setter(strip_option), default=None)]
@@ -33,7 +33,7 @@ pub struct CommitmentFilter {
     #[builder(setter(strip_option), default=None)]
     pub block_num: Option<u64>,
     #[builder(setter(strip_option), default=None)]
-    pub src_chain_id: Option<u32>,
+    pub src_chain_id: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub src_address: Option<String>,
     #[builder(setter(strip_option), default=None)]
@@ -60,12 +60,12 @@ pub struct CommitmentFilter {
 
 #[derive(Deserialize, Serialize, TypedBuilder)]
 pub struct CommitmentsForContractRequest {
-    pub chain_id: u32,
+    pub chain_id: u64,
     pub contract_address: String,
     #[builder(setter(strip_option), default=None)]
-    pub start_block: Option<u32>,
+    pub start_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
-    pub end_block: Option<u32>,
+    pub end_block: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub where_filter: Option<CommitmentFilter>,
 }
@@ -76,7 +76,7 @@ pub struct CommitmentResponse {
     pub id: u32,
     pub status: DepositStatus,
     #[builder(setter(strip_option), default=None)]
-    pub chain_id: Option<u32>,
+    pub chain_id: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub contract_address: Option<String>,
     pub commit_hash: String,
@@ -87,7 +87,7 @@ pub struct CommitmentResponse {
     #[builder(setter(strip_option), default=None)]
     pub block_num: Option<u64>,
     #[builder(setter(strip_option), default=None)]
-    pub src_chain_id: Option<u32>,
+    pub src_chain_id: Option<u64>,
     #[builder(setter(strip_option), default=None)]
     pub src_address: Option<String>,
     pub creation_transaction_hash: String,
