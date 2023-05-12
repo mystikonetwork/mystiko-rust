@@ -4,6 +4,7 @@ extern crate num_bigint;
 extern crate serde;
 extern crate serde_json;
 extern crate thiserror;
+extern crate typed_builder;
 extern crate ulid;
 
 pub mod collection;

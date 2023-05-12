@@ -1,8 +1,8 @@
 use crate::document::{Document, DocumentColumn, DocumentData};
 use crate::error::StorageError;
 use crate::filter::{QueryFilter, SubFilter};
-use crate::formatter::{Statement, StatementFormatter};
-use crate::migration::{Migration, MigrationColumn};
+use crate::formatter::types::{Statement, StatementFormatter};
+use crate::migration::history::{MigrationHistory, MigrationHistoryColumn};
 use crate::storage::Storage;
 use std::time::SystemTime;
 
@@ -138,10 +138,10 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         self.storage.collection_exists(collection_name).await
     }
 
-    pub async fn migrate<D: DocumentData>(&self) -> Result<Document<Migration>, StorageError> {
-        let collection_exists = self.collection_exists(&Migration::collection_name()).await?;
-        let existing: Option<Document<Migration>> = if collection_exists {
-            let query_filter = SubFilter::equal(&MigrationColumn::CollectionName, D::collection_name());
+    pub async fn migrate<D: DocumentData>(&self) -> Result<Document<MigrationHistory>, StorageError> {
+        let collection_exists = self.collection_exists(&MigrationHistory::collection_name()).await?;
+        let existing: Option<Document<MigrationHistory>> = if collection_exists {
+            let query_filter = SubFilter::equal(&MigrationHistoryColumn::CollectionName, D::collection_name());
             self.find_one(Some(query_filter)).await?
         } else {
             None
@@ -152,10 +152,9 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                 if current_version >= D::version() {
                     Ok(migration)
                 } else {
-                    let mut migration_statements: Vec<Statement> = vec![];
-                    for index in current_version..D::migrations().len() {
-                        migration_statements.push(Statement::new(D::migrations()[index].to_string(), vec![]));
-                    }
+                    let mut migration_statements: Vec<Statement> = self
+                        .formatter
+                        .format_migration_batch(&Document::<D>::migrations()[current_version..]);
                     migration.updated_at = current_timestamp();
                     migration.data.version = D::version();
                     migration_statements.push(self.formatter.format_update(&migration));
@@ -166,22 +165,18 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
             None => {
                 let mut migration_statements = vec![];
                 if !collection_exists {
-                    for migration_collection_creation in Migration::migrations() {
-                        migration_statements.push(Statement::new(migration_collection_creation.to_string(), vec![]));
-                    }
+                    migration_statements.extend(
+                        self.formatter
+                            .format_migration_batch(&Document::<MigrationHistory>::migrations()),
+                    );
                 }
-                migration_statements.extend(
-                    D::migrations()
-                        .iter()
-                        .map(|m| Statement::new(m.to_string(), vec![]))
-                        .collect::<Vec<_>>(),
-                );
+                migration_statements.extend(self.formatter.format_migration_batch(&Document::<D>::migrations()));
                 let now = current_timestamp();
-                let migration: Document<Migration> = Document {
+                let migration: Document<MigrationHistory> = Document {
                     id: self.storage.uuid().await?,
                     created_at: now,
                     updated_at: now,
-                    data: Migration {
+                    data: MigrationHistory {
                         collection_name: D::collection_name(),
                         version: D::version(),
                     },

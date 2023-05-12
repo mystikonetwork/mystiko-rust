@@ -4,6 +4,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fmt::{Debug, Display, Formatter};
+use typed_builder::TypedBuilder;
 
 type Result<T> = anyhow::Result<T, StorageError>;
 
@@ -53,11 +54,16 @@ pub enum ColumnValue {
     Json(Value),
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct Column {
     pub column_type: ColumnType,
     pub column_name: String,
+    #[builder(default = false)]
     pub nullable: bool,
+    #[builder(default = false)]
+    pub is_primary_key: bool,
+    #[builder(default, setter(strip_option))]
+    pub length_limit: Option<u64>,
 }
 
 impl From<bool> for ColumnValue {
@@ -453,16 +459,6 @@ impl ColumnValue {
                 self.column_type().to_string(),
                 ColumnType::Json.to_string(),
             )),
-        }
-    }
-}
-
-impl Column {
-    pub fn new(column_name: String, column_type: ColumnType, nullable: bool) -> Self {
-        Self {
-            column_name,
-            column_type,
-            nullable,
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::document::{Document, DocumentData};
 use crate::error::StorageError;
-use crate::formatter::{CountStatement, Statement};
+use crate::formatter::types::{CountStatement, Statement};
 use anyhow::Result;
 use async_trait::async_trait;
 use std::fmt::Debug;

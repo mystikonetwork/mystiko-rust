@@ -1,6 +1,7 @@
 use crate::column::ColumnValue;
 use crate::document::{Document, DocumentData};
 use crate::filter::QueryFilter;
+use crate::migration::types::Migration;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
@@ -18,14 +19,27 @@ pub struct CountStatement {
 
 pub trait StatementFormatter: Send + Sync + Debug {
     fn format_insert<T: DocumentData>(&self, doc: &Document<T>) -> Statement;
-    fn format_insert_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> Vec<Statement>;
     fn format_update<T: DocumentData>(&self, doc: &Document<T>) -> Statement;
-    fn format_update_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> Vec<Statement>;
     fn format_delete<T: DocumentData>(&self, doc: &Document<T>) -> Statement;
-    fn format_delete_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> Vec<Statement>;
     fn format_delete_by_filter<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> Statement;
     fn format_count<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> CountStatement;
     fn format_find<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> Statement;
+    fn format_migration(&self, migration: &Migration) -> Statement;
+    fn format_insert_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> Vec<Statement> {
+        docs.iter().map(|doc| self.format_insert(doc)).collect::<Vec<_>>()
+    }
+    fn format_update_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> Vec<Statement> {
+        docs.iter().map(|doc| self.format_update(doc)).collect::<Vec<_>>()
+    }
+    fn format_delete_batch<T: DocumentData>(&self, docs: &[Document<T>]) -> Vec<Statement> {
+        docs.iter().map(|doc| self.format_delete(doc)).collect::<Vec<_>>()
+    }
+    fn format_migration_batch(&self, migrations: &[Migration]) -> Vec<Statement> {
+        migrations
+            .iter()
+            .map(|migration| self.format_migration(migration))
+            .collect::<Vec<_>>()
+    }
 }
 
 impl Statement {

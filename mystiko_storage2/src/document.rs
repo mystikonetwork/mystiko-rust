@@ -1,17 +1,23 @@
 use crate::column::{Column, ColumnType, ColumnValue};
 use crate::error::StorageError;
+use crate::migration::types::{CreateCollectionMigration, Migration};
 use std::fmt::Debug;
 
 type Result<T> = anyhow::Result<T, StorageError>;
 
 pub trait DocumentData: Send + Sync + Clone + Debug + PartialEq {
-    fn migrations() -> &'static [&'static str];
     fn create(column_values: &[(Column, ColumnValue)]) -> Result<Self>;
     fn collection_name() -> String;
     fn columns() -> Vec<Column>;
     fn column_values(&self) -> Vec<(Column, Option<ColumnValue>)>;
+    fn unique_columns() -> Vec<Vec<String>> {
+        vec![]
+    }
+    fn migrations() -> Vec<Migration> {
+        vec![]
+    }
     fn version() -> usize {
-        Self::migrations().len()
+        Self::migrations().len() + 1
     }
 }
 
@@ -41,10 +47,6 @@ impl ToString for DocumentColumn {
 }
 
 impl<T: DocumentData> DocumentData for Document<T> {
-    fn migrations() -> &'static [&'static str] {
-        T::migrations()
-    }
-
     fn create(column_values: &[(Column, ColumnValue)]) -> Result<Self> {
         Ok(Self {
             id: find_required_column_value(&DocumentColumn::Id.to_string(), column_values)?.as_string()?,
@@ -69,6 +71,22 @@ impl<T: DocumentData> DocumentData for Document<T> {
         values.extend(self.data.column_values());
         values
     }
+
+    fn unique_columns() -> Vec<Vec<String>> {
+        T::unique_columns()
+    }
+
+    fn migrations() -> Vec<Migration> {
+        let mut migrations: Vec<Migration> = vec![Migration::CreateCollection(
+            CreateCollectionMigration::builder()
+                .collection_name(Self::collection_name())
+                .columns(Self::columns())
+                .unique_columns(Self::unique_columns())
+                .build(),
+        )];
+        migrations.extend(T::migrations());
+        migrations
+    }
 }
 
 impl<T: DocumentData> Document<T> {
@@ -83,27 +101,32 @@ impl<T: DocumentData> Document<T> {
 
     pub fn meta_columns() -> Vec<Column> {
         vec![
-            Column::new(DocumentColumn::Id.to_string(), ColumnType::String, false),
-            Column::new(DocumentColumn::CreatedAt.to_string(), ColumnType::U64, false),
-            Column::new(DocumentColumn::UpdatedAt.to_string(), ColumnType::U64, false),
+            Column::builder()
+                .column_name(DocumentColumn::Id.to_string())
+                .column_type(ColumnType::String)
+                .is_primary_key(true)
+                .length_limit(64)
+                .build(),
+            Column::builder()
+                .column_name(DocumentColumn::CreatedAt.to_string())
+                .column_type(ColumnType::U64)
+                .build(),
+            Column::builder()
+                .column_name(DocumentColumn::UpdatedAt.to_string())
+                .column_type(ColumnType::U64)
+                .build(),
         ]
     }
 
     pub fn meta_column_values(&self) -> Vec<(Column, Option<ColumnValue>)> {
-        vec![
-            (
-                Column::new(DocumentColumn::Id.to_string(), ColumnType::String, false),
+        Self::columns()
+            .into_iter()
+            .zip(vec![
                 Some(self.id.clone().into()),
-            ),
-            (
-                Column::new(DocumentColumn::CreatedAt.to_string(), ColumnType::U64, false),
                 Some(self.created_at.into()),
-            ),
-            (
-                Column::new(DocumentColumn::UpdatedAt.to_string(), ColumnType::U64, false),
                 Some(self.updated_at.into()),
-            ),
-        ]
+            ])
+            .collect()
     }
 }
 

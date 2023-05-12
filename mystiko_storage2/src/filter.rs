@@ -11,7 +11,7 @@ pub enum SubFilterOperator {
     Less,
     LessEqual,
     BetweenAnd,
-    IN,
+    In,
 }
 #[derive(Debug, Clone)]
 pub enum ConditionOperator {
@@ -128,7 +128,7 @@ impl SubFilter {
     }
     pub fn in_list<C: ToString, V: Into<ColumnValue>>(column: &C, values: Vec<V>) -> Self {
         Self {
-            operator: SubFilterOperator::IN,
+            operator: SubFilterOperator::In,
             column: column.to_string(),
             values: values.into_iter().map(|v| v.into()).collect(),
         }
