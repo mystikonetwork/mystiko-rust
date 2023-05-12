@@ -2,6 +2,7 @@ use crate::error::ZkpError;
 use crate::zkp::compute_witness::compute_witness;
 use crate::zkp::generate_proof::generate_proof;
 use anyhow::Result;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use zokrates_ast::ir::{self, ProgEnum};
 use zokrates_ast::typed::abi::Abi;
@@ -64,15 +65,12 @@ pub struct Proof {
     pub c: G1Point,
 }
 
-//
-// pub fn json_to_zks_proof(proof: String) -> Result<ZokratesSystemProof, ZkpError> {
-//     let proof_json: serde_json::Value = serde_json::from_str(proof.as_str())
-//         .map_err(|why| ZkpError::SerdeJsonError("proof".to_string(), why.to_string()))?;
-//
-//     let proof: ZokratesSystemProof =
-//         serde_json::from_value(proof_json).map_err(|why| ZkpError::ProofError(why.to_string()))?;
-//     Ok(proof)
-// }
+impl Proof {
+    pub fn convert_to<T: DeserializeOwned>(&self) -> Result<T> {
+        let serialized = serde_json::to_string(self)?;
+        Ok(serde_json::from_str(&serialized)?)
+    }
+}
 
 fn call_verify<T: Field, S: Scheme<T>, B: Backend<T, S>>(
     vk: serde_json::Value,

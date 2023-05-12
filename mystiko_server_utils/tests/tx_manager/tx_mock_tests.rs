@@ -46,12 +46,12 @@ async fn test_send_1559_tx() {
 
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let gas_price = tx.gas_price().await.unwrap();
+    let gas_price = tx.gas_price(&provider).await.unwrap();
     assert!(gas_price > U256::zero());
 
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value).await.unwrap();
+    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await.unwrap();
     assert!(gas > U256::zero());
 
     mock.push(transaction_receipt.clone()).unwrap();
@@ -61,8 +61,11 @@ async fn test_send_1559_tx() {
     mock.push(nonce).unwrap();
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let _ = tx.send(vec![].as_slice(), value, max_gas_price).await.unwrap();
-    let _ = tx.confirm().await.unwrap();
+    let _ = tx
+        .send(vec![].as_slice(), value, max_gas_price, &provider)
+        .await
+        .unwrap();
+    let _ = tx.confirm(&provider).await.unwrap();
 }
 
 #[tokio::test]
@@ -91,13 +94,13 @@ async fn test_send_legacy_tx() {
     assert!(!tx.is_1559_tx());
 
     mock.push(price).unwrap();
-    let gas_price = tx.gas_price().await.unwrap();
+    let gas_price = tx.gas_price(&provider).await.unwrap();
     assert!(gas_price > U256::zero());
 
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value).await.unwrap();
+    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await.unwrap();
     assert!(gas > U256::zero());
 
     mock.push(transaction_receipt.clone()).unwrap();
@@ -106,8 +109,11 @@ async fn test_send_legacy_tx() {
     mock.push(tx_hash).unwrap();
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
-    let _ = tx.send(vec![].as_slice(), value, max_gas_price).await.unwrap();
-    let _ = tx.confirm().await.unwrap();
+    let _ = tx
+        .send(vec![].as_slice(), value, max_gas_price, &provider)
+        .await
+        .unwrap();
+    let _ = tx.confirm(&provider).await.unwrap();
 }
 
 #[tokio::test]
@@ -133,26 +139,26 @@ async fn test_1559_tx_with_error() {
     let mut tx = builder.build_tx(&provider).await;
     assert!(tx.is_1559_tx());
 
-    let gas_price = tx.gas_price().await;
+    let gas_price = tx.gas_price(&provider).await;
     assert_eq!(gas_price.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     let value = ethers_core::utils::parse_ether("1").unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value).await;
+    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await;
     assert_eq!(gas.err().unwrap(), TxManagerError::NonceError("".into()));
 
     mock.push(nonce).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value).await;
+    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await;
     assert_eq!(gas.err().unwrap(), TxManagerError::EstimateGasError("".into()));
 
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     let max_gas_price = Some(U256::from(1u64));
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
     assert_eq!(
         tx_hash.err().unwrap(),
         TxManagerError::GasPriceError("gas price too high".into())
@@ -161,13 +167,15 @@ async fn test_1559_tx_with_error() {
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let tx_hash = tx
+        .send(vec![].as_slice(), value, max_gas_price.clone(), &provider)
+        .await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::NonceError("".into()));
 
     mock.push(nonce).unwrap();
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::SendTxError("".into()));
 }
 
@@ -190,27 +198,27 @@ async fn test_legacy_tx_with_error() {
     let mut tx = builder.build_tx(&provider).await;
     assert!(!tx.is_1559_tx());
 
-    let gas_price = tx.gas_price().await;
+    let gas_price = tx.gas_price(&provider).await;
     assert_eq!(gas_price.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     mock.push(price).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value).await;
+    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await;
     assert_eq!(gas.err().unwrap(), TxManagerError::NonceError("".into()));
 
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value).await;
+    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await;
     assert_eq!(gas.err().unwrap(), TxManagerError::EstimateGasError("".into()));
 
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     mock.push(price).unwrap();
     let max_gas_price = Some(U256::from(1u64));
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
     assert_eq!(
         tx_hash.err().unwrap(),
         TxManagerError::GasPriceError("gas price too high".into())
@@ -218,12 +226,14 @@ async fn test_legacy_tx_with_error() {
 
     mock.push(price).unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let tx_hash = tx
+        .send(vec![].as_slice(), value, max_gas_price.clone(), &provider)
+        .await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::NonceError("".into()));
 
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::SendTxError("".into()));
 }
 
@@ -250,7 +260,7 @@ async fn test_confirm_with_error() {
     let mut tx = builder.build_tx(&provider).await;
     assert!(!tx.is_1559_tx());
 
-    let receipt = tx.confirm().await;
+    let receipt = tx.confirm(&provider).await;
     assert_eq!(
         receipt.err().unwrap(),
         TxManagerError::ConfirmTxError("tx hash none".into())
@@ -263,30 +273,30 @@ async fn test_confirm_with_error() {
     mock.push(tx_hash).unwrap();
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
-    let _ = tx.send(vec![].as_slice(), value, max_gas_price).await;
+    let _ = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
 
-    let receipt = tx.confirm().await;
+    let receipt = tx.confirm(&provider).await;
     assert_eq!(receipt.err().unwrap(), TxManagerError::ConfirmTxError("".into()));
 
     mock.push(json!(null)).unwrap();
-    let receipt = tx.confirm().await;
+    let receipt = tx.confirm(&provider).await;
     assert_eq!(receipt.err().unwrap(), TxManagerError::TxDropped);
 
     mock.push(transaction.clone()).unwrap();
-    let receipt = tx.confirm().await;
+    let receipt = tx.confirm(&provider).await;
     assert_eq!(receipt.err().unwrap(), TxManagerError::ConfirmTxError("".into()));
 
     transaction_receipt.status = Some(U64::from(0));
     mock.push(transaction_receipt.clone()).unwrap();
     mock.push(transaction.clone()).unwrap();
-    let receipt = tx.confirm().await;
+    let receipt = tx.confirm(&provider).await;
     assert_eq!(receipt.err().unwrap(), TxManagerError::ConfirmTxError("".into()));
 
     for _ in 0..cfg.max_confirm_count {
         mock.push(json!(null)).unwrap();
         mock.push(transaction.clone()).unwrap();
     }
-    let receipt = tx.confirm().await;
+    let receipt = tx.confirm(&provider).await;
     assert_eq!(
         receipt.err().unwrap(),
         TxManagerError::ConfirmTxError("reach max confirm count".into())

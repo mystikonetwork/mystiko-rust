@@ -1,4 +1,5 @@
 use crate::tx_manager::error::TxManagerError;
+use anyhow::Result;
 use ethers_core::types::{U256, U64};
 use mystiko_fs::read_file_bytes;
 use serde::{Deserialize, Serialize};
@@ -32,6 +33,16 @@ impl Default for TxManagerConfig {
     }
 }
 
+impl TxManagerConfig {
+    pub async fn from_json_file(file_path_str: &str) -> Result<Self, TxManagerError> {
+        let file = read_file_bytes(file_path_str)
+            .await
+            .map_err(|why| TxManagerError::FileError(why.to_string()))?;
+        let config: TxManagerConfig = serde_json::from_slice(&file)?;
+        Ok(config)
+    }
+}
+
 fn default_max_gas_price() -> U256 {
     U256::from(100_000_000_000u64) // 100 Gwei
 }
@@ -50,12 +61,4 @@ fn default_confirm_interval_secs() -> u64 {
 
 fn default_force_gas_price_chains() -> Vec<U64> {
     vec![U64::from(250), U64::from(4002), U64::from(137), U64::from(80001)]
-}
-
-pub async fn read_config_from_file(file_path_str: &str) -> Result<TxManagerConfig, TxManagerError> {
-    let file = read_file_bytes(file_path_str)
-        .await
-        .map_err(|why| TxManagerError::FileError(why.to_string()))?;
-    let config: TxManagerConfig = serde_json::from_slice(&file)?;
-    Ok(config)
 }

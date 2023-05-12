@@ -7,23 +7,30 @@ use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_crypto::utils::{bigint_to_be_32_bytes, mod_floor};
 use num_bigint::{BigInt, Sign};
 
-#[derive(Debug, Clone)]
-pub struct Rollup {
-    tree: MerkleTree,
+#[derive(Debug)]
+pub struct Rollup<'a> {
+    tree: &'a mut MerkleTree,
     new_leaves: Vec<BigInt>,
     program: Vec<u8>,
     abi: Vec<u8>,
     proving_key: Vec<u8>,
 }
 
-impl Rollup {
+#[derive(Debug, Clone)]
+pub struct RollupProof {
+    pub zk_proof: ZKProof,
+    pub new_root: BigInt,
+    pub leaves_hash: BigInt,
+}
+
+impl<'a> Rollup<'a> {
     pub fn new(
-        tree: MerkleTree,
+        tree: &'a mut MerkleTree,
         new_leaves: Vec<BigInt>,
         program: Vec<u8>,
         abi: Vec<u8>,
         proving_key: Vec<u8>,
-    ) -> Self {
+    ) -> Rollup<'a> {
         Self {
             tree,
             new_leaves,
@@ -33,7 +40,7 @@ impl Rollup {
         }
     }
 
-    pub fn prove(&self) -> Result<ZKProof, ProtocolError> {
+    pub fn prove(&mut self) -> Result<RollupProof, ProtocolError> {
         let new_leaves = self.new_leaves.clone();
         let rollup_size = new_leaves.len();
         assert!(is_power_of_two(rollup_size));
@@ -42,10 +49,9 @@ impl Rollup {
         assert_eq!(current_leaf_count % rollup_size, 0);
         let current_root = self.tree.root();
 
-        let mut new_tree = self.tree.clone();
-        new_tree.bulk_insert(new_leaves.clone())?;
-        let new_root = new_tree.root();
-        let leaf_path = new_tree.path(current_leaf_count)?;
+        self.tree.bulk_insert(new_leaves.clone())?;
+        let new_root = self.tree.root();
+        let leaf_path = self.tree.path(current_leaf_count)?;
         let (_, path_indices) = leaf_path.1.split_at(rollup_height);
         let path_indices = path_indices_number(path_indices);
         let (_, path_elements) = leaf_path.0.split_at(rollup_height);
@@ -63,13 +69,18 @@ impl Rollup {
         ];
 
         let input = serde_json::Value::Array(array).to_string();
-        let proof = ZKProof::generate(
+        let zk_proof = ZKProof::generate(
             self.program.as_slice(),
             self.abi.as_slice(),
             self.proving_key.as_slice(),
             &input,
         )?;
-        Ok(proof)
+
+        Ok(RollupProof {
+            zk_proof,
+            new_root,
+            leaves_hash,
+        })
     }
 }
 

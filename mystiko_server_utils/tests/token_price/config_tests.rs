@@ -1,15 +1,15 @@
-use mystiko_server_utils::token_price::config::{read_config_from_file, TokenPriceConfig};
+use mystiko_server_utils::token_price::config::TokenPriceConfig;
 use mystiko_server_utils::token_price::error::TokenPriceError;
 
 #[tokio::test]
 async fn test_read_config() {
-    let cfg = read_config_from_file("./tests/token_price/files/xxx.json").await;
+    let cfg = TokenPriceConfig::from_json_file("./tests/token_price/files/xxx.json").await;
     assert_eq!(cfg.err().unwrap(), TokenPriceError::FileError("".into()));
 
-    let cfg = read_config_from_file("./tests/token_price/files/token_price_wrong.json").await;
+    let cfg = TokenPriceConfig::from_json_file("./tests/token_price/files/token_price_wrong.json").await;
     assert!(matches!(cfg.err().unwrap(), TokenPriceError::SerdeJsonError(_)));
 
-    let cfg = read_config_from_file("./src/token_price/config/config.json").await;
+    let cfg = TokenPriceConfig::from_json_file("./src/token_price/config/token_price.json").await;
     assert!(cfg.is_ok());
     let cfg = cfg.unwrap();
     let default_cfg = TokenPriceConfig::default();

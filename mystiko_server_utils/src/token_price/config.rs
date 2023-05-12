@@ -1,4 +1,5 @@
 use crate::token_price::error::TokenPriceError;
+use anyhow::Result;
 use mystiko_fs::read_file_bytes;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -32,6 +33,14 @@ impl Default for TokenPriceConfig {
 }
 
 impl TokenPriceConfig {
+    pub async fn from_json_file(file_path_str: &str) -> Result<Self, TokenPriceError> {
+        let file = read_file_bytes(file_path_str)
+            .await
+            .map_err(|why| TokenPriceError::FileError(why.to_string()))?;
+        let config: TokenPriceConfig = serde_json::from_slice(&file)?;
+        Ok(config)
+    }
+
     pub fn tokens(&self) -> Vec<String> {
         Vec::from_iter(self.coin_market_cap_ids.keys().cloned())
     }
@@ -86,12 +95,4 @@ fn default_market_cap_ids() -> HashMap<String, u32> {
     }
 
     coin_market_cap_ids
-}
-
-pub async fn read_config_from_file(file_path_str: &str) -> Result<TokenPriceConfig, TokenPriceError> {
-    let file = read_file_bytes(file_path_str)
-        .await
-        .map_err(|why| TokenPriceError::FileError(why.to_string()))?;
-    let config: TokenPriceConfig = serde_json::from_slice(&file)?;
-    Ok(config)
 }
