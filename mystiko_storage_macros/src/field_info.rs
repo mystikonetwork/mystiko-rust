@@ -10,6 +10,11 @@ pub struct FieldInfo<'a> {
     pub type_name_enum: String,
     pub is_optional: bool,
     pub is_primitive: bool,
+    pub attributes: FieldAttribute,
+}
+
+pub struct FieldAttribute {
+    pub length_limit: Option<syn::Expr>,
 }
 
 impl<'a> FieldInfo<'a> {
@@ -25,6 +30,7 @@ impl<'a> FieldInfo<'a> {
                 is_optional: is_optional_type(&field.ty),
                 is_primitive: is_primitive_type(&type_name)?,
                 type_name,
+                attributes: FieldAttribute::new(&field.attrs)?,
             })
         } else {
             Err(syn::Error::new(field.span(), "Nameless field in struct"))
@@ -66,11 +72,16 @@ impl<'a> FieldInfo<'a> {
         let column_type = syn::Ident::new(&self.type_name_enum, self.name.span());
         let field_name = self.name.clone();
         let nullable = syn::Ident::new(if self.is_optional { "true" } else { "false" }, self.name.span());
+        let length_limit = match self.attributes.length_limit.as_ref() {
+            Some(expr) => quote! { Some(#expr) },
+            None => quote! { None },
+        };
         quote! {
             mystiko_storage2::column::Column::builder()
                 .column_name(stringify!(#field_name).to_string())
                 .column_type(mystiko_storage2::column::ColumnType::#column_type)
                 .nullable(#nullable)
+                .length_limit(#length_limit)
                 .build()
         }
     }
@@ -107,6 +118,24 @@ impl<'a> FieldInfo<'a> {
                 Some(self.#field_name.clone().into())
             }
         }
+    }
+}
+
+impl FieldAttribute {
+    pub fn new(attrs: &[syn::Attribute]) -> Result<Self, syn::parse::Error> {
+        let mut length_limit: Option<syn::Expr> = None;
+        for attr in attrs {
+            if attr.path().is_ident("column") {
+                attr.parse_nested_meta(|meta| {
+                    let expr: syn::Expr = meta.value()?.parse()?;
+                    if meta.path.is_ident("length_limit") {
+                        length_limit = Some(expr);
+                    }
+                    Ok(())
+                })?;
+            }
+        }
+        Ok(Self { length_limit })
     }
 }
 

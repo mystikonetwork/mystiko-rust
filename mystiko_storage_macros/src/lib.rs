@@ -14,7 +14,7 @@ use syn::{parse_macro_input, DeriveInput};
 mod field_info;
 mod struct_info;
 
-#[proc_macro_derive(CollectionBuilder, attributes(collection))]
+#[proc_macro_derive(CollectionBuilder, attributes(collection, column))]
 pub fn derive_collection_builder(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match impl_my_derive(&input) {

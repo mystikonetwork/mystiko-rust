@@ -105,7 +105,7 @@ impl<T: DocumentData> Document<T> {
                 .column_name(DocumentColumn::Id.to_string())
                 .column_type(ColumnType::String)
                 .is_primary_key(true)
-                .length_limit(64)
+                .length_limit(Some(64))
                 .build(),
             Column::builder()
                 .column_name(DocumentColumn::CreatedAt.to_string())

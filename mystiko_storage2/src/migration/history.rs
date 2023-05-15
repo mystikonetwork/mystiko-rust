@@ -47,7 +47,7 @@ impl DocumentData for MigrationHistory {
             Column::builder()
                 .column_name(MigrationHistoryColumn::CollectionName.to_string())
                 .column_type(ColumnType::String)
-                .length_limit(128)
+                .length_limit(Some(128))
                 .build(),
             Column::builder()
                 .column_name(MigrationHistoryColumn::Version.to_string())

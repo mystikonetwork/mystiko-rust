@@ -1,9 +1,12 @@
 use mystiko_storage2::column::{Column, ColumnValue};
 use mystiko_storage2::document::DocumentData;
+use mystiko_storage2::migration::types::{AddIndexMigration, Migration, RenameCollectionMigration};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigInt;
 
 #[derive(CollectionBuilder, Clone, Debug, PartialEq)]
+#[collection(name = "test_collection", uniques = unique_columns())]
+#[collection(migrations = migrations())]
 pub struct TestDocument {
     pub field1: bool,
     pub field2: Option<bool>,
@@ -37,14 +40,57 @@ pub struct TestDocument {
     pub field30: Option<f32>,
     pub field31: f64,
     pub field32: Option<f64>,
+    #[column(length_limit = 128)]
     pub field33: String,
     pub field34: Option<String>,
     pub field35: BigInt,
+    #[column(length_limit = length_limit())]
     pub field36: Option<BigInt>,
     pub field37: Vec<u8>,
     pub field38: Option<Vec<u8>>,
     pub field39: Vec<Vec<String>>,
     pub field40_with_underscore: Option<Vec<Vec<String>>>,
+}
+
+fn length_limit() -> u64 {
+    256
+}
+
+fn unique_columns() -> Vec<Vec<String>> {
+    vec![
+        vec![
+            TestDocumentColumn::Field1.to_string(),
+            TestDocumentColumn::Field3.to_string(),
+        ],
+        vec![
+            TestDocumentColumn::Field5.to_string(),
+            TestDocumentColumn::Field7.to_string(),
+        ],
+    ]
+}
+
+fn migrations() -> Vec<Migration> {
+    vec![
+        Migration::AddIndex(
+            AddIndexMigration::builder()
+                .collection_name(TestDocument::collection_name())
+                .index_name("index_1".to_string())
+                .column_names(vec![TestDocumentColumn::Field1.to_string()])
+                .build(),
+        ),
+        Migration::RenameCollection(
+            RenameCollectionMigration::builder()
+                .old_collection_name(TestDocument::collection_name())
+                .new_collection_name("new_collection_name".to_string())
+                .build(),
+        ),
+    ]
+}
+
+#[test]
+fn test_struct_attributes() {
+    assert_eq!(TestDocument::unique_columns(), unique_columns());
+    assert_eq!(TestDocument::migrations(), migrations());
 }
 
 #[test]
@@ -271,7 +317,7 @@ fn test_document_data_impl_create_with_none() {
 
 #[test]
 fn test_document_data_impl_collection_name() {
-    assert_eq!(TestDocument::collection_name(), "test_documents");
+    assert_eq!(TestDocument::collection_name(), "test_collection");
 }
 
 #[test]
@@ -426,6 +472,7 @@ fn test_document_data_impl_columns() {
             Column::builder()
                 .column_name(TestDocumentColumn::Field33.to_string())
                 .column_type(mystiko_storage2::column::ColumnType::String)
+                .length_limit(Some(128))
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field34.to_string())
@@ -439,6 +486,7 @@ fn test_document_data_impl_columns() {
             Column::builder()
                 .column_name(TestDocumentColumn::Field36.to_string())
                 .column_type(mystiko_storage2::column::ColumnType::Json)
+                .length_limit(Some(256))
                 .nullable(true)
                 .build(),
             Column::builder()
@@ -655,4 +703,17 @@ fn test_document_data_impl_column_values_with_none() {
             None,
         ]
     );
+}
+
+#[test]
+fn test_default_collection_name() {
+    #[derive(CollectionBuilder, Clone, Debug, PartialEq)]
+    pub struct TestDocumentWithDefaultName {
+        pub field1: bool,
+    }
+    assert_eq!(
+        TestDocumentWithDefaultName::collection_name(),
+        "test_document_with_default_names"
+    );
+    assert_eq!(TestDocumentWithDefaultNameColumn::Field1.to_string(), "field1");
 }

@@ -59,7 +59,7 @@ pub struct Column {
     pub nullable: bool,
     #[builder(default = false)]
     pub is_primary_key: bool,
-    #[builder(default, setter(strip_option))]
+    #[builder(default)]
     pub length_limit: Option<u64>,
 }
 
