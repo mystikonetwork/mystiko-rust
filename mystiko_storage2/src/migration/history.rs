@@ -26,7 +26,7 @@ impl ToString for MigrationHistoryColumn {
 }
 
 impl DocumentData for MigrationHistory {
-    fn create(column_values: &[(Column, ColumnValue)]) -> Result<Self> {
+    fn create(column_values: &[(&str, ColumnValue)]) -> Result<Self> {
         Ok(Self {
             collection_name: find_required_column_value(
                 &MigrationHistoryColumn::CollectionName.to_string(),

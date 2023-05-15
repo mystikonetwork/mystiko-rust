@@ -6,7 +6,7 @@ use std::fmt::Debug;
 type Result<T> = anyhow::Result<T, StorageError>;
 
 pub trait DocumentData: Send + Sync + Clone + Debug + PartialEq {
-    fn create(column_values: &[(Column, ColumnValue)]) -> Result<Self>;
+    fn create(column_values: &[(&str, ColumnValue)]) -> Result<Self>;
     fn collection_name() -> String;
     fn columns() -> Vec<Column>;
     fn column_values(&self) -> Vec<(Column, Option<ColumnValue>)>;
@@ -47,7 +47,7 @@ impl ToString for DocumentColumn {
 }
 
 impl<T: DocumentData> DocumentData for Document<T> {
-    fn create(column_values: &[(Column, ColumnValue)]) -> Result<Self> {
+    fn create(column_values: &[(&str, ColumnValue)]) -> Result<Self> {
         Ok(Self {
             id: find_required_column_value(&DocumentColumn::Id.to_string(), column_values)?.as_string()?,
             created_at: find_required_column_value(&DocumentColumn::CreatedAt.to_string(), column_values)?.as_u64()?,
@@ -130,9 +130,9 @@ impl<T: DocumentData> Document<T> {
     }
 }
 
-pub fn find_column_value(column_name: &str, column_values: &[(Column, ColumnValue)]) -> Option<ColumnValue> {
+pub fn find_column_value(column_name: &str, column_values: &[(&str, ColumnValue)]) -> Option<ColumnValue> {
     column_values.iter().find_map(|(column, value)| {
-        if column.column_name == column_name {
+        if *column == column_name {
             Some(value.clone())
         } else {
             None
@@ -140,7 +140,7 @@ pub fn find_column_value(column_name: &str, column_values: &[(Column, ColumnValu
     })
 }
 
-pub fn find_required_column_value(column_name: &str, column_values: &[(Column, ColumnValue)]) -> Result<ColumnValue> {
+pub fn find_required_column_value(column_name: &str, column_values: &[(&str, ColumnValue)]) -> Result<ColumnValue> {
     find_column_value(column_name, column_values)
         .ok_or_else(|| StorageError::MissingRequiredColumnError(column_name.into()))
 }
