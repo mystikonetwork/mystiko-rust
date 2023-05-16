@@ -3,8 +3,9 @@ use quote::quote;
 use syn::spanned::Spanned;
 
 pub struct FieldInfo<'a> {
-    pub ordinal: usize,
     pub name: &'a syn::Ident,
+    pub column_enum_name: syn::Ident,
+    pub column_enum_item_name: syn::Ident,
     pub ty: &'a syn::Type,
     pub type_name: String,
     pub type_name_enum: String,
@@ -18,13 +19,18 @@ pub struct FieldAttribute {
 }
 
 impl<'a> FieldInfo<'a> {
-    pub fn new(ordinal: usize, field: &syn::Field) -> Result<FieldInfo, syn::parse::Error> {
+    pub fn new(
+        field: &syn::Field,
+        column_enum_name: syn::Ident,
+        column_enum_item_name: syn::Ident,
+    ) -> Result<FieldInfo, syn::parse::Error> {
         if let Some(ref name) = field.ident {
             let ty = option_inside_type(&field.ty);
             let type_name = type_name(ty)?;
             Ok(FieldInfo {
-                ordinal,
                 name,
+                column_enum_name,
+                column_enum_item_name,
                 ty,
                 type_name_enum: type_name_enum(&type_name)?,
                 is_optional: is_optional_type(&field.ty),
@@ -44,6 +50,8 @@ impl<'a> FieldInfo<'a> {
             syn::Ident::new(&format!("as_{}", self.type_name.to_lowercase()), self.name.span())
         };
         let field_name = self.name.clone();
+        let column_enum_name = self.column_enum_name.clone();
+        let column_enum_item_name = self.column_enum_item_name.clone();
         let column_finder = syn::Ident::new(
             if self.is_optional {
                 "find_column_value"
@@ -55,7 +63,7 @@ impl<'a> FieldInfo<'a> {
         if self.is_optional {
             quote! {
                 #field_name: match mystiko_storage2::document::#column_finder(
-                    stringify!(#field_name), column_values) {
+                    &#column_enum_name::#column_enum_item_name, column_values) {
                     Some(value) => Some(value.#as_type()?),
                     None => None,
                 }
@@ -63,14 +71,15 @@ impl<'a> FieldInfo<'a> {
         } else {
             quote! {
                 #field_name: mystiko_storage2::document::#column_finder(
-                    stringify!(#field_name), column_values)?.#as_type()?
+                    &#column_enum_name::#column_enum_item_name, column_values)?.#as_type()?
             }
         }
     }
 
     pub fn column_impl(&self) -> TokenStream {
         let column_type = syn::Ident::new(&self.type_name_enum, self.name.span());
-        let field_name = self.name.clone();
+        let column_enum_name = self.column_enum_name.clone();
+        let column_enum_item_name = self.column_enum_item_name.clone();
         let nullable = syn::Ident::new(if self.is_optional { "true" } else { "false" }, self.name.span());
         let length_limit = match self.attributes.length_limit.as_ref() {
             Some(expr) => quote! { Some(#expr) },
@@ -78,7 +87,7 @@ impl<'a> FieldInfo<'a> {
         };
         quote! {
             mystiko_storage2::column::Column::builder()
-                .column_name(stringify!(#field_name).to_string())
+                .column_name(#column_enum_name::#column_enum_item_name)
                 .column_type(mystiko_storage2::column::ColumnType::#column_type)
                 .nullable(#nullable)
                 .length_limit(#length_limit)

@@ -3135,6 +3135,7 @@ dependencies = [
  "Inflector",
  "anyhow",
  "heck",
+ "lazy_static",
  "mystiko_storage2",
  "num-bigint 0.4.3",
  "proc-macro2 1.0.56",

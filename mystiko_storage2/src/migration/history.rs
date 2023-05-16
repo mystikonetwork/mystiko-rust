@@ -16,41 +16,49 @@ pub enum MigrationHistoryColumn {
     Version,
 }
 
+impl AsRef<str> for MigrationHistoryColumn {
+    fn as_ref(&self) -> &str {
+        match self {
+            MigrationHistoryColumn::CollectionName => "collection_name",
+            MigrationHistoryColumn::Version => "version",
+        }
+    }
+}
+
 impl ToString for MigrationHistoryColumn {
     fn to_string(&self) -> String {
-        match self {
-            MigrationHistoryColumn::CollectionName => "collection_name".into(),
-            MigrationHistoryColumn::Version => "version".into(),
-        }
+        self.as_ref().to_string()
+    }
+}
+
+impl From<MigrationHistoryColumn> for String {
+    fn from(value: MigrationHistoryColumn) -> Self {
+        value.to_string()
     }
 }
 
 impl DocumentData for MigrationHistory {
     fn create(column_values: &[(&str, ColumnValue)]) -> Result<Self> {
         Ok(Self {
-            collection_name: find_required_column_value(
-                &MigrationHistoryColumn::CollectionName.to_string(),
-                column_values,
-            )?
-            .as_string()?,
-            version: find_required_column_value(&MigrationHistoryColumn::Version.to_string(), column_values)?
-                .as_usize()?,
+            collection_name: find_required_column_value(&MigrationHistoryColumn::CollectionName, column_values)?
+                .as_string()?,
+            version: find_required_column_value(&MigrationHistoryColumn::Version, column_values)?.as_usize()?,
         })
     }
 
-    fn collection_name() -> String {
-        String::from("__migrations__")
+    fn collection_name() -> &'static str {
+        "__migrations__"
     }
 
     fn columns() -> Vec<Column> {
         vec![
             Column::builder()
-                .column_name(MigrationHistoryColumn::CollectionName.to_string())
+                .column_name(MigrationHistoryColumn::CollectionName)
                 .column_type(ColumnType::String)
                 .length_limit(Some(128))
                 .build(),
             Column::builder()
-                .column_name(MigrationHistoryColumn::Version.to_string())
+                .column_name(MigrationHistoryColumn::Version)
                 .column_type(ColumnType::USize)
                 .build(),
         ]

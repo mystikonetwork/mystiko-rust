@@ -1,4 +1,4 @@
-use crate::column::{Column, ColumnType, ColumnValue};
+use crate::column::{Column, ColumnType, ColumnValue, IndexColumns, UniqueColumns};
 use crate::error::StorageError;
 use crate::migration::types::{CreateCollectionMigration, Migration};
 use std::fmt::Debug;
@@ -7,10 +7,13 @@ type Result<T> = anyhow::Result<T, StorageError>;
 
 pub trait DocumentData: Send + Sync + Clone + Debug + PartialEq {
     fn create(column_values: &[(&str, ColumnValue)]) -> Result<Self>;
-    fn collection_name() -> String;
+    fn collection_name() -> &'static str;
     fn columns() -> Vec<Column>;
     fn column_values(&self) -> Vec<(Column, Option<ColumnValue>)>;
-    fn unique_columns() -> Vec<Vec<String>> {
+    fn unique_columns() -> Vec<UniqueColumns> {
+        vec![]
+    }
+    fn index_columns() -> Vec<IndexColumns> {
         vec![]
     }
     fn migrations() -> Vec<Migration> {
@@ -36,27 +39,39 @@ pub enum DocumentColumn {
     UpdatedAt,
 }
 
+impl AsRef<str> for DocumentColumn {
+    fn as_ref(&self) -> &str {
+        match self {
+            DocumentColumn::Id => "id",
+            DocumentColumn::CreatedAt => "created_at",
+            DocumentColumn::UpdatedAt => "updated_at",
+        }
+    }
+}
+
 impl ToString for DocumentColumn {
     fn to_string(&self) -> String {
-        match self {
-            DocumentColumn::Id => "id".into(),
-            DocumentColumn::CreatedAt => "created_at".into(),
-            DocumentColumn::UpdatedAt => "updated_at".into(),
-        }
+        self.as_ref().to_string()
+    }
+}
+
+impl From<DocumentColumn> for String {
+    fn from(value: DocumentColumn) -> Self {
+        value.to_string()
     }
 }
 
 impl<T: DocumentData> DocumentData for Document<T> {
     fn create(column_values: &[(&str, ColumnValue)]) -> Result<Self> {
         Ok(Self {
-            id: find_required_column_value(&DocumentColumn::Id.to_string(), column_values)?.as_string()?,
-            created_at: find_required_column_value(&DocumentColumn::CreatedAt.to_string(), column_values)?.as_u64()?,
-            updated_at: find_required_column_value(&DocumentColumn::UpdatedAt.to_string(), column_values)?.as_u64()?,
+            id: find_required_column_value(&DocumentColumn::Id, column_values)?.as_string()?,
+            created_at: find_required_column_value(&DocumentColumn::CreatedAt, column_values)?.as_u64()?,
+            updated_at: find_required_column_value(&DocumentColumn::UpdatedAt, column_values)?.as_u64()?,
             data: T::create(column_values)?,
         })
     }
 
-    fn collection_name() -> String {
+    fn collection_name() -> &'static str {
         T::collection_name()
     }
 
@@ -72,7 +87,7 @@ impl<T: DocumentData> DocumentData for Document<T> {
         values
     }
 
-    fn unique_columns() -> Vec<Vec<String>> {
+    fn unique_columns() -> Vec<UniqueColumns> {
         T::unique_columns()
     }
 
@@ -82,6 +97,7 @@ impl<T: DocumentData> DocumentData for Document<T> {
                 .collection_name(Self::collection_name())
                 .columns(Self::columns())
                 .unique_columns(Self::unique_columns())
+                .index_columns(Self::index_columns())
                 .build(),
         )];
         migrations.extend(T::migrations());
@@ -102,17 +118,17 @@ impl<T: DocumentData> Document<T> {
     pub fn meta_columns() -> Vec<Column> {
         vec![
             Column::builder()
-                .column_name(DocumentColumn::Id.to_string())
+                .column_name(DocumentColumn::Id)
                 .column_type(ColumnType::String)
                 .is_primary_key(true)
                 .length_limit(Some(64))
                 .build(),
             Column::builder()
-                .column_name(DocumentColumn::CreatedAt.to_string())
+                .column_name(DocumentColumn::CreatedAt)
                 .column_type(ColumnType::U64)
                 .build(),
             Column::builder()
-                .column_name(DocumentColumn::UpdatedAt.to_string())
+                .column_name(DocumentColumn::UpdatedAt)
                 .column_type(ColumnType::U64)
                 .build(),
         ]
@@ -130,9 +146,9 @@ impl<T: DocumentData> Document<T> {
     }
 }
 
-pub fn find_column_value(column_name: &str, column_values: &[(&str, ColumnValue)]) -> Option<ColumnValue> {
+pub fn find_column_value<S: AsRef<str>>(column_name: &S, column_values: &[(&str, ColumnValue)]) -> Option<ColumnValue> {
     column_values.iter().find_map(|(column, value)| {
-        if *column == column_name {
+        if *column == column_name.as_ref() {
             Some(value.clone())
         } else {
             None
@@ -140,7 +156,10 @@ pub fn find_column_value(column_name: &str, column_values: &[(&str, ColumnValue)
     })
 }
 
-pub fn find_required_column_value(column_name: &str, column_values: &[(&str, ColumnValue)]) -> Result<ColumnValue> {
+pub fn find_required_column_value<S: AsRef<str>>(
+    column_name: &S,
+    column_values: &[(&str, ColumnValue)],
+) -> Result<ColumnValue> {
     find_column_value(column_name, column_values)
-        .ok_or_else(|| StorageError::MissingRequiredColumnError(column_name.into()))
+        .ok_or_else(|| StorageError::MissingRequiredColumnError(column_name.as_ref().to_string()))
 }

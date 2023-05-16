@@ -54,6 +54,7 @@ pub enum ColumnValue {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct Column {
     pub column_type: ColumnType,
+    #[builder(setter(into))]
     pub column_name: String,
     #[builder(default = false)]
     pub nullable: bool,
@@ -61,6 +62,20 @@ pub struct Column {
     pub is_primary_key: bool,
     #[builder(default)]
     pub length_limit: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
+pub struct UniqueColumns {
+    #[builder(setter(into))]
+    pub unique_name: String,
+    pub column_names: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
+pub struct IndexColumns {
+    #[builder(setter(into))]
+    pub index_name: String,
+    pub column_names: Vec<String>,
 }
 
 impl From<bool> for ColumnValue {

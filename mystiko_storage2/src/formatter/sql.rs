@@ -197,14 +197,14 @@ impl StatementFormatter for SqlStatementFormatter {
         }
     }
 
-    fn format_migration(&self, migration: &Migration) -> Statement {
+    fn format_migration(&self, migration: &Migration) -> Vec<Statement> {
         match migration {
             Migration::CreateCollection(migration) => format_create_collection_migration(migration),
-            Migration::AddIndex(migration) => format_add_index_migration(migration),
-            Migration::AddColumn(migration) => format_add_column_migration(migration),
-            Migration::DropColumn(migration) => format_drop_column_migration(migration),
-            Migration::RenameCollection(migration) => format_rename_collection_migration(migration),
-            Migration::RenameColumn(migration) => format_rename_column_migration(migration),
+            Migration::AddIndex(migration) => vec![format_add_index_migration(migration)],
+            Migration::AddColumn(migration) => vec![format_add_column_migration(migration)],
+            Migration::DropColumn(migration) => vec![format_drop_column_migration(migration)],
+            Migration::RenameCollection(migration) => vec![format_rename_collection_migration(migration)],
+            Migration::RenameColumn(migration) => vec![format_rename_column_migration(migration)],
         }
     }
 }
@@ -330,33 +330,43 @@ fn format_order_by(order_by: &OrderBy) -> String {
     format!("ORDER BY {} {}", column_names.join(", "), order)
 }
 
-fn format_create_collection_migration(migration: &CreateCollectionMigration) -> Statement {
+fn format_create_collection_migration(migration: &CreateCollectionMigration) -> Vec<Statement> {
     let mut columns_sql: Vec<String> = Vec::new();
     for column in migration.columns.iter() {
         columns_sql.push(format_column_sql(column));
     }
     let mut unique_columns_sql: Vec<String> = Vec::new();
-    for (index, unique_columns) in migration.unique_columns.iter().enumerate() {
+    for unique_columns in migration.unique_columns.iter() {
         let unique_columns_names = unique_columns
+            .column_names
             .iter()
             .map(|column| format!("`{}`", column))
             .collect::<Vec<String>>();
         unique_columns_sql.push(format!(
-            "CONSTRAINT `{}_unique_constraint_{}` UNIQUE ({})",
-            migration.collection_name,
-            index,
+            "CONSTRAINT `{}` UNIQUE ({})",
+            unique_columns.unique_name,
             unique_columns_names.join(", ")
         ));
     }
     columns_sql.extend(unique_columns_sql);
-    Statement::new(
+    let mut statements: Vec<Statement> = vec![Statement::new(
         format!(
             "CREATE TABLE `{}` ({})",
             migration.collection_name,
             columns_sql.join(", ")
         ),
         vec![],
-    )
+    )];
+    for index_columns in migration.index_columns.iter() {
+        statements.push(format_add_index_migration(
+            &AddIndexMigration::builder()
+                .collection_name(migration.collection_name.clone())
+                .index_name(index_columns.index_name.clone())
+                .column_names(index_columns.column_names.clone())
+                .build(),
+        ));
+    }
+    statements
 }
 
 fn format_add_index_migration(migration: &AddIndexMigration) -> Statement {

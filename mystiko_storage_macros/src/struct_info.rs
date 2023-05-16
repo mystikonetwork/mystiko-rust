@@ -3,9 +3,11 @@ use heck::ToUpperCamelCase;
 use inflector::Inflector;
 use proc_macro2::TokenStream;
 use quote::quote;
+use syn::spanned::Spanned;
 
 pub struct StructInfo<'a> {
     pub name: &'a syn::Ident,
+    pub column_enum_name: syn::Ident,
     pub fields: Vec<FieldInfo<'a>>,
     pub attributes: StructAttribute,
 }
@@ -13,6 +15,7 @@ pub struct StructInfo<'a> {
 pub struct StructAttribute {
     pub collection_name: Option<syn::Expr>,
     pub unique_columns: Option<syn::Expr>,
+    pub index_columns: Option<syn::Expr>,
     pub migrations: Option<syn::Expr>,
 }
 
@@ -21,26 +24,33 @@ impl<'a> StructInfo<'a> {
         ast: &'a syn::DeriveInput,
         fields: impl Iterator<Item = &'a syn::Field>,
     ) -> Result<StructInfo<'a>, syn::parse::Error> {
+        let column_enum_name = syn::Ident::new(&format!("{}Column", ast.ident), ast.ident.span());
         Ok(StructInfo {
             name: &ast.ident,
+            column_enum_name: column_enum_name.clone(),
             fields: fields
                 .enumerate()
-                .map(|(i, f)| FieldInfo::new(i, f))
+                .map(|(_, f)| {
+                    let column_enum_item_name = syn::Ident::new(
+                        &f.ident
+                            .as_ref()
+                            .map(|name| format!("{}", name).to_upper_camel_case())
+                            .unwrap_or("".into()),
+                        f.ident.span(),
+                    );
+                    FieldInfo::new(f, column_enum_name.clone(), column_enum_item_name)
+                })
                 .collect::<Result<_, _>>()?,
             attributes: StructAttribute::new(&ast.attrs)?,
         })
     }
 
     pub fn column_enum_impl(&self) -> Result<TokenStream, syn::parse::Error> {
-        let enum_name = syn::Ident::new(&format!("{}Column", self.name), self.name.span());
+        let enum_name = self.column_enum_name.clone();
         let enum_item_names = self
             .fields
             .iter()
-            .map(|f| {
-                let ident = f.name;
-                let name = ident.to_string().to_upper_camel_case();
-                syn::Ident::new(&name, ident.span())
-            })
+            .map(|f| f.column_enum_item_name.clone())
             .collect::<Vec<_>>();
         let to_string_values = self.fields.iter().map(|f| f.name.clone()).collect::<Vec<_>>();
         let enum_items1 = enum_item_names.iter();
@@ -50,11 +60,21 @@ impl<'a> StructInfo<'a> {
             pub enum #enum_name {
                 #(#enum_items1,)*
             }
+            impl AsRef<str> for #enum_name {
+                fn as_ref(&self) -> &str {
+                    match self {
+                        #( Self::#enum_items2 => stringify!(#to_string_items), )*
+                    }
+                }
+            }
             impl ToString for #enum_name {
                 fn to_string(&self) -> String {
-                    match self {
-                        #( Self::#enum_items2 => stringify!(#to_string_items).to_string(), )*
-                    }
+                    self.as_ref().to_string()
+                }
+            }
+            impl From<#enum_name> for String {
+                fn from(value: #enum_name) -> Self {
+                    value.to_string()
                 }
             }
         })
@@ -77,7 +97,12 @@ impl<'a> StructInfo<'a> {
         let unique_columns = if let Some(unique_columns) = self.attributes.unique_columns.as_ref() {
             quote! { #unique_columns }
         } else {
-            quote! { vec![vec![]] }
+            quote! { vec![] }
+        };
+        let index_columns = if let Some(index_columns) = self.attributes.index_columns.as_ref() {
+            quote! { #index_columns }
+        } else {
+            quote! { vec![] }
         };
         let migrations = if let Some(migrations) = self.attributes.migrations.as_ref() {
             quote! { #migrations }
@@ -91,8 +116,8 @@ impl<'a> StructInfo<'a> {
                 ) -> anyhow::Result<Self, mystiko_storage2::error::StorageError> {
                     Ok(Self { #(#column_creates_iter,)* })
                 }
-                fn collection_name() -> String {
-                    #collection_name.to_string()
+                fn collection_name() -> &'static str {
+                    #collection_name
                 }
                 fn columns() -> Vec<mystiko_storage2::column::Column> {
                    vec![#(#column_iter,)*]
@@ -104,8 +129,11 @@ impl<'a> StructInfo<'a> {
                             .zip(vec![#(#column_values_iter,)*])
                             .collect()
                 }
-                fn unique_columns() -> Vec<Vec<String>> {
+                fn unique_columns() -> Vec<mystiko_storage2::column::UniqueColumns> {
                     #unique_columns
+                }
+                fn index_columns() -> Vec<mystiko_storage2::column::IndexColumns> {
+                    #index_columns
                 }
                 fn migrations() -> Vec<mystiko_storage2::migration::types::Migration> {
                     #migrations
@@ -219,6 +247,7 @@ impl StructAttribute {
     pub fn new(attrs: &[syn::Attribute]) -> Result<Self, syn::parse::Error> {
         let mut collection_name: Option<syn::Expr> = None;
         let mut unique_columns: Option<syn::Expr> = None;
+        let mut index_columns: Option<syn::Expr> = None;
         let mut migrations: Option<syn::Expr> = None;
         for attr in attrs {
             if attr.path().is_ident("collection") {
@@ -228,6 +257,8 @@ impl StructAttribute {
                         collection_name = Some(expr);
                     } else if meta.path.is_ident("uniques") {
                         unique_columns = Some(expr);
+                    } else if meta.path.is_ident("indexes") {
+                        index_columns = Some(expr);
                     } else if meta.path.is_ident("migrations") {
                         migrations = Some(expr);
                     }
@@ -238,6 +269,7 @@ impl StructAttribute {
         Ok(Self {
             collection_name,
             unique_columns,
+            index_columns,
             migrations,
         })
     }

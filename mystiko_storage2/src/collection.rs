@@ -139,7 +139,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
     }
 
     pub async fn migrate<D: DocumentData>(&self) -> Result<Document<MigrationHistory>, StorageError> {
-        let collection_exists = self.collection_exists(&MigrationHistory::collection_name()).await?;
+        let collection_exists = self.collection_exists(MigrationHistory::collection_name()).await?;
         let existing: Option<Document<MigrationHistory>> = if collection_exists {
             let query_filter = SubFilter::equal(&MigrationHistoryColumn::CollectionName, D::collection_name());
             self.find_one(Some(query_filter)).await?
@@ -177,7 +177,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                     created_at: now,
                     updated_at: now,
                     data: MigrationHistory {
-                        collection_name: D::collection_name(),
+                        collection_name: D::collection_name().to_string(),
                         version: D::version(),
                     },
                 };

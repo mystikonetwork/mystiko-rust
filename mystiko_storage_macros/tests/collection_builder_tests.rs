@@ -1,11 +1,11 @@
-use mystiko_storage2::column::{Column, ColumnValue};
+use mystiko_storage2::column::{Column, ColumnValue, IndexColumns, UniqueColumns};
 use mystiko_storage2::document::DocumentData;
-use mystiko_storage2::migration::types::{AddIndexMigration, Migration, RenameCollectionMigration};
+use mystiko_storage2::migration::types::{Migration, RenameCollectionMigration};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigInt;
 
 #[derive(CollectionBuilder, Clone, Debug, PartialEq)]
-#[collection(name = "test_collection", uniques = unique_columns())]
+#[collection(name = "test_collection", uniques = uniques(), indexes = indexes())]
 #[collection(migrations = migrations())]
 pub struct TestDocument {
     pub field1: bool,
@@ -56,40 +56,56 @@ fn length_limit() -> u64 {
     256
 }
 
-fn unique_columns() -> Vec<Vec<String>> {
+fn uniques() -> Vec<UniqueColumns> {
     vec![
-        vec![
-            TestDocumentColumn::Field1.to_string(),
-            TestDocumentColumn::Field3.to_string(),
-        ],
-        vec![
-            TestDocumentColumn::Field5.to_string(),
-            TestDocumentColumn::Field7.to_string(),
-        ],
+        UniqueColumns::builder()
+            .unique_name("test_collection_field1_field3_unique")
+            .column_names(vec![
+                TestDocumentColumn::Field1.to_string(),
+                TestDocumentColumn::Field3.to_string(),
+            ])
+            .build(),
+        UniqueColumns::builder()
+            .unique_name("test_collection_field5_field7_unique")
+            .column_names(vec![
+                TestDocumentColumn::Field5.to_string(),
+                TestDocumentColumn::Field7.to_string(),
+            ])
+            .build(),
+    ]
+}
+
+fn indexes() -> Vec<IndexColumns> {
+    vec![
+        IndexColumns::builder()
+            .index_name("test_collection_index_field1_field3")
+            .column_names(vec![
+                TestDocumentColumn::Field1.to_string(),
+                TestDocumentColumn::Field3.to_string(),
+            ])
+            .build(),
+        IndexColumns::builder()
+            .index_name("test_collection_index_field5_field7")
+            .column_names(vec![
+                TestDocumentColumn::Field5.to_string(),
+                TestDocumentColumn::Field7.to_string(),
+            ])
+            .build(),
     ]
 }
 
 fn migrations() -> Vec<Migration> {
-    vec![
-        Migration::AddIndex(
-            AddIndexMigration::builder()
-                .collection_name(TestDocument::collection_name())
-                .index_name("index_1".to_string())
-                .column_names(vec![TestDocumentColumn::Field1.to_string()])
-                .build(),
-        ),
-        Migration::RenameCollection(
-            RenameCollectionMigration::builder()
-                .old_collection_name(TestDocument::collection_name())
-                .new_collection_name("new_collection_name".to_string())
-                .build(),
-        ),
-    ]
+    vec![RenameCollectionMigration::builder()
+        .old_collection_name(TestDocument::collection_name())
+        .new_collection_name("new_collection_name")
+        .build()
+        .into()]
 }
 
 #[test]
 fn test_struct_attributes() {
-    assert_eq!(TestDocument::unique_columns(), unique_columns());
+    assert_eq!(TestDocument::unique_columns(), uniques());
+    assert_eq!(TestDocument::index_columns(), indexes());
     assert_eq!(TestDocument::migrations(), migrations());
 }
 
