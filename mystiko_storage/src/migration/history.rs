@@ -38,7 +38,7 @@ impl From<MigrationHistoryColumn> for String {
 }
 
 impl DocumentData for MigrationHistory {
-    fn create(column_values: &[(&str, ColumnValue)]) -> Result<Self> {
+    fn create(column_values: &[(String, ColumnValue)]) -> Result<Self> {
         Ok(Self {
             collection_name: find_required_column_value(&MigrationHistoryColumn::CollectionName, column_values)?
                 .as_string()?,

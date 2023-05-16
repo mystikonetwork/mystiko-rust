@@ -62,7 +62,7 @@ impl<'a> FieldInfo<'a> {
         );
         if self.is_optional {
             quote! {
-                #field_name: match mystiko_storage2::document::#column_finder(
+                #field_name: match mystiko_storage::document::#column_finder(
                     &#column_enum_name::#column_enum_item_name, column_values) {
                     Some(value) => Some(value.#as_type()?),
                     None => None,
@@ -70,7 +70,7 @@ impl<'a> FieldInfo<'a> {
             }
         } else {
             quote! {
-                #field_name: mystiko_storage2::document::#column_finder(
+                #field_name: mystiko_storage::document::#column_finder(
                     &#column_enum_name::#column_enum_item_name, column_values)?.#as_type()?
             }
         }
@@ -86,9 +86,9 @@ impl<'a> FieldInfo<'a> {
             None => quote! { None },
         };
         quote! {
-            mystiko_storage2::column::Column::builder()
+            mystiko_storage::column::Column::builder()
                 .column_name(#column_enum_name::#column_enum_item_name)
-                .column_type(mystiko_storage2::column::ColumnType::#column_type)
+                .column_type(mystiko_storage::column::ColumnType::#column_type)
                 .nullable(#nullable)
                 .length_limit(#length_limit)
                 .build()

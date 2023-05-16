@@ -1,6 +1,6 @@
-use mystiko_storage2::column::{Column, ColumnValue, IndexColumns, UniqueColumns};
-use mystiko_storage2::document::DocumentData;
-use mystiko_storage2::migration::types::{Migration, RenameCollectionMigration};
+use mystiko_storage::column::{Column, ColumnValue, IndexColumns, UniqueColumns};
+use mystiko_storage::document::DocumentData;
+use mystiko_storage::migration::types::{Migration, RenameCollectionMigration};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigInt;
 
@@ -159,56 +159,62 @@ fn test_column_enum_impl() {
 #[test]
 fn test_document_data_impl_create() {
     let document = TestDocument::create(&vec![
-        ("field1", ColumnValue::Bool(true)),
-        ("field2", ColumnValue::Bool(false)),
-        ("field3", ColumnValue::Char('f')),
-        ("field4", ColumnValue::Char('d')),
-        ("field5", ColumnValue::U8(1)),
-        ("field6", ColumnValue::U8(2)),
-        ("field7", ColumnValue::U16(3)),
-        ("field8", ColumnValue::U16(4)),
-        ("field9", ColumnValue::U32(5)),
-        ("field10", ColumnValue::U32(6)),
-        ("field11", ColumnValue::U64(7)),
-        ("field12", ColumnValue::U64(8)),
-        ("field13", ColumnValue::U128(9)),
-        ("field14", ColumnValue::U128(10)),
-        ("field15", ColumnValue::USize(11)),
-        ("field16", ColumnValue::USize(12)),
-        ("field17", ColumnValue::I8(13)),
-        ("field18", ColumnValue::I8(14)),
-        ("field19", ColumnValue::I16(15)),
-        ("field20", ColumnValue::I16(16)),
-        ("field21", ColumnValue::I32(17)),
-        ("field22", ColumnValue::I32(18)),
-        ("field23", ColumnValue::I64(19)),
-        ("field24", ColumnValue::I64(20)),
-        ("field25", ColumnValue::I128(21)),
-        ("field26", ColumnValue::I128(22)),
-        ("field27", ColumnValue::ISize(23)),
-        ("field28", ColumnValue::ISize(24)),
-        ("field29", ColumnValue::F32(25.0)),
-        ("field30", ColumnValue::F32(26.0)),
-        ("field31", ColumnValue::F64(27.0)),
-        ("field32", ColumnValue::F64(28.0)),
-        ("field33", ColumnValue::String("29".to_string())),
-        ("field34", ColumnValue::String("30".to_string())),
+        ("field1".to_string(), ColumnValue::Bool(true)),
+        ("field2".to_string(), ColumnValue::Bool(false)),
+        ("field3".to_string(), ColumnValue::Char('f')),
+        ("field4".to_string(), ColumnValue::Char('d')),
+        ("field5".to_string(), ColumnValue::U8(1)),
+        ("field6".to_string(), ColumnValue::U8(2)),
+        ("field7".to_string(), ColumnValue::U16(3)),
+        ("field8".to_string(), ColumnValue::U16(4)),
+        ("field9".to_string(), ColumnValue::U32(5)),
+        ("field10".to_string(), ColumnValue::U32(6)),
+        ("field11".to_string(), ColumnValue::U64(7)),
+        ("field12".to_string(), ColumnValue::U64(8)),
+        ("field13".to_string(), ColumnValue::U128(9)),
+        ("field14".to_string(), ColumnValue::U128(10)),
+        ("field15".to_string(), ColumnValue::USize(11)),
+        ("field16".to_string(), ColumnValue::USize(12)),
+        ("field17".to_string(), ColumnValue::I8(13)),
+        ("field18".to_string(), ColumnValue::I8(14)),
+        ("field19".to_string(), ColumnValue::I16(15)),
+        ("field20".to_string(), ColumnValue::I16(16)),
+        ("field21".to_string(), ColumnValue::I32(17)),
+        ("field22".to_string(), ColumnValue::I32(18)),
+        ("field23".to_string(), ColumnValue::I64(19)),
+        ("field24".to_string(), ColumnValue::I64(20)),
+        ("field25".to_string(), ColumnValue::I128(21)),
+        ("field26".to_string(), ColumnValue::I128(22)),
+        ("field27".to_string(), ColumnValue::ISize(23)),
+        ("field28".to_string(), ColumnValue::ISize(24)),
+        ("field29".to_string(), ColumnValue::F32(25.0)),
+        ("field30".to_string(), ColumnValue::F32(26.0)),
+        ("field31".to_string(), ColumnValue::F64(27.0)),
+        ("field32".to_string(), ColumnValue::F64(28.0)),
+        ("field33".to_string(), ColumnValue::String("29".to_string())),
+        ("field34".to_string(), ColumnValue::String("30".to_string())),
         (
-            "field35",
+            "field35".to_string(),
             ColumnValue::Json(serde_json::to_value(BigInt::from(31)).unwrap()),
         ),
         (
-            "field36",
+            "field36".to_string(),
             ColumnValue::Json(serde_json::to_value(BigInt::from(32)).unwrap()),
         ),
-        ("field37", ColumnValue::Json(serde_json::to_value(vec![33]).unwrap())),
-        ("field38", ColumnValue::Json(serde_json::to_value(vec![34]).unwrap())),
         (
-            "field39",
+            "field37".to_string(),
+            ColumnValue::Json(serde_json::to_value(vec![33]).unwrap()),
+        ),
+        (
+            "field38".to_string(),
+            ColumnValue::Json(serde_json::to_value(vec![34]).unwrap()),
+        ),
+        (
+            "field39".to_string(),
             ColumnValue::Json(serde_json::to_value(vec![vec!["35".to_string(), "36".to_string()]]).unwrap()),
         ),
         (
-            "field40_with_underscore",
+            "field40_with_underscore".to_string(),
             ColumnValue::Json(serde_json::to_value(vec![vec!["37".to_string(), "38".to_string()]]).unwrap()),
         ),
     ])
@@ -261,30 +267,33 @@ fn test_document_data_impl_create() {
 #[test]
 fn test_document_data_impl_create_with_none() {
     let document = TestDocument::create(&vec![
-        ("field1", ColumnValue::Bool(true)),
-        ("field3", ColumnValue::Char('f')),
-        ("field5", ColumnValue::U8(1)),
-        ("field7", ColumnValue::U16(2)),
-        ("field9", ColumnValue::U32(3)),
-        ("field11", ColumnValue::U64(4)),
-        ("field13", ColumnValue::U128(5)),
-        ("field15", ColumnValue::USize(6)),
-        ("field17", ColumnValue::I8(7)),
-        ("field19", ColumnValue::I16(8)),
-        ("field21", ColumnValue::I32(9)),
-        ("field23", ColumnValue::I64(10)),
-        ("field25", ColumnValue::I128(11)),
-        ("field27", ColumnValue::ISize(12)),
-        ("field29", ColumnValue::F32(13.0)),
-        ("field31", ColumnValue::F64(14.0)),
-        ("field33", ColumnValue::String("15".to_string())),
+        ("field1".to_string(), ColumnValue::Bool(true)),
+        ("field3".to_string(), ColumnValue::Char('f')),
+        ("field5".to_string(), ColumnValue::U8(1)),
+        ("field7".to_string(), ColumnValue::U16(2)),
+        ("field9".to_string(), ColumnValue::U32(3)),
+        ("field11".to_string(), ColumnValue::U64(4)),
+        ("field13".to_string(), ColumnValue::U128(5)),
+        ("field15".to_string(), ColumnValue::USize(6)),
+        ("field17".to_string(), ColumnValue::I8(7)),
+        ("field19".to_string(), ColumnValue::I16(8)),
+        ("field21".to_string(), ColumnValue::I32(9)),
+        ("field23".to_string(), ColumnValue::I64(10)),
+        ("field25".to_string(), ColumnValue::I128(11)),
+        ("field27".to_string(), ColumnValue::ISize(12)),
+        ("field29".to_string(), ColumnValue::F32(13.0)),
+        ("field31".to_string(), ColumnValue::F64(14.0)),
+        ("field33".to_string(), ColumnValue::String("15".to_string())),
         (
-            "field35",
+            "field35".to_string(),
             ColumnValue::Json(serde_json::to_value(BigInt::from(16)).unwrap()),
         ),
-        ("field37", ColumnValue::Json(serde_json::to_value(vec![17]).unwrap())),
         (
-            "field39",
+            "field37".to_string(),
+            ColumnValue::Json(serde_json::to_value(vec![17]).unwrap()),
+        ),
+        (
+            "field39".to_string(),
             ColumnValue::Json(serde_json::to_value(vec![vec!["18".to_string(), "19".to_string()]]).unwrap()),
         ),
     ])
@@ -343,184 +352,184 @@ fn test_document_data_impl_columns() {
         vec![
             Column::builder()
                 .column_name(TestDocumentColumn::Field1.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Bool)
+                .column_type(mystiko_storage::column::ColumnType::Bool)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field2.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Bool)
+                .column_type(mystiko_storage::column::ColumnType::Bool)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field3.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Char)
+                .column_type(mystiko_storage::column::ColumnType::Char)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field4.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Char)
+                .column_type(mystiko_storage::column::ColumnType::Char)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field5.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U8)
+                .column_type(mystiko_storage::column::ColumnType::U8)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field6.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U8)
+                .column_type(mystiko_storage::column::ColumnType::U8)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field7.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U16)
+                .column_type(mystiko_storage::column::ColumnType::U16)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field8.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U16)
+                .column_type(mystiko_storage::column::ColumnType::U16)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field9.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U32)
+                .column_type(mystiko_storage::column::ColumnType::U32)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field10.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U32)
+                .column_type(mystiko_storage::column::ColumnType::U32)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field11.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U64)
+                .column_type(mystiko_storage::column::ColumnType::U64)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field12.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U64)
+                .column_type(mystiko_storage::column::ColumnType::U64)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field13.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U128)
+                .column_type(mystiko_storage::column::ColumnType::U128)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field14.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::U128)
+                .column_type(mystiko_storage::column::ColumnType::U128)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field15.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::USize)
+                .column_type(mystiko_storage::column::ColumnType::USize)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field16.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::USize)
+                .column_type(mystiko_storage::column::ColumnType::USize)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field17.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I8)
+                .column_type(mystiko_storage::column::ColumnType::I8)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field18.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I8)
+                .column_type(mystiko_storage::column::ColumnType::I8)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field19.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I16)
+                .column_type(mystiko_storage::column::ColumnType::I16)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field20.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I16)
+                .column_type(mystiko_storage::column::ColumnType::I16)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field21.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I32)
+                .column_type(mystiko_storage::column::ColumnType::I32)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field22.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I32)
+                .column_type(mystiko_storage::column::ColumnType::I32)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field23.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I64)
+                .column_type(mystiko_storage::column::ColumnType::I64)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field24.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I64)
+                .column_type(mystiko_storage::column::ColumnType::I64)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field25.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I128)
+                .column_type(mystiko_storage::column::ColumnType::I128)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field26.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::I128)
+                .column_type(mystiko_storage::column::ColumnType::I128)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field27.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::ISize)
+                .column_type(mystiko_storage::column::ColumnType::ISize)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field28.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::ISize)
+                .column_type(mystiko_storage::column::ColumnType::ISize)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field29.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::F32)
+                .column_type(mystiko_storage::column::ColumnType::F32)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field30.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::F32)
+                .column_type(mystiko_storage::column::ColumnType::F32)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field31.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::F64)
+                .column_type(mystiko_storage::column::ColumnType::F64)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field32.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::F64)
+                .column_type(mystiko_storage::column::ColumnType::F64)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field33.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::String)
+                .column_type(mystiko_storage::column::ColumnType::String)
                 .length_limit(Some(128))
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field34.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::String)
+                .column_type(mystiko_storage::column::ColumnType::String)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field35.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::Json)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field36.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::Json)
                 .length_limit(Some(256))
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field37.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::Json)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field38.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::Json)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field39.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::Json)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field40WithUnderscore.to_string())
-                .column_type(mystiko_storage2::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::Json)
                 .nullable(true)
                 .build(),
         ]

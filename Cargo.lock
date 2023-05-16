@@ -3106,21 +3106,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "num-bigint 0.4.3",
- "num-traits 0.2.15",
- "serde_json",
- "thiserror",
- "tokio",
- "typed-builder",
- "ulid",
-]
-
-[[package]]
-name = "mystiko_storage2"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
  "serde",
  "serde_json",
  "thiserror",
@@ -3136,7 +3121,7 @@ dependencies = [
  "anyhow",
  "heck",
  "lazy_static",
- "mystiko_storage2",
+ "mystiko_storage",
  "num-bigint 0.4.3",
  "proc-macro2 1.0.56",
  "quote 1.0.27",
@@ -3152,7 +3137,9 @@ dependencies = [
  "anyhow",
  "async-trait",
  "mystiko_storage",
+ "mystiko_storage_macros",
  "num-traits 0.2.15",
+ "serde_json",
  "sqlx",
  "tempfile",
  "tokio",

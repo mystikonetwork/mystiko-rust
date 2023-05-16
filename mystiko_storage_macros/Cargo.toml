@@ -18,7 +18,7 @@ syn = { version = "2.0.15" }
 [dev-dependencies]
 anyhow = { version = "1.0.69" }
 lazy_static = { version = "1.4.0" }
-mystiko_storage2 = { version = "0.1.0", path = "../mystiko_storage2" }
+mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 num-bigint = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }

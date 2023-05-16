@@ -1,54 +1,59 @@
-#![forbid(unsafe_code)]
+use crate::column::ColumnValue;
 
-#[derive(Clone)]
-pub enum SubFilter {
-    IsNull(String),
-    IsNotNull(String),
-    Equal(String, String),
-    NotEqual(String, String),
-    Greater(String, String),
-    GreaterEqual(String, String),
-    Less(String, String),
-    LessEqual(String, String),
-    BetweenAnd(String, [String; 2]),
-    IN(String, Vec<String>),
+#[derive(Debug, Clone)]
+pub enum SubFilterOperator {
+    IsNull,
+    IsNotNull,
+    Equal,
+    NotEqual,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
+    BetweenAnd,
+    In,
 }
-
-#[derive(Clone)]
-pub enum Condition {
-    FILTER(SubFilter),
-    AND(Vec<SubFilter>),
-    OR(Vec<SubFilter>),
-}
-
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum ConditionOperator {
     AND,
     OR,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Order {
     ASC,
     DESC,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
+pub struct SubFilter {
+    pub operator: SubFilterOperator,
+    pub column: String,
+    pub values: Vec<ColumnValue>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Condition {
+    pub operator: ConditionOperator,
+    pub sub_filters: Vec<SubFilter>,
+}
+
+#[derive(Debug, Clone)]
 pub struct OrderBy {
     pub columns: Vec<String>,
     pub order: Order,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct QueryFilter {
     pub conditions: Vec<Condition>,
-    pub conditions_operator: Option<ConditionOperator>,
+    pub conditions_operator: ConditionOperator,
     pub limit: Option<u64>,
     pub offset: Option<u64>,
     pub order_by: Option<OrderBy>,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Clone)]
 pub struct QueryFilterBuilder {
     conditions: Vec<Condition>,
     conditions_operator: Option<ConditionOperator>,
@@ -58,101 +63,98 @@ pub struct QueryFilterBuilder {
 }
 
 impl SubFilter {
-    pub fn to_sql(&self) -> String {
-        match self {
-            SubFilter::IsNull(column) => format!("`{}` IS NULL", column),
-            SubFilter::IsNotNull(column) => format!("`{}` IS NOT NULL", column),
-            SubFilter::Equal(column, value) => format!("`{}` = '{}'", column, value),
-            SubFilter::NotEqual(column, value) => format!("`{}` != '{}'", column, value),
-            SubFilter::Greater(column, value) => format!("`{}` > '{}'", column, value),
-            SubFilter::GreaterEqual(column, value) => format!("`{}` >= '{}'", column, value),
-            SubFilter::Less(column, value) => format!("`{}` < '{}'", column, value),
-            SubFilter::LessEqual(column, value) => format!("`{}` <= '{}'", column, value),
-            SubFilter::BetweenAnd(column, values) => {
-                format!("`{}` BETWEEN '{}' AND '{}'", column, values[0], values[1])
-            }
-            SubFilter::IN(column, values) => {
-                let wrapped_values: Vec<String> = values.iter().map(|v| format!("'{}'", v)).collect();
-                format!("`{}` IN ({})", column, wrapped_values.join(", "))
-            }
+    pub fn is_null<C: ToString>(column: &C) -> Self {
+        Self {
+            operator: SubFilterOperator::IsNull,
+            column: column.to_string(),
+            values: vec![],
+        }
+    }
+    pub fn is_not_null<C: ToString>(column: &C) -> Self {
+        Self {
+            operator: SubFilterOperator::IsNotNull,
+            column: column.to_string(),
+            values: vec![],
+        }
+    }
+    pub fn equal<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+        Self {
+            operator: SubFilterOperator::Equal,
+            column: column.to_string(),
+            values: vec![value.into()],
+        }
+    }
+    pub fn not_equal<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+        Self {
+            operator: SubFilterOperator::NotEqual,
+            column: column.to_string(),
+            values: vec![value.into()],
+        }
+    }
+    pub fn greater<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+        Self {
+            operator: SubFilterOperator::Greater,
+            column: column.to_string(),
+            values: vec![value.into()],
+        }
+    }
+    pub fn greater_equal<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+        Self {
+            operator: SubFilterOperator::GreaterEqual,
+            column: column.to_string(),
+            values: vec![value.into()],
+        }
+    }
+    pub fn less<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+        Self {
+            operator: SubFilterOperator::Less,
+            column: column.to_string(),
+            values: vec![value.into()],
+        }
+    }
+    pub fn less_equal<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+        Self {
+            operator: SubFilterOperator::LessEqual,
+            column: column.to_string(),
+            values: vec![value.into()],
+        }
+    }
+    pub fn between_and<C: ToString, V: Into<ColumnValue>>(column: &C, value1: V, value2: V) -> Self {
+        Self {
+            operator: SubFilterOperator::BetweenAnd,
+            column: column.to_string(),
+            values: vec![value1.into(), value2.into()],
+        }
+    }
+    pub fn in_list<C: ToString, V: Into<ColumnValue>>(column: &C, values: Vec<V>) -> Self {
+        Self {
+            operator: SubFilterOperator::In,
+            column: column.to_string(),
+            values: values.into_iter().map(|v| v.into()).collect(),
         }
     }
 }
 
 impl Condition {
-    pub fn to_sql(&self) -> String {
-        match self {
-            Condition::FILTER(filter) => filter.to_sql(),
-            Condition::AND(filters) => {
-                let filters_sql: Vec<String> = filters.iter().map(|f| f.to_sql()).collect();
-                filters_sql.join(" AND ")
-            }
-            Condition::OR(filters) => {
-                let filters_sql: Vec<String> = filters.iter().map(|f| f.to_sql()).collect();
-                filters_sql.join(" OR ")
-            }
+    pub fn filter(sub_filter: SubFilter) -> Self {
+        Self {
+            operator: ConditionOperator::AND,
+            sub_filters: vec![sub_filter],
         }
     }
-}
 
-impl Order {
-    pub fn as_str(&self) -> &str {
-        match self {
-            Order::ASC => "ASC",
-            Order::DESC => "DESC",
+    pub fn and(sub_filters: Vec<SubFilter>) -> Self {
+        Self {
+            operator: ConditionOperator::AND,
+            sub_filters,
         }
     }
-}
 
-impl OrderBy {
-    pub fn to_sql(&self) -> String {
-        if !self.columns.is_empty() {
-            let columns_quote: Vec<String> = self.columns.iter().map(|c| format!("`{}`", c)).collect();
-            format!("ORDER BY {} {}", columns_quote.join(", "), self.order.as_str())
-        } else {
-            String::new()
+    pub fn or(sub_filters: Vec<SubFilter>) -> Self {
+        Self {
+            operator: ConditionOperator::OR,
+            sub_filters,
         }
-    }
-}
-
-impl QueryFilter {
-    pub fn to_sql(&self) -> String {
-        let mut sqls: Vec<String> = Vec::new();
-        if !self.conditions.is_empty() {
-            let condition_sqls: Vec<String> = self
-                .conditions
-                .iter()
-                .map(|c| (c, c.to_sql()))
-                .filter(|(_, s)| !s.is_empty())
-                .map(|(c, s)| match c {
-                    Condition::FILTER(_) => s,
-                    _ => {
-                        if self.conditions.len() > 1 {
-                            format!("({})", s)
-                        } else {
-                            s
-                        }
-                    }
-                })
-                .collect();
-            let conditions_operator = match self.conditions_operator.as_ref().unwrap_or(&ConditionOperator::AND) {
-                ConditionOperator::AND => "AND",
-                ConditionOperator::OR => "OR",
-            };
-            sqls.push(condition_sqls.join(&format!(" {} ", conditions_operator)));
-        }
-        if let Some(order_by) = &self.order_by {
-            if !order_by.columns.is_empty() {
-                sqls.push(order_by.to_sql());
-            }
-        }
-        if let Some(limit) = self.limit {
-            sqls.push(format!("LIMIT {}", limit));
-            if let Some(offset) = self.offset {
-                sqls.push(format!("OFFSET {}", offset));
-            }
-        }
-        sqls.join(" ")
     }
 }
 
@@ -200,7 +202,7 @@ impl QueryFilterBuilder {
     pub fn build(self) -> QueryFilter {
         QueryFilter {
             conditions: self.conditions,
-            conditions_operator: self.conditions_operator,
+            conditions_operator: self.conditions_operator.unwrap_or(ConditionOperator::AND),
             limit: self.limit,
             offset: self.offset,
             order_by: self.order_by,
@@ -210,21 +212,21 @@ impl QueryFilterBuilder {
 
 impl From<SubFilter> for Condition {
     fn from(sub_filter: SubFilter) -> Self {
-        Condition::FILTER(sub_filter)
+        Condition::filter(sub_filter)
     }
 }
 
 impl From<Vec<SubFilter>> for Condition {
     fn from(sub_filters: Vec<SubFilter>) -> Self {
-        Condition::AND(sub_filters)
+        Condition::and(sub_filters)
     }
 }
 
 impl From<(Vec<SubFilter>, ConditionOperator)> for Condition {
     fn from((sub_filters, operator): (Vec<SubFilter>, ConditionOperator)) -> Self {
         match operator {
-            ConditionOperator::AND => Condition::AND(sub_filters),
-            ConditionOperator::OR => Condition::OR(sub_filters),
+            ConditionOperator::AND => Condition::and(sub_filters),
+            ConditionOperator::OR => Condition::or(sub_filters),
         }
     }
 }
