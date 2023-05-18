@@ -173,9 +173,7 @@ async fn test_1559_tx_with_error() {
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let tx_hash = tx
-        .send(vec![].as_slice(), value, max_gas_price.clone(), &provider)
-        .await;
+    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::NonceError("".into()));
 
     let gas = U256::from(100_000_000_000u64);
@@ -235,9 +233,7 @@ async fn test_legacy_tx_with_error() {
 
     mock.push(price).unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash = tx
-        .send(vec![].as_slice(), value, max_gas_price.clone(), &provider)
-        .await;
+    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::NonceError("".into()));
 
     let gas = U256::from(100_000_000_000u64);
