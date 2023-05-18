@@ -1,4 +1,5 @@
 extern crate anyhow;
+extern crate config as mehcode_config;
 extern crate dotenv;
 extern crate ethers_core;
 extern crate ethers_middleware;
@@ -6,7 +7,6 @@ extern crate ethers_providers;
 extern crate ethers_signers;
 extern crate ff;
 extern crate generic_array;
-extern crate mystiko_fs;
 extern crate regex;
 extern crate reqwest;
 extern crate serde;

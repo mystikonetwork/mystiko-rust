@@ -1,21 +1,29 @@
-use mystiko_server_utils::tx_manager::config::{read_config_from_file, TxManagerConfig};
-use mystiko_server_utils::tx_manager::error::TxManagerError;
+use mystiko_server_utils::tx_manager::config::TxManagerConfig;
+use std::env;
 
 #[tokio::test]
 async fn test_read_config() {
-    let cfg = read_config_from_file("./tests/tx_manager/files/xxx.json").await;
-    assert_eq!(cfg.err().unwrap(), TxManagerError::FileError("".into()));
+    let cfg = TxManagerConfig::new("testnet", "").unwrap();
+    assert_eq!(cfg.max_gas_price.to_string(), "200000000000");
+    assert_eq!(cfg.max_confirm_count, 100);
+    assert_eq!(cfg.gas_limit_reserve_percentage, 10);
 
-    let cfg = read_config_from_file("./tests/tx_manager/files/tx_manager_wrong.json").await;
-    assert!(matches!(cfg.err().unwrap(), TxManagerError::SerdeJsonError(_)));
+    let cfg = TxManagerConfig::new("mainnet", "").unwrap();
+    assert_eq!(cfg.max_gas_price.to_string(), "100000000000");
+    assert_eq!(cfg.max_confirm_count, 100);
+    assert_eq!(cfg.gas_limit_reserve_percentage, 10);
 
-    let cfg = read_config_from_file("./src/tx_manager/config/config.json").await;
-    assert!(cfg.is_ok());
-    let cfg = cfg.unwrap();
-    let default_cfg = TxManagerConfig::default();
-    assert_eq!(cfg, default_cfg);
+    let cfg = TxManagerConfig::new("testnet", "tests/tx_manager/files").unwrap();
+    assert_eq!(cfg.max_gas_price.to_string(), "500000000000");
 
-    let ser = serde_json::to_value(cfg.clone()).unwrap();
-    let cfg_des: TxManagerConfig = serde_json::from_value(ser).unwrap();
-    assert_eq!(cfg, cfg_des)
+    env::set_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE", "0x45d964b800");
+    env::set_var("MYSTIKO_TX_MANAGER.MAX_CONFIRM_COUNT", "10");
+    env::set_var("MYSTIKO_TX_MANAGER.GAS_LIMIT_RESERVE_PERCENTAGE", "20");
+    let cfg = TxManagerConfig::new("mainnet", "").unwrap();
+    assert_eq!(cfg.max_gas_price.to_string(), "300000000000");
+    assert_eq!(cfg.max_confirm_count, 10);
+    assert_eq!(cfg.gas_limit_reserve_percentage, 20);
+
+    let cfg = TxManagerConfig::new("testnet", "tests/tx_manager/files").unwrap();
+    assert_eq!(cfg.max_gas_price.to_string(), "300000000000");
 }

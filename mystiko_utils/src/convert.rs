@@ -1,5 +1,6 @@
 use anyhow::Result;
-use num_bigint::BigInt;
+use ethers_core::types::U256;
+use num_bigint::{BigInt, Sign};
 use num_traits::{zero, NumCast, Zero};
 use rust_decimal::Decimal;
 use std::fmt::Display;
@@ -33,4 +34,14 @@ where
     )?;
     let base = Decimal::from_str(&number.to_string())?;
     Ok(base.mul(multiplier))
+}
+
+pub fn u256_to_big_int(u: &U256) -> BigInt {
+    let mut arr = [0u8; 32];
+    u.to_little_endian(&mut arr[..]);
+    BigInt::from_bytes_le(Sign::Plus, &arr[..])
+}
+
+pub fn big_int_to_u256(b: &BigInt) -> U256 {
+    U256::from_little_endian(b.to_bytes_le().1.as_slice())
 }

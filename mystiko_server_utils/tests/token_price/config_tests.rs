@@ -1,26 +1,21 @@
-use mystiko_server_utils::token_price::config::{read_config_from_file, TokenPriceConfig};
-use mystiko_server_utils::token_price::error::TokenPriceError;
+use mystiko_server_utils::token_price::config::TokenPriceConfig;
+use std::env;
 
 #[tokio::test]
 async fn test_read_config() {
-    let cfg = read_config_from_file("./tests/token_price/files/xxx.json").await;
-    assert_eq!(cfg.err().unwrap(), TokenPriceError::FileError("".into()));
+    let cfg = TokenPriceConfig::new("testnet", "").unwrap();
+    assert_eq!(cfg.price_cache_ttl, 72000);
 
-    let cfg = read_config_from_file("./tests/token_price/files/token_price_wrong.json").await;
-    assert!(matches!(cfg.err().unwrap(), TokenPriceError::SerdeJsonError(_)));
+    let cfg = TokenPriceConfig::new("mainnet", "").unwrap();
+    assert_eq!(cfg.price_cache_ttl, 1800);
 
-    let cfg = read_config_from_file("./src/token_price/config/config.json").await;
-    assert!(cfg.is_ok());
-    let cfg = cfg.unwrap();
-    let default_cfg = TokenPriceConfig::default();
-    assert_eq!(cfg, default_cfg);
+    let cfg = TokenPriceConfig::new("mainnet", "tests/token_price/files/config").unwrap();
+    assert_eq!(cfg.price_cache_ttl, 90000);
 
-    let ser = serde_json::to_value(cfg.clone()).unwrap();
-    let cfg_des: TokenPriceConfig = serde_json::from_value(ser).unwrap();
-    assert_eq!(cfg, cfg_des);
+    env::set_var("MYSTIKO_TOKEN_PRICE.PRICE_CACHE_TTL", "800");
+    let cfg = TokenPriceConfig::new("mainnet", "").unwrap();
+    assert_eq!(cfg.price_cache_ttl, 800);
 
-    let tokens = cfg.tokens();
-    assert_eq!(tokens.len(), 17);
-    let ids = cfg.ids();
-    assert_eq!(ids.len(), 9);
+    let cfg = TokenPriceConfig::new("mainnet", "tests/token_price/files/config").unwrap();
+    assert_eq!(cfg.price_cache_ttl, 800);
 }

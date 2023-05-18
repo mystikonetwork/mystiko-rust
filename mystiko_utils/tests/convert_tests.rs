@@ -1,3 +1,4 @@
+use ethers_core::types::U256;
 use mystiko_utils::convert::{decimal_to_number, number_to_decimal};
 use num_bigint::BigInt;
 use num_traits::ToPrimitive;
@@ -28,4 +29,20 @@ fn test_number_to_decimal() {
     assert_eq!(number_to_decimal(0.01, Some(4)).unwrap().to_i32().unwrap(), 100);
     assert_eq!(number_to_decimal(-0.01, Some(5)).unwrap().to_i32().unwrap(), -1000);
     assert_eq!(number_to_decimal(1e-18, None).unwrap().to_i32().unwrap(), 1);
+}
+
+#[test]
+fn test_u256_to_big_int() {
+    assert_eq!(
+        mystiko_utils::convert::u256_to_big_int(&U256::from_dec_str("123456789").unwrap()),
+        BigInt::from(123456789)
+    );
+}
+
+#[test]
+fn test_big_int_to_u256() {
+    assert_eq!(
+        mystiko_utils::convert::big_int_to_u256(&BigInt::from(123456789)),
+        U256::from_dec_str("123456789").unwrap()
+    );
 }

@@ -1,37 +1,65 @@
-use crate::token_price::error::TokenPriceError;
-use mystiko_fs::read_file_bytes;
+use mehcode_config::{Config, Environment, File};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
-use typed_builder::TypedBuilder;
+use std::path::Path;
 
-#[derive(Debug, Clone, TypedBuilder, Serialize, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[allow(unused)]
 pub struct TokenPriceConfig {
-    #[serde(default = "default_base_url")]
     pub base_url: String,
-    #[serde(default = "default_query_timeout_secs")]
     pub query_timeout_secs: u32,
-    #[serde(default = "default_price_cache_ttl")]
     pub price_cache_ttl: u64,
-    #[serde(default = "default_swap_precision")]
     pub swap_precision: u32,
-    #[serde(default = "default_market_cap_ids")]
     pub coin_market_cap_ids: HashMap<String, u32>,
 }
 
-impl Default for TokenPriceConfig {
-    fn default() -> Self {
-        Self {
-            base_url: default_base_url(),
-            query_timeout_secs: default_query_timeout_secs(),
-            price_cache_ttl: default_price_cache_ttl(),
-            swap_precision: default_swap_precision(),
-            coin_market_cap_ids: default_market_cap_ids(),
-        }
-    }
-}
-
 impl TokenPriceConfig {
+    pub fn new(run_mod: &str, config_path: &str) -> anyhow::Result<Self> {
+        let mut ids = HashMap::new();
+        ids.insert("ETH".to_string(), 1027);
+        ids.insert("mETH".to_string(), 1027);
+        ids.insert("BNB".to_string(), 1839);
+        ids.insert("mBNB".to_string(), 1839);
+        ids.insert("USDT".to_string(), 825);
+        ids.insert("USDC".to_string(), 3408);
+        ids.insert("BUSD".to_string(), 4687);
+        ids.insert("FTM".to_string(), 3513);
+        ids.insert("mFTM".to_string(), 3513);
+        ids.insert("MATIC".to_string(), 3890);
+        ids.insert("mMATIC".to_string(), 3890);
+        ids.insert("DEV".to_string(), 5990);
+        ids.insert("mDEV".to_string(), 5990);
+        ids.insert("AVAX".to_string(), 5805);
+        ids.insert("mAVAX".to_string(), 5805);
+        ids.insert("MTT".to_string(), 1839);
+        ids.insert("mUSD".to_string(), 1839);
+
+        let mut s = Config::builder()
+            .set_default(
+                "base_url",
+                "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest",
+            )?
+            .set_default("query_timeout_secs", 10)?
+            .set_default("swap_precision", 8)?
+            .set_default("coin_market_cap_ids", ids)?;
+
+        if run_mod == "testnet" {
+            s = s.set_default("price_cache_ttl", 72000)?;
+        } else {
+            s = s.set_default("price_cache_ttl", 1800)?;
+        }
+
+        let run_config_path = format!("{}/token_price.json", config_path);
+        if Path::exists(Path::new(&run_config_path)) {
+            s = s.add_source(File::with_name(&run_config_path));
+        }
+
+        let cfg = s
+            .add_source(Environment::with_prefix("MYSTIKO_TOKEN_PRICE").separator("."))
+            .build()?;
+        Ok(cfg.try_deserialize()?)
+    }
+
     pub fn tokens(&self) -> Vec<String> {
         Vec::from_iter(self.coin_market_cap_ids.keys().cloned())
     }
@@ -40,58 +68,4 @@ impl TokenPriceConfig {
         let set: HashSet<u32> = self.coin_market_cap_ids.values().cloned().collect();
         set.into_iter().collect()
     }
-}
-
-fn default_base_url() -> String {
-    "https://pro-api.coinmarketcap.com".to_string()
-}
-
-fn default_query_timeout_secs() -> u32 {
-    5
-}
-
-fn default_price_cache_ttl() -> u64 {
-    1800
-}
-
-fn default_swap_precision() -> u32 {
-    3
-}
-
-fn default_market_cap_ids() -> HashMap<String, u32> {
-    let mut coin_market_cap_ids = HashMap::new();
-
-    let tokens = vec![
-        ("ETH", 1027),
-        ("mETH", 1027),
-        ("BNB", 1839),
-        ("mBNB", 1839),
-        ("USDT", 825),
-        ("USDC", 3408),
-        ("BUSD", 4687),
-        ("MTT", 3408),
-        ("mUSD", 3408),
-        ("FTM", 3513),
-        ("mFTM", 3513),
-        ("MATIC", 3890),
-        ("mMATIC", 3890),
-        ("DEV", 5990),
-        ("mDEV", 5990),
-        ("AVAX", 5805),
-        ("mAVAX", 5805),
-    ];
-
-    for (symbol, id) in tokens {
-        coin_market_cap_ids.insert(symbol.to_string(), id);
-    }
-
-    coin_market_cap_ids
-}
-
-pub async fn read_config_from_file(file_path_str: &str) -> Result<TokenPriceConfig, TokenPriceError> {
-    let file = read_file_bytes(file_path_str)
-        .await
-        .map_err(|why| TokenPriceError::FileError(why.to_string()))?;
-    let config: TokenPriceConfig = serde_json::from_slice(&file)?;
-    Ok(config)
 }
