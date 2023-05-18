@@ -1,4 +1,5 @@
 use crate::common::env::{load_coin_market_api_key, load_roller_config_path};
+use crate::common::trace::trace_init;
 use crate::config::config::create_token_price_config;
 use crate::config::config::RollerConfig;
 use crate::config::config::{create_mystiko_config, create_roller_config};
@@ -33,6 +34,8 @@ impl Context {
     pub async fn new() -> Self {
         let cfg_path = load_roller_config_path();
         let roller_cfg = create_roller_config(&cfg_path).await.unwrap();
+        trace_init(&roller_cfg.log_level);
+
         let core_cfg = create_mystiko_config(&cfg_path, &roller_cfg.core).await.unwrap();
         let token_price_cfg = create_token_price_config(&cfg_path).await.unwrap();
 
@@ -43,6 +46,7 @@ impl Context {
             .chain_providers_options(Box::new(core_cfg_parser.clone()))
             .build();
         let _ = providers.get_or_create_provider(roller_cfg.chain.chain_id).await;
+
         let sign_provider = create_sign_provider(roller_cfg.chain.chain_id, &core_cfg_parser).await;
 
         let db = create_roller_database().await;

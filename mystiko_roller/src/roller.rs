@@ -1,4 +1,3 @@
-use crate::common::trace::trace_init;
 use crate::context::Context;
 use crate::pool::Pool;
 use anyhow::Result;
@@ -8,16 +7,10 @@ use tracing::info;
 
 pub struct Roller {
     context: Arc<Context>,
-    // core_cfg_parser: Arc<MystikoConfigParser>,
-    // cfg: Arc<RollerConfig>,
-    // // tx_manager: TxManager<P>,
-    // pub providers: Arc<RwLock<ProviderPool>>,
 }
 
 impl Roller {
     pub async fn new() -> Result<Roller> {
-        trace_init();
-
         let context = Context::new().await;
         Ok(Roller {
             context: Arc::new(context),
@@ -34,7 +27,7 @@ impl Roller {
             .core_cfg_parser()
             .pool_contracts(self.context.cfg().chain.chain_id);
         for pool_contract in pool_contracts {
-            if pool_contract.address() != "0xCFC94003081ce7EcdBc43f94A443Cf9fad0F8847" {
+            if pool_contract.address() != "0x83Ad3a5B2dE65b32a446e9B73640a8B8431D3eb7" {
                 continue;
             }
 

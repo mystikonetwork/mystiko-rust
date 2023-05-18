@@ -1,3 +1,4 @@
+// todo support xscan
 use crate::common::env::load_x_scan_api_key;
 
 pub struct XScanInstance {

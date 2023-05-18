@@ -78,8 +78,6 @@ fn default_market_cap_ids() -> HashMap<String, u32> {
         ("USDT", 825),
         ("USDC", 3408),
         ("BUSD", 4687),
-        ("MTT", 3408),
-        ("mUSD", 3408),
         ("FTM", 3513),
         ("mFTM", 3513),
         ("MATIC", 3890),
@@ -88,6 +86,8 @@ fn default_market_cap_ids() -> HashMap<String, u32> {
         ("mDEV", 5990),
         ("AVAX", 5805),
         ("mAVAX", 5805),
+        ("MTT", 1839),
+        ("mUSD", 1839),
     ];
 
     for (symbol, id) in tokens {

@@ -17,6 +17,8 @@ pub struct TxManagerConfig {
     pub max_confirm_count: u32,
     #[serde(default = "default_confirm_interval_secs")]
     pub confirm_interval_secs: u64,
+    #[serde(default = "default_gas_limit_reserve_percentage")]
+    pub gas_limit_reserve_percentage: u32,
     #[serde(default = "default_force_gas_price_chains")]
     pub force_gas_price_chains: Vec<U64>,
 }
@@ -28,6 +30,7 @@ impl Default for TxManagerConfig {
             max_priority_fee_per_gas: default_max_priority_fee_per_gas(),
             max_confirm_count: default_max_confirm_count(),
             confirm_interval_secs: default_confirm_interval_secs(),
+            gas_limit_reserve_percentage: default_gas_limit_reserve_percentage(),
             force_gas_price_chains: default_force_gas_price_chains(),
         }
     }
@@ -57,6 +60,10 @@ fn default_max_confirm_count() -> u32 {
 
 fn default_confirm_interval_secs() -> u64 {
     5
+}
+
+fn default_gas_limit_reserve_percentage() -> u32 {
+    10
 }
 
 fn default_force_gas_price_chains() -> Vec<U64> {

@@ -41,16 +41,16 @@ pub struct G2Point {
 impl G2Point {
     fn to_affine(&self) -> G2Affine {
         G2Affine::Fq2(G2AffineFq2(
-            (self.x[0].clone(), self.y[0].clone()),
-            (self.x[1].clone(), self.y[1].clone()),
+            (self.x[0].clone(), self.x[1].clone()),
+            (self.y[0].clone(), self.y[1].clone()),
         ))
     }
 
     fn from_affine(point: &G2Affine) -> Self {
         if let G2Affine::Fq2(a) = point {
             G2Point {
-                x: [a.0 .0.clone(), a.1 .0.clone()],
-                y: [a.0 .1.clone(), a.1 .1.clone()],
+                x: [a.0 .0.clone(), a.0 .1.clone()],
+                y: [a.1 .0.clone(), a.1 .1.clone()],
             }
         } else {
             panic!("Unexpected G2Affine type");

@@ -11,13 +11,13 @@ pub static COMMITMENT_INFO_SCHEMA: DocumentSchema = DocumentSchema {
             `id`                        VARCHAR(64)  NOT NULL PRIMARY KEY,\
             `created_at`                INT          NOT NULL,\
             `updated_at`                INT          NOT NULL,\
-            `chain_id`                  INT          NOT NULL,\
+            `chain_id`                  BIGINT       NOT NULL,\
             `contract_address`          VARCHAR(64)  NOT NULL,\
-            `commitment_hash`           BIGINT       NOT NULL,\
+            `commitment_hash`           VARCHAR(128) NOT NULL,\
             `block_number`              INT          NOT NULL,\
             `rollup_fee`                VARCHAR(128) NOT NULL,\
             `leaf_index`                INT          NOT NULL,\
-            `tx_hash`                   VARCHAR(255) NOT NULL)",
+            `tx_hash`                   VARCHAR(128) NOT NULL)",
         "CREATE INDEX `commitment_info_commitment_hash_index` ON `commitment_info` (`commitment_hash`);",
         "CREATE INDEX `commitment_info_leaf_index_index` ON `commitment_info` (`leaf_index`);",
     ],
@@ -63,13 +63,13 @@ impl DocumentData for CommitmentInfo {
 
     fn deserialize<F: DocumentRawData>(raw: &F) -> Result<Self, StorageError> {
         Ok(CommitmentInfo {
-            chain_id: raw.field_integer_value("chain_id")?.unwrap(),
-            contract_address: raw.field_string_value("contract_address")?.unwrap(),
-            block_number: raw.field_integer_value("block_number")?.unwrap(),
+            chain_id: raw.required_field_integer_value("chain_id")?,
+            contract_address: raw.required_field_string_value("contract_address")?,
+            block_number: raw.required_field_integer_value("block_number")?,
             commitment_hash: raw.required_bigint_value("commitment_hash")?,
-            leaf_index: raw.field_integer_value("leaf_index")?.unwrap(),
-            rollup_fee: raw.field_string_value("rollup_fee")?.unwrap(),
-            tx_hash: raw.field_string_value("tx_hash")?.unwrap(),
+            leaf_index: raw.required_field_integer_value("leaf_index")?,
+            rollup_fee: raw.required_field_string_value("rollup_fee")?,
+            tx_hash: raw.required_field_string_value("tx_hash")?,
         })
     }
 }

@@ -6,7 +6,6 @@ use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::transaction::request::TransactionRequest;
 use ethers_core::types::transaction::response::TransactionReceipt;
 use ethers_core::types::{Address, BlockNumber, TxHash, H256, U256, U64};
-use std::time::Duration;
 // use ethers_middleware::gas_escalator::GasEscalatorMiddleware;
 // use ethers_middleware::gas_escalator::{Frequency, GeometricGasPrice};
 use ethers_middleware::gas_oracle::{GasOracle, ProviderOracle};
@@ -14,6 +13,8 @@ use ethers_middleware::{NonceManagerMiddleware, SignerMiddleware};
 use ethers_providers::{JsonRpcClient, Middleware, Provider};
 use ethers_signers::{LocalWallet, Signer};
 use std::marker::PhantomData;
+use std::ops::{Div, Mul};
+use std::time::Duration;
 use typed_builder::TypedBuilder;
 
 pub struct TxManager<P> {
@@ -89,6 +90,25 @@ where
         }
     }
 
+    async fn do_estimate_gas(&mut self, gas_price: &U256, provider: &Provider<P>) -> Result<U256, TxManagerError> {
+        let typed_tx = match self.is_1559_tx {
+            true => {
+                let tx = self.build_1559_tx(gas_price, provider).await?;
+                TypedTransaction::try_from(tx).expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
+            }
+            false => {
+                let tx = self.build_legacy_tx(gas_price, provider).await?;
+                TypedTransaction::try_from(tx).expect("Failed to convert TransactionRequest to TypedTransaction")
+            }
+        };
+
+        let signer = SignerMiddleware::new(provider, self.wallet.clone());
+        signer
+            .estimate_gas(&typed_tx, None)
+            .await
+            .map_err(|why| TxManagerError::EstimateGasError(why.to_string()))
+    }
+
     pub async fn estimate_gas(
         &mut self,
         data: &[u8],
@@ -102,22 +122,7 @@ where
             true => self.choose_max_gas_price(),
             false => self.gas_price(provider).await?,
         };
-
-        let typed_tx = match self.is_1559_tx {
-            true => {
-                let tx = self.build_1559_tx(&gas_price, provider).await?;
-                TypedTransaction::try_from(tx).expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
-            }
-            false => {
-                let tx = self.build_legacy_tx(&gas_price, provider).await?;
-                TypedTransaction::try_from(tx).expect("Failed to convert TransactionRequest to TypedTransaction")
-            }
-        };
-
-        provider
-            .estimate_gas(&typed_tx, None)
-            .await
-            .map_err(|why| TxManagerError::EstimateGasError(why.to_string()))
+        self.do_estimate_gas(&gas_price, provider).await
     }
 
     pub async fn send(
@@ -138,10 +143,19 @@ where
             return Err(TxManagerError::GasPriceError("gas price too high".into()));
         }
 
-        if self.is_1559_tx {
-            self.send_1559_tx(&max_gas_price, provider).await
+        let gas_price = if self.is_1559_tx {
+            &max_gas_price
         } else {
-            self.send_legacy_tx(&current_gas_price, provider).await
+            &current_gas_price
+        };
+
+        let mut gas_limit = self.do_estimate_gas(gas_price, provider).await?;
+        gas_limit = gas_limit.mul(100 + self.config.gas_limit_reserve_percentage).div(100);
+        // let gas_limit = U256::from(400000);
+        if self.is_1559_tx {
+            self.send_1559_tx(&max_gas_price, &gas_limit, provider).await
+        } else {
+            self.send_legacy_tx(&current_gas_price, &gas_limit, provider).await
         }
     }
 
@@ -166,7 +180,7 @@ where
                 .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?;
 
             if let Some(receipt) = receipt {
-                if receipt.status == Some(U64::from(0)) {
+                if receipt.status != Some(U64::from(1)) {
                     return Err(TxManagerError::ConfirmTxError(format!("failed: {:?}", receipt)));
                 }
                 return Ok(receipt);
@@ -192,12 +206,18 @@ where
             .gas_price(*gas_price))
     }
 
-    async fn send_legacy_tx(&mut self, gas_price: &U256, provider: &Provider<P>) -> Result<TxHash, TxManagerError> {
+    async fn send_legacy_tx(
+        &mut self,
+        gas_price: &U256,
+        gas_limit: &U256,
+        provider: &Provider<P>,
+    ) -> Result<TxHash, TxManagerError> {
         // Create the transaction
-        let tx = self.build_legacy_tx(gas_price, provider).await?;
-        let signer = SignerMiddleware::new(provider, self.wallet.clone());
+        let mut tx = self.build_legacy_tx(gas_price, provider).await?;
+        tx.gas = Some(*gas_limit);
+        let signer = SignerMiddleware::new(provider.clone(), self.wallet.clone());
 
-        // todo support gas escalator, meet provider lifetime problem
+        // todo support gas escalator
         // let geometric_escalator = GeometricGasPrice::new(
         //     // self.config.gas_price_coefficient,
         //     // self.config.gas_price_every_secs,
@@ -240,9 +260,16 @@ where
             .max_priority_fee_per_gas(self.config.max_priority_fee_per_gas))
     }
 
-    async fn send_1559_tx(&mut self, max_gas_price: &U256, provider: &Provider<P>) -> Result<TxHash, TxManagerError> {
+    async fn send_1559_tx(
+        &mut self,
+        max_gas_price: &U256,
+        gas_limit: &U256,
+        provider: &Provider<P>,
+    ) -> Result<TxHash, TxManagerError> {
         // Create the transaction
-        let tx = self.build_1559_tx(max_gas_price, provider).await?;
+        let mut tx = self.build_1559_tx(max_gas_price, provider).await?;
+        tx.gas = Some(*gas_limit);
+
         let signer = SignerMiddleware::new(provider, self.wallet.clone());
         // Send the transaction
         let pending_tx = signer

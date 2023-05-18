@@ -32,6 +32,8 @@ pub enum RollerError {
     InvalidCallData(String),
     #[error("rpc call error {0}")]
     RpcCallError(String),
+    #[error("contract call error {0}")]
+    ContractCallError(String),
     #[error(transparent)]
     DatabaseError(#[from] StorageError),
     #[error(transparent)]

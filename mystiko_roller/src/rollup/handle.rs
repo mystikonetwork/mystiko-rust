@@ -6,7 +6,6 @@ use crate::core::slice::SlicePattern;
 use crate::data::data::{DataHandle, ProofInfo, RollupPlan};
 use ethers_core::types::{Address, Bytes, U256};
 use ethers_signers::{LocalWallet, Signer};
-use log::info;
 use mystiko_abi::commitment_pool::{CommitmentPool, RollupRequest};
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_ethers::provider::factory::Provider;
@@ -17,7 +16,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::Arc;
-use tracing::debug;
+use tracing::{debug, error, info};
 
 pub struct RollupHandle {
     chain_id: u64,
@@ -38,7 +37,6 @@ impl RollupHandle {
         let cfg = context.cfg().rollup.clone();
         let chain_id = context.cfg().chain.chain_id;
 
-        // todo use signer_endpoint for tx send
         let address = Address::from_str(pool_contract_cfg.address()).expect("invalid contract address");
         let cfg_path = load_roller_config_path();
         let tx_manager_cfg = create_tx_manager_config(&cfg_path)
@@ -48,6 +46,7 @@ impl RollupHandle {
         let local_wallet = LocalWallet::from_str(&sk_str)
             .expect("invalid private key")
             .with_chain_id(chain_id);
+        info!("local wallet address: {:?}", local_wallet.address());
         let builder = TxBuilder::builder()
             .config(tx_manager_cfg)
             .chain_id(chain_id.into())
@@ -69,6 +68,7 @@ impl RollupHandle {
     }
 
     async fn calc_tx_max_gas_price(&self, plan: &RollupPlan) -> Result<U256> {
+        debug!("calc tx max gas price");
         let mut total_gas_cost = 0;
         plan.sizes.iter().for_each(|size| {
             let cost = self.cfg.get_rollup_cost(*size);
@@ -95,12 +95,12 @@ impl RollupHandle {
         Ok(swap_amount / total_gas_cost)
     }
 
-    pub async fn build_rollup_transaction_param(&self, size: usize, info: &ProofInfo) -> Result<Bytes> {
+    pub async fn build_rollup_transaction_param(&self, size: usize, proof_info: &ProofInfo) -> Result<Bytes> {
         let request = RollupRequest {
-            proof: info.r.zk_proof.proof.convert_to().expect("invalid proof"),
+            proof: proof_info.r.zk_proof.proof.convert_to()?,
             rollup_size: size as u32,
-            new_root: big_int_to_u256(&info.r.new_root),
-            leaf_hash: big_int_to_u256(&info.r.leaves_hash),
+            new_root: big_int_to_u256(&proof_info.r.new_root),
+            leaf_hash: big_int_to_u256(&proof_info.r.leaves_hash),
         };
 
         let call = self.pool_contract.rollup(request);
@@ -110,43 +110,56 @@ impl RollupHandle {
         Ok(call_data)
     }
 
-    async fn send_rollup_transaction(&mut self, plan: &RollupPlan, info: &ProofInfo) -> Result<()> {
+    async fn send_rollup_transaction(&mut self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<()> {
         info!("send rollup transaction");
-        let provider = self.context.providers().await.check_provider(self.chain_id)?;
-        let tx_data = self.build_rollup_transaction_param(plan.sizes[0], info).await?;
+        let provider = self.context.sign_provider().await;
+        let tx_data = self.build_rollup_transaction_param(plan.sizes[0], proof_info).await?;
         if plan.force {
             let tx_hash = self.tx.send(tx_data.as_slice(), U256::zero(), None, &provider).await?;
-            info!("force send rollup transaction hash: {}", tx_hash);
+            info!("force send rollup transaction hash: {:?}", tx_hash);
         } else {
             let max_gas_price = self.calc_tx_max_gas_price(&plan).await?;
+            info!("send rollup transaction with max gas price {:?}", max_gas_price);
             let tx_hash = self
                 .tx
                 .send(tx_data.as_slice(), U256::zero(), Some(max_gas_price), &provider)
                 .await?;
-            info!("send rollup transaction hash: {}", tx_hash);
+            info!("send rollup transaction hash: {:?}", tx_hash.to_string());
         }
 
-        let receipt = self.tx.confirm(&provider).await?;
-        info!("rollup transaction have been confirmed: {}", receipt.transaction_hash);
+        let _ = self.tx.confirm(&provider).await?;
+        info!("rollup transaction have been confirmed");
         Ok(())
     }
 
+    async fn build_rollup_plan(&self, included_count: u32) -> Result<(RollupPlan, ProofInfo)> {
+        info!("build rollup plan");
+        let mut data = self.data.borrow_mut();
+        let force_rollup_block_count = self.context.cfg().rollup.force_rollup_block_count;
+        let plan = data.generate_plan(included_count as usize, force_rollup_block_count)?;
+        info!("rollup plan {:?}", plan);
+        let proof = data.generate_proof(&plan).await?;
+        Ok((plan, proof))
+    }
+
     async fn do_rollup(&mut self, included_count: u32) -> Result<()> {
-        if (included_count as usize) <= self.data.borrow().get_included_count() {
+        let queue_count = self.data.borrow().get_commitments_queue_count();
+        if queue_count < included_count as usize {
+            error!("commitment slow {:?}, included: {:?}", queue_count, included_count);
+            return Err(RollerError::CommitmentQueueSlow);
+        } else if queue_count == included_count as usize {
+            debug!("queue len same with included count");
             return Ok(());
         }
 
-        let force_rollup_block_count = self.context.cfg().rollup.force_rollup_block_count;
-        let plan = self
-            .data
-            .borrow_mut()
-            .generate_plan(included_count as usize, force_rollup_block_count)?;
-
-        let proof = self.data.borrow_mut().generate_proof(&plan).await?;
+        info!("do rollup {:?}", included_count);
+        let (plan, proof) = self.build_rollup_plan(included_count).await?;
         self.send_rollup_transaction(&plan, &proof).await
     }
 
     async fn get_included_count_from_indexer(&self) -> Result<u32> {
+        debug!("get included count from indexer");
+
         let indexer = self.context.indexer().await.ok_or(RollerError::NoIndexer)?;
         let next_block_number = self.data.borrow().get_next_sync_block();
         let include_count = indexer
@@ -156,6 +169,8 @@ impl RollupHandle {
     }
 
     async fn get_included_count_from_provider(&mut self) -> Result<u32> {
+        info!("get included count from provider");
+
         let address = Address::from_str(self.pool_contract_cfg.address()).expect("invalid contract address");
         let sign_provider = self.context.sign_provider().await;
         let pool = CommitmentPool::new(address, sign_provider);
@@ -172,11 +187,16 @@ impl RollupHandle {
         debug!("rollup");
         let indexer_count = self.get_included_count_from_indexer().await;
         if indexer_count.is_err() {
+            error!(
+                "get included count from indexer failed {:?}, rollup by provider",
+                indexer_count
+            );
             let included_count = self.get_included_count_from_provider().await?;
             self.do_rollup(included_count).await
         } else {
             let result = self.do_rollup(indexer_count.unwrap()).await;
             if result.is_err() {
+                error!("rollup by indexer failed {:?}, rollup by provider", result);
                 let included_count = self.get_included_count_from_provider().await?;
                 self.do_rollup(included_count).await
             } else {

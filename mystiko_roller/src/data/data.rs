@@ -1,12 +1,12 @@
 use crate::common::env::load_roller_circuits_path;
-use crate::common::error::{Result, RollerError};
+use crate::common::error::Result;
 use crate::context::Context;
 use crate::data::calc::calc_rollup_size_array;
 use crate::db::document::commitment::CommitmentInfo;
 use ethers_core::types::U256;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_fs::{read_file_bytes, read_gzip_file_bytes};
+use mystiko_fs::read_file_bytes;
 use mystiko_protocol::rollup::{Rollup, RollupProof};
 use num_bigint::BigInt;
 use std::sync::Arc;
@@ -18,10 +18,11 @@ pub struct CommitmentData {
     block_number: u64,
 }
 
+#[derive(Debug)]
 pub struct RollupPlan {
-    pub force: bool,
     pub sizes: Vec<usize>,
     pub total_fee: U256,
+    pub force: bool,
 }
 
 pub struct ProofInfo {
@@ -73,23 +74,23 @@ impl DataHandle {
             panic!("commitment leaf index mismatch");
         }
 
-        debug!("push commitment in queue {:?} {:?}", cm.leaf_index, cm_data.hash);
         self.commitments.push(cm_data);
     }
 
     pub async fn load_commitment_from_db(&mut self) {
-        debug!("recovery commitment queue");
         let cms = self
             .context
             .db()
             .await
             .find_all_commitment(self.chain_id, self.pool_contract.address())
             .await;
-        let _ = cms.iter().map(|doc| {
-            self.push_commitment_in_queue(&doc.data);
-        });
 
         info!("load {:?} commitments from db", cms.len());
+
+        for doc in &cms {
+            self.push_commitment_in_queue(&doc.data);
+        }
+
         if cms.len() == 0 {
             self.set_new_next_sync_block(self.pool_contract.start_block());
         } else {
@@ -150,15 +151,6 @@ impl DataHandle {
     }
 
     pub fn generate_plan(&mut self, included: usize, force_rollup_block_count: u64) -> Result<RollupPlan> {
-        if self.commitments.len() <= included {
-            info!(
-                "commitment queue slow queue len {:?}, included: {:?}",
-                self.commitments.len(),
-                included
-            );
-            return Err(RollerError::CommitmentQueueSlow);
-        }
-
         let tree_count = self.tree.as_ref().map_or(0, |t| t.count());
         if self.tree.is_none() || tree_count > included {
             self.rebuild_tree(included);
@@ -193,10 +185,13 @@ impl DataHandle {
             .collect();
 
         let circuits = CircuitsConfig::new(plan.sizes[0]);
-
-        let program = read_gzip_file_bytes(&circuits.program_file).await.unwrap();
-        let abi = read_file_bytes(&circuits.abi_file).await.unwrap();
-        let pkey = read_gzip_file_bytes(&circuits.proving_key_file).await.unwrap();
+        let program = read_file_bytes(&circuits.program_file)
+            .await
+            .expect("read zk program error");
+        let abi = read_file_bytes(&circuits.abi_file).await.expect("read zk abi error");
+        let pkey = read_file_bytes(&circuits.proving_key_file)
+            .await
+            .expect("read zk proving key error");
         let mut rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
         let proof = rollup.prove().expect("build proof error");
 
@@ -224,9 +219,9 @@ impl CircuitsConfig {
 
         let circuits_path = load_roller_circuits_path();
         CircuitsConfig {
-            program_file: circuits_path.clone() + &(format!("{}.program.gz", rollup_name)),
-            abi_file: circuits_path.clone() + &(format!("{}.abi.json", rollup_name)),
-            proving_key_file: circuits_path + &(format!("{}.pkey.gz", rollup_name)),
+            program_file: circuits_path.clone() + &(format!("/{}.program", rollup_name)),
+            abi_file: circuits_path.clone() + &(format!("/{}.abi.json", rollup_name)),
+            proving_key_file: circuits_path + &(format!("/{}.pkey", rollup_name)),
         }
     }
 }

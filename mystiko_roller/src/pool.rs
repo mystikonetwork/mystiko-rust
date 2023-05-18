@@ -7,7 +7,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
 use tokio::time::{self, Duration};
-use tracing::info;
+use tracing::{error, info};
 
 pub struct Pool {
     context: Arc<Context>,
@@ -46,7 +46,14 @@ impl Pool {
     }
 
     pub async fn do_rollup(&mut self) {
-        let _ = self.pull.pull().await;
-        let _ = self.rollup.rollup().await;
+        let result = self.pull.pull().await;
+        if result.is_err() {
+            error!("pull error: {:?}", result.err().unwrap());
+        }
+
+        let result = self.rollup.rollup().await;
+        if result.is_err() {
+            error!("rollup error: {:?}", result.err().unwrap());
+        }
     }
 }

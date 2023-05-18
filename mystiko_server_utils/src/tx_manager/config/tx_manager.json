@@ -3,6 +3,7 @@
   "maxPriorityFeePerGas": "0x59682f00",
   "maxConfirmCount": 100,
   "confirmInterval": 5,
+  "gasLimitReservePercentage": 10,
   "forceGasPriceChains": [
     "0xfa",
     "0xfa2",
