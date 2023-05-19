@@ -1,8 +1,9 @@
 {
-  "url": "https://pro-api.coinmarketcap.com",
+  "base_url": "https://pro-api.coinmarketcap.com",
   "query_timeout_secs": 5,
-  "priceCacheTTL": 1800,
-  "coinMarketCapIds": {
+  "price_cache_ttl": 1800,
+  "swap_precision": 3,
+  "coin_market_cap_ids": {
     "ETH": 1027,
     "mETH": 1027,
     "BNB": 1839,
@@ -10,8 +11,6 @@
     "USDT": 825,
     "USDC": 3408,
     "BUSD": 4687,
-    "MTT": 3408,
-    "mUSD": 3408,
     "FTM": 3513,
     "mFTM": 3513,
     "MATIC": 3890,
@@ -19,6 +18,8 @@
     "DEV": 5990,
     "mDEV": 5990,
     "AVAX": 5805,
-    "mAVAX": 5805
+    "mAVAX": 5805,
+    "MTT": 1839,
+    "mUSD": 1839
   }
 }

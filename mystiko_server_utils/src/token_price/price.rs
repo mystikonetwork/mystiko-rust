@@ -3,14 +3,13 @@ use crate::token_price::error::TokenPriceError;
 use crate::token_price::query::QueryApiInstance;
 use crate::token_price::utils::{calc_token_precision, f64_to_u256, u256_to_f64};
 use anyhow::Result;
-use dotenv::dotenv;
 use ethers_core::types::U256;
 use std::collections::HashMap;
-use std::env;
 use std::ops::{Div, Mul};
 use std::time::{Duration, Instant};
 
 pub struct TokenPrice {
+    initialized: bool,
     config: TokenPriceConfig,
     instance: QueryApiInstance,
     record_time: Instant,
@@ -23,30 +22,26 @@ fn instant_init(duration: u64) -> Instant {
     Instant::now() - Duration::from_secs(duration + 1)
 }
 
-fn load_api_key_from_env() -> Result<String, TokenPriceError> {
-    dotenv().ok();
-    let key = "COIN_MARKET_CAP_API_KEY";
-    match env::var(key) {
-        Ok(value) => Ok(value),
-        Err(_) => Err(TokenPriceError::ApiKeyNotConfigure),
-    }
-}
-
 impl TokenPrice {
-    pub fn new(cfg: TokenPriceConfig) -> Result<Self, TokenPriceError> {
-        let api_key = load_api_key_from_env()?;
-        let instance = QueryApiInstance::new(&api_key, cfg.base_url.clone(), cfg.query_timeout_secs)?;
+    pub fn new(cfg: &TokenPriceConfig, api_key: &str) -> Result<Self, TokenPriceError> {
+        let instance = QueryApiInstance::new(api_key, cfg.base_url.clone(), cfg.query_timeout_secs)?;
         Ok(TokenPrice {
             ids: cfg.ids(),
             record_time: instant_init(cfg.price_cache_ttl),
-            config: cfg,
+            config: cfg.clone(),
             instance,
             prices: HashMap::new(),
+            initialized: false,
         })
     }
 
     pub async fn price(&mut self, symbol: &str) -> Result<f64, TokenPriceError> {
-        self.update_token_prices().await?;
+        if let Err(e) = self.update_token_prices().await {
+            if !self.initialized {
+                return Err(e);
+            }
+        }
+
         self.get_token_price(symbol)
     }
 
@@ -58,7 +53,11 @@ impl TokenPrice {
         asset_b: &str,
         decimal_b: u32,
     ) -> Result<U256, TokenPriceError> {
-        self.update_token_prices().await?;
+        if let Err(e) = self.update_token_prices().await {
+            if !self.initialized {
+                return Err(e);
+            }
+        }
 
         let price_a = self.get_token_price(asset_a)?;
         let price_b = self.get_token_price(asset_b)?;
@@ -88,7 +87,7 @@ impl TokenPrice {
         }
 
         self.record_time = instant_now;
-
+        self.initialized = true;
         Ok(())
     }
 

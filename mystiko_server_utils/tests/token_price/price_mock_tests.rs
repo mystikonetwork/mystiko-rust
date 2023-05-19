@@ -9,20 +9,9 @@ use mystiko_server_utils::token_price::error::TokenPriceError;
 use mystiko_server_utils::token_price::price::TokenPrice;
 use mystiko_server_utils::token_price::query::{CurrencyMapResponse, CurrencyQuoteResponse};
 use serde_json::json;
-use std::env;
-use std::sync::Once;
-
-static INIT: Once = Once::new();
-fn setup() {
-    INIT.call_once(|| {
-        env::set_var("COIN_MARKET_CAP_API_KEY", "mock");
-    });
-}
 
 #[tokio::test]
 async fn test_get_token_id() {
-    setup();
-
     let id_bytes = read_file_bytes("./tests/token_price/files/token_ids.json")
         .await
         .unwrap();
@@ -31,28 +20,26 @@ async fn test_get_token_id() {
     let server = Server::run();
     server.expect(Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map")).respond_with(resp_json));
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", "").unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
-    let tp = TokenPrice::new(default_cfg).unwrap();
+    let tp = TokenPrice::new(&default_cfg, "").unwrap();
     let id = tp.get_token_id("ETH").await.unwrap();
     assert_eq!(id, [1027]);
 }
 
 #[tokio::test]
 async fn test_get_token_id_error() {
-    setup();
-
     let server = Server::run();
     server.expect(
         Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map")).respond_with(status_code(401)),
     );
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", "").unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
-    let tp = TokenPrice::new(default_cfg).unwrap();
+    let tp = TokenPrice::new(&default_cfg, "").unwrap();
     let id = tp.get_token_id("ETH").await;
     assert!(matches!(id.err().unwrap(), TokenPriceError::ReqwestError(_)));
 
@@ -76,8 +63,6 @@ async fn test_get_token_id_error() {
 
 #[tokio::test]
 async fn test_price() {
-    setup();
-
     let id_bytes = read_file_bytes("./tests/token_price/files/token_price.json")
         .await
         .unwrap();
@@ -89,30 +74,28 @@ async fn test_price() {
         Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", "").unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
-    let mut tp = TokenPrice::new(default_cfg).unwrap();
+    let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
     let price = tp.price("ETH").await.unwrap();
     assert!(price > 100.0);
 }
 
 #[tokio::test]
 async fn test_price_error() {
-    setup();
-
     let server = Server::run();
     server.expect(
         Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest"))
             .respond_with(status_code(401)),
     );
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", "").unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
-    let mut tp = TokenPrice::new(default_cfg).unwrap();
+    let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
     let price = tp.price("ETH").await;
     assert!(matches!(price.err().unwrap(), TokenPriceError::ReqwestError(_)));
 
@@ -140,8 +123,6 @@ async fn test_price_error() {
 
 #[tokio::test]
 async fn test_swap() {
-    setup();
-
     let id_bytes = read_file_bytes("./tests/token_price/files/token_price.json")
         .await
         .unwrap();
@@ -153,11 +134,11 @@ async fn test_swap() {
         Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", "").unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
-    let mut tp = TokenPrice::new(default_cfg).unwrap();
+    let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
 
     for i in 0..6 {
         let amount_a = U256::from(10000000) / U256::from(10_u64.pow(i));
@@ -167,7 +148,7 @@ async fn test_swap() {
 
     let amount_a = U256::from(10);
     let amount_b = tp.swap("USDT", 6, amount_a, "USDT", 6).await.unwrap();
-    assert_eq!(amount_b, U256::from(0));
+    assert_eq!(amount_b, U256::from(10));
 
     let amount = ethers_core::utils::parse_ether(10).unwrap();
     for i in 0..12 {
@@ -179,8 +160,6 @@ async fn test_swap() {
 
 #[tokio::test]
 async fn test_internal_error() {
-    setup();
-
     let id_bytes = read_file_bytes("./tests/token_price/files/token_price.json")
         .await
         .unwrap();
@@ -192,11 +171,11 @@ async fn test_internal_error() {
         Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", "").unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
-    let mut tp = TokenPrice::new(default_cfg.clone()).unwrap();
+    let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
     let price = tp.price("BTC").await;
     assert_eq!(price.err().unwrap(), TokenPriceError::TokenNotSupport);
     let price = tp.price("mMATIC").await;

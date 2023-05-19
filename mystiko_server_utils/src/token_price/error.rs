@@ -1,6 +1,8 @@
 use serde_json::Error as SerdeJsonError;
 use thiserror::Error;
 
+pub type Result<T> = anyhow::Result<T, TokenPriceError>;
+
 #[derive(Error, Debug)]
 pub enum TokenPriceError {
     #[error("read file error {0}")]
