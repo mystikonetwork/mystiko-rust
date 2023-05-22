@@ -144,6 +144,17 @@ impl<T: DocumentData> Document<T> {
             ])
             .collect()
     }
+
+    pub fn initial_migrations() -> Vec<Migration> {
+        Self::migrations()
+            .into_iter()
+            .filter(|migration| match migration {
+                Migration::CreateCollection(_) => true,
+                Migration::AddIndex(_) => true,
+                _ => false,
+            })
+            .collect()
+    }
 }
 
 pub fn find_column_value<S: AsRef<str>>(

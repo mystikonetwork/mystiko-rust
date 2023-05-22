@@ -167,10 +167,13 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                 if !collection_exists {
                     migration_statements.extend(
                         self.formatter
-                            .format_migration(&Document::<MigrationHistory>::migrations()[0]),
+                            .format_migration_batch(&Document::<MigrationHistory>::initial_migrations()),
                     );
                 }
-                migration_statements.extend(self.formatter.format_migration(&Document::<D>::migrations()[0]));
+                migration_statements.extend(
+                    self.formatter
+                        .format_migration_batch(&Document::<D>::initial_migrations()),
+                );
                 let now = current_timestamp();
                 let migration: Document<MigrationHistory> = Document {
                     id: self.storage.uuid().await?,
