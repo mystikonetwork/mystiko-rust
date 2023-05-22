@@ -1,15 +1,14 @@
-use mystiko_database::collection::chain::ChainCollection;
-use mystiko_database::document::chain::{Chain, Provider, NAME_FIELD_NAME, NAME_OVERRIDE_FIELD_NAME};
+use mystiko_database::document::chain::{Chain, ChainCollection, ChainColumn, Provider};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
 
-async fn create_chains() -> ChainCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
+async fn create_chains() -> ChainCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let chains = ChainCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
+    let chains = ChainCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
     chains.migrate().await.unwrap();
     assert!(chains.collection_exists().await.unwrap());
     chains
@@ -51,7 +50,7 @@ async fn test_chains_crud() {
     // testing insert_batch
     inserted_chains.extend(
         chains
-            .insert_batch(&vec![
+            .insert_batch(&[
                 Chain {
                     chain_id: 97,
                     name: String::from("BSC Testnet"),
@@ -95,7 +94,7 @@ async fn test_chains_crud() {
     // testing count
     assert_eq!(
         chains
-            .count(SubFilter::Equal(NAME_OVERRIDE_FIELD_NAME.into(), 1.to_string(),))
+            .count(SubFilter::equal(&ChainColumn::NameOverride, 1))
             .await
             .unwrap(),
         1
@@ -112,7 +111,7 @@ async fn test_chains_crud() {
     assert_eq!(found_chains, inserted_chains[1..]);
     // testing find_one
     let mut found_chain = chains
-        .find_one(SubFilter::Equal(NAME_FIELD_NAME.into(), String::from("Polygon")))
+        .find_one(SubFilter::equal(&ChainColumn::Name, "Polygon"))
         .await
         .unwrap()
         .unwrap();
@@ -139,16 +138,13 @@ async fn test_chains_crud() {
     chains.delete(&inserted_chains[0]).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 2);
     // testing delete_batch
-    chains.delete_batch(&vec![inserted_chains[1].clone()]).await.unwrap();
+    chains.delete_batch(&[inserted_chains[1].clone()]).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 1);
     // testing delete_by_filter
     chains.insert(&inserted_chains[0].data).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 2);
     chains
-        .delete_by_filter(SubFilter::Equal(
-            NAME_FIELD_NAME.into(),
-            String::from("Ethereum Goerli"),
-        ))
+        .delete_by_filter(SubFilter::equal(&ChainColumn::Name, "Ethereum Goerli"))
         .await
         .unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 1);

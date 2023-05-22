@@ -1,18 +1,15 @@
-use mystiko_database::collection::nullifier::NullifierCollection;
-use mystiko_database::document::nullifier::{
-    Nullifier, CHAIN_ID_FIELD_NAME, CONTRACT_ADDRESS_FIELD_NAME, NULLIFIER_FIELD_NAME,
-};
+use mystiko_database::document::nullifier::{Nullifier, NullifierCollection, NullifierColumn};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use num_bigint::BigInt;
 use std::sync::Arc;
 
-async fn create_nullifiers() -> NullifierCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
+async fn create_nullifiers() -> NullifierCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let nullifiers = NullifierCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
+    let nullifiers = NullifierCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
     nullifiers.migrate().await.unwrap();
     assert!(nullifiers.collection_exists().await.unwrap());
     nullifiers
@@ -37,7 +34,7 @@ async fn test_nullifiers_crud() {
     );
     inserted_nullifiers.extend(
         nullifiers
-            .insert_batch(&vec![
+            .insert_batch(&[
                 Nullifier {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
@@ -59,7 +56,7 @@ async fn test_nullifiers_crud() {
     assert_eq!(nullifiers.count_all().await.unwrap(), 3);
     assert_eq!(
         nullifiers
-            .count(SubFilter::Equal(CHAIN_ID_FIELD_NAME.into(), 2.to_string()))
+            .count(SubFilter::equal(&NullifierColumn::ChainId, 2))
             .await
             .unwrap(),
         1
@@ -74,9 +71,9 @@ async fn test_nullifiers_crud() {
         .unwrap();
     assert_eq!(found_nullifiers, inserted_nullifiers[1..]);
     let mut found_nullifier = nullifiers
-        .find_one(SubFilter::Equal(
-            CONTRACT_ADDRESS_FIELD_NAME.into(),
-            String::from("contract_address 2"),
+        .find_one(SubFilter::equal(
+            &NullifierColumn::ContractAddress,
+            "contract_address 2",
         ))
         .await
         .unwrap()
@@ -105,14 +102,14 @@ async fn test_nullifiers_crud() {
     nullifiers.delete(&inserted_nullifiers[0]).await.unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 2);
     nullifiers
-        .delete_batch(&vec![inserted_nullifiers[1].clone()])
+        .delete_batch(&[inserted_nullifiers[1].clone()])
         .await
         .unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 1);
     nullifiers.insert(&inserted_nullifiers[0].data).await.unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 2);
     nullifiers
-        .delete_by_filter(SubFilter::Equal(NULLIFIER_FIELD_NAME.into(), 1.to_string()))
+        .delete_by_filter(SubFilter::equal(&NullifierColumn::Nullifier, 1))
         .await
         .unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 1);

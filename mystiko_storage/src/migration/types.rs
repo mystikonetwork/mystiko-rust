@@ -17,8 +17,8 @@ pub struct CreateCollectionMigration {
 pub struct AddIndexMigration {
     #[builder(setter(into))]
     pub collection_name: String,
-    #[builder(setter(into))]
-    pub index_name: String,
+    #[builder(default, setter(into, strip_option))]
+    pub index_name: Option<String>,
     #[builder(setter(into))]
     pub column_names: Vec<String>,
 }

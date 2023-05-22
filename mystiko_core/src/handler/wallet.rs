@@ -6,9 +6,9 @@ use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_crypto::hash::checksum;
 use mystiko_database::database::Database;
 use mystiko_database::document::wallet::Wallet;
-use mystiko_storage::document::{Document, DocumentRawData, DOCUMENT_CREATED_AT_FIELD};
+use mystiko_storage::document::{Document, DocumentColumn};
 use mystiko_storage::filter::{Order, QueryFilterBuilder};
-use mystiko_storage::formatter::StatementFormatter;
+use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use rand_core::OsRng;
@@ -32,8 +32,8 @@ const PASSWORD_HINT: &str = "\
     and the length should be as least 8";
 
 #[derive(Debug)]
-pub struct WalletHandler<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    db: Arc<Database<F, R, S>>,
+pub struct WalletHandler<F: StatementFormatter, S: Storage> {
+    db: Arc<Database<F, S>>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -43,25 +43,24 @@ pub struct CreateWalletOptions {
     pub mnemonic_phrase: Option<String>,
 }
 
-impl<F, R, S> WalletHandler<F, R, S>
+impl<F, S> WalletHandler<F, S>
 where
     F: StatementFormatter,
-    R: DocumentRawData,
-    S: Storage<R>,
+    S: Storage,
 {
-    pub fn new(db: Arc<Database<F, R, S>>) -> Self {
+    pub fn new(db: Arc<Database<F, S>>) -> Self {
         Self { db }
     }
 
     pub async fn current(&self) -> Result<Option<Document<Wallet>>> {
         let filter = QueryFilterBuilder::new()
-            .order_by(vec![DOCUMENT_CREATED_AT_FIELD.to_string()], Order::DESC)
+            .order_by(vec![DocumentColumn::Id.to_string()], Order::DESC)
             .build();
         self.db
             .wallets
             .find_one(filter)
             .await
-            .map_err(MystikoError::DatabaseError)
+            .map_err(MystikoError::StorageError)
     }
 
     pub async fn create(&self, options: &CreateWalletOptions) -> Result<Document<Wallet>> {
@@ -83,7 +82,7 @@ where
             .wallets
             .insert(&wallet)
             .await
-            .map_err(MystikoError::DatabaseError)?;
+            .map_err(MystikoError::StorageError)?;
         log::info!("successfully created a wallet(id = \"{}\")", wallet.id);
         Ok(wallet)
     }
@@ -117,7 +116,7 @@ where
             .wallets
             .update(&wallet)
             .await
-            .map_err(MystikoError::DatabaseError)?;
+            .map_err(MystikoError::StorageError)?;
         log::info!(
             "successfully updated the password of the wallet(id = \"{}\")",
             wallet.id

@@ -1,16 +1,20 @@
 #![forbid(unsafe_code)]
 extern crate anyhow;
 extern crate async_trait;
-extern crate num_traits;
+extern crate mystiko_storage;
+extern crate num_bigint;
 extern crate serde_json;
 extern crate sqlx;
+extern crate tokio;
 
 use anyhow::Result;
 use async_trait::async_trait;
 use mystiko_storage::column::{ColumnType, ColumnValue};
 use mystiko_storage::document::{Document, DocumentData};
+use num_bigint::BigInt;
 use sqlx::{ConnectOptions, Row, Sqlite};
 use std::fmt::Debug;
+use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -220,6 +224,9 @@ fn bind_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Result<Que
             ColumnType::String => {
                 query = query.bind(value.as_string()?);
             }
+            ColumnType::BigInt => {
+                query = query.bind(value.as_bigint()?.to_string());
+            }
             ColumnType::Json => {
                 query = query.bind(serde_json::to_string(&value.as_json()?)?);
             }
@@ -329,6 +336,12 @@ fn row_to_document<T: DocumentData>(row: &sqlx::sqlite::SqliteRow) -> Result<Doc
             ColumnType::String => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
                     columns_with_value.push((column.column_name, ColumnValue::String(value)));
+                }
+            }
+            ColumnType::BigInt => {
+                if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
+                    let value = BigInt::from_str(&value)?;
+                    columns_with_value.push((column.column_name, ColumnValue::BigInt(value)))
                 }
             }
             ColumnType::Json => {

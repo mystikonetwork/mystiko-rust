@@ -1,5 +1,6 @@
 extern crate anyhow;
 extern crate async_trait;
+extern crate num_bigint;
 extern crate serde;
 extern crate serde_json;
 extern crate thiserror;

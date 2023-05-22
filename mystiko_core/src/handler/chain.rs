@@ -6,14 +6,14 @@ use ethers_providers::Quorum;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_config::wrapper::provider::ProviderConfig;
 use mystiko_database::database::Database;
-use mystiko_database::document::chain::{Chain, Provider, CHAIN_ID_FIELD_NAME};
+use mystiko_database::document::chain::{Chain, ChainColumn, Provider};
 use mystiko_database::document::contract::Contract;
 use mystiko_ethers::provider::factory::{ProvidersOptions, HTTP_REGEX, WS_REGEX};
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
-use mystiko_storage::document::{Document, DocumentRawData};
+use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilter, SubFilter};
-use mystiko_storage::formatter::StatementFormatter;
+use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_types::ProviderType;
 use std::sync::Arc;
@@ -44,18 +44,17 @@ pub struct UpdateChainOptions {
 }
 
 #[derive(Debug)]
-pub struct ChainHandler<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    db: Arc<Database<F, R, S>>,
+pub struct ChainHandler<F: StatementFormatter, S: Storage> {
+    db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
-    contracts: ContractHandler<F, R, S>,
+    contracts: ContractHandler<F, S>,
 }
-impl<F, R, S> ChainHandler<F, R, S>
+impl<F, S> ChainHandler<F, S>
 where
     F: StatementFormatter,
-    R: DocumentRawData,
-    S: Storage<R>,
+    S: Storage,
 {
-    pub fn new(db: Arc<Database<F, R, S>>, config: Arc<MystikoConfig>) -> Self {
+    pub fn new(db: Arc<Database<F, S>>, config: Arc<MystikoConfig>) -> Self {
         Self {
             db: db.clone(),
             config: config.clone(),
@@ -68,24 +67,24 @@ where
             .chains
             .find(query_filter)
             .await
-            .map_err(MystikoError::DatabaseError)
+            .map_err(MystikoError::StorageError)
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Chain>>> {
-        self.db.chains.find_all().await.map_err(MystikoError::DatabaseError)
+        self.db.chains.find_all().await.map_err(MystikoError::StorageError)
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Chain>>> {
-        self.db.chains.find_by_id(id).await.map_err(MystikoError::DatabaseError)
+        self.db.chains.find_by_id(id).await.map_err(MystikoError::StorageError)
     }
 
     pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
-        let query_filter = SubFilter::Equal(CHAIN_ID_FIELD_NAME.to_string(), chain_id.to_string());
+        let query_filter = SubFilter::equal(&ChainColumn::ChainId, chain_id);
         self.db
             .chains
             .find_one(query_filter)
             .await
-            .map_err(MystikoError::DatabaseError)
+            .map_err(MystikoError::StorageError)
     }
 
     pub async fn count<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<u64> {
@@ -93,11 +92,11 @@ where
             .chains
             .count(query_filter)
             .await
-            .map_err(MystikoError::DatabaseError)
+            .map_err(MystikoError::StorageError)
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.db.chains.count_all().await.map_err(MystikoError::DatabaseError)
+        self.db.chains.count_all().await.map_err(MystikoError::StorageError)
     }
 
     pub async fn initialize(&self) -> Result<Vec<Document<Chain>>> {
@@ -129,14 +128,14 @@ where
                 .chains
                 .insert_batch(&insert_chains)
                 .await
-                .map_err(MystikoError::DatabaseError)?,
+                .map_err(MystikoError::StorageError)?,
         );
         chains.extend(
             self.db
                 .chains
                 .update_batch(&update_chains)
                 .await
-                .map_err(MystikoError::DatabaseError)?,
+                .map_err(MystikoError::StorageError)?,
         );
         Ok(chains)
     }
@@ -154,7 +153,7 @@ where
                     .chains
                     .update(&existing_chain)
                     .await
-                    .map_err(MystikoError::DatabaseError)?,
+                    .map_err(MystikoError::StorageError)?,
             ))
         } else {
             Ok(None)
@@ -222,7 +221,7 @@ where
                             .chains
                             .update(&existing_chain)
                             .await
-                            .map_err(MystikoError::DatabaseError)?,
+                            .map_err(MystikoError::StorageError)?,
                     ))
                 } else {
                     Ok(Some(existing_chain))
@@ -242,7 +241,7 @@ where
                 .chains
                 .update(&chain)
                 .await
-                .map_err(MystikoError::DatabaseError)?;
+                .map_err(MystikoError::StorageError)?;
             let mut contracts: Vec<Document<Contract>> = Vec::new();
             for contract_config in chain_config.contracts_with_disabled().iter() {
                 if let Some(mut contract) = self
@@ -258,7 +257,7 @@ where
                 .contracts
                 .update_batch(&contracts)
                 .await
-                .map_err(MystikoError::DatabaseError)?;
+                .map_err(MystikoError::StorageError)?;
             Ok(Some(updated_chain))
         } else {
             Ok(None)
@@ -266,11 +265,10 @@ where
     }
 }
 #[async_trait]
-impl<F, R, S> ChainProvidersOptions for ChainHandler<F, R, S>
+impl<F, S> ChainProvidersOptions for ChainHandler<F, S>
 where
     F: StatementFormatter,
-    R: DocumentRawData,
-    S: Storage<R>,
+    S: Storage,
 {
     async fn providers_options(&self, chain_id: u64) -> anyhow::Result<Option<ProvidersOptions>> {
         if let (Some(chain_config), Some(chain)) =

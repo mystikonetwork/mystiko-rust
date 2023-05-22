@@ -1,5 +1,5 @@
 use mystiko_storage::collection::Collection;
-use mystiko_storage::document::{DocumentColumn, DocumentData};
+use mystiko_storage::document::DocumentColumn;
 use mystiko_storage::filter::{Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_macros::CollectionBuilder;

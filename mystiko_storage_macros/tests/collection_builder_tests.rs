@@ -1,5 +1,4 @@
 use mystiko_storage::column::{Column, ColumnValue, IndexColumns, UniqueColumns};
-use mystiko_storage::document::DocumentData;
 use mystiko_storage::migration::types::{Migration, RenameCollectionMigration};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigInt;
@@ -193,14 +192,8 @@ fn test_document_data_impl_create() {
         ("field32".to_string(), ColumnValue::F64(28.0)),
         ("field33".to_string(), ColumnValue::String("29".to_string())),
         ("field34".to_string(), ColumnValue::String("30".to_string())),
-        (
-            "field35".to_string(),
-            ColumnValue::Json(serde_json::to_value(BigInt::from(31)).unwrap()),
-        ),
-        (
-            "field36".to_string(),
-            ColumnValue::Json(serde_json::to_value(BigInt::from(32)).unwrap()),
-        ),
+        ("field35".to_string(), ColumnValue::BigInt(BigInt::from(31))),
+        ("field36".to_string(), ColumnValue::BigInt(BigInt::from(32))),
         (
             "field37".to_string(),
             ColumnValue::Json(serde_json::to_value(vec![33]).unwrap()),
@@ -284,10 +277,7 @@ fn test_document_data_impl_create_with_none() {
         ("field29".to_string(), ColumnValue::F32(13.0)),
         ("field31".to_string(), ColumnValue::F64(14.0)),
         ("field33".to_string(), ColumnValue::String("15".to_string())),
-        (
-            "field35".to_string(),
-            ColumnValue::Json(serde_json::to_value(BigInt::from(16)).unwrap()),
-        ),
+        ("field35".to_string(), ColumnValue::BigInt(BigInt::from(16))),
         (
             "field37".to_string(),
             ColumnValue::Json(serde_json::to_value(vec![17]).unwrap()),
@@ -506,11 +496,11 @@ fn test_document_data_impl_columns() {
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field35.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::BigInt)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field36.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::BigInt)
                 .length_limit(Some(256))
                 .nullable(true)
                 .build(),
@@ -620,8 +610,8 @@ fn test_document_data_impl_column_values() {
             Some(ColumnValue::F64(28.0)),
             Some(ColumnValue::String("29".to_string())),
             Some(ColumnValue::String("30".to_string())),
-            Some(ColumnValue::Json(serde_json::to_value(BigInt::from(31)).unwrap())),
-            Some(ColumnValue::Json(serde_json::to_value(BigInt::from(32)).unwrap())),
+            Some(ColumnValue::BigInt(BigInt::from(31))),
+            Some(ColumnValue::BigInt(BigInt::from(32))),
             Some(ColumnValue::Json(serde_json::to_value(vec![33]).unwrap())),
             Some(ColumnValue::Json(serde_json::to_value(vec![34]).unwrap())),
             Some(ColumnValue::Json(
@@ -718,7 +708,7 @@ fn test_document_data_impl_column_values_with_none() {
             None,
             Some(ColumnValue::String("15".to_string())),
             None,
-            Some(ColumnValue::Json(serde_json::to_value(BigInt::from(16)).unwrap())),
+            Some(ColumnValue::BigInt(BigInt::from(16))),
             None,
             Some(ColumnValue::Json(serde_json::to_value(vec![17]).unwrap())),
             None,

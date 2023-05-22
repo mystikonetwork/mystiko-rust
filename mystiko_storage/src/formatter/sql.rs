@@ -293,7 +293,11 @@ impl SqlStatementFormatter {
                 Statement::new(format!("`{}` <= {}", filter.column, self.value_mark()), filter.values)
             }
             SubFilterOperator::In => {
-                Statement::new(format!("`{}` IN ({})", filter.column, self.value_mark()), filter.values)
+                let value_marks = std::iter::repeat(self.value_mark())
+                    .take(filter.values.len())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                Statement::new(format!("`{}` IN ({})", filter.column, value_marks), filter.values)
             }
             SubFilterOperator::BetweenAnd => Statement::new(
                 format!(
@@ -344,7 +348,10 @@ fn format_create_collection_migration(migration: &CreateCollectionMigration) -> 
             .collect::<Vec<String>>();
         unique_columns_sql.push(format!(
             "CONSTRAINT `{}` UNIQUE ({})",
-            unique_columns.unique_name,
+            unique_columns.unique_name.clone().unwrap_or(default_unique_name(
+                &migration.collection_name,
+                &unique_columns.column_names
+            )),
             unique_columns_names.join(", ")
         ));
     }
@@ -361,7 +368,10 @@ fn format_create_collection_migration(migration: &CreateCollectionMigration) -> 
         statements.push(format_add_index_migration(
             &AddIndexMigration::builder()
                 .collection_name(migration.collection_name.clone())
-                .index_name(index_columns.index_name.clone())
+                .index_name(index_columns.index_name.clone().unwrap_or(default_index_name(
+                    &migration.collection_name,
+                    &index_columns.column_names,
+                )))
                 .column_names(index_columns.column_names.clone())
                 .build(),
         ));
@@ -378,7 +388,10 @@ fn format_add_index_migration(migration: &AddIndexMigration) -> Statement {
     Statement::new(
         format!(
             "CREATE INDEX `{}` ON `{}` ({})",
-            migration.index_name,
+            migration
+                .index_name
+                .clone()
+                .unwrap_or(default_index_name(&migration.collection_name, &migration.column_names)),
             migration.collection_name,
             index_columns.join(", ")
         ),
@@ -458,6 +471,7 @@ fn get_column_sql_type(column: &Column) -> String {
         ColumnType::F32 => "FLOAT".into(),
         ColumnType::F64 => "DOUBLE".into(),
         ColumnType::String => varchar_or_text_sql_type(&column.length_limit),
+        ColumnType::BigInt => varchar_or_text_sql_type(&column.length_limit),
         ColumnType::Json => varchar_or_text_sql_type(&column.length_limit),
     }
 }
@@ -468,4 +482,12 @@ fn varchar_or_text_sql_type(length_limit: &Option<u64>) -> String {
     } else {
         "TEXT".into()
     }
+}
+
+fn default_unique_name(collection_name: &str, column_names: &[String]) -> String {
+    format!("{}_unique_{}", collection_name, column_names.join("_"))
+}
+
+fn default_index_name(collection_name: &str, column_names: &[String]) -> String {
+    format!("{}_index_{}", collection_name, column_names.join("_"))
 }

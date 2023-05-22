@@ -146,6 +146,7 @@ impl<'a> StructInfo<'a> {
         let struct_name = self.name.clone();
         let collection_struct_name = syn::Ident::new(&format!("{}Collection", self.name), self.name.span());
         Ok(quote! {
+            use mystiko_storage::document::DocumentData;
             #[derive(Debug)]
             pub struct #collection_struct_name<
                 F: mystiko_storage::formatter::types::StatementFormatter, S: mystiko_storage::storage::Storage> {

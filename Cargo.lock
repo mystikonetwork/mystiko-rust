@@ -2948,12 +2948,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "mystiko_storage",
+ "mystiko_storage_macros",
  "mystiko_storage_sqlite",
  "mystiko_types",
  "num-bigint 0.4.3",
  "serde",
  "serde_json",
- "thiserror",
  "tokio",
 ]
 
@@ -3106,6 +3106,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "num-bigint 0.4.3",
  "serde",
  "serde_json",
  "thiserror",
@@ -3138,7 +3139,7 @@ dependencies = [
  "async-trait",
  "mystiko_storage",
  "mystiko_storage_macros",
- "num-traits 0.2.15",
+ "num-bigint 0.4.3",
  "serde_json",
  "sqlx",
  "tempfile",

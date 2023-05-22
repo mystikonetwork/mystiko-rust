@@ -1,21 +1,18 @@
 extern crate mystiko_database;
 
-use mystiko_database::collection::deposit::DepositCollection;
-use mystiko_database::document::deposit::{
-    Deposit, HASH_K_FIELD_NAME, RANDOM_S_FIELD_NAME, SHIELDED_RECIPIENT_ADDRESS_FIELD_NAME,
-};
+use mystiko_database::document::deposit::{Deposit, DepositCollection, DepositColumn};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigInt;
 use std::sync::Arc;
 
-async fn create_deposits() -> DepositCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
+async fn create_deposits() -> DepositCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let deposits = DepositCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
+    let deposits = DepositCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
     deposits.migrate().await.unwrap();
     assert!(deposits.collection_exists().await.unwrap());
     deposits
@@ -137,7 +134,7 @@ async fn test_deposits_crud() {
     assert_eq!(deposits.count_all().await.unwrap(), 3);
     assert_eq!(
         deposits
-            .count(SubFilter::Equal(HASH_K_FIELD_NAME.into(), 22.to_string()))
+            .count(SubFilter::equal(&DepositColumn::HashK, 22))
             .await
             .unwrap(),
         1
@@ -158,7 +155,7 @@ async fn test_deposits_crud() {
         .unwrap();
     assert_eq!(found_deposits, inserted_deposits[1..]);
     let mut found_deposit = deposits
-        .find_one(SubFilter::Equal(RANDOM_S_FIELD_NAME.into(), 222.to_string()))
+        .find_one(SubFilter::equal(&DepositColumn::RandomS, 222))
         .await
         .unwrap()
         .unwrap();
@@ -189,9 +186,9 @@ async fn test_deposits_crud() {
     deposits.insert(&inserted_deposits[0].data).await.unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 2);
     deposits
-        .delete_by_filter(SubFilter::Equal(
-            SHIELDED_RECIPIENT_ADDRESS_FIELD_NAME.into(),
-            String::from("shielded_recipient_address 1"),
+        .delete_by_filter(SubFilter::equal(
+            &DepositColumn::ShieldedRecipientAddress,
+            "shielded_recipient_address 1",
         ))
         .await
         .unwrap();

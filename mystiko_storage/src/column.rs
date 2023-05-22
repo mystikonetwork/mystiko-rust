@@ -1,4 +1,5 @@
 use crate::error::StorageError;
+use num_bigint::BigInt;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -26,6 +27,7 @@ pub enum ColumnType {
     F32,
     F64,
     String,
+    BigInt,
     Json,
 }
 
@@ -48,6 +50,7 @@ pub enum ColumnValue {
     F32(f32),
     F64(f64),
     String(String),
+    BigInt(BigInt),
     Json(Value),
 }
 
@@ -66,15 +69,15 @@ pub struct Column {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct UniqueColumns {
-    #[builder(setter(into))]
-    pub unique_name: String,
+    #[builder(default, setter(into, strip_option))]
+    pub unique_name: Option<String>,
     pub column_names: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct IndexColumns {
-    #[builder(setter(into))]
-    pub index_name: String,
+    #[builder(default, setter(into, strip_option))]
+    pub index_name: Option<String>,
     pub column_names: Vec<String>,
 }
 
@@ -185,6 +188,12 @@ impl From<&str> for ColumnValue {
     }
 }
 
+impl From<BigInt> for ColumnValue {
+    fn from(value: BigInt) -> Self {
+        ColumnValue::BigInt(value)
+    }
+}
+
 impl From<Value> for ColumnValue {
     fn from(value: Value) -> Self {
         ColumnValue::Json(value)
@@ -211,6 +220,7 @@ impl Display for ColumnType {
             ColumnType::F32 => Display::fmt("f32", f),
             ColumnType::F64 => Display::fmt("f64", f),
             ColumnType::String => Display::fmt("string", f),
+            ColumnType::BigInt => Display::fmt("bigint", f),
             ColumnType::Json => Display::fmt("json", f),
         }
     }
@@ -236,6 +246,7 @@ impl Display for ColumnValue {
             ColumnValue::F32(value) => Display::fmt(&value, f),
             ColumnValue::F64(value) => Display::fmt(&value, f),
             ColumnValue::String(value) => Display::fmt(&value, f),
+            ColumnValue::BigInt(value) => Display::fmt(&value, f),
             ColumnValue::Json(value) => Display::fmt(&value, f),
         }
     }
@@ -261,6 +272,7 @@ impl ColumnValue {
             ColumnValue::F32(_) => ColumnType::F32,
             ColumnValue::F64(_) => ColumnType::F64,
             ColumnValue::String(_) => ColumnType::String,
+            ColumnValue::BigInt(_) => ColumnType::BigInt,
             ColumnValue::Json(_) => ColumnType::Json,
         }
     }
@@ -431,6 +443,16 @@ impl ColumnValue {
             _ => Err(StorageError::WrongColumnTypeError(
                 self.column_type().to_string(),
                 ColumnType::String.to_string(),
+            )),
+        }
+    }
+
+    pub fn as_bigint(&self) -> Result<BigInt> {
+        match self {
+            ColumnValue::BigInt(value) => Ok(value.clone()),
+            _ => Err(StorageError::WrongColumnTypeError(
+                self.column_type().to_string(),
+                ColumnType::BigInt.to_string(),
             )),
         }
     }

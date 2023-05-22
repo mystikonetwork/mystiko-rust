@@ -1,19 +1,16 @@
-use mystiko_database::collection::transaction::TransactionCollection;
-use mystiko_database::document::transaction::{
-    Transaction, ASSET_SYMBOL_FIELD_NAME, SHIELDED_ADDRESS_FIELD_NAME, SIGNATURE_PUBLIC_KEY_FIELD_NAME,
-};
+use mystiko_database::document::transaction::{Transaction, TransactionCollection, TransactionColumn};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigInt;
 use std::sync::Arc;
 
-async fn create_transactions() -> TransactionCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
+async fn create_transactions() -> TransactionCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let transactions = TransactionCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
+    let transactions = TransactionCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
     transactions.migrate().await.unwrap();
     assert!(transactions.collection_exists().await.unwrap());
     transactions
@@ -129,9 +126,9 @@ async fn test_transactions_crud() {
     assert_eq!(transactions.count_all().await.unwrap(), 3);
     assert_eq!(
         transactions
-            .count(SubFilter::Equal(
-                SIGNATURE_PUBLIC_KEY_FIELD_NAME.into(),
-                "signature_public_key 2".to_string()
+            .count(SubFilter::equal(
+                &TransactionColumn::SignaturePublicKey,
+                "signature_public_key 2"
             ))
             .await
             .unwrap(),
@@ -153,10 +150,7 @@ async fn test_transactions_crud() {
         .unwrap();
     assert_eq!(found_transactions, inserted_transactions[1..]);
     let mut found_transaction = transactions
-        .find_one(SubFilter::Equal(
-            ASSET_SYMBOL_FIELD_NAME.into(),
-            String::from("asset_symbol 2"),
-        ))
+        .find_one(SubFilter::equal(&TransactionColumn::AssetSymbol, "asset_symbol 2"))
         .await
         .unwrap()
         .unwrap();
@@ -191,9 +185,9 @@ async fn test_transactions_crud() {
     transactions.insert(&inserted_transactions[0].data).await.unwrap();
     assert_eq!(transactions.count_all().await.unwrap(), 2);
     transactions
-        .delete_by_filter(SubFilter::Equal(
-            SHIELDED_ADDRESS_FIELD_NAME.into(),
-            String::from("shielded_address 1"),
+        .delete_by_filter(SubFilter::equal(
+            &TransactionColumn::ShieldedAddress,
+            "shielded_address 1",
         ))
         .await
         .unwrap();

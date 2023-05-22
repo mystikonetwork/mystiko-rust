@@ -1,3 +1,4 @@
+use num_bigint::ParseBigIntError;
 use std::num::ParseIntError;
 use thiserror::Error;
 
@@ -17,4 +18,6 @@ pub enum StorageError {
     MissingDataError(String),
     #[error(transparent)]
     ParseIntError(#[from] ParseIntError),
+    #[error(transparent)]
+    ParseBigIntError(#[from] ParseBigIntError),
 }
