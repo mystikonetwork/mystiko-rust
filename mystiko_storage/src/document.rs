@@ -148,11 +148,7 @@ impl<T: DocumentData> Document<T> {
     pub fn initial_migrations() -> Vec<Migration> {
         Self::migrations()
             .into_iter()
-            .filter(|migration| match migration {
-                Migration::CreateCollection(_) => true,
-                Migration::AddIndex(_) => true,
-                _ => false,
-            })
+            .filter(|migration| matches!(migration, Migration::CreateCollection(_)))
             .collect()
     }
 }
