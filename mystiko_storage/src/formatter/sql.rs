@@ -358,7 +358,7 @@ fn format_create_collection_migration(migration: &CreateCollectionMigration) -> 
     columns_sql.extend(unique_columns_sql);
     let mut statements: Vec<Statement> = vec![Statement::new(
         format!(
-            "CREATE TABLE `{}` ({})",
+            "CREATE TABLE IF NOT EXISTS `{}` ({})",
             migration.collection_name,
             columns_sql.join(", ")
         ),
