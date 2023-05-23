@@ -13,7 +13,7 @@ async fn create_chain_config() -> ChainConfig {
     let raw_config = create_raw_from_file::<RawChainConfig>(VALID_CHAIN_CONFIG_FILE)
         .await
         .unwrap();
-    let config = ChainConfig::new(Arc::new(raw_config)).unwrap();
+    let config = ChainConfig::new(Arc::new(raw_config));
     config.validate().unwrap();
     config
 }

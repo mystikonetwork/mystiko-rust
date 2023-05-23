@@ -1,0 +1,17 @@
+[package]
+name = "mystiko_relayer_types"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.152", features = ["derive", "rc"] }
+serde_json = { version = "1.0.91" }
+typed-builder = { version = "0.14.0" }
+mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
+mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
+mystiko_validator = { version = "0.1.0", path = "../mystiko_validator" }
+actix-web = { version = "4", default-features = false }
+validator = { version = "0.16.0", features = ["derive"] }
+num-bigint = { version = "0.4", features = ["serde"] }
