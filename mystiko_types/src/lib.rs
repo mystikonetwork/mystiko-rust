@@ -1,4 +1,3 @@
-extern crate serde;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone, Default)]
@@ -100,6 +99,13 @@ pub enum TransactionStatus {
 pub enum TransactionType {
     Transfer,
     Withdraw,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum NetworkType {
+    Testnet,
+    Mainnet,
 }
 
 impl CircuitType {
