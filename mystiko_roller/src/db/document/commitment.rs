@@ -3,6 +3,7 @@ use anyhow::Result;
 use mystiko_storage::document::{DocumentData, DocumentRawData, DocumentSchema};
 use mystiko_storage::error::StorageError;
 use num_bigint::BigInt;
+use serde::{Deserialize, Serialize};
 
 pub static COMMITMENT_INFO_SCHEMA: DocumentSchema = DocumentSchema {
     collection_name: "commitment_info",
@@ -32,7 +33,7 @@ pub static COMMITMENT_INFO_SCHEMA: DocumentSchema = DocumentSchema {
     ],
 };
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct CommitmentInfo {
     pub chain_id: u64,
     pub contract_address: String,

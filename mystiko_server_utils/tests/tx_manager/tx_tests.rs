@@ -21,7 +21,7 @@ async fn test_send_1559_tx() {
     let chain_id = provider.get_chainid().await.unwrap();
     let wallet: LocalWallet = anvil.keys().first().unwrap().clone().into();
     let wallet = wallet.with_chain_id(chain_id.as_u64());
-    let cfg = TxManagerConfig::default();
+    let cfg = TxManagerConfig::new("testnet", None).unwrap();
     let to = anvil.addresses()[1];
     let value = ethers_core::utils::parse_ether("1").unwrap();
 
@@ -68,7 +68,7 @@ async fn test_send_legacy_tx() {
     let wallet = wallet.with_chain_id(chain_id.as_u64());
 
     let force_chain = vec![chain_id];
-    let mut cfg = TxManagerConfig::default();
+    let mut cfg = TxManagerConfig::new("testnet", None).unwrap();
     cfg.force_gas_price_chains = force_chain;
 
     let to = anvil.addresses()[1];

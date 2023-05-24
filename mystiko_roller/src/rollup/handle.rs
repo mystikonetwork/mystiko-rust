@@ -1,7 +1,7 @@
-use crate::common::env::{load_roller_config_path, load_roller_private_key};
+use crate::common::env::load_roller_private_key;
 use crate::common::error::{Result, RollerError};
-use crate::config::config::{create_tx_manager_config, Rollup as RollupConfig};
-use crate::context::Context;
+use crate::config::settings::{create_tx_manager_config, RollupConfig};
+use crate::context::ContextTrait;
 use crate::core::slice::SlicePattern;
 use crate::data::data::{DataHandle, ProofInfo, RollupPlan};
 use ethers_core::types::{Address, Bytes, U256};
@@ -23,7 +23,7 @@ pub struct RollupHandle {
     pool_contract_cfg: PoolContractConfig,
     pool_contract: CommitmentPool<Provider>,
     cfg: RollupConfig,
-    context: Arc<Context>,
+    context: Arc<dyn ContextTrait>,
     data: Rc<RefCell<DataHandle>>,
     tx: TxManager<ProviderWrapper<Box<dyn JsonRpcClientWrapper>>>,
 }
@@ -31,17 +31,14 @@ pub struct RollupHandle {
 impl RollupHandle {
     pub async fn new(
         pool_contract_cfg: &PoolContractConfig,
-        context: Arc<Context>,
+        context: Arc<dyn ContextTrait>,
         data: Rc<RefCell<DataHandle>>,
     ) -> Self {
         let cfg = context.cfg().rollup.clone();
         let chain_id = context.cfg().chain.chain_id;
-
         let address = Address::from_str(pool_contract_cfg.address()).expect("invalid contract address");
-        let cfg_path = load_roller_config_path();
-        let tx_manager_cfg = create_tx_manager_config(&cfg_path)
-            .await
-            .expect("invalid tx manager config");
+
+        let tx_manager_cfg = create_tx_manager_config();
         let sk_str = load_roller_private_key().expect("load private key error");
         let local_wallet = LocalWallet::from_str(&sk_str)
             .expect("invalid private key")

@@ -24,7 +24,7 @@ fn instant_init(duration: u64) -> Instant {
 
 impl TokenPrice {
     pub fn new(cfg: &TokenPriceConfig, api_key: &str) -> Result<Self, TokenPriceError> {
-        let instance = QueryApiInstance::new(&api_key, cfg.base_url.clone(), cfg.query_timeout_secs)?;
+        let instance = QueryApiInstance::new(api_key, cfg.base_url.clone(), cfg.query_timeout_secs)?;
         Ok(TokenPrice {
             ids: cfg.ids(),
             record_time: instant_init(cfg.price_cache_ttl),

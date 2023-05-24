@@ -2,6 +2,8 @@ use ethers_providers::ProviderError;
 use serde_json::Error as SerdeJsonError;
 use thiserror::Error;
 
+pub type Result<T> = anyhow::Result<T, TxManagerError>;
+
 #[derive(Error, Debug)]
 pub enum TxManagerError {
     #[error("read file error {0}")]

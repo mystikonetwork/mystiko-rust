@@ -20,7 +20,7 @@ async fn test_get_token_id() {
     let server = Server::run();
     server.expect(Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map")).respond_with(resp_json));
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", None).unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
@@ -35,7 +35,7 @@ async fn test_get_token_id_error() {
     server.expect(
         Expectation::matching(request::method_path("GET", "/v1/cryptocurrency/map")).respond_with(status_code(401)),
     );
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", None).unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
@@ -74,7 +74,7 @@ async fn test_price() {
         Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", None).unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
@@ -91,7 +91,7 @@ async fn test_price_error() {
             .respond_with(status_code(401)),
     );
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", None).unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
@@ -134,7 +134,7 @@ async fn test_swap() {
         Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", None).unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 
@@ -148,7 +148,7 @@ async fn test_swap() {
 
     let amount_a = U256::from(10);
     let amount_b = tp.swap("USDT", 6, amount_a, "USDT", 6).await.unwrap();
-    assert_eq!(amount_b, U256::from(0));
+    assert_eq!(amount_b, U256::from(10));
 
     let amount = ethers_core::utils::parse_ether(10).unwrap();
     for i in 0..12 {
@@ -171,7 +171,7 @@ async fn test_internal_error() {
         Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
     );
 
-    let mut default_cfg = TokenPriceConfig::default();
+    let mut default_cfg = TokenPriceConfig::new("testnet", None).unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
 

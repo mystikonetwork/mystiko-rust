@@ -1,6 +1,5 @@
 use crate::tx_manager::config::TxManagerConfig;
-use crate::tx_manager::error::TxManagerError;
-use anyhow::Result;
+use crate::tx_manager::error::{Result, TxManagerError};
 use ethers_core::types::transaction::eip1559::Eip1559TransactionRequest;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::transaction::request::TransactionRequest;
@@ -73,7 +72,7 @@ impl<P> TxManager<P>
 where
     P: JsonRpcClient + Send + Sync,
 {
-    pub async fn gas_price(&self, provider: &Provider<P>) -> Result<U256, TxManagerError> {
+    pub async fn gas_price(&self, provider: &Provider<P>) -> Result<U256> {
         let gas_oracle = ProviderOracle::new(provider);
 
         if self.is_1559_tx {
@@ -90,7 +89,7 @@ where
         }
     }
 
-    async fn do_estimate_gas(&mut self, gas_price: &U256, provider: &Provider<P>) -> Result<U256, TxManagerError> {
+    async fn do_estimate_gas(&mut self, gas_price: &U256, provider: &Provider<P>) -> Result<U256> {
         let typed_tx = match self.is_1559_tx {
             true => {
                 let tx = self.build_1559_tx(gas_price, provider).await?;
@@ -109,12 +108,7 @@ where
             .map_err(|why| TxManagerError::EstimateGasError(why.to_string()))
     }
 
-    pub async fn estimate_gas(
-        &mut self,
-        data: &[u8],
-        value: U256,
-        provider: &Provider<P>,
-    ) -> Result<U256, TxManagerError> {
+    pub async fn estimate_gas(&mut self, data: &[u8], value: U256, provider: &Provider<P>) -> Result<U256> {
         self.data = data.to_vec();
         self.value = value;
 
@@ -131,7 +125,7 @@ where
         value: U256,
         max_gas_price: Option<U256>,
         provider: &Provider<P>,
-    ) -> Result<TxHash, TxManagerError> {
+    ) -> Result<TxHash> {
         self.max_gas_price = max_gas_price;
         self.data = data.to_vec();
         self.value = value;
@@ -151,7 +145,7 @@ where
 
         let mut gas_limit = self.do_estimate_gas(gas_price, provider).await?;
         gas_limit = gas_limit.mul(100 + self.config.gas_limit_reserve_percentage).div(100);
-        // let gas_limit = U256::from(400000);
+
         if self.is_1559_tx {
             self.send_1559_tx(&max_gas_price, &gas_limit, provider).await
         } else {
@@ -159,7 +153,7 @@ where
         }
     }
 
-    pub async fn confirm(&self, provider: &Provider<P>) -> Result<TransactionReceipt, TxManagerError> {
+    pub async fn confirm(&self, provider: &Provider<P>) -> Result<TransactionReceipt> {
         let tx_hash = match self.tx_hash {
             Some(hash) => H256::from_slice(hash.as_bytes()),
             None => return Err(TxManagerError::ConfirmTxError("tx hash none".into())),
@@ -190,11 +184,7 @@ where
         Err(TxManagerError::ConfirmTxError("reach max confirm count".into()))
     }
 
-    async fn build_legacy_tx(
-        &self,
-        gas_price: &U256,
-        provider: &Provider<P>,
-    ) -> Result<TransactionRequest, TxManagerError> {
+    async fn build_legacy_tx(&self, gas_price: &U256, provider: &Provider<P>) -> Result<TransactionRequest> {
         let curr_nonce = self.get_current_nonce(provider).await?;
 
         Ok(TransactionRequest::new()
@@ -206,16 +196,11 @@ where
             .gas_price(*gas_price))
     }
 
-    async fn send_legacy_tx(
-        &mut self,
-        gas_price: &U256,
-        gas_limit: &U256,
-        provider: &Provider<P>,
-    ) -> Result<TxHash, TxManagerError> {
+    async fn send_legacy_tx(&mut self, gas_price: &U256, gas_limit: &U256, provider: &Provider<P>) -> Result<TxHash> {
         // Create the transaction
         let mut tx = self.build_legacy_tx(gas_price, provider).await?;
         tx.gas = Some(*gas_limit);
-        let signer = SignerMiddleware::new(provider.clone(), self.wallet.clone());
+        let signer = SignerMiddleware::new(provider, self.wallet.clone());
 
         // todo support gas escalator
         // let geometric_escalator = GeometricGasPrice::new(
@@ -243,11 +228,7 @@ where
         Ok(pending_tx.tx_hash())
     }
 
-    async fn build_1559_tx(
-        &self,
-        max_gas_price: &U256,
-        provider: &Provider<P>,
-    ) -> Result<Eip1559TransactionRequest, TxManagerError> {
+    async fn build_1559_tx(&self, max_gas_price: &U256, provider: &Provider<P>) -> Result<Eip1559TransactionRequest> {
         let curr_nonce = self.get_current_nonce(provider).await?;
 
         Ok(Eip1559TransactionRequest::new()
@@ -260,12 +241,7 @@ where
             .max_priority_fee_per_gas(self.config.max_priority_fee_per_gas))
     }
 
-    async fn send_1559_tx(
-        &mut self,
-        max_gas_price: &U256,
-        gas_limit: &U256,
-        provider: &Provider<P>,
-    ) -> Result<TxHash, TxManagerError> {
+    async fn send_1559_tx(&mut self, max_gas_price: &U256, gas_limit: &U256, provider: &Provider<P>) -> Result<TxHash> {
         // Create the transaction
         let mut tx = self.build_1559_tx(max_gas_price, provider).await?;
         tx.gas = Some(*gas_limit);
@@ -292,7 +268,7 @@ where
         }
     }
 
-    async fn get_current_nonce(&self, provider: &Provider<P>) -> Result<U256, TxManagerError> {
+    async fn get_current_nonce(&self, provider: &Provider<P>) -> Result<U256> {
         let nonce_manager = NonceManagerMiddleware::new(provider, self.wallet.address());
         nonce_manager
             .get_transaction_count(self.wallet.address(), Some(BlockNumber::Pending.into()))

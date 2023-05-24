@@ -1,17 +1,14 @@
 use crate::common::error::{Result, RollerError};
-use crate::config::config::Pull as PullConfig;
-use crate::context::Context;
+use crate::config::settings::PullConfig;
+use crate::context::ContextTrait;
 use crate::data::data::DataHandle;
 use crate::db::document::commitment::CommitmentInfo;
-use ethers_core::types::{Address, BlockNumber, U64};
+use crate::instance::contract::commitment::CommitmentContractInstance;
 use ethers_providers::Middleware;
 use log::error;
-use mystiko_abi::commitment_pool::CommitmentPool;
-use mystiko_utils::convert::u256_to_big_int;
 use num_bigint::BigInt;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::str::FromStr;
 use std::sync::Arc;
 use tracing::debug;
 
@@ -19,12 +16,12 @@ pub struct PullHandle {
     chain_id: u64,
     contract_address: String,
     cfg: PullConfig,
-    context: Arc<Context>,
+    context: Arc<dyn ContextTrait>,
     data: Rc<RefCell<DataHandle>>,
 }
 
 impl PullHandle {
-    pub fn new(contract_address: &str, context: Arc<Context>, data: Rc<RefCell<DataHandle>>) -> Self {
+    pub fn new(contract_address: &str, context: Arc<dyn ContextTrait>, data: Rc<RefCell<DataHandle>>) -> Self {
         let cfg = context.cfg().pull.clone();
         PullHandle {
             chain_id: context.cfg().chain.chain_id,
@@ -38,39 +35,16 @@ impl PullHandle {
     async fn pull_from_provider(&self) -> Result<()> {
         debug!("pull from provider");
 
-        let provider = self.context.providers().await.check_provider(self.chain_id)?;
+        let provider = self.context.provider().await?;
         let latest_block = provider.get_block_number().await?.as_u64();
 
         let batch = self.cfg.batch_block_from_provider as usize;
         let mut data_handle = self.data.borrow_mut();
-        let address = Address::from_str(&self.contract_address).expect("invalid contract address");
-        let pool_contract = CommitmentPool::new(address, provider);
+        let pool_contract = CommitmentContractInstance::new(self.chain_id, &self.contract_address, provider);
 
         for start in (data_handle.get_next_sync_block() + 1..=latest_block).step_by(batch) {
             let end = std::cmp::min(start + batch as u64 - 1, latest_block);
-            let event = pool_contract
-                .commitment_queued_filter()
-                .from_block(BlockNumber::Number(U64::from(start)))
-                .to_block(BlockNumber::Number(U64::from(end)));
-            let cms = event
-                .query()
-                .await
-                .map_err(|e| RollerError::ContractCallError(e.to_string()))?;
-
-            let info_cms = cms
-                .iter()
-                .map(|cm| {
-                    Ok(CommitmentInfo {
-                        chain_id: self.chain_id,
-                        contract_address: self.contract_address.clone(),
-                        commitment_hash: u256_to_big_int(&cm.commitment),
-                        block_number: end,
-                        rollup_fee: cm.rollup_fee.to_string(),
-                        leaf_index: cm.leaf_index.as_u32(),
-                        tx_hash: "".to_string(),
-                    })
-                })
-                .collect::<Result<Vec<CommitmentInfo>>>()?;
+            let info_cms = pool_contract.query_queued_commitments(start, end).await?;
             data_handle.insert_commitments(info_cms).await;
         }
 

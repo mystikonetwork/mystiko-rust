@@ -1,6 +1,6 @@
 use crate::common::env::load_roller_circuits_path;
 use crate::common::error::Result;
-use crate::context::Context;
+use crate::context::ContextTrait;
 use crate::data::calc::calc_rollup_size_array;
 use crate::db::document::commitment::CommitmentInfo;
 use ethers_core::types::U256;
@@ -9,6 +9,10 @@ use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_fs::read_file_bytes;
 use mystiko_protocol::rollup::{Rollup, RollupProof};
 use num_bigint::BigInt;
+use serde::Serialize;
+use serde_json::json;
+use std::fs::{File, OpenOptions};
+use std::io::Write;
 use std::sync::Arc;
 use tracing::{debug, error, info};
 
@@ -32,14 +36,14 @@ pub struct ProofInfo {
 pub struct DataHandle {
     chain_id: u64,
     pool_contract: PoolContractConfig,
-    context: Arc<Context>,
+    context: Arc<dyn ContextTrait>,
     next_sync_block: u64,
     commitments: Vec<CommitmentData>,
     tree: Option<MerkleTree>,
 }
 
 impl DataHandle {
-    pub async fn new(pool_contract: &PoolContractConfig, context: Arc<Context>) -> Self {
+    pub async fn new(pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait>) -> Self {
         let chain_id = context.cfg().chain.chain_id;
         DataHandle {
             chain_id,
@@ -64,7 +68,6 @@ impl DataHandle {
 
     fn push_commitment_in_queue(&mut self, cm: &CommitmentInfo) {
         let cm_data = build_commitment_data(cm);
-
         if self.commitments.len() as u32 != cm.leaf_index {
             error!(
                 "commitment leaf index mismatch, queue: {:?}, input: {:?}",

@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0" }
 async-trait = { version = "0.1.64" }
+config = { version = "0.13.3" }
 ethers-core  = { version = "2.0.4" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
 ethers-signers = { version = "2.0.4"}

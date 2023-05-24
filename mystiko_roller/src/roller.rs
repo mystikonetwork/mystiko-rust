@@ -1,4 +1,5 @@
 use crate::context::Context;
+use crate::context::ContextTrait;
 use crate::pool::Pool;
 use anyhow::Result;
 use std::sync::Arc;
@@ -11,7 +12,7 @@ pub struct Roller {
 
 impl Roller {
     pub async fn new() -> Result<Roller> {
-        let context = Context::new().await;
+        let context = Context::new().await?;
         Ok(Roller {
             context: Arc::new(context),
         })

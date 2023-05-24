@@ -1,8 +1,9 @@
 {
-  "url": "https://pro-api.coinmarketcap.com",
+  "base_url": "https://pro-api.coinmarketcap.com",
   "query_timeout_secs": 5,
-  "priceCacheTTL": 1800,
-  "coinMarketCapIds": {
+  "price_cache_ttl": 1800,
+  "swap_precision": 3,
+  "coin_market_cap_ids": {
     "ETH": 1027,
     "mETH": 1027,
     "BNB": 1839,

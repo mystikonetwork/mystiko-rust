@@ -8,12 +8,14 @@ use tracing::debug;
 pub struct IndexerInstance {
     client: IndexerClient,
 }
+
 impl IndexerInstance {
     pub fn new(cfg: &IndexerConfig) -> Self {
         let client = IndexerClient::builder(cfg.url())
             .timeout(Duration::from_millis(cfg.timeout_ms()))
             .build()
-            .unwrap();
+            .unwrap_or_else(|e| panic!("failed to create indexer client: {}", e));
+
         IndexerInstance { client }
     }
 

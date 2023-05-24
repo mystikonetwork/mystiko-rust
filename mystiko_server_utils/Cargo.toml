@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0" }
+config = { version = "0.13.3" }
 ethers-core = { version = "2.0.4" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
 ethers-signers = { version = "2.0.4"}
@@ -21,10 +22,8 @@ generic-array = { version = "0.14.6" }
 dotenv = { version = "0.15.0" }
 tokio = { version = "1.26.0", features = ["time"] }
 
-# mystiko
-mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
-
 [dev-dependencies]
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
 rand = { version = "0.8.5" }
 httptest= { version = "0.15.4" }
+mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }

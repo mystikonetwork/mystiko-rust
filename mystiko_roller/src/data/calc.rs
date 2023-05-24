@@ -1,3 +1,5 @@
+const MAX_ROLLUP_SIZE: usize = 16;
+
 fn calc_rollup_size(included: usize, queued: usize) -> usize {
     match () {
         _ if queued >= 16 && included % 16 == 0 => 16,
@@ -7,22 +9,27 @@ fn calc_rollup_size(included: usize, queued: usize) -> usize {
         _ => 1,
     }
 }
+
 pub fn calc_rollup_size_array(included: usize, queued: usize) -> Vec<usize> {
     let mut rollup_array = Vec::new();
+    if queued == 0 {
+        return rollup_array;
+    }
+
     let mut included_count = included;
     let mut queued_count = queued;
     let mut rollup_size = 0;
 
     loop {
         let new_rollup_size = calc_rollup_size(included_count, queued_count);
-        if new_rollup_size == rollup_size {
+        if new_rollup_size < rollup_size || (new_rollup_size == rollup_size && new_rollup_size < MAX_ROLLUP_SIZE) {
             break;
         }
 
         rollup_size = new_rollup_size;
         rollup_array.push(rollup_size);
 
-        if rollup_size >= 16 || queued_count < 2 * rollup_size {
+        if queued_count < rollup_size {
             break;
         }
 

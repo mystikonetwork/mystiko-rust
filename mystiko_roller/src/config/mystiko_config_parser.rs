@@ -1,3 +1,4 @@
+use crate::config::settings::{create_mystiko_config, CoreConfig};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_providers::Quorum;
@@ -10,21 +11,21 @@ use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_ethers::provider::types::ProviderOptions;
 use mystiko_ethers::provider::types::QuorumProviderOptions;
 use mystiko_types::ProviderType;
-use std::sync::Arc;
 use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub struct MystikoConfigParser {
-    config: Arc<MystikoConfig>,
+    cfg: MystikoConfig,
 }
 
 impl MystikoConfigParser {
-    pub fn new(config: Arc<MystikoConfig>) -> Self {
-        MystikoConfigParser { config }
+    pub async fn new(core_cfg: &CoreConfig) -> Self {
+        let cfg = create_mystiko_config(core_cfg).await;
+        MystikoConfigParser { cfg }
     }
 
     pub fn pool_contracts(&self, chain_id: u64) -> Vec<PoolContractConfig> {
-        self.config
+        self.cfg
             .find_chain(chain_id)
             .expect("can not find the chain")
             .pool_contracts()
@@ -34,20 +35,20 @@ impl MystikoConfigParser {
     }
 
     pub fn indexer_cfg(&self) -> Option<&IndexerConfig> {
-        self.config.indexer()
+        self.cfg.indexer()
     }
 
     pub fn xscan_cfg(&self, chain_id: u64) -> Option<&str> {
-        let chain = self.config.find_chain(chain_id).unwrap();
+        let chain = self.cfg.find_chain(chain_id).unwrap();
         Some(chain.explorer_api_url())
     }
 
     pub fn chain(&self, chain_id: u64) -> &ChainConfig {
-        self.config.find_chain(chain_id).expect("can not find the chain")
+        self.cfg.find_chain(chain_id).expect("can not find the chain")
     }
 
     pub fn sign_endpoint(&self, chain_id: u64) -> &str {
-        let chain = self.config.find_chain(chain_id).expect("can not find the chain");
+        let chain = self.cfg.find_chain(chain_id).expect("can not find the chain");
         chain.signer_endpoint()
     }
 }
@@ -55,7 +56,7 @@ impl MystikoConfigParser {
 #[async_trait]
 impl ChainProvidersOptions for MystikoConfigParser {
     async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>> {
-        if let Some(chain_config) = self.config.find_chain(chain_id) {
+        if let Some(chain_config) = self.cfg.find_chain(chain_id) {
             let mut providers_options: Vec<ProviderOptions> = vec![];
             for provider_config in chain_config.providers() {
                 let provider_options = ProviderOptions::builder()

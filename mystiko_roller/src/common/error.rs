@@ -1,5 +1,6 @@
 use anyhow::Error as AnyhowError;
 use ethers_providers::ProviderError;
+use mehcode_config::ConfigError;
 use mystiko_server_utils::token_price::error::TokenPriceError;
 use mystiko_server_utils::tx_manager::error::TxManagerError;
 use mystiko_storage::error::StorageError;
@@ -10,8 +11,8 @@ pub type Result<T> = anyhow::Result<T, RollerError>;
 
 #[derive(Error, Debug)]
 pub enum RollerError {
-    #[error("read file error {0}")]
-    FileError(String),
+    #[error(transparent)]
+    ConfigError(#[from] ConfigError),
     #[error(transparent)]
     SerdeJsonError(#[from] SerdeJsonError),
     #[error("log level error {0}")]
@@ -22,9 +23,9 @@ pub enum RollerError {
     EnvNotConfig(String),
     #[error("commitment queue slow")]
     CommitmentQueueSlow,
-    #[error("no provider")]
-    NoProvider,
-    #[error("no provider")]
+    #[error("provider not exist {0}")]
+    NoProvider(String),
+    #[error("indexer not exist")]
     NoIndexer,
     #[error("invalid commitment hash")]
     InvalidCommitmentHash,
@@ -50,13 +51,13 @@ impl PartialEq for RollerError {
     fn eq(&self, other: &Self) -> bool {
         matches!(
             (self, other),
-            (Self::FileError(_), Self::FileError(_))
+            (Self::ConfigError(_), Self::ConfigError(_))
                 | (Self::SerdeJsonError(_), Self::SerdeJsonError(_))
                 | (Self::InitLogError(_), Self::InitLogError(_))
                 | (Self::LoadConfigError(_), Self::LoadConfigError(_))
                 | (Self::EnvNotConfig(_), Self::EnvNotConfig(_))
                 | (Self::CommitmentQueueSlow, Self::CommitmentQueueSlow)
-                | (Self::NoProvider, Self::NoProvider)
+                | (Self::NoProvider(_), Self::NoProvider(_))
                 | (Self::NoIndexer, Self::NoIndexer)
                 | (Self::InvalidCommitmentHash, Self::InvalidCommitmentHash)
                 | (Self::ProviderError(_), Self::ProviderError(_))

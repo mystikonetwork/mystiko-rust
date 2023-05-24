@@ -1,4 +1,4 @@
-use crate::context::Context;
+use crate::context::ContextTrait;
 use crate::data::data::DataHandle;
 use crate::pull::handle::PullHandle;
 use crate::rollup::handle::RollupHandle;
@@ -10,14 +10,14 @@ use tokio::time::{self, Duration};
 use tracing::{error, info};
 
 pub struct Pool {
-    context: Arc<Context>,
+    context: Arc<dyn ContextTrait>,
     data: Rc<RefCell<DataHandle>>,
     pull: PullHandle,
     rollup: RollupHandle,
 }
 
 impl Pool {
-    pub async fn new(pool_contract: &PoolContractConfig, context: Arc<Context>) -> Pool {
+    pub async fn new(pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait>) -> Pool {
         let data = DataHandle::new(pool_contract, Arc::clone(&context)).await;
         let data_rc = Rc::new(RefCell::new(data));
         let pull = PullHandle::new(pool_contract.address(), Arc::clone(&context), Rc::clone(&data_rc));
