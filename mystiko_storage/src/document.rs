@@ -20,15 +20,15 @@ pub trait DocumentData: Send + Sync + Clone + Debug + PartialEq {
         vec![]
     }
     fn version() -> usize {
-        Self::migrations().len() + 1
+        Self::migrations().len()
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Document<T: DocumentData> {
     pub id: String,
-    pub created_at: u64,
-    pub updated_at: u64,
+    pub created_at: i64,
+    pub updated_at: i64,
     pub data: T,
 }
 
@@ -65,8 +65,8 @@ impl<T: DocumentData> DocumentData for Document<T> {
     fn create(column_values: &[(String, ColumnValue)]) -> Result<Self> {
         Ok(Self {
             id: find_required_column_value(&DocumentColumn::Id, column_values)?.as_string()?,
-            created_at: find_required_column_value(&DocumentColumn::CreatedAt, column_values)?.as_u64()?,
-            updated_at: find_required_column_value(&DocumentColumn::UpdatedAt, column_values)?.as_u64()?,
+            created_at: find_required_column_value(&DocumentColumn::CreatedAt, column_values)?.as_i64()?,
+            updated_at: find_required_column_value(&DocumentColumn::UpdatedAt, column_values)?.as_i64()?,
             data: T::create(column_values)?,
         })
     }
@@ -91,10 +91,13 @@ impl<T: DocumentData> DocumentData for Document<T> {
         T::unique_columns()
     }
 
+    fn index_columns() -> Vec<IndexColumns> {
+        T::index_columns()
+    }
+
     fn migrations() -> Vec<Migration> {
         let mut migrations: Vec<Migration> = vec![Migration::CreateCollection(
             CreateCollectionMigration::builder()
-                .collection_name(Self::collection_name())
                 .columns(Self::columns())
                 .unique_columns(Self::unique_columns())
                 .index_columns(Self::index_columns())
@@ -106,7 +109,7 @@ impl<T: DocumentData> DocumentData for Document<T> {
 }
 
 impl<T: DocumentData> Document<T> {
-    pub fn new(id: String, created_at: u64, updated_at: u64, data: T) -> Self {
+    pub fn new(id: String, created_at: i64, updated_at: i64, data: T) -> Self {
         Self {
             id,
             created_at,
@@ -125,11 +128,11 @@ impl<T: DocumentData> Document<T> {
                 .build(),
             Column::builder()
                 .column_name(DocumentColumn::CreatedAt)
-                .column_type(ColumnType::U64)
+                .column_type(ColumnType::I64)
                 .build(),
             Column::builder()
                 .column_name(DocumentColumn::UpdatedAt)
-                .column_type(ColumnType::U64)
+                .column_type(ColumnType::I64)
                 .build(),
         ]
     }

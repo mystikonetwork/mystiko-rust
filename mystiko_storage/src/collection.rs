@@ -73,7 +73,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
     }
 
     pub async fn find_by_id<D: DocumentData>(&self, id: &str) -> Result<Option<Document<D>>, StorageError> {
-        let query_filter = SubFilter::equal(&DocumentColumn::Id, String::from(id));
+        let query_filter = SubFilter::equal(DocumentColumn::Id, String::from(id));
         self.find_one(Some(query_filter)).await
     }
 
@@ -141,7 +141,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
     pub async fn migrate<D: DocumentData>(&self) -> Result<Document<MigrationHistory>, StorageError> {
         let collection_exists = self.collection_exists(MigrationHistory::collection_name()).await?;
         let existing: Option<Document<MigrationHistory>> = if collection_exists {
-            let query_filter = SubFilter::equal(&MigrationHistoryColumn::CollectionName, D::collection_name());
+            let query_filter = SubFilter::equal(MigrationHistoryColumn::CollectionName, D::collection_name());
             self.find_one(Some(query_filter)).await?
         } else {
             None
@@ -149,14 +149,14 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         match existing {
             Some(mut migration) => {
                 let current_version: usize = migration.data.version;
-                if current_version >= D::version() {
+                if current_version >= Document::<D>::version() {
                     Ok(migration)
                 } else {
                     let mut migration_statements: Vec<Statement> = self
                         .formatter
-                        .format_migration_batch(&Document::<D>::migrations()[current_version..]);
+                        .format_migration_batch::<D>(&Document::<D>::migrations()[current_version..]);
                     migration.updated_at = current_timestamp();
-                    migration.data.version = D::version();
+                    migration.data.version = Document::<D>::version();
                     migration_statements.push(self.formatter.format_update(&migration));
                     self.storage.execute_batch(migration_statements).await?;
                     Ok(migration)
@@ -165,14 +165,13 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
             None => {
                 let mut migration_statements = vec![];
                 if !collection_exists {
-                    migration_statements.extend(
-                        self.formatter
-                            .format_migration_batch(&Document::<MigrationHistory>::initial_migrations()),
-                    );
+                    migration_statements.extend(self.formatter.format_migration_batch::<MigrationHistory>(
+                        &Document::<MigrationHistory>::initial_migrations(),
+                    ));
                 }
                 migration_statements.extend(
                     self.formatter
-                        .format_migration_batch(&Document::<D>::initial_migrations()),
+                        .format_migration_batch::<D>(&Document::<D>::initial_migrations()),
                 );
                 let now = current_timestamp();
                 let migration: Document<MigrationHistory> = Document {
@@ -181,7 +180,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                     updated_at: now,
                     data: MigrationHistory {
                         collection_name: D::collection_name().to_string(),
-                        version: D::version(),
+                        version: Document::<D>::version(),
                     },
                 };
                 migration_statements.push(self.formatter.format_insert(&migration));
@@ -200,9 +199,9 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
     }
 }
 
-fn current_timestamp() -> u64 {
+fn current_timestamp() -> i64 {
     SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
-        .as_millis() as u64
+        .as_millis() as i64
 }

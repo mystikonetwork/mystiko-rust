@@ -103,7 +103,7 @@ async fn test_contract_find() {
     contracts.sort_by_key(|c| c.id.to_string());
 
     let filter = SubFilter::in_list(
-        &DocumentColumn::Id,
+        DocumentColumn::Id,
         vec![contracts[0].id.clone(), contracts[1].id.clone()],
     );
     let mut found_contracts = handler.find(filter).await.unwrap();
@@ -128,7 +128,7 @@ async fn test_contract_count() {
     let contracts = handler.initialize().await.unwrap();
     assert_eq!(contracts.len() as u64, handler.count_all().await.unwrap());
     let filter = SubFilter::in_list(
-        &DocumentColumn::Id,
+        DocumentColumn::Id,
         vec![contracts[0].id.clone(), contracts[1].id.clone()],
     );
     assert_eq!(handler.count(filter).await.unwrap(), 2);

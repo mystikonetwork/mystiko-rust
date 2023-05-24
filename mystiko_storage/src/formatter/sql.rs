@@ -4,7 +4,7 @@ use crate::filter::{Condition, ConditionOperator, Order, OrderBy, QueryFilter, S
 use crate::formatter::types::{CountStatement, Statement, StatementFormatter};
 use crate::migration::types::{
     AddColumnMigration, AddIndexMigration, CreateCollectionMigration, DropColumnMigration, Migration,
-    RenameCollectionMigration, RenameColumnMigration,
+    RenameColumnMigration,
 };
 use typed_builder::TypedBuilder;
 
@@ -197,14 +197,13 @@ impl StatementFormatter for SqlStatementFormatter {
         }
     }
 
-    fn format_migration(&self, migration: &Migration) -> Vec<Statement> {
+    fn format_migration<T: DocumentData>(&self, migration: &Migration) -> Vec<Statement> {
         match migration {
-            Migration::CreateCollection(migration) => format_create_collection_migration(migration),
-            Migration::AddIndex(migration) => vec![format_add_index_migration(migration)],
-            Migration::AddColumn(migration) => vec![format_add_column_migration(migration)],
-            Migration::DropColumn(migration) => vec![format_drop_column_migration(migration)],
-            Migration::RenameCollection(migration) => vec![format_rename_collection_migration(migration)],
-            Migration::RenameColumn(migration) => vec![format_rename_column_migration(migration)],
+            Migration::CreateCollection(migration) => format_create_collection_migration::<T>(migration),
+            Migration::AddIndex(migration) => vec![format_add_index_migration::<T>(migration)],
+            Migration::AddColumn(migration) => vec![format_add_column_migration::<T>(migration)],
+            Migration::DropColumn(migration) => vec![format_drop_column_migration::<T>(migration)],
+            Migration::RenameColumn(migration) => vec![format_rename_column_migration::<T>(migration)],
         }
     }
 }
@@ -235,7 +234,9 @@ impl SqlStatementFormatter {
                 column_values.extend(condition_statement.column_values);
             }
         }
-        statements.push(condition_statements.join(format_condition_operator(&filter.conditions_operator)));
+        if !condition_statements.is_empty() {
+            statements.push(condition_statements.join(format_condition_operator(&filter.conditions_operator)));
+        }
         if let Some(order_by) = &filter.order_by {
             if !order_by.columns.is_empty() {
                 statements.push(format_order_by(order_by));
@@ -257,14 +258,11 @@ impl SqlStatementFormatter {
             .map(|sub_filter| self.format_sub_filter(sub_filter))
             .collect::<Vec<Statement>>();
         Statement::new(
-            format!(
-                "({})",
-                sub_filter_statements
-                    .iter()
-                    .map(|statement| statement.statement.clone())
-                    .collect::<Vec<String>>()
-                    .join(format_condition_operator(&condition.operator))
-            ),
+            sub_filter_statements
+                .iter()
+                .map(|statement| statement.statement.clone())
+                .collect::<Vec<String>>()
+                .join(format_condition_operator(&condition.operator)),
             sub_filter_statements
                 .into_iter()
                 .flat_map(|statement| statement.column_values)
@@ -334,7 +332,7 @@ fn format_order_by(order_by: &OrderBy) -> String {
     format!("ORDER BY {} {}", column_names.join(", "), order)
 }
 
-fn format_create_collection_migration(migration: &CreateCollectionMigration) -> Vec<Statement> {
+fn format_create_collection_migration<T: DocumentData>(migration: &CreateCollectionMigration) -> Vec<Statement> {
     let mut columns_sql: Vec<String> = Vec::new();
     for column in migration.columns.iter() {
         columns_sql.push(format_column_sql(column));
@@ -348,10 +346,10 @@ fn format_create_collection_migration(migration: &CreateCollectionMigration) -> 
             .collect::<Vec<String>>();
         unique_columns_sql.push(format!(
             "CONSTRAINT `{}` UNIQUE ({})",
-            unique_columns.unique_name.clone().unwrap_or(default_unique_name(
-                &migration.collection_name,
-                &unique_columns.column_names
-            )),
+            unique_columns
+                .unique_name
+                .clone()
+                .unwrap_or(default_unique_name(T::collection_name(), &unique_columns.column_names)),
             unique_columns_names.join(", ")
         ));
     }
@@ -359,19 +357,20 @@ fn format_create_collection_migration(migration: &CreateCollectionMigration) -> 
     let mut statements: Vec<Statement> = vec![Statement::new(
         format!(
             "CREATE TABLE IF NOT EXISTS `{}` ({})",
-            migration.collection_name,
+            T::collection_name(),
             columns_sql.join(", ")
         ),
         vec![],
     )];
     for index_columns in migration.index_columns.iter() {
-        statements.push(format_add_index_migration(
+        statements.push(format_add_index_migration::<T>(
             &AddIndexMigration::builder()
-                .collection_name(migration.collection_name.clone())
-                .index_name(index_columns.index_name.clone().unwrap_or(default_index_name(
-                    &migration.collection_name,
-                    &index_columns.column_names,
-                )))
+                .index_name(
+                    index_columns
+                        .index_name
+                        .clone()
+                        .unwrap_or(default_index_name(T::collection_name(), &index_columns.column_names)),
+                )
                 .column_names(index_columns.column_names.clone())
                 .build(),
         ));
@@ -379,7 +378,7 @@ fn format_create_collection_migration(migration: &CreateCollectionMigration) -> 
     statements
 }
 
-fn format_add_index_migration(migration: &AddIndexMigration) -> Statement {
+fn format_add_index_migration<T: DocumentData>(migration: &AddIndexMigration) -> Statement {
     let index_columns = migration
         .column_names
         .iter()
@@ -391,50 +390,43 @@ fn format_add_index_migration(migration: &AddIndexMigration) -> Statement {
             migration
                 .index_name
                 .clone()
-                .unwrap_or(default_index_name(&migration.collection_name, &migration.column_names)),
-            migration.collection_name,
+                .unwrap_or(default_index_name(T::collection_name(), &migration.column_names)),
+            T::collection_name(),
             index_columns.join(", ")
         ),
         vec![],
     )
 }
 
-fn format_add_column_migration(migration: &AddColumnMigration) -> Statement {
+fn format_add_column_migration<T: DocumentData>(migration: &AddColumnMigration) -> Statement {
     Statement::new(
         format!(
             "ALTER TABLE `{}` ADD COLUMN {}",
-            migration.collection_name,
+            T::collection_name(),
             format_column_sql(&migration.column)
         ),
         vec![],
     )
 }
 
-fn format_drop_column_migration(migration: &DropColumnMigration) -> Statement {
+fn format_drop_column_migration<T: DocumentData>(migration: &DropColumnMigration) -> Statement {
     Statement::new(
         format!(
             "ALTER TABLE `{}` DROP COLUMN `{}`",
-            migration.collection_name, migration.column_name
+            T::collection_name(),
+            migration.column_name
         ),
         vec![],
     )
 }
 
-fn format_rename_collection_migration(migration: &RenameCollectionMigration) -> Statement {
-    Statement::new(
-        format!(
-            "ALTER TABLE `{}` RENAME TO `{}`",
-            migration.old_collection_name, migration.new_collection_name
-        ),
-        vec![],
-    )
-}
-
-fn format_rename_column_migration(migration: &RenameColumnMigration) -> Statement {
+fn format_rename_column_migration<T: DocumentData>(migration: &RenameColumnMigration) -> Statement {
     Statement::new(
         format!(
             "ALTER TABLE `{}` RENAME COLUMN `{}` TO `{}`",
-            migration.collection_name, migration.old_column_name, migration.new_column_name
+            T::collection_name(),
+            migration.old_column_name,
+            migration.new_column_name
         ),
         vec![],
     )

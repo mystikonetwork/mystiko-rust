@@ -38,8 +38,8 @@ where
 
     pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Vec<Document<Contract>>> {
         let filters: Vec<Condition> = vec![
-            SubFilter::equal(&ContractColumn::ChainId, chain_id).into(),
-            SubFilter::equal(&ContractColumn::Disabled, false).into(),
+            SubFilter::equal(ContractColumn::ChainId, chain_id).into(),
+            SubFilter::equal(ContractColumn::Disabled, false).into(),
         ];
         self.find(filters).await
     }
@@ -54,8 +54,8 @@ where
 
     pub async fn find_by_address(&self, chain_id: u64, address: &str) -> Result<Option<Document<Contract>>> {
         let filters: Vec<Condition> = vec![
-            SubFilter::equal(&ContractColumn::ChainId, chain_id).into(),
-            SubFilter::equal(&ContractColumn::ContractAddress, address).into(),
+            SubFilter::equal(ContractColumn::ChainId, chain_id).into(),
+            SubFilter::equal(ContractColumn::ContractAddress, address).into(),
         ];
         self.db
             .contracts

@@ -3106,10 +3106,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "mystiko_storage_macros",
+ "mystiko_storage_sqlite",
  "num-bigint 0.4.3",
  "serde",
  "serde_json",
  "thiserror",
+ "tokio",
  "typed-builder",
  "ulid",
 ]

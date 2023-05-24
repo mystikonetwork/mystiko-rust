@@ -1,5 +1,6 @@
 use mystiko_storage::column::{Column, ColumnValue, IndexColumns, UniqueColumns};
-use mystiko_storage::migration::types::{Migration, RenameCollectionMigration};
+use mystiko_storage::document::DocumentData;
+use mystiko_storage::migration::types::{Migration, RenameColumnMigration};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::{BigInt, BigUint};
 
@@ -96,9 +97,9 @@ fn indexes() -> Vec<IndexColumns> {
 }
 
 fn migrations() -> Vec<Migration> {
-    vec![RenameCollectionMigration::builder()
-        .old_collection_name(TestDocument::collection_name())
-        .new_collection_name("new_collection_name")
+    vec![RenameColumnMigration::builder()
+        .old_column_name(TestDocumentColumn::Field3)
+        .new_column_name("field3_new")
         .build()
         .into()]
 }

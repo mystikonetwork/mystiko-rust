@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 use mystiko_storage::column::{IndexColumns, UniqueColumns};
+use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::CommitmentStatus;
 use num_bigint::BigInt;

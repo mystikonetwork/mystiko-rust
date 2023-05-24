@@ -1,6 +1,7 @@
 use crate::column::ColumnValue;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum SubFilterOperator {
     IsNull,
     IsNotNull,
@@ -13,38 +14,39 @@ pub enum SubFilterOperator {
     BetweenAnd,
     In,
 }
-#[derive(Debug, Clone)]
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ConditionOperator {
     AND,
     OR,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Order {
     ASC,
     DESC,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SubFilter {
     pub operator: SubFilterOperator,
     pub column: String,
     pub values: Vec<ColumnValue>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Condition {
     pub operator: ConditionOperator,
     pub sub_filters: Vec<SubFilter>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OrderBy {
     pub columns: Vec<String>,
     pub order: Order,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QueryFilter {
     pub conditions: Vec<Condition>,
     pub conditions_operator: ConditionOperator,
@@ -63,70 +65,70 @@ pub struct QueryFilterBuilder {
 }
 
 impl SubFilter {
-    pub fn is_null<C: ToString>(column: &C) -> Self {
+    pub fn is_null<C: ToString>(column: C) -> Self {
         Self {
             operator: SubFilterOperator::IsNull,
             column: column.to_string(),
             values: vec![],
         }
     }
-    pub fn is_not_null<C: ToString>(column: &C) -> Self {
+    pub fn is_not_null<C: ToString>(column: C) -> Self {
         Self {
             operator: SubFilterOperator::IsNotNull,
             column: column.to_string(),
             values: vec![],
         }
     }
-    pub fn equal<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+    pub fn equal<C: ToString, V: Into<ColumnValue>>(column: C, value: V) -> Self {
         Self {
             operator: SubFilterOperator::Equal,
             column: column.to_string(),
             values: vec![value.into()],
         }
     }
-    pub fn not_equal<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+    pub fn not_equal<C: ToString, V: Into<ColumnValue>>(column: C, value: V) -> Self {
         Self {
             operator: SubFilterOperator::NotEqual,
             column: column.to_string(),
             values: vec![value.into()],
         }
     }
-    pub fn greater<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+    pub fn greater<C: ToString, V: Into<ColumnValue>>(column: C, value: V) -> Self {
         Self {
             operator: SubFilterOperator::Greater,
             column: column.to_string(),
             values: vec![value.into()],
         }
     }
-    pub fn greater_equal<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+    pub fn greater_equal<C: ToString, V: Into<ColumnValue>>(column: C, value: V) -> Self {
         Self {
             operator: SubFilterOperator::GreaterEqual,
             column: column.to_string(),
             values: vec![value.into()],
         }
     }
-    pub fn less<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+    pub fn less<C: ToString, V: Into<ColumnValue>>(column: C, value: V) -> Self {
         Self {
             operator: SubFilterOperator::Less,
             column: column.to_string(),
             values: vec![value.into()],
         }
     }
-    pub fn less_equal<C: ToString, V: Into<ColumnValue>>(column: &C, value: V) -> Self {
+    pub fn less_equal<C: ToString, V: Into<ColumnValue>>(column: C, value: V) -> Self {
         Self {
             operator: SubFilterOperator::LessEqual,
             column: column.to_string(),
             values: vec![value.into()],
         }
     }
-    pub fn between_and<C: ToString, V: Into<ColumnValue>>(column: &C, value1: V, value2: V) -> Self {
+    pub fn between_and<C: ToString, V: Into<ColumnValue>>(column: C, value1: V, value2: V) -> Self {
         Self {
             operator: SubFilterOperator::BetweenAnd,
             column: column.to_string(),
             values: vec![value1.into(), value2.into()],
         }
     }
-    pub fn in_list<C: ToString, V: Into<ColumnValue>>(column: &C, values: Vec<V>) -> Self {
+    pub fn in_list<C: ToString, V: Into<ColumnValue>>(column: C, values: Vec<V>) -> Self {
         Self {
             operator: SubFilterOperator::In,
             column: column.to_string(),
@@ -194,8 +196,15 @@ impl QueryFilterBuilder {
         self
     }
 
-    pub fn order_by(mut self, columns: Vec<String>, order: Order) -> Self {
-        self.order_by = Some(OrderBy { columns, order });
+    pub fn order_by<T: ToString>(self, column: T, order: Order) -> Self {
+        self.order_by_multiple(vec![column], order)
+    }
+
+    pub fn order_by_multiple<T: ToString>(mut self, columns: Vec<T>, order: Order) -> Self {
+        self.order_by = Some(OrderBy {
+            columns: columns.into_iter().map(|c| c.to_string()).collect(),
+            order,
+        });
         self
     }
 

@@ -52,7 +52,7 @@ async fn test_wallets_crud() {
     assert_eq!(wallets.count_all().await.unwrap(), 3);
     assert_eq!(
         wallets
-            .count(SubFilter::equal(&WalletColumn::AccountNonce, 2))
+            .count(SubFilter::equal(WalletColumn::AccountNonce, 2))
             .await
             .unwrap(),
         1
@@ -67,7 +67,7 @@ async fn test_wallets_crud() {
         .unwrap();
     assert_eq!(found_wallets, inserted_wallets[1..]);
     let mut found_wallet = wallets
-        .find_one(SubFilter::equal(&WalletColumn::HashedPassword, "hashed password 02"))
+        .find_one(SubFilter::equal(WalletColumn::HashedPassword, "hashed password 02"))
         .await
         .unwrap()
         .unwrap();
@@ -102,7 +102,7 @@ async fn test_wallets_crud() {
         .unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 2);
     wallets
-        .delete_by_filter(SubFilter::equal(&WalletColumn::HashedPassword, "hashed password 01"))
+        .delete_by_filter(SubFilter::equal(WalletColumn::HashedPassword, "hashed password 01"))
         .await
         .unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 1);

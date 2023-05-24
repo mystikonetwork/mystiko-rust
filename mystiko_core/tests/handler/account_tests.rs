@@ -171,7 +171,7 @@ async fn test_find() {
     assert_eq!(accounts, vec![account1.clone()]);
     options.scan_size = Some(200);
     let account2 = account_handler.create(&options).await.unwrap();
-    let filter = SubFilter::less_equal(&AccountColumn::ScanSize, 200);
+    let filter = SubFilter::less_equal(AccountColumn::ScanSize, 200);
     accounts = account_handler.find(filter).await.unwrap();
     assert_eq!(accounts, vec![account2.clone()]);
     accounts = account_handler.find_all().await.unwrap();
@@ -260,7 +260,7 @@ async fn test_count() {
     options.scan_size = Some(200);
     account_handler.create(&options).await.unwrap();
     assert_eq!(account_handler.count_all().await.unwrap(), 2);
-    let filter = SubFilter::less_equal(&AccountColumn::ScanSize, 200);
+    let filter = SubFilter::less_equal(AccountColumn::ScanSize, 200);
     assert_eq!(account_handler.count(filter).await.unwrap(), 1);
 }
 

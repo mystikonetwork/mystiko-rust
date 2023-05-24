@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug)]

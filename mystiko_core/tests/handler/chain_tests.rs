@@ -126,7 +126,7 @@ async fn test_chains_find() {
         handler.count_all().await.unwrap()
     );
     chains.sort_by_key(|c| c.data.chain_id);
-    let filter = SubFilter::in_list(&DocumentColumn::Id, vec![chains[0].id.clone(), chains[1].id.clone()]);
+    let filter = SubFilter::in_list(DocumentColumn::Id, vec![chains[0].id.clone(), chains[1].id.clone()]);
     let mut found_chains = handler.find(filter).await.unwrap();
     found_chains.sort_by_key(|c| c.data.chain_id);
     assert_eq!(found_chains[0], chains[0]);
@@ -145,7 +145,7 @@ async fn test_chains_find() {
 async fn test_chains_count() {
     let (handler, _, _) = setup().await;
     let chains = handler.initialize().await.unwrap();
-    let filter = SubFilter::in_list(&DocumentColumn::Id, vec![chains[0].id.clone(), chains[1].id.clone()]);
+    let filter = SubFilter::in_list(DocumentColumn::Id, vec![chains[0].id.clone(), chains[1].id.clone()]);
     assert_eq!(handler.count(filter).await.unwrap(), 2);
 }
 

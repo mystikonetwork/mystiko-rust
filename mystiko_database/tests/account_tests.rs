@@ -65,7 +65,7 @@ async fn test_accounts_crud() {
     assert_eq!(accounts.count_all().await.unwrap(), 3);
     assert_eq!(
         accounts
-            .count(SubFilter::equal(&AccountColumn::ScanSize, 2))
+            .count(SubFilter::equal(AccountColumn::ScanSize, 2))
             .await
             .unwrap(),
         1
@@ -80,7 +80,7 @@ async fn test_accounts_crud() {
         .unwrap();
     assert_eq!(found_accounts, inserted_accounts[1..]);
     let mut found_account = accounts
-        .find_one(SubFilter::equal(&AccountColumn::ShieldedAddress, "shielded address 2"))
+        .find_one(SubFilter::equal(AccountColumn::ShieldedAddress, "shielded address 2"))
         .await
         .unwrap()
         .unwrap();
@@ -108,7 +108,7 @@ async fn test_accounts_crud() {
     accounts.insert(&inserted_accounts[0].data).await.unwrap();
     assert_eq!(accounts.count_all().await.unwrap(), 2);
     accounts
-        .delete_by_filter(SubFilter::equal(&AccountColumn::PublicKey, "public key 1"))
+        .delete_by_filter(SubFilter::equal(AccountColumn::PublicKey, "public key 1"))
         .await
         .unwrap();
     assert_eq!(accounts.count_all().await.unwrap(), 1);

@@ -54,7 +54,7 @@ where
 
     pub async fn current(&self) -> Result<Option<Document<Wallet>>> {
         let filter = QueryFilterBuilder::new()
-            .order_by(vec![DocumentColumn::Id.to_string()], Order::DESC)
+            .order_by(DocumentColumn::Id, Order::DESC)
             .build();
         self.db
             .wallets

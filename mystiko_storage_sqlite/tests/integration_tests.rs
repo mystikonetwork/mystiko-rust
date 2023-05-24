@@ -1,5 +1,5 @@
 use mystiko_storage::collection::Collection;
-use mystiko_storage::document::DocumentColumn;
+use mystiko_storage::document::{DocumentColumn, DocumentData};
 use mystiko_storage::filter::{Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_macros::CollectionBuilder;
@@ -121,7 +121,7 @@ async fn test_delete() {
     assert_eq!(collection.count_all().await.unwrap(), 0);
     let documents = collection.insert_batch(&test_documents()).await.unwrap();
     collection
-        .delete_by_filter(SubFilter::equal(&DocumentColumn::Id, documents[0].id.clone()))
+        .delete_by_filter(SubFilter::equal(DocumentColumn::Id, documents[0].id.clone()))
         .await
         .unwrap();
     assert_eq!(collection.count_all().await.unwrap(), 2);
@@ -145,7 +145,7 @@ async fn test_find() {
     assert_eq!(
         documents[1],
         collection
-            .find_one(SubFilter::equal(&DocumentColumn::Id, documents[1].id.clone()))
+            .find_one(SubFilter::equal(DocumentColumn::Id, documents[1].id.clone()))
             .await
             .unwrap()
             .unwrap()
@@ -153,18 +153,15 @@ async fn test_find() {
     assert_eq!(
         documents[1..],
         collection
-            .find(SubFilter::greater(
-                &TestDocumentColumn::Field3,
-                documents[0].data.field3
-            ))
+            .find(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3))
             .await
             .unwrap()
     );
     let filter = QueryFilterBuilder::new()
-        .filter(SubFilter::greater(&TestDocumentColumn::Field3, documents[0].data.field3).into())
+        .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
         .limit(1)
         .offset(1)
-        .order_by(vec![TestDocumentColumn::Field3.to_string()], Order::ASC)
+        .order_by(TestDocumentColumn::Field3, Order::ASC)
         .build();
     assert_eq!(documents[2..], collection.find(filter).await.unwrap());
 }
@@ -176,7 +173,7 @@ async fn test_count() {
     let documents = collection.insert_batch(&test_documents()).await.unwrap();
     assert_eq!(collection.count_all().await.unwrap(), 3);
     let filter = QueryFilterBuilder::new()
-        .filter(SubFilter::greater(&TestDocumentColumn::Field3, documents[0].data.field3).into())
+        .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
         .build();
     assert_eq!(collection.count(filter).await.unwrap(), 2);
 }

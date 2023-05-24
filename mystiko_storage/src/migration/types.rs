@@ -4,8 +4,6 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct CreateCollectionMigration {
-    #[builder(setter(into))]
-    pub collection_name: String,
     pub columns: Vec<Column>,
     #[builder(default)]
     pub unique_columns: Vec<UniqueColumns>,
@@ -15,8 +13,6 @@ pub struct CreateCollectionMigration {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct AddIndexMigration {
-    #[builder(setter(into))]
-    pub collection_name: String,
     #[builder(default, setter(into, strip_option))]
     pub index_name: Option<String>,
     #[builder(setter(into))]
@@ -25,31 +21,17 @@ pub struct AddIndexMigration {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct AddColumnMigration {
-    #[builder(setter(into))]
-    pub collection_name: String,
     pub column: Column,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct DropColumnMigration {
     #[builder(setter(into))]
-    pub collection_name: String,
-    #[builder(setter(into))]
     pub column_name: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
-pub struct RenameCollectionMigration {
-    #[builder(setter(into))]
-    pub old_collection_name: String,
-    #[builder(setter(into))]
-    pub new_collection_name: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct RenameColumnMigration {
-    #[builder(setter(into))]
-    pub collection_name: String,
     #[builder(setter(into))]
     pub old_column_name: String,
     #[builder(setter(into))]
@@ -62,7 +44,6 @@ pub enum Migration {
     AddIndex(AddIndexMigration),
     AddColumn(AddColumnMigration),
     DropColumn(DropColumnMigration),
-    RenameCollection(RenameCollectionMigration),
     RenameColumn(RenameColumnMigration),
 }
 
@@ -87,12 +68,6 @@ impl From<AddColumnMigration> for Migration {
 impl From<DropColumnMigration> for Migration {
     fn from(value: DropColumnMigration) -> Self {
         Self::DropColumn(value)
-    }
-}
-
-impl From<RenameCollectionMigration> for Migration {
-    fn from(value: RenameCollectionMigration) -> Self {
-        Self::RenameCollection(value)
     }
 }
 

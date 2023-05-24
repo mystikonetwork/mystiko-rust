@@ -72,7 +72,7 @@ async fn test_contracts_crud() {
     // testing count
     assert_eq!(
         contracts
-            .count(SubFilter::equal(&ContractColumn::Disabled, 1))
+            .count(SubFilter::equal(ContractColumn::Disabled, 1))
             .await
             .unwrap(),
         1
@@ -90,7 +90,7 @@ async fn test_contracts_crud() {
     // testing find_one
     let mut found_contract = contracts
         .find_one(SubFilter::equal(
-            &ContractColumn::ContractAddress,
+            ContractColumn::ContractAddress,
             "0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d",
         ))
         .await
@@ -123,7 +123,7 @@ async fn test_contracts_crud() {
     assert_eq!(contracts.count_all().await.unwrap(), 2);
     contracts
         .delete_by_filter(SubFilter::equal(
-            &ContractColumn::ContractAddress,
+            ContractColumn::ContractAddress,
             "0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d",
         ))
         .await

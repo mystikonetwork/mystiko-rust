@@ -127,7 +127,7 @@ async fn test_transactions_crud() {
     assert_eq!(
         transactions
             .count(SubFilter::equal(
-                &TransactionColumn::SignaturePublicKey,
+                TransactionColumn::SignaturePublicKey,
                 "signature_public_key 2"
             ))
             .await
@@ -150,7 +150,7 @@ async fn test_transactions_crud() {
         .unwrap();
     assert_eq!(found_transactions, inserted_transactions[1..]);
     let mut found_transaction = transactions
-        .find_one(SubFilter::equal(&TransactionColumn::AssetSymbol, "asset_symbol 2"))
+        .find_one(SubFilter::equal(TransactionColumn::AssetSymbol, "asset_symbol 2"))
         .await
         .unwrap()
         .unwrap();
@@ -186,7 +186,7 @@ async fn test_transactions_crud() {
     assert_eq!(transactions.count_all().await.unwrap(), 2);
     transactions
         .delete_by_filter(SubFilter::equal(
-            &TransactionColumn::ShieldedAddress,
+            TransactionColumn::ShieldedAddress,
             "shielded_address 1",
         ))
         .await

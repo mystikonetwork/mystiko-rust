@@ -96,21 +96,21 @@ where
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Account>>> {
-        self.find_one_by_identifier(id, &DocumentColumn::Id).await
+        self.find_one_by_identifier(id, DocumentColumn::Id).await
     }
 
     pub async fn find_by_shielded_address(&self, shielded_address: &str) -> Result<Option<Document<Account>>> {
-        self.find_one_by_identifier(shielded_address, &AccountColumn::ShieldedAddress)
+        self.find_one_by_identifier(shielded_address, AccountColumn::ShieldedAddress)
             .await
     }
 
     pub async fn find_by_public_key(&self, shielded_address: &str) -> Result<Option<Document<Account>>> {
-        self.find_one_by_identifier(shielded_address, &AccountColumn::PublicKey)
+        self.find_one_by_identifier(shielded_address, AccountColumn::PublicKey)
             .await
     }
 
     pub async fn update_by_id(&self, id: &str, options: &UpdateAccountOptions) -> Result<Document<Account>> {
-        self.update_by_identifier(id, &DocumentColumn::Id, options).await
+        self.update_by_identifier(id, DocumentColumn::Id, options).await
     }
 
     pub async fn update_by_shielded_address(
@@ -118,7 +118,7 @@ where
         shielded_address: &str,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
-        self.update_by_identifier(shielded_address, &AccountColumn::ShieldedAddress, options)
+        self.update_by_identifier(shielded_address, AccountColumn::ShieldedAddress, options)
             .await
     }
 
@@ -127,7 +127,7 @@ where
         public_key: &str,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
-        self.update_by_identifier(public_key, &AccountColumn::PublicKey, options)
+        self.update_by_identifier(public_key, AccountColumn::PublicKey, options)
             .await
     }
 
@@ -156,12 +156,12 @@ where
     }
 
     pub async fn export_secret_key_by_id(&self, wallet_password: &str, id: &str) -> Result<String> {
-        self.export_secret_key_by_identifier(wallet_password, id, &DocumentColumn::Id)
+        self.export_secret_key_by_identifier(wallet_password, id, DocumentColumn::Id)
             .await
     }
 
     pub async fn export_secret_key_by_public_key(&self, wallet_password: &str, public_key: &str) -> Result<String> {
-        self.export_secret_key_by_identifier(wallet_password, public_key, &AccountColumn::PublicKey)
+        self.export_secret_key_by_identifier(wallet_password, public_key, AccountColumn::PublicKey)
             .await
     }
 
@@ -170,7 +170,7 @@ where
         wallet_password: &str,
         shielded_address: &str,
     ) -> Result<String> {
-        self.export_secret_key_by_identifier(wallet_password, shielded_address, &AccountColumn::ShieldedAddress)
+        self.export_secret_key_by_identifier(wallet_password, shielded_address, AccountColumn::ShieldedAddress)
             .await
     }
 
@@ -182,14 +182,14 @@ where
         };
         filter
             .conditions
-            .push(SubFilter::equal(&AccountColumn::WalletId, wallet.id).into());
+            .push(SubFilter::equal(AccountColumn::WalletId, wallet.id).into());
         Ok(filter)
     }
 
     async fn find_one_by_identifier<T: ToString>(
         &self,
         identifier: &str,
-        field_name: &T,
+        field_name: T,
     ) -> Result<Option<Document<Account>>> {
         let filter = SubFilter::equal(field_name, identifier);
         let wrapped_filter = self.wrap_filter(Some(filter)).await?;
@@ -203,10 +203,11 @@ where
     async fn update_by_identifier<T: ToString>(
         &self,
         identifier: &str,
-        field_name: &T,
+        field_name: T,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
         self.wallets.check_password(&options.wallet_password).await?;
+        let field_name_str = field_name.to_string();
         if let Some(mut account) = self.find_one_by_identifier(identifier, field_name).await? {
             let mut has_update = false;
             if let Some(new_name) = &options.name {
@@ -244,10 +245,7 @@ where
                 Ok(account)
             }
         } else {
-            Err(MystikoError::NoSuchAccountError(
-                field_name.to_string(),
-                identifier.to_string(),
-            ))
+            Err(MystikoError::NoSuchAccountError(field_name_str, identifier.to_string()))
         }
     }
 
@@ -255,16 +253,14 @@ where
         &self,
         wallet_password: &str,
         identifier: &str,
-        field_name: &T,
+        field_name: T,
     ) -> Result<String> {
         self.wallets.check_password(wallet_password).await?;
+        let field_name_str = field_name.to_string();
         if let Some(account) = self.find_one_by_identifier(identifier, field_name).await? {
             Ok(decrypt_symmetric(wallet_password, &account.data.encrypted_secret_key)?)
         } else {
-            Err(MystikoError::NoSuchAccountError(
-                field_name.to_string(),
-                identifier.to_string(),
-            ))
+            Err(MystikoError::NoSuchAccountError(field_name_str, identifier.to_string()))
         }
     }
 

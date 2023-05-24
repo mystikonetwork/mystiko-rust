@@ -95,7 +95,7 @@ async fn test_commitments_crud() {
     // testing count
     assert_eq!(
         commitments
-            .count(SubFilter::equal(&CommitmentColumn::LeafIndex, BigInt::from(1)))
+            .count(SubFilter::equal(CommitmentColumn::LeafIndex, BigInt::from(1)))
             .await
             .unwrap(),
         1
@@ -113,7 +113,7 @@ async fn test_commitments_crud() {
     // testing find_one
     let mut found_commitment = commitments
         .find_one(SubFilter::equal(
-            &CommitmentColumn::CommitmentHash,
+            CommitmentColumn::CommitmentHash,
             "9709495941671889428395361755215352896616366060066411186055604144562505250548",
         ))
         .await
@@ -155,7 +155,7 @@ async fn test_commitments_crud() {
     assert_eq!(commitments.count_all().await.unwrap(), 2);
     commitments
         .delete_by_filter(SubFilter::equal(
-            &CommitmentColumn::CommitmentHash,
+            CommitmentColumn::CommitmentHash,
             "9709505941671889428395361755215352896616366060066411186055604144562505250548",
         ))
         .await

@@ -94,7 +94,7 @@ async fn test_chains_crud() {
     // testing count
     assert_eq!(
         chains
-            .count(SubFilter::equal(&ChainColumn::NameOverride, 1))
+            .count(SubFilter::equal(ChainColumn::NameOverride, 1))
             .await
             .unwrap(),
         1
@@ -111,7 +111,7 @@ async fn test_chains_crud() {
     assert_eq!(found_chains, inserted_chains[1..]);
     // testing find_one
     let mut found_chain = chains
-        .find_one(SubFilter::equal(&ChainColumn::Name, "Polygon"))
+        .find_one(SubFilter::equal(ChainColumn::Name, "Polygon"))
         .await
         .unwrap()
         .unwrap();
@@ -144,7 +144,7 @@ async fn test_chains_crud() {
     chains.insert(&inserted_chains[0].data).await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 2);
     chains
-        .delete_by_filter(SubFilter::equal(&ChainColumn::Name, "Ethereum Goerli"))
+        .delete_by_filter(SubFilter::equal(ChainColumn::Name, "Ethereum Goerli"))
         .await
         .unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 1);

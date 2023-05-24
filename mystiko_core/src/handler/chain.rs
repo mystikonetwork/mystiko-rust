@@ -79,7 +79,7 @@ where
     }
 
     pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
-        let query_filter = SubFilter::equal(&ChainColumn::ChainId, chain_id);
+        let query_filter = SubFilter::equal(ChainColumn::ChainId, chain_id);
         self.db
             .chains
             .find_one(query_filter)
