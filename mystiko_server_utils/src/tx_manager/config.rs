@@ -15,7 +15,7 @@ pub struct TxManagerConfig {
 }
 
 impl TxManagerConfig {
-    pub fn new(run_mod: &str, config_path: &str) -> anyhow::Result<Self> {
+    pub fn new(run_mod: &str, config_path: Option<&str>) -> anyhow::Result<Self> {
         let mut s = Config::builder()
             .set_default("max_priority_fee_per_gas", "0x3b9aca00")?
             .set_default("max_confirm_count", 100)?
@@ -29,9 +29,11 @@ impl TxManagerConfig {
             s = s.set_default("max_gas_price", "0x174876e800")?;
         }
 
-        let run_config_path = format!("{}/tx_manager.json", config_path);
-        if Path::exists(Path::new(&run_config_path)) {
-            s = s.add_source(File::with_name(&run_config_path));
+        if config_path.is_some() {
+            let run_config_path = format!("{}/tx_manager.json", config_path.unwrap());
+            if Path::exists(Path::new(&run_config_path)) {
+                s = s.add_source(File::with_name(&run_config_path));
+            }
         }
 
         let cfg = s
