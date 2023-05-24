@@ -42,60 +42,34 @@ pub struct Commitment {
 
 fn uniques() -> Vec<UniqueColumns> {
     vec![
-        UniqueColumns::builder()
-            .column_names(vec![
-                CommitmentColumn::ChainId.to_string(),
-                CommitmentColumn::ContractAddress.to_string(),
-                CommitmentColumn::CommitmentHash.to_string(),
-            ])
-            .build(),
-        UniqueColumns::builder()
-            .column_names(vec![
-                CommitmentColumn::ChainId.to_string(),
-                CommitmentColumn::ContractAddress.to_string(),
-                CommitmentColumn::LeafIndex.to_string(),
-            ])
-            .build(),
+        vec![
+            CommitmentColumn::ChainId,
+            CommitmentColumn::ContractAddress,
+            CommitmentColumn::CommitmentHash,
+        ]
+        .into(),
+        vec![
+            CommitmentColumn::ChainId,
+            CommitmentColumn::ContractAddress,
+            CommitmentColumn::LeafIndex,
+        ]
+        .into(),
     ]
 }
 
 fn indexes() -> Vec<IndexColumns> {
     vec![
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::ChainId.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::ContractAddress.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::CommitmentHash.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::LeafIndex.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::Status.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::AssetSymbol.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::AssetAddress.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::Nullifier.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::ShieldedAddress.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::CreationTransactionHash.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::SpendingTransactionHash.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![CommitmentColumn::RollupTransactionHash.to_string()])
-            .build(),
+        vec![CommitmentColumn::ChainId].into(),
+        vec![CommitmentColumn::ContractAddress].into(),
+        vec![CommitmentColumn::CommitmentHash].into(),
+        vec![CommitmentColumn::LeafIndex].into(),
+        vec![CommitmentColumn::Status].into(),
+        vec![CommitmentColumn::AssetSymbol].into(),
+        vec![CommitmentColumn::AssetAddress].into(),
+        vec![CommitmentColumn::Nullifier].into(),
+        vec![CommitmentColumn::ShieldedAddress].into(),
+        vec![CommitmentColumn::CreationTransactionHash].into(),
+        vec![CommitmentColumn::SpendingTransactionHash].into(),
+        vec![CommitmentColumn::RollupTransactionHash].into(),
     ]
 }

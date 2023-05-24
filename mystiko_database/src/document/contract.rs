@@ -21,21 +21,12 @@ pub struct Contract {
 }
 
 fn uniques() -> Vec<UniqueColumns> {
-    vec![UniqueColumns::builder()
-        .column_names(vec![
-            ContractColumn::ChainId.to_string(),
-            ContractColumn::ContractAddress.to_string(),
-        ])
-        .build()]
+    vec![vec![ContractColumn::ChainId, ContractColumn::ContractAddress].into()]
 }
 
 fn indexes() -> Vec<IndexColumns> {
     vec![
-        IndexColumns::builder()
-            .column_names(vec![ContractColumn::ChainId.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![ContractColumn::ContractAddress.to_string()])
-            .build(),
+        vec![ContractColumn::ChainId].into(),
+        vec![ContractColumn::ContractAddress].into(),
     ]
 }

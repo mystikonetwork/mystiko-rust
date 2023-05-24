@@ -60,39 +60,15 @@ fn length_limit() -> u64 {
 
 fn uniques() -> Vec<UniqueColumns> {
     vec![
-        UniqueColumns::builder()
-            .unique_name("test_collection_field1_field3_unique")
-            .column_names(vec![
-                TestDocumentColumn::Field1.to_string(),
-                TestDocumentColumn::Field3.to_string(),
-            ])
-            .build(),
-        UniqueColumns::builder()
-            .unique_name("test_collection_field5_field7_unique")
-            .column_names(vec![
-                TestDocumentColumn::Field5.to_string(),
-                TestDocumentColumn::Field7.to_string(),
-            ])
-            .build(),
+        vec![TestDocumentColumn::Field1, TestDocumentColumn::Field3].into(),
+        vec![TestDocumentColumn::Field5, TestDocumentColumn::Field7].into(),
     ]
 }
 
 fn indexes() -> Vec<IndexColumns> {
     vec![
-        IndexColumns::builder()
-            .index_name("test_collection_index_field1_field3")
-            .column_names(vec![
-                TestDocumentColumn::Field1.to_string(),
-                TestDocumentColumn::Field3.to_string(),
-            ])
-            .build(),
-        IndexColumns::builder()
-            .index_name("test_collection_index_field5_field7")
-            .column_names(vec![
-                TestDocumentColumn::Field5.to_string(),
-                TestDocumentColumn::Field7.to_string(),
-            ])
-            .build(),
+        vec![TestDocumentColumn::Field1, TestDocumentColumn::Field3].into(),
+        vec![TestDocumentColumn::Field5, TestDocumentColumn::Field7].into(),
     ]
 }
 

@@ -65,49 +65,26 @@ pub struct Deposit {
 }
 
 fn uniques() -> Vec<UniqueColumns> {
-    vec![UniqueColumns::builder()
-        .column_names(vec![
-            DepositColumn::ChainId.to_string(),
-            DepositColumn::ContractAddress.to_string(),
-            DepositColumn::CommitmentHash.to_string(),
-        ])
-        .build()]
+    vec![vec![
+        DepositColumn::ChainId,
+        DepositColumn::ContractAddress,
+        DepositColumn::CommitmentHash,
+    ]
+    .into()]
 }
 
 fn indexes() -> Vec<IndexColumns> {
     vec![
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::ChainId.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::ContractAddress.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::CommitmentHash.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::DstChainId.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::DstChainContractAddress.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::ShieldedRecipientAddress.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::AssetApproveTransactionHash.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::TransactionHash.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::RelayTransactionHash.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::RollupTransactionHash.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![DepositColumn::WalletId.to_string()])
-            .build(),
+        vec![DepositColumn::ChainId].into(),
+        vec![DepositColumn::ContractAddress].into(),
+        vec![DepositColumn::CommitmentHash].into(),
+        vec![DepositColumn::DstChainId].into(),
+        vec![DepositColumn::DstChainContractAddress].into(),
+        vec![DepositColumn::ShieldedRecipientAddress].into(),
+        vec![DepositColumn::AssetApproveTransactionHash].into(),
+        vec![DepositColumn::TransactionHash].into(),
+        vec![DepositColumn::RelayTransactionHash].into(),
+        vec![DepositColumn::RollupTransactionHash].into(),
+        vec![DepositColumn::WalletId].into(),
     ]
 }

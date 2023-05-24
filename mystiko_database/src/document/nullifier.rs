@@ -18,28 +18,19 @@ pub struct Nullifier {
 }
 
 fn uniques() -> Vec<UniqueColumns> {
-    vec![UniqueColumns::builder()
-        .column_names(vec![
-            NullifierColumn::ChainId.to_string(),
-            NullifierColumn::ContractAddress.to_string(),
-            NullifierColumn::Nullifier.to_string(),
-        ])
-        .build()]
+    vec![vec![
+        NullifierColumn::ChainId,
+        NullifierColumn::ContractAddress,
+        NullifierColumn::Nullifier,
+    ]
+    .into()]
 }
 
 fn indexes() -> Vec<IndexColumns> {
     vec![
-        IndexColumns::builder()
-            .column_names(vec![NullifierColumn::ChainId.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![NullifierColumn::ContractAddress.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![NullifierColumn::Nullifier.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![NullifierColumn::TransactionHash.to_string()])
-            .build(),
+        vec![NullifierColumn::ChainId].into(),
+        vec![NullifierColumn::ContractAddress].into(),
+        vec![NullifierColumn::Nullifier].into(),
+        vec![NullifierColumn::TransactionHash].into(),
     ]
 }

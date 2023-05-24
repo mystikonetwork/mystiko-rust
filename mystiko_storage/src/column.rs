@@ -208,6 +208,22 @@ impl From<Value> for ColumnValue {
     }
 }
 
+impl<T: ToString, I: IntoIterator<Item = T>> From<I> for UniqueColumns {
+    fn from(value: I) -> Self {
+        UniqueColumns::builder()
+            .column_names(value.into_iter().map(|v| v.to_string()).collect())
+            .build()
+    }
+}
+
+impl<T: ToString, I: IntoIterator<Item = T>> From<I> for IndexColumns {
+    fn from(value: I) -> Self {
+        IndexColumns::builder()
+            .column_names(value.into_iter().map(|v| v.to_string()).collect())
+            .build()
+    }
+}
+
 impl Display for ColumnType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {

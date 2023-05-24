@@ -27,13 +27,9 @@ pub struct Chain {
 }
 
 fn uniques() -> Vec<UniqueColumns> {
-    vec![UniqueColumns::builder()
-        .column_names(vec![ChainColumn::ChainId.to_string()])
-        .build()]
+    vec![vec![ChainColumn::ChainId].into()]
 }
 
 fn indexes() -> Vec<IndexColumns> {
-    vec![IndexColumns::builder()
-        .column_names(vec![ChainColumn::ChainId.to_string()])
-        .build()]
+    vec![vec![ChainColumn::ChainId].into()]
 }

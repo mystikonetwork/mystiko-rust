@@ -724,12 +724,7 @@ fn uniques() -> Vec<UniqueColumns> {
             .unique_name("my_unique_1")
             .column_names(vec![TestDocumentColumn::Field1.to_string()])
             .build(),
-        UniqueColumns::builder()
-            .column_names(vec![
-                TestDocumentColumn::Field3.to_string(),
-                TestDocumentColumn::Field5.to_string(),
-            ])
-            .build(),
+        vec![TestDocumentColumn::Field3, TestDocumentColumn::Field5].into(),
     ]
 }
 
@@ -739,11 +734,6 @@ fn indexes() -> Vec<IndexColumns> {
             .index_name("my_index_1")
             .column_names(vec![TestDocumentColumn::Field7.to_string()])
             .build(),
-        IndexColumns::builder()
-            .column_names(vec![
-                TestDocumentColumn::Field9.to_string(),
-                TestDocumentColumn::Field11.to_string(),
-            ])
-            .build(),
+        vec![TestDocumentColumn::Field9, TestDocumentColumn::Field11].into(),
     ]
 }

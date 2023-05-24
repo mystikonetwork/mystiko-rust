@@ -23,31 +23,15 @@ pub struct Account {
 
 fn uniques() -> Vec<UniqueColumns> {
     vec![
-        UniqueColumns::builder()
-            .column_names(vec![
-                AccountColumn::WalletId.to_string(),
-                AccountColumn::ShieldedAddress.to_string(),
-            ])
-            .build(),
-        UniqueColumns::builder()
-            .column_names(vec![
-                AccountColumn::WalletId.to_string(),
-                AccountColumn::PublicKey.to_string(),
-            ])
-            .build(),
+        vec![AccountColumn::WalletId, AccountColumn::ShieldedAddress].into(),
+        vec![AccountColumn::WalletId, AccountColumn::PublicKey].into(),
     ]
 }
 
 fn indexes() -> Vec<IndexColumns> {
     vec![
-        IndexColumns::builder()
-            .column_names(vec![AccountColumn::WalletId.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![AccountColumn::ShieldedAddress.to_string()])
-            .build(),
-        IndexColumns::builder()
-            .column_names(vec![AccountColumn::PublicKey.to_string()])
-            .build(),
+        vec![AccountColumn::WalletId].into(),
+        vec![AccountColumn::ShieldedAddress].into(),
+        vec![AccountColumn::PublicKey].into(),
     ]
 }
