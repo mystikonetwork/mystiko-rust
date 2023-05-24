@@ -11,7 +11,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use mystiko_storage::column::{ColumnType, ColumnValue};
 use mystiko_storage::document::{Document, DocumentData};
-use num_bigint::BigInt;
+use num_bigint::{BigInt, BigUint};
 use sqlx::{ConnectOptions, Row, Sqlite};
 use std::fmt::Debug;
 use std::str::FromStr;
@@ -227,6 +227,9 @@ fn bind_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Result<Que
             ColumnType::BigInt => {
                 query = query.bind(value.as_bigint()?.to_string());
             }
+            ColumnType::BigUint => {
+                query = query.bind(value.as_biguint()?.to_string());
+            }
             ColumnType::Json => {
                 query = query.bind(serde_json::to_string(&value.as_json()?)?);
             }
@@ -342,6 +345,12 @@ fn row_to_document<T: DocumentData>(row: &sqlx::sqlite::SqliteRow) -> Result<Doc
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
                     let value = BigInt::from_str(&value)?;
                     columns_with_value.push((column.column_name, ColumnValue::BigInt(value)))
+                }
+            }
+            ColumnType::BigUint => {
+                if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
+                    let value = BigUint::from_str(&value)?;
+                    columns_with_value.push((column.column_name, ColumnValue::BigUint(value)))
                 }
             }
             ColumnType::Json => {

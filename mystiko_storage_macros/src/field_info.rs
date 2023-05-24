@@ -188,6 +188,7 @@ fn type_name(ty: &syn::Type) -> Result<String, syn::parse::Error> {
                 "f64" => Ok("f64".to_string()),
                 "String" => Ok("String".to_string()),
                 "BigInt" => Ok("BigInt".to_string()),
+                "BigUint" => Ok("BigUint".to_string()),
                 _ => Ok("json".to_string()),
             };
         }
@@ -215,6 +216,7 @@ fn type_name_enum(type_name: &str) -> Result<String, syn::parse::Error> {
         "f64" => Ok("F64".to_string()),
         "String" => Ok("String".to_string()),
         "BigInt" => Ok("BigInt".to_string()),
+        "BigUint" => Ok("BigUint".to_string()),
         _ => Ok("Json".to_string()),
     }
 }
@@ -223,6 +225,7 @@ fn is_primitive_type(type_name: &str) -> Result<bool, syn::parse::Error> {
     match type_name {
         "String" => Ok(false),
         "BigInt" => Ok(false),
+        "BigUint" => Ok(false),
         "json" => Ok(false),
         _ => Ok(true),
     }

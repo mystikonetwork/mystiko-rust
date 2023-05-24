@@ -472,6 +472,7 @@ fn get_column_sql_type(column: &Column) -> String {
         ColumnType::F64 => "DOUBLE".into(),
         ColumnType::String => varchar_or_text_sql_type(&column.length_limit),
         ColumnType::BigInt => varchar_or_text_sql_type(&column.length_limit),
+        ColumnType::BigUint => varchar_or_text_sql_type(&column.length_limit),
         ColumnType::Json => varchar_or_text_sql_type(&column.length_limit),
     }
 }

@@ -1,7 +1,7 @@
 use mystiko_storage::column::{Column, ColumnValue, IndexColumns, UniqueColumns};
 use mystiko_storage::migration::types::{Migration, RenameCollectionMigration};
 use mystiko_storage_macros::CollectionBuilder;
-use num_bigint::BigInt;
+use num_bigint::{BigInt, BigUint};
 
 #[derive(CollectionBuilder, Clone, Debug, PartialEq)]
 #[collection(name = "test_collection", uniques = uniques(), indexes = indexes())]
@@ -45,10 +45,12 @@ pub struct TestDocument {
     pub field35: BigInt,
     #[column(length_limit = length_limit())]
     pub field36: Option<BigInt>,
-    pub field37: Vec<u8>,
-    pub field38: Option<Vec<u8>>,
-    pub field39: Vec<Vec<String>>,
-    pub field40_with_underscore: Option<Vec<Vec<String>>>,
+    pub field37: BigUint,
+    pub field38: Option<BigUint>,
+    pub field39: Vec<u8>,
+    pub field40: Option<Vec<u8>>,
+    pub field41: Vec<Vec<String>>,
+    pub field42_with_underscore: Option<Vec<Vec<String>>>,
 }
 
 fn length_limit() -> u64 {
@@ -149,9 +151,11 @@ fn test_column_enum_impl() {
     assert_eq!(TestDocumentColumn::Field37.to_string(), "field37");
     assert_eq!(TestDocumentColumn::Field38.to_string(), "field38");
     assert_eq!(TestDocumentColumn::Field39.to_string(), "field39");
+    assert_eq!(TestDocumentColumn::Field40.to_string(), "field40");
+    assert_eq!(TestDocumentColumn::Field41.to_string(), "field41");
     assert_eq!(
-        TestDocumentColumn::Field40WithUnderscore.to_string(),
-        "field40_with_underscore"
+        TestDocumentColumn::Field42WithUnderscore.to_string(),
+        "field42_with_underscore"
     );
 }
 
@@ -194,21 +198,23 @@ fn test_document_data_impl_create() {
         ("field34".to_string(), ColumnValue::String("30".to_string())),
         ("field35".to_string(), ColumnValue::BigInt(BigInt::from(31))),
         ("field36".to_string(), ColumnValue::BigInt(BigInt::from(32))),
-        (
-            "field37".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![33]).unwrap()),
-        ),
-        (
-            "field38".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![34]).unwrap()),
-        ),
+        ("field37".to_string(), ColumnValue::BigUint(BigUint::from(33u32))),
+        ("field38".to_string(), ColumnValue::BigUint(BigUint::from(34u32))),
         (
             "field39".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![vec!["35".to_string(), "36".to_string()]]).unwrap()),
+            ColumnValue::Json(serde_json::to_value(vec![35]).unwrap()),
         ),
         (
-            "field40_with_underscore".to_string(),
+            "field40".to_string(),
+            ColumnValue::Json(serde_json::to_value(vec![36]).unwrap()),
+        ),
+        (
+            "field41".to_string(),
             ColumnValue::Json(serde_json::to_value(vec![vec!["37".to_string(), "38".to_string()]]).unwrap()),
+        ),
+        (
+            "field42_with_underscore".to_string(),
+            ColumnValue::Json(serde_json::to_value(vec![vec!["39".to_string(), "40".to_string()]]).unwrap()),
         ),
     ])
     .unwrap();
@@ -248,12 +254,14 @@ fn test_document_data_impl_create() {
     assert_eq!(document.field34, Some("30".to_string()));
     assert_eq!(document.field35, BigInt::from(31));
     assert_eq!(document.field36, Some(BigInt::from(32)));
-    assert_eq!(document.field37, vec![33]);
-    assert_eq!(document.field38, Some(vec![34]));
-    assert_eq!(document.field39, vec![vec!["35".to_string(), "36".to_string()]]);
+    assert_eq!(document.field37, BigUint::from(33u32));
+    assert_eq!(document.field38, Some(BigUint::from(34u32)));
+    assert_eq!(document.field39, vec![35]);
+    assert_eq!(document.field40, Some(vec![36]));
+    assert_eq!(document.field41, vec![vec!["37".to_string(), "38".to_string()]]);
     assert_eq!(
-        document.field40_with_underscore,
-        Some(vec![vec!["37".to_string(), "38".to_string()]])
+        document.field42_with_underscore,
+        Some(vec![vec!["39".to_string(), "40".to_string()]])
     );
 }
 
@@ -278,13 +286,14 @@ fn test_document_data_impl_create_with_none() {
         ("field31".to_string(), ColumnValue::F64(14.0)),
         ("field33".to_string(), ColumnValue::String("15".to_string())),
         ("field35".to_string(), ColumnValue::BigInt(BigInt::from(16))),
-        (
-            "field37".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![17]).unwrap()),
-        ),
+        ("field37".to_string(), ColumnValue::BigUint(BigUint::from(17u32))),
         (
             "field39".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![vec!["18".to_string(), "19".to_string()]]).unwrap()),
+            ColumnValue::Json(serde_json::to_value(vec![18]).unwrap()),
+        ),
+        (
+            "field41".to_string(),
+            ColumnValue::Json(serde_json::to_value(vec![vec!["19".to_string(), "20".to_string()]]).unwrap()),
         ),
     ])
     .unwrap();
@@ -324,10 +333,12 @@ fn test_document_data_impl_create_with_none() {
     assert!(document.field34.is_none());
     assert_eq!(document.field35, BigInt::from(16));
     assert!(document.field36.is_none());
-    assert_eq!(document.field37, vec![17]);
+    assert_eq!(document.field37, BigUint::from(17u32));
     assert!(document.field38.is_none());
-    assert_eq!(document.field39, vec![vec!["18".to_string(), "19".to_string(),]]);
-    assert!(document.field40_with_underscore.is_none());
+    assert_eq!(document.field39, vec![18]);
+    assert!(document.field40.is_none());
+    assert_eq!(document.field41, vec![vec!["19".to_string(), "20".to_string(),]]);
+    assert!(document.field42_with_underscore.is_none());
 }
 
 #[test]
@@ -506,11 +517,11 @@ fn test_document_data_impl_columns() {
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field37.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::BigUint)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field38.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Json)
+                .column_type(mystiko_storage::column::ColumnType::BigUint)
                 .nullable(true)
                 .build(),
             Column::builder()
@@ -518,7 +529,16 @@ fn test_document_data_impl_columns() {
                 .column_type(mystiko_storage::column::ColumnType::Json)
                 .build(),
             Column::builder()
-                .column_name(TestDocumentColumn::Field40WithUnderscore.to_string())
+                .column_name(TestDocumentColumn::Field40.to_string())
+                .column_type(mystiko_storage::column::ColumnType::Json)
+                .nullable(true)
+                .build(),
+            Column::builder()
+                .column_name(TestDocumentColumn::Field41.to_string())
+                .column_type(mystiko_storage::column::ColumnType::Json)
+                .build(),
+            Column::builder()
+                .column_name(TestDocumentColumn::Field42WithUnderscore.to_string())
                 .column_type(mystiko_storage::column::ColumnType::Json)
                 .nullable(true)
                 .build(),
@@ -565,10 +585,12 @@ fn test_document_data_impl_column_values() {
         field34: Some("30".to_string()),
         field35: BigInt::from(31),
         field36: Some(BigInt::from(32)),
-        field37: vec![33],
-        field38: Some(vec![34]),
-        field39: vec![vec!["35".to_string(), "36".to_string()]],
-        field40_with_underscore: Some(vec![vec!["37".to_string(), "38".to_string()]]),
+        field37: BigUint::from(33u32),
+        field38: Some(BigUint::from(34u32)),
+        field39: vec![35],
+        field40: Some(vec![36]),
+        field41: vec![vec!["37".to_string(), "38".to_string()]],
+        field42_with_underscore: Some(vec![vec!["39".to_string(), "40".to_string()]]),
     };
     let (columns, column_values): (Vec<Column>, Vec<Option<ColumnValue>>) =
         document.column_values().into_iter().unzip();
@@ -612,13 +634,15 @@ fn test_document_data_impl_column_values() {
             Some(ColumnValue::String("30".to_string())),
             Some(ColumnValue::BigInt(BigInt::from(31))),
             Some(ColumnValue::BigInt(BigInt::from(32))),
-            Some(ColumnValue::Json(serde_json::to_value(vec![33]).unwrap())),
-            Some(ColumnValue::Json(serde_json::to_value(vec![34]).unwrap())),
-            Some(ColumnValue::Json(
-                serde_json::to_value(vec![vec!["35".to_string(), "36".to_string()]]).unwrap()
-            )),
+            Some(ColumnValue::BigUint(BigUint::from(33u32))),
+            Some(ColumnValue::BigUint(BigUint::from(34u32))),
+            Some(ColumnValue::Json(serde_json::to_value(vec![35]).unwrap())),
+            Some(ColumnValue::Json(serde_json::to_value(vec![36]).unwrap())),
             Some(ColumnValue::Json(
                 serde_json::to_value(vec![vec!["37".to_string(), "38".to_string()]]).unwrap()
+            )),
+            Some(ColumnValue::Json(
+                serde_json::to_value(vec![vec!["39".to_string(), "40".to_string()]]).unwrap()
             )),
         ]
     );
@@ -663,10 +687,12 @@ fn test_document_data_impl_column_values_with_none() {
         field34: None,
         field35: BigInt::from(16),
         field36: None,
-        field37: vec![17],
+        field37: BigUint::from(17u32),
         field38: None,
-        field39: vec![vec!["18".to_string(), "19".to_string()]],
-        field40_with_underscore: None,
+        field39: vec![18],
+        field40: None,
+        field41: vec![vec!["19".to_string(), "20".to_string()]],
+        field42_with_underscore: None,
     };
     let (columns, column_values): (Vec<Column>, Vec<Option<ColumnValue>>) =
         document.column_values().into_iter().unzip();
@@ -710,10 +736,12 @@ fn test_document_data_impl_column_values_with_none() {
             None,
             Some(ColumnValue::BigInt(BigInt::from(16))),
             None,
-            Some(ColumnValue::Json(serde_json::to_value(vec![17]).unwrap())),
+            Some(ColumnValue::BigUint(BigUint::from(17u32))),
+            None,
+            Some(ColumnValue::Json(serde_json::to_value(vec![18]).unwrap())),
             None,
             Some(ColumnValue::Json(
-                serde_json::to_value(vec![vec!["18".to_string(), "19".to_string()]]).unwrap()
+                serde_json::to_value(vec![vec!["19".to_string(), "20".to_string()]]).unwrap()
             )),
             None,
         ]

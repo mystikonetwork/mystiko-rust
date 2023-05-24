@@ -1,5 +1,5 @@
 use crate::error::StorageError;
-use num_bigint::BigInt;
+use num_bigint::{BigInt, BigUint};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -28,6 +28,7 @@ pub enum ColumnType {
     F64,
     String,
     BigInt,
+    BigUint,
     Json,
 }
 
@@ -51,6 +52,7 @@ pub enum ColumnValue {
     F64(f64),
     String(String),
     BigInt(BigInt),
+    BigUint(BigUint),
     Json(Value),
 }
 
@@ -194,6 +196,12 @@ impl From<BigInt> for ColumnValue {
     }
 }
 
+impl From<BigUint> for ColumnValue {
+    fn from(value: BigUint) -> Self {
+        ColumnValue::BigUint(value)
+    }
+}
+
 impl From<Value> for ColumnValue {
     fn from(value: Value) -> Self {
         ColumnValue::Json(value)
@@ -221,6 +229,7 @@ impl Display for ColumnType {
             ColumnType::F64 => Display::fmt("f64", f),
             ColumnType::String => Display::fmt("string", f),
             ColumnType::BigInt => Display::fmt("bigint", f),
+            ColumnType::BigUint => Display::fmt("biguint", f),
             ColumnType::Json => Display::fmt("json", f),
         }
     }
@@ -247,6 +256,7 @@ impl Display for ColumnValue {
             ColumnValue::F64(value) => Display::fmt(&value, f),
             ColumnValue::String(value) => Display::fmt(&value, f),
             ColumnValue::BigInt(value) => Display::fmt(&value, f),
+            ColumnValue::BigUint(value) => Display::fmt(&value, f),
             ColumnValue::Json(value) => Display::fmt(&value, f),
         }
     }
@@ -273,6 +283,7 @@ impl ColumnValue {
             ColumnValue::F64(_) => ColumnType::F64,
             ColumnValue::String(_) => ColumnType::String,
             ColumnValue::BigInt(_) => ColumnType::BigInt,
+            ColumnValue::BigUint(_) => ColumnType::BigUint,
             ColumnValue::Json(_) => ColumnType::Json,
         }
     }
@@ -453,6 +464,16 @@ impl ColumnValue {
             _ => Err(StorageError::WrongColumnTypeError(
                 self.column_type().to_string(),
                 ColumnType::BigInt.to_string(),
+            )),
+        }
+    }
+
+    pub fn as_biguint(&self) -> Result<BigUint> {
+        match self {
+            ColumnValue::BigUint(value) => Ok(value.clone()),
+            _ => Err(StorageError::WrongColumnTypeError(
+                self.column_type().to_string(),
+                ColumnType::BigUint.to_string(),
             )),
         }
     }

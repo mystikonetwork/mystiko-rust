@@ -4,6 +4,7 @@ use mystiko_storage::filter::{Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use num_bigint::{BigInt, BigUint};
 use std::path::Path;
 use std::sync::Arc;
 use tempfile::tempdir;
@@ -44,8 +45,12 @@ pub struct TestDocument {
     pub field32: Option<f64>,
     pub field33: String,
     pub field34: Option<String>,
-    pub field35: Vec<u8>,
-    pub field36: Option<Vec<u8>>,
+    pub field35: BigInt,
+    pub field36: Option<BigInt>,
+    pub field37: BigUint,
+    pub field38: Option<BigUint>,
+    pub field39: Vec<u8>,
+    pub field40: Option<Vec<u8>>,
 }
 
 #[tokio::test]
@@ -95,14 +100,14 @@ async fn test_update() {
     let mut documents = collection.insert_batch(&test_documents()).await.unwrap();
     documents[0].data.field1 = false;
     documents[1].data.field2 = None;
-    documents[2].data.field35 = vec![];
+    documents[2].data.field39 = vec![];
     collection.update(&documents[0]).await.unwrap();
     collection.update_batch(&documents[1..]).await.unwrap();
     documents = collection.find_all().await.unwrap();
     documents.sort_by_key(|d| d.data.field3);
     assert!(!documents[0].data.field1);
     assert!(documents[1].data.field2.is_none());
-    assert!(documents[2].data.field35.is_empty());
+    assert!(documents[2].data.field39.is_empty());
 }
 
 #[tokio::test]
@@ -221,8 +226,12 @@ fn test_documents() -> Vec<TestDocument> {
             field32: None,
             field33: "field33".to_string(),
             field34: None,
-            field35: vec![1, 2, 3, 4],
+            field35: BigInt::from(-0xdeadbeefbaadbabei128),
             field36: None,
+            field37: BigUint::from(0xdeadbeefbaadbabeu128),
+            field38: None,
+            field39: vec![1, 2, 3, 4],
+            field40: None,
         },
         TestDocument {
             field1: true,
@@ -259,8 +268,12 @@ fn test_documents() -> Vec<TestDocument> {
             field32: Some(f64::MAX + 2.0),
             field33: "field33_1".to_string(),
             field34: Some("field33_2".to_string()),
-            field35: vec![10, 20, 30, 40],
-            field36: Some(vec![50, 60, 70, 80]),
+            field35: BigInt::from(-0xdeadbeefbaadbabdi128),
+            field36: None,
+            field37: BigUint::from(0xdeadbeefbaadbabfu128),
+            field38: None,
+            field39: vec![10, 20, 30, 40],
+            field40: Some(vec![50, 60, 70, 80]),
         },
         TestDocument {
             field1: true,
@@ -297,8 +310,12 @@ fn test_documents() -> Vec<TestDocument> {
             field32: Some(f64::MAX + 3.0),
             field33: "field33_2".to_string(),
             field34: Some("field33_3".to_string()),
-            field35: vec![11, 21, 31, 41],
-            field36: Some(vec![51, 52, 53, 54]),
+            field35: BigInt::from(-0xdeadbeefbaadbabci128),
+            field36: Some(BigInt::from(-0xdeadbeefbaadbabbi128)),
+            field37: BigUint::from(0xdeadbeefbaadbac0u128),
+            field38: Some(BigUint::from(0xdeadbeefbaadbac1u128)),
+            field39: vec![11, 21, 31, 41],
+            field40: Some(vec![51, 52, 53, 54]),
         },
     ]
 }
