@@ -200,6 +200,8 @@ fn test_format_count() {
     let formatter = SqlStatementFormatter::default();
     let statement1 = formatter.format_count::<TestDocument, QueryFilter>(None);
     assert_eq!(statement1.statement.statement, "SELECT COUNT(*) FROM `test_documents`");
+    let statement1 = formatter.format_count::<TestDocument, _>(Some(QueryFilterBuilder::new().build()));
+    assert_eq!(statement1.statement.statement, "SELECT COUNT(*) FROM `test_documents`");
     assert!(statement1.statement.column_values.is_empty());
     let statement2 = formatter.format_count::<TestDocument, _>(Some(SubFilter::equal(TestDocumentColumn::Field5, 1u8)));
     assert_eq!(
@@ -247,6 +249,16 @@ fn test_format_count() {
 fn test_format_find() {
     let formatter = SqlStatementFormatter::default();
     let statement1 = formatter.format_find::<TestDocument, QueryFilter>(None);
+    assert_eq!(
+        statement1.statement,
+        "SELECT `id`, `created_at`, `updated_at`, \
+        `field1`, `field2`, `field3`, `field4`, `field5`, `field6`, `field7`, `field8`, \
+        `field9`, `field10`, `field11`, `field12`, `field13`, `field14`, `field15`, `field16`, \
+        `field17`, `field18`, `field19`, `field20`, `field21`, `field22`, `field23`, `field24`, \
+        `field25`, `field26`, `field27`, `field28`, `field29`, `field30`, `field31`, `field32`, \
+        `field33`, `field34`, `field35`, `field36`, `field37`, `field38`, `field39`, `field40` FROM `test_documents`"
+    );
+    let statement1 = formatter.format_find::<TestDocument, QueryFilter>(Some(QueryFilterBuilder::new().build()));
     assert_eq!(
         statement1.statement,
         "SELECT `id`, `created_at`, `updated_at`, \

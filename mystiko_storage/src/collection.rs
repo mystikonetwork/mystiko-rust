@@ -19,12 +19,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
 
     pub async fn insert<D: DocumentData>(&self, data: &D) -> Result<Document<D>, StorageError> {
         let now = current_timestamp();
-        let document: Document<D> = Document {
-            id: self.storage.uuid().await?,
-            created_at: now,
-            updated_at: now,
-            data: data.clone(),
-        };
+        let document: Document<D> = Document::new(self.storage.uuid().await?, now, now, data.clone());
         self.storage.execute(self.formatter.format_insert(&document)).await?;
         Ok(document)
     }
@@ -36,12 +31,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
             let mut documents: Vec<Document<D>> = Vec::new();
             let now = current_timestamp();
             for doc in data.iter() {
-                let document: Document<D> = Document {
-                    id: self.storage.uuid().await?,
-                    created_at: now,
-                    updated_at: now,
-                    data: doc.clone(),
-                };
+                let document: Document<D> = Document::new(self.storage.uuid().await?, now, now, doc.clone());
                 documents.push(document);
             }
             self.storage
@@ -139,9 +129,12 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
     }
 
     pub async fn migrate<D: DocumentData>(&self) -> Result<Document<MigrationHistory>, StorageError> {
-        let collection_exists = self.collection_exists(MigrationHistory::collection_name()).await?;
+        let collection_exists = self
+            .collection_exists(Document::<MigrationHistory>::collection_name())
+            .await?;
         let existing: Option<Document<MigrationHistory>> = if collection_exists {
-            let query_filter = SubFilter::equal(MigrationHistoryColumn::CollectionName, D::collection_name());
+            let query_filter =
+                SubFilter::equal(MigrationHistoryColumn::CollectionName, Document::<D>::collection_name());
             self.find_one(Some(query_filter)).await?
         } else {
             None
@@ -179,7 +172,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                     created_at: now,
                     updated_at: now,
                     data: MigrationHistory {
-                        collection_name: D::collection_name().to_string(),
+                        collection_name: Document::<D>::collection_name().to_string(),
                         version: Document::<D>::version(),
                     },
                 };
