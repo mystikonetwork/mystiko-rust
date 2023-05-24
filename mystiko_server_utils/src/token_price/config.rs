@@ -14,7 +14,7 @@ pub struct TokenPriceConfig {
 }
 
 impl TokenPriceConfig {
-    pub fn new(run_mod: &str, config_path: &str) -> anyhow::Result<Self> {
+    pub fn new(run_mod: &str, config_path: Option<&str>) -> anyhow::Result<Self> {
         let mut ids = HashMap::new();
         ids.insert("ETH".to_string(), 1027);
         ids.insert("mETH".to_string(), 1027);
@@ -49,9 +49,11 @@ impl TokenPriceConfig {
             s = s.set_default("price_cache_ttl", 1800)?;
         }
 
-        let run_config_path = format!("{}/token_price.json", config_path);
-        if Path::exists(Path::new(&run_config_path)) {
-            s = s.add_source(File::with_name(&run_config_path));
+        if config_path.is_some() {
+            let run_config_path = format!("{}/token_price.json", config_path.unwrap());
+            if Path::exists(Path::new(&run_config_path)) {
+                s = s.add_source(File::with_name(&run_config_path));
+            }
         }
 
         let cfg = s
