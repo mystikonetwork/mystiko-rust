@@ -5,18 +5,16 @@ use bip32::XPrv;
 use futures::TryFutureExt;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_database::database::Database;
-use mystiko_database::document::account::{
-    Account, PUBLIC_KEY_FIELD_NAME, SHIELDED_ADDRESS_FIELD_NAME, WALLET_ID_FIELD_NAME,
-};
+use mystiko_database::document::account::{Account, AccountColumn};
 use mystiko_database::document::wallet::Wallet;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::{
     combined_public_key, combined_secret_key, encryption_public_key, separate_secret_keys, verification_public_key,
 };
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
-use mystiko_storage::document::{Document, DocumentRawData, DOCUMENT_ID_FIELD};
+use mystiko_storage::document::{Document, DocumentColumn};
 use mystiko_storage::filter::{QueryFilter, QueryFilterBuilder, SubFilter};
-use mystiko_storage::formatter::StatementFormatter;
+use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_types::AccountStatus;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
@@ -28,9 +26,9 @@ pub const DEFAULT_ACCOUNT_SCAN_SIZE: u32 = 10000;
 pub const DEFAULT_KEY_DERIVE_PATH: &str = "m/44'/94085'/0'";
 
 #[derive(Debug)]
-pub struct AccountHandler<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    db: Arc<Database<F, R, S>>,
-    wallets: WalletHandler<F, R, S>,
+pub struct AccountHandler<F: StatementFormatter, S: Storage> {
+    db: Arc<Database<F, S>>,
+    wallets: WalletHandler<F, S>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -55,13 +53,12 @@ pub struct UpdateAccountOptions {
     pub status: Option<AccountStatus>,
 }
 
-impl<F, R, S> AccountHandler<F, R, S>
+impl<F, S> AccountHandler<F, S>
 where
     F: StatementFormatter,
-    R: DocumentRawData,
-    S: Storage<R>,
+    S: Storage,
 {
-    pub fn new(db: Arc<Database<F, R, S>>) -> Self {
+    pub fn new(db: Arc<Database<F, S>>) -> Self {
         Self {
             db: db.clone(),
             wallets: WalletHandler::new(db),
@@ -82,11 +79,7 @@ where
 
     pub async fn count<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<u64> {
         let filter = self.wrap_filter(Some(filter)).await?;
-        self.db
-            .accounts
-            .count(filter)
-            .await
-            .map_err(MystikoError::DatabaseError)
+        self.db.accounts.count(filter).await.map_err(MystikoError::StorageError)
     }
 
     pub async fn count_all(&self) -> Result<u64> {
@@ -95,7 +88,7 @@ where
 
     pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<Document<Account>>> {
         let filter = self.wrap_filter(Some(filter)).await?;
-        self.db.accounts.find(filter).await.map_err(MystikoError::DatabaseError)
+        self.db.accounts.find(filter).await.map_err(MystikoError::StorageError)
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Account>>> {
@@ -103,21 +96,21 @@ where
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Account>>> {
-        self.find_one_by_identifier(id, DOCUMENT_ID_FIELD).await
+        self.find_one_by_identifier(id, DocumentColumn::Id).await
     }
 
     pub async fn find_by_shielded_address(&self, shielded_address: &str) -> Result<Option<Document<Account>>> {
-        self.find_one_by_identifier(shielded_address, SHIELDED_ADDRESS_FIELD_NAME)
+        self.find_one_by_identifier(shielded_address, AccountColumn::ShieldedAddress)
             .await
     }
 
     pub async fn find_by_public_key(&self, shielded_address: &str) -> Result<Option<Document<Account>>> {
-        self.find_one_by_identifier(shielded_address, PUBLIC_KEY_FIELD_NAME)
+        self.find_one_by_identifier(shielded_address, AccountColumn::PublicKey)
             .await
     }
 
     pub async fn update_by_id(&self, id: &str, options: &UpdateAccountOptions) -> Result<Document<Account>> {
-        self.update_by_identifier(id, DOCUMENT_ID_FIELD, options).await
+        self.update_by_identifier(id, DocumentColumn::Id, options).await
     }
 
     pub async fn update_by_shielded_address(
@@ -125,7 +118,7 @@ where
         shielded_address: &str,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
-        self.update_by_identifier(shielded_address, SHIELDED_ADDRESS_FIELD_NAME, options)
+        self.update_by_identifier(shielded_address, AccountColumn::ShieldedAddress, options)
             .await
     }
 
@@ -134,7 +127,7 @@ where
         public_key: &str,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
-        self.update_by_identifier(public_key, PUBLIC_KEY_FIELD_NAME, options)
+        self.update_by_identifier(public_key, AccountColumn::PublicKey, options)
             .await
     }
 
@@ -154,7 +147,7 @@ where
             .accounts
             .update_batch(&accounts)
             .await
-            .map_err(MystikoError::DatabaseError)?;
+            .map_err(MystikoError::StorageError)?;
         log::info!(
             "successfully updated the encryption of all accounts from wallet(id = \"{}\")",
             &wallet.id
@@ -163,12 +156,12 @@ where
     }
 
     pub async fn export_secret_key_by_id(&self, wallet_password: &str, id: &str) -> Result<String> {
-        self.export_secret_key_by_identifier(wallet_password, id, DOCUMENT_ID_FIELD)
+        self.export_secret_key_by_identifier(wallet_password, id, DocumentColumn::Id)
             .await
     }
 
     pub async fn export_secret_key_by_public_key(&self, wallet_password: &str, public_key: &str) -> Result<String> {
-        self.export_secret_key_by_identifier(wallet_password, public_key, PUBLIC_KEY_FIELD_NAME)
+        self.export_secret_key_by_identifier(wallet_password, public_key, AccountColumn::PublicKey)
             .await
     }
 
@@ -177,7 +170,7 @@ where
         wallet_password: &str,
         shielded_address: &str,
     ) -> Result<String> {
-        self.export_secret_key_by_identifier(wallet_password, shielded_address, SHIELDED_ADDRESS_FIELD_NAME)
+        self.export_secret_key_by_identifier(wallet_password, shielded_address, AccountColumn::ShieldedAddress)
             .await
     }
 
@@ -189,27 +182,32 @@ where
         };
         filter
             .conditions
-            .push(SubFilter::Equal(WALLET_ID_FIELD_NAME.to_string(), wallet.id).into());
+            .push(SubFilter::equal(AccountColumn::WalletId, wallet.id).into());
         Ok(filter)
     }
 
-    async fn find_one_by_identifier(&self, identifier: &str, field_name: &str) -> Result<Option<Document<Account>>> {
-        let filter = SubFilter::Equal(field_name.to_string(), identifier.to_string());
+    async fn find_one_by_identifier<T: ToString>(
+        &self,
+        identifier: &str,
+        field_name: T,
+    ) -> Result<Option<Document<Account>>> {
+        let filter = SubFilter::equal(field_name, identifier);
         let wrapped_filter = self.wrap_filter(Some(filter)).await?;
         self.db
             .accounts
             .find_one(wrapped_filter)
             .await
-            .map_err(MystikoError::DatabaseError)
+            .map_err(MystikoError::StorageError)
     }
 
-    async fn update_by_identifier(
+    async fn update_by_identifier<T: ToString>(
         &self,
         identifier: &str,
-        field_name: &str,
+        field_name: T,
         options: &UpdateAccountOptions,
     ) -> Result<Document<Account>> {
         self.wallets.check_password(&options.wallet_password).await?;
+        let field_name_str = field_name.to_string();
         if let Some(mut account) = self.find_one_by_identifier(identifier, field_name).await? {
             let mut has_update = false;
             if let Some(new_name) = &options.name {
@@ -235,7 +233,7 @@ where
                     .db
                     .accounts
                     .update(&account)
-                    .map_err(MystikoError::DatabaseError)
+                    .map_err(MystikoError::StorageError)
                     .await?;
                 log::info!(
                     "successfully updated an account(id = \"{}\") with options: {:?}",
@@ -247,27 +245,22 @@ where
                 Ok(account)
             }
         } else {
-            Err(MystikoError::NoSuchAccountError(
-                field_name.to_string(),
-                identifier.to_string(),
-            ))
+            Err(MystikoError::NoSuchAccountError(field_name_str, identifier.to_string()))
         }
     }
 
-    async fn export_secret_key_by_identifier(
+    async fn export_secret_key_by_identifier<T: ToString>(
         &self,
         wallet_password: &str,
         identifier: &str,
-        field_name: &str,
+        field_name: T,
     ) -> Result<String> {
         self.wallets.check_password(wallet_password).await?;
+        let field_name_str = field_name.to_string();
         if let Some(account) = self.find_one_by_identifier(identifier, field_name).await? {
             Ok(decrypt_symmetric(wallet_password, &account.data.encrypted_secret_key)?)
         } else {
-            Err(MystikoError::NoSuchAccountError(
-                field_name.to_string(),
-                identifier.to_string(),
-            ))
+            Err(MystikoError::NoSuchAccountError(field_name_str, identifier.to_string()))
         }
     }
 
@@ -354,13 +347,13 @@ where
                     .wallets
                     .update(wallet)
                     .await
-                    .map_err(MystikoError::DatabaseError)?;
+                    .map_err(MystikoError::StorageError)?;
             }
             self.db
                 .accounts
                 .insert(&account)
                 .await
-                .map_err(MystikoError::DatabaseError)
+                .map_err(MystikoError::StorageError)
         }
     }
 }

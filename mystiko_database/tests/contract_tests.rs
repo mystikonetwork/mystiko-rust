@@ -1,18 +1,17 @@
 extern crate mystiko_database;
 
-use mystiko_database::collection::contract::ContractCollection;
-use mystiko_database::document::contract::{Contract, CONTRACT_ADDRESS_FIELD_NAME, DISABLED_FIELD_NAME};
+use mystiko_database::document::contract::{Contract, ContractCollection, ContractColumn};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::ContractType;
 use std::sync::Arc;
 
-async fn create_contracts() -> ContractCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
+async fn create_contracts() -> ContractCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let contracts = ContractCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
+    let contracts = ContractCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
     contracts.migrate().await.unwrap();
     assert!(contracts.collection_exists().await.unwrap());
     contracts
@@ -43,7 +42,7 @@ async fn test_contracts_crud() {
     // testing insert_batch
     inserted_contracts.extend(
         contracts
-            .insert_batch(&vec![
+            .insert_batch(&[
                 Contract {
                     contract_type: ContractType::Deposit,
                     chain_id: 5,
@@ -73,7 +72,7 @@ async fn test_contracts_crud() {
     // testing count
     assert_eq!(
         contracts
-            .count(SubFilter::Equal(DISABLED_FIELD_NAME.into(), 1.to_string()))
+            .count(SubFilter::equal(ContractColumn::Disabled, 1))
             .await
             .unwrap(),
         1
@@ -90,9 +89,9 @@ async fn test_contracts_crud() {
     assert_eq!(found_contracts, inserted_contracts[1..]);
     // testing find_one
     let mut found_contract = contracts
-        .find_one(SubFilter::Equal(
-            CONTRACT_ADDRESS_FIELD_NAME.into(),
-            String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
+        .find_one(SubFilter::equal(
+            ContractColumn::ContractAddress,
+            "0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d",
         ))
         .await
         .unwrap()
@@ -117,18 +116,15 @@ async fn test_contracts_crud() {
     contracts.delete(&inserted_contracts[0]).await.unwrap();
     assert_eq!(contracts.count_all().await.unwrap(), 2);
     // testing delete_batch
-    contracts
-        .delete_batch(&vec![inserted_contracts[1].clone()])
-        .await
-        .unwrap();
+    contracts.delete_batch(&[inserted_contracts[1].clone()]).await.unwrap();
     assert_eq!(contracts.count_all().await.unwrap(), 1);
     // testing delete_by_filter
     contracts.insert(&inserted_contracts[1].data).await.unwrap();
     assert_eq!(contracts.count_all().await.unwrap(), 2);
     contracts
-        .delete_by_filter(SubFilter::Equal(
-            CONTRACT_ADDRESS_FIELD_NAME.into(),
-            String::from("0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
+        .delete_by_filter(SubFilter::equal(
+            ContractColumn::ContractAddress,
+            "0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d",
         ))
         .await
         .unwrap();

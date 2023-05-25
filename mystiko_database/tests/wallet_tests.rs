@@ -1,15 +1,14 @@
-use mystiko_database::collection::wallet::WalletCollection;
-use mystiko_database::document::wallet::{Wallet, ACCOUNT_NONCE_FIELD_NAME, HASHED_PASSWORD_FIELD_NAME};
+use mystiko_database::document::wallet::{Wallet, WalletCollection, WalletColumn};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
 
-async fn create_wallets() -> WalletCollection<SqlFormatter, SqliteRawData, SqliteStorage> {
+async fn create_wallets() -> WalletCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let wallets = WalletCollection::new(Arc::new(Collection::new(SqlFormatter {}, storage)));
+    let wallets = WalletCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
     wallets.migrate().await.unwrap();
     assert!(wallets.collection_exists().await.unwrap());
     wallets
@@ -33,7 +32,7 @@ async fn test_wallets_crud() {
     );
     inserted_wallets.extend(
         wallets
-            .insert_batch(&vec![
+            .insert_batch(&[
                 Wallet {
                     encrypted_entropy: String::from("encrypted entropy 02"),
                     hashed_password: String::from("hashed password 02"),
@@ -53,7 +52,7 @@ async fn test_wallets_crud() {
     assert_eq!(wallets.count_all().await.unwrap(), 3);
     assert_eq!(
         wallets
-            .count(SubFilter::Equal(ACCOUNT_NONCE_FIELD_NAME.into(), 2.to_string()))
+            .count(SubFilter::equal(WalletColumn::AccountNonce, 2))
             .await
             .unwrap(),
         1
@@ -68,10 +67,7 @@ async fn test_wallets_crud() {
         .unwrap();
     assert_eq!(found_wallets, inserted_wallets[1..]);
     let mut found_wallet = wallets
-        .find_one(SubFilter::Equal(
-            HASHED_PASSWORD_FIELD_NAME.into(),
-            String::from("hashed password 02"),
-        ))
+        .find_one(SubFilter::equal(WalletColumn::HashedPassword, "hashed password 02"))
         .await
         .unwrap()
         .unwrap();
@@ -94,7 +90,7 @@ async fn test_wallets_crud() {
     // testing delete/delete_batch/delete_by_filter/delete_all
     wallets.delete(&inserted_wallets[0]).await.unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 2);
-    wallets.delete_batch(&vec![inserted_wallets[1].clone()]).await.unwrap();
+    wallets.delete_batch(&[inserted_wallets[1].clone()]).await.unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 1);
     wallets
         .insert(&Wallet {
@@ -106,10 +102,7 @@ async fn test_wallets_crud() {
         .unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 2);
     wallets
-        .delete_by_filter(SubFilter::Equal(
-            HASHED_PASSWORD_FIELD_NAME.into(),
-            String::from("hashed password 01"),
-        ))
+        .delete_by_filter(SubFilter::equal(WalletColumn::HashedPassword, "hashed password 01"))
         .await
         .unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 1);

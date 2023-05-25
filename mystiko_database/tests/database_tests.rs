@@ -1,11 +1,11 @@
 use mystiko_database::database::Database;
-use mystiko_storage::formatter::SqlFormatter;
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorageBuilder;
 
 #[tokio::test]
 async fn test_database_migration() {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let database = Database::new(SqlFormatter {}, storage);
+    let database = Database::new(SqlStatementFormatter::default(), storage);
     database.migrate().await.unwrap();
     assert!(database.accounts.collection_exists().await.unwrap());
     assert!(database.deposits.collection_exists().await.unwrap());

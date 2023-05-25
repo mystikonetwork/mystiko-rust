@@ -5,20 +5,20 @@ use mystiko_core::handler::account::{
 use mystiko_core::handler::wallet::{CreateWalletOptions, WalletHandler};
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_database::database::Database;
-use mystiko_database::document::account::SCAN_SIZE_FIELD_NAME;
+use mystiko_database::document::account::AccountColumn;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::full_public_key;
 use mystiko_protocol::types::{FullPk, FullSk};
 use mystiko_storage::filter::SubFilter;
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::AccountStatus;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
 
-type TypedDatabase = Database<SqlFormatter, SqliteRawData, SqliteStorage>;
-type TypedWalletHandler = WalletHandler<SqlFormatter, SqliteRawData, SqliteStorage>;
-type TypedAccountHandler = AccountHandler<SqlFormatter, SqliteRawData, SqliteStorage>;
+type TypedDatabase = Database<SqlStatementFormatter, SqliteStorage>;
+type TypedWalletHandler = WalletHandler<SqlStatementFormatter, SqliteStorage>;
+type TypedAccountHandler = AccountHandler<SqlStatementFormatter, SqliteStorage>;
 
 const DEFAULT_WALLET_PASSWORD: &str = "P@ssw0rd";
 
@@ -171,7 +171,7 @@ async fn test_find() {
     assert_eq!(accounts, vec![account1.clone()]);
     options.scan_size = Some(200);
     let account2 = account_handler.create(&options).await.unwrap();
-    let filter = SubFilter::LessEqual(SCAN_SIZE_FIELD_NAME.to_string(), String::from("200"));
+    let filter = SubFilter::less_equal(AccountColumn::ScanSize, 200);
     accounts = account_handler.find(filter).await.unwrap();
     assert_eq!(accounts, vec![account2.clone()]);
     accounts = account_handler.find_all().await.unwrap();
@@ -260,7 +260,7 @@ async fn test_count() {
     options.scan_size = Some(200);
     account_handler.create(&options).await.unwrap();
     assert_eq!(account_handler.count_all().await.unwrap(), 2);
-    let filter = SubFilter::LessEqual(SCAN_SIZE_FIELD_NAME.to_string(), String::from("200"));
+    let filter = SubFilter::less_equal(AccountColumn::ScanSize, 200);
     assert_eq!(account_handler.count(filter).await.unwrap(), 1);
 }
 

@@ -1,34 +1,34 @@
 #![forbid(unsafe_code)]
 
-use crate::collection::account::AccountCollection;
-use crate::collection::chain::ChainCollection;
-use crate::collection::commitment::CommitmentCollection;
-use crate::collection::contract::ContractCollection;
-use crate::collection::deposit::DepositCollection;
-use crate::collection::nullifier::NullifierCollection;
-use crate::collection::transaction::TransactionCollection;
-use crate::collection::wallet::WalletCollection;
+use crate::document::account::AccountCollection;
+use crate::document::chain::ChainCollection;
+use crate::document::commitment::CommitmentCollection;
+use crate::document::contract::ContractCollection;
+use crate::document::deposit::DepositCollection;
+use crate::document::nullifier::NullifierCollection;
+use crate::document::transaction::TransactionCollection;
+use crate::document::wallet::WalletCollection;
 use anyhow::Result;
 use mystiko_storage::collection::Collection;
-use mystiko_storage::document::{Document, DocumentRawData};
-use mystiko_storage::formatter::StatementFormatter;
-use mystiko_storage::migration::Migration;
+use mystiko_storage::document::Document;
+use mystiko_storage::formatter::types::StatementFormatter;
+use mystiko_storage::migration::history::MigrationHistory;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
 
 #[derive(Debug)]
-pub struct Database<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    pub accounts: AccountCollection<F, R, S>,
-    pub chains: ChainCollection<F, R, S>,
-    pub commitments: CommitmentCollection<F, R, S>,
-    pub contracts: ContractCollection<F, R, S>,
-    pub deposits: DepositCollection<F, R, S>,
-    pub nullifiers: NullifierCollection<F, R, S>,
-    pub transactions: TransactionCollection<F, R, S>,
-    pub wallets: WalletCollection<F, R, S>,
+pub struct Database<F: StatementFormatter, S: Storage> {
+    pub accounts: AccountCollection<F, S>,
+    pub chains: ChainCollection<F, S>,
+    pub commitments: CommitmentCollection<F, S>,
+    pub contracts: ContractCollection<F, S>,
+    pub deposits: DepositCollection<F, S>,
+    pub nullifiers: NullifierCollection<F, S>,
+    pub transactions: TransactionCollection<F, S>,
+    pub wallets: WalletCollection<F, S>,
 }
 
-impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S> {
+impl<F: StatementFormatter, S: Storage> Database<F, S> {
     pub fn new(formatter: F, storage: S) -> Self {
         let collection = Arc::new(Collection::new(formatter, storage));
         Database {
@@ -43,8 +43,8 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Database<F, R, S>
         }
     }
 
-    pub async fn migrate(&self) -> Result<Vec<Document<Migration>>> {
-        let migrations: Vec<Document<Migration>> = vec![
+    pub async fn migrate(&self) -> Result<Vec<Document<MigrationHistory>>> {
+        let migrations: Vec<Document<MigrationHistory>> = vec![
             self.accounts.migrate().await?,
             self.chains.migrate().await?,
             self.commitments.migrate().await?,

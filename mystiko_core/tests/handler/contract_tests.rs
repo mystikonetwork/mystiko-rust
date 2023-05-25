@@ -4,15 +4,15 @@ use mystiko_config::raw::mystiko::RawMystikoConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_core::handler::contract::ContractHandler;
 use mystiko_database::database::Database;
-use mystiko_storage::document::DOCUMENT_ID_FIELD;
+use mystiko_storage::document::DocumentColumn;
 use mystiko_storage::filter::SubFilter;
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::ContractType;
 use std::sync::Arc;
 
-type TypedDatabase = Database<SqlFormatter, SqliteRawData, SqliteStorage>;
-type TypedContractHandler = ContractHandler<SqlFormatter, SqliteRawData, SqliteStorage>;
+type TypedDatabase = Database<SqlStatementFormatter, SqliteStorage>;
+type TypedContractHandler = ContractHandler<SqlStatementFormatter, SqliteStorage>;
 
 async fn setup() -> (TypedContractHandler, Arc<TypedDatabase>, Arc<MystikoConfig>) {
     let database = Arc::new(create_database().await);
@@ -102,8 +102,8 @@ async fn test_contract_find() {
     );
     contracts.sort_by_key(|c| c.id.to_string());
 
-    let filter = SubFilter::IN(
-        DOCUMENT_ID_FIELD.to_string(),
+    let filter = SubFilter::in_list(
+        DocumentColumn::Id,
         vec![contracts[0].id.clone(), contracts[1].id.clone()],
     );
     let mut found_contracts = handler.find(filter).await.unwrap();
@@ -127,8 +127,8 @@ async fn test_contract_count() {
     let (handler, _, _) = setup().await;
     let contracts = handler.initialize().await.unwrap();
     assert_eq!(contracts.len() as u64, handler.count_all().await.unwrap());
-    let filter = SubFilter::IN(
-        DOCUMENT_ID_FIELD.to_string(),
+    let filter = SubFilter::in_list(
+        DocumentColumn::Id,
         vec![contracts[0].id.clone(), contracts[1].id.clone()],
     );
     assert_eq!(handler.count(filter).await.unwrap(), 2);
