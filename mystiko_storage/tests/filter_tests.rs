@@ -1,161 +1,202 @@
-use mystiko_storage::filter::*;
+use mystiko_storage::column::ColumnValue;
+use mystiko_storage::filter::{
+    Condition, ConditionOperator, Order, QueryFilter, QueryFilterBuilder, SubFilter, SubFilterOperator,
+};
 
 #[test]
-fn test_sub_filter() {
-    let sf1 = SubFilter::IsNull(String::from("c1"));
-    assert_eq!(sf1.to_sql(), "`c1` IS NULL");
-    let sf2 = SubFilter::IsNotNull(String::from("c2"));
-    assert_eq!(sf2.to_sql(), "`c2` IS NOT NULL");
-    let sf3 = SubFilter::Equal(String::from("c3"), String::from("v3"));
-    assert_eq!(sf3.to_sql(), "`c3` = 'v3'");
-    let sf4 = SubFilter::NotEqual(String::from("c4"), String::from("v4"));
-    assert_eq!(sf4.to_sql(), "`c4` != 'v4'");
-    let sf5 = SubFilter::Greater(String::from("c5"), String::from("v5"));
-    assert_eq!(sf5.to_sql(), "`c5` > 'v5'");
-    let sf6 = SubFilter::GreaterEqual(String::from("c6"), String::from("v6"));
-    assert_eq!(sf6.to_sql(), "`c6` >= 'v6'");
-    let sf7 = SubFilter::Less(String::from("c7"), String::from("v7"));
-    assert_eq!(sf7.to_sql(), "`c7` < 'v7'");
-    let sf8 = SubFilter::LessEqual(String::from("c8"), String::from("v8"));
-    assert_eq!(sf8.to_sql(), "`c8` <= 'v8'");
-    let sf9 = SubFilter::BetweenAnd(String::from("c9"), [String::from("v10"), String::from("v11")]);
-    assert_eq!(sf9.to_sql(), "`c9` BETWEEN 'v10' AND 'v11'");
-    let sf10 = SubFilter::IN(
-        String::from("c10"),
-        vec![String::from("v12"), String::from("v13"), String::from("v14")],
-    );
-    assert_eq!(sf10.to_sql(), "`c10` IN ('v12', 'v13', 'v14')");
+fn test_equal_filter() {
+    let equal_filter = SubFilter::equal("column1", 123i32);
+    assert_eq!(equal_filter.operator, SubFilterOperator::Equal);
+    assert_eq!(equal_filter.column, "column1");
+    assert_eq!(equal_filter.values, vec![ColumnValue::I32(123)]);
 }
 
 #[test]
-fn test_condition() {
-    let c1 = Condition::FILTER(SubFilter::Equal(String::from("c1"), String::from("v1")));
-    assert_eq!(c1.to_sql(), "`c1` = 'v1'");
-    let c2 = Condition::AND(vec![
-        SubFilter::Equal(String::from("c2"), String::from("v2")),
-        SubFilter::IsNull(String::from("c3")),
-    ]);
-    assert_eq!(c2.to_sql(), "`c2` = 'v2' AND `c3` IS NULL");
-    let c3 = Condition::OR(vec![
-        SubFilter::NotEqual(String::from("c3"), String::from("v3")),
-        SubFilter::IsNotNull(String::from("c4")),
-    ]);
-    assert_eq!(c3.to_sql(), "`c3` != 'v3' OR `c4` IS NOT NULL");
-    let c4 = Condition::AND(vec![SubFilter::Equal(String::from("c2"), String::from("v2"))]);
-    assert_eq!(c4.to_sql(), "`c2` = 'v2'");
-    let c5 = Condition::OR(vec![SubFilter::NotEqual(String::from("c3"), String::from("v3"))]);
-    assert_eq!(c5.to_sql(), "`c3` != 'v3'");
-    let c6 = Condition::OR(vec![]);
-    assert_eq!(c6.to_sql(), "");
+fn test_not_equal_filter() {
+    let not_equal_filter = SubFilter::not_equal("column1", 123i32);
+    assert_eq!(not_equal_filter.operator, SubFilterOperator::NotEqual);
+    assert_eq!(not_equal_filter.column, "column1");
+    assert_eq!(not_equal_filter.values, vec![ColumnValue::I32(123)]);
 }
 
 #[test]
-fn test_order_by() {
-    let o1: OrderBy = OrderBy {
-        columns: vec![],
-        order: Order::ASC,
-    };
-    assert_eq!(o1.to_sql(), "");
-    let o2: OrderBy = OrderBy {
-        columns: vec![String::from("c1"), String::from("c2")],
-        order: Order::ASC,
-    };
-    assert_eq!(o2.to_sql(), "ORDER BY `c1`, `c2` ASC");
-    let o3: OrderBy = OrderBy {
-        columns: vec![String::from("c3")],
-        order: Order::DESC,
-    };
-    assert_eq!(o3.to_sql(), "ORDER BY `c3` DESC");
+fn test_less_filter() {
+    let less_filter = SubFilter::less("column1", 123i32);
+    assert_eq!(less_filter.operator, SubFilterOperator::Less);
+    assert_eq!(less_filter.column, "column1");
+    assert_eq!(less_filter.values, vec![ColumnValue::I32(123)]);
 }
 
 #[test]
-fn test_query_filter() {
-    let qf1 = QueryFilterBuilder::new().filters(vec![]).build();
-    assert_eq!(qf1.to_sql(), "");
-    let qf2: QueryFilter = Condition::FILTER(SubFilter::IsNull(String::from("c1"))).into();
-    assert_eq!(qf2.to_sql(), "`c1` IS NULL");
-    let qf3 = QueryFilterBuilder::new()
-        .filters(vec![Condition::FILTER(SubFilter::Equal(
-            String::from("c2"),
-            String::from("v2"),
-        ))])
-        .limit(30)
-        .build();
-    assert_eq!(qf3.to_sql(), "`c2` = 'v2' LIMIT 30");
-    let qf4 = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::Greater(
-            String::from("c3"),
-            String::from("v3"),
-        )))
-        .order_by(vec![String::from("c4")], Order::DESC)
-        .build();
-    assert_eq!(qf4.to_sql(), "`c3` > 'v3' ORDER BY `c4` DESC");
-    let qf5 = QueryFilterBuilder::new()
-        .filter(Condition::FILTER(SubFilter::IsNull(String::from("c4"))))
-        .offset(12)
-        .build();
-    assert_eq!(qf5.to_sql(), "`c4` IS NULL");
-    let qf6: QueryFilter = vec![
-        SubFilter::IsNull(String::from("c5")),
-        SubFilter::Equal(String::from("c6"), String::from("v6")),
-    ]
-    .into();
-    assert_eq!(qf6.to_sql(), "`c5` IS NULL AND `c6` = 'v6'");
-    let qf6: QueryFilter = (
-        vec![
-            SubFilter::IsNull(String::from("c5")),
-            SubFilter::Equal(String::from("c6"), String::from("v6")),
-        ],
-        ConditionOperator::OR,
-    )
-        .into();
-    assert_eq!(qf6.to_sql(), "`c5` IS NULL OR `c6` = 'v6'");
-    let qf6: QueryFilter = (
-        vec![
-            SubFilter::IsNotNull(String::from("c5")),
-            SubFilter::Equal(String::from("c6"), String::from("v6")),
-        ],
-        ConditionOperator::AND,
-    )
-        .into();
-    assert_eq!(qf6.to_sql(), "`c5` IS NOT NULL AND `c6` = 'v6'");
-    let qf7: QueryFilter = vec![
-        Condition::FILTER(SubFilter::Equal(String::from("c7"), String::from("v7"))),
-        Condition::OR(vec![
-            SubFilter::IsNotNull(String::from("c8")),
-            SubFilter::Less(String::from("c9"), String::from("v9")),
-        ]),
-    ]
-    .into();
-    assert_eq!(qf7.to_sql(), "`c7` = 'v7' AND (`c8` IS NOT NULL OR `c9` < 'v9')");
-    let qf8 = QueryFilterBuilder::new()
-        .filters(vec![
-            Condition::OR(vec![
-                SubFilter::Equal(String::from("c10"), String::from("v10")),
-                SubFilter::IN(String::from("c11"), vec![String::from("v11"), String::from("v12")]),
-            ]),
-            Condition::AND(vec![
-                SubFilter::BetweenAnd(String::from("c12"), [String::from("v13"), String::from("v14")]),
-                SubFilter::GreaterEqual(String::from("c13"), String::from("v15")),
-            ]),
-            Condition::AND(vec![]),
-        ])
-        .limit(30)
-        .offset(40)
-        .order_by(vec![String::from("c15")], Order::ASC)
-        .build();
+fn test_less_equal_filter() {
+    let less_equal_filter = SubFilter::less_equal("column1", 123i32);
+    assert_eq!(less_equal_filter.operator, SubFilterOperator::LessEqual);
+    assert_eq!(less_equal_filter.column, "column1");
+    assert_eq!(less_equal_filter.values, vec![ColumnValue::I32(123)]);
+}
+
+#[test]
+fn test_greater_filter() {
+    let greater_filter = SubFilter::greater("column1", 123i32);
+    assert_eq!(greater_filter.operator, SubFilterOperator::Greater);
+    assert_eq!(greater_filter.column, "column1");
+    assert_eq!(greater_filter.values, vec![ColumnValue::I32(123)]);
+}
+
+#[test]
+fn test_greater_equal_filter() {
+    let greater_equal_filter = SubFilter::greater_equal("column1", 123i32);
+    assert_eq!(greater_equal_filter.operator, SubFilterOperator::GreaterEqual);
+    assert_eq!(greater_equal_filter.column, "column1");
+    assert_eq!(greater_equal_filter.values, vec![ColumnValue::I32(123)]);
+}
+
+#[test]
+fn test_between_and_filter() {
+    let between_and_filter = SubFilter::between_and("column1", 123i32, 456i32);
+    assert_eq!(between_and_filter.operator, SubFilterOperator::BetweenAnd);
+    assert_eq!(between_and_filter.column, "column1");
     assert_eq!(
-        qf8.to_sql(),
-        "\
-            (`c10` = 'v10' OR `c11` IN ('v11', 'v12')) \
-            AND (`c12` BETWEEN 'v13' AND 'v14' AND `c13` >= 'v15') \
-            ORDER BY `c15` ASC LIMIT 30 OFFSET 40"
+        between_and_filter.values,
+        vec![ColumnValue::I32(123), ColumnValue::I32(456)]
     );
-    let qf9: QueryFilter = (qf8.conditions, ConditionOperator::OR).into();
+}
+
+#[test]
+fn test_in_list_filter() {
+    let in_list_filter = SubFilter::in_list("column1", vec![123i32, 456i32]);
+    assert_eq!(in_list_filter.operator, SubFilterOperator::In);
+    assert_eq!(in_list_filter.column, "column1");
     assert_eq!(
-        qf9.to_sql(),
-        "\
-            (`c10` = 'v10' OR `c11` IN ('v11', 'v12')) \
-            OR (`c12` BETWEEN 'v13' AND 'v14' AND `c13` >= 'v15')"
+        in_list_filter.values,
+        vec![ColumnValue::I32(123), ColumnValue::I32(456)]
     );
+}
+
+#[test]
+fn test_is_null_filter() {
+    let is_null_filter = SubFilter::is_null("column1");
+    assert_eq!(is_null_filter.operator, SubFilterOperator::IsNull);
+    assert_eq!(is_null_filter.column, "column1");
+    assert_eq!(is_null_filter.values, vec![]);
+}
+
+#[test]
+fn test_is_not_null_filter() {
+    let is_not_null_filter = SubFilter::is_not_null("column1");
+    assert_eq!(is_not_null_filter.operator, SubFilterOperator::IsNotNull);
+    assert_eq!(is_not_null_filter.column, "column1");
+    assert_eq!(is_not_null_filter.values, vec![]);
+}
+
+#[test]
+fn test_and_condition() {
+    let sub_filters = vec![SubFilter::equal("column1", 123i32), SubFilter::equal("column2", 456i32)];
+    let condition = Condition::and(sub_filters.clone());
+    assert_eq!(condition.operator, ConditionOperator::AND);
+    assert_eq!(condition.sub_filters, sub_filters);
+}
+
+#[test]
+fn test_or_condition() {
+    let sub_filters = vec![SubFilter::equal("column1", 123i32), SubFilter::equal("column2", 456i32)];
+    let condition = Condition::or(sub_filters.clone());
+    assert_eq!(condition.operator, ConditionOperator::OR);
+    assert_eq!(condition.sub_filters, sub_filters);
+}
+
+#[test]
+fn test_single_filter_condition() {
+    let sub_filter = SubFilter::equal("column1", 123i32);
+    let condition = Condition::filter(sub_filter.clone());
+    assert_eq!(condition.operator, ConditionOperator::AND);
+    assert_eq!(condition.sub_filters, vec![sub_filter]);
+}
+
+#[test]
+fn test_query_filter_builder() {
+    let conditions: Vec<Condition> = vec![
+        Condition::filter(SubFilter::equal("column1", 123i32)),
+        Condition::filter(SubFilter::equal("column2", 456i32)),
+    ];
+    let query_filter = QueryFilterBuilder::new()
+        .filter(conditions[0].clone())
+        .filters(conditions[1..].to_vec())
+        .filter_operator(ConditionOperator::OR)
+        .limit(10)
+        .offset(20)
+        .order_by("column1", Order::DESC)
+        .build();
+    assert_eq!(query_filter.conditions, conditions);
+    assert_eq!(query_filter.conditions_operator, ConditionOperator::OR);
+    assert_eq!(query_filter.limit.unwrap(), 10);
+    assert_eq!(query_filter.offset.unwrap(), 20);
+    assert_eq!(query_filter.order_by.as_ref().unwrap().order, Order::DESC);
+    assert_eq!(query_filter.order_by.as_ref().unwrap().columns, vec!["column1"]);
+}
+
+#[test]
+fn test_sub_filter_to_condition() {
+    let sub_filters = vec![SubFilter::equal("column1", 123i32), SubFilter::equal("column2", 345i32)];
+    let condition: Condition = sub_filters[0].clone().into();
+    assert_eq!(condition.operator, ConditionOperator::AND);
+    assert_eq!(condition.sub_filters, sub_filters[..1]);
+    let condition: Condition = sub_filters.clone().into();
+    assert_eq!(condition.operator, ConditionOperator::AND);
+    assert_eq!(condition.sub_filters, sub_filters);
+    let condition: Condition = (sub_filters.clone(), ConditionOperator::OR).into();
+    assert_eq!(condition.operator, ConditionOperator::OR);
+    assert_eq!(condition.sub_filters, sub_filters);
+}
+
+#[test]
+fn test_sub_filter_to_query_filter() {
+    let sub_filters = vec![SubFilter::equal("column1", 123i32), SubFilter::equal("column2", 345i32)];
+    let condition: Condition = sub_filters[0].clone().into();
+    let query_filter: QueryFilter = sub_filters[0].clone().into();
+    assert_eq!(query_filter.conditions, vec![condition]);
+    assert_eq!(query_filter.conditions_operator, ConditionOperator::AND);
+    assert!(query_filter.limit.is_none());
+    assert!(query_filter.offset.is_none());
+    assert!(query_filter.order_by.is_none());
+    let condition: Condition = sub_filters.clone().into();
+    let query_filter: QueryFilter = sub_filters.clone().into();
+    assert_eq!(query_filter.conditions, vec![condition]);
+    assert_eq!(query_filter.conditions_operator, ConditionOperator::AND);
+    assert!(query_filter.limit.is_none());
+    assert!(query_filter.offset.is_none());
+    assert!(query_filter.order_by.is_none());
+    let condition: Condition = (sub_filters.clone(), ConditionOperator::OR).into();
+    let query_filter: QueryFilter = (sub_filters, ConditionOperator::OR).into();
+    assert_eq!(query_filter.conditions, vec![condition]);
+    assert_eq!(query_filter.conditions_operator, ConditionOperator::AND);
+    assert!(query_filter.limit.is_none());
+    assert!(query_filter.offset.is_none());
+    assert!(query_filter.order_by.is_none());
+}
+
+#[test]
+fn test_condition_to_query_filter() {
+    let conditions: Vec<Condition> = vec![
+        SubFilter::equal("column1", 123i32).into(),
+        vec![SubFilter::equal("column2", 345i32), SubFilter::equal("column3", 567i32)].into(),
+    ];
+    let query_filter: QueryFilter = conditions[0].clone().into();
+    assert_eq!(query_filter.conditions, conditions[..1]);
+    assert_eq!(query_filter.conditions_operator, ConditionOperator::AND);
+    assert!(query_filter.limit.is_none());
+    assert!(query_filter.offset.is_none());
+    assert!(query_filter.order_by.is_none());
+    let query_filter: QueryFilter = conditions.clone().into();
+    assert_eq!(query_filter.conditions, conditions);
+    assert_eq!(query_filter.conditions_operator, ConditionOperator::AND);
+    assert!(query_filter.limit.is_none());
+    assert!(query_filter.offset.is_none());
+    assert!(query_filter.order_by.is_none());
+    let query_filter: QueryFilter = (conditions.clone(), ConditionOperator::OR).into();
+    assert_eq!(query_filter.conditions, conditions);
+    assert_eq!(query_filter.conditions_operator, ConditionOperator::OR);
+    assert!(query_filter.limit.is_none());
+    assert!(query_filter.offset.is_none());
+    assert!(query_filter.order_by.is_none());
 }

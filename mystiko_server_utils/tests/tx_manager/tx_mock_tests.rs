@@ -31,11 +31,14 @@ async fn test_send_1559_tx() {
     let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
+<<<<<<< HEAD
+=======
+    let to_address = wallet.address();
+>>>>>>> c0b06da7272bcb5f8775f294d8e4b5ddc4588710
     let cfg = TxManagerConfig::new("testnet", None).unwrap();
     let builder = TxBuilder::builder()
         .config(cfg)
         .chain_id(chain_id.into())
-        .to(wallet.address())
         .wallet(wallet)
         .build();
 
@@ -51,7 +54,10 @@ async fn test_send_1559_tx() {
 
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await.unwrap();
+    let gas = tx
+        .estimate_gas(to_address, vec![].as_slice(), value, &provider)
+        .await
+        .unwrap();
     assert_eq!(gas.to_string(), "100000000000");
 
     mock.push(transaction_receipt.clone()).unwrap();
@@ -63,7 +69,7 @@ async fn test_send_1559_tx() {
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
     let hash = tx
-        .send(vec![].as_slice(), value, max_gas_price, &provider)
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
         .await
         .unwrap();
     assert_eq!(hash, tx_hash);
@@ -85,11 +91,14 @@ async fn test_send_legacy_tx() {
     let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
+<<<<<<< HEAD
+=======
+    let to_address = wallet.address();
+>>>>>>> c0b06da7272bcb5f8775f294d8e4b5ddc4588710
     let cfg = TxManagerConfig::new("testnet", None).unwrap();
     let builder = TxBuilder::builder()
         .config(cfg)
         .chain_id(chain_id.into())
-        .to(wallet.address())
         .wallet(wallet)
         .build();
 
@@ -103,7 +112,10 @@ async fn test_send_legacy_tx() {
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await.unwrap();
+    let gas = tx
+        .estimate_gas(to_address, vec![].as_slice(), value, &provider)
+        .await
+        .unwrap();
     assert_eq!(gas.to_string(), "100000000000");
 
     let gas = U256::from(100_000_000_000u64);
@@ -115,7 +127,7 @@ async fn test_send_legacy_tx() {
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
     let hash = tx
-        .send(vec![].as_slice(), value, max_gas_price, &provider)
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
         .await
         .unwrap();
     assert_eq!(hash, tx_hash);
@@ -134,11 +146,14 @@ async fn test_1559_tx_with_error() {
     let value = ethers_core::utils::parse_ether("1").unwrap();
 
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
+<<<<<<< HEAD
+=======
+    let to_address = wallet.address();
+>>>>>>> c0b06da7272bcb5f8775f294d8e4b5ddc4588710
     let cfg = TxManagerConfig::new("testnet", None).unwrap();
     let builder = TxBuilder::builder()
         .config(cfg)
         .chain_id(chain_id.into())
-        .to(wallet.address())
         .wallet(wallet)
         .build();
 
@@ -150,21 +165,25 @@ async fn test_1559_tx_with_error() {
     let gas_price = tx.gas_price(&provider).await;
     assert_eq!(gas_price.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
-    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await;
+    let gas = tx.estimate_gas(to_address, vec![].as_slice(), value, &provider).await;
     assert_eq!(gas.err().unwrap(), TxManagerError::NonceError("".into()));
 
     mock.push(nonce).unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await;
+    let gas = tx.estimate_gas(to_address, vec![].as_slice(), value, &provider).await;
     assert_eq!(gas.err().unwrap(), TxManagerError::EstimateGasError("".into()));
 
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let tx_hash = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     let max_gas_price = Some(U256::from(1u64));
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let tx_hash = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
     assert_eq!(
         tx_hash.err().unwrap(),
         TxManagerError::GasPriceError("gas price too high".into())
@@ -173,7 +192,9 @@ async fn test_1559_tx_with_error() {
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let tx_hash = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::NonceError("".into()));
 
     let gas = U256::from(100_000_000_000u64);
@@ -182,7 +203,9 @@ async fn test_1559_tx_with_error() {
     mock.push(nonce).unwrap();
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let tx_hash = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::SendTxError("".into()));
 }
 
@@ -195,11 +218,14 @@ async fn test_legacy_tx_with_error() {
 
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
+<<<<<<< HEAD
+=======
+    let to_address = wallet.address();
+>>>>>>> c0b06da7272bcb5f8775f294d8e4b5ddc4588710
     let cfg = TxManagerConfig::new("testnet", None).unwrap();
     let builder = TxBuilder::builder()
         .config(cfg)
         .chain_id(chain_id.into())
-        .to(wallet.address())
         .wallet(wallet)
         .build();
     let mut tx = builder.build_tx(&provider).await;
@@ -210,22 +236,26 @@ async fn test_legacy_tx_with_error() {
 
     mock.push(price).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await;
+    let gas = tx.estimate_gas(to_address, vec![].as_slice(), value, &provider).await;
     assert_eq!(gas.err().unwrap(), TxManagerError::NonceError("".into()));
 
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
-    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await;
+    let gas = tx.estimate_gas(to_address, vec![].as_slice(), value, &provider).await;
     assert_eq!(gas.err().unwrap(), TxManagerError::EstimateGasError("".into()));
 
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let tx_hash = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::GasPriceError("".into()));
 
     mock.push(price).unwrap();
     let max_gas_price = Some(U256::from(1u64));
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let tx_hash = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
     assert_eq!(
         tx_hash.err().unwrap(),
         TxManagerError::GasPriceError("gas price too high".into())
@@ -233,7 +263,9 @@ async fn test_legacy_tx_with_error() {
 
     mock.push(price).unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let tx_hash = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::NonceError("".into()));
 
     let gas = U256::from(100_000_000_000u64);
@@ -241,7 +273,9 @@ async fn test_legacy_tx_with_error() {
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
-    let tx_hash = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let tx_hash = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
     assert_eq!(tx_hash.err().unwrap(), TxManagerError::SendTxError("".into()));
 }
 
@@ -256,13 +290,16 @@ async fn test_confirm_with_error() {
 
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
+<<<<<<< HEAD
+=======
+    let to_address = wallet.address();
+>>>>>>> c0b06da7272bcb5f8775f294d8e4b5ddc4588710
     let mut cfg = TxManagerConfig::new("testnet", None).unwrap();
     cfg.confirm_interval_secs = 0;
     cfg.max_confirm_count = 4;
     let builder = TxBuilder::builder()
         .config(cfg.clone())
         .chain_id(chain_id.into())
-        .to(wallet.address())
         .wallet(wallet)
         .build();
     let mut tx = builder.build_tx(&provider).await;
@@ -283,7 +320,9 @@ async fn test_confirm_with_error() {
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
-    let _ = tx.send(vec![].as_slice(), value, max_gas_price, &provider).await;
+    let _ = tx
+        .send(to_address, vec![].as_slice(), value, max_gas_price, &provider)
+        .await;
 
     let receipt = tx.confirm(&provider).await;
     assert_eq!(receipt.err().unwrap(), TxManagerError::ConfirmTxError("".into()));

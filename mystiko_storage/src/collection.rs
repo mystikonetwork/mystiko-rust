@@ -1,73 +1,55 @@
-#![forbid(unsafe_code)]
-use crate::document::{Document, DocumentData, DocumentRawData, DocumentSchema, DOCUMENT_ID_FIELD};
+use crate::document::{Document, DocumentColumn, DocumentData};
 use crate::error::StorageError;
 use crate::filter::{QueryFilter, SubFilter};
-use crate::formatter::StatementFormatter;
-use crate::migration::{Migration, MIGRATION_SCHEMA};
+use crate::formatter::types::{Statement, StatementFormatter};
+use crate::migration::history::{MigrationHistory, MigrationHistoryColumn};
 use crate::storage::Storage;
-use anyhow::Result;
-use std::marker::PhantomData;
 use std::time::SystemTime;
 
 #[derive(Debug)]
-pub struct Collection<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
+pub struct Collection<F: StatementFormatter, S: Storage> {
     formatter: F,
     storage: S,
-    _phantom: PhantomData<R>,
 }
 
-impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, S> {
+impl<F: StatementFormatter, S: Storage> Collection<F, S> {
     pub fn new(formatter: F, storage: S) -> Self {
-        Collection {
-            formatter,
-            storage,
-            _phantom: Default::default(),
-        }
+        Collection { formatter, storage }
     }
+
     pub async fn insert<D: DocumentData>(&self, data: &D) -> Result<Document<D>, StorageError> {
         let now = current_timestamp();
-        let document: Document<D> = Document {
-            id: self.storage.uuid().await?,
-            created_at: now,
-            updated_at: now,
-            data: data.clone(),
-        };
-        let sql = self.formatter.format_insert(&document);
-        self.storage.execute(sql).await?;
+        let document: Document<D> = Document::new(self.storage.uuid().await?, now, now, data.clone());
+        self.storage.execute(self.formatter.format_insert(&document)).await?;
         Ok(document)
     }
-    pub async fn insert_batch<D: DocumentData>(&self, data: &Vec<D>) -> Result<Vec<Document<D>>, StorageError> {
+
+    pub async fn insert_batch<D: DocumentData>(&self, data: &[D]) -> Result<Vec<Document<D>>, StorageError> {
         if data.is_empty() {
             Ok(vec![])
         } else {
             let mut documents: Vec<Document<D>> = Vec::new();
             let now = current_timestamp();
             for doc in data.iter() {
-                let document: Document<D> = Document {
-                    id: self.storage.uuid().await?,
-                    created_at: now,
-                    updated_at: now,
-                    data: doc.clone(),
-                };
+                let document: Document<D> = Document::new(self.storage.uuid().await?, now, now, doc.clone());
                 documents.push(document);
             }
             self.storage
-                .execute(self.formatter.format_insert_batch(&documents))
+                .execute_batch(self.formatter.format_insert_batch(&documents))
                 .await?;
             Ok(documents)
         }
     }
+
     pub async fn find<D: DocumentData, Q: Into<QueryFilter>>(
         &self,
         filter: Option<Q>,
     ) -> Result<Vec<Document<D>>, StorageError> {
-        let raw_documents = self.storage.query(self.formatter.format_find::<D, Q>(filter)).await?;
-        let mut documents: Vec<Document<D>> = Vec::new();
-        for raw_document in raw_documents.iter() {
-            documents.push(Document::<D>::deserialize(raw_document)?);
-        }
-        Ok(documents)
+        self.storage
+            .query::<D>(self.formatter.format_find::<D, Q>(filter))
+            .await
     }
+
     pub async fn find_one<D: DocumentData, Q: Into<QueryFilter>>(
         &self,
         filter: Option<Q>,
@@ -79,10 +61,12 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             Ok(Some(documents.remove(0)))
         }
     }
+
     pub async fn find_by_id<D: DocumentData>(&self, id: &str) -> Result<Option<Document<D>>, StorageError> {
-        let query_filter = SubFilter::Equal(String::from(DOCUMENT_ID_FIELD), String::from(id));
+        let query_filter = SubFilter::equal(DocumentColumn::Id, String::from(id));
         self.find_one(Some(query_filter)).await
     }
+
     pub async fn update<D: DocumentData>(&self, document: &Document<D>) -> Result<Document<D>, StorageError> {
         let mut document_new = document.clone();
         document_new.updated_at = current_timestamp();
@@ -91,9 +75,10 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             .await?;
         Ok(document_new)
     }
+
     pub async fn update_batch<D: DocumentData>(
         &self,
-        documents: &Vec<Document<D>>,
+        documents: &[Document<D>],
     ) -> Result<Vec<Document<D>>, StorageError> {
         if documents.is_empty() {
             Ok(vec![])
@@ -106,31 +91,26 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
                 documents_new.push(document_new);
             }
             self.storage
-                .execute(self.formatter.format_update_batch(&documents_new))
+                .execute_batch(self.formatter.format_update_batch(&documents_new))
                 .await?;
             Ok(documents_new)
         }
     }
-    pub async fn count<D: DocumentData, Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<u64, StorageError> {
-        let counts = self.storage.query(self.formatter.format_count::<D, Q>(filter)).await?;
-        if counts.is_empty() {
-            Ok(0)
-        } else {
-            Ok(counts[0].field_integer_value::<u64>("COUNT(*)")?.unwrap_or(0))
-        }
-    }
+
     pub async fn delete<D: DocumentData>(&self, document: &Document<D>) -> Result<(), StorageError> {
         self.storage.execute(self.formatter.format_delete(document)).await
     }
-    pub async fn delete_batch<D: DocumentData>(&self, documents: &Vec<Document<D>>) -> Result<(), StorageError> {
+
+    pub async fn delete_batch<D: DocumentData>(&self, documents: &[Document<D>]) -> Result<(), StorageError> {
         if documents.is_empty() {
             Ok(())
         } else {
             self.storage
-                .execute(self.formatter.format_delete_batch(documents))
+                .execute_batch(self.formatter.format_delete_batch(documents))
                 .await
         }
     }
+
     pub async fn delete_by_filter<D: DocumentData, Q: Into<QueryFilter>>(
         &self,
         filter: Option<Q>,
@@ -139,13 +119,22 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
             .execute(self.formatter.format_delete_by_filter::<D, Q>(filter))
             .await
     }
-    pub async fn migrate(&self, schema: &DocumentSchema) -> Result<Document<Migration>, StorageError> {
-        let collection_exists = self.collection_exists(&MIGRATION_SCHEMA).await?;
-        let existing: Option<Document<Migration>> = if collection_exists {
-            let query_filter = SubFilter::Equal(
-                String::from(MIGRATION_SCHEMA.field_names[0]),
-                String::from(schema.collection_name),
-            );
+
+    pub async fn count<D: DocumentData, Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<u64, StorageError> {
+        self.storage.count(self.formatter.format_count::<D, Q>(filter)).await
+    }
+
+    pub async fn collection_exists(&self, collection_name: &str) -> Result<bool, StorageError> {
+        self.storage.collection_exists(collection_name).await
+    }
+
+    pub async fn migrate<D: DocumentData>(&self) -> Result<Document<MigrationHistory>, StorageError> {
+        let collection_exists = self
+            .collection_exists(Document::<MigrationHistory>::collection_name())
+            .await?;
+        let existing: Option<Document<MigrationHistory>> = if collection_exists {
+            let query_filter =
+                SubFilter::equal(MigrationHistoryColumn::CollectionName, Document::<D>::collection_name());
             self.find_one(Some(query_filter)).await?
         } else {
             None
@@ -153,52 +142,45 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
         match existing {
             Some(mut migration) => {
                 let current_version: usize = migration.data.version;
-                if current_version >= schema.version() {
+                if current_version >= Document::<D>::version() {
                     Ok(migration)
                 } else {
-                    let migration_sql = schema.migrations[current_version..].join(";");
+                    let mut migration_statements: Vec<Statement> = self
+                        .formatter
+                        .format_migration_batch::<D>(&Document::<D>::migrations()[current_version..]);
                     migration.updated_at = current_timestamp();
-                    migration.data.version = schema.migrations.len();
-                    let migration_update_sql = self.formatter.format_update(&migration);
-                    self.storage
-                        .execute(format!("{};{}", migration_sql, migration_update_sql))
-                        .await?;
+                    migration.data.version = Document::<D>::version();
+                    migration_statements.push(self.formatter.format_update(&migration));
+                    self.storage.execute_batch(migration_statements).await?;
                     Ok(migration)
                 }
             }
             None => {
-                let migration_sql = schema.migrations.join(";");
+                let mut migration_statements = vec![];
+                if !collection_exists {
+                    migration_statements.extend(self.formatter.format_migration_batch::<MigrationHistory>(
+                        &Document::<MigrationHistory>::initial_migrations(),
+                    ));
+                }
+                migration_statements.extend(
+                    self.formatter
+                        .format_migration_batch::<D>(&Document::<D>::initial_migrations()),
+                );
                 let now = current_timestamp();
-                let migration: Document<Migration> = Document {
+                let migration: Document<MigrationHistory> = Document {
                     id: self.storage.uuid().await?,
                     created_at: now,
                     updated_at: now,
-                    data: Migration {
-                        collection_name: String::from(schema.collection_name),
-                        version: schema.migrations.len(),
+                    data: MigrationHistory {
+                        collection_name: Document::<D>::collection_name().to_string(),
+                        version: Document::<D>::version(),
                     },
                 };
-                let migration_creation_sql = self.formatter.format_insert(&migration);
-                if collection_exists {
-                    self.storage
-                        .execute(format!("{};{}", migration_sql, migration_creation_sql))
-                        .await?;
-                    Ok(migration)
-                } else {
-                    self.storage
-                        .execute(format!(
-                            "{};{};{}",
-                            MIGRATION_SCHEMA.migrations[0], migration_sql, migration_creation_sql
-                        ))
-                        .await?;
-                    Ok(migration)
-                }
+                migration_statements.push(self.formatter.format_insert(&migration));
+                self.storage.execute_batch(migration_statements).await?;
+                Ok(migration)
             }
         }
-    }
-
-    pub async fn collection_exists(&self, schema: &DocumentSchema) -> Result<bool, StorageError> {
-        self.storage.collection_exists(schema.collection_name).await
     }
 
     pub fn formatter(&self) -> &F {
@@ -208,15 +190,11 @@ impl<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> Collection<F, R, 
     pub fn storage(&self) -> &S {
         &self.storage
     }
-
-    pub fn mut_storage(&mut self) -> &mut S {
-        &mut self.storage
-    }
 }
 
-fn current_timestamp() -> u64 {
+fn current_timestamp() -> i64 {
     SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
-        .as_millis() as u64
+        .as_millis() as i64
 }

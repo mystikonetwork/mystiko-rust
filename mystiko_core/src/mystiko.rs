@@ -8,20 +8,19 @@ use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
 use mystiko_database::database::Database;
 use mystiko_ethers::provider::factory::ProviderFactory;
 use mystiko_ethers::provider::pool::ProviderPool;
-use mystiko_storage::document::DocumentRawData;
-use mystiko_storage::formatter::StatementFormatter;
+use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
-pub struct Mystiko<F: StatementFormatter, R: DocumentRawData, S: Storage<R>> {
-    pub db: Arc<Database<F, R, S>>,
+pub struct Mystiko<F: StatementFormatter, S: Storage> {
+    pub db: Arc<Database<F, S>>,
     pub config: Arc<MystikoConfig>,
-    pub accounts: AccountHandler<F, R, S>,
-    pub chains: ChainHandler<F, R, S>,
-    pub contracts: ContractHandler<F, R, S>,
-    pub wallets: WalletHandler<F, R, S>,
+    pub accounts: AccountHandler<F, S>,
+    pub chains: ChainHandler<F, S>,
+    pub contracts: ContractHandler<F, S>,
+    pub wallets: WalletHandler<F, S>,
     pub providers: Arc<RwLock<ProviderPool>>,
 }
 
@@ -41,13 +40,12 @@ pub struct MystikoOptions {
     pub provider_factory: Option<Box<dyn ProviderFactory>>,
 }
 
-impl<F, R, S> Mystiko<F, R, S>
+impl<F, S> Mystiko<F, S>
 where
     F: StatementFormatter + 'static,
-    R: DocumentRawData + 'static,
-    S: Storage<R> + 'static,
+    S: Storage + 'static,
 {
-    pub async fn new(database: Database<F, R, S>, options: Option<MystikoOptions>) -> Result<Self, MystikoError> {
+    pub async fn new(database: Database<F, S>, options: Option<MystikoOptions>) -> Result<Self, MystikoError> {
         let mystiko_options = options.unwrap_or(MystikoOptions::builder().build());
         database.migrate().await.map_err(MystikoError::DatabaseMigrationError)?;
         let db = Arc::new(database);

@@ -1,569 +1,254 @@
-use anyhow::{Error, Result};
-use async_trait::async_trait;
-use mystiko_storage::collection::*;
-use mystiko_storage::document::{Document, DocumentData, DocumentRawData, DOCUMENT_ID_FIELD};
-use mystiko_storage::error::StorageError;
+use mystiko_storage::collection::Collection;
+use mystiko_storage::column::{Column, ColumnType};
+use mystiko_storage::document::{Document, DocumentColumn, DocumentData};
 use mystiko_storage::filter::{QueryFilter, SubFilter};
-use mystiko_storage::formatter::{SqlFormatter, StatementFormatter};
-use mystiko_storage::migration::{Migration, MIGRATION_SCHEMA};
-use mystiko_storage::storage::Storage;
-use mystiko_storage::testing::TestDocumentData;
-use num_traits::{Float, PrimInt};
-use std::collections::HashMap;
-use std::str::FromStr;
-use tokio::sync::Mutex;
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::migration::types::{
+    AddColumnMigration, AddIndexMigration, DropColumnMigration, Migration, RenameColumnMigration,
+};
+use mystiko_storage_macros::CollectionBuilder;
+use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use std::time::Duration;
 
-#[derive(Clone, Debug)]
-struct TestDocumentRawData {
-    data: HashMap<String, String>,
-}
-
-impl DocumentRawData for TestDocumentRawData {
-    fn field_integer_value<T: PrimInt + FromStr>(&self, field: &str) -> Result<Option<T>, StorageError> {
-        let value = self.data.get(field);
-        if let Some(..) = value {
-            match value.unwrap().parse() {
-                Ok(parsed) => Ok(Some(parsed)),
-                Err(_) => Err(StorageError::CorruptedDataError("parsed error".into())),
-            }
-        } else {
-            Ok(None)
-        }
-    }
-
-    fn field_float_value<T: Float + FromStr>(&self, field: &str) -> Result<Option<T>, StorageError> {
-        let value = self.data.get(field);
-        if let Some(..) = value {
-            match value.unwrap().parse() {
-                Ok(parsed) => Ok(Some(parsed)),
-                Err(_) => Err(StorageError::CorruptedDataError("parsed error".into())),
-            }
-        } else {
-            Ok(None)
-        }
-    }
-
-    fn field_string_value(&self, field: &str) -> Result<Option<String>, StorageError> {
-        Ok(self.data.get(field).cloned())
-    }
-}
-
-#[derive(Debug)]
-struct TestStorage {
-    collection_exists: bool,
-    raise_error_on_collection_exists: bool,
-    raise_error_on_query: bool,
-    raise_error_on_execute: bool,
-    expected_data: Vec<TestDocumentRawData>,
-    statements: Mutex<Vec<String>>,
-}
-
-impl TestStorage {
-    pub fn new() -> Self {
-        TestStorage {
-            collection_exists: false,
-            raise_error_on_collection_exists: false,
-            raise_error_on_query: false,
-            raise_error_on_execute: false,
-            expected_data: vec![],
-            statements: Mutex::new(vec![]),
-        }
-    }
-}
-
-#[async_trait]
-impl Storage<TestDocumentRawData> for TestStorage {
-    async fn execute(&self, statement: String) -> Result<(), StorageError> {
-        self.statements.lock().await.push(statement);
-        if self.raise_error_on_execute {
-            Err(StorageError::DatabaseError(Error::msg("expected error")))
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn query(&self, statement: String) -> Result<Vec<TestDocumentRawData>, StorageError> {
-        self.statements.lock().await.push(statement);
-        if self.raise_error_on_query {
-            Err(StorageError::DatabaseError(Error::msg("expected error")))
-        } else {
-            Ok(self.expected_data.clone())
-        }
-    }
-
-    async fn collection_exists(&self, _collection: &str) -> Result<bool, StorageError> {
-        if self.raise_error_on_collection_exists {
-            Err(StorageError::DatabaseError(Error::msg("expected error")))
-        } else {
-            Ok(self.collection_exists)
-        }
-    }
+#[tokio::test]
+async fn test_migration() {
+    let collection = create_collection().await;
+    assert!(!collection
+        .collection_exists(TestDocument::collection_name())
+        .await
+        .unwrap());
+    let migration_history = collection.migrate::<TestDocument>().await.unwrap();
+    assert_eq!(migration_history.data.collection_name, TestDocument::collection_name());
+    assert_eq!(migration_history.data.version, Document::<TestDocument>::version());
+    assert!(collection
+        .collection_exists(TestDocument::collection_name())
+        .await
+        .unwrap());
+    let migration_history = collection.migrate::<TestDocument2>().await.unwrap();
+    assert_eq!(migration_history.data.collection_name, TestDocument2::collection_name());
+    assert_eq!(migration_history.data.version, Document::<TestDocument2>::version());
+    let migration_history = collection.migrate::<TestDocument2>().await.unwrap();
+    assert_eq!(migration_history.data.collection_name, TestDocument2::collection_name());
+    assert_eq!(migration_history.data.version, Document::<TestDocument2>::version());
+    let document = collection
+        .insert::<TestDocument2>(&TestDocument2 {
+            field1: 1,
+            field3_new: true,
+            field4: Some(String::from("abc")),
+        })
+        .await
+        .unwrap();
+    assert_eq!(document.data.field1, 1);
+    assert!(document.data.field3_new);
+    assert_eq!(document.data.field4, Some(String::from("abc")));
 }
 
 #[tokio::test]
 async fn test_insert() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let doc = collection
-        .insert(&TestDocumentData {
-            field1: String::from("field value"),
-            field2: 0xbaad,
-            field3: None,
-        })
-        .await
-        .unwrap();
-    assert!(!doc.id.is_empty());
-    assert!(doc.created_at > 0);
-    assert!(doc.updated_at > 0);
-    assert_eq!(doc.data.field1, "field value");
-    assert_eq!(doc.data.field2, 0xbaad);
-    assert_eq!(doc.data.field3, None);
-    assert_eq!(
-        collection.formatter().format_insert(&doc),
-        collection.storage().statements.lock().await[0]
-    );
-    collection.mut_storage().raise_error_on_execute = true;
-    let result = collection
-        .insert(&TestDocumentData {
-            field1: String::from("field value"),
-            field2: 0xbaad,
-            field3: None,
-        })
-        .await;
-    assert!(result.is_err());
-}
-
-#[tokio::test]
-async fn test_insert_batch() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection.insert_batch::<TestDocumentData>(&vec![]).await.unwrap();
-    assert!(d1.is_empty());
-    let raw_data: Vec<TestDocumentData> = vec![
-        TestDocumentData {
-            field1: String::from("doc1 field1"),
-            field2: 1000,
-            field3: None,
+    let collection = create_collection().await;
+    collection.migrate::<TestDocument>().await.unwrap();
+    assert!(collection.insert_batch::<TestDocument>(&[]).await.unwrap().is_empty());
+    let documents = vec![
+        TestDocument {
+            field1: 1,
+            field2: 2,
+            field3: true,
         },
-        TestDocumentData {
-            field1: String::from("doc2 field1"),
-            field2: 2000,
-            field3: Some(0.1314),
+        TestDocument {
+            field1: 3,
+            field2: 4,
+            field3: false,
+        },
+        TestDocument {
+            field1: 5,
+            field2: 6,
+            field3: true,
         },
     ];
-    let d2 = collection.insert_batch(&raw_data).await.unwrap();
+    let document = collection.insert(&documents[0]).await.unwrap();
+    assert_eq!(document.created_at, document.updated_at);
+    assert!(document.created_at > 0);
+    assert_eq!(document.data, documents[0]);
+    let insert_documents = collection.insert_batch(&documents[1..]).await.unwrap();
     assert_eq!(
-        collection.formatter().format_insert_batch(&d2),
-        collection.storage().statements.lock().await[0]
+        insert_documents.into_iter().map(|d| d.data).collect::<Vec<_>>(),
+        documents[1..]
     );
-    assert_ne!(d2[0].id, d2[1].id);
-    assert_eq!(d2[0].created_at, d2[1].created_at);
-    assert_eq!(d2[0].updated_at, d2[1].created_at);
-    assert_eq!(d2[0].data.field1, "doc1 field1");
-    assert_eq!(d2[0].data.field2, 1000);
-    assert_eq!(d2[0].data.field3, None);
-    assert_eq!(d2[1].data.field1, "doc2 field1");
-    assert_eq!(d2[1].data.field2, 2000);
-    assert_eq!(d2[1].data.field3, Some(0.1314));
-    collection.mut_storage().raise_error_on_execute = true;
-    let result = collection.insert_batch(&raw_data).await;
-    assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn test_update() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let doc = collection
-        .update::<TestDocumentData>(&Document {
-            id: String::from("1000"),
-            created_at: 0,
-            updated_at: 0,
-            data: TestDocumentData {
-                field1: String::from("field value"),
-                field2: 0xbaad,
-                field3: None,
+    let collection = create_collection().await;
+    collection.migrate::<TestDocument>().await.unwrap();
+    assert!(collection.update_batch::<TestDocument>(&[]).await.unwrap().is_empty());
+    let mut documents = collection
+        .insert_batch(&[
+            TestDocument {
+                field1: 1,
+                field2: 2,
+                field3: true,
             },
-        })
+            TestDocument {
+                field1: 3,
+                field2: 4,
+                field3: false,
+            },
+            TestDocument {
+                field1: 5,
+                field2: 6,
+                field3: true,
+            },
+        ])
         .await
         .unwrap();
-    assert_eq!(doc.id, "1000");
-    assert!(doc.updated_at > 0);
+    documents[0].data.field3 = false;
+    documents[1].data.field3 = true;
+    documents[2].data.field3 = false;
+    tokio::time::sleep(Duration::from_millis(1)).await;
+    let document = collection.update(&documents[0]).await.unwrap();
+    assert!(!document.data.field3);
+    assert!(document.updated_at > document.created_at);
+    let update_documents = collection.update_batch(&documents[1..]).await.unwrap();
     assert_eq!(
-        collection.formatter().format_update(&doc),
-        collection.storage().statements.lock().await[0]
+        update_documents.iter().map(|d| d.data.field3).collect::<Vec<_>>(),
+        documents[1..].iter().map(|d| d.data.field3).collect::<Vec<_>>()
     );
-    collection.mut_storage().raise_error_on_execute = true;
-    let result = collection.update(&doc).await;
-    assert!(result.is_err());
-}
-
-#[tokio::test]
-async fn test_update_batch() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection.update_batch::<TestDocumentData>(&vec![]).await.unwrap();
-    assert!(d1.is_empty());
-    let documents = vec![
-        Document {
-            id: String::from("1000"),
-            created_at: 0,
-            updated_at: 0,
-            data: TestDocumentData {
-                field1: String::from("field value1"),
-                field2: 10,
-                field3: Some(0.1),
-            },
-        },
-        Document {
-            id: String::from("2000"),
-            created_at: 1,
-            updated_at: 1,
-            data: TestDocumentData {
-                field1: String::from("field value2"),
-                field2: 20,
-                field3: Some(0.2),
-            },
-        },
-    ];
-    let d2 = collection.update_batch(&documents).await.unwrap();
-    assert_ne!(documents[0].updated_at, d2[0].updated_at);
-    assert_ne!(documents[1].updated_at, d2[1].updated_at);
-    assert_eq!(
-        collection.formatter().format_update_batch(&d2),
-        collection.storage().statements.lock().await[0]
-    );
-    collection.mut_storage().raise_error_on_execute = true;
-    let result = collection.update_batch(&documents).await;
-    assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn test_delete() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let doc = Document {
-        id: String::from("1000"),
-        created_at: 0,
-        updated_at: 0,
-        data: TestDocumentData {
-            field1: String::from("field value"),
-            field2: 0xbaad,
-            field3: None,
-        },
-    };
-    collection.delete::<TestDocumentData>(&doc).await.unwrap();
-    assert_eq!(
-        collection.formatter().format_delete(&doc),
-        collection.storage().statements.lock().await[0]
-    );
-    collection.mut_storage().raise_error_on_execute = true;
-    let result = collection.delete::<TestDocumentData>(&doc).await;
-    assert!(result.is_err());
-}
-
-#[tokio::test]
-async fn test_delete_batch() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    collection.delete_batch::<TestDocumentData>(&vec![]).await.unwrap();
-    let documents = vec![
-        Document {
-            id: String::from("1000"),
-            created_at: 0,
-            updated_at: 0,
-            data: TestDocumentData {
-                field1: String::from("field value1"),
-                field2: 10,
-                field3: Some(0.1),
+    let collection = create_collection().await;
+    collection.migrate::<TestDocument>().await.unwrap();
+    let documents = collection
+        .insert_batch(&[
+            TestDocument {
+                field1: 1,
+                field2: 2,
+                field3: true,
             },
-        },
-        Document {
-            id: String::from("2000"),
-            created_at: 1,
-            updated_at: 1,
-            data: TestDocumentData {
-                field1: String::from("field value2"),
-                field2: 20,
-                field3: Some(0.2),
+            TestDocument {
+                field1: 3,
+                field2: 4,
+                field3: false,
             },
-        },
-    ];
-    collection.delete_batch(&documents).await.unwrap();
-    assert_eq!(
-        collection.formatter().format_delete_batch(&documents),
-        collection.storage().statements.lock().await[0]
-    );
-    collection.mut_storage().raise_error_on_execute = true;
-    let result = collection.delete_batch(&documents).await;
-    assert!(result.is_err());
-}
-
-#[tokio::test]
-async fn test_delete_by_filter() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    collection
-        .delete_by_filter::<TestDocumentData, QueryFilter>(None)
+            TestDocument {
+                field1: 5,
+                field2: 6,
+                field3: true,
+            },
+        ])
         .await
         .unwrap();
-    assert_eq!(
-        collection
-            .formatter()
-            .format_delete_by_filter::<TestDocumentData, QueryFilter>(None),
-        collection.storage().statements.lock().await[0],
-    );
-    let filter = SubFilter::Equal(String::from(DOCUMENT_ID_FIELD), String::from("1000"));
+    collection.delete_batch::<TestDocument>(&[]).await.unwrap();
+    assert_eq!(collection.count::<TestDocument, QueryFilter>(None).await.unwrap(), 3);
+    collection.delete::<TestDocument>(&documents[0]).await.unwrap();
+    assert_eq!(collection.count::<TestDocument, QueryFilter>(None).await.unwrap(), 2);
     collection
-        .delete_by_filter::<TestDocumentData, SubFilter>(Some(filter.clone()))
+        .delete_by_filter::<TestDocument, _>(Some(SubFilter::equal(
+            TestDocumentColumn::Field1,
+            documents[1].data.field1,
+        )))
         .await
         .unwrap();
-    assert_eq!(
-        collection
-            .formatter()
-            .format_delete_by_filter::<TestDocumentData, SubFilter>(Some(filter.clone())),
-        collection.storage().statements.lock().await[1],
-    );
-    collection.mut_storage().raise_error_on_execute = true;
-    assert!(collection
-        .delete_by_filter::<TestDocumentData, SubFilter>(Some(filter))
-        .await
-        .is_err());
+    assert_eq!(collection.count::<TestDocument, QueryFilter>(None).await.unwrap(), 1);
+    collection.delete_batch(&documents[2..]).await.unwrap();
+    assert_eq!(collection.count::<TestDocument, QueryFilter>(None).await.unwrap(), 0);
 }
 
 #[tokio::test]
 async fn test_find() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection.find::<TestDocumentData, QueryFilter>(None).await.unwrap();
-    assert!(d1.is_empty());
-    assert_eq!(
-        collection
-            .formatter()
-            .format_find::<TestDocumentData, QueryFilter>(None),
-        collection.storage().statements.lock().await[0]
-    );
-    collection.mut_storage().expected_data = vec![
-        TestDocumentRawData {
-            data: HashMap::from([
-                (String::from("id"), String::from("1")),
-                (String::from("created_at"), String::from("1")),
-                (String::from("updated_at"), String::from("1")),
-                (String::from("field1"), String::from("doc1 field1")),
-                (String::from("field2"), String::from("1000")),
-            ]),
-        },
-        TestDocumentRawData {
-            data: HashMap::from([
-                (String::from("id"), String::from("2")),
-                (String::from("created_at"), String::from("2")),
-                (String::from("updated_at"), String::from("2")),
-                (String::from("field1"), String::from("doc2 field1")),
-                (String::from("field2"), String::from("2000")),
-                (String::from("field3"), String::from("0.433")),
-            ]),
-        },
-    ];
-    let d2 = collection.find::<TestDocumentData, QueryFilter>(None).await.unwrap();
-    assert_eq!(d2.len(), 2);
-    assert_eq!(d2[0].id, "1");
-    assert_eq!(d2[0].created_at, 1);
-    assert_eq!(d2[0].updated_at, 1);
-    assert_eq!(d2[0].data.field1, "doc1 field1");
-    assert_eq!(d2[0].data.field2, 1000);
-    assert_eq!(d2[0].data.field3, None);
-    assert_eq!(d2[1].id, "2");
-    assert_eq!(d2[1].created_at, 2);
-    assert_eq!(d2[1].updated_at, 2);
-    assert_eq!(d2[1].data.field1, "doc2 field1");
-    assert_eq!(d2[1].data.field2, 2000);
-    assert_eq!(d2[1].data.field3, Some(0.433));
-    collection.mut_storage().raise_error_on_query = true;
-    let result = collection.find::<TestDocumentData, QueryFilter>(None).await;
-    assert!(result.is_err());
-}
-
-#[tokio::test]
-async fn test_find_one() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection
-        .find_one::<TestDocumentData, QueryFilter>(None)
+    let collection = create_collection().await;
+    collection.migrate::<TestDocument>().await.unwrap();
+    let documents = collection
+        .insert_batch(&[
+            TestDocument {
+                field1: 1,
+                field2: 2,
+                field3: true,
+            },
+            TestDocument {
+                field1: 3,
+                field2: 4,
+                field3: false,
+            },
+            TestDocument {
+                field1: 5,
+                field2: 6,
+                field3: true,
+            },
+        ])
         .await
         .unwrap();
-    assert!(d1.is_none());
-    collection.mut_storage().expected_data = vec![TestDocumentRawData {
-        data: HashMap::from([
-            (String::from("id"), String::from("1")),
-            (String::from("created_at"), String::from("1")),
-            (String::from("updated_at"), String::from("1")),
-            (String::from("field1"), String::from("doc1 field1")),
-            (String::from("field2"), String::from("1000")),
-        ]),
-    }];
-    let d2 = collection
-        .find_one::<TestDocumentData, QueryFilter>(None)
+    let document = collection.find_by_id::<TestDocument>(&documents[0].id).await.unwrap();
+    assert_eq!(document.unwrap(), documents[0]);
+    let document = collection
+        .find_one(Some(SubFilter::equal(DocumentColumn::Id, documents[1].id.clone())))
+        .await
+        .unwrap();
+    assert_eq!(document.unwrap(), documents[1]);
+    assert!(collection
+        .find_by_id::<TestDocument>("non_existing_id")
         .await
         .unwrap()
+        .is_none());
+    let mut found_documents = collection.find::<TestDocument, QueryFilter>(None).await.unwrap();
+    found_documents.sort_by_key(|d| d.data.field1);
+    assert_eq!(found_documents, documents);
+    found_documents = collection
+        .find::<TestDocument, _>(Some(SubFilter::greater(TestDocumentColumn::Field1, 1)))
+        .await
         .unwrap();
-    assert_eq!(d2.created_at, 1);
-    assert_eq!(d2.updated_at, 1);
-    assert_eq!(d2.data.field1, "doc1 field1");
-    assert_eq!(d2.data.field2, 1000);
-    assert_eq!(d2.data.field3, None);
-    collection.mut_storage().raise_error_on_query = true;
-    let result = collection.find_one::<TestDocumentData, QueryFilter>(None).await;
-    assert!(result.is_err());
+    found_documents.sort_by_key(|d| d.data.field1);
+    assert_eq!(found_documents, documents[1..]);
 }
 
-#[tokio::test]
-async fn test_find_by_id() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let d1 = collection.find_by_id::<TestDocumentData>("1000").await.unwrap();
-    assert!(d1.is_none());
-    let filter = SubFilter::Equal(String::from(DOCUMENT_ID_FIELD), String::from("1000"));
-    assert_eq!(
-        collection
-            .formatter()
-            .format_find::<TestDocumentData, SubFilter>(Some(filter)),
-        collection.storage().statements.lock().await[0]
-    );
-    collection.mut_storage().raise_error_on_query = true;
-    let result = collection.find_by_id::<TestDocumentData>("1000").await;
-    assert!(result.is_err());
+#[derive(CollectionBuilder, Clone, Debug, PartialEq)]
+pub struct TestDocument {
+    pub field1: i16,
+    pub field2: u32,
+    pub field3: bool,
 }
 
-#[tokio::test]
-async fn test_migrate_initialization() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    collection.mut_storage().raise_error_on_collection_exists = true;
-    assert!(collection.migrate(TestDocumentData::schema()).await.is_err());
-    collection.mut_storage().raise_error_on_collection_exists = false;
-    let migration = collection.migrate(TestDocumentData::schema()).await.unwrap();
-    assert_eq!(
-        format!(
-            "{};{};{}",
-            MIGRATION_SCHEMA.migrations[0],
-            TestDocumentData::schema().migrations.join(";"),
-            collection.formatter().format_insert(&migration)
-        ),
-        collection.storage().statements.lock().await[0]
-    );
-    collection.mut_storage().raise_error_on_execute = true;
-    assert!(collection.migrate(TestDocumentData::schema()).await.is_err());
+#[derive(CollectionBuilder, Clone, Debug, PartialEq)]
+#[collection(name = "test_documents", migrations = migrations())]
+pub struct TestDocument2 {
+    pub field1: i16,
+    pub field3_new: bool,
+    #[column(length_limit = 128)]
+    pub field4: Option<String>,
 }
 
-#[tokio::test]
-async fn test_count() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    let mut count = collection.count::<TestDocumentData, QueryFilter>(None).await.unwrap();
-    assert_eq!(count, 0);
-    collection.mut_storage().expected_data = vec![TestDocumentRawData {
-        data: HashMap::from([(String::from("COUNT(*)"), 123.to_string())]),
-    }];
-    count = collection.count::<TestDocumentData, QueryFilter>(None).await.unwrap();
-    assert_eq!(count, 123);
-    collection.mut_storage().expected_data = vec![TestDocumentRawData {
-        data: HashMap::from([]),
-    }];
-    count = collection.count::<TestDocumentData, QueryFilter>(None).await.unwrap();
-    assert_eq!(count, 0);
-    collection.mut_storage().raise_error_on_query = true;
-    assert!(collection.count::<TestDocumentData, QueryFilter>(None).await.is_err());
+fn migrations() -> Vec<Migration> {
+    vec![
+        AddIndexMigration::builder()
+            .index_name("my_index_1")
+            .column_names(vec![TestDocumentColumn::Field1.to_string()])
+            .build()
+            .into(),
+        AddColumnMigration::builder()
+            .column(
+                Column::builder()
+                    .column_type(ColumnType::String)
+                    .column_name("field4")
+                    .nullable(true)
+                    .length_limit(Some(128))
+                    .build(),
+            )
+            .build()
+            .into(),
+        DropColumnMigration::builder()
+            .column_name(TestDocumentColumn::Field2)
+            .build()
+            .into(),
+        RenameColumnMigration::builder()
+            .old_column_name(TestDocumentColumn::Field3)
+            .new_column_name("field3_new")
+            .build()
+            .into(),
+    ]
 }
 
-#[tokio::test]
-async fn test_migrate_non_existing() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    collection.mut_storage().collection_exists = true;
-    let migration = collection.migrate(TestDocumentData::schema()).await.unwrap();
-    let filter = SubFilter::Equal(
-        String::from(MIGRATION_SCHEMA.field_names[0]),
-        String::from(TestDocumentData::schema().collection_name),
-    );
-    assert_eq!(
-        collection.formatter().format_find::<Migration, SubFilter>(Some(filter)),
-        collection.storage().statements.lock().await[0]
-    );
-    assert_eq!(
-        format!(
-            "{};{}",
-            TestDocumentData::schema().migrations.join(";"),
-            collection.formatter().format_insert(&migration)
-        ),
-        collection.storage().statements.lock().await[1]
-    );
-}
-
-#[tokio::test]
-async fn test_migrate_existing() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    collection.mut_storage().collection_exists = true;
-    collection.mut_storage().expected_data = vec![TestDocumentRawData {
-        data: HashMap::from([
-            (String::from("id"), String::from("1")),
-            (String::from("created_at"), String::from("1")),
-            (String::from("updated_at"), String::from("1")),
-            (
-                String::from("collection_name"),
-                String::from(TestDocumentData::schema().collection_name),
-            ),
-            (String::from("version"), String::from("1")),
-        ]),
-    }];
-    let mut migration = collection.migrate(TestDocumentData::schema()).await.unwrap();
-    let filter = SubFilter::Equal(
-        String::from(MIGRATION_SCHEMA.field_names[0]),
-        String::from(TestDocumentData::schema().collection_name),
-    );
-    migration.data.version = TestDocumentData::schema().version();
-    assert_eq!(
-        collection.formatter().format_find::<Migration, SubFilter>(Some(filter)),
-        collection.storage().statements.lock().await[0]
-    );
-    assert_eq!(
-        format!(
-            "{};{}",
-            TestDocumentData::schema().migrations[1..].join(";"),
-            collection.formatter().format_update(&migration)
-        ),
-        collection.storage().statements.lock().await[1]
-    );
-}
-
-#[tokio::test]
-async fn test_migrate_skipping() {
-    let mut collection: Collection<SqlFormatter, TestDocumentRawData, TestStorage> =
-        Collection::new(SqlFormatter {}, TestStorage::new());
-    collection.mut_storage().collection_exists = true;
-    collection.mut_storage().expected_data = vec![TestDocumentRawData {
-        data: HashMap::from([
-            (String::from("id"), String::from("1")),
-            (String::from("created_at"), String::from("1")),
-            (String::from("updated_at"), String::from("1")),
-            (
-                String::from("collection_name"),
-                String::from(TestDocumentData::schema().collection_name),
-            ),
-            (
-                String::from("version"),
-                TestDocumentData::schema().version().to_string(),
-            ),
-        ]),
-    }];
-    collection.migrate(TestDocumentData::schema()).await.unwrap();
-    let filter = SubFilter::Equal(
-        String::from(MIGRATION_SCHEMA.field_names[0]),
-        String::from(TestDocumentData::schema().collection_name),
-    );
-    assert_eq!(collection.storage().statements.lock().await.len(), 1);
-    assert_eq!(
-        collection.formatter().format_find::<Migration, SubFilter>(Some(filter)),
-        collection.storage().statements.lock().await[0]
-    );
+async fn create_collection() -> Collection<SqlStatementFormatter, SqliteStorage> {
+    let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
+    Collection::new(SqlStatementFormatter::default(), storage)
 }

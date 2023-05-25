@@ -1,12 +1,12 @@
 use crate::common::create_database;
 use bip32::{Language, Mnemonic};
 use mystiko_core::handler::wallet::{CreateWalletOptions, WalletHandler};
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::SqliteStorage;
 use rand_core::OsRng;
 use std::sync::Arc;
 
-async fn setup() -> WalletHandler<SqlFormatter, SqliteRawData, SqliteStorage> {
+async fn setup() -> WalletHandler<SqlStatementFormatter, SqliteStorage> {
     let database = create_database().await;
     database.migrate().await.unwrap();
     WalletHandler::new(Arc::new(database))
