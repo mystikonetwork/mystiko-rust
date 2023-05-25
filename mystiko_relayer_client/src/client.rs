@@ -224,7 +224,7 @@ impl RelayerClient {
                 }
             }
 
-            log::debug!(
+            debug!(
                 "uuid {:?} transaction status {:?}, keep waiting...",
                 response.uuid,
                 response.status
