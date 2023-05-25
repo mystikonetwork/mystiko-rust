@@ -44,14 +44,12 @@ jobs:
           profile: minimal
           components: llvm-tools-preview
 
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
       - name: Install cargo-llvm-cov cargo command
         run: cargo install cargo-llvm-cov
-
-      - name: Install anvil command
-        run: |
-          curl -L https://foundry.paradigm.xyz | bash
-          source $HOME/.bashrc
-          foundryup
 
       - name: Cache
         uses: actions/cache@v3
