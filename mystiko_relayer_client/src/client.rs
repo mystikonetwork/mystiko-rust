@@ -226,8 +226,7 @@ impl RelayerClient {
 
             debug!(
                 "uuid {:?} transaction status {:?}, keep waiting...",
-                response.uuid,
-                response.status
+                response.uuid, response.status
             );
 
             if start_time.elapsed() > request.timeout {
