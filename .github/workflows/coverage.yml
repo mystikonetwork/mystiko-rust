@@ -50,7 +50,7 @@ jobs:
       - name: Install anvil command
         run: |
           curl -L https://foundry.paradigm.xyz | bash
-          source /home/runner/.bashrc
+          source $HOME/.bashrc
           foundryup
 
       - name: Cache
