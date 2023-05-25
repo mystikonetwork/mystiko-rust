@@ -49,9 +49,8 @@ jobs:
 
       - name: Install anvil command
         run: |
-          git clone https://github.com/foundry-rs/foundry
-          cd foundry
-          cargo install --path ./anvil --bins --locked --force
+          curl -L https://foundry.paradigm.xyz | bash
+          foundryup
 
       - name: Cache
         uses: actions/cache@v3
