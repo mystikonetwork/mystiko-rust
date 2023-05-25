@@ -3,7 +3,7 @@ use crate::types::register::RegisterInfo;
 use crate::types::result::Result;
 use ethers_core::types::Address;
 use futures::future::try_join_all;
-use log::LevelFilter;
+use log::{debug, LevelFilter};
 use mystiko_ethers::provider::pool::ProviderPool;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_config::wrapper::relayer::{RelayerConfig, RemoteOptions};
@@ -24,6 +24,7 @@ use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
+use validator::Validate;
 
 pub const INFO_URL_PATH: &str = "info";
 pub const TRANSACT_URL_PATH: &str = "transact";
@@ -78,6 +79,11 @@ impl RelayerClient {
     }
 
     pub async fn all_register_info(self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>> {
+        debug!("all register info {:?}", request);
+
+        // validate request
+        request.validate().map_err(RelayerClientError::ValidationErrors)?;
+
         let chain_id = request.chain_id;
 
         let mut provider_pool = self.providers.write().await;
@@ -140,7 +146,10 @@ impl RelayerClient {
     }
 
     pub async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse> {
-        log::debug!("gas relayer send transact: {:?}", request);
+        debug!("gas relayer send transact: {:?}", request);
+
+        // validate request
+        request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
         let mut request_builder = self
             .reqwest_client
@@ -155,6 +164,11 @@ impl RelayerClient {
         &self,
         request: RelayTransactStatusRequest,
     ) -> Result<RelayTransactStatusResponse> {
+        debug!("relay transaction status {:?}", request);
+
+        // validate request
+        request.validate().map_err(RelayerClientError::ValidationErrors)?;
+
         let response = self
             .get_data::<RelayTransactStatusResponse>(&format!(
                 "{}/{}/{}",
@@ -165,6 +179,11 @@ impl RelayerClient {
     }
 
     pub async fn wait_transaction(&self, request: WaitingTransactionRequest) -> Result<RelayTransactStatusResponse> {
+        debug!("wait transaction {:?}", request);
+
+        // validate request
+        request.validate().map_err(RelayerClientError::ValidationErrors)?;
+
         let start_time = Instant::now();
         loop {
             let response = self

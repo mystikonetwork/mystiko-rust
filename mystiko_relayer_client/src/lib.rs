@@ -15,6 +15,7 @@ extern crate serde_json;
 extern crate thiserror;
 extern crate tokio;
 extern crate typed_builder;
+extern crate validator;
 
 pub mod client;
 pub mod error;

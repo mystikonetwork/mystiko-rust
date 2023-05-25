@@ -3543,6 +3543,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "typed-builder",
+ "validator",
 ]
 
 [[package]]
@@ -3574,6 +3575,7 @@ dependencies = [
  "num-bigint 0.4.3",
  "serde",
  "serde_json",
+ "tokio",
  "typed-builder",
  "validator",
 ]

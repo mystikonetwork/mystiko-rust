@@ -19,9 +19,11 @@ use std::time::Duration;
 use typed_builder::TypedBuilder;
 use validator::{Validate, ValidationError};
 
-#[derive(TypedBuilder, Serialize, Deserialize, Debug)]
+#[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug)]
 pub struct RelayTransactRequest {
+    #[validate(url)]
     pub relayer_url: String,
+    #[validate]
     pub data: TransactRequestData,
 }
 
@@ -46,9 +48,11 @@ pub struct RelayTransactResponse {
     pub uuid: String,
 }
 
-#[derive(TypedBuilder, Serialize, Deserialize, Debug)]
+#[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug)]
 pub struct RelayTransactStatusRequest {
+    #[validate(url)]
     pub relayer_url: String,
+    #[validate(length(min = 1))]
     pub uuid: String,
 }
 
@@ -71,26 +75,33 @@ pub enum TransactStatus {
     Failed,
 }
 
-#[derive(TypedBuilder, Serialize, Deserialize, Debug)]
+#[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug)]
 pub struct WaitingTransactionRequest {
+    #[validate(url)]
     pub relayer_url: String,
+    #[validate(length(min = 1))]
     pub uuid: String,
     pub waiting_status: TransactStatus,
     pub timeout: Duration,
     pub interval: Option<Duration>,
 }
 
-#[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug, Clone)]
 pub struct RegisterInfoRequest {
+    #[validate(range(min = 1))]
     pub chain_id: u64,
+    #[validate]
     #[serde(default)]
     pub options: Option<RegisterOptions>,
 }
 
-#[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone)]
+#[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug, Clone)]
 pub struct RegisterOptions {
+    #[validate(length(min = 1))]
     pub asset_symbol: String,
+    #[validate(range(min = 1))]
     pub asset_decimals: u32,
+    #[validate(custom = "is_valid_circuit_type")]
     pub circuit_type: CircuitType,
     pub show_unavailable: bool,
 }

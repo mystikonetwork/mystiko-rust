@@ -86,4 +86,11 @@ async fn test_create() {
             .unwrap(),
         803183
     );
+    assert_eq!(
+        config
+            .find_gas_cost(&AssetType::Erc20, &CircuitType::Rollup1)
+            .unwrap_err()
+            .to_string(),
+        String::from("unsupported circuit type Rollup1")
+    )
 }

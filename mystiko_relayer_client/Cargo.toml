@@ -24,6 +24,7 @@ serde_json = { version = "1.0.91" }
 thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.27.0", features = ["full"] }
 typed-builder = { version = "0.14.0" }
+validator = { version = "0.16.0", features = ["derive"] }
 
 [dev-dependencies]
 async-trait = { version = "0.1.64" }

@@ -74,6 +74,32 @@ async fn setup(provider: Option<SetProvider>) -> Result<TestRelayerClient> {
 }
 
 #[tokio::test]
+async fn test_create_relayer_config_error() {
+    let mock_chain_config = MockChainConfig::new();
+    let pool = ProviderPool::builder()
+        .chain_providers_options(Box::new(mock_chain_config))
+        .build();
+
+    let client = RelayerClient::new(
+        Arc::new(RwLock::new(pool)),
+        Some(
+            RelayerClientOptions::builder()
+                .relayer_config_file_path(String::from("./path"))
+                .is_testnet(true)
+                .log_level(LevelFilter::Debug)
+                .build(),
+        ),
+    )
+    .await;
+
+    assert!(client.is_err());
+    assert_eq!(
+        client.unwrap_err().to_string(),
+        String::from("create relayer config error")
+    );
+}
+
+#[tokio::test]
 async fn test_all_register_info() {
     let chain_id: u64 = 31337;
     let anvil = Anvil::new().chain_id(chain_id).spawn();
@@ -128,7 +154,7 @@ async fn test_all_register_info() {
             chain_id: anvil.chain_id(),
             options: Some(RegisterOptions {
                 asset_symbol: "TEST".to_string(),
-                asset_decimals: 0,
+                asset_decimals: 16,
                 circuit_type: CircuitType::Transaction1x0,
                 show_unavailable: false,
             }),
@@ -205,7 +231,7 @@ async fn relay_transact() {
                 .chain_id(56)
                 .asset_symbol(String::from("MTT"))
                 .asset_decimals(16)
-                .pool_address(String::from(""))
+                .pool_address(String::from("0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc"))
                 .circuit_type(CircuitType::Transaction1x0)
                 .signature(String::from(""))
                 .build(),
@@ -214,6 +240,34 @@ async fn relay_transact() {
     let response = client.relay_transact(request).await.unwrap();
     assert_eq!(response, mock_result);
     mock.assert_async().await;
+}
+
+#[tokio::test]
+async fn relay_transact_invalid_circuit_type() {
+    let TestRelayerClient { mock_server, client } = setup(None).await.unwrap();
+
+    let request = RelayTransactRequest::builder()
+        .relayer_url(mock_server.url())
+        .data(
+            TransactRequestData::builder()
+                .contract_param(TransactRequest::default())
+                .transaction_type(TransactionType::Withdraw)
+                .bridge_type(BridgeType::Loop)
+                .chain_id(56)
+                .asset_symbol(String::from("MTT"))
+                .asset_decimals(16)
+                .pool_address(String::from("0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc"))
+                .circuit_type(CircuitType::Rollup1)
+                .signature(String::from(""))
+                .build(),
+        )
+        .build();
+    let response = client.relay_transact(request).await;
+    assert!(response.is_err());
+    assert_eq!(
+        response.unwrap_err().to_string(),
+        String::from("data.circuit_type: Validation error: invalid circuit type [{\"value\": String(\"rollup1\")}]")
+    );
 }
 
 #[tokio::test]

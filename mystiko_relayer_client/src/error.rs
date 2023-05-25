@@ -1,6 +1,7 @@
 use std::io;
 use thiserror::Error;
 use tokio::task::JoinError;
+use validator::ValidationErrors;
 
 #[derive(Error, Debug)]
 pub enum RelayerClientError {
@@ -28,4 +29,6 @@ pub enum RelayerClientError {
     GetOrCreateProviderError(String),
     #[error(transparent)]
     JoinError(#[from] JoinError),
+    #[error(transparent)]
+    ValidationErrors(#[from] ValidationErrors),
 }
