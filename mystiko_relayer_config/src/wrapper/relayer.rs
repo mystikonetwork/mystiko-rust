@@ -12,19 +12,19 @@ use validator::Validate;
 pub struct RelayerConfig {
     raw: RawRelayerConfig,
     chain_configs: Vec<Arc<ChainConfig>>,
-    default_chain_configs: HashMap<u32, Arc<ChainConfig>>,
+    default_chain_configs: HashMap<u64, Arc<ChainConfig>>,
 }
 
 #[derive(TypedBuilder, Clone, Debug)]
 pub struct RemoteOptions {
     #[builder(default, setter(strip_option))]
-    base_url: Option<String>,
+    pub base_url: Option<String>,
     #[builder(default, setter(strip_option))]
-    git_revision: Option<String>,
+    pub git_revision: Option<String>,
     #[builder(default = false)]
-    is_testnet: bool,
+    pub is_testnet: bool,
     #[builder(default = false)]
-    is_staging: bool,
+    pub is_staging: bool,
 }
 
 const DEFAULT_REMOTE_BASE_URL: &str = "https://static.mystiko.network/relayer_config";
@@ -88,7 +88,7 @@ impl RelayerConfig {
         &self.raw.version
     }
 
-    pub fn find_chain_config(&self, chain_id: u32) -> Option<&ChainConfig> {
+    pub fn find_chain_config(&self, chain_id: u64) -> Option<&ChainConfig> {
         self.default_chain_configs.get(&chain_id).map(|c| c.as_ref())
     }
 
@@ -108,13 +108,13 @@ impl RelayerConfig {
 fn initialize_chain_configs(raw_chain_configs: &[Arc<RawChainConfig>]) -> Result<Vec<Arc<ChainConfig>>> {
     let mut chain_configs: Vec<Arc<ChainConfig>> = Vec::new();
     for raw_chain_config in raw_chain_configs {
-        chain_configs.push(Arc::new(ChainConfig::new(raw_chain_config.clone())?));
+        chain_configs.push(Arc::new(ChainConfig::new(raw_chain_config.clone())));
     }
     Ok(chain_configs)
 }
 
-fn initialize_default_chain_configs(chain_configs: &[Arc<ChainConfig>]) -> Result<HashMap<u32, Arc<ChainConfig>>> {
-    let mut configs: HashMap<u32, Arc<ChainConfig>> = HashMap::new();
+fn initialize_default_chain_configs(chain_configs: &[Arc<ChainConfig>]) -> Result<HashMap<u64, Arc<ChainConfig>>> {
+    let mut configs: HashMap<u64, Arc<ChainConfig>> = HashMap::new();
     for chain_config in chain_configs.iter() {
         if configs.contains_key(&chain_config.chain_id()) {
             return Err(Error::msg(format!(

@@ -13,7 +13,7 @@ async fn create_chain_config() -> ChainConfig {
     let raw_config = create_raw_from_file::<RawChainConfig>(VALID_CHAIN_CONFIG_FILE)
         .await
         .unwrap();
-    let config = ChainConfig::new(Arc::new(raw_config)).unwrap();
+    let config = ChainConfig::new(Arc::new(raw_config));
     config.validate().unwrap();
     config
 }
@@ -181,4 +181,14 @@ async fn test_create_from_remote_error() {
         .base_url(format!("{}/relayer_config", server.url()))
         .build();
     assert!(RelayerConfig::from_remote(&options).await.is_err());
+}
+
+#[tokio::test]
+async fn test_create_from_remote_default_mainnet() {
+    assert!(RelayerConfig::from_remote_default_mainnet().await.is_ok());
+}
+
+#[tokio::test]
+async fn test_create_from_remote_default_testnet() {
+    assert!(RelayerConfig::from_remote_default_testnet().await.is_ok());
 }
