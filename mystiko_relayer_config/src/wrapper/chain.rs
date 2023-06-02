@@ -37,6 +37,10 @@ impl ChainConfig {
         &self.raw.asset_symbol
     }
 
+    pub fn asset_decimals(&self) -> u32 {
+        self.raw.asset_decimals
+    }
+
     pub fn relayer_contract_address(&self) -> &str {
         &self.raw.relayer_contract_address
     }
