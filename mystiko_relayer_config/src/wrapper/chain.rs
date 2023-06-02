@@ -1,6 +1,6 @@
+use crate::raw::asset::RawAssetConfig;
 use crate::raw::chain::RawChainConfig;
-use crate::raw::contract::RawContractConfig;
-use crate::wrapper::contract::ContractConfig;
+use crate::wrapper::asset::AssetConfig;
 use crate::wrapper::transaction_info::TransactionInfoConfig;
 use anyhow::{bail, Result};
 use mystiko_types::{AssetType, CircuitType};
@@ -10,17 +10,17 @@ use validator::Validate;
 #[derive(Clone, Debug, PartialEq)]
 pub struct ChainConfig {
     raw: Arc<RawChainConfig>,
-    contract_configs: Vec<Arc<ContractConfig>>,
+    asset_configs: Vec<Arc<AssetConfig>>,
     transaction_info: TransactionInfoConfig,
 }
 
 impl ChainConfig {
     pub fn new(raw: Arc<RawChainConfig>) -> Self {
-        let contract_configs = initialize_contract_configs(&raw.contracts);
+        let contract_configs = initialize_contract_configs(&raw.assets);
         let transaction_info = TransactionInfoConfig::new(raw.transaction_info.clone());
         Self {
             raw,
-            contract_configs,
+            asset_configs: contract_configs,
             transaction_info,
         }
     }
@@ -41,16 +41,16 @@ impl ChainConfig {
         &self.raw.relayer_contract_address
     }
 
-    pub fn contracts(&self) -> Vec<&ContractConfig> {
-        self.contract_configs.iter().map(|c| c.as_ref()).collect()
+    pub fn assets(&self) -> Vec<&AssetConfig> {
+        self.asset_configs.iter().map(|c| c.as_ref()).collect()
     }
 
     pub fn transaction_info(&self) -> &TransactionInfoConfig {
         &self.transaction_info
     }
 
-    pub fn find_contract(&self, asset_symbol: &str) -> Option<&ContractConfig> {
-        for contract_config in self.contract_configs.iter() {
+    pub fn find_asset(&self, asset_symbol: &str) -> Option<&AssetConfig> {
+        for contract_config in self.asset_configs.iter() {
             if contract_config.asset_symbol().eq_ignore_ascii_case(asset_symbol) {
                 return Some(contract_config.as_ref());
             }
@@ -78,18 +78,18 @@ impl ChainConfig {
 
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
-        for contract_config in self.contracts() {
-            contract_config.validate()?;
+        for asset_config in self.assets() {
+            asset_config.validate()?;
         }
         self.transaction_info.validate()?;
         Ok(())
     }
 }
 
-fn initialize_contract_configs(raw_contract_configs: &[Arc<RawContractConfig>]) -> Vec<Arc<ContractConfig>> {
-    let mut contract_configs: Vec<Arc<ContractConfig>> = Vec::new();
+fn initialize_contract_configs(raw_contract_configs: &[Arc<RawAssetConfig>]) -> Vec<Arc<AssetConfig>> {
+    let mut asset_configs: Vec<Arc<AssetConfig>> = Vec::new();
     for raw_contract_config in raw_contract_configs {
-        contract_configs.push(Arc::new(ContractConfig::new(raw_contract_config.clone())));
+        asset_configs.push(Arc::new(AssetConfig::new(raw_contract_config.clone())));
     }
-    contract_configs
+    asset_configs
 }
