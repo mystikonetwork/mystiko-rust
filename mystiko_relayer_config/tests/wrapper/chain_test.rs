@@ -1,16 +1,16 @@
-use mystiko_relayer_config::raw::asset::RawAssetConfig;
 use mystiko_relayer_config::raw::chain::RawChainConfig;
+use mystiko_relayer_config::raw::contract::RawContractConfig;
 use mystiko_relayer_config::raw::create_raw_from_file;
 use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
-use mystiko_relayer_config::wrapper::asset::AssetConfig;
 use mystiko_relayer_config::wrapper::chain::ChainConfig;
+use mystiko_relayer_config::wrapper::contract::ContractConfig;
 use mystiko_relayer_config::wrapper::transaction_info::TransactionInfoConfig;
 use mystiko_types::{AssetType, CircuitType};
 use std::sync::Arc;
 
 const VALID_CONFIG_FILE: &str = "tests/files/chain.valid.json";
 const VALID_GAS_COST_CONFIG_FILE: &str = "tests/files/transaction_info.valid.json";
-const VALID_CONTRACT_CONFIG_FILE: &str = "tests/files/asset.valid.json";
+const VALID_CONTRACT_CONFIG_FILE: &str = "tests/files/contract.valid.json";
 
 async fn test_create_transaction_info() -> TransactionInfoConfig {
     let raw_config = create_raw_from_file::<RawTransactionInfoConfig>(VALID_GAS_COST_CONFIG_FILE)
@@ -21,11 +21,11 @@ async fn test_create_transaction_info() -> TransactionInfoConfig {
     config
 }
 
-async fn test_create_contract() -> AssetConfig {
-    let raw_config = create_raw_from_file::<RawAssetConfig>(VALID_CONTRACT_CONFIG_FILE)
+async fn test_create_contract() -> ContractConfig {
+    let raw_config = create_raw_from_file::<RawContractConfig>(VALID_CONTRACT_CONFIG_FILE)
         .await
         .unwrap();
-    let config = AssetConfig::new(Arc::new(raw_config));
+    let config = ContractConfig::new(Arc::new(raw_config));
     config.validate().unwrap();
     config
 }
@@ -42,13 +42,13 @@ async fn test_create() {
         config.relayer_contract_address(),
         "0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc"
     );
-    assert_eq!(config.assets().len(), 3);
+    assert_eq!(config.contracts().len(), 3);
     assert_eq!(config.transaction_info(), &test_create_transaction_info().await);
 
-    let contract_option = config.find_asset("ETH");
+    let contract_option = config.find_contract("ETH");
     assert!(contract_option.is_some());
     assert_eq!(contract_option.unwrap(), &test_create_contract().await);
-    assert!(config.find_asset("BNB").is_none());
+    assert!(config.find_contract("BNB").is_none());
 
     assert_eq!(
         config

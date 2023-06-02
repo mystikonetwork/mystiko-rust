@@ -1,4 +1,5 @@
 use crate::raw::contract::RawContractConfig;
+use mystiko_types::AssetType;
 use rust_decimal::Decimal;
 use std::sync::Arc;
 use validator::Validate;
@@ -13,8 +14,16 @@ impl ContractConfig {
         ContractConfig { raw }
     }
 
+    pub fn asset_type(&self) -> &AssetType {
+        &self.raw.asset_type
+    }
+
     pub fn asset_symbol(&self) -> &str {
         &self.raw.asset_symbol
+    }
+
+    pub fn asset_decimals(&self) -> u32 {
+        self.raw.asset_decimals
     }
 
     pub fn relayer_fee_of_ten_thousandth(&self) -> u32 {
