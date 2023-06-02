@@ -1,8 +1,9 @@
+use mystiko_relayer_config::raw::asset::RawAssetConfig;
 use mystiko_relayer_config::raw::chain::RawChainConfig;
-use mystiko_relayer_config::raw::contract::RawContractConfig;
 use mystiko_relayer_config::raw::gas_cost::RawGasCostConfig;
 use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
 use mystiko_relayer_config::raw::{create_raw, create_raw_from_file};
+use mystiko_types::AssetType;
 use std::sync::Arc;
 use validator::Validate;
 
@@ -21,23 +22,28 @@ fn default_config() -> RawChainConfig {
             .chain_id(5)
             .asset_symbol("ETH".to_string())
             .relayer_contract_address("0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc".to_string())
-            .contracts(vec![
+            .assets(vec![
                 Arc::new(
-                    RawContractConfig::builder()
+                    RawAssetConfig::builder()
+                        .asset_type(AssetType::Main)
                         .asset_symbol("ETH".to_string())
+                        .asset_decimals(18)
                         .relayer_fee_of_ten_thousandth(25)
                         .build(),
                 ),
                 Arc::new(
-                    RawContractConfig::builder()
+                    RawAssetConfig::builder()
+                        .asset_type(AssetType::Erc20)
                         .asset_symbol("MTT".to_string())
                         .relayer_fee_of_ten_thousandth(25)
                         .build(),
                 ),
                 Arc::new(
-                    RawContractConfig::builder()
+                    RawAssetConfig::builder()
+                        .asset_type(AssetType::Erc20)
                         .asset_symbol("mUSD".to_string())
                         .relayer_fee_of_ten_thousandth(25)
+                        .asset_decimals(6)
                         .build(),
                 ),
             ])
@@ -114,7 +120,7 @@ fn test_default_values() {
     )
     .unwrap();
     assert!(raw_config.validate().is_ok());
-    assert_eq!(raw_config.contracts.len(), 0);
+    assert_eq!(raw_config.assets.len(), 0);
 }
 
 #[tokio::test]
