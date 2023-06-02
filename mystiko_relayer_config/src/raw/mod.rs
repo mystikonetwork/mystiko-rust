@@ -1,5 +1,5 @@
-pub mod asset;
 pub mod chain;
+pub mod contract;
 pub mod gas_cost;
 pub mod relayer;
 pub mod transaction_info;

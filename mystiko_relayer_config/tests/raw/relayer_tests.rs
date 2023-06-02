@@ -1,5 +1,5 @@
-use mystiko_relayer_config::raw::asset::RawAssetConfig;
 use mystiko_relayer_config::raw::chain::RawChainConfig;
+use mystiko_relayer_config::raw::contract::RawContractConfig;
 use mystiko_relayer_config::raw::gas_cost::RawGasCostConfig;
 use mystiko_relayer_config::raw::relayer::RawRelayerConfig;
 use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
@@ -23,23 +23,23 @@ fn default_chain_config() -> RawChainConfig {
             .chain_id(5)
             .asset_symbol("ETH".to_string())
             .relayer_contract_address("0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc".to_string())
-            .assets(vec![
+            .contracts(vec![
                 Arc::new(
-                    RawAssetConfig::builder()
+                    RawContractConfig::builder()
                         .asset_type(AssetType::Main)
                         .asset_symbol("ETH".to_string())
                         .relayer_fee_of_ten_thousandth(25)
                         .build(),
                 ),
                 Arc::new(
-                    RawAssetConfig::builder()
+                    RawContractConfig::builder()
                         .asset_type(AssetType::Erc20)
                         .asset_symbol("MTT".to_string())
                         .relayer_fee_of_ten_thousandth(25)
                         .build(),
                 ),
                 Arc::new(
-                    RawAssetConfig::builder()
+                    RawContractConfig::builder()
                         .asset_type(AssetType::Erc20)
                         .asset_symbol("mUSD".to_string())
                         .asset_decimals(6)

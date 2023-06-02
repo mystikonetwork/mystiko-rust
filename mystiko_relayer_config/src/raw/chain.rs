@@ -1,4 +1,4 @@
-use crate::raw::asset::RawAssetConfig;
+use crate::raw::contract::RawContractConfig;
 use crate::raw::transaction_info::RawTransactionInfoConfig;
 use mystiko_validator::validate::is_ethereum_address;
 use serde::{Deserialize, Serialize};
@@ -28,15 +28,15 @@ pub struct RawChainConfig {
     pub relayer_contract_address: String,
 
     #[validate]
-    #[serde(default = "default_assets")]
-    #[builder(default = default_assets())]
-    pub assets: Vec<Arc<RawAssetConfig>>,
+    #[serde(default = "default_contracts")]
+    #[builder(default = default_contracts())]
+    pub contracts: Vec<Arc<RawContractConfig>>,
 
     #[validate]
     pub transaction_info: Arc<RawTransactionInfoConfig>,
 }
 
-fn default_assets() -> Vec<Arc<RawAssetConfig>> {
+fn default_contracts() -> Vec<Arc<RawContractConfig>> {
     Vec::new()
 }
 
