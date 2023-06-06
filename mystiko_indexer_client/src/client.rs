@@ -254,14 +254,20 @@ impl IndexerClient {
         &self,
         chain_id: u64,
         contract_address: &str,
-        end_block: u64,
+        end_block: Option<u64>,
     ) -> Result<u32> {
-        let resp = self
-            .get_data::<u32>(&format!(
+        let url = if let Some(end_block_num) = end_block {
+            format!(
                 "{}/chains/{}/address/{}/count/commitment-included?endBlock={}",
-                &self.base_url, chain_id, contract_address, end_block
-            ))
-            .await?;
+                &self.base_url, chain_id, contract_address, end_block_num
+            )
+        } else {
+            format!(
+                "{}/chains/{}/address/{}/count/commitment-included",
+                &self.base_url, chain_id, contract_address
+            )
+        };
+        let resp = self.get_data::<u32>(&url).await?;
         Ok(resp)
     }
 }
