@@ -1280,7 +1280,34 @@ async fn test_count_commitment_included_for_contract() {
         .create_async()
         .await;
     let resp = indexer_client
-        .count_commitment_included_for_contract(test_chain_id, test_contract_address, test_end_block)
+        .count_commitment_included_for_contract(test_chain_id, test_contract_address, Some(test_end_block))
+        .await;
+    assert!(resp.is_ok());
+    let resp = resp.unwrap();
+    assert_eq!(resp, test_resp);
+    m.assert_async().await;
+
+    let test_resp = 10;
+    let mocked_api_resp = ApiResponse {
+        code: 0,
+        result: &test_resp,
+    };
+    let m = mocked_server
+        .mock(
+            "get",
+            format!(
+                "/chains/{}/address/{}/count/commitment-included",
+                test_chain_id, test_contract_address
+            )
+            .as_str(),
+        )
+        .with_status(200)
+        .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let resp = indexer_client
+        .count_commitment_included_for_contract(test_chain_id, test_contract_address, None)
         .await;
     assert!(resp.is_ok());
     let resp = resp.unwrap();
