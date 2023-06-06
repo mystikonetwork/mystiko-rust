@@ -28,7 +28,6 @@ async fn test_send_1559_tx() {
     let builder = TxBuilder::builder()
         .config(cfg)
         .chain_id(chain_id.as_u64().into())
-        .to(to)
         .wallet(wallet)
         .build();
     let mut tx = builder.build_tx(&provider).await;
@@ -37,13 +36,13 @@ async fn test_send_1559_tx() {
     let gas_price = tx.gas_price(&provider).await.unwrap();
     assert!(gas_price > U256::zero());
 
-    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await.unwrap();
+    let gas = tx.estimate_gas(to, vec![].as_slice(), &value, &provider).await.unwrap();
     assert!(gas > U256::zero());
 
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     let before = provider.get_balance(to, None).await.unwrap();
     let tx_hash = tx
-        .send(vec![].as_slice(), value, max_gas_price, &provider)
+        .send(to, vec![].as_slice(), &value, &gas, max_gas_price, &provider)
         .await
         .unwrap();
     let receipt = tx.confirm(&provider).await.unwrap();
@@ -77,7 +76,6 @@ async fn test_send_legacy_tx() {
     let builder = TxBuilder::builder()
         .config(cfg)
         .chain_id(chain_id)
-        .to(to)
         .wallet(wallet)
         .build();
     let mut tx = builder.build_tx(&provider).await;
@@ -86,13 +84,13 @@ async fn test_send_legacy_tx() {
     let gas_price = tx.gas_price(&provider).await.unwrap();
     assert!(gas_price > U256::zero());
 
-    let gas = tx.estimate_gas(vec![].as_slice(), value, &provider).await.unwrap();
+    let gas = tx.estimate_gas(to, vec![].as_slice(), &value, &provider).await.unwrap();
     assert!(gas > U256::zero());
 
     let max_gas_price = Some(U256::from(100_000_000_000u64));
     let before = provider.get_balance(to, None).await.unwrap();
     let tx_hash = tx
-        .send(vec![].as_slice(), value, max_gas_price, &provider)
+        .send(to, vec![].as_slice(), &value, &gas, max_gas_price, &provider)
         .await
         .unwrap();
     let receipt = tx.confirm(&provider).await.unwrap();

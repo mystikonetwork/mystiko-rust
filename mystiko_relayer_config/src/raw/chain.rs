@@ -13,7 +13,7 @@ pub struct RawChainConfig {
     pub name: String,
 
     #[validate(range(min = 1))]
-    pub chain_id: u32,
+    pub chain_id: u64,
 
     #[validate(length(min = 1))]
     pub asset_symbol: String,

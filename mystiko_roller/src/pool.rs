@@ -18,7 +18,7 @@ pub struct Pool {
 
 impl Pool {
     pub async fn new(pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait>) -> Pool {
-        let data = DataHandle::new(pool_contract, Arc::clone(&context)).await;
+        let data = DataHandle::new(context.cfg().chain.chain_id, pool_contract, Arc::clone(&context)).await;
         let data_rc = Rc::new(RefCell::new(data));
         let pull = PullHandle::new(pool_contract.address(), Arc::clone(&context), Rc::clone(&data_rc));
         let rollup = RollupHandle::new(pool_contract, Arc::clone(&context), Rc::clone(&data_rc)).await;

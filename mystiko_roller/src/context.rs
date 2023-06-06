@@ -1,4 +1,4 @@
-use crate::common::env::load_coin_market_api_key;
+use crate::common::env::{load_coin_market_api_key, load_roller_config_path};
 use crate::common::error::{Result, RollerError};
 use crate::common::trace::trace_init;
 use crate::config::mystiko_config_parser::MystikoConfigParser;
@@ -20,6 +20,7 @@ use mystiko_storage::formatter::SqlFormatter;
 use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
 use std::sync::Arc;
 use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use tracing::info;
 
 #[async_trait]
 pub trait ContextTrait {
@@ -53,6 +54,7 @@ impl ContextTrait for Context {
     async fn new() -> Result<Self> {
         let roller_cfg = create_roller_config();
         trace_init(&roller_cfg.log_level);
+        info!("roller config path: {:?}", load_roller_config_path());
 
         let token_price_cfg = create_token_price_config();
         let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core).await;

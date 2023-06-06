@@ -12,7 +12,6 @@ use ethers_middleware::{NonceManagerMiddleware, SignerMiddleware};
 use ethers_providers::{JsonRpcClient, Middleware, Provider};
 use ethers_signers::{LocalWallet, Signer};
 use std::marker::PhantomData;
-use std::ops::{Div, Mul};
 use std::time::Duration;
 use typed_builder::TypedBuilder;
 
@@ -69,31 +68,60 @@ impl<P> TxManager<P>
 where
     P: JsonRpcClient + Send + Sync,
 {
-    pub async fn gas_price(&self, provider: &Provider<P>) -> Result<U256> {
+    async fn gas_price_1559_tx(&self, provider: &Provider<P>) -> Result<(U256, U256)> {
         let gas_oracle = ProviderOracle::new(provider);
 
+        let (max_fee_per_gas, mut priority_fee) = gas_oracle
+            .estimate_eip1559_fees()
+            .await
+            .map_err(|e| TxManagerError::GasPriceError(e.to_string()))?;
+        if priority_fee < self.config.min_priority_fee_per_gas {
+            priority_fee = self.config.min_priority_fee_per_gas;
+        }
+        Ok((max_fee_per_gas, priority_fee))
+    }
+
+    async fn gas_price_legacy_tx(&self, provider: &Provider<P>) -> Result<U256> {
+        let gas_oracle = ProviderOracle::new(provider);
+
+        gas_oracle
+            .fetch()
+            .await
+            .map_err(|e| TxManagerError::GasPriceError(e.to_string()))
+    }
+
+    pub async fn gas_price(&self, provider: &Provider<P>) -> Result<U256> {
         if self.is_1559_tx {
-            gas_oracle
-                .estimate_eip1559_fees()
-                .await
-                .map_err(|e| TxManagerError::GasPriceError(e.to_string()))
-                .map(|(max_fee_per_gas, _)| max_fee_per_gas)
+            let (max_fee_per_gas, priority_fee) = self.gas_price_1559_tx(provider).await?;
+            Ok(max_fee_per_gas + priority_fee)
         } else {
-            gas_oracle
-                .fetch()
-                .await
-                .map_err(|e| TxManagerError::GasPriceError(e.to_string()))
+            self.gas_price_legacy_tx(provider).await
         }
     }
 
-    async fn do_estimate_gas(&mut self, to: Address, gas_price: &U256, provider: &Provider<P>) -> Result<U256> {
+    pub async fn estimate_gas(
+        &mut self,
+        to: Address,
+        data: &[u8],
+        value: &U256,
+        provider: &Provider<P>,
+    ) -> Result<U256> {
+        self.data = data.to_vec();
+        self.value = value.clone();
+
         let typed_tx = match self.is_1559_tx {
             true => {
-                let tx = self.build_1559_tx(to, gas_price, provider).await?;
+                let max_fee_per_gas = self.choose_max_gas_price();
+                let priority_fee = self.config.min_priority_fee_per_gas;
+
+                let tx = self
+                    .build_1559_tx(to, &max_fee_per_gas, &priority_fee, provider)
+                    .await?;
                 TypedTransaction::try_from(tx).expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
             }
             false => {
-                let tx = self.build_legacy_tx(to, gas_price, provider).await?;
+                let gas_price = self.gas_price_legacy_tx(provider).await?;
+                let tx = self.build_legacy_tx(to, &gas_price, provider).await?;
                 TypedTransaction::try_from(tx).expect("Failed to convert TransactionRequest to TypedTransaction")
             }
         };
@@ -105,55 +133,37 @@ where
             .map_err(|why| TxManagerError::EstimateGasError(why.to_string()))
     }
 
-    pub async fn estimate_gas(
-        &mut self,
-        to: Address,
-        data: &[u8],
-        value: U256,
-        provider: &Provider<P>,
-    ) -> Result<U256> {
-        self.data = data.to_vec();
-        self.value = value;
-
-        let gas_price = match self.is_1559_tx {
-            true => self.choose_max_gas_price(),
-            false => self.gas_price(provider).await?,
-        };
-        self.do_estimate_gas(to, &gas_price, provider).await
-    }
-
     pub async fn send(
         &mut self,
         to: Address,
         data: &[u8],
-        value: U256,
+        value: &U256,
+        gas_limit: &U256,
         max_gas_price: Option<U256>,
         provider: &Provider<P>,
     ) -> Result<TxHash> {
         self.max_gas_price = max_gas_price;
         self.data = data.to_vec();
-        self.value = value;
+        self.value = value.clone();
         self.tx_hash = None;
 
-        let current_gas_price = self.gas_price(provider).await?;
-        let max_gas_price = self.choose_max_gas_price();
-        if current_gas_price >= max_gas_price {
-            return Err(TxManagerError::GasPriceError("gas price too high".into()));
-        }
-
-        let gas_price = if self.is_1559_tx {
-            &max_gas_price
-        } else {
-            &current_gas_price
-        };
-
-        let mut gas_limit = self.do_estimate_gas(to, gas_price, provider).await?;
-        gas_limit = gas_limit.mul(100 + self.config.gas_limit_reserve_percentage).div(100);
-
+        let gas_limit = gas_limit * (100 + self.config.gas_limit_reserve_percentage) / 100;
         if self.is_1559_tx {
-            self.send_1559_tx(to, &max_gas_price, &gas_limit, provider).await
+            let (max_fee_per_gas, priority_fee) = self.gas_price_1559_tx(provider).await?;
+            let max_gas_price = self.choose_max_gas_price();
+            if max_fee_per_gas + priority_fee > max_gas_price {
+                return Err(TxManagerError::GasPriceError("gas price too high".into()));
+            }
+            let max_fee_per_gas = max_gas_price - priority_fee;
+            self.send_1559_tx(to, &max_fee_per_gas, &priority_fee, &gas_limit, provider)
+                .await
         } else {
-            self.send_legacy_tx(to, &current_gas_price, &gas_limit, provider).await
+            let gas_price = self.gas_price_legacy_tx(provider).await?;
+            let max_gas_price = self.choose_max_gas_price();
+            if gas_price > max_gas_price {
+                return Err(TxManagerError::GasPriceError("gas price too high".into()));
+            }
+            self.send_legacy_tx(to, &gas_price, &gas_limit, provider).await
         }
     }
 
@@ -246,30 +256,33 @@ where
     async fn build_1559_tx(
         &self,
         to: Address,
-        max_gas_price: &U256,
+        max_fee_per_gas: &U256,
+        priority_fee: &U256,
         provider: &Provider<P>,
     ) -> Result<Eip1559TransactionRequest> {
         let curr_nonce = self.get_current_nonce(provider).await?;
 
+        // todo set priority_fee_per_gas from provider
         Ok(Eip1559TransactionRequest::new()
             .chain_id(self.chain_id)
             .to(ethers_core::types::NameOrAddress::Address(to))
             .value(self.value)
             .data(self.data.clone())
             .nonce(curr_nonce)
-            .max_fee_per_gas(*max_gas_price)
-            .max_priority_fee_per_gas(self.config.max_priority_fee_per_gas))
+            .max_fee_per_gas(*max_fee_per_gas)
+            .max_priority_fee_per_gas(*priority_fee))
     }
 
     async fn send_1559_tx(
         &mut self,
         to: Address,
-        max_gas_price: &U256,
+        max_fee_per_gas: &U256,
+        priority_fee: &U256,
         gas_limit: &U256,
         provider: &Provider<P>,
     ) -> Result<TxHash> {
         // Create the transaction
-        let mut tx = self.build_1559_tx(to, max_gas_price, provider).await?;
+        let mut tx = self.build_1559_tx(to, max_fee_per_gas, priority_fee, provider).await?;
         tx.gas = Some(*gas_limit);
 
         let signer = SignerMiddleware::new(provider, self.wallet.clone());

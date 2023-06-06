@@ -9,7 +9,7 @@ const coin_market_api_key: &str = "";
 
 #[tokio::test]
 async fn test_get_token_id() {
-    let default_cfg = TokenPriceConfig::new("mainnet", "").unwrap();
+    let default_cfg = TokenPriceConfig::new("mainnet", None).unwrap();
     let tp = TokenPrice::new(&default_cfg, coin_market_api_key).unwrap();
     let id = tp.get_token_id("ETH").await.unwrap();
     assert_eq!(id, [1027]);
@@ -17,7 +17,7 @@ async fn test_get_token_id() {
 
 #[tokio::test]
 async fn test_price() {
-    let default_cfg = TokenPriceConfig::new("mainnet", "").unwrap();
+    let default_cfg = TokenPriceConfig::new("mainnet", None).unwrap();
     let mut tp = TokenPrice::new(&default_cfg, coin_market_api_key).unwrap();
     let price = tp.price("ETH").await.unwrap();
     assert!(price > 100.0);
@@ -25,7 +25,7 @@ async fn test_price() {
 
 #[tokio::test]
 async fn test_swap() {
-    let default_cfg = TokenPriceConfig::new("mainnet", "").unwrap();
+    let default_cfg = TokenPriceConfig::new("mainnet", None).unwrap();
     let mut tp = TokenPrice::new(&default_cfg, coin_market_api_key).unwrap();
 
     let amount = tp

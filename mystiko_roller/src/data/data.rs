@@ -9,12 +9,8 @@ use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_fs::read_file_bytes;
 use mystiko_protocol::rollup::{Rollup, RollupProof};
 use num_bigint::BigInt;
-use serde::Serialize;
-use serde_json::json;
-use std::fs::{File, OpenOptions};
-use std::io::Write;
 use std::sync::Arc;
-use tracing::{debug, error, info};
+use tracing::{debug, info};
 
 pub struct CommitmentData {
     hash: BigInt,
@@ -22,7 +18,7 @@ pub struct CommitmentData {
     block_number: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct RollupPlan {
     pub sizes: Vec<usize>,
     pub total_fee: U256,
@@ -43,8 +39,7 @@ pub struct DataHandle {
 }
 
 impl DataHandle {
-    pub async fn new(pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait>) -> Self {
-        let chain_id = context.cfg().chain.chain_id;
+    pub async fn new(chain_id: u64, pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait>) -> Self {
         DataHandle {
             chain_id,
             pool_contract: pool_contract.clone(),
@@ -68,14 +63,6 @@ impl DataHandle {
 
     fn push_commitment_in_queue(&mut self, cm: &CommitmentInfo) {
         let cm_data = build_commitment_data(cm);
-        if self.commitments.len() as u32 != cm.leaf_index {
-            error!(
-                "commitment leaf index mismatch, queue: {:?}, input: {:?}",
-                self.commitments.len(),
-                cm.leaf_index
-            );
-            panic!("commitment leaf index mismatch");
-        }
 
         self.commitments.push(cm_data);
     }
@@ -102,23 +89,16 @@ impl DataHandle {
         info!("set start block number {:?}", self.next_sync_block);
     }
 
-    pub async fn insert_commitments(&mut self, cms: Vec<CommitmentInfo>) {
-        for cm in &cms {
+    pub async fn insert_commitments(&mut self, cms: &[CommitmentInfo]) {
+        for cm in cms {
             let index = cm.leaf_index as usize;
             if index < self.commitments.len() {
                 assert_eq!(self.commitments[index].hash, cm.commitment_hash);
             } else {
-                self.context.db().await.insert_commitment(cm).await;
                 self.push_commitment_in_queue(cm);
+                self.context.db().await.insert_commitment(cm).await;
             }
         }
-    }
-
-    fn rebuild_tree(&mut self, count: usize) {
-        info!("rebuild merkle tree");
-        let height = self.context.cfg().rollup.merkle_tree_height;
-        let init_elem: Vec<BigInt> = self.commitments.iter().take(count).map(|cm| cm.hash.clone()).collect();
-        self.tree = Some(MerkleTree::new(Some(init_elem), Some(height), None).expect("rebuild merkle tree meet error"));
     }
 
     pub fn get_included_count(&self) -> usize {
@@ -129,11 +109,17 @@ impl DataHandle {
         self.commitments.len()
     }
 
+    fn rebuild_tree(&mut self, count: usize) {
+        info!("rebuild merkle tree");
+        let height = self.context.cfg().rollup.merkle_tree_height;
+        let init_elem: Vec<BigInt> = self.commitments.iter().take(count).map(|cm| cm.hash.clone()).collect();
+        self.tree = Some(MerkleTree::new(Some(init_elem), Some(height), None).expect("rebuild merkle tree meet error"));
+    }
+
     fn build_rollup_plan(&self, force_rollup_block_count: u64) -> RollupPlan {
         let included_len = self.get_included_count();
         let queued_len = self.get_commitments_queue_count() - included_len;
         let sizes = calc_rollup_size_array(included_len, queued_len);
-        assert!(!sizes.is_empty());
 
         let counter: usize = sizes.iter().sum();
         let total_fee = self.commitments[included_len..(included_len + counter)]
@@ -142,7 +128,10 @@ impl DataHandle {
             .fold(U256::zero(), |acc, x| acc + x);
 
         let force = {
-            let record_block = self.commitments[included_len].block_number;
+            let mut record_block: u64 = 0;
+            if !self.commitments.is_empty() {
+                record_block = self.commitments[included_len].block_number;
+            }
             self.next_sync_block >= record_block + force_rollup_block_count
         };
 
@@ -154,6 +143,7 @@ impl DataHandle {
     }
 
     pub fn generate_plan(&mut self, included: usize, force_rollup_block_count: u64) -> Result<RollupPlan> {
+        assert!(included <= self.commitments.len());
         let tree_count = self.tree.as_ref().map_or(0, |t| t.count());
         if self.tree.is_none() || tree_count > included {
             self.rebuild_tree(included);

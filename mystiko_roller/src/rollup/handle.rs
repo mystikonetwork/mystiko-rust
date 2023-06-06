@@ -26,6 +26,7 @@ pub struct RollupHandle {
     context: Arc<dyn ContextTrait>,
     data: Rc<RefCell<DataHandle>>,
     tx: TxManager<ProviderWrapper<Box<dyn JsonRpcClientWrapper>>>,
+    to_address: Address,
 }
 
 impl RollupHandle {
@@ -36,7 +37,7 @@ impl RollupHandle {
     ) -> Self {
         let cfg = context.cfg().rollup.clone();
         let chain_id = context.cfg().chain.chain_id;
-        let address = Address::from_str(pool_contract_cfg.address()).expect("invalid contract address");
+        let to_address = Address::from_str(pool_contract_cfg.address()).expect("invalid contract address");
 
         let tx_manager_cfg = create_tx_manager_config();
         let sk_str = load_roller_private_key().expect("load private key error");
@@ -47,12 +48,11 @@ impl RollupHandle {
         let builder = TxBuilder::builder()
             .config(tx_manager_cfg)
             .chain_id(chain_id.into())
-            .to(address)
             .wallet(local_wallet)
             .build();
         let provider = context.sign_provider().await;
         let tx = builder.build_tx(&provider).await;
-        let pool_contract = CommitmentPool::new(address, provider);
+        let pool_contract = CommitmentPool::new(to_address, provider);
         RollupHandle {
             chain_id,
             pool_contract_cfg: pool_contract_cfg.clone(),
@@ -61,6 +61,7 @@ impl RollupHandle {
             context,
             data,
             tx,
+            to_address,
         }
     }
 
@@ -112,14 +113,23 @@ impl RollupHandle {
         let provider = self.context.sign_provider().await;
         let tx_data = self.build_rollup_transaction_param(plan.sizes[0], proof_info).await?;
         if plan.force {
-            let tx_hash = self.tx.send(tx_data.as_slice(), U256::zero(), None, &provider).await?;
+            let tx_hash = self
+                .tx
+                .send(self.to_address, tx_data.as_slice(), U256::zero(), None, &provider)
+                .await?;
             info!("force send rollup transaction hash: {:?}", tx_hash);
         } else {
             let max_gas_price = self.calc_tx_max_gas_price(&plan).await?;
             info!("send rollup transaction with max gas price {:?}", max_gas_price);
             let tx_hash = self
                 .tx
-                .send(tx_data.as_slice(), U256::zero(), Some(max_gas_price), &provider)
+                .send(
+                    self.to_address,
+                    tx_data.as_slice(),
+                    U256::zero(),
+                    Some(max_gas_price),
+                    &provider,
+                )
                 .await?;
             info!("send rollup transaction hash: {:?}", tx_hash.to_string());
         }

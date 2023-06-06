@@ -5,12 +5,11 @@ use crate::data::data::DataHandle;
 use crate::db::document::commitment::CommitmentInfo;
 use crate::instance::contract::commitment::CommitmentContractInstance;
 use ethers_providers::Middleware;
-use log::error;
 use num_bigint::BigInt;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
-use tracing::debug;
+use tracing::{debug, error};
 
 pub struct PullHandle {
     chain_id: u64,
@@ -45,7 +44,7 @@ impl PullHandle {
         for start in (data_handle.get_next_sync_block() + 1..=latest_block).step_by(batch) {
             let end = std::cmp::min(start + batch as u64 - 1, latest_block);
             let info_cms = pool_contract.query_queued_commitments(start, end).await?;
-            data_handle.insert_commitments(info_cms).await;
+            data_handle.insert_commitments(info_cms.as_slice()).await;
         }
 
         data_handle.set_new_next_sync_block(latest_block);
@@ -86,7 +85,7 @@ impl PullHandle {
                     })
                 })
                 .collect::<anyhow::Result<Vec<CommitmentInfo>, RollerError>>()?;
-            data.insert_commitments(info_cms).await;
+            data.insert_commitments(info_cms.as_slice()).await;
         }
 
         data.set_new_next_sync_block(latest_block + 1);
@@ -101,16 +100,10 @@ impl PullHandle {
             let result = self.pull_from_indexer().await;
             if result.is_err() {
                 error!("pull from indexer meet error: {:?}", result.err().unwrap());
-                let result = self.pull_from_provider().await;
-                if result.is_err() {
-                    error!("pull from provider meet error {:?}", result);
-                }
+                return self.pull_from_provider().await;
             }
         } else {
-            let result = self.pull_from_provider().await;
-            if result.is_err() {
-                error!("pull from provider meet error {:?}", result);
-            }
+            return self.pull_from_provider().await;
         }
 
         Ok(())
