@@ -19,6 +19,7 @@ impl Roller {
     }
 
     pub async fn start(&self) {
+        info!("starting roller");
         let mut thread_handles = vec![];
         let context = Arc::clone(&self.context);
         let mut thread_number = 0;
@@ -28,15 +29,17 @@ impl Roller {
             .core_cfg_parser()
             .pool_contracts(self.context.cfg().chain.chain_id);
         for pool_contract in pool_contracts {
-            if pool_contract.address() != "0x83Ad3a5B2dE65b32a446e9B73640a8B8431D3eb7" {
+            if pool_contract.address() != "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411" {
                 continue;
             }
 
             let thread_name = "T".to_string() + &thread_number.to_string();
             info!(
-                "new thread {:?} for contract {:?}",
+                "new thread {:?} for contract {:?} {:?} {:?}",
                 thread_name,
-                pool_contract.address()
+                pool_contract.address(),
+                pool_contract.asset().asset_symbol(),
+                pool_contract.bridge_type()
             );
 
             let context = Arc::clone(&context); // Clone the context before moving it into the closure

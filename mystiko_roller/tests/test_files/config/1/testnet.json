@@ -1,0 +1,5 @@
+{
+  "rollup": {
+    "force_rollup_block_count": 20
+  }
+}

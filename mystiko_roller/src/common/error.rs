@@ -40,28 +40,29 @@ pub enum RollerError {
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
     #[error(transparent)]
-    AnyhowError(#[from] AnyhowError),
-    #[error(transparent)]
     TokenPriceError(#[from] TokenPriceError),
     #[error(transparent)]
     TxManagerError(#[from] TxManagerError),
+    #[error(transparent)]
+    AnyhowError(#[from] AnyhowError),
 }
 
-impl PartialEq for RollerError {
-    fn eq(&self, other: &Self) -> bool {
-        matches!(
-            (self, other),
-            (Self::ConfigError(_), Self::ConfigError(_))
-                | (Self::SerdeJsonError(_), Self::SerdeJsonError(_))
-                | (Self::InitLogError(_), Self::InitLogError(_))
-                | (Self::LoadConfigError(_), Self::LoadConfigError(_))
-                | (Self::EnvNotConfig(_), Self::EnvNotConfig(_))
-                | (Self::CommitmentQueueSlow, Self::CommitmentQueueSlow)
-                | (Self::NoProvider(_), Self::NoProvider(_))
-                | (Self::NoIndexer, Self::NoIndexer)
-                | (Self::InvalidCommitmentHash, Self::InvalidCommitmentHash)
-                | (Self::ProviderError(_), Self::ProviderError(_))
-                | (Self::AnyhowError(_), Self::AnyhowError(_))
-        )
-    }
-}
+//
+// impl PartialEq for RollerError {
+//     fn eq(&self, other: &Self) -> bool {
+//         matches!(
+//             (self, other),
+//             (Self::ConfigError(_), Self::ConfigError(_))
+//                 | (Self::SerdeJsonError(_), Self::SerdeJsonError(_))
+//                 | (Self::InitLogError(_), Self::InitLogError(_))
+//                 | (Self::LoadConfigError(_), Self::LoadConfigError(_))
+//                 | (Self::EnvNotConfig(_), Self::EnvNotConfig(_))
+//                 | (Self::CommitmentQueueSlow, Self::CommitmentQueueSlow)
+//                 | (Self::NoProvider(_), Self::NoProvider(_))
+//                 | (Self::NoIndexer, Self::NoIndexer)
+//                 | (Self::InvalidCommitmentHash, Self::InvalidCommitmentHash)
+//                 | (Self::ProviderError(_), Self::ProviderError(_))
+//                 | (Self::AnyhowError(_), Self::AnyhowError(_))
+//         )
+//     }
+// }

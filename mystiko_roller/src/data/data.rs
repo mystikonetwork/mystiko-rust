@@ -6,7 +6,7 @@ use crate::db::document::commitment::CommitmentInfo;
 use ethers_core::types::U256;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_fs::read_file_bytes;
+use mystiko_fs::{read_file_bytes, read_gzip_file_bytes};
 use mystiko_protocol::rollup::{Rollup, RollupProof};
 use num_bigint::BigInt;
 use std::sync::Arc;
@@ -62,8 +62,9 @@ impl DataHandle {
     }
 
     fn push_commitment_in_queue(&mut self, cm: &CommitmentInfo) {
-        let cm_data = build_commitment_data(cm);
+        info!("push commitment in queue {:?} {:?}", cm.leaf_index, cm.commitment_hash);
 
+        let cm_data = build_commitment_data(cm);
         self.commitments.push(cm_data);
     }
 
@@ -90,6 +91,7 @@ impl DataHandle {
     }
 
     pub async fn insert_commitments(&mut self, cms: &[CommitmentInfo]) {
+        debug!("insert commitments");
         for cm in cms {
             let index = cm.leaf_index as usize;
             if index < self.commitments.len() {
@@ -178,11 +180,11 @@ impl DataHandle {
             .collect();
 
         let circuits = CircuitsConfig::new(plan.sizes[0]);
-        let program = read_file_bytes(&circuits.program_file)
+        let program = read_gzip_file_bytes(&circuits.program_file)
             .await
             .expect("read zk program error");
         let abi = read_file_bytes(&circuits.abi_file).await.expect("read zk abi error");
-        let pkey = read_file_bytes(&circuits.proving_key_file)
+        let pkey = read_gzip_file_bytes(&circuits.proving_key_file)
             .await
             .expect("read zk proving key error");
         let mut rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
@@ -200,6 +202,7 @@ fn build_commitment_data(cm: &CommitmentInfo) -> CommitmentData {
     }
 }
 
+#[derive(Debug)]
 pub struct CircuitsConfig {
     pub program_file: String,
     pub abi_file: String,
@@ -212,9 +215,9 @@ impl CircuitsConfig {
 
         let circuits_path = load_roller_circuits_path();
         CircuitsConfig {
-            program_file: circuits_path.clone() + &(format!("/{}.program", rollup_name)),
+            program_file: circuits_path.clone() + &(format!("/{}.program.gz", rollup_name)),
             abi_file: circuits_path.clone() + &(format!("/{}.abi.json", rollup_name)),
-            proving_key_file: circuits_path + &(format!("/{}.pkey", rollup_name)),
+            proving_key_file: circuits_path + &(format!("/{}.pkey.gz", rollup_name)),
         }
     }
 }

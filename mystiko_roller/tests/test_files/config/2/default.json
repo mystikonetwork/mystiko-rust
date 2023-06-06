@@ -1,0 +1,25 @@
+{
+  "log_level": "INFO",
+  "core": {
+    "is_testnet": true,
+    "is_staging": false
+  },
+  "chain": {
+    "name": "bsctestnet",
+    "chain_id": 97
+  },
+  "pull": {
+    "check_interval_secs": 60,
+    "batch_block_from_indexer": 100000,
+    "batch_block_from_provider": 500
+  },
+  "rollup": {
+    "merkle_tree_height": 20,
+    "force_rollup_block_count": 100,
+    "rollup1_gas_cost": 331000,
+    "rollup2_gas_cost": 336000,
+    "rollup4_gas_cost": 340000,
+    "rollup8_gas_cost": 360000,
+    "rollup16_gas_cost": 410000
+  }
+}

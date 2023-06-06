@@ -16,8 +16,8 @@ use mystiko_ethers::provider::factory::{
 use mystiko_ethers::provider::pool::ProviderPool;
 use mystiko_ethers::provider::types::ProviderOptions;
 use mystiko_server_utils::token_price::price::TokenPrice;
-use mystiko_storage::formatter::SqlFormatter;
-use mystiko_storage_sqlite::{SqliteRawData, SqliteStorage};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::SqliteStorage;
 use std::sync::Arc;
 use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use tracing::info;
@@ -30,7 +30,7 @@ pub trait ContextTrait {
 
     fn core_cfg_parser(&self) -> Arc<MystikoConfigParser>;
     fn cfg(&self) -> Arc<RollerConfig>;
-    async fn db(&self) -> RwLockReadGuard<RollerDatabase<SqlFormatter, SqliteRawData, SqliteStorage>>;
+    async fn db(&self) -> RwLockReadGuard<RollerDatabase<SqlStatementFormatter, SqliteStorage>>;
     async fn indexer(&self) -> Option<RwLockReadGuard<IndexerInstance>>;
     async fn xscan(&self) -> Option<RwLockReadGuard<XScanInstance>>;
     async fn provider(&self) -> Result<Arc<Provider>>;
@@ -41,7 +41,7 @@ pub trait ContextTrait {
 pub struct Context {
     core_cfg_parser: Arc<MystikoConfigParser>,
     cfg: Arc<RollerConfig>,
-    db: RwLock<RollerDatabase<SqlFormatter, SqliteRawData, SqliteStorage>>,
+    db: RwLock<RollerDatabase<SqlStatementFormatter, SqliteStorage>>,
     indexer: Option<RwLock<IndexerInstance>>,
     xscan: Option<RwLock<XScanInstance>>,
     providers: RwLock<Arc<ProviderPool>>,
@@ -92,7 +92,7 @@ impl ContextTrait for Context {
         Arc::clone(&self.cfg)
     }
 
-    async fn db(&self) -> RwLockReadGuard<RollerDatabase<SqlFormatter, SqliteRawData, SqliteStorage>> {
+    async fn db(&self) -> RwLockReadGuard<RollerDatabase<SqlStatementFormatter, SqliteStorage>> {
         self.db.read().await
     }
 

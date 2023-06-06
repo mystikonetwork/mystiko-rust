@@ -19,8 +19,8 @@ use std::sync::Arc;
 use tracing::{debug, error, info};
 
 pub struct RollupHandle {
-    chain_id: u64,
-    pool_contract_cfg: PoolContractConfig,
+    pub chain_id: u64,
+    pub pool_contract_cfg: PoolContractConfig,
     pool_contract: CommitmentPool<Provider>,
     cfg: RollupConfig,
     context: Arc<dyn ContextTrait>,
@@ -93,7 +93,7 @@ impl RollupHandle {
         Ok(swap_amount / total_gas_cost)
     }
 
-    pub async fn build_rollup_transaction_param(&self, size: usize, proof_info: &ProofInfo) -> Result<Bytes> {
+    async fn build_rollup_transaction_param(&self, size: usize, proof_info: &ProofInfo) -> Result<Bytes> {
         let request = RollupRequest {
             proof: proof_info.r.zk_proof.proof.convert_to()?,
             rollup_size: size as u32,
@@ -108,14 +108,25 @@ impl RollupHandle {
         Ok(call_data)
     }
 
-    async fn send_rollup_transaction(&mut self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<()> {
+    pub async fn send_rollup_transaction(&mut self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<()> {
         info!("send rollup transaction");
         let provider = self.context.sign_provider().await;
         let tx_data = self.build_rollup_transaction_param(plan.sizes[0], proof_info).await?;
+        let gas_limit = self
+            .tx
+            .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &provider)
+            .await?;
         if plan.force {
             let tx_hash = self
                 .tx
-                .send(self.to_address, tx_data.as_slice(), U256::zero(), None, &provider)
+                .send(
+                    self.to_address,
+                    tx_data.as_slice(),
+                    &U256::zero(),
+                    &gas_limit,
+                    None,
+                    &provider,
+                )
                 .await?;
             info!("force send rollup transaction hash: {:?}", tx_hash);
         } else {
@@ -126,7 +137,8 @@ impl RollupHandle {
                 .send(
                     self.to_address,
                     tx_data.as_slice(),
-                    U256::zero(),
+                    &U256::zero(),
+                    &gas_limit,
                     Some(max_gas_price),
                     &provider,
                 )
@@ -161,6 +173,8 @@ impl RollupHandle {
 
         info!("do rollup {:?}", included_count);
         let (plan, proof) = self.build_rollup_plan(included_count).await?;
+        println!("plan: {:?}", plan);
+        println!("proof: {:?}", proof.r.zk_proof);
         self.send_rollup_transaction(&plan, &proof).await
     }
 
@@ -168,9 +182,8 @@ impl RollupHandle {
         debug!("get included count from indexer");
 
         let indexer = self.context.indexer().await.ok_or(RollerError::NoIndexer)?;
-        let next_block_number = self.data.borrow().get_next_sync_block();
         let include_count = indexer
-            .get_commitment_included_count(self.chain_id, &self.pool_contract_cfg.address(), next_block_number - 1)
+            .get_commitment_included_count(self.chain_id, &self.pool_contract_cfg.address())
             .await?;
         Ok(include_count)
     }
@@ -181,11 +194,8 @@ impl RollupHandle {
         let address = Address::from_str(self.pool_contract_cfg.address()).expect("invalid contract address");
         let sign_provider = self.context.sign_provider().await;
         let pool = CommitmentPool::new(address, sign_provider);
-        let count = pool
-            .get_commitment_included_count()
-            .call()
-            .await
-            .map_err(|e| RollerError::RpcCallError(e.to_string()))?;
+        let count = pool.get_commitment_included_count().call().await;
+        let count = count.map_err(|e| RollerError::RpcCallError(e.to_string()))?;
         let count = count.as_u32();
         Ok(count)
     }
@@ -201,6 +211,7 @@ impl RollupHandle {
             let included_count = self.get_included_count_from_provider().await?;
             self.do_rollup(included_count).await
         } else {
+            debug!("get included count from indexer {:?}", indexer_count);
             let result = self.do_rollup(indexer_count.unwrap()).await;
             if result.is_err() {
                 error!("rollup by indexer failed {:?}, rollup by provider", result);

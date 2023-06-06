@@ -28,11 +28,9 @@ impl IndexerInstance {
             .and_then(move |response| Ok(response.current_sync_block_num as u64))
     }
 
-    pub async fn get_commitment_included_count(&self, chain_id: u64, contract_address: &str, end: u64) -> Result<u32> {
-        debug!("get indexer commitment included count at block number {:?} ", end);
-
+    pub async fn get_commitment_included_count(&self, chain_id: u64, contract_address: &str) -> Result<u32> {
         self.client
-            .count_commitment_included_for_contract(chain_id, contract_address, end)
+            .count_commitment_included_for_contract(chain_id, contract_address, None)
             .await
             .and_then(move |response| Ok(response))
     }

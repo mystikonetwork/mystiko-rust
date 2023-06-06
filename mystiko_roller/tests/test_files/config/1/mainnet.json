@@ -1,0 +1,9 @@
+{
+  "core": {
+    "is_testnet": false
+  },
+  "chain": {
+    "name": "ethereum",
+    "chain_id": 1
+  }
+}

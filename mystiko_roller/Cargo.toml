@@ -14,8 +14,6 @@ tracing = { version = "0.1.37" }
 tracing-futures = { version = "0.2.5" }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"]}
 dotenv = { version = "0.15.0" }
-lazy_static = { version = "1.4.0" }
-log = { version = "0.4.17" }
 num-bigint = { version = "0.4.3" }
 serde = { version = "1.0.152" }
 serde_json = { version = "1.0.91", features = ["preserve_order"] }
@@ -36,6 +34,11 @@ mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite"
 mystiko_protocol = { version = "0.1.0", path = "../mystiko_protocol" }
 mystiko_indexer_client = { version = "0.1.0", path = "../mystiko_indexer_client" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
+mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
 
 [dev-dependencies]
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+ethers-contract = { version = "2.0.4"}
+httptest= { version = "0.15.4" }
+hex-literal = { version="0.4.1"}
+lazy_static = { version = "1.4.0" }

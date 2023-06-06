@@ -12,8 +12,8 @@ use std::sync::Arc;
 use tracing::{debug, error};
 
 pub struct PullHandle {
-    chain_id: u64,
-    contract_address: String,
+    pub chain_id: u64,
+    pub contract_address: String,
     cfg: PullConfig,
     context: Arc<dyn ContextTrait>,
     data: Rc<RefCell<DataHandle>>,

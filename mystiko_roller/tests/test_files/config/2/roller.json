@@ -1,0 +1,10 @@
+{
+  "log_level": "DEBUG",
+  "chain": {
+    "name": "ethereum",
+    "chain_id": 1
+  },
+  "rollup": {
+    "force_rollup_block_count": 100
+  }
+}

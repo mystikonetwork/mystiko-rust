@@ -7,6 +7,7 @@ use mystiko_ethers::provider::factory::Provider;
 use mystiko_utils::convert::u256_to_big_int;
 use std::str::FromStr;
 use std::sync::Arc;
+use tracing::debug;
 
 pub struct CommitmentContractInstance {
     chain_id: u64,
@@ -26,6 +27,7 @@ impl CommitmentContractInstance {
     }
 
     pub async fn query_queued_commitments(&self, start: u64, end: u64) -> Result<Vec<CommitmentInfo>> {
+        debug!("query queued commitments from {} to {}", start, end);
         let event = self
             .pool
             .commitment_queued_filter()
