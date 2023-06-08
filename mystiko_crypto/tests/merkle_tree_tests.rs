@@ -161,5 +161,5 @@ async fn test_path() {
     assert_eq!(result3.0, vec![default_zero, hash_two(&e1, &e2)]);
 
     let result4 = tree.path(4);
-    assert_eq!(result4.err().unwrap(), MerkleTreeError::IndexOutOfBounds);
+    assert!(matches!(result4.err().unwrap(), MerkleTreeError::IndexOutOfBounds));
 }

@@ -21,18 +21,3 @@ pub enum ProtocolError {
     #[error(transparent)]
     SerdeJsonError(#[from] SerdeJsonError),
 }
-
-impl PartialEq for ProtocolError {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::ParameterError, Self::ParameterError) => true,
-            (Self::InvalidShieldedAddress, Self::InvalidShieldedAddress) => true,
-            (Self::ECCryptoError(l), Self::ECCryptoError(r)) => l == r,
-            (Self::SecretShareError(l), Self::SecretShareError(r)) => l == r,
-            (Self::ZkpError(l), Self::ZkpError(r)) => l == r,
-            (Self::MerkleTreeError(l), Self::MerkleTreeError(r)) => l == r,
-            (Self::SerdeJsonError(_), Self::SerdeJsonError(_)) => true,
-            _ => false,
-        }
-    }
-}

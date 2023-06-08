@@ -177,7 +177,7 @@ async fn test_internal_error() {
 
     let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
     let price = tp.price("BTC").await;
-    assert_eq!(price.err().unwrap(), TokenPriceError::TokenNotSupport);
+    assert!(matches!(price.err().unwrap(), TokenPriceError::TokenNotSupport));
     let price = tp.price("mMATIC").await;
-    assert_eq!(price.err().unwrap(), TokenPriceError::InternalError);
+    assert!(matches!(price.err().unwrap(), TokenPriceError::InternalError));
 }

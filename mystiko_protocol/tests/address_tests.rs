@@ -27,7 +27,7 @@ async fn test_shielded_address() {
     assert!(ShieldedAddress::is_valid_address(&sa.address()));
     let wrong_address = "*3hMt2P6h8zp5t8Cxm5oAzTULg1boVEvzjaEPXmLtSBUmF4KKnaooWkBKBqZs9BYncvY6rA6TpCkAJ6cEXFEHWMHt";
     let sa3 = ShieldedAddress::from_string(wrong_address);
-    assert_eq!(sa3.err().unwrap(), ProtocolError::InvalidShieldedAddress);
+    assert!(matches!(sa3.err().unwrap(), ProtocolError::InvalidShieldedAddress));
 
     let (vk_f, ek_f) = sa.public_key();
 

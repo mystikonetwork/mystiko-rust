@@ -3,7 +3,6 @@ extern crate mystiko_protocol;
 extern crate num_bigint;
 
 use num_bigint::BigInt;
-use std::sync::Arc;
 
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_fs::{read_file_bytes, read_gzip_file_bytes};

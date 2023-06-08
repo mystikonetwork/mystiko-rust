@@ -1,8 +1,8 @@
-use crate::context::mock_context::{create_mock_context, get_pool_contracts, MockContext};
+use crate::context::mock_context::{create_mock_context, get_pool_contracts, indexer_server_port, MockContext};
 use crate::test_files::load::load_commitments;
 use ethers_core::types::U256;
 use mystiko_roller::context::ContextTrait;
-use mystiko_roller::data::data::{DataHandle, RollupPlan};
+use mystiko_roller::data::handler::{DataHandler, RollupPlan};
 use std::sync::Arc;
 
 #[tokio::test]
@@ -52,7 +52,7 @@ pub async fn test_insert_commitments() {
     assert_eq!(data.get_commitments_queue_count(), cms.len());
 
     let context_trait2: Arc<dyn ContextTrait> = Arc::clone(&c) as Arc<dyn ContextTrait>;
-    let mut data2 = DataHandle::new(test_chain_id, &pool_contract, context_trait2).await;
+    let mut data2 = DataHandler::new(test_chain_id, &pool_contract, context_trait2).await;
     data2.load_commitment_from_db().await;
     let db_cms = c
         .db()
@@ -82,7 +82,7 @@ pub async fn test_generate_plan() {
     );
 
     let cms = load_commitments(
-        "tests/json/commitments.json",
+        "tests/test_files/data/commitments.json",
         Some(test_chain_id),
         Some(pool_contract.address()),
     )
@@ -139,12 +139,12 @@ pub async fn test_generate_plan() {
     assert_eq!(data.get_commitments_queue_count(), 4);
 }
 
-async fn create_data_handle(test_chain_id: u64) -> (DataHandle, Arc<MockContext>) {
-    let c = create_mock_context(test_chain_id + 20000).await;
+async fn create_data_handle(test_chain_id: u64) -> (DataHandler, Arc<MockContext>) {
+    let c = create_mock_context(indexer_server_port(test_chain_id)).await;
     let c = Arc::new(c);
     let pool_contract = get_pool_contracts(&c);
 
     let context_trait: Arc<dyn ContextTrait> = Arc::clone(&c) as Arc<dyn ContextTrait>;
-    let data = DataHandle::new(test_chain_id, &pool_contract, context_trait).await;
+    let data = DataHandler::new(test_chain_id, &pool_contract, context_trait).await;
     (data, c)
 }

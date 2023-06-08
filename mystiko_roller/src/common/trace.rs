@@ -6,7 +6,7 @@ use tracing_subscriber::fmt::{self, time};
 pub fn trace_init(level: &str) {
     let filter = EnvFilter::from_default_env()
         .add_directive(LevelFilter::WARN.into())
-        .add_directive(format!("mystiko_roller={}", level).parse().expect("invalid log level"));
+        .add_directive(format!("mystiko_={}", level).parse().expect("invalid log level"));
 
     let formatter = Format::default()
         .with_timer(time::SystemTime::default())

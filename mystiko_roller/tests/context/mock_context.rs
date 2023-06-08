@@ -1,5 +1,4 @@
-use crate::common::env_tests::{load_env_mock_indexer_port, set_env_mock_indexer_port, ENV_MOCK_INDEXER_PORT_MUTEX};
-use crate::context::context_tests::do_evn_init;
+use crate::common::{evn_init, load_env_mock_indexer_port, set_env_mock_indexer_port, ENV_MUTEX};
 use async_trait::async_trait;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
 use mystiko_config::raw::indexer::RawIndexerConfig;
@@ -10,13 +9,12 @@ use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
 use mystiko_roller::common::env::load_coin_market_api_key;
 use mystiko_roller::common::error::Result;
-use mystiko_roller::common::trace::trace_init;
-use mystiko_roller::config::mystiko_config_parser::MystikoConfigParser;
-use mystiko_roller::config::settings::{create_roller_config, create_token_price_config, RollerConfig};
+use mystiko_roller::config::mystiko_parser::MystikoConfigParser;
+use mystiko_roller::config::roller::{create_roller_config, create_token_price_config, RollerConfig};
 use mystiko_roller::context::ContextTrait;
-use mystiko_roller::db::db::RollerDatabase;
-use mystiko_roller::instance::sync::indexer::IndexerInstance;
-use mystiko_roller::instance::sync::x_scan::XScanInstance;
+use mystiko_roller::db::database::RollerDatabase;
+use mystiko_roller::sync::chain_explorer::SyncChainExplorer;
+use mystiko_roller::sync::indexer::SyncIndexer;
 use mystiko_server_utils::token_price::price::TokenPrice;
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
@@ -28,8 +26,8 @@ pub struct MockContext {
     core_cfg_parser: Arc<MystikoConfigParser>,
     cfg: Arc<RollerConfig>,
     db: RwLock<RollerDatabase<SqlStatementFormatter, SqliteStorage>>,
-    indexer: Option<RwLock<IndexerInstance>>,
-    xscan: Option<RwLock<XScanInstance>>,
+    indexer: Option<RwLock<SyncIndexer>>,
+    chain_explorer: Option<RwLock<SyncChainExplorer>>,
     token_price: Arc<RwLock<TokenPrice>>,
     provider: RwLock<Arc<Provider>>,
     mock_provider: Arc<RwLock<MockProvider>>,
@@ -49,22 +47,27 @@ impl MockContext {
 impl ContextTrait for MockContext {
     async fn new() -> Result<Self> {
         let roller_cfg = create_roller_config();
-        trace_init(&roller_cfg.log_level);
 
-        let token_price_cfg = create_token_price_config();
         let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core).await;
         let db = create_memory_database().await;
 
         let indexer_port = load_env_mock_indexer_port();
         let raw_indexer_cfg = RawIndexerConfig {
-            url: format!("http://127.0.0.1:{}", indexer_port).to_string(),
+            url: format!("http://127.0.0.1:{}", indexer_port),
             timeout_ms: 15000,
         };
-        let indexer = IndexerInstance::new(&IndexerConfig::new(Arc::new(raw_indexer_cfg)));
-        let xscan = core_cfg_parser
-            .xscan_cfg(roller_cfg.chain.chain_id)
-            .map(XScanInstance::new);
+        let indexer_cfg = IndexerConfig::new(Arc::new(raw_indexer_cfg));
+        let indexer = SyncIndexer::new(&indexer_cfg);
+        let chain_explorer = core_cfg_parser
+            .chain_explorer_cfg(roller_cfg.chain.chain_id)
+            .map(SyncChainExplorer::new);
         let api_key = load_coin_market_api_key().unwrap();
+
+        let mut token_price_cfg = create_token_price_config();
+        token_price_cfg.base_url = format!(
+            "http://127.0.0.1:{}",
+            token_price_server_port(indexer_port.parse::<u64>().unwrap())
+        );
         let token_price = TokenPrice::new(&token_price_cfg, &api_key).unwrap();
 
         let (_, mock) = EthersProvider::mocked();
@@ -75,7 +78,7 @@ impl ContextTrait for MockContext {
             cfg: Arc::new(roller_cfg),
             db: RwLock::new(db),
             indexer: Some(RwLock::new(indexer)),
-            xscan: xscan.map(RwLock::new),
+            chain_explorer: chain_explorer.map(RwLock::new),
             token_price: Arc::new(RwLock::new(token_price)),
             provider: RwLock::new(Arc::new(provider)),
             mock_provider: Arc::new(RwLock::new(mock)),
@@ -94,12 +97,12 @@ impl ContextTrait for MockContext {
         self.db.read().await
     }
 
-    async fn indexer(&self) -> Option<RwLockReadGuard<IndexerInstance>> {
+    async fn indexer(&self) -> Option<RwLockReadGuard<SyncIndexer>> {
         Some(self.indexer.as_ref()?.read().await)
     }
 
-    async fn xscan(&self) -> Option<RwLockReadGuard<XScanInstance>> {
-        Some(self.xscan.as_ref()?.read().await)
+    async fn chain_explorer(&self) -> Option<RwLockReadGuard<SyncChainExplorer>> {
+        Some(self.chain_explorer.as_ref()?.read().await)
     }
 
     async fn provider(&self) -> Result<Arc<Provider>> {
@@ -145,9 +148,17 @@ fn create_mock_provider(provider: &MockProvider) -> Provider {
     Provider::new(ProviderWrapper::new(Box::new(failover_provider_builder.build())))
 }
 
+pub fn indexer_server_port(chain_id: u64) -> u64 {
+    chain_id + 20000
+}
+
+pub fn token_price_server_port(indexer_server_port: u64) -> u64 {
+    indexer_server_port + 5000
+}
+
 pub async fn create_mock_context(indexer_port: u64) -> MockContext {
-    do_evn_init();
-    let _guard = ENV_MOCK_INDEXER_PORT_MUTEX.lock();
+    let _guard = ENV_MUTEX.write().await;
+    evn_init();
     set_env_mock_indexer_port(&indexer_port.to_string());
     MockContext::new().await.unwrap()
 }

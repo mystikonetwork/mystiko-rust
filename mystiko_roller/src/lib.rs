@@ -22,7 +22,6 @@ extern crate num_bigint;
 extern crate serde;
 extern crate tokio;
 extern crate tracing;
-extern crate tracing_futures;
 extern crate tracing_subscriber;
 
 pub mod common;
@@ -30,8 +29,8 @@ pub mod config;
 pub mod context;
 pub mod data;
 pub mod db;
-pub mod instance;
 pub mod pool;
 pub mod pull;
 pub mod roller;
 pub mod rollup;
+pub mod sync;

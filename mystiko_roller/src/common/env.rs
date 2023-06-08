@@ -9,7 +9,7 @@ const EVN_ROLLER_DATA_PATH: &str = "MYSTIKO_ROLLER_DATA_PATH";
 const EVN_ROLLER_CIRCUITS_PATH: &str = "MYSTIKO_ROLLER_CIRCUITS_PATH";
 
 const EVN_ROLLER_PRIVATE_KEY: &str = "MYSTIKO_ROLLER_PRIVATE_KEY";
-const EVN_X_SCAN_API_KEY: &str = "MYSTIKO_ROLLER_X_SCAN_API_KEY";
+const EVN_CHAIN_EXPLORER_API_KEY: &str = "MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY";
 const EVN_COIN_MARKET_CAP_API_KEY: &str = "MYSTIKO_ROLLER_COIN_MARKET_CAP_API_KEY";
 
 pub fn load_roller_run_mod() -> String {
@@ -36,11 +36,11 @@ pub fn load_roller_private_key() -> Result<String> {
     }
 }
 
-pub fn load_x_scan_api_key() -> Result<String> {
+pub fn load_chain_explorer_api_key() -> Result<String> {
     dotenv().ok();
-    match env::var(EVN_X_SCAN_API_KEY) {
+    match env::var(EVN_CHAIN_EXPLORER_API_KEY) {
         Ok(value) => Ok(value),
-        Err(_) => Err(RollerError::EnvNotConfig(EVN_X_SCAN_API_KEY.to_string())),
+        Err(_) => Err(RollerError::EnvNotConfig(EVN_CHAIN_EXPLORER_API_KEY.to_string())),
     }
 }
 

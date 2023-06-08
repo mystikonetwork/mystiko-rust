@@ -29,7 +29,7 @@ pub struct ProofInfo {
     pub r: RollupProof,
 }
 
-pub struct DataHandle {
+pub struct DataHandler {
     chain_id: u64,
     pool_contract: PoolContractConfig,
     context: Arc<dyn ContextTrait>,
@@ -38,13 +38,13 @@ pub struct DataHandle {
     tree: Option<MerkleTree>,
 }
 
-impl DataHandle {
+impl DataHandler {
     pub async fn new(chain_id: u64, pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait>) -> Self {
-        DataHandle {
+        DataHandler {
             chain_id,
             pool_contract: pool_contract.clone(),
             context,
-            next_sync_block: 0 as u64,
+            next_sync_block: 0_u64,
             commitments: vec![],
             tree: None,
         }
@@ -82,7 +82,7 @@ impl DataHandle {
             self.push_commitment_in_queue(&doc.data);
         }
 
-        if cms.len() == 0 {
+        if cms.is_empty() {
             self.set_new_next_sync_block(self.pool_contract.start_block());
         } else {
             self.set_new_next_sync_block(cms[cms.len() - 1].data.block_number);
@@ -126,7 +126,7 @@ impl DataHandle {
         let counter: usize = sizes.iter().sum();
         let total_fee = self.commitments[included_len..(included_len + counter)]
             .iter()
-            .map(|cm| cm.rollup_fee.clone())
+            .map(|cm| cm.rollup_fee)
             .fold(U256::zero(), |acc, x| acc + x);
 
         let force = {
@@ -158,7 +158,7 @@ impl DataHandle {
                     .take(included - tree_count)
                     .map(|cm| cm.hash.clone())
                     .collect();
-                let _ = tree.bulk_insert(cms).expect("tree bulk insert error");
+                tree.bulk_insert(cms).expect("tree bulk insert error");
             }
         }
 

@@ -1,4 +1,4 @@
-use crate::config::settings::{create_mystiko_config, CoreConfig};
+use crate::config::roller::{create_mystiko_config, CoreConfig};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_providers::Quorum;
@@ -38,7 +38,7 @@ impl MystikoConfigParser {
         self.cfg.indexer()
     }
 
-    pub fn xscan_cfg(&self, chain_id: u64) -> Option<&str> {
+    pub fn chain_explorer_cfg(&self, chain_id: u64) -> Option<&str> {
         let chain = self.cfg.find_chain(chain_id).unwrap();
         Some(chain.explorer_api_url())
     }

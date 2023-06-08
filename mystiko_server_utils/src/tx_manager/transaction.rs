@@ -13,6 +13,7 @@ use ethers_providers::{JsonRpcClient, Middleware, Provider};
 use ethers_signers::{LocalWallet, Signer};
 use std::marker::PhantomData;
 use std::time::Duration;
+use tracing::info;
 use typed_builder::TypedBuilder;
 
 pub struct TxManager<P> {
@@ -44,7 +45,8 @@ impl TxBuilder {
         if self.is_force_chain() {
             is_1559_tx = false;
         } else {
-            let base = provider.estimate_eip1559_fees(None).await;
+            let gas_oracle = ProviderOracle::new(provider);
+            let base = gas_oracle.estimate_eip1559_fees().await;
             if base.is_err() {
                 is_1559_tx = false
             }
@@ -107,7 +109,7 @@ where
         provider: &Provider<P>,
     ) -> Result<U256> {
         self.data = data.to_vec();
-        self.value = value.clone();
+        self.value = *value;
 
         let typed_tx = match self.is_1559_tx {
             true => {
@@ -142,11 +144,15 @@ where
         max_gas_price: Option<U256>,
         provider: &Provider<P>,
     ) -> Result<TxHash> {
+        info!(
+            "send tx to {:?} with gas_limit {:?} and max_gas_price {:?}",
+            to, gas_limit, max_gas_price
+        );
+
         self.max_gas_price = max_gas_price;
         self.data = data.to_vec();
-        self.value = value.clone();
+        self.value = *value;
         self.tx_hash = None;
-
         let gas_limit = gas_limit * (100 + self.config.gas_limit_reserve_percentage) / 100;
         if self.is_1559_tx {
             let (max_fee_per_gas, priority_fee) = self.gas_price_1559_tx(provider).await?;
@@ -168,6 +174,8 @@ where
     }
 
     pub async fn confirm(&self, provider: &Provider<P>) -> Result<TransactionReceipt> {
+        info!("confirm tx {:?}", self.tx_hash);
+
         let tx_hash = match self.tx_hash {
             Some(hash) => H256::from_slice(hash.as_bytes()),
             None => return Err(TxManagerError::ConfirmTxError("tx hash none".into())),

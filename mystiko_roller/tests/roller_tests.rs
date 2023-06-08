@@ -1,6 +1,6 @@
 extern crate core;
 
-mod common;
+pub mod common;
 mod config;
 pub mod context;
 mod data;

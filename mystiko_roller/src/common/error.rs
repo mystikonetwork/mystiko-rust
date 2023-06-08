@@ -27,6 +27,8 @@ pub enum RollerError {
     NoProvider(String),
     #[error("indexer not exist")]
     NoIndexer,
+    #[error("invalid start block number")]
+    InvalidStartBlock,
     #[error("invalid commitment hash")]
     InvalidCommitmentHash,
     #[error("invalid call data {0}")]

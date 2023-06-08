@@ -1,5 +1,6 @@
 use crate::common::env::{load_roller_config_path, load_roller_run_mod};
 use crate::common::error::Result;
+use crate::common::types::SyncType;
 use mehcode_config::{Config, Environment, File};
 use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
 use mystiko_server_utils::token_price::config::TokenPriceConfig;
@@ -40,6 +41,16 @@ pub struct PullConfig {
     pub check_interval_secs: u64,
     pub batch_block_from_indexer: u32,
     pub batch_block_from_provider: u32,
+}
+
+impl PullConfig {
+    pub fn batch_block(&self, sync_type: SyncType) -> usize {
+        match sync_type {
+            SyncType::ChainExplorer => panic!("unsupported sync type"),
+            SyncType::Indexer => self.batch_block_from_indexer as usize,
+            SyncType::Provider => self.batch_block_from_provider as usize,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
