@@ -8,6 +8,7 @@ use mystiko_storage::migration::types::{
 };
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 #[tokio::test]
@@ -202,14 +203,33 @@ async fn test_find() {
     assert_eq!(found_documents, documents[1..]);
 }
 
-#[derive(CollectionBuilder, Clone, Debug, PartialEq)]
+#[tokio::test]
+async fn test_serde() {
+    let collection = create_collection().await;
+    collection.migrate::<TestDocument>().await.unwrap();
+    assert!(collection.insert_batch::<TestDocument>(&[]).await.unwrap().is_empty());
+    let document = collection
+        .insert(&TestDocument {
+            field1: 1,
+            field2: 2,
+            field3: true,
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        document,
+        serde_json::from_str(&serde_json::to_string(&document).unwrap()).unwrap()
+    )
+}
+
+#[derive(CollectionBuilder, Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct TestDocument {
     pub field1: i16,
     pub field2: u32,
     pub field3: bool,
 }
 
-#[derive(CollectionBuilder, Clone, Debug, PartialEq)]
+#[derive(CollectionBuilder, Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[collection(name = "test_documents", migrations = migrations())]
 pub struct TestDocument2 {
     pub field1: i16,

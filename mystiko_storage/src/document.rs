@@ -1,6 +1,7 @@
 use crate::column::{Column, ColumnType, ColumnValue, IndexColumns, UniqueColumns};
 use crate::error::StorageError;
 use crate::migration::types::{CreateCollectionMigration, Migration};
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
 type Result<T> = anyhow::Result<T, StorageError>;
@@ -24,7 +25,7 @@ pub trait DocumentData: Send + Sync + Clone + Debug + PartialEq {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Document<T: DocumentData> {
     pub id: String,
     pub created_at: i64,

@@ -115,3 +115,24 @@ async fn test_accounts_crud() {
     accounts.delete_all().await.unwrap();
     assert_eq!(accounts.count_all().await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn test_account_serde() {
+    let accounts = create_accounts().await;
+    let account = accounts
+        .insert(&Account {
+            name: String::from("account 1"),
+            shielded_address: String::from("shielded address 1"),
+            public_key: String::from("public key 1"),
+            encrypted_secret_key: String::from("encrypted secret key 1"),
+            status: AccountStatus::Created,
+            scan_size: 1,
+            wallet_id: String::from("1"),
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        account,
+        serde_json::from_str(&serde_json::to_string(&account).unwrap()).unwrap()
+    );
+}

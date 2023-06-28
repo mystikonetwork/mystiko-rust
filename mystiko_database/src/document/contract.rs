@@ -4,8 +4,9 @@ use mystiko_storage::column::{IndexColumns, UniqueColumns};
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::ContractType;
+use serde::{Deserialize, Serialize};
 
-#[derive(CollectionBuilder, Clone, PartialEq, Debug)]
+#[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
 #[collection(uniques = uniques(), indexes = indexes())]
 pub struct Contract {
     #[column(length_limit = 32)]

@@ -109,3 +109,20 @@ async fn test_wallets_crud() {
     wallets.delete_all().await.unwrap();
     assert_eq!(wallets.count_all().await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn test_wallet_serde() {
+    let wallets = create_wallets().await;
+    let wallet = wallets
+        .insert(&Wallet {
+            encrypted_entropy: String::from("encrypted entropy 01"),
+            hashed_password: String::from("hashed password 01"),
+            account_nonce: 1,
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        wallet,
+        serde_json::from_str(&serde_json::to_string(&wallet).unwrap()).unwrap()
+    )
+}

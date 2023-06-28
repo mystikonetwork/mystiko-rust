@@ -113,3 +113,21 @@ async fn test_nullifiers_crud() {
     nullifiers.delete_all().await.unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn test_nullifier_serde() {
+    let nullifiers = create_nullifiers().await;
+    let nullifier = nullifiers
+        .insert(&Nullifier {
+            chain_id: 1,
+            contract_address: String::from("contract_address 1"),
+            nullifier: BigInt::from(1),
+            transaction_hash: String::from("transaction_hash 1"),
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        nullifier,
+        serde_json::from_str(&serde_json::to_string(&nullifier).unwrap()).unwrap()
+    )
+}
