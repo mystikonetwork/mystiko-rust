@@ -152,3 +152,36 @@ async fn test_chains_crud() {
     chains.delete_all().await.unwrap();
     assert_eq!(chains.count_all().await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn test_chain_serde() {
+    let chains = create_chains().await;
+    let chain = chains
+        .insert(&Chain {
+            chain_id: 5,
+            name: String::from("Ethereum Goerli"),
+            name_override: false,
+            providers: vec![
+                Provider {
+                    url: String::from("http://localhost:8545"),
+                    timeout_ms: 10000,
+                    max_try_count: 3,
+                    quorum_weight: 2,
+                },
+                Provider {
+                    url: String::from("http://localhost:8546"),
+                    timeout_ms: 20000,
+                    max_try_count: 4,
+                    quorum_weight: 3,
+                },
+            ],
+            provider_override: true,
+            synced_block_number: 8497095,
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        chain,
+        serde_json::from_str(&serde_json::to_string(&chain).unwrap()).unwrap()
+    );
+}

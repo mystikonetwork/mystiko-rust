@@ -5,8 +5,9 @@ use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigInt;
+use serde::{Deserialize, Serialize};
 
-#[derive(CollectionBuilder, Clone, PartialEq, Debug)]
+#[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
 #[collection(indexes = indexes())]
 pub struct Transaction {
     pub chain_id: u64,

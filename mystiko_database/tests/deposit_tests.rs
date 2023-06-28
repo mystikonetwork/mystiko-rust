@@ -196,3 +196,46 @@ async fn test_deposits_crud() {
     deposits.delete_all().await.unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn test_deposit_serde() {
+    let deposits = create_deposits().await;
+    let deposit = deposits
+        .insert(&Deposit {
+            chain_id: 1,
+            contract_address: String::from("contract_address 1"),
+            pool_address: String::from("pool_address 1"),
+            commitment_hash: BigInt::from(1),
+            hash_k: BigInt::from(11),
+            random_s: BigInt::from(111),
+            encrypted_note: String::from("encrypted_note 1"),
+            asset_symbol: String::from("asset_symbol 1"),
+            asset_decimals: 6,
+            asset_address: Some(String::from("asset_address 1")),
+            bridge_type: BridgeType::Axelar,
+            amount: BigInt::from(101),
+            rollup_fee_amount: BigInt::from(102),
+            bridge_fee_amount: BigInt::from(103),
+            bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 1")),
+            executor_fee_amount: BigInt::from(104),
+            executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
+            service_fee_amount: BigInt::from(105),
+            shielded_recipient_address: String::from("shielded_recipient_address 1"),
+            status: DepositStatus::Init,
+            error_message: Some(String::from("error_message 1")),
+            wallet_id: String::from("wallet_id 1"),
+            dst_chain_id: 11,
+            dst_chain_contract_address: String::from("dst_chain_contract_address 1"),
+            dst_pool_address: String::from("dst_pool_address 1"),
+            asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
+            transaction_hash: Some(String::from("transaction_hash 1")),
+            relay_transaction_hash: Some(String::from("relay_transaction_hash 1")),
+            rollup_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        deposit,
+        serde_json::from_str(&serde_json::to_string(&deposit).unwrap()).unwrap()
+    );
+}

@@ -14,7 +14,7 @@ pub struct Provider {
     pub quorum_weight: u32,
 }
 
-#[derive(CollectionBuilder, Clone, PartialEq, Debug)]
+#[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
 #[collection(uniques = uniques(), indexes = indexes())]
 pub struct Chain {
     pub chain_id: u64,

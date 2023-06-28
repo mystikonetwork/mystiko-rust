@@ -133,3 +133,25 @@ async fn test_contracts_crud() {
     contracts.delete_all().await.unwrap();
     assert_eq!(contracts.count_all().await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn test_contract_serde() {
+    let contracts = create_contracts().await;
+    let contract = contracts
+        .insert(&Contract {
+            contract_type: ContractType::Deposit,
+            chain_id: 5,
+            contract_address: String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
+            disabled: false,
+            sync_start: 1000000,
+            sync_size: 10000,
+            synced_block_number: 1100000,
+            checked_leaf_index: Some(10),
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        contract,
+        serde_json::from_str(&serde_json::to_string(&contract).unwrap()).unwrap()
+    );
+}

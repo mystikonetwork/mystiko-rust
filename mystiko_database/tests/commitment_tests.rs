@@ -165,3 +165,30 @@ async fn test_commitments_crud() {
     commitments.delete_all().await.unwrap();
     assert_eq!(commitments.count_all().await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn test_commitment_serde() {
+    let commitments = create_commitments().await;
+    let commitment = commitments.insert(&Commitment {
+        chain_id: 5,
+        contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+        commitment_hash: BigInt::from_str("9709495941671889428395361755215352896616366060066411186055604144562505250548").unwrap(),
+        asset_symbol: String::from("MTT"),
+        asset_decimals: 18,
+        asset_address: Some(String::from("0x80C46C896E26C1cB7DCdD23019d9e7cca6854864")),
+        status: CommitmentStatus::SrcSucceeded,
+        rollup_fee_amount: Some(BigInt::from(20000000000000000u64)),
+        encrypted_note: Some(String::from("9f86d4d7e35fb1f2g24f9784d4fced7f045cdf768b82d33e17ed1b62cb0a9706d13ff263c74d746df89a09cfa57405547db8cf3c4300e693d3cbd117f5f0c6e7af10c022c2a0110fa91afbd8ac01a55ad28e7b2ec01a3268a980e2a8c3f349f19e8d26cc8131bbe3f68c418f7cb6ba2bcdcdd86a5b2370792b2a86330096104637f0b7b992436f1a83000a727476b006b05da69f5eb0812f57ad6d871e53dd2f73c6b8ede35effdb39c1f2e78357a96da6f7af8d57d9ae524df2cd001ec1e6cbaa2cf5cb90ded104783af9b5c144c9513e")),
+        leaf_index: Some(0.into()),
+        amount: Some(BigInt::from(1000000000000000000u64)),
+        nullifier: None,
+        shielded_address: Some(String::from("0x8695520Db7C1074D07898D655D2Bc7308395B041b")),
+        creation_transaction_hash: Some(String::from("0x81d3510c46dfe7a1fc282eb54034b848a3d83f440c551c19e4d513801be00130")),
+        spending_transaction_hash: Some(String::from("")),
+        rollup_transaction_hash: Some(String::from("")),
+    }).await.unwrap();
+    assert_eq!(
+        commitment,
+        serde_json::from_str(&serde_json::to_string(&commitment).unwrap()).unwrap()
+    );
+}
