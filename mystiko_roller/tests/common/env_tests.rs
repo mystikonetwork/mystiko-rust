@@ -60,30 +60,37 @@ async fn test_load_roller_home_path() {
 
 #[tokio::test]
 async fn test_load_roller_private_key() {
+    let _guard = ENV_MUTEX.write().await;
+    env::remove_var("MYSTIKO_ROLLER_PRIVATE_KEY");
+
     let private_key = load_roller_private_key();
     assert!(private_key.is_err());
     env::set_var(
         "MYSTIKO_ROLLER_PRIVATE_KEY",
-        "0x3c87ede2a7d0a38de10b522ec6a7a3ea73be79e469c2aae38b5e0030131a9afa",
+        "0x2f0ddd32231ec7dadcef459447c73fae18b9b3e3d0e0acf00e999ca5ffb8efec",
     );
     let private_key = load_roller_private_key().unwrap();
     assert_eq!(
         private_key,
-        "0x3c87ede2a7d0a38de10b522ec6a7a3ea73be79e469c2aae38b5e0030131a9afa"
+        "0x2f0ddd32231ec7dadcef459447c73fae18b9b3e3d0e0acf00e999ca5ffb8efec"
     );
 }
 
 #[tokio::test]
 async fn test_load_chain_explorer_api_key() {
+    let _guard = ENV_MUTEX.write().await;
+    env::remove_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY");
     let x_scan_api_key = load_chain_explorer_api_key();
     assert!(x_scan_api_key.is_err());
-    env::set_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY", "x_scan_api_key");
+    env::set_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY", "chain_explorer_api_key");
     let x_scan_api_key = load_chain_explorer_api_key().unwrap();
-    assert_eq!(x_scan_api_key, "x_scan_api_key");
+    assert_eq!(x_scan_api_key, "chain_explorer_api_key");
 }
 
 #[tokio::test]
 async fn test_load_coin_market_api_key() {
+    let _guard = ENV_MUTEX.write().await;
+    env::remove_var("MYSTIKO_ROLLER_COIN_MARKET_CAP_API_KEY");
     let coin_market_api_key = load_coin_market_api_key();
     assert!(coin_market_api_key.is_err());
     env::set_var("MYSTIKO_ROLLER_COIN_MARKET_CAP_API_KEY", "coin_market_api_key");

@@ -23,16 +23,14 @@ pub fn load_env_mock_indexer_port() -> String {
 
 pub fn evn_init() {
     env::set_var("MYSTIKO_ROLLER_CONFIG_PATH", "./tests/test_files/config/2");
-    env::set_var(
-        "MYSTIKO_ROLLER_CIRCUITS_PATH",
-        "./../mystiko_circuits/dist/zokrates/dev",
-    );
+    env::set_var("MYSTIKO_ROLLER_CIRCUITS_PATH", "./tests/test_files/circuits");
     env::set_var("MYSTIKO_ROLLER_DATA_PATH", "./tests/db");
 
-    // env::set_var(
-    //     "MYSTIKO_ROLLER_PRIVATE_KEY",
-    //     "0x3c87ede2a7d0a38de10b522ec6a7a3ea73be79e469c2aae38b5e0030131a9afa",
-    // );
-
+    env::set_var("MYSTIKO_ROLLER_COIN_MARKET_CAP_API_KEY", "coin_market_api_key");
+    env::set_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY", "chain_explorer_api_key");
+    env::set_var(
+        "MYSTIKO_ROLLER_PRIVATE_KEY",
+        "0x2f0ddd32231ec7dadcef459447c73fae18b9b3e3d0e0acf00e999ca5ffb8efec",
+    );
     env::set_var("MYSTIKO_ROLLER.CHAIN.CHAIN_ID", "1");
 }

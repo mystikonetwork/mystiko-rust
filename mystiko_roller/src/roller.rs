@@ -1,68 +1,80 @@
+use crate::common::error::Result;
 use crate::context::Context;
 use crate::context::ContextTrait;
-use crate::pool::Pool;
-use anyhow::Result;
+use crate::pool::{Pool, PoolAction};
 use std::sync::Arc;
-use std::thread;
-use tracing::info;
+use tokio::time::{sleep, Duration};
+use tracing::{error, info, Instrument};
 
 pub struct Roller {
-    context: Arc<Context>,
+    round_check_sec: u64,
+    pools: Vec<Pool>,
 }
 
 impl Roller {
     pub async fn new() -> Result<Roller> {
-        let context = Context::new().await?;
+        let context = Arc::new(Context::new().await?);
+
+        info!("starting roller {:?}", context.cfg().chain.chain_id);
+        let pool_contracts = context.core_cfg_parser().pool_contracts(context.cfg().chain.chain_id);
+        let mut pools = Vec::new();
+        for (index, pool_contract) in pool_contracts.into_iter().enumerate() {
+            info!("create pool instance t{:?} {:?}", index, pool_contract.address());
+            let pool = Pool::new(
+                index,
+                &pool_contract,
+                Arc::clone(&context) as Arc<dyn ContextTrait + Send>,
+            )
+            .await;
+            pools.push(pool);
+        }
+
         Ok(Roller {
-            context: Arc::new(context),
+            round_check_sec: context.cfg().pull.check_interval_secs,
+            pools,
         })
     }
 
-    pub async fn start(&self) {
-        info!("starting roller");
-        let mut thread_handles = vec![];
-        let context = Arc::clone(&self.context);
-        let mut thread_number = 0;
+    pub async fn start(&mut self) {
+        if let Err(e) = self.run(PoolAction::Init).await {
+            error!("Failed to run init: {:?}", e);
+            return;
+        }
 
-        let pool_contracts = self
-            .context
-            .core_cfg_parser()
-            .pool_contracts(self.context.cfg().chain.chain_id);
-        for pool_contract in pool_contracts {
-            if pool_contract.address() != "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411" {
-                continue;
+        loop {
+            if let Err(e) = self.run(PoolAction::Run).await {
+                error!("Failed to run: {:?}", e);
+                break;
             }
 
-            let thread_name = "T".to_string() + &thread_number.to_string();
-            info!(
-                "new thread {:?} for contract {:?} {:?} {:?}",
-                thread_name,
-                pool_contract.address(),
-                pool_contract.asset().asset_symbol(),
-                pool_contract.bridge_type()
-            );
+            sleep(Duration::from_secs(self.round_check_sec)).await;
+        }
+    }
 
-            let context = Arc::clone(&context); // Clone the context before moving it into the closure
-            let new_thread = thread::Builder::new()
-                .name(thread_name)
-                .spawn(move || {
-                    let runtime = tokio::runtime::Builder::new_current_thread()
-                        .enable_all()
-                        .build()
-                        .unwrap();
+    async fn run(&mut self, action: PoolAction) -> Result<()> {
+        let tasks: Vec<_> = self
+            .pools
+            .drain(..)
+            .map(|pool| {
+                let index = pool.index.clone();
+                match action {
+                    PoolAction::Init => tokio::spawn(pool.init().instrument(tracing::info_span!("", T = index))),
+                    PoolAction::Run => tokio::spawn(pool.run().instrument(tracing::info_span!("", T = index))),
+                }
+            })
+            .collect();
+        let results = futures::future::try_join_all(tasks).await?;
 
-                    runtime.block_on(async move {
-                        let mut pool = Pool::new(&pool_contract, context).await;
-                        pool.start().await;
-                    });
-                })
-                .unwrap();
-            thread_handles.push(new_thread);
-            thread_number += 1;
+        for result in results {
+            match result {
+                Ok(pool) => self.pools.push(pool),
+                Err(e) => {
+                    error!("Failed to run pool: {:?}", e);
+                    return Err(e);
+                }
+            }
         }
 
-        for thread in thread_handles {
-            thread.join().unwrap();
-        }
+        Ok(())
     }
 }

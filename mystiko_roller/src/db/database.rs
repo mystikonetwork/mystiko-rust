@@ -59,7 +59,11 @@ pub async fn create_roller_database() -> RollerDatabase<SqlStatementFormatter, S
     let storage = SqliteStorageBuilder::new()
         .path(db_path.to_str().unwrap())
         .build()
-        .await
-        .unwrap();
-    RollerDatabase::new(formatter, storage).await
+        .await;
+    match storage {
+        Ok(s) => RollerDatabase::new(formatter, s).await,
+        Err(e) => {
+            panic!("create sqlite storage meet error: {:?}", e);
+        }
+    }
 }

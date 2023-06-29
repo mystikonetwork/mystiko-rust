@@ -29,7 +29,6 @@ pub struct Downloader {
 pub struct DownloadOptions {
     pub skip_cache: bool,
     pub skip_decompression: bool,
-    pub hasher: Box<dyn DynDigest>,
 }
 
 #[derive(Default)]
@@ -88,9 +87,10 @@ impl Downloader {
         Ok(read(self.download_failover(urls, options).await?).await?)
     }
 
-    async fn download_raw(&mut self, url: &str, mut options: DownloadOptions) -> Result<PathBuf> {
-        options.hasher.update(url.as_bytes());
-        let hash = hex::encode(&options.hasher.finalize());
+    async fn download_raw(&mut self, url: &str, options: DownloadOptions) -> Result<PathBuf> {
+        let mut hasher = Blake2s256::new();
+        DynDigest::update(&mut hasher, url.as_bytes());
+        let hash = hex::encode(&hasher.finalize());
         let file_path = self.folder.join(PathBuf::from(&hash));
         let file_exists = try_exists(&file_path).await?;
         if file_exists && !options.skip_cache {
@@ -126,7 +126,6 @@ impl DownloadOptions {
         DownloadOptions {
             skip_cache: false,
             skip_decompression: false,
-            hasher: Box::new(Blake2s256::new()),
         }
     }
 }

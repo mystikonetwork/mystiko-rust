@@ -12,14 +12,14 @@ pub async fn test_insert_commitments() {
     let pool_contract = get_pool_contracts(&c);
 
     assert_eq!(data.get_next_sync_block(), 0);
-    data.set_new_next_sync_block(2);
+    data.set_next_sync_block(2);
     assert_eq!(data.get_next_sync_block(), 2);
-    data.set_new_next_sync_block(1);
+    data.set_next_sync_block(1);
     assert_eq!(data.get_next_sync_block(), 2);
     assert_eq!(data.get_included_count(), 0);
     assert_eq!(data.get_commitments_queue_count(), 0);
 
-    data.load_commitment_from_db().await;
+    data.load_commitment_from_db().await.unwrap();
     assert_eq!(data.get_next_sync_block(), pool_contract.start_block());
     assert_eq!(data.get_included_count(), 0);
     assert_eq!(data.get_commitments_queue_count(), 0);
@@ -31,7 +31,7 @@ pub async fn test_insert_commitments() {
     )
     .await;
 
-    data.insert_commitments(cms.as_slice()).await;
+    data.insert_commitments(cms.as_slice()).await.unwrap();
     let db_cms = c
         .db()
         .await
@@ -41,7 +41,7 @@ pub async fn test_insert_commitments() {
     assert_eq!(data.get_included_count(), 0);
     assert_eq!(data.get_commitments_queue_count(), cms.len());
 
-    data.insert_commitments(cms.as_slice()).await;
+    data.insert_commitments(cms.as_slice()).await.unwrap();
     let db_cms = c
         .db()
         .await
@@ -53,7 +53,7 @@ pub async fn test_insert_commitments() {
 
     let context_trait2: Arc<dyn ContextTrait> = Arc::clone(&c) as Arc<dyn ContextTrait>;
     let mut data2 = DataHandler::new(test_chain_id, &pool_contract, context_trait2).await;
-    data2.load_commitment_from_db().await;
+    data2.load_commitment_from_db().await.unwrap();
     let db_cms = c
         .db()
         .await
@@ -90,7 +90,7 @@ pub async fn test_generate_plan() {
 
     let (cms1, cms2) = cms.split_at(1);
 
-    data.insert_commitments(cms1).await;
+    data.insert_commitments(cms1).await.unwrap();
     let plan = data.generate_plan(0, 100).unwrap();
     assert_eq!(
         plan,
@@ -104,7 +104,7 @@ pub async fn test_generate_plan() {
     assert_eq!(data.get_commitments_queue_count(), 1);
 
     let (cms3, _) = cms2.split_at(3);
-    data.insert_commitments(cms3).await;
+    data.insert_commitments(cms3).await.unwrap();
     let plan = data.generate_plan(1, 100).unwrap();
     let fee = cms3
         .iter()

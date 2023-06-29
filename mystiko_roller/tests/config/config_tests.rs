@@ -13,7 +13,6 @@ async fn test_read_config() {
     let cfg = create_roller_config();
     assert_eq!(cfg.log_level, "INFO");
     assert_eq!(cfg.chain.chain_id, 5);
-    assert!(cfg.core.is_testnet);
     assert_eq!(
         cfg.core.remote_base_url,
         Some("https://new.static.mystiko.network/config".to_string())
@@ -24,14 +23,11 @@ async fn test_read_config() {
     env::set_var("MYSTIKO_ROLLER_RUN_MOD", "mainnet");
     let cfg = create_roller_config();
     assert_eq!(cfg.chain.chain_id, 1);
-    assert!(!cfg.core.is_testnet);
     assert_eq!(cfg.rollup.force_rollup_block_count, 100);
 
     env::set_var("MYSTIKO_ROLLER_CONFIG_PATH", "tests/test_files/config/2");
     let cfg = create_roller_config();
     assert_eq!(cfg.chain.chain_id, 1);
-    assert_eq!(cfg.chain.name, "ethereum");
-    assert!(!cfg.core.is_testnet);
     assert_eq!(cfg.core.remote_base_url, None);
     assert_eq!(cfg.core.git_revision, None);
     assert_eq!(cfg.rollup.force_rollup_block_count, 100);

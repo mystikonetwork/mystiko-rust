@@ -39,7 +39,7 @@ impl MystikoConfigParser {
     }
 
     pub fn chain_explorer_cfg(&self, chain_id: u64) -> Option<&str> {
-        let chain = self.cfg.find_chain(chain_id).unwrap();
+        let chain = self.cfg.find_chain(chain_id).expect("can not find the chain");
         Some(chain.explorer_api_url())
     }
 

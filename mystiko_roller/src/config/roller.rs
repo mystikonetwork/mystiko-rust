@@ -1,35 +1,58 @@
 use crate::common::env::{load_roller_config_path, load_roller_run_mod};
-use crate::common::error::Result;
-use crate::common::types::SyncType;
+use crate::common::error::{Result, RollerError};
 use mehcode_config::{Config, Environment, File};
 use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
 use mystiko_server_utils::token_price::config::TokenPriceConfig;
 use mystiko_server_utils::tx_manager::config::TxManagerConfig;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use std::str::FromStr;
 use tracing::{error, info};
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
 #[allow(unused)]
 pub struct RollerConfig {
     pub log_level: String,
+    pub chain_data_sources: String,
     pub core: CoreConfig,
     pub chain: ChainConfig,
     pub pull: PullConfig,
     pub rollup: RollupConfig,
 }
 
+impl RollerConfig {
+    pub fn get_data_sources(&self) -> Vec<ChainDataSource> {
+        let mut data_sources = Vec::new();
+        let chain_data_sources = self.chain_data_sources.split(",");
+        for source in chain_data_sources {
+            let source = source.trim();
+            match source {
+                "explorer" => data_sources.push(ChainDataSource::Explorer),
+                "indexer" => data_sources.push(ChainDataSource::Indexer),
+                "provider" => data_sources.push(ChainDataSource::Provider),
+                _ => {
+                    panic!("invalid data source: {}", source);
+                }
+            }
+        }
+        data_sources
+    }
+
+    pub fn is_data_source_enable(&self, source: ChainDataSource) -> bool {
+        let data_sources = self.get_data_sources();
+        data_sources.iter().any(|s| *s == source)
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
 #[allow(unused)]
 pub struct ChainConfig {
-    pub name: String,
     pub chain_id: u64,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
 #[allow(unused)]
 pub struct CoreConfig {
-    pub is_testnet: bool,
     pub is_staging: bool,
     pub remote_base_url: Option<String>,
     pub git_revision: Option<String>,
@@ -39,16 +62,17 @@ pub struct CoreConfig {
 #[allow(unused)]
 pub struct PullConfig {
     pub check_interval_secs: u64,
+    pub max_empty_queue_count: u64,
     pub batch_block_from_indexer: u32,
     pub batch_block_from_provider: u32,
 }
 
 impl PullConfig {
-    pub fn batch_block(&self, sync_type: SyncType) -> usize {
-        match sync_type {
-            SyncType::ChainExplorer => panic!("unsupported sync type"),
-            SyncType::Indexer => self.batch_block_from_indexer as usize,
-            SyncType::Provider => self.batch_block_from_provider as usize,
+    pub fn batch_block(&self, data_source: ChainDataSource) -> usize {
+        match data_source {
+            ChainDataSource::Explorer => panic!("unsupported sync type"),
+            ChainDataSource::Indexer => self.batch_block_from_indexer as usize,
+            ChainDataSource::Provider => self.batch_block_from_provider as usize,
         }
     }
 }
@@ -74,6 +98,27 @@ impl RollupConfig {
             8 => self.rollup8_gas_cost,
             16 => self.rollup16_gas_cost,
             _ => panic!("unsupported rollup size {}", rollup_size),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum ChainDataSource {
+    Indexer,
+    Provider,
+    Explorer,
+}
+
+impl FromStr for ChainDataSource {
+    type Err = RollerError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "indexer" => Ok(ChainDataSource::Indexer),
+            "explorer" => Ok(ChainDataSource::Explorer),
+            "provider" => Ok(ChainDataSource::Provider),
+            _ => Err(RollerError::LoadConfigError("chain data source invalid".to_string())),
         }
     }
 }
@@ -124,8 +169,10 @@ pub async fn create_mystiko_config(core_config: &CoreConfig) -> MystikoConfig {
 }
 
 fn create_remote_options(core_config: &CoreConfig) -> RemoteOptions {
+    let run_mod = load_roller_run_mod();
+    let is_testnet = run_mod == "testnet";
     let mut remote_options = RemoteOptions::builder()
-        .is_testnet(core_config.is_testnet)
+        .is_testnet(is_testnet)
         .is_staging(core_config.is_staging)
         .build();
     remote_options.base_url = core_config.remote_base_url.clone();

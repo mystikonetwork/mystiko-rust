@@ -8,14 +8,14 @@ pub fn trace_init(level: &str) {
         .add_directive(LevelFilter::WARN.into())
         .add_directive(format!("mystiko_={}", level).parse().expect("invalid log level"));
 
-    let formatter = Format::default()
-        .with_timer(time::SystemTime::default())
-        .with_thread_names(true);
+    let formatter = Format::default().with_timer(time::SystemTime::default());
 
     let subscriber = fmt::Subscriber::builder()
         .with_env_filter(filter)
         .event_format(formatter)
         .finish();
 
-    tracing::subscriber::set_global_default(subscriber).expect("setting tracing default failed");
+    tracing::subscriber::set_global_default(subscriber)
+        .map_err(|_| println!("a global default subscriber has already been set"))
+        .ok();
 }

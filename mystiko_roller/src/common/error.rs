@@ -1,11 +1,13 @@
 use anyhow::Error as AnyhowError;
 use ethers_providers::ProviderError;
 use mehcode_config::ConfigError;
+use mystiko_protocol::error::ProtocolError;
 use mystiko_server_utils::token_price::error::TokenPriceError;
 use mystiko_server_utils::tx_manager::error::TxManagerError;
 use mystiko_storage::error::StorageError;
 use serde_json::Error as SerdeJsonError;
 use thiserror::Error;
+use tokio::task::JoinError;
 
 pub type Result<T> = anyhow::Result<T, RollerError>;
 
@@ -27,8 +29,8 @@ pub enum RollerError {
     NoProvider(String),
     #[error("indexer not exist")]
     NoIndexer,
-    #[error("invalid start block number")]
-    InvalidStartBlock,
+    #[error("circuits not exist")]
+    CircuitNotFound,
     #[error("invalid commitment hash")]
     InvalidCommitmentHash,
     #[error("invalid call data {0}")]
@@ -46,7 +48,13 @@ pub enum RollerError {
     #[error(transparent)]
     TxManagerError(#[from] TxManagerError),
     #[error(transparent)]
+    ProtocolError(#[from] ProtocolError),
+    #[error(transparent)]
+    JoinError(#[from] JoinError),
+    #[error(transparent)]
     AnyhowError(#[from] AnyhowError),
+    #[error("commitment missing")]
+    CommitmentMissing,
 }
 
 //

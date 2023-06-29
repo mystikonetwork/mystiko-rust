@@ -184,11 +184,24 @@ where
         for _ in 0..self.config.max_confirm_count {
             tokio::time::sleep(Duration::from_secs(self.config.confirm_interval_secs)).await;
 
-            let _ = provider
+            let tx = provider
                 .get_transaction(tx_hash)
                 .await
                 .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?
                 .ok_or_else(|| TxManagerError::TxDropped)?;
+
+            if let Some(block_number) = tx.block_number {
+                let current_block_number = provider
+                    .get_block_number()
+                    .await
+                    .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?;
+                if current_block_number - block_number < self.config.confirm_blocks {
+                    info!("wait tx been confirmed");
+                    continue;
+                }
+            } else {
+                continue;
+            }
 
             let receipt = provider
                 .get_transaction_receipt(tx_hash)

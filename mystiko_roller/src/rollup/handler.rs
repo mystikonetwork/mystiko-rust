@@ -1,18 +1,21 @@
 use crate::common::env::load_roller_private_key;
 use crate::common::error::{Result, RollerError};
-use crate::config::roller::{create_tx_manager_config, RollupConfig};
+use crate::config::roller::{create_tx_manager_config, ChainDataSource, RollupConfig};
 use crate::context::ContextTrait;
 use crate::core::slice::SlicePattern;
 use crate::data::handler::{DataHandler, ProofInfo, RollupPlan};
-use crate::sync::provider::SyncProvider;
-use crate::sync::SyncTrait;
+use crate::rollup::static_data::{STATIC_ERROR_INVALID_LEAF_HASH, STATIC_ERROR_INVALID_ROLLUP_SIZE, STATIC_PROOF_DATA};
 use ethers_core::types::{Address, Bytes, U256};
 use ethers_signers::{LocalWallet, Signer};
 use mystiko_abi::commitment_pool::{CommitmentPool, RollupRequest};
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
+use mystiko_server_utils::tx_manager::error::TxManagerError;
 use mystiko_server_utils::tx_manager::transaction::{TxBuilder, TxManager};
+
+use crate::chain::provider::ProviderStub;
+use crate::chain::ChainDataGiver;
 use mystiko_utils::convert::big_int_to_u256;
 use std::cmp::Ordering;
 use std::str::FromStr;
@@ -29,12 +32,14 @@ pub struct RollupHandle {
     data: Arc<RwLock<DataHandler>>,
     tx: TxManager<ProviderWrapper<Box<dyn JsonRpcClientWrapper>>>,
     to_address: Address,
+    stub_provider: Arc<ProviderStub>,
+    latest_rollup_block_number: u64,
 }
 
 impl RollupHandle {
     pub async fn new(
         pool_contract_cfg: &PoolContractConfig,
-        context: Arc<dyn ContextTrait>,
+        context: Arc<dyn ContextTrait + Send>,
         data: Arc<RwLock<DataHandler>>,
     ) -> Self {
         let cfg = context.cfg().rollup.clone();
@@ -46,15 +51,16 @@ impl RollupHandle {
         let local_wallet = LocalWallet::from_str(&sk_str)
             .expect("invalid private key")
             .with_chain_id(chain_id);
-        info!("local wallet address: {:?}", local_wallet.address());
+        debug!("local wallet address: {:?}", local_wallet.address());
         let builder = TxBuilder::builder()
             .config(tx_manager_cfg)
             .chain_id(chain_id.into())
             .wallet(local_wallet)
             .build();
-        let provider = context.sign_provider().await;
-        let tx = builder.build_tx(&provider).await;
-        let pool_contract = CommitmentPool::new(to_address, provider);
+        let signer = context.signer();
+        let tx = builder.build_tx(&signer).await;
+        let pool_contract = CommitmentPool::new(to_address, signer.clone());
+        let stub_provider = Arc::new(ProviderStub::new(pool_contract_cfg.address(), signer));
         RollupHandle {
             chain_id,
             pool_contract_cfg: pool_contract_cfg.clone(),
@@ -64,6 +70,8 @@ impl RollupHandle {
             data,
             tx,
             to_address,
+            stub_provider,
+            latest_rollup_block_number: 1,
         }
     }
 
@@ -109,13 +117,22 @@ impl RollupHandle {
         Ok(call_data)
     }
 
-    pub async fn send_rollup_transaction(&mut self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<()> {
+    async fn log_rollup_transaction(&self, tx_hash: &str, include_count: usize, rollup_size: usize) {
+        self.data
+            .read()
+            .await
+            .get_batch_commitments(include_count, rollup_size)
+            .iter()
+            .for_each(|cm| info!("rollup commitment {:?} in transaction {:?}", cm.hash, tx_hash));
+    }
+
+    pub async fn send_rollup_transaction(&mut self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<String> {
         info!("send rollup transaction");
-        let provider = self.context.sign_provider().await;
+        let signer = self.context.signer();
         let tx_data = self.build_rollup_transaction_param(plan.sizes[0], proof_info).await?;
         let gas_limit = self
             .tx
-            .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &provider)
+            .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &signer)
             .await?;
         info!("rollup transaction gas limit: {:?}", gas_limit);
         if plan.force {
@@ -127,7 +144,7 @@ impl RollupHandle {
                     &U256::zero(),
                     &gas_limit,
                     None,
-                    &provider,
+                    &signer,
                 )
                 .await?;
             info!("force send rollup transaction hash: {:?}", tx_hash);
@@ -142,36 +159,36 @@ impl RollupHandle {
                     &U256::zero(),
                     &gas_limit,
                     Some(max_gas_price),
-                    &provider,
+                    &signer,
                 )
                 .await?;
             info!("send rollup transaction hash: {:?}", tx_hash.to_string());
         }
 
-        let _ = self.tx.confirm(&provider).await?;
+        let receipt = self.tx.confirm(&signer).await?;
+        self.latest_rollup_block_number = receipt.block_number.unwrap().as_u64();
         info!("rollup transaction have been confirmed");
-        Ok(())
+        Ok(receipt.transaction_hash.to_string())
     }
 
-    async fn build_rollup_plan(&self, included_count: u32) -> Result<(RollupPlan, ProofInfo)> {
+    async fn build_rollup_plan(&self, included_count: usize) -> Result<(RollupPlan, ProofInfo)> {
         info!("build rollup plan");
-        // let mut data = self.data.borrow_mut();
         let force_rollup_block_count = self.context.cfg().rollup.force_rollup_block_count;
         let plan = self
             .data
             .write()
             .await
-            .generate_plan(included_count as usize, force_rollup_block_count)?;
+            .generate_plan(included_count, force_rollup_block_count)?;
         info!("rollup plan {:?}", plan);
         let proof = self.data.write().await.generate_proof(&plan).await?;
         Ok((plan, proof))
     }
 
-    async fn do_rollup(&mut self, included_count: u32) -> Result<()> {
+    async fn do_rollup(&mut self, included_count: usize) -> Result<()> {
         let queue_count = self.data.read().await.get_commitments_queue_count();
-        match queue_count.cmp(&(included_count as usize)) {
+        match queue_count.cmp(&(included_count)) {
             Ordering::Equal => {
-                info!("no commitment in queue");
+                debug!("no queued commitment");
                 Ok(())
             }
             Ordering::Less => {
@@ -181,49 +198,68 @@ impl RollupHandle {
             Ordering::Greater => {
                 info!("do rollup {:?}", included_count);
                 let (plan, proof) = self.build_rollup_plan(included_count).await?;
-                self.send_rollup_transaction(&plan, &proof).await
-            }
-        }
-    }
-
-    pub async fn rollup_with_indexer(&mut self) -> Result<()> {
-        debug!("rollup with indexer");
-        let mut included_count = 0;
-        {
-            if let Some(indexer) = self.context.indexer().await {
-                let count = indexer
-                    .get_included_count(self.chain_id, self.pool_contract_cfg.address())
+                let tx_hash = self.send_rollup_transaction(&plan, &proof).await?;
+                self.log_rollup_transaction(&tx_hash, included_count, plan.sizes[0])
                     .await;
-                if count.is_err() {
-                    error!("get included count from indexer failed: {:?}", included_count);
-                    return Err(count.err().unwrap());
-                }
-
-                included_count = count.unwrap();
-            } else {
-                return Err(RollerError::NoIndexer);
+                Ok(())
             }
         }
-
-        self.do_rollup(included_count).await
     }
 
-    pub async fn rollup_with_provider(&mut self) -> Result<()> {
-        debug!("rollup with provider");
-        let provider = self.context.provider().await?;
-        let sync_provider = SyncProvider::new(self.pool_contract_cfg.address(), provider);
-        let included_count = sync_provider
+    async fn rollup_from_chain_data_giver(&mut self, giver: Arc<dyn ChainDataGiver>) -> Result<()> {
+        debug!("rollup from giver {:?}", giver.data_source());
+        let latest_block = giver
+            .get_latest_block_number(self.chain_id, self.pool_contract_cfg.address())
+            .await?;
+        if latest_block <= self.latest_rollup_block_number {
+            info!("giver {:?} latest {:?} block slow", giver.data_source(), latest_block);
+            return Ok(());
+        }
+
+        let included_count = giver
             .get_included_count(self.chain_id, self.pool_contract_cfg.address())
             .await?;
         self.do_rollup(included_count).await
     }
 
-    pub async fn rollup(&mut self) -> Result<()> {
+    pub async fn rollup(&mut self, source: &ChainDataSource) -> Result<()> {
         debug!("rollup");
-        if self.rollup_with_indexer().await.is_err() {
-            self.rollup_with_provider().await?
+        match source {
+            &ChainDataSource::Provider => self.rollup_from_chain_data_giver(self.stub_provider.clone()).await,
+            &ChainDataSource::Indexer => match self.context.indexer() {
+                Some(indexer) => self.rollup_from_chain_data_giver(indexer).await,
+                None => Err(RollerError::NoIndexer),
+            },
+            &ChainDataSource::Explorer => panic!("un support"),
         }
+    }
 
-        Ok(())
+    pub async fn is_chain_commitment_queue_empty(&mut self) -> Result<bool> {
+        let signer = self.context.signer();
+        let tx_data = self.build_rollup_transaction_param(1, &STATIC_PROOF_DATA).await?;
+        let gas_limit = self
+            .tx
+            .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &signer)
+            .await;
+
+        match gas_limit {
+            Ok(_) => panic!("must error when check queue"),
+            Err(err) => {
+                let err_string = format!("{}", err);
+                if matches!(err, TxManagerError::EstimateGasError(_)) {
+                    if err_string.contains(&*STATIC_ERROR_INVALID_ROLLUP_SIZE) {
+                        return Ok(true);
+                    } else if err_string.contains(&*STATIC_ERROR_INVALID_LEAF_HASH) {
+                        return Ok(false);
+                    } else {
+                        error!("unexpected estimate gas error {:?}", err);
+                        panic!("unexpected estimate gas error {:?}", err);
+                    }
+                }
+
+                error!("unexpected error {:?}", err);
+                return Ok(true);
+            }
+        }
     }
 }

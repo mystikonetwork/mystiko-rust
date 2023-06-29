@@ -22,13 +22,24 @@ pub struct CommitmentInfo {
 
 fn uniques() -> Vec<UniqueColumns> {
     vec![
-        vec![CommitmentInfoColumn::CommitmentHash].into(),
-        vec![CommitmentInfoColumn::LeafIndex].into(),
+        vec![
+            CommitmentInfoColumn::ChainId,
+            CommitmentInfoColumn::ContractAddress,
+            CommitmentInfoColumn::CommitmentHash,
+        ]
+        .into(),
+        vec![
+            CommitmentInfoColumn::ChainId,
+            CommitmentInfoColumn::ContractAddress,
+            CommitmentInfoColumn::LeafIndex,
+        ]
+        .into(),
     ]
 }
 
 fn indexes() -> Vec<IndexColumns> {
     vec![
+        vec![CommitmentInfoColumn::ContractAddress].into(),
         vec![CommitmentInfoColumn::CommitmentHash].into(),
         vec![CommitmentInfoColumn::LeafIndex].into(),
     ]

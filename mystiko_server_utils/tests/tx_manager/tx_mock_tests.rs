@@ -48,7 +48,7 @@ async fn test_send_1559_tx() {
     let block = get_1559_block();
     let history = get_fee_history();
     let nonce = U256::from(100);
-    let transaction = get_transaction();
+    let mut transaction = get_transaction();
     let transaction_receipt = get_transaction_receipt();
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
@@ -57,7 +57,8 @@ async fn test_send_1559_tx() {
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
     let to_address = wallet.address();
-    let cfg = TxManagerConfig::new("testnet", None).unwrap();
+    let mut cfg = TxManagerConfig::new("testnet", None).unwrap();
+    cfg.confirm_interval_secs = 1;
     let builder = TxBuilder::builder()
         .config(cfg)
         .chain_id(chain_id.into())
@@ -82,7 +83,15 @@ async fn test_send_1559_tx() {
         .unwrap();
     assert_eq!(gas.to_string(), "100000000000");
 
+    let transaction2 = transaction.clone();
+    transaction.block_number = None;
+    let block_number = U64::from(6203173);
+    let block_number2 = U64::from(6203176);
     mock.push(transaction_receipt.clone()).unwrap();
+    mock.push(block_number2).unwrap();
+    mock.push(transaction2.clone()).unwrap();
+    mock.push(block_number).unwrap();
+    mock.push(transaction2.clone()).unwrap();
     mock.push(transaction.clone()).unwrap();
     mock.push(tx_hash).unwrap();
     mock.push(nonce).unwrap();
@@ -112,7 +121,8 @@ async fn test_send_legacy_tx() {
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
     let to_address = wallet.address();
-    let cfg = TxManagerConfig::new("testnet", None).unwrap();
+    let mut cfg = TxManagerConfig::new("testnet", None).unwrap();
+    cfg.confirm_interval_secs = 1;
     let builder = TxBuilder::builder()
         .config(cfg)
         .chain_id(chain_id.into())
@@ -136,7 +146,9 @@ async fn test_send_legacy_tx() {
     assert_eq!(gas.to_string(), "100000000000");
 
     let gas = U256::from(100_000_000_000u64);
+    let block_number = U64::from(6203176);
     mock.push(transaction_receipt.clone()).unwrap();
+    mock.push(block_number).unwrap();
     mock.push(transaction.clone()).unwrap();
     mock.push(tx_hash).unwrap();
     mock.push(nonce).unwrap();

@@ -8,6 +8,8 @@ use std::path::Path;
 pub struct TxManagerConfig {
     pub max_gas_price: U256,
     pub min_priority_fee_per_gas: U256,
+    pub max_priority_fee_per_gas: U256,
+    pub confirm_blocks: U64,
     pub max_confirm_count: u32,
     pub confirm_interval_secs: u64,
     pub gas_limit_reserve_percentage: u32,
@@ -18,6 +20,8 @@ impl TxManagerConfig {
     pub fn new(run_mod: &str, config_path: Option<&str>) -> anyhow::Result<Self> {
         let mut s = Config::builder()
             .set_default("min_priority_fee_per_gas", "0x3b9aca00")?
+            .set_default("max_priority_fee_per_gas", "0xba43b7400")?
+            .set_default("confirm_blocks", 2)?
             .set_default("max_confirm_count", 100)?
             .set_default("confirm_interval_secs", 10)?
             .set_default("gas_limit_reserve_percentage", 10)?
@@ -42,9 +46,15 @@ impl TxManagerConfig {
 
         let cfg: TxManagerConfig = c.try_deserialize()?;
 
-        if cfg.max_gas_price < cfg.min_priority_fee_per_gas {
+        if cfg.max_gas_price < cfg.max_priority_fee_per_gas {
             return Err(anyhow::anyhow!(
                 "max_gas_price must be greater than min_priority_fee_per_gas"
+            ));
+        }
+
+        if cfg.max_priority_fee_per_gas < cfg.min_priority_fee_per_gas {
+            return Err(anyhow::anyhow!(
+                "max_priority_fee_per_gas must be greater than min_priority_fee_per_gas"
             ));
         }
 

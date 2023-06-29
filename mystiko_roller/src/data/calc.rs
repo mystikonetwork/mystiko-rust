@@ -1,4 +1,17 @@
+use mystiko_types::CircuitType;
+
 const MAX_ROLLUP_SIZE: usize = 16;
+
+pub fn circuit_type_from_rollup_size(rollup_size: usize) -> CircuitType {
+    match rollup_size {
+        1 => CircuitType::Rollup1,
+        2 => CircuitType::Rollup2,
+        4 => CircuitType::Rollup4,
+        8 => CircuitType::Rollup8,
+        16 => CircuitType::Rollup16,
+        _ => panic!("un support rollup size: {}", rollup_size),
+    }
+}
 
 fn calc_rollup_size(included: usize, queued: usize) -> usize {
     match () {

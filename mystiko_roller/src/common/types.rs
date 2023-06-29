@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum SyncType {
     ChainExplorer,
     Indexer,

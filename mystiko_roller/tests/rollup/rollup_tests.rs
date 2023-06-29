@@ -3,12 +3,14 @@ use crate::context::mock_context::{
 };
 use crate::rollup::rollup_test_data::{get_proof, get_transaction, get_transaction_receipt};
 use crate::test_files::load::load_commitments;
-use ethers_core::types::{Bytes, H256, U256};
+use ethers_core::types::{Bytes, H256, U256, U64};
 use httptest::responders::json_encoded;
 use httptest::{matchers::*, Expectation, Server, ServerBuilder};
 use mystiko_fs::read_file_bytes;
 use mystiko_indexer_client::response::ApiResponse;
+use mystiko_indexer_client::types::sync_response::ContractSyncResponse;
 use mystiko_roller::common::error::RollerError;
+use mystiko_roller::config::roller::ChainDataSource;
 use mystiko_roller::context::ContextTrait;
 use mystiko_roller::data::handler::{DataHandler, RollupPlan};
 use mystiko_roller::rollup::handler::RollupHandle;
@@ -23,13 +25,21 @@ use tokio::sync::RwLock;
 pub async fn test_rollup_with_provider() {
     let chain_id = 301;
     let (mut handle, data, c) = create_rollup_handle(chain_id, true).await;
-    let result = handle.rollup().await;
-    assert!(matches!(result.err().unwrap(), RollerError::ContractCallError(_)));
+    let result = handle.rollup(&ChainDataSource::Provider).await;
+    assert!(matches!(result.err().unwrap(), RollerError::ProviderError(_)));
+
+    let mock = c.mock_provider().await;
+    let block_number = U64::from("0x1");
+    mock.push(block_number).unwrap();
+    let result = handle.rollup(&ChainDataSource::Provider).await;
+    assert!(result.is_ok());
 
     let mock = c.mock_provider().await;
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
-    let result = handle.rollup().await;
+    let block_number = U64::from("0x100");
+    mock.push(block_number).unwrap();
+    let result = handle.rollup(&ChainDataSource::Provider).await;
     assert!(matches!(result.err().unwrap(), RollerError::CommitmentQueueSlow));
 
     let cms = load_commitments(
@@ -39,32 +49,34 @@ pub async fn test_rollup_with_provider() {
     )
     .await;
     let (cms1, cms2) = cms.split_at(1);
-    data.write().await.insert_commitments(cms1).await;
+    data.write().await.insert_commitments(cms1).await.unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
-    let result = handle.rollup().await;
+    mock.push(block_number).unwrap();
+    let result = handle.rollup(&ChainDataSource::Provider).await;
     assert!(result.is_ok());
     assert_eq!(data.read().await.get_commitments_queue_count(), 1);
     assert_eq!(data.read().await.get_included_count(), 0);
 
     let (cms3, _) = cms2.split_at(1);
-    data.write().await.insert_commitments(cms3).await;
+    data.write().await.insert_commitments(cms3).await.unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
-    let result = handle.rollup().await;
-    assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
+    mock.push(block_number).unwrap();
+    let result = handle.rollup(&ChainDataSource::Provider).await;
+    assert!(matches!(result.err().unwrap(), RollerError::ProtocolError(_)));
 }
 
 #[tokio::test]
 pub async fn test_rollup_with_indexer() {
     let test_chain_id = 302;
     let (mut handle, data, c) = create_rollup_handle(test_chain_id, false).await;
-    let result = handle.rollup().await;
-    assert!(matches!(result.err().unwrap(), RollerError::ContractCallError(_)));
+    let result = handle.rollup(&ChainDataSource::Indexer).await;
+    assert!(matches!(result.err().unwrap(), RollerError::AnyhowError(_)));
 
-    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), 3).await;
+    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), 2, 3).await;
     let mock = c.mock_provider().await;
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
-    let result = handle.rollup().await;
+    let result = handle.rollup(&ChainDataSource::Indexer).await;
     assert!(matches!(result.err().unwrap(), RollerError::CommitmentQueueSlow));
     std::mem::drop(server);
 
@@ -75,9 +87,9 @@ pub async fn test_rollup_with_indexer() {
     )
     .await;
     let (cms1, _) = cms.split_at(3);
-    data.write().await.insert_commitments(cms1).await;
-    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), 3).await;
-    let result = handle.rollup().await;
+    data.write().await.insert_commitments(cms1).await.unwrap();
+    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), 2, 3).await;
+    let result = handle.rollup(&ChainDataSource::Indexer).await;
     assert!(result.is_ok());
     std::mem::drop(server);
 }
@@ -153,23 +165,38 @@ pub async fn test_rollup_send_transaction() {
     std::mem::drop(token_price_server);
 }
 
-async fn create_mock_indexer_server(chain_id: u64, contract_address: &str, included_count: u32) -> Server {
+async fn create_mock_indexer_server(
+    chain_id: u64,
+    contract_address: &str,
+    block_number: u64,
+    included_count: u32,
+) -> Server {
     let addr = SocketAddr::new(
         IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
         (indexer_server_port(chain_id)) as u16,
     );
     let server = ServerBuilder::new().bind_addr(addr).run().unwrap();
+    let block_number_path = format!("/chains/{}/contracts/{}/block-number", chain_id, contract_address);
     let included_count_path = format!(
         "/chains/{}/address/{}/count/commitment-included",
         chain_id, contract_address
     );
-
+    let block_number_rsp = ApiResponse {
+        code: 0,
+        result: ContractSyncResponse {
+            chain_id: Some(chain_id),
+            contract_address: contract_address.to_string(),
+            current_sync_block_num: block_number,
+            current_sync_time: None,
+        },
+    };
+    let block_number_json = json_encoded(json!(block_number_rsp));
     let included_count_rsp = ApiResponse {
         code: 0,
         result: included_count,
     };
     let included_count_json = json_encoded(json!(included_count_rsp));
-
+    server.expect(Expectation::matching(request::path(matches(block_number_path))).respond_with(block_number_json));
     server.expect(Expectation::matching(request::path(matches(included_count_path))).respond_with(included_count_json));
     server
 }

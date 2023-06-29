@@ -1,4 +1,20 @@
-use mystiko_roller::data::calc::calc_rollup_size_array;
+use mystiko_roller::data::calc::{calc_rollup_size_array, circuit_type_from_rollup_size};
+use mystiko_types::CircuitType;
+
+#[tokio::test]
+pub async fn test_circuit_type_from_rollup_size() {
+    assert_eq!(CircuitType::Rollup1, circuit_type_from_rollup_size(1));
+    assert_eq!(CircuitType::Rollup2, circuit_type_from_rollup_size(2));
+    assert_eq!(CircuitType::Rollup4, circuit_type_from_rollup_size(4));
+    assert_eq!(CircuitType::Rollup8, circuit_type_from_rollup_size(8));
+    assert_eq!(CircuitType::Rollup16, circuit_type_from_rollup_size(16));
+}
+
+#[test]
+#[should_panic(expected = "un support rollup size: 32")]
+fn test_test_circuit_type_from_rollup_size_32() {
+    let _ = circuit_type_from_rollup_size(32);
+}
 
 #[tokio::test]
 pub async fn test_calc_rollup_size_array_0() {

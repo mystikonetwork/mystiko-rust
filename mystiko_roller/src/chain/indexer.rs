@@ -1,6 +1,7 @@
+use crate::chain::ChainDataGiver;
 use crate::common::error::{Result, RollerError};
+use crate::config::roller::ChainDataSource;
 use crate::db::document::commitment::CommitmentInfo;
-use crate::sync::{SyncTrait, SyncType};
 use async_trait::async_trait;
 use mystiko_config::wrapper::indexer::IndexerConfig;
 use mystiko_indexer_client::client::IndexerClient;
@@ -9,25 +10,25 @@ use num_bigint::BigInt;
 use std::time::Duration;
 use tracing::debug;
 
-pub struct SyncIndexer {
+pub struct IndexerStub {
     client: IndexerClient,
 }
 
-impl SyncIndexer {
+impl IndexerStub {
     pub fn new(cfg: &IndexerConfig) -> Self {
         let client = IndexerClient::builder(cfg.url())
             .timeout(Duration::from_millis(cfg.timeout_ms()))
             .build()
             .unwrap_or_else(|e| panic!("failed to create indexer client: {}", e));
 
-        SyncIndexer { client }
+        IndexerStub { client }
     }
 }
 
 #[async_trait]
-impl SyncTrait for SyncIndexer {
-    fn sync_type(&self) -> SyncType {
-        SyncType::Indexer
+impl ChainDataGiver for IndexerStub {
+    fn data_source(&self) -> ChainDataSource {
+        ChainDataSource::Indexer
     }
 
     async fn get_latest_block_number(&self, chain_id: u64, contract_address: &str) -> Result<u64> {
@@ -40,11 +41,12 @@ impl SyncTrait for SyncIndexer {
             .map_err(|e| e.into())
     }
 
-    async fn get_included_count(&self, chain_id: u64, contract_address: &str) -> Result<u32> {
+    async fn get_included_count(&self, chain_id: u64, contract_address: &str) -> Result<usize> {
         self.client
             .count_commitment_included_for_contract(chain_id, contract_address, None)
             .await
-            .map_err(|e| e.into())
+            .map(|c| c as usize)
+            .map_err(RollerError::from)
     }
 
     async fn get_queued_commitments(

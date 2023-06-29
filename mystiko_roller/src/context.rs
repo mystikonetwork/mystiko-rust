@@ -1,14 +1,14 @@
+use crate::chain::explorer::ExplorerStub;
+use crate::chain::indexer::IndexerStub;
 use crate::common::env::{load_coin_market_api_key, load_roller_config_path};
-use crate::common::error::{Result, RollerError};
+use crate::common::error::Result;
 use crate::common::trace::trace_init;
 use crate::config::mystiko_parser::MystikoConfigParser;
-use crate::config::roller::create_roller_config;
 use crate::config::roller::create_token_price_config;
 use crate::config::roller::RollerConfig;
+use crate::config::roller::{create_roller_config, ChainDataSource};
 use crate::db::database::create_roller_database;
 use crate::db::database::RollerDatabase;
-use crate::sync::chain_explorer::SyncChainExplorer;
-use crate::sync::indexer::SyncIndexer;
 use async_trait::async_trait;
 use mystiko_ethers::provider::factory::{
     DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions, HTTP_REGEX, WS_REGEX,
@@ -23,7 +23,7 @@ use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use tracing::info;
 
 #[async_trait]
-pub trait ContextTrait {
+pub trait ContextTrait: Send + Sync {
     async fn new() -> Result<Self>
     where
         Self: Sized;
@@ -31,10 +31,10 @@ pub trait ContextTrait {
     fn core_cfg_parser(&self) -> Arc<MystikoConfigParser>;
     fn cfg(&self) -> Arc<RollerConfig>;
     async fn db(&self) -> RwLockReadGuard<RollerDatabase<SqlStatementFormatter, SqliteStorage>>;
-    async fn indexer(&self) -> Option<RwLockReadGuard<SyncIndexer>>;
-    async fn chain_explorer(&self) -> Option<RwLockReadGuard<SyncChainExplorer>>;
-    async fn provider(&self) -> Result<Arc<Provider>>;
-    async fn sign_provider(&self) -> Arc<Provider>;
+    fn indexer(&self) -> Option<Arc<IndexerStub>>;
+    fn chain_explorer(&self) -> Option<Arc<ExplorerStub>>;
+    fn provider(&self) -> Arc<Provider>;
+    fn signer(&self) -> Arc<Provider>;
     async fn token_price(&self) -> RwLockWriteGuard<'_, TokenPrice>;
 }
 
@@ -42,10 +42,10 @@ pub struct Context {
     core_cfg_parser: Arc<MystikoConfigParser>,
     cfg: Arc<RollerConfig>,
     db: RwLock<RollerDatabase<SqlStatementFormatter, SqliteStorage>>,
-    indexer: Option<RwLock<SyncIndexer>>,
-    chain_explorer: Option<RwLock<SyncChainExplorer>>,
-    providers: RwLock<Arc<ProviderPool>>,
-    sign_provider: RwLock<Arc<Provider>>,
+    indexer: Option<Arc<IndexerStub>>,
+    chain_explorer: Option<Arc<ExplorerStub>>,
+    provider: Arc<Provider>,
+    signer: Arc<Provider>,
     token_price: Arc<RwLock<TokenPrice>>,
 }
 
@@ -59,26 +59,35 @@ impl ContextTrait for Context {
         let token_price_cfg = create_token_price_config();
         let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core).await;
         let db = create_roller_database().await;
-        let indexer = core_cfg_parser.indexer_cfg().map(SyncIndexer::new);
-        let chain_explorer = core_cfg_parser
-            .chain_explorer_cfg(roller_cfg.chain.chain_id)
-            .map(SyncChainExplorer::new);
-        let api_key = load_coin_market_api_key().unwrap();
-        let token_price = TokenPrice::new(&token_price_cfg, &api_key).unwrap();
+        let indexer = match roller_cfg.is_data_source_enable(ChainDataSource::Indexer) {
+            true => core_cfg_parser.indexer_cfg().map(IndexerStub::new),
+            false => None,
+        };
 
-        let providers = ProviderPool::builder()
+        let chain_explorer = match roller_cfg.is_data_source_enable(ChainDataSource::Explorer) {
+            true => core_cfg_parser
+                .chain_explorer_cfg(roller_cfg.chain.chain_id)
+                .map(ExplorerStub::new),
+            false => None,
+        };
+
+        let api_key = load_coin_market_api_key()?;
+        let token_price = TokenPrice::new(&token_price_cfg, &api_key)?;
+
+        let mut providers = ProviderPool::builder()
             .chain_providers_options(Box::new(core_cfg_parser.clone()))
             .build();
+        let provider = providers.get_or_create_provider(roller_cfg.chain.chain_id).await?;
         let sign_provider = create_sign_provider(roller_cfg.chain.chain_id, &core_cfg_parser).await;
 
         Ok(Context {
             core_cfg_parser: Arc::new(core_cfg_parser),
             cfg: Arc::new(roller_cfg),
             db: RwLock::new(db),
-            indexer: indexer.map(RwLock::new),
-            chain_explorer: chain_explorer.map(RwLock::new),
-            providers: RwLock::new(Arc::new(providers)),
-            sign_provider: RwLock::new(Arc::new(sign_provider)),
+            indexer: indexer.map(Arc::new),
+            chain_explorer: chain_explorer.map(Arc::new),
+            provider,
+            signer: Arc::new(sign_provider),
             token_price: Arc::new(RwLock::new(token_price)),
         })
     }
@@ -95,25 +104,20 @@ impl ContextTrait for Context {
         self.db.read().await
     }
 
-    async fn indexer(&self) -> Option<RwLockReadGuard<SyncIndexer>> {
-        Some(self.indexer.as_ref()?.read().await)
+    fn indexer(&self) -> Option<Arc<IndexerStub>> {
+        self.indexer.clone()
     }
 
-    async fn chain_explorer(&self) -> Option<RwLockReadGuard<SyncChainExplorer>> {
-        Some(self.chain_explorer.as_ref()?.read().await)
+    fn chain_explorer(&self) -> Option<Arc<ExplorerStub>> {
+        self.chain_explorer.clone()
     }
 
-    async fn provider(&self) -> Result<Arc<Provider>> {
-        self.providers
-            .read()
-            .await
-            .check_provider(self.cfg.chain.chain_id)
-            .map_err(|e| RollerError::NoProvider(e.to_string()))
+    fn provider(&self) -> Arc<Provider> {
+        self.provider.clone()
     }
 
-    async fn sign_provider(&self) -> Arc<Provider> {
-        let provider_guard = self.sign_provider.read().await;
-        Arc::clone(&*provider_guard)
+    fn signer(&self) -> Arc<Provider> {
+        self.signer.clone()
     }
 
     async fn token_price(&self) -> RwLockWriteGuard<'_, TokenPrice> {

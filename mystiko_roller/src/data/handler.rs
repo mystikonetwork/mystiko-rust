@@ -1,21 +1,31 @@
 use crate::common::env::load_roller_circuits_path;
-use crate::common::error::Result;
+use crate::common::error::{Result, RollerError};
 use crate::context::ContextTrait;
-use crate::data::calc::calc_rollup_size_array;
+use crate::data::calc::{calc_rollup_size_array, circuit_type_from_rollup_size};
 use crate::db::document::commitment::CommitmentInfo;
 use ethers_core::types::U256;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_fs::{read_file_bytes, read_gzip_file_bytes};
+use mystiko_downloader::DownloaderBuilder;
 use mystiko_protocol::rollup::{Rollup, RollupProof};
 use num_bigint::BigInt;
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::{debug, error, info};
 
 pub struct CommitmentData {
-    hash: BigInt,
+    pub hash: BigInt,
     rollup_fee: U256,
     block_number: u64,
+}
+
+impl CommitmentData {
+    pub fn from(info: &CommitmentInfo) -> Self {
+        CommitmentData {
+            hash: info.commitment_hash.clone(),
+            rollup_fee: U256::from_str_radix(&info.rollup_fee, 10).expect("rollup fee error"),
+            block_number: info.block_number,
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -39,7 +49,7 @@ pub struct DataHandler {
 }
 
 impl DataHandler {
-    pub async fn new(chain_id: u64, pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait>) -> Self {
+    pub async fn new(chain_id: u64, pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait + Send>) -> Self {
         DataHandler {
             chain_id,
             pool_contract: pool_contract.clone(),
@@ -54,21 +64,49 @@ impl DataHandler {
         self.next_sync_block
     }
 
-    pub fn set_new_next_sync_block(&mut self, block_number: u64) {
+    pub fn set_next_sync_block(&mut self, block_number: u64) {
         if block_number > self.next_sync_block {
             debug!("set new start block {:?}", block_number);
             self.next_sync_block = block_number;
         }
     }
 
-    fn push_commitment_in_queue(&mut self, cm: &CommitmentInfo) {
-        info!("push commitment in queue {:?} {:?}", cm.leaf_index, cm.commitment_hash);
-
-        let cm_data = build_commitment_data(cm);
-        self.commitments.push(cm_data);
+    pub fn reset_next_sync_block(&mut self) {
+        if let Some(last_commitment) = self.commitments.last() {
+            self.set_next_sync_block(last_commitment.block_number);
+        } else {
+            self.set_next_sync_block(self.pool_contract.start_block());
+        }
     }
 
-    pub async fn load_commitment_from_db(&mut self) {
+    pub fn get_batch_commitments(&self, start: usize, count: usize) -> &[CommitmentData] {
+        if start + count > self.commitments.len() {
+            error!("get batch commitments out of range");
+            &[]
+        } else {
+            &self.commitments[start..(start + count)]
+        }
+    }
+
+    fn push_commitment_in_queue(&mut self, cm: &CommitmentInfo) -> Result<()> {
+        let expect_leaf_index = self.commitments.len();
+        if cm.leaf_index as usize != expect_leaf_index {
+            self.reset_next_sync_block();
+            error!(
+                "leaf index mismatch insert {:?} expect {:?}, revert next sync block number to {:?}",
+                cm.leaf_index,
+                expect_leaf_index,
+                self.get_next_sync_block()
+            );
+
+            return Err(RollerError::CommitmentMissing);
+        }
+
+        self.commitments.push(CommitmentData::from(cm));
+        Ok(())
+    }
+
+    pub async fn load_commitment_from_db(&mut self) -> Result<()> {
         let cms = self
             .context
             .db()
@@ -79,28 +117,26 @@ impl DataHandler {
         info!("load {:?} commitments from db", cms.len());
 
         for doc in &cms {
-            self.push_commitment_in_queue(&doc.data);
+            self.push_commitment_in_queue(&doc.data)?;
         }
 
-        if cms.is_empty() {
-            self.set_new_next_sync_block(self.pool_contract.start_block());
-        } else {
-            self.set_new_next_sync_block(cms[cms.len() - 1].data.block_number);
-        }
-        info!("set start block number {:?}", self.next_sync_block);
+        self.reset_next_sync_block();
+        info!("start block number at {:?}", self.next_sync_block);
+        Ok(())
     }
 
-    pub async fn insert_commitments(&mut self, cms: &[CommitmentInfo]) {
-        debug!("insert commitments");
+    pub async fn insert_commitments(&mut self, cms: &[CommitmentInfo]) -> Result<()> {
         for cm in cms {
             let index = cm.leaf_index as usize;
             if index < self.commitments.len() {
                 assert_eq!(self.commitments[index].hash, cm.commitment_hash);
             } else {
-                self.push_commitment_in_queue(cm);
+                info!("push commitment in queue {:?} {:?}", cm.leaf_index, cm.commitment_hash);
+                self.push_commitment_in_queue(cm)?;
                 self.context.db().await.insert_commitment(cm).await;
             }
         }
+        Ok(())
     }
 
     pub fn get_included_count(&self) -> usize {
@@ -112,13 +148,15 @@ impl DataHandler {
     }
 
     fn rebuild_tree(&mut self, count: usize) {
-        info!("rebuild merkle tree");
+        info!("rebuild merkle tree with included count {:?}", count);
         let height = self.context.cfg().rollup.merkle_tree_height;
         let init_elem: Vec<BigInt> = self.commitments.iter().take(count).map(|cm| cm.hash.clone()).collect();
         self.tree = Some(MerkleTree::new(Some(init_elem), Some(height), None).expect("rebuild merkle tree meet error"));
     }
 
     fn build_rollup_plan(&self, force_rollup_block_count: u64) -> RollupPlan {
+        debug!("build rollup plan");
+
         let included_len = self.get_included_count();
         let queued_len = self.get_commitments_queue_count() - included_len;
         let sizes = calc_rollup_size_array(included_len, queued_len);
@@ -167,8 +205,9 @@ impl DataHandler {
 
     pub async fn generate_proof(&mut self, plan: &RollupPlan) -> Result<ProofInfo> {
         assert!(!plan.sizes.is_empty());
-        info!("generate proof size {:?}", plan.sizes[0]);
+        let rollup_size = plan.sizes[0];
 
+        info!("generate proof size {:?}", rollup_size);
         let tree = self.tree.as_mut().unwrap();
         let tree_len = tree.count();
         let new_leaves = self
@@ -179,45 +218,27 @@ impl DataHandler {
             .map(|cm| cm.hash.clone())
             .collect();
 
-        let circuits = CircuitsConfig::new(plan.sizes[0]);
-        let program = read_gzip_file_bytes(&circuits.program_file)
-            .await
-            .expect("read zk program error");
-        let abi = read_file_bytes(&circuits.abi_file).await.expect("read zk abi error");
-        let pkey = read_gzip_file_bytes(&circuits.proving_key_file)
-            .await
-            .expect("read zk proving key error");
+        let circuits_type = circuit_type_from_rollup_size(rollup_size);
+        let circuits_cfg = self
+            .pool_contract
+            .circuit_by_type(&circuits_type)
+            .ok_or(RollerError::CircuitNotFound)?;
+
+        let mut downloader = DownloaderBuilder::new()
+            .folder(&load_roller_circuits_path())
+            .build()
+            .await?;
+
+        let program = downloader
+            .read_bytes_failover(circuits_cfg.program_file(), None)
+            .await?;
+        let abi = downloader.read_bytes_failover(circuits_cfg.abi_file(), None).await?;
+        let pkey = downloader
+            .read_bytes_failover(circuits_cfg.proving_key_file(), None)
+            .await?;
+
         let mut rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
-        let proof = rollup.prove().expect("build proof error");
-
+        let proof = rollup.prove()?;
         Ok(ProofInfo { r: proof })
-    }
-}
-
-fn build_commitment_data(cm: &CommitmentInfo) -> CommitmentData {
-    CommitmentData {
-        hash: cm.commitment_hash.clone(),
-        rollup_fee: U256::from_str_radix(&cm.rollup_fee, 10).expect("rollup fee error"),
-        block_number: cm.block_number,
-    }
-}
-
-#[derive(Debug)]
-pub struct CircuitsConfig {
-    pub program_file: String,
-    pub abi_file: String,
-    pub proving_key_file: String,
-}
-
-impl CircuitsConfig {
-    pub fn new(rollup_size: usize) -> CircuitsConfig {
-        let rollup_name = format!("Rollup{}", rollup_size);
-
-        let circuits_path = load_roller_circuits_path();
-        CircuitsConfig {
-            program_file: circuits_path.clone() + &(format!("/{}.program.gz", rollup_name)),
-            abi_file: circuits_path.clone() + &(format!("/{}.abi.json", rollup_name)),
-            proving_key_file: circuits_path + &(format!("/{}.pkey.gz", rollup_name)),
-        }
     }
 }

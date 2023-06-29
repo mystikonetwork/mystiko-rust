@@ -8,6 +8,7 @@ use httptest::{matchers::*, responders::*, Expectation, Server, ServerBuilder};
 use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::types::sync_response::ContractSyncResponse;
 use mystiko_roller::common::error::RollerError;
+use mystiko_roller::config::roller::ChainDataSource;
 use mystiko_roller::context::ContextTrait;
 use mystiko_roller::data::handler::DataHandler;
 use mystiko_roller::pull::handler::PullHandle;
@@ -20,7 +21,7 @@ use tokio::sync::RwLock;
 pub async fn test_pull_from_provider() {
     let test_chain_id = 201;
     let (handle, data, c) = create_pull_handle(test_chain_id, true).await;
-    let result = handle.pull().await;
+    let result = handle.pull(&ChainDataSource::Provider).await;
     assert!(matches!(result.err().unwrap(), RollerError::ProviderError(_)));
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -31,7 +32,7 @@ pub async fn test_pull_from_provider() {
     let mock = c.mock_provider().await;
     let block_number = U64::from("0x100");
     mock.push(block_number).unwrap();
-    let result = handle.pull().await;
+    let result = handle.pull(&ChainDataSource::Provider).await;
     assert!(matches!(result.err().unwrap(), RollerError::ContractCallError(_)));
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -39,17 +40,17 @@ pub async fn test_pull_from_provider() {
         "next sync block should be 0"
     );
 
-    data.write().await.set_new_next_sync_block(10);
+    data.write().await.set_next_sync_block(10);
     let block_number = U64::from(2);
     mock.push(block_number).unwrap();
-    let result = handle.pull().await;
-    assert!(matches!(result.err().unwrap(), RollerError::InvalidStartBlock));
+    let result = handle.pull(&ChainDataSource::Provider).await;
+    assert!(result.is_ok());
 
     let logs = load_commitment_logs("tests/test_files/data/commitment_logs.json").await;
     let block_number = U64::from(256);
     mock.push::<Vec<Log>, _>(vec![logs[0].clone()]).unwrap();
     mock.push(block_number).unwrap();
-    let result = handle.pull().await;
+    let result = handle.pull(&ChainDataSource::Provider).await;
     assert!(result.is_ok());
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -65,7 +66,7 @@ pub async fn test_pull_from_provider() {
     let block_number = U64::from(512);
     mock.push::<Vec<Log>, _>(logs.clone()).unwrap();
     mock.push(block_number).unwrap();
-    let result = handle.pull().await;
+    let result = handle.pull(&ChainDataSource::Provider).await;
     assert!(result.is_ok());
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -87,7 +88,7 @@ pub async fn test_pull_from_indexer() {
     let block_number = 128;
     let cm_count: usize = 2;
     let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, cm_count).await;
-    let result = handle.pull().await;
+    let result = handle.pull(&ChainDataSource::Indexer).await;
     assert!(result.is_ok());
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -105,7 +106,7 @@ pub async fn test_pull_from_indexer() {
     let block_number = 256;
     let cm_count: usize = 18;
     let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, cm_count).await;
-    let result = handle.pull().await;
+    let result = handle.pull(&ChainDataSource::Indexer).await;
     assert!(result.is_ok());
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -122,8 +123,8 @@ pub async fn test_pull_from_indexer() {
 
     let block_number = 10;
     let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, 0).await;
-    let result = handle.pull().await;
-    assert!(matches!(result.err().unwrap(), RollerError::ProviderError(_)));
+    let result = handle.pull(&ChainDataSource::Indexer).await;
+    assert!(result.is_ok());
     std::mem::drop(server);
 }
 
