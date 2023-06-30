@@ -11,7 +11,7 @@ use mystiko_ethers::provider::factory::Provider;
 use mystiko_utils::convert::u256_to_big_int;
 use std::str::FromStr;
 use std::sync::Arc;
-use tracing::debug;
+use tracing::{debug, error};
 
 pub struct ProviderStub {
     provider: Arc<Provider>,
@@ -101,10 +101,13 @@ impl ChainDataGiver for ProviderStub {
         end: u64,
     ) -> Result<Vec<CommitmentInfo>> {
         // create new tokio runtime because ethers event filter not support Send
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(async move {
-            self.get_queued_commitments_inner(chain_id, contract_address, start, end)
-                .await
-        })
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .map_err(|e| {
+                error!("create tokio runtime error: {}", e);
+                RollerError::RuntimeError
+            })?;
+        rt.block_on(self.get_queued_commitments_inner(chain_id, contract_address, start, end))
     }
 }

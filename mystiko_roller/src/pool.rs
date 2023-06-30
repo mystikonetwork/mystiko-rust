@@ -5,6 +5,8 @@ use crate::data::handler::DataHandler;
 use crate::pull::handler::PullHandle;
 use crate::rollup::handler::RollupHandle;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
+use mystiko_server_utils::tx_manager::error::TxManagerError::GasPriceError;
+
 use std::cmp::Ordering;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -56,7 +58,14 @@ impl Pool {
         for source in &chain_data_sources {
             sleep(check_time).await;
             match self.run_from_one_source(source).await {
-                Err(e) => error!("{:?} meet error {:?}", source, e),
+                Err(e) => {
+                    if self.should_failover(&e) {
+                        error!("{:?} meet error {:?}, failover", source, e);
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
                 Ok(_) => {
                     debug!("{:?} success", source);
                     break;
@@ -100,5 +109,14 @@ impl Pool {
                 panic!("unexpected check commitment queue");
             }
         }
+    }
+
+    fn should_failover(&self, err: &RollerError) -> bool {
+        !matches!(
+            err,
+            RollerError::TxManagerError(GasPriceError(_))
+                | RollerError::TokenPriceError(_)
+                | RollerError::CircuitNotFound
+        )
     }
 }

@@ -224,13 +224,13 @@ impl RollupHandle {
 
     pub async fn rollup(&mut self, source: &ChainDataSource) -> Result<()> {
         debug!("rollup");
-        match source {
-            &ChainDataSource::Provider => self.rollup_from_chain_data_giver(self.stub_provider.clone()).await,
-            &ChainDataSource::Indexer => match self.context.indexer() {
+        match *source {
+            ChainDataSource::Provider => self.rollup_from_chain_data_giver(self.stub_provider.clone()).await,
+            ChainDataSource::Indexer => match self.context.indexer() {
                 Some(indexer) => self.rollup_from_chain_data_giver(indexer).await,
                 None => Err(RollerError::NoIndexer),
             },
-            &ChainDataSource::Explorer => panic!("un support"),
+            ChainDataSource::Explorer => panic!("un support"),
         }
     }
 
@@ -258,7 +258,7 @@ impl RollupHandle {
                 }
 
                 error!("unexpected error {:?}", err);
-                return Ok(true);
+                Ok(true)
             }
         }
     }

@@ -23,7 +23,7 @@ pub struct RollerConfig {
 impl RollerConfig {
     pub fn get_data_sources(&self) -> Vec<ChainDataSource> {
         let mut data_sources = Vec::new();
-        let chain_data_sources = self.chain_data_sources.split(",");
+        let chain_data_sources = self.chain_data_sources.split(',');
         for source in chain_data_sources {
             let source = source.trim();
             match source {

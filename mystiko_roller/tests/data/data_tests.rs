@@ -51,7 +51,7 @@ pub async fn test_insert_commitments() {
     assert_eq!(data.get_included_count(), 0);
     assert_eq!(data.get_commitments_queue_count(), cms.len());
 
-    let context_trait2: Arc<dyn ContextTrait> = Arc::clone(&c) as Arc<dyn ContextTrait>;
+    let context_trait2: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let mut data2 = DataHandler::new(test_chain_id, &pool_contract, context_trait2).await;
     data2.load_commitment_from_db().await.unwrap();
     let db_cms = c
@@ -144,7 +144,7 @@ async fn create_data_handle(test_chain_id: u64) -> (DataHandler, Arc<MockContext
     let c = Arc::new(c);
     let pool_contract = get_pool_contracts(&c);
 
-    let context_trait: Arc<dyn ContextTrait> = Arc::clone(&c) as Arc<dyn ContextTrait>;
+    let context_trait: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let data = DataHandler::new(test_chain_id, &pool_contract, context_trait).await;
     (data, c)
 }

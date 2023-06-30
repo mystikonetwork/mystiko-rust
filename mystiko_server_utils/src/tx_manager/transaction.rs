@@ -13,7 +13,7 @@ use ethers_providers::{JsonRpcClient, Middleware, Provider};
 use ethers_signers::{LocalWallet, Signer};
 use std::marker::PhantomData;
 use std::time::Duration;
-use tracing::info;
+use tracing::{debug, info};
 use typed_builder::TypedBuilder;
 
 pub struct TxManager<P> {
@@ -41,10 +41,13 @@ impl TxBuilder {
     }
 
     pub async fn build_tx<P: JsonRpcClient>(&self, provider: &Provider<P>) -> TxManager<P> {
+        debug!("build tx manager");
         let mut is_1559_tx = true;
         if self.is_force_chain() {
+            debug!("force chain, use legacy tx");
             is_1559_tx = false;
         } else {
+            debug!("try to use 1559 tx");
             let gas_oracle = ProviderOracle::new(provider);
             let base = gas_oracle.estimate_eip1559_fees().await;
             if base.is_err() {
@@ -71,6 +74,7 @@ where
     P: JsonRpcClient + Send + Sync,
 {
     async fn gas_price_1559_tx(&self, provider: &Provider<P>) -> Result<(U256, U256)> {
+        debug!("gas price 1559 tx");
         let gas_oracle = ProviderOracle::new(provider);
 
         let (max_fee_per_gas, mut priority_fee) = gas_oracle
@@ -84,6 +88,7 @@ where
     }
 
     async fn gas_price_legacy_tx(&self, provider: &Provider<P>) -> Result<U256> {
+        debug!("gas price legacy tx");
         let gas_oracle = ProviderOracle::new(provider);
 
         gas_oracle
@@ -93,6 +98,7 @@ where
     }
 
     pub async fn gas_price(&self, provider: &Provider<P>) -> Result<U256> {
+        debug!("gas price");
         if self.is_1559_tx {
             let (max_fee_per_gas, priority_fee) = self.gas_price_1559_tx(provider).await?;
             Ok(max_fee_per_gas + priority_fee)
@@ -108,6 +114,7 @@ where
         value: &U256,
         provider: &Provider<P>,
     ) -> Result<U256> {
+        debug!("estimate gas");
         self.data = data.to_vec();
         self.value = *value;
 
@@ -196,7 +203,7 @@ where
                     .await
                     .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?;
                 if current_block_number - block_number < self.config.confirm_blocks {
-                    info!("wait tx been confirmed");
+                    info!("waiting for tx to be confirmed");
                     continue;
                 }
             } else {
@@ -329,6 +336,7 @@ where
     }
 
     async fn get_current_nonce(&self, provider: &Provider<P>) -> Result<U256> {
+        debug!("get current nonce");
         let nonce_manager = NonceManagerMiddleware::new(provider, self.wallet.address());
         nonce_manager
             .get_transaction_count(self.wallet.address(), Some(BlockNumber::Pending.into()))

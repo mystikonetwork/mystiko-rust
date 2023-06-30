@@ -171,10 +171,7 @@ async fn create_mock_indexer_server(
     block_number: u64,
     included_count: u32,
 ) -> Server {
-    let addr = SocketAddr::new(
-        IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
-        (indexer_server_port(chain_id)) as u16,
-    );
+    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), indexer_server_port(chain_id));
     let server = ServerBuilder::new().bind_addr(addr).run().unwrap();
     let block_number_path = format!("/chains/{}/contracts/{}/block-number", chain_id, contract_address);
     let included_count_path = format!(
@@ -204,7 +201,7 @@ async fn create_mock_indexer_server(
 async fn create_mock_token_price_server(chain_id: u64) -> Server {
     let indexer_port = indexer_server_port(chain_id);
     let token_price_port = token_price_server_port(indexer_port);
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), (token_price_port) as u16);
+    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), token_price_port);
     let server = ServerBuilder::new().bind_addr(addr).run().unwrap();
 
     let id_bytes = read_file_bytes("./../mystiko_server_utils/tests/token_price/files/token_price.json")
@@ -230,10 +227,10 @@ async fn create_rollup_handle(
     let c = Arc::new(c);
     let pool_contract = get_pool_contracts(&c);
 
-    let context_trait: Arc<dyn ContextTrait> = Arc::clone(&c) as Arc<dyn ContextTrait>;
+    let context_trait: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let data = DataHandler::new(chain_id, &pool_contract, context_trait).await;
     let data_rc = Arc::new(RwLock::new(data));
-    let context_trait2: Arc<dyn ContextTrait> = Arc::clone(&c) as Arc<dyn ContextTrait>;
+    let context_trait2: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let mut handle = RollupHandle::new(&pool_contract, context_trait2, Arc::clone(&data_rc)).await;
     handle.chain_id = chain_id;
     (handle, data_rc, c)

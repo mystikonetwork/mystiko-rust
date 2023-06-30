@@ -90,7 +90,7 @@ impl Downloader {
     async fn download_raw(&mut self, url: &str, options: DownloadOptions) -> Result<PathBuf> {
         let mut hasher = Blake2s256::new();
         DynDigest::update(&mut hasher, url.as_bytes());
-        let hash = hex::encode(&hasher.finalize());
+        let hash = hex::encode(hasher.finalize());
         let file_path = self.folder.join(PathBuf::from(&hash));
         let file_exists = try_exists(&file_path).await?;
         if file_exists && !options.skip_cache {
