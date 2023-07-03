@@ -18,6 +18,11 @@ pub struct RawChainConfig {
     #[validate(length(min = 1))]
     pub asset_symbol: String,
 
+    #[validate(range(min = 1))]
+    #[serde(default = "default_asset_decimals")]
+    #[builder(default = default_asset_decimals())]
+    pub asset_decimals: u32,
+
     #[validate(custom = "is_ethereum_address")]
     #[validate(length(min = 1))]
     pub relayer_contract_address: String,
@@ -33,4 +38,8 @@ pub struct RawChainConfig {
 
 fn default_contracts() -> Vec<Arc<RawContractConfig>> {
     Vec::new()
+}
+
+fn default_asset_decimals() -> u32 {
+    18
 }

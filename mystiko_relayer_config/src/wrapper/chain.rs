@@ -37,6 +37,10 @@ impl ChainConfig {
         &self.raw.asset_symbol
     }
 
+    pub fn asset_decimals(&self) -> u32 {
+        self.raw.asset_decimals
+    }
+
     pub fn relayer_contract_address(&self) -> &str {
         &self.raw.relayer_contract_address
     }
@@ -78,8 +82,8 @@ impl ChainConfig {
 
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
-        for contract_config in self.contracts() {
-            contract_config.validate()?;
+        for contract in self.contracts() {
+            contract.validate()?;
         }
         self.transaction_info.validate()?;
         Ok(())

@@ -6,9 +6,7 @@ use validator::Validate;
 
 #[derive(TypedBuilder, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct RawContractConfig {
-    #[serde(default = "default_asset_type")]
-    #[builder(default = default_asset_type())]
+pub struct RawAssetConfig {
     pub asset_type: AssetType,
 
     #[validate(length(min = 1))]
@@ -33,10 +31,6 @@ pub struct RawContractConfig {
 
 fn default_minimum_gas_fee() -> Decimal {
     Decimal::ZERO
-}
-
-fn default_asset_type() -> AssetType {
-    AssetType::Erc20
 }
 
 fn default_asset_decimals() -> u32 {
