@@ -6,28 +6,27 @@ use anyhow::Result;
 use ethers_core::types::U256;
 use std::collections::HashMap;
 use std::ops::{Div, Mul};
-use std::time::{Duration, Instant};
+use std::time::SystemTime;
+use tracing::debug;
 
 pub struct TokenPrice {
     initialized: bool,
     config: TokenPriceConfig,
     instance: QueryApiInstance,
-    record_time: Instant,
+    record_time: SystemTime,
     ids: Vec<u32>,
     // key token id
     prices: HashMap<u32, f64>,
 }
 
-fn instant_init(duration: u64) -> Instant {
-    Instant::now() - Duration::from_secs(duration + 1)
-}
-
 impl TokenPrice {
     pub fn new(cfg: &TokenPriceConfig, api_key: &str) -> Result<Self, TokenPriceError> {
+        debug!("new token price manager");
+
         let instance = QueryApiInstance::new(api_key, cfg.base_url.clone(), cfg.query_timeout_secs)?;
         Ok(TokenPrice {
             ids: cfg.ids(),
-            record_time: instant_init(cfg.price_cache_ttl),
+            record_time: SystemTime::UNIX_EPOCH,
             config: cfg.clone(),
             instance,
             prices: HashMap::new(),
@@ -76,8 +75,11 @@ impl TokenPrice {
     }
 
     async fn update_token_prices(&mut self) -> Result<(), TokenPriceError> {
-        let instant_now = Instant::now();
-        let current = instant_now.duration_since(self.record_time).as_secs();
+        let system_now = SystemTime::now();
+        let current = system_now
+            .duration_since(self.record_time)
+            .map_err(|_| TokenPriceError::InternalError)?
+            .as_secs();
         if current < self.config.price_cache_ttl {
             return Ok(());
         }
@@ -86,7 +88,7 @@ impl TokenPrice {
             self.prices.insert(key, price);
         }
 
-        self.record_time = instant_now;
+        self.record_time = system_now;
         self.initialized = true;
         Ok(())
     }
