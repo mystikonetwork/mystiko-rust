@@ -37,4 +37,6 @@ async fn test_read_config() {
     env::set_var("MYSTIKO_TX_MANAGER.MAX_PRIORITY_FEE_PER_GAS", "0x5f5e100");
     let cfg = TxManagerConfig::new("mainnet", None);
     assert!(cfg.is_err());
+    env::remove_var("MYSTIKO_TX_MANAGER.MAX_PRIORITY_FEE_PER_GAS");
+    env::remove_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE");
 }

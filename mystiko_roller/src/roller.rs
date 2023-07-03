@@ -22,7 +22,7 @@ impl Roller {
             info!("create pool instance t{:?} {:?}", index, pool_contract.address());
             let pool = Pool::new(
                 index,
-                &pool_contract,
+                pool_contract,
                 Arc::clone(&context) as Arc<dyn ContextTrait + Send>,
             )
             .await;
@@ -74,7 +74,6 @@ impl Roller {
                 }
             }
         }
-
         Ok(())
     }
 }

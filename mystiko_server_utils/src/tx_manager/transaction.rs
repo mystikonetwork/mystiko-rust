@@ -4,7 +4,7 @@ use ethers_core::types::transaction::eip1559::Eip1559TransactionRequest;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::transaction::request::TransactionRequest;
 use ethers_core::types::transaction::response::TransactionReceipt;
-use ethers_core::types::{Address, BlockNumber, TxHash, H256, U256, U64};
+use ethers_core::types::{Address, BlockNumber, TxHash, U256, U64};
 // use ethers_middleware::gas_escalator::GasEscalatorMiddleware;
 // use ethers_middleware::gas_escalator::{Frequency, GeometricGasPrice};
 use ethers_middleware::gas_oracle::{GasOracle, ProviderOracle};
@@ -22,10 +22,6 @@ pub struct TxManager<P> {
     chain_id: U64,
     wallet: LocalWallet,
     is_1559_tx: bool,
-    data: Vec<u8>,
-    value: U256,
-    max_gas_price: Option<U256>,
-    tx_hash: Option<TxHash>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -61,10 +57,6 @@ impl TxBuilder {
             chain_id: self.chain_id,
             wallet: self.wallet.clone(),
             is_1559_tx,
-            max_gas_price: None,
-            value: U256::zero(),
-            data: vec![],
-            tx_hash: None,
         }
     }
 }
@@ -107,30 +99,21 @@ where
         }
     }
 
-    pub async fn estimate_gas(
-        &mut self,
-        to: Address,
-        data: &[u8],
-        value: &U256,
-        provider: &Provider<P>,
-    ) -> Result<U256> {
+    pub async fn estimate_gas(&self, to: Address, data: &[u8], value: &U256, provider: &Provider<P>) -> Result<U256> {
         debug!("estimate gas");
-        self.data = data.to_vec();
-        self.value = *value;
-
         let typed_tx = match self.is_1559_tx {
             true => {
-                let max_fee_per_gas = self.choose_max_gas_price();
+                let max_fee_per_gas = self.choose_max_gas_price(None);
                 let priority_fee = self.config.min_priority_fee_per_gas;
 
                 let tx = self
-                    .build_1559_tx(to, &max_fee_per_gas, &priority_fee, provider)
+                    .build_1559_tx(to, data, value, &max_fee_per_gas, &priority_fee, provider)
                     .await?;
                 TypedTransaction::try_from(tx).expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
             }
             false => {
                 let gas_price = self.gas_price_legacy_tx(provider).await?;
-                let tx = self.build_legacy_tx(to, &gas_price, provider).await?;
+                let tx = self.build_legacy_tx(to, data, value, &gas_price, provider).await?;
                 TypedTransaction::try_from(tx).expect("Failed to convert TransactionRequest to TypedTransaction")
             }
         };
@@ -143,51 +126,42 @@ where
     }
 
     pub async fn send(
-        &mut self,
+        &self,
         to: Address,
         data: &[u8],
         value: &U256,
         gas_limit: &U256,
-        max_gas_price: Option<U256>,
+        tx_max_gas_price: Option<U256>,
         provider: &Provider<P>,
     ) -> Result<TxHash> {
         info!(
             "send tx to {:?} with gas_limit {:?} and max_gas_price {:?}",
-            to, gas_limit, max_gas_price
+            to, gas_limit, tx_max_gas_price
         );
 
-        self.max_gas_price = max_gas_price;
-        self.data = data.to_vec();
-        self.value = *value;
-        self.tx_hash = None;
         let gas_limit = gas_limit * (100 + self.config.gas_limit_reserve_percentage) / 100;
         if self.is_1559_tx {
             let (max_fee_per_gas, priority_fee) = self.gas_price_1559_tx(provider).await?;
-            let max_gas_price = self.choose_max_gas_price();
+            let max_gas_price = self.choose_max_gas_price(tx_max_gas_price);
             if max_fee_per_gas + priority_fee > max_gas_price {
                 return Err(TxManagerError::GasPriceError("gas price too high".into()));
             }
             let max_fee_per_gas = max_gas_price - priority_fee;
-            self.send_1559_tx(to, &max_fee_per_gas, &priority_fee, &gas_limit, provider)
+            self.send_1559_tx(to, data, value, &max_fee_per_gas, &priority_fee, &gas_limit, provider)
                 .await
         } else {
             let gas_price = self.gas_price_legacy_tx(provider).await?;
-            let max_gas_price = self.choose_max_gas_price();
+            let max_gas_price = self.choose_max_gas_price(tx_max_gas_price);
             if gas_price > max_gas_price {
                 return Err(TxManagerError::GasPriceError("gas price too high".into()));
             }
-            self.send_legacy_tx(to, &gas_price, &gas_limit, provider).await
+            self.send_legacy_tx(to, data, value, &gas_price, &gas_limit, provider)
+                .await
         }
     }
 
-    pub async fn confirm(&self, provider: &Provider<P>) -> Result<TransactionReceipt> {
-        info!("confirm tx {:?}", self.tx_hash);
-
-        let tx_hash = match self.tx_hash {
-            Some(hash) => H256::from_slice(hash.as_bytes()),
-            None => return Err(TxManagerError::ConfirmTxError("tx hash none".into())),
-        };
-
+    pub async fn confirm(&self, provider: &Provider<P>, tx_hash: TxHash) -> Result<TransactionReceipt> {
+        info!("confirm tx {:?}", tx_hash);
         for _ in 0..self.config.max_confirm_count {
             tokio::time::sleep(Duration::from_secs(self.config.confirm_interval_secs)).await;
 
@@ -229,6 +203,8 @@ where
     async fn build_legacy_tx(
         &self,
         to: Address,
+        data: &[u8],
+        value: &U256,
         gas_price: &U256,
         provider: &Provider<P>,
     ) -> Result<TransactionRequest> {
@@ -237,21 +213,23 @@ where
         Ok(TransactionRequest::new()
             .chain_id(self.chain_id)
             .to(ethers_core::types::NameOrAddress::Address(to))
-            .value(self.value)
-            .data(self.data.clone())
+            .value(value)
+            .data(data.to_vec())
             .nonce(curr_nonce)
             .gas_price(*gas_price))
     }
 
     async fn send_legacy_tx(
-        &mut self,
+        &self,
         to: Address,
+        data: &[u8],
+        value: &U256,
         gas_price: &U256,
         gas_limit: &U256,
         provider: &Provider<P>,
     ) -> Result<TxHash> {
         // Create the transaction
-        let mut tx = self.build_legacy_tx(to, gas_price, provider).await?;
+        let mut tx = self.build_legacy_tx(to, data, value, gas_price, provider).await?;
         tx.gas = Some(*gas_limit);
         let signer = SignerMiddleware::new(provider, self.wallet.clone());
 
@@ -277,13 +255,14 @@ where
             .await
             .map_err(|why| TxManagerError::SendTxError(why.to_string()))?;
 
-        self.tx_hash = Some(pending_tx.tx_hash());
         Ok(pending_tx.tx_hash())
     }
 
     async fn build_1559_tx(
         &self,
         to: Address,
+        data: &[u8],
+        value: &U256,
         max_fee_per_gas: &U256,
         priority_fee: &U256,
         provider: &Provider<P>,
@@ -294,23 +273,27 @@ where
         Ok(Eip1559TransactionRequest::new()
             .chain_id(self.chain_id)
             .to(ethers_core::types::NameOrAddress::Address(to))
-            .value(self.value)
-            .data(self.data.clone())
+            .value(value)
+            .data(data.to_vec())
             .nonce(curr_nonce)
             .max_fee_per_gas(*max_fee_per_gas)
             .max_priority_fee_per_gas(*priority_fee))
     }
 
     async fn send_1559_tx(
-        &mut self,
+        &self,
         to: Address,
+        data: &[u8],
+        value: &U256,
         max_fee_per_gas: &U256,
         priority_fee: &U256,
         gas_limit: &U256,
         provider: &Provider<P>,
     ) -> Result<TxHash> {
         // Create the transaction
-        let mut tx = self.build_1559_tx(to, max_fee_per_gas, priority_fee, provider).await?;
+        let mut tx = self
+            .build_1559_tx(to, data, value, max_fee_per_gas, priority_fee, provider)
+            .await?;
         tx.gas = Some(*gas_limit);
 
         let signer = SignerMiddleware::new(provider, self.wallet.clone());
@@ -319,8 +302,6 @@ where
             .send_transaction(tx, None)
             .await
             .map_err(|why| TxManagerError::SendTxError(why.to_string()))?;
-
-        self.tx_hash = Some(pending_tx.tx_hash());
         Ok(pending_tx.tx_hash())
     }
 
@@ -328,8 +309,8 @@ where
         self.is_1559_tx
     }
 
-    fn choose_max_gas_price(&self) -> U256 {
-        match self.max_gas_price {
+    fn choose_max_gas_price(&self, tx_max_gas_price: Option<U256>) -> U256 {
+        match tx_max_gas_price {
             Some(price) => std::cmp::min(price, self.config.max_gas_price),
             None => self.config.max_gas_price,
         }

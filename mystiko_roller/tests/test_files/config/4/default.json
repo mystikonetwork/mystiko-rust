@@ -1,11 +1,13 @@
 {
   "log_level": "INFO",
-  "chain_data_sources": "provider",
+  "chain_data_sources": "indexer,explorer,provider",
   "core": {
-    "is_staging": false
+    "is_staging": false,
+    "remote_base_url": "https://new.static.mystiko.network/config",
+    "git_revision": "0187435"
   },
   "chain": {
-    "chain_id": 97
+    "chain_id": 5
   },
   "pull": {
     "check_interval_secs": 60,

@@ -21,7 +21,8 @@ async fn test_send_1559_tx() {
     let chain_id = provider.get_chainid().await.unwrap();
     let wallet: LocalWallet = anvil.keys().first().unwrap().clone().into();
     let wallet = wallet.with_chain_id(chain_id.as_u64());
-    let cfg = TxManagerConfig::new("testnet", None).unwrap();
+    let mut cfg = TxManagerConfig::new("testnet", None).unwrap();
+    cfg.confirm_blocks = U64::zero();
     let to = anvil.addresses()[1];
     let value = ethers_core::utils::parse_ether("1").unwrap();
 
@@ -30,7 +31,7 @@ async fn test_send_1559_tx() {
         .chain_id(chain_id.as_u64().into())
         .wallet(wallet)
         .build();
-    let mut tx = builder.build_tx(&provider).await;
+    let tx = builder.build_tx(&provider).await;
     assert!(tx.is_1559_tx());
 
     let gas_price = tx.gas_price(&provider).await.unwrap();
@@ -45,7 +46,7 @@ async fn test_send_1559_tx() {
         .send(to, vec![].as_slice(), &value, &gas, max_gas_price, &provider)
         .await
         .unwrap();
-    let receipt = tx.confirm(&provider).await.unwrap();
+    let receipt = tx.confirm(&provider, tx_hash).await.unwrap();
     assert_ne!(receipt.block_number.unwrap(), U64::from(0));
     assert_ne!(receipt.status.unwrap(), U64::from(0));
     assert_eq!(receipt.transaction_hash, tx_hash);
@@ -69,6 +70,7 @@ async fn test_send_legacy_tx() {
     let force_chain = vec![chain_id];
     let mut cfg = TxManagerConfig::new("testnet", None).unwrap();
     cfg.force_gas_price_chains = force_chain;
+    cfg.confirm_blocks = U64::zero();
 
     let to = anvil.addresses()[1];
     let value = ethers_core::utils::parse_ether("1").unwrap();
@@ -78,7 +80,7 @@ async fn test_send_legacy_tx() {
         .chain_id(chain_id)
         .wallet(wallet)
         .build();
-    let mut tx = builder.build_tx(&provider).await;
+    let tx = builder.build_tx(&provider).await;
     assert!(!tx.is_1559_tx());
 
     let gas_price = tx.gas_price(&provider).await.unwrap();
@@ -93,7 +95,7 @@ async fn test_send_legacy_tx() {
         .send(to, vec![].as_slice(), &value, &gas, max_gas_price, &provider)
         .await
         .unwrap();
-    let receipt = tx.confirm(&provider).await.unwrap();
+    let receipt = tx.confirm(&provider, tx_hash).await.unwrap();
     assert_ne!(receipt.block_number.unwrap(), U64::from(0));
     assert_ne!(receipt.status.unwrap(), U64::from(0));
     assert_eq!(receipt.transaction_hash, tx_hash);

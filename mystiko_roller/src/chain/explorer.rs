@@ -1,5 +1,5 @@
 // todo support xscan
-
+#[derive(Clone)]
 pub struct ExplorerStub {
     // url: String,
     // key: String,

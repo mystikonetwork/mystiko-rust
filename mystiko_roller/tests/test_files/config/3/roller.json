@@ -1,6 +1,5 @@
 {
   "log_level": "DEBUG",
-  "chain_data_sources": [],
   "chain": {
     "chain_id": 1
   },

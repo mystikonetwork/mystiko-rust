@@ -1,7 +1,6 @@
-use crate::chain::provider::ProviderStub;
 use crate::chain::ChainDataGiver;
-use crate::common::error::{Result, RollerError};
-use crate::config::roller::{ChainDataSource, PullConfig};
+use crate::common::error::Result;
+use crate::config::roller::PullConfig;
 use crate::context::ContextTrait;
 use crate::data::handler::DataHandler;
 use std::cmp::Ordering;
@@ -13,26 +12,26 @@ pub struct PullHandle {
     pub chain_id: u64,
     pub contract_address: String,
     cfg: PullConfig,
-    context: Arc<dyn ContextTrait>,
     data: Arc<RwLock<DataHandler>>,
-    stub_provider: Arc<ProviderStub>,
 }
 
 impl PullHandle {
     pub fn new(contract_address: &str, context: Arc<dyn ContextTrait + Send>, data: Arc<RwLock<DataHandler>>) -> Self {
         let cfg = context.cfg().pull.clone();
-        let stub_provider = Arc::new(ProviderStub::new(contract_address, context.provider()));
         PullHandle {
             chain_id: context.cfg().chain.chain_id,
             contract_address: contract_address.to_string(),
             cfg,
-            context,
             data,
-            stub_provider,
         }
     }
 
-    async fn pull_queued_commitments(&self, giver: Arc<dyn ChainDataGiver>, start: u64, end: u64) -> Result<()> {
+    async fn pull_queued_commitments<T: ChainDataGiver + ?Sized>(
+        &self,
+        giver: Arc<T>,
+        start: u64,
+        end: u64,
+    ) -> Result<()> {
         debug!("pull queued commitments");
         let cms = giver
             .get_queued_commitments(self.chain_id, &self.contract_address, start, end)
@@ -41,7 +40,7 @@ impl PullHandle {
         Ok(())
     }
 
-    async fn pull_from_chain_data_giver(&self, giver: Arc<dyn ChainDataGiver>) -> Result<()> {
+    async fn pull_from_chain_data_giver<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
         debug!("pull from giver {:?}", giver.data_source());
         let current_block = self.data.write().await.get_next_sync_block();
         let latest_block = giver
@@ -70,15 +69,8 @@ impl PullHandle {
         Ok(())
     }
 
-    pub async fn pull(&self, source: &ChainDataSource) -> Result<()> {
+    pub async fn pull<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
         debug!("pull");
-        match *source {
-            ChainDataSource::Provider => self.pull_from_chain_data_giver(self.stub_provider.clone()).await,
-            ChainDataSource::Indexer => match self.context.indexer() {
-                Some(indexer) => self.pull_from_chain_data_giver(indexer).await,
-                None => Err(RollerError::NoIndexer),
-            },
-            ChainDataSource::Explorer => panic!("un support"),
-        }
+        self.pull_from_chain_data_giver(giver).await
     }
 }

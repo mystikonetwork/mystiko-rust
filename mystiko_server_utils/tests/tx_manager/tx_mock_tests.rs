@@ -67,7 +67,7 @@ async fn test_send_1559_tx() {
 
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let mut tx = builder.build_tx(&provider).await;
+    let tx = builder.build_tx(&provider).await;
     assert!(tx.is_1559_tx());
 
     mock.push(history.clone()).unwrap();
@@ -102,7 +102,7 @@ async fn test_send_1559_tx() {
         .await
         .unwrap();
     assert_eq!(hash, tx_hash);
-    let receipt = tx.confirm(&provider).await.unwrap();
+    let receipt = tx.confirm(&provider, hash).await.unwrap();
     assert_eq!(receipt, transaction_receipt);
 }
 
@@ -129,7 +129,7 @@ async fn test_send_legacy_tx() {
         .wallet(wallet)
         .build();
 
-    let mut tx = builder.build_tx(&provider).await;
+    let tx = builder.build_tx(&provider).await;
     assert!(!tx.is_1559_tx());
 
     mock.push(price).unwrap();
@@ -158,7 +158,7 @@ async fn test_send_legacy_tx() {
         .await
         .unwrap();
     assert_eq!(hash, tx_hash);
-    let receipt = tx.confirm(&provider).await.unwrap();
+    let receipt = tx.confirm(&provider, hash).await.unwrap();
     assert_eq!(receipt, transaction_receipt);
 }
 
@@ -183,7 +183,7 @@ async fn test_1559_tx_with_error() {
 
     mock.push(history.clone()).unwrap();
     mock.push(block.clone()).unwrap();
-    let mut tx = builder.build_tx(&provider).await;
+    let tx = builder.build_tx(&provider).await;
     assert!(tx.is_1559_tx());
 
     let gas_price = tx.gas_price(&provider).await;
@@ -247,7 +247,7 @@ async fn test_legacy_tx_with_error() {
         .chain_id(chain_id.into())
         .wallet(wallet)
         .build();
-    let mut tx = builder.build_tx(&provider).await;
+    let tx = builder.build_tx(&provider).await;
     assert!(!tx.is_1559_tx());
 
     let gas_price = tx.gas_price(&provider).await;
@@ -316,15 +316,15 @@ async fn test_confirm_with_error() {
         .chain_id(chain_id.into())
         .wallet(wallet)
         .build();
-    let mut tx = builder.build_tx(&provider).await;
+    let tx = builder.build_tx(&provider).await;
     assert!(!tx.is_1559_tx());
 
-    let receipt = tx.confirm(&provider).await;
+    let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
+    let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let max_gas_price = Some(U256::from(100_000_000_000u64));
-    let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
     let gas = U256::from(100_000_000_000u64);
     mock.push(tx_hash).unwrap();
     mock.push(nonce).unwrap();
@@ -333,28 +333,28 @@ async fn test_confirm_with_error() {
         .send(to_address, vec![].as_slice(), &value, &gas, max_gas_price, &provider)
         .await;
 
-    let receipt = tx.confirm(&provider).await;
+    let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
     mock.push(json!(null)).unwrap();
-    let receipt = tx.confirm(&provider).await;
+    let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::TxDropped));
 
     mock.push(transaction.clone()).unwrap();
-    let receipt = tx.confirm(&provider).await;
+    let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
     transaction_receipt.status = Some(U64::from(0));
     mock.push(transaction_receipt.clone()).unwrap();
     mock.push(transaction.clone()).unwrap();
-    let receipt = tx.confirm(&provider).await;
+    let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
     for _ in 0..cfg.max_confirm_count {
         mock.push(json!(null)).unwrap();
         mock.push(transaction.clone()).unwrap();
     }
-    let receipt = tx.confirm(&provider).await;
+    let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 }
 

@@ -77,9 +77,9 @@ pub fn get_transaction() -> Transaction {
 pub fn get_transaction_receipt() -> TransactionReceipt {
     let v: serde_json::Value = serde_json::from_str(
         r#"{
-        "transactionHash": "0x611b173b0e0dfda94da7bfb6cb77c9f1c03e2f2149ba060e6bddfaa219942369",
+        "transactionHash": "0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d",
         "blockHash": "0xa11871d61e0e703ae33b358a6a9653c43e4216f277d4a1c7377b76b4d5b4cbf1",
-        "blockNumber": "0xe3c1d8",
+        "blockNumber": "0x5ea72f",
         "contractAddress": "0x08f6db30039218894067023a3593baf27d3f4a2b",
         "cumulativeGasUsed": "0x1246047",
         "effectiveGasPrice": "0xa02ffee00",

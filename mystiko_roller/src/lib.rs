@@ -3,6 +3,7 @@ extern crate async_trait;
 extern crate config as mehcode_config;
 extern crate core;
 extern crate dotenv;
+extern crate ethers_contract;
 extern crate ethers_core;
 extern crate ethers_providers;
 extern crate ethers_signers;

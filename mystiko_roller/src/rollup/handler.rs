@@ -1,6 +1,7 @@
+use crate::chain::ChainDataGiver;
 use crate::common::env::load_roller_private_key;
 use crate::common::error::{Result, RollerError};
-use crate::config::roller::{create_tx_manager_config, ChainDataSource, RollupConfig};
+use crate::config::roller::{create_tx_manager_config, RollupConfig};
 use crate::context::ContextTrait;
 use crate::core::slice::SlicePattern;
 use crate::data::handler::{DataHandler, ProofInfo, RollupPlan};
@@ -13,9 +14,6 @@ use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
 use mystiko_server_utils::tx_manager::error::TxManagerError;
 use mystiko_server_utils::tx_manager::transaction::{TxBuilder, TxManager};
-
-use crate::chain::provider::ProviderStub;
-use crate::chain::ChainDataGiver;
 use mystiko_utils::convert::big_int_to_u256;
 use std::cmp::Ordering;
 use std::str::FromStr;
@@ -26,14 +24,12 @@ use tracing::{debug, error, info};
 pub struct RollupHandle {
     pub chain_id: u64,
     pub pool_contract_cfg: PoolContractConfig,
-    pool: CommitmentPool<Provider>,
     cfg: RollupConfig,
+    to_address: Address,
+    commitment_contract: CommitmentPool<Provider>,
     context: Arc<dyn ContextTrait>,
     data: Arc<RwLock<DataHandler>>,
     tx: TxManager<ProviderWrapper<Box<dyn JsonRpcClientWrapper>>>,
-    to_address: Address,
-    stub_provider: Arc<ProviderStub>,
-    latest_rollup_block_number: u64,
 }
 
 impl RollupHandle {
@@ -59,19 +55,16 @@ impl RollupHandle {
             .build();
         let signer = context.signer();
         let tx = builder.build_tx(&signer).await;
-        let pool_contract = CommitmentPool::new(to_address, signer.clone());
-        let stub_provider = Arc::new(ProviderStub::new(pool_contract_cfg.address(), signer));
+        let commitment_contract = CommitmentPool::new(to_address, signer.clone());
         RollupHandle {
             chain_id,
             pool_contract_cfg: pool_contract_cfg.clone(),
-            pool: pool_contract,
             cfg,
+            commitment_contract,
             context,
             data,
             tx,
             to_address,
-            stub_provider,
-            latest_rollup_block_number: 1,
         }
     }
 
@@ -110,7 +103,7 @@ impl RollupHandle {
             leaf_hash: big_int_to_u256(&proof_info.r.leaves_hash),
         };
 
-        let call = self.pool.rollup(request);
+        let call = self.commitment_contract.rollup(request);
         let call_data = call
             .calldata()
             .ok_or(RollerError::InvalidCallData("rollup data".to_string()))?;
@@ -126,7 +119,7 @@ impl RollupHandle {
             .for_each(|cm| info!("rollup commitment {:?} in transaction {:?}", cm.hash, tx_hash));
     }
 
-    pub async fn send_rollup_transaction(&mut self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<String> {
+    pub async fn send_rollup_transaction(&self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<String> {
         info!("send rollup transaction");
         let signer = self.context.signer();
         let tx_data = self.build_rollup_transaction_param(plan.sizes[0], proof_info).await?;
@@ -135,9 +128,9 @@ impl RollupHandle {
             .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &signer)
             .await?;
         info!("rollup transaction gas limit: {:?}", gas_limit);
-        if plan.force {
-            let tx_hash = self
-                .tx
+        let tx_hash = if plan.force {
+            info!("force send rollup transaction");
+            self.tx
                 .send(
                     self.to_address,
                     tx_data.as_slice(),
@@ -146,13 +139,11 @@ impl RollupHandle {
                     None,
                     &signer,
                 )
-                .await?;
-            info!("force send rollup transaction hash: {:?}", tx_hash);
+                .await?
         } else {
             let max_gas_price = self.calc_tx_max_gas_price(plan).await?;
             info!("send rollup transaction with max gas price {:?}", max_gas_price);
-            let tx_hash = self
-                .tx
+            self.tx
                 .send(
                     self.to_address,
                     tx_data.as_slice(),
@@ -161,12 +152,21 @@ impl RollupHandle {
                     Some(max_gas_price),
                     &signer,
                 )
-                .await?;
-            info!("send rollup transaction hash: {:?}", tx_hash.to_string());
+                .await?
+        };
+        info!("send rollup transaction hash: {:?}", tx_hash.to_string());
+
+        let receipt = self.tx.confirm(&signer, tx_hash).await?;
+        if let Some(block_number) = receipt.block_number {
+            self.data
+                .write()
+                .await
+                .set_latest_rollup_block_number(block_number.as_u64());
+        } else {
+            error!("rollup transaction block number is none");
+            panic!("rollup transaction block number is none");
         }
 
-        let receipt = self.tx.confirm(&signer).await?;
-        self.latest_rollup_block_number = receipt.block_number.unwrap().as_u64();
         info!("rollup transaction have been confirmed");
         Ok(receipt.transaction_hash.to_string())
     }
@@ -184,7 +184,7 @@ impl RollupHandle {
         Ok((plan, proof))
     }
 
-    async fn do_rollup(&mut self, included_count: usize) -> Result<()> {
+    async fn do_rollup(&self, included_count: usize) -> Result<()> {
         let queue_count = self.data.read().await.get_commitments_queue_count();
         match queue_count.cmp(&(included_count)) {
             Ordering::Equal => {
@@ -206,12 +206,12 @@ impl RollupHandle {
         }
     }
 
-    async fn rollup_from_chain_data_giver(&mut self, giver: Arc<dyn ChainDataGiver>) -> Result<()> {
+    async fn rollup_with_chain_data_giver<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
         debug!("rollup from giver {:?}", giver.data_source());
         let latest_block = giver
             .get_latest_block_number(self.chain_id, self.pool_contract_cfg.address())
             .await?;
-        if latest_block <= self.latest_rollup_block_number {
+        if latest_block <= self.data.read().await.get_latest_rollup_block_number() {
             info!("giver {:?} latest {:?} block slow", giver.data_source(), latest_block);
             return Ok(());
         }
@@ -222,19 +222,12 @@ impl RollupHandle {
         self.do_rollup(included_count).await
     }
 
-    pub async fn rollup(&mut self, source: &ChainDataSource) -> Result<()> {
+    pub async fn rollup<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
         debug!("rollup");
-        match *source {
-            ChainDataSource::Provider => self.rollup_from_chain_data_giver(self.stub_provider.clone()).await,
-            ChainDataSource::Indexer => match self.context.indexer() {
-                Some(indexer) => self.rollup_from_chain_data_giver(indexer).await,
-                None => Err(RollerError::NoIndexer),
-            },
-            ChainDataSource::Explorer => panic!("un support"),
-        }
+        self.rollup_with_chain_data_giver(giver).await
     }
 
-    pub async fn is_chain_commitment_queue_empty(&mut self) -> Result<bool> {
+    pub async fn is_chain_commitment_queue_empty(&self) -> Result<bool> {
         let signer = self.context.signer();
         let tx_data = self.build_rollup_transaction_param(1, &STATIC_PROOF_DATA).await?;
         let gas_limit = self

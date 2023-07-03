@@ -43,9 +43,11 @@ pub struct DataHandler {
     chain_id: u64,
     pool_contract: PoolContractConfig,
     context: Arc<dyn ContextTrait>,
-    next_sync_block: u64,
     commitments: Vec<CommitmentData>,
     tree: Option<MerkleTree>,
+    next_sync_block: u64,
+    empty_queue_counter: u64,
+    latest_rollup_block_number: u64,
 }
 
 impl DataHandler {
@@ -57,7 +59,29 @@ impl DataHandler {
             next_sync_block: 0_u64,
             commitments: vec![],
             tree: None,
+            empty_queue_counter: 0,
+            latest_rollup_block_number: 1,
         }
+    }
+
+    pub fn get_empty_queue_counter(&self) -> u64 {
+        self.empty_queue_counter
+    }
+
+    pub fn inc_empty_queue_counter(&mut self) {
+        self.empty_queue_counter += 1;
+    }
+
+    pub fn set_empty_queue_counter(&mut self, counter: u64) {
+        self.empty_queue_counter = counter;
+    }
+
+    pub fn get_latest_rollup_block_number(&self) -> u64 {
+        self.latest_rollup_block_number
+    }
+
+    pub fn set_latest_rollup_block_number(&mut self, block_number: u64) {
+        self.latest_rollup_block_number = block_number;
     }
 
     pub fn get_next_sync_block(&self) -> u64 {

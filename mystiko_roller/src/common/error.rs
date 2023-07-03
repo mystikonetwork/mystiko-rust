@@ -1,4 +1,5 @@
 use anyhow::Error as AnyhowError;
+use ethers_core::abi::Error as AbiError;
 use ethers_providers::ProviderError;
 use mehcode_config::ConfigError;
 use mystiko_protocol::error::ProtocolError;
@@ -39,6 +40,8 @@ pub enum RollerError {
     RpcCallError(String),
     #[error("contract call error {0}")]
     ContractCallError(String),
+    #[error(transparent)]
+    AbiError(#[from] AbiError),
     #[error(transparent)]
     DatabaseError(#[from] StorageError),
     #[error(transparent)]

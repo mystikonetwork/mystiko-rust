@@ -144,10 +144,7 @@ impl RollerConfig {
 }
 
 pub fn create_roller_config() -> RollerConfig {
-    RollerConfig::new().unwrap_or_else(|e| {
-        println!("error occurred: {:?}", e);
-        panic!("load roller config failed")
-    })
+    RollerConfig::new().unwrap_or_else(|_| panic!("load roller config failed"))
 }
 
 pub async fn create_mystiko_config(core_config: &CoreConfig) -> MystikoConfig {
@@ -156,7 +153,7 @@ pub async fn create_mystiko_config(core_config: &CoreConfig) -> MystikoConfig {
     if Path::exists(Path::new(&config_file)) {
         return MystikoConfig::from_json_file(&config_file).await.unwrap_or_else(|e| {
             error!("error occurred: {:?}", e);
-            panic!("load core config failed")
+            panic!("failed load core config from file")
         });
     }
 
@@ -164,7 +161,7 @@ pub async fn create_mystiko_config(core_config: &CoreConfig) -> MystikoConfig {
     let remote_options = create_remote_options(core_config);
     MystikoConfig::from_remote(&remote_options).await.unwrap_or_else(|e| {
         error!("error occurred: {:?}", e);
-        panic!("load core config failed")
+        panic!("failed load core config from remote")
     })
 }
 
