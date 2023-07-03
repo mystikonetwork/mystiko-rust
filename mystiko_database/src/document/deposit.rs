@@ -5,8 +5,9 @@ use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigInt;
+use serde::{Deserialize, Serialize};
 
-#[derive(CollectionBuilder, Clone, PartialEq, Debug)]
+#[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
 #[collection(uniques = uniques(), indexes = indexes())]
 pub struct Deposit {
     pub chain_id: u64,

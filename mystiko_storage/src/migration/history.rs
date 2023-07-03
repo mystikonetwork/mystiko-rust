@@ -1,10 +1,11 @@
 use crate::column::{Column, ColumnType, ColumnValue};
 use crate::document::{find_required_column_value, DocumentData};
 use crate::error::StorageError;
+use serde::{Deserialize, Serialize};
 
 type Result<T> = anyhow::Result<T, StorageError>;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MigrationHistory {
     pub collection_name: String,
     pub version: usize,

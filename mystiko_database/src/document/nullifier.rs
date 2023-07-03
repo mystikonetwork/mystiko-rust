@@ -4,8 +4,9 @@ use mystiko_storage::column::{IndexColumns, UniqueColumns};
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigInt;
+use serde::{Deserialize, Serialize};
 
-#[derive(CollectionBuilder, Clone, PartialEq, Debug)]
+#[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
 #[collection(uniques = uniques(), indexes = indexes())]
 pub struct Nullifier {
     pub chain_id: u64,

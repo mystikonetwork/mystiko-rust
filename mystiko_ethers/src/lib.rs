@@ -1,7 +1,9 @@
 extern crate anyhow;
 extern crate async_trait;
 extern crate ethers_core;
+extern crate ethers_middleware;
 extern crate ethers_providers;
+extern crate ethers_signers;
 extern crate futures_core;
 extern crate lazy_static;
 extern crate regex;
@@ -13,3 +15,4 @@ extern crate tokio;
 extern crate typed_builder;
 
 pub mod provider;
+pub mod signer;

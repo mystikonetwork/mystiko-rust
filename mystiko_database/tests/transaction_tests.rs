@@ -195,3 +195,44 @@ async fn test_transactions_crud() {
     transactions.delete_all().await.unwrap();
     assert_eq!(transactions.count_all().await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn test_transaction_serde() {
+    let transactions = create_transactions().await;
+    let transaction = transactions
+        .insert(&Transaction {
+            chain_id: 1,
+            contract_address: String::from("contract_address 1"),
+            asset_symbol: String::from("asset_symbol 1"),
+            asset_decimals: 6,
+            asset_address: Some(String::from("asset_address 1")),
+            proof: Some(String::from("proof 1")),
+            root_hash: BigInt::from(1),
+            input_commitments: vec![BigInt::from(11), BigInt::from(12)],
+            output_commitments: Some(vec![BigInt::from(111), BigInt::from(112)]),
+            nullifiers: Some(vec![BigInt::from(1111), BigInt::from(1112)]),
+            signature_public_key: Some(String::from("signature_public_key 1")),
+            signature_public_key_hashes: Some(vec![String::from("spkh1"), String::from("spkh2")]),
+            amount: BigInt::from(101),
+            public_amount: BigInt::from(102),
+            rollup_fee_amount: BigInt::from(103),
+            gas_relayer_fee_amount: BigInt::from(104),
+            shielded_address: Some(String::from("shielded_address 1")),
+            public_address: Some(String::from("public_address 1")),
+            gas_relayer_address: Some(String::from("gas_relayer_address 1")),
+            signature: Some(String::from("signature 1")),
+            random_auditing_public_key: Some(BigInt::from(11111)),
+            encrypted_auditor_notes: Some(vec![String::from("ean1"), String::from("ean2")]),
+            transaction_type: TransactionType::Transfer,
+            status: TransactionStatus::Init,
+            error_message: Some(String::from("error_message 1")),
+            transaction_hash: Some(String::from("transaction_hash 1")),
+            wallet_id: String::from("wallet_id 1"),
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        transaction,
+        serde_json::from_str(&serde_json::to_string(&transaction).unwrap()).unwrap()
+    );
+}
