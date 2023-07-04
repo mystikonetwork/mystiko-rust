@@ -18,4 +18,6 @@ async fn test_read_config() {
 
     let cfg = TokenPriceConfig::new("mainnet", Some("tests/token_price/files/config")).unwrap();
     assert_eq!(cfg.price_cache_ttl, 800);
+    let tokens = cfg.tokens();
+    assert!(tokens.len() > 1);
 }

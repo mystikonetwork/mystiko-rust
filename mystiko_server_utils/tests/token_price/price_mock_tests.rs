@@ -9,6 +9,7 @@ use mystiko_server_utils::token_price::error::TokenPriceError;
 use mystiko_server_utils::token_price::price::TokenPrice;
 use mystiko_server_utils::token_price::query::{CurrencyMapResponse, CurrencyQuoteResponse};
 use serde_json::json;
+use std::assert_matches::assert_matches;
 
 #[tokio::test]
 async fn test_get_token_id() {
@@ -122,6 +123,19 @@ async fn test_price_error() {
 }
 
 #[tokio::test]
+async fn test_tokne_price_not_init_err() {
+    let mut default_cfg = TokenPriceConfig::new("testnet", None).unwrap();
+    default_cfg.base_url = "http://error.com".to_string();
+    let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
+    let price = tp.price("ETH").await;
+    assert_matches!(price.err().unwrap(), TokenPriceError::ReqwestError(_));
+
+    let amount_a = U256::from(10000000);
+    let amount_b = tp.swap("USDT", 6, amount_a, "USDT", 6).await;
+    assert_matches!(amount_b.err().unwrap(), TokenPriceError::ReqwestError(_));
+}
+
+#[tokio::test]
 async fn test_swap() {
     let id_bytes = read_file_bytes("./tests/token_price/files/token_price.json")
         .await
@@ -137,9 +151,9 @@ async fn test_swap() {
     let mut default_cfg = TokenPriceConfig::new("testnet", None).unwrap();
     let url = server.url("").to_string();
     default_cfg.base_url = url.split_at(url.len() - 1).0.to_string();
+    default_cfg.swap_precision = 8;
 
     let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
-
     for i in 0..6 {
         let amount_a = U256::from(10000000) / U256::from(10_u64.pow(i));
         let amount_b = tp.swap("USDT", 6, amount_a, "USDT", 6).await.unwrap();
@@ -177,7 +191,7 @@ async fn test_internal_error() {
 
     let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
     let price = tp.price("BTC").await;
-    assert_eq!(price.err().unwrap(), TokenPriceError::TokenNotSupport);
+    assert!(matches!(price.err().unwrap(), TokenPriceError::TokenNotSupport));
     let price = tp.price("mMATIC").await;
-    assert_eq!(price.err().unwrap(), TokenPriceError::InternalError);
+    assert!(matches!(price.err().unwrap(), TokenPriceError::InternalError));
 }

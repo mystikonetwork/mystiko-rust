@@ -20,18 +20,3 @@ pub enum TokenPriceError {
     #[error("internal error")]
     InternalError,
 }
-
-impl PartialEq for TokenPriceError {
-    fn eq(&self, other: &Self) -> bool {
-        matches!(
-            (self, other),
-            (Self::FileError(_), Self::FileError(_))
-                | (Self::SerdeJsonError(_), Self::SerdeJsonError(_))
-                | (Self::ApiKeyNotConfigure, Self::ApiKeyNotConfigure)
-                | (Self::TokenNotSupport, Self::TokenNotSupport)
-                | (Self::ReqwestError(_), Self::ReqwestError(_))
-                | (Self::ResponseError(_), Self::ResponseError(_))
-                | (Self::InternalError, Self::InternalError)
-        )
-    }
-}

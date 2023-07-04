@@ -10,8 +10,8 @@ pub enum TxManagerError {
     FileError(String),
     #[error(transparent)]
     SerdeJsonError(#[from] SerdeJsonError),
-    #[error(transparent)]
-    FromHexError(#[from] ff::hex::FromHexError),
+    // #[error(transparent)]
+    // FromHexError(#[from] ff::hex::FromHexError),
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
     #[error("nonce manager error {0}")]
@@ -26,22 +26,4 @@ pub enum TxManagerError {
     TxDropped,
     #[error("confirm transaction error {0}")]
     ConfirmTxError(String),
-}
-
-impl PartialEq for TxManagerError {
-    fn eq(&self, other: &Self) -> bool {
-        matches!(
-            (self, other),
-            (Self::FileError(_), Self::FileError(_))
-                | (Self::SerdeJsonError(_), Self::SerdeJsonError(_))
-                | (Self::FromHexError(_), Self::FromHexError(_))
-                | (Self::ProviderError(_), Self::ProviderError(_))
-                | (Self::NonceError(_), Self::NonceError(_))
-                | (Self::GasPriceError(_), Self::GasPriceError(_))
-                | (Self::EstimateGasError(_), Self::EstimateGasError(_))
-                | (Self::SendTxError(_), Self::SendTxError(_))
-                | (Self::TxDropped, Self::TxDropped)
-                | (Self::ConfirmTxError(_), Self::ConfirmTxError(_)),
-        )
-    }
 }
