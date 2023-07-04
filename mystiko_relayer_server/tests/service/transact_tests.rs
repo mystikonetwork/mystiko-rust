@@ -268,7 +268,7 @@ async fn test_send_transaction_to_queue_failed() {
             .service(transact)
             .service(transaction_status),
     )
-        .await;
+    .await;
 
     drop(server.senders);
 
@@ -295,7 +295,7 @@ async fn test_unsupported_transaction() {
             .service(transact)
             .service(transaction_status),
     )
-        .await;
+    .await;
 
     let gas = U256::from(100_000_000_000u64);
     let nonce = U256::from(100);

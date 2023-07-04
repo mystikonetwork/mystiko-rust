@@ -2,6 +2,7 @@ use crate::common::{get_valid_transact_request_data, TestServer, TOKEN_PRICE_CON
 use ethereum_types::{U256, U64};
 use ethers_core::types::{Transaction, TransactionReceipt, TxHash};
 use ethers_providers::MockProvider;
+use log::error;
 use mockito::Matcher;
 use mystiko_fs::read_file_bytes;
 use mystiko_relayer_server::channel::transact_channel;
@@ -15,7 +16,6 @@ use mystiko_types::AssetType;
 use std::sync::Arc;
 use std::thread::sleep;
 use std::time::Duration;
-use log::error;
 use tokio::runtime::Runtime;
 
 #[test]

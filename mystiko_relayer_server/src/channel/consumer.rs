@@ -200,7 +200,7 @@ impl TransactionConsumer {
     }
 
     async fn wait_confirm(&self, provider: &Arc<Provider>, tx_hash: &str) -> Result<String> {
-        let tx_hash= TxHash::from_str(tx_hash)?;
+        let tx_hash = TxHash::from_str(tx_hash)?;
         error!("tx hash is {:?}", tx_hash);
         let receipt = self.tx_manager.confirm(provider, tx_hash).await?;
         Ok(receipt.transaction_hash.to_string())
