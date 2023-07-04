@@ -3,6 +3,7 @@ use mystiko_relayer_config::raw::contract::RawContractConfig;
 use mystiko_relayer_config::raw::gas_cost::RawGasCostConfig;
 use mystiko_relayer_config::raw::transaction_info::RawTransactionInfoConfig;
 use mystiko_relayer_config::raw::{create_raw, create_raw_from_file};
+use mystiko_types::AssetType;
 use std::sync::Arc;
 use validator::Validate;
 
@@ -24,20 +25,25 @@ fn default_config() -> RawChainConfig {
             .contracts(vec![
                 Arc::new(
                     RawContractConfig::builder()
+                        .asset_type(AssetType::Main)
                         .asset_symbol("ETH".to_string())
+                        .asset_decimals(18)
                         .relayer_fee_of_ten_thousandth(25)
                         .build(),
                 ),
                 Arc::new(
                     RawContractConfig::builder()
+                        .asset_type(AssetType::Erc20)
                         .asset_symbol("MTT".to_string())
                         .relayer_fee_of_ten_thousandth(25)
                         .build(),
                 ),
                 Arc::new(
                     RawContractConfig::builder()
+                        .asset_type(AssetType::Erc20)
                         .asset_symbol("mUSD".to_string())
                         .relayer_fee_of_ten_thousandth(25)
+                        .asset_decimals(6)
                         .build(),
                 ),
             ])

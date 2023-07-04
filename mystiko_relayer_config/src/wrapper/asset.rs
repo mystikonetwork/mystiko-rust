@@ -1,17 +1,17 @@
-use crate::raw::contract::RawContractConfig;
+use crate::raw::asset::RawAssetConfig;
 use mystiko_types::AssetType;
 use rust_decimal::Decimal;
 use std::sync::Arc;
 use validator::Validate;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct ContractConfig {
-    raw: Arc<RawContractConfig>,
+pub struct AssetConfig {
+    raw: Arc<RawAssetConfig>,
 }
 
-impl ContractConfig {
-    pub fn new(raw: Arc<RawContractConfig>) -> Self {
-        ContractConfig { raw }
+impl AssetConfig {
+    pub fn new(raw: Arc<RawAssetConfig>) -> Self {
+        AssetConfig { raw }
     }
 
     pub fn asset_type(&self) -> &AssetType {
