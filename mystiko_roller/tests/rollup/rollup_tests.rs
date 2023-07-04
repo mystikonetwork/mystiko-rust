@@ -25,7 +25,7 @@ use tokio::sync::RwLock;
 pub async fn test_rollup_with_provider() {
     let chain_id = 301;
     let (handle, data, c) = create_rollup_handle(chain_id, true).await;
-    let stub_provider = Arc::new(ProviderStub::new(&handle.pool_contract_cfg.address(), c.provider()));
+    let stub_provider = Arc::new(ProviderStub::new(handle.pool_contract_cfg.address(), c.provider()));
     let result = handle.rollup(stub_provider.clone()).await;
     assert!(matches!(result.err().unwrap(), RollerError::ProviderError(_)));
 

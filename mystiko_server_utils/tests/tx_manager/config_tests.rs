@@ -3,6 +3,14 @@ use std::env;
 
 #[tokio::test]
 async fn test_read_config() {
+    // test invalid config
+    let cfg = TxManagerConfig::new("mainnet", Some("tests/tx_manager/files/invalid"));
+    assert!(cfg.is_err());
+
+    // test invalid config
+    let cfg = TxManagerConfig::new("mainnet", Some("tests/tx_manager/files/invalid2"));
+    assert!(cfg.is_err());
+
     let cfg = TxManagerConfig::new("testnet", None).unwrap();
     assert_eq!(cfg.max_gas_price.to_string(), "200000000000");
     assert_eq!(cfg.max_confirm_count, 100);
@@ -26,17 +34,4 @@ async fn test_read_config() {
 
     let cfg = TxManagerConfig::new("testnet", Some("tests/tx_manager/files")).unwrap();
     assert_eq!(cfg.max_gas_price.to_string(), "300000000000");
-
-    // test invalid config
-
-    env::set_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE", "0x3b9aca00");
-    let cfg = TxManagerConfig::new("mainnet", None);
-    assert!(cfg.is_err());
-
-    env::set_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE", "0x45d964b800");
-    env::set_var("MYSTIKO_TX_MANAGER.MAX_PRIORITY_FEE_PER_GAS", "0x5f5e100");
-    let cfg = TxManagerConfig::new("mainnet", None);
-    assert!(cfg.is_err());
-    env::remove_var("MYSTIKO_TX_MANAGER.MAX_PRIORITY_FEE_PER_GAS");
-    env::remove_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE");
 }

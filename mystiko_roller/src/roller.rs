@@ -40,7 +40,7 @@ impl Roller {
     }
 
     pub async fn start(&mut self) {
-        if self.pools.len() == 0 {
+        if self.pools.is_empty() {
             info!("No pool to run");
             return;
         }

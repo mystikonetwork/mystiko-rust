@@ -3624,6 +3624,7 @@ dependencies = [
  "mystiko_utils",
  "num-bigint 0.4.3",
  "openssl",
+ "reqwest",
  "serde",
  "serde_json",
  "thiserror",

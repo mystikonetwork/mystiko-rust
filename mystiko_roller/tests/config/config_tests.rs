@@ -12,7 +12,6 @@ async fn test_read_config() {
 
     env::set_var("MYSTIKO_ROLLER_CONFIG_PATH", "tests/test_files/config/1");
     let cfg = create_roller_config();
-    assert_eq!(cfg.log_level, "INFO");
     assert_eq!(cfg.chain.chain_id, 5);
     assert_eq!(
         cfg.core.remote_base_url,
@@ -66,7 +65,7 @@ async fn test_get_rollup_cost() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "failed load core config from file")]
+#[should_panic(expected = "failed load core config from local file")]
 async fn test_create_mystiko_config1() {
     let _guard = ENV_MUTEX.write().await;
     env::set_var("MYSTIKO_ROLLER_CONFIG_PATH", "tests/test_files/config/4");

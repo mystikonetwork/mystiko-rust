@@ -207,7 +207,7 @@ impl RollupHandle {
         }
     }
 
-    async fn rollup_with_chain_data_giver<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
+    pub async fn rollup<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
         debug!("rollup from giver {:?}", giver.data_source());
         let latest_block = giver
             .get_latest_block_number(self.chain_id, self.pool_contract_cfg.address())
@@ -221,11 +221,6 @@ impl RollupHandle {
             .get_included_count(self.chain_id, self.pool_contract_cfg.address())
             .await?;
         self.do_rollup(included_count).await
-    }
-
-    pub async fn rollup<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
-        debug!("rollup");
-        self.rollup_with_chain_data_giver(giver).await
     }
 
     pub async fn commitment_queue_check_by_transaction(&self) -> Result<bool> {
