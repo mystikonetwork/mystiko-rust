@@ -153,7 +153,7 @@ async fn test_all_register_info() {
         .all_register_info(RegisterInfoRequest {
             chain_id: anvil.chain_id(),
             options: Some(RegisterOptions {
-                asset_symbol: "TEST".to_string(),git
+                asset_symbol: "TEST".to_string(),
                 circuit_type: CircuitType::Transaction1x0,
                 show_unavailable: false,
             }),
