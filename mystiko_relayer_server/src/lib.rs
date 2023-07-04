@@ -36,6 +36,7 @@ extern crate tokio;
 extern crate typed_builder;
 extern crate validator;
 
+pub mod application;
 pub mod channel;
 pub mod common;
 pub mod configs;

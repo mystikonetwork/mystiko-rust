@@ -1,19 +1,26 @@
 {
   "chains":[
     {
+      "assetDecimals":18,
       "assetSymbol":"ETH",
       "chainId":5,
       "contracts":[
         {
+          "assetDecimals":18,
           "assetSymbol":"ETH",
+          "assetType":"main",
           "relayerFeeOfTenThousandth":25
         },
         {
+          "assetDecimals":18,
           "assetSymbol":"MTT",
+          "assetType":"erc20",
           "relayerFeeOfTenThousandth":25
         },
         {
+          "assetDecimals":6,
           "assetSymbol":"mUSD",
+          "assetType":"erc20",
           "relayerFeeOfTenThousandth":25
         }
       ],
@@ -39,6 +46,6 @@
       }
     }
   ],
-  "gitRevision":"a475a7c",
+  "gitRevision":"6335708",
   "version":"0.0.1"
 }

@@ -4,11 +4,16 @@ use actix_web::web::Data;
 use actix_web::App;
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
+use mystiko_relayer_server::database::Database;
 use mystiko_relayer_server::error::ResponseError;
+use mystiko_relayer_server::handler::transaction::TransactionHandler;
 use mystiko_relayer_server::service::transaction_status;
 use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
 use mystiko_relayer_types::{RelayTransactStatusResponse, TransactRequestData, TransactStatus};
+use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage_sqlite::SqliteStorageBuilder;
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
+use std::sync::Arc;
 
 lazy_static! {
     static ref SERVER: AsyncOnce<TestServer> = AsyncOnce::new(async { TestServer::new(None).await.unwrap() });
@@ -80,4 +85,30 @@ async fn test_successful() {
     let info = resp.result.unwrap();
     assert_eq!(info.uuid, id);
     assert_eq!(info.status, TransactStatus::Queued);
+}
+
+#[actix_rt::test]
+async fn test_db_error() {
+    // create test server
+    let mut server = TestServer::new(None).await.unwrap();
+    let database = Database::new(
+        SqlStatementFormatter::default(),
+        SqliteStorageBuilder::new().in_memory().build().await.unwrap(),
+    );
+    let transaction_handler = TransactionHandler::new(Arc::new(database));
+    server.transaction_handler = Arc::new(transaction_handler);
+    // init service
+    let app = init_service(
+        App::new()
+            .app_data(Data::new(server.transaction_handler.clone()))
+            .service(transaction_status),
+    )
+    .await;
+    let id = "test_id1234";
+
+    let req = TestRequest::get()
+        .uri(&format!("/transaction/status/{}", id))
+        .to_request();
+    let resp: ApiResponse<RelayTransactStatusResponse> = call_and_read_body_json(&app, req).await;
+    assert_eq!(resp.code, ResponseCode::DatabaseError as i32);
 }

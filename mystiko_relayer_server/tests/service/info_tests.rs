@@ -198,7 +198,7 @@ async fn test_options_successful_2() {
     // create mock provider
     let mock_provider = MockProvider::new();
     // create test server
-    let mut server = TestServer::new(Some(mock_provider.clone())).await.unwrap();
+    let server = TestServer::new(Some(mock_provider.clone())).await.unwrap();
     // init service
     let app = init_service(
         App::new()
@@ -209,17 +209,6 @@ async fn test_options_successful_2() {
             .service(info),
     )
     .await;
-
-    let id_bytes = read_file_bytes(TOKEN_PRICE_CONFIG_PATH).await.unwrap();
-    let currency_quote: CurrencyQuoteResponse = serde_json::from_slice(&id_bytes).unwrap();
-    let mock = server
-        .mock_server
-        .mock("GET", "/v2/cryptocurrency/quotes/latest")
-        .expect(1)
-        .match_query(Matcher::Any)
-        .with_body(serde_json::to_string(&currency_quote).expect("Failed to serialize struct to JSON"))
-        .create_async()
-        .await;
 
     let gas_price = U256::from(1000000);
     mock_provider.push(gas_price).unwrap();
@@ -242,8 +231,6 @@ async fn test_options_successful_2() {
         )
         .to_request();
     let resp: ApiResponse<RegisterInfoResponse> = call_and_read_body_json(&app, req).await;
-    mock.assert_async().await;
-
     let result = resp.result.unwrap();
     let contracts = result.contracts.unwrap();
 
