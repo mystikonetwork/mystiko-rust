@@ -1,7 +1,7 @@
 use crate::chain::ChainDataGiver;
 use crate::common::env::load_roller_private_key;
 use crate::common::error::{Result, RollerError};
-use crate::config::roller::{create_tx_manager_config, RollupConfig};
+use crate::config::roller::RollupConfig;
 use crate::context::ContextTrait;
 use crate::core::slice::SlicePattern;
 use crate::data::handler::{DataHandler, ProofInfo, RollupPlan};
@@ -12,6 +12,7 @@ use mystiko_abi::commitment_pool::{CommitmentPool, RollupRequest};
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
+use mystiko_server_utils::tx_manager::config::TxManagerConfig;
 use mystiko_server_utils::tx_manager::error::TxManagerError;
 use mystiko_server_utils::tx_manager::transaction::{TxBuilder, TxManager};
 use mystiko_utils::convert::big_int_to_u256;
@@ -35,6 +36,7 @@ pub struct RollupHandle {
 impl RollupHandle {
     pub async fn new(
         pool_contract_cfg: &PoolContractConfig,
+        tx_manager_cfg: &TxManagerConfig,
         context: Arc<dyn ContextTrait + Send>,
         data: Arc<RwLock<DataHandler>>,
     ) -> Self {
@@ -42,14 +44,13 @@ impl RollupHandle {
         let chain_id = context.cfg().chain.chain_id;
         let to_address = Address::from_str(pool_contract_cfg.address()).expect("invalid contract address");
 
-        let tx_manager_cfg = create_tx_manager_config();
         let sk_str = load_roller_private_key().expect("load private key error");
         let local_wallet = LocalWallet::from_str(&sk_str)
             .expect("invalid private key")
             .with_chain_id(chain_id);
-        debug!("local wallet address: {:?}", local_wallet.address());
+        info!("local wallet address: {:?}", local_wallet.address());
         let builder = TxBuilder::builder()
-            .config(tx_manager_cfg)
+            .config(tx_manager_cfg.clone())
             .chain_id(chain_id.into())
             .wallet(local_wallet)
             .build();
@@ -70,7 +71,6 @@ impl RollupHandle {
     }
 
     async fn calc_tx_max_gas_price(&self, plan: &RollupPlan) -> Result<U256> {
-        debug!("calc tx max gas price");
         let mut total_gas_cost = 0;
         plan.sizes.iter().for_each(|size| {
             let cost = self.cfg.get_rollup_cost(*size);
@@ -173,7 +173,6 @@ impl RollupHandle {
     }
 
     async fn build_rollup_plan(&self, included_count: usize) -> Result<(RollupPlan, ProofInfo)> {
-        info!("build rollup plan");
         let force_rollup_block_count = self.context.cfg().rollup.force_rollup_block_count;
         let plan = self
             .data
@@ -188,10 +187,7 @@ impl RollupHandle {
     async fn do_rollup(&self, included_count: usize) -> Result<()> {
         let queue_count = self.data.read().await.get_commitments_queue_count();
         match queue_count.cmp(&(included_count)) {
-            Ordering::Equal => {
-                debug!("no queued commitment");
-                Ok(())
-            }
+            Ordering::Equal => Ok(()),
             Ordering::Less => {
                 error!("commitment slow {:?}, included: {:?}", queue_count, included_count);
                 Err(RollerError::CommitmentQueueSlow)
@@ -208,7 +204,6 @@ impl RollupHandle {
     }
 
     pub async fn rollup<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
-        debug!("rollup from giver {:?}", giver.data_source());
         let latest_block = giver
             .get_latest_block_number(self.chain_id, self.pool_contract_cfg.address())
             .await?;

@@ -6,7 +6,7 @@ use crate::data::handler::DataHandler;
 use std::cmp::Ordering;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{debug, info};
+use tracing::info;
 
 pub struct PullHandle {
     pub chain_id: u64,
@@ -32,7 +32,6 @@ impl PullHandle {
         start: u64,
         end: u64,
     ) -> Result<()> {
-        debug!("pull queued commitments");
         let cms = giver
             .get_queued_commitments(self.chain_id, &self.contract_address, start, end)
             .await?;
@@ -41,7 +40,6 @@ impl PullHandle {
     }
 
     async fn pull_from_chain_data_giver<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
-        debug!("pull from giver {:?}", giver.data_source());
         let current_block = self.data.write().await.get_next_sync_block();
         let latest_block = giver
             .get_latest_block_number(self.chain_id, &self.contract_address)
@@ -70,7 +68,6 @@ impl PullHandle {
     }
 
     pub async fn pull<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
-        debug!("pull");
         self.pull_from_chain_data_giver(giver).await
     }
 }

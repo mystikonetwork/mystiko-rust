@@ -19,8 +19,8 @@ pub struct MystikoConfigParser {
 }
 
 impl MystikoConfigParser {
-    pub async fn new(core_cfg: &CoreConfig) -> Self {
-        let cfg = create_mystiko_config(core_cfg).await;
+    pub async fn new(core_cfg: &CoreConfig, cfg_path: &str) -> Self {
+        let cfg = create_mystiko_config(core_cfg, cfg_path).await;
         MystikoConfigParser { cfg }
     }
 

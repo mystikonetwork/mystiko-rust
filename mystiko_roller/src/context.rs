@@ -1,6 +1,6 @@
 use crate::chain::explorer::ExplorerStub;
 use crate::chain::indexer::IndexerStub;
-use crate::common::env::{load_coin_market_api_key, load_roller_config_path};
+use crate::common::env::load_coin_market_api_key;
 use crate::common::error::{Result, RollerError};
 use crate::common::trace::trace_init;
 use crate::config::mystiko_parser::MystikoConfigParser;
@@ -24,7 +24,7 @@ use tracing::info;
 
 #[async_trait]
 pub trait ContextTrait: Send + Sync {
-    async fn new() -> Result<Self>
+    async fn new(run_mod: &str, cfg_path: &str) -> Result<Self>
     where
         Self: Sized;
 
@@ -51,13 +51,13 @@ pub struct Context {
 
 #[async_trait]
 impl ContextTrait for Context {
-    async fn new() -> Result<Self> {
-        let roller_cfg = create_roller_config();
-        trace_init(&roller_cfg.log_level);
-        info!("roller config path: {:?}", load_roller_config_path());
+    async fn new(run_mod: &str, cfg_path: &str) -> Result<Self> {
+        info!("roller config path: {:?}", cfg_path);
 
-        let token_price_cfg = create_token_price_config();
-        let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core).await;
+        let roller_cfg = create_roller_config(run_mod, cfg_path);
+        trace_init(&roller_cfg.log_level);
+        let token_price_cfg = create_token_price_config(run_mod, cfg_path);
+        let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core, cfg_path).await;
         let db = create_roller_database().await;
         let indexer = match roller_cfg.chain.is_data_source_enable(ChainDataSource::Indexer) {
             true => Some(IndexerStub::new(

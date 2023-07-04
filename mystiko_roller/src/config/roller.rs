@@ -1,4 +1,4 @@
-use crate::common::env::{load_roller_config_path, load_roller_run_mod};
+use crate::common::env::load_roller_run_mod;
 use crate::common::error::{Result, RollerError};
 use mehcode_config::{Config, Environment, File};
 use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
@@ -126,9 +126,7 @@ impl FromStr for ChainDataSource {
 }
 
 impl RollerConfig {
-    pub fn new() -> Result<Self> {
-        let run_mod = load_roller_run_mod();
-        let cfg_path = load_roller_config_path();
+    pub fn new(run_mod: &str, cfg_path: &str) -> Result<Self> {
         let mut s = Config::builder()
             .add_source(File::with_name(&format!("{}/default", cfg_path)))
             .add_source(File::with_name(&format!("{}/{}", cfg_path, run_mod)));
@@ -145,13 +143,12 @@ impl RollerConfig {
     }
 }
 
-pub fn create_roller_config() -> RollerConfig {
-    RollerConfig::new().unwrap_or_else(|_| panic!("load roller config failed"))
+pub fn create_roller_config(run_mod: &str, cfg_path: &str) -> RollerConfig {
+    RollerConfig::new(run_mod, cfg_path).unwrap_or_else(|_| panic!("load roller config failed"))
 }
 
-pub async fn create_mystiko_config(core_config: &CoreConfig) -> MystikoConfig {
-    let cfg_path = load_roller_config_path();
-    let config_file = cfg_path + "/mystiko.json";
+pub async fn create_mystiko_config(core_config: &CoreConfig, cfg_path: &str) -> MystikoConfig {
+    let config_file = cfg_path.to_string() + "/mystiko.json";
     if Path::exists(Path::new(&config_file)) {
         return MystikoConfig::from_json_file(&config_file).await.unwrap_or_else(|e| {
             error!("error occurred: {:?}", e);
@@ -180,20 +177,14 @@ fn create_remote_options(core_config: &CoreConfig) -> RemoteOptions {
     remote_options
 }
 
-pub fn create_token_price_config() -> TokenPriceConfig {
-    let cfg_path = load_roller_config_path();
-    let run_mod = load_roller_run_mod();
-
-    TokenPriceConfig::new(&run_mod, Some(&cfg_path)).unwrap_or_else(|e| {
+pub fn create_token_price_config(run_mod: &str, cfg_path: &str) -> TokenPriceConfig {
+    TokenPriceConfig::new(run_mod, Some(cfg_path)).unwrap_or_else(|e| {
         error!("error occurred: {:?}", e);
         panic!("load token price config failed")
     })
 }
 
-pub fn create_tx_manager_config() -> TxManagerConfig {
-    let cfg_path = load_roller_config_path();
-    let run_mod = load_roller_run_mod();
-
+pub fn create_tx_manager_config(run_mod: &str, cfg_path: &str) -> TxManagerConfig {
     TxManagerConfig::new(&run_mod, Some(&cfg_path)).unwrap_or_else(|e| {
         error!("error occurred: {:?}", e);
         panic!("load tx manager config failed")

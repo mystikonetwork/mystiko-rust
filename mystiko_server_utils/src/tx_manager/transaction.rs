@@ -37,13 +37,10 @@ impl TxBuilder {
     }
 
     pub async fn build_tx<P: JsonRpcClient>(&self, provider: &Provider<P>) -> TxManager<P> {
-        debug!("build tx manager");
         let mut is_1559_tx = true;
         if self.is_force_chain() {
-            debug!("force chain, use legacy tx");
             is_1559_tx = false;
         } else {
-            debug!("try to use 1559 tx");
             let gas_oracle = ProviderOracle::new(provider);
             let base = gas_oracle.estimate_eip1559_fees().await;
             if base.is_err() {
@@ -66,7 +63,6 @@ where
     P: JsonRpcClient + Send + Sync,
 {
     async fn gas_price_1559_tx(&self, provider: &Provider<P>) -> Result<(U256, U256)> {
-        debug!("gas price 1559 tx");
         let gas_oracle = ProviderOracle::new(provider);
 
         let (max_fee_per_gas, mut priority_fee) = gas_oracle
@@ -80,7 +76,6 @@ where
     }
 
     async fn gas_price_legacy_tx(&self, provider: &Provider<P>) -> Result<U256> {
-        debug!("gas price legacy tx");
         let gas_oracle = ProviderOracle::new(provider);
 
         gas_oracle
@@ -90,7 +85,6 @@ where
     }
 
     pub async fn gas_price(&self, provider: &Provider<P>) -> Result<U256> {
-        debug!("gas price");
         if self.is_1559_tx {
             let (max_fee_per_gas, priority_fee) = self.gas_price_1559_tx(provider).await?;
             Ok(max_fee_per_gas + priority_fee)
@@ -100,7 +94,6 @@ where
     }
 
     pub async fn estimate_gas(&self, to: Address, data: &[u8], value: &U256, provider: &Provider<P>) -> Result<U256> {
-        debug!("estimate gas");
         let typed_tx = match self.is_1559_tx {
             true => {
                 let max_fee_per_gas = self.choose_max_gas_price(None);
@@ -292,7 +285,6 @@ where
     }
 
     async fn get_current_nonce(&self, provider: &Provider<P>) -> Result<U256> {
-        debug!("get current nonce");
         let nonce_manager = NonceManagerMiddleware::new(provider, self.wallet.address());
         nonce_manager
             .get_transaction_count(self.wallet.address(), Some(BlockNumber::Pending.into()))

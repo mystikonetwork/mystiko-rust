@@ -1,4 +1,4 @@
-use crate::common::{evn_init, load_env_mock_indexer_port, set_env_mock_indexer_port, ENV_MUTEX};
+use crate::common::{env_init, load_env_mock_indexer_port, set_env_mock_indexer_port, ENV_MUTEX};
 use async_trait::async_trait;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
 use mystiko_config::raw::indexer::RawIndexerConfig;
@@ -45,10 +45,10 @@ impl MockContext {
 
 #[async_trait]
 impl ContextTrait for MockContext {
-    async fn new() -> Result<Self> {
-        let roller_cfg = create_roller_config();
+    async fn new(run_mod: &str, cfg_path: &str) -> Result<Self> {
+        let roller_cfg = create_roller_config(run_mod, cfg_path);
 
-        let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core).await;
+        let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core, cfg_path).await;
         let db = create_memory_database().await;
 
         let indexer_port = load_env_mock_indexer_port();
@@ -63,7 +63,7 @@ impl ContextTrait for MockContext {
             .map(ExplorerStub::new);
         let api_key = load_coin_market_api_key().unwrap();
 
-        let mut token_price_cfg = create_token_price_config();
+        let mut token_price_cfg = create_token_price_config(run_mod, cfg_path);
         token_price_cfg.base_url = format!(
             "http://127.0.0.1:{}",
             token_price_server_port(indexer_port.parse::<u16>().unwrap())
@@ -160,9 +160,11 @@ pub fn token_price_server_port(indexer_server_port: u16) -> u16 {
 
 pub async fn create_mock_context(indexer_port: u16) -> MockContext {
     let _guard = ENV_MUTEX.write().await;
-    evn_init();
+    env_init();
     set_env_mock_indexer_port(&indexer_port.to_string());
-    MockContext::new().await.unwrap()
+    MockContext::new("testnet", "tests/test_files/config/base")
+        .await
+        .unwrap()
 }
 
 pub fn get_pool_contracts(c: &MockContext) -> PoolContractConfig {

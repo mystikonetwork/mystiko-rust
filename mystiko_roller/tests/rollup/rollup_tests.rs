@@ -11,6 +11,7 @@ use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::types::sync_response::ContractSyncResponse;
 use mystiko_roller::chain::provider::ProviderStub;
 use mystiko_roller::common::error::RollerError;
+use mystiko_roller::config::roller::create_tx_manager_config;
 use mystiko_roller::context::ContextTrait;
 use mystiko_roller::data::handler::{DataHandler, RollupPlan};
 use mystiko_roller::rollup::handler::RollupHandle;
@@ -230,12 +231,12 @@ async fn create_rollup_handle(
 
     let c = Arc::new(c);
     let pool_contract = get_pool_contracts(&c);
-
+    let tx_manager_cfg = create_tx_manager_config("testnet", "tests/test_files/config/base");
     let context_trait: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let data = DataHandler::new(chain_id, &pool_contract, context_trait).await;
     let data_rc = Arc::new(RwLock::new(data));
     let context_trait2: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
-    let mut handle = RollupHandle::new(&pool_contract, context_trait2, Arc::clone(&data_rc)).await;
+    let mut handle = RollupHandle::new(&pool_contract, &tx_manager_cfg, context_trait2, Arc::clone(&data_rc)).await;
     handle.chain_id = chain_id;
     (handle, data_rc, c)
 }

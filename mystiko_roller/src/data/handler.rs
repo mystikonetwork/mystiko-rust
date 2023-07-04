@@ -90,7 +90,6 @@ impl DataHandler {
 
     pub fn set_next_sync_block(&mut self, block_number: u64) {
         if block_number > self.next_sync_block {
-            debug!("set new start block {:?}", block_number);
             self.next_sync_block = block_number;
         }
     }
@@ -179,8 +178,6 @@ impl DataHandler {
     }
 
     fn build_rollup_plan(&self, force_rollup_block_count: u64) -> RollupPlan {
-        debug!("build rollup plan");
-
         let included_len = self.get_included_count();
         let queued_len = self.get_commitments_queue_count() - included_len;
         let sizes = calc_rollup_size_array(included_len, queued_len);

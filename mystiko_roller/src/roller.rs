@@ -1,4 +1,6 @@
+use crate::common::env::{load_roller_config_path, load_roller_run_mod};
 use crate::common::error::Result;
+use crate::config::roller::create_tx_manager_config;
 use crate::context::Context;
 use crate::context::ContextTrait;
 use crate::pool::{Pool, PoolAction};
@@ -14,17 +16,18 @@ pub struct Roller {
 }
 
 impl Roller {
-    pub async fn new() -> Result<Roller> {
-        let context = Arc::new(Context::new().await?);
-
+    pub async fn new(run_mod: &str, cfg_path: &str) -> Result<Roller> {
+        let context = Arc::new(Context::new(run_mod, cfg_path).await?);
         info!("starting roller {:?}", context.cfg().chain.chain_id);
         let pool_contracts = context.core_cfg_parser().pool_contracts(context.cfg().chain.chain_id);
         let mut pools = Vec::new();
+        let tx_manager_cfg = create_tx_manager_config(run_mod, cfg_path);
         for (index, pool_contract) in pool_contracts.into_iter().enumerate() {
             info!("create pool instance t{:?} {:?}", index, pool_contract.address());
             let pool = Pool::new(
                 index,
                 pool_contract,
+                &tx_manager_cfg,
                 Arc::clone(&context) as Arc<dyn ContextTrait + Send>,
             )
             .await;
@@ -41,7 +44,6 @@ impl Roller {
 
     pub async fn start(&mut self) {
         if self.pools.is_empty() {
-            info!("No pool to run");
             return;
         }
 
@@ -59,13 +61,13 @@ impl Roller {
             sleep(Duration::from_secs(self.round_check_sec)).await;
             self.round += 1;
             if self.stop {
+                info!("roller stopped");
                 break;
             }
         }
     }
 
     async fn run(&mut self, action: PoolAction) -> Result<()> {
-        debug!("run with action {:?}", action);
         let tasks: Vec<_> = self
             .pools
             .drain(..)
@@ -93,7 +95,9 @@ impl Roller {
 }
 
 pub async fn run_roller() {
-    let roller = Roller::new().await;
+    let run_mod = load_roller_run_mod();
+    let cfg_path = load_roller_config_path();
+    let roller = Roller::new(&run_mod, &cfg_path).await;
     match roller {
         Ok(mut r) => {
             r.start().await;

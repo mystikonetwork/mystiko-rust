@@ -1,21 +1,18 @@
 extern crate mockito;
 
-use crate::common::evn_init;
-use crate::common::ENV_MUTEX;
+use crate::common::env_init;
 use crate::context::mock_context::provider_server_port;
 use mystiko_roller::context::{Context, ContextTrait};
-use std::env;
 
 #[tokio::test]
 pub async fn test_context_new() {
-    let _guard = ENV_MUTEX.write().await;
-    evn_init();
+    env_init();
+
     let _ = create_mock_provider_server(provider_server_port()).await;
-    let c = Context::new().await;
+    let c = Context::new("testnet", "./tests/test_files/config/base").await;
     assert!(c.is_ok());
 
-    env::set_var("MYSTIKO_ROLLER_CONFIG_PATH", "./tests/test_files/config/3");
-    let c = Context::new().await;
+    let c = Context::new("testnet", "./tests/test_files/config/no_indexer_explorer").await;
     assert!(c.is_ok());
     let c = c.unwrap();
     assert!(c.indexer().is_none());

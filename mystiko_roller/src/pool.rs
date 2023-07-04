@@ -9,6 +9,7 @@ use mystiko_server_utils::tx_manager::error::TxManagerError::GasPriceError;
 
 use crate::chain::provider::ProviderStub;
 use crate::chain::ChainDataGiver;
+use mystiko_server_utils::tx_manager::config::TxManagerConfig;
 use std::cmp::Ordering;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -31,11 +32,22 @@ pub struct Pool {
 }
 
 impl Pool {
-    pub async fn new(index: usize, pool_contract: PoolContractConfig, context: Arc<dyn ContextTrait + Send>) -> Pool {
+    pub async fn new(
+        index: usize,
+        pool_contract: PoolContractConfig,
+        tx_manager_cfg: &TxManagerConfig,
+        context: Arc<dyn ContextTrait + Send>,
+    ) -> Pool {
         let data = DataHandler::new(context.cfg().chain.chain_id, &pool_contract, Arc::clone(&context)).await;
         let data_rc = Arc::new(RwLock::new(data));
         let pull = PullHandle::new(pool_contract.address(), Arc::clone(&context), Arc::clone(&data_rc));
-        let rollup = RollupHandle::new(&pool_contract, Arc::clone(&context), Arc::clone(&data_rc)).await;
+        let rollup = RollupHandle::new(
+            &pool_contract,
+            tx_manager_cfg,
+            Arc::clone(&context),
+            Arc::clone(&data_rc),
+        )
+        .await;
         let stub_provider = Arc::new(ProviderStub::new(pool_contract.address(), context.provider()));
         Pool {
             index: index.to_string(),
@@ -48,14 +60,11 @@ impl Pool {
     }
 
     pub async fn init(self) -> Result<Pool> {
-        debug!("init");
         self.data.write().await.load_commitment_from_db().await?;
         Ok(self)
     }
 
     pub async fn run(self) -> Result<Pool> {
-        debug!("run");
-
         let chain_data_sources = self.context.cfg().chain.get_data_source_order();
         let check_time = Duration::from_secs(self.context.cfg().pull.check_interval_secs);
         for source in &chain_data_sources {
@@ -75,7 +84,6 @@ impl Pool {
                     break;
                 }
             } else {
-                debug!("{:?} success", source);
                 break;
             }
         }
@@ -89,7 +97,6 @@ impl Pool {
     }
 
     pub async fn check_commitment_queue(&self) -> Result<()> {
-        debug!("check commitment queue");
         let queue_len = self.data.read().await.get_commitments_queue_count();
         let include_count = self.data.read().await.get_included_count();
 

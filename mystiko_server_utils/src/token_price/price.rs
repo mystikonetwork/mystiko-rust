@@ -21,8 +21,6 @@ pub struct TokenPrice {
 
 impl TokenPrice {
     pub fn new(cfg: &TokenPriceConfig, api_key: &str) -> Result<Self, TokenPriceError> {
-        debug!("new token price manager");
-
         let instance = QueryApiInstance::new(api_key, cfg.base_url.clone(), cfg.query_timeout_secs)?;
         Ok(TokenPrice {
             ids: cfg.ids(),

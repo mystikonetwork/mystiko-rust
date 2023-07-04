@@ -4,6 +4,7 @@ use std::env;
 use tokio::sync::RwLock;
 
 pub mod env_tests;
+pub mod error_tests;
 
 lazy_static! {
     pub static ref ENV_MUTEX: RwLock<()> = RwLock::new(());
@@ -21,10 +22,9 @@ pub fn load_env_mock_indexer_port() -> String {
     }
 }
 
-pub fn evn_init() {
-    env::set_var("MYSTIKO_ROLLER.LOG_LEVEL", "OFF");
+pub fn env_init() {
+    // env::set_var("MYSTIKO_ROLLER.LOG_LEVEL", "OFF");
 
-    env::set_var("MYSTIKO_ROLLER_CONFIG_PATH", "./tests/test_files/config/2");
     env::set_var("MYSTIKO_ROLLER_CIRCUITS_PATH", "./tests/test_files/circuits");
     env::set_var("MYSTIKO_ROLLER_DATA_PATH", "./tests/test_files/db");
 
@@ -34,5 +34,4 @@ pub fn evn_init() {
         "MYSTIKO_ROLLER_PRIVATE_KEY",
         "0x2f0ddd32231ec7dadcef459447c73fae18b9b3e3d0e0acf00e999ca5ffb8efec",
     );
-    env::set_var("MYSTIKO_ROLLER.CHAIN.CHAIN_ID", "1");
 }
