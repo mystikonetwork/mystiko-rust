@@ -92,6 +92,7 @@ pub struct RegisterInfoRequest {
     pub chain_id: u64,
     #[validate]
     #[serde(default)]
+    #[builder(default)]
     pub options: Option<RegisterOptions>,
 }
 
@@ -99,8 +100,6 @@ pub struct RegisterInfoRequest {
 pub struct RegisterOptions {
     #[validate(length(min = 1))]
     pub asset_symbol: String,
-    #[validate(range(min = 1))]
-    pub asset_decimals: u32,
     #[validate(custom = "is_valid_circuit_type")]
     pub circuit_type: CircuitType,
     pub show_unavailable: bool,

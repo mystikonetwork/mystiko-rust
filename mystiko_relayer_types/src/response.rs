@@ -3,7 +3,7 @@ use actix_web::http::header::ContentType;
 use actix_web::{HttpRequest, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum ResponseCode {
     Successful = 0,
     Failed = -1,
@@ -15,6 +15,8 @@ pub enum ResponseCode {
     TransactionChannelError = -7,
     TransactionNotFound = -8,
     GetGasPriceError = -9,
+    ChainIdNotFound = -10,
+    AccountNotFoundInDatabase = -11,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

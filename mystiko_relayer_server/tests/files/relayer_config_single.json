@@ -1,0 +1,44 @@
+{
+  "chains":[
+    {
+      "assetSymbol":"ETH",
+      "chainId":5,
+      "contracts":[
+        {
+          "assetSymbol":"ETH",
+          "relayerFeeOfTenThousandth":25
+        },
+        {
+          "assetSymbol":"MTT",
+          "relayerFeeOfTenThousandth":25
+        },
+        {
+          "assetSymbol":"mUSD",
+          "relayerFeeOfTenThousandth":25
+        }
+      ],
+      "name":"Ethereum Goerli",
+      "relayerContractAddress":"0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc",
+      "transactionInfo":{
+        "erc20GasCost":{
+          "transaction1x0":512985,
+          "transaction1x1":629802,
+          "transaction1x2":705494,
+          "transaction2x0":611040,
+          "transaction2x1":727970,
+          "transaction2x2":803645
+        },
+        "mainGasCost":{
+          "transaction1x0":500704,
+          "transaction1x1":617592,
+          "transaction1x2":705128,
+          "transaction2x0":598799,
+          "transaction2x1":708389,
+          "transaction2x2":803183
+        }
+      }
+    }
+  ],
+  "gitRevision":"a475a7c",
+  "version":"0.0.1"
+}
