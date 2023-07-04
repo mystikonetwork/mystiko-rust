@@ -13,18 +13,24 @@ use tracing::{error, info};
 #[allow(unused)]
 pub struct RollerConfig {
     pub log_level: String,
-    pub chain_data_sources: String,
     pub core: CoreConfig,
     pub chain: ChainConfig,
     pub pull: PullConfig,
     pub rollup: RollupConfig,
 }
 
-impl RollerConfig {
-    pub fn get_data_sources(&self) -> Vec<ChainDataSource> {
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[allow(unused)]
+pub struct ChainConfig {
+    pub chain_id: u64,
+    pub data_source_order: String,
+}
+
+impl ChainConfig {
+    pub fn get_data_source_order(&self) -> Vec<ChainDataSource> {
         let mut data_sources = Vec::new();
-        let chain_data_sources = self.chain_data_sources.split(',');
-        for source in chain_data_sources {
+        let data_source_order = self.data_source_order.split(',');
+        for source in data_source_order {
             let source = source.trim();
             match source {
                 "explorer" => data_sources.push(ChainDataSource::Explorer),
@@ -39,15 +45,9 @@ impl RollerConfig {
     }
 
     pub fn is_data_source_enable(&self, source: ChainDataSource) -> bool {
-        let data_sources = self.get_data_sources();
+        let data_sources = self.get_data_source_order();
         data_sources.iter().any(|s| *s == source)
     }
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
-#[allow(unused)]
-pub struct ChainConfig {
-    pub chain_id: u64,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
@@ -65,13 +65,15 @@ pub struct PullConfig {
     pub max_empty_queue_count: u64,
     pub batch_block_from_indexer: u32,
     pub batch_block_from_provider: u32,
+    pub batch_block_from_explorer: u32,
+    pub explorer_request_timeout_secs: u64,
 }
 
 impl PullConfig {
     pub fn batch_block(&self, data_source: ChainDataSource) -> usize {
         match data_source {
-            ChainDataSource::Explorer => panic!("unsupported sync type"),
             ChainDataSource::Indexer => self.batch_block_from_indexer as usize,
+            ChainDataSource::Explorer => self.batch_block_from_explorer as usize,
             ChainDataSource::Provider => self.batch_block_from_provider as usize,
         }
     }
@@ -153,7 +155,7 @@ pub async fn create_mystiko_config(core_config: &CoreConfig) -> MystikoConfig {
     if Path::exists(Path::new(&config_file)) {
         return MystikoConfig::from_json_file(&config_file).await.unwrap_or_else(|e| {
             error!("error occurred: {:?}", e);
-            panic!("failed load core config from file")
+            panic!("failed load core config from local file")
         });
     }
 

@@ -22,6 +22,7 @@ extern crate mystiko_storage_macros;
 extern crate mystiko_storage_sqlite;
 extern crate mystiko_utils;
 extern crate num_bigint;
+extern crate reqwest;
 extern crate serde;
 extern crate tokio;
 extern crate tracing;

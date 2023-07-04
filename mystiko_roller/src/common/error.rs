@@ -30,6 +30,8 @@ pub enum RollerError {
     NoProvider(String),
     #[error("indexer not exist")]
     NoIndexer,
+    #[error("chain explorer not exist")]
+    NoChainExplorer,
     #[error("circuits not exist")]
     CircuitNotFound,
     #[error("invalid commitment hash")]

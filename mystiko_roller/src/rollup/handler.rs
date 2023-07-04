@@ -56,6 +56,7 @@ impl RollupHandle {
         let signer = context.signer();
         let tx = builder.build_tx(&signer).await;
         let commitment_contract = CommitmentPool::new(to_address, signer.clone());
+
         RollupHandle {
             chain_id,
             pool_contract_cfg: pool_contract_cfg.clone(),
@@ -163,7 +164,7 @@ impl RollupHandle {
                 .await
                 .set_latest_rollup_block_number(block_number.as_u64());
         } else {
-            error!("rollup transaction block number is none");
+            error!("rollup transaction block number is none receipt {:?}", receipt);
             panic!("rollup transaction block number is none");
         }
 
@@ -227,7 +228,7 @@ impl RollupHandle {
         self.rollup_with_chain_data_giver(giver).await
     }
 
-    pub async fn is_chain_commitment_queue_empty(&self) -> Result<bool> {
+    pub async fn commitment_queue_check_by_transaction(&self) -> Result<bool> {
         let signer = self.context.signer();
         let tx_data = self.build_rollup_transaction_param(1, &STATIC_PROOF_DATA).await?;
         let gas_limit = self
@@ -245,7 +246,6 @@ impl RollupHandle {
                     } else if err_string.contains(&*STATIC_ERROR_INVALID_LEAF_HASH) {
                         return Ok(false);
                     } else {
-                        error!("unexpected estimate gas error {:?}", err);
                         panic!("unexpected estimate gas error {:?}", err);
                     }
                 }

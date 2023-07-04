@@ -22,9 +22,11 @@ pub fn load_env_mock_indexer_port() -> String {
 }
 
 pub fn evn_init() {
+    env::set_var("MYSTIKO_ROLLER.LOG_LEVEL", "OFF");
+
     env::set_var("MYSTIKO_ROLLER_CONFIG_PATH", "./tests/test_files/config/2");
     env::set_var("MYSTIKO_ROLLER_CIRCUITS_PATH", "./tests/test_files/circuits");
-    env::set_var("MYSTIKO_ROLLER_DATA_PATH", "./tests/db");
+    env::set_var("MYSTIKO_ROLLER_DATA_PATH", "./tests/test_files/db");
 
     env::set_var("MYSTIKO_ROLLER_COIN_MARKET_CAP_API_KEY", "coin_market_api_key");
     env::set_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY", "chain_explorer_api_key");

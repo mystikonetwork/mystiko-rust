@@ -1,12 +1,10 @@
 use crate::common::env::load_roller_db_path;
 use crate::db::document::commitment::{CommitmentInfo, CommitmentInfoCollection, CommitmentInfoColumn};
-use anyhow::Result;
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
 use mystiko_storage::filter::{Condition, Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage::formatter::types::StatementFormatter;
-use mystiko_storage::migration::history::MigrationHistory;
 use mystiko_storage::storage::Storage;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use std::path::PathBuf;
@@ -25,11 +23,6 @@ impl<F: StatementFormatter, S: Storage> RollerDatabase<F, S> {
         };
         let _ = db.commitments.migrate().await.expect("load db meet error");
         db
-    }
-
-    pub async fn migrate(&self) -> Result<Vec<Document<MigrationHistory>>> {
-        let migrations: Vec<Document<MigrationHistory>> = vec![self.commitments.migrate().await?];
-        Ok(migrations)
     }
 
     pub async fn find_all_commitment(&self, chain_id: u64, contract_address: &str) -> Vec<Document<CommitmentInfo>> {

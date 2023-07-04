@@ -4,9 +4,11 @@ use crate::context::ContextTrait;
 use crate::pool::{Pool, PoolAction};
 use std::sync::Arc;
 use tokio::time::{sleep, Duration};
-use tracing::{error, info, Instrument};
+use tracing::{debug, error, info, Instrument};
 
 pub struct Roller {
+    pub round: u64,
+    pub stop: bool,
     round_check_sec: u64,
     pools: Vec<Pool>,
 }
@@ -31,11 +33,18 @@ impl Roller {
 
         Ok(Roller {
             round_check_sec: context.cfg().pull.check_interval_secs,
+            round: 0,
+            stop: false,
             pools,
         })
     }
 
     pub async fn start(&mut self) {
+        if self.pools.len() == 0 {
+            info!("No pool to run");
+            return;
+        }
+
         if let Err(e) = self.run(PoolAction::Init).await {
             error!("Failed to run init: {:?}", e);
             return;
@@ -48,10 +57,15 @@ impl Roller {
             }
 
             sleep(Duration::from_secs(self.round_check_sec)).await;
+            self.round += 1;
+            if self.stop {
+                break;
+            }
         }
     }
 
     async fn run(&mut self, action: PoolAction) -> Result<()> {
+        debug!("run with action {:?}", action);
         let tasks: Vec<_> = self
             .pools
             .drain(..)
@@ -75,5 +89,17 @@ impl Roller {
             }
         }
         Ok(())
+    }
+}
+
+pub async fn run_roller() {
+    let roller = Roller::new().await;
+    match roller {
+        Ok(mut r) => {
+            r.start().await;
+        }
+        Err(e) => {
+            error!("roller start failed {:?}", e);
+        }
     }
 }

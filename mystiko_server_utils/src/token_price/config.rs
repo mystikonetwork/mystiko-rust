@@ -37,7 +37,7 @@ impl TokenPriceConfig {
         let mut s = Config::builder()
             .set_default("base_url", "https://pro-api.coinmarketcap.com")?
             .set_default("query_timeout_secs", 10)?
-            .set_default("swap_precision", 8)?
+            .set_default("swap_precision", 3)?
             .set_default("coin_market_cap_ids", ids)?;
 
         if run_mod == "testnet" {

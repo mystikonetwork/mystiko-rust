@@ -147,16 +147,20 @@ where
                 return Err(TxManagerError::GasPriceError("gas price too high".into()));
             }
             let max_fee_per_gas = max_gas_price - priority_fee;
-            self.send_1559_tx(to, data, value, &max_fee_per_gas, &priority_fee, &gas_limit, provider)
-                .await
+            let mut tx_request = self
+                .build_1559_tx(to, data, value, &max_fee_per_gas, &priority_fee, provider)
+                .await?;
+            tx_request.gas = Some(gas_limit);
+            self.send_1559_tx(tx_request, provider).await
         } else {
             let gas_price = self.gas_price_legacy_tx(provider).await?;
             let max_gas_price = self.choose_max_gas_price(tx_max_gas_price);
             if gas_price > max_gas_price {
                 return Err(TxManagerError::GasPriceError("gas price too high".into()));
             }
-            self.send_legacy_tx(to, data, value, &gas_price, &gas_limit, provider)
-                .await
+            let mut tx_request = self.build_legacy_tx(to, data, value, &gas_price, provider).await?;
+            tx_request.gas = Some(gas_limit);
+            self.send_legacy_tx(tx_request, provider).await
         }
     }
 
@@ -219,20 +223,8 @@ where
             .gas_price(*gas_price))
     }
 
-    async fn send_legacy_tx(
-        &self,
-        to: Address,
-        data: &[u8],
-        value: &U256,
-        gas_price: &U256,
-        gas_limit: &U256,
-        provider: &Provider<P>,
-    ) -> Result<TxHash> {
-        // Create the transaction
-        let mut tx = self.build_legacy_tx(to, data, value, gas_price, provider).await?;
-        tx.gas = Some(*gas_limit);
+    async fn send_legacy_tx(&self, tx_request: TransactionRequest, provider: &Provider<P>) -> Result<TxHash> {
         let signer = SignerMiddleware::new(provider, self.wallet.clone());
-
         // todo support gas escalator
         // let geometric_escalator = GeometricGasPrice::new(
         //     // self.config.gas_price_coefficient,
@@ -249,9 +241,8 @@ where
         //     Frequency::Duration(300),
         // );
 
-        // Send the transaction
         let pending_tx = signer
-            .send_transaction(tx, None)
+            .send_transaction(tx_request, None)
             .await
             .map_err(|why| TxManagerError::SendTxError(why.to_string()))?;
 
@@ -280,26 +271,10 @@ where
             .max_priority_fee_per_gas(*priority_fee))
     }
 
-    async fn send_1559_tx(
-        &self,
-        to: Address,
-        data: &[u8],
-        value: &U256,
-        max_fee_per_gas: &U256,
-        priority_fee: &U256,
-        gas_limit: &U256,
-        provider: &Provider<P>,
-    ) -> Result<TxHash> {
-        // Create the transaction
-        let mut tx = self
-            .build_1559_tx(to, data, value, max_fee_per_gas, priority_fee, provider)
-            .await?;
-        tx.gas = Some(*gas_limit);
-
+    async fn send_1559_tx(&self, tx_request: Eip1559TransactionRequest, provider: &Provider<P>) -> Result<TxHash> {
         let signer = SignerMiddleware::new(provider, self.wallet.clone());
-        // Send the transaction
         let pending_tx = signer
-            .send_transaction(tx, None)
+            .send_transaction(tx_request, None)
             .await
             .map_err(|why| TxManagerError::SendTxError(why.to_string()))?;
         Ok(pending_tx.tx_hash())

@@ -2,6 +2,7 @@ extern crate mystiko_roller;
 
 use crate::common::ENV_MUTEX;
 use mystiko_roller::config::roller::{create_mystiko_config, create_roller_config, CoreConfig, RollupConfig};
+use mystiko_roller::context::create_sign_provider;
 use std::env;
 
 #[tokio::test]
@@ -76,6 +77,7 @@ async fn test_create_mystiko_config1() {
         git_revision: None,
     };
     let _ = create_mystiko_config(&core_cfg).await;
+    env::remove_var("MYSTIKO_ROLLER_CONFIG_PATH");
 }
 
 #[tokio::test]
@@ -90,4 +92,12 @@ async fn test_create_mystiko_config2() {
         git_revision: Some("1234567".to_string()),
     };
     let _ = create_mystiko_config(&core_cfg).await;
+    env::remove_var("MYSTIKO_ROLLER_CONFIG_PATH");
+}
+
+#[tokio::test]
+async fn test_create_signer_provider() {
+    assert!(create_sign_provider("https://").await.is_err());
+    assert!(create_sign_provider("wss://").await.is_err());
+    assert!(create_sign_provider("error://").await.is_err());
 }

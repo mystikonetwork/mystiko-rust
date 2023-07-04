@@ -15,6 +15,7 @@ use tokio::sync::RwLock;
 use tokio::time::{sleep, Duration};
 use tracing::{debug, error};
 
+#[derive(Debug)]
 pub enum PoolAction {
     Init,
     Run,
@@ -36,7 +37,6 @@ impl Pool {
         let pull = PullHandle::new(pool_contract.address(), Arc::clone(&context), Arc::clone(&data_rc));
         let rollup = RollupHandle::new(&pool_contract, Arc::clone(&context), Arc::clone(&data_rc)).await;
         let stub_provider = Arc::new(ProviderStub::new(pool_contract.address(), context.provider()));
-
         Pool {
             index: index.to_string(),
             context,
@@ -56,12 +56,12 @@ impl Pool {
     pub async fn run(self) -> Result<Pool> {
         debug!("run");
 
-        let chain_data_sources = self.context.cfg().get_data_sources();
+        let chain_data_sources = self.context.cfg().chain.get_data_source_order();
         let check_time = Duration::from_secs(self.context.cfg().pull.check_interval_secs);
         for source in &chain_data_sources {
             let giver: Arc<dyn ChainDataGiver> = match source {
                 ChainDataSource::Indexer => self.context.indexer().unwrap(),
-                ChainDataSource::Explorer => panic!("not support explorer"),
+                ChainDataSource::Explorer => self.context.chain_explorer().unwrap(),
                 ChainDataSource::Provider => self.stub_provider.clone(),
             };
 
@@ -102,7 +102,7 @@ impl Pool {
                 self.data.write().await.inc_empty_queue_counter();
                 let empty_queue_counter = self.data.read().await.get_empty_queue_counter();
                 if empty_queue_counter > self.context.cfg().pull.max_empty_queue_count {
-                    if let Ok(false) = self.rollup.is_chain_commitment_queue_empty().await {
+                    if let Ok(false) = self.rollup.commitment_queue_check_by_transaction().await {
                         self.data.write().await.reset_next_sync_block();
                         self.data.write().await.set_empty_queue_counter(0);
                         return Err(RollerError::CommitmentMissing);

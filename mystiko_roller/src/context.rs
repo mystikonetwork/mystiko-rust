@@ -1,7 +1,7 @@
 use crate::chain::explorer::ExplorerStub;
 use crate::chain::indexer::IndexerStub;
 use crate::common::env::{load_coin_market_api_key, load_roller_config_path};
-use crate::common::error::Result;
+use crate::common::error::{Result, RollerError};
 use crate::common::trace::trace_init;
 use crate::config::mystiko_parser::MystikoConfigParser;
 use crate::config::roller::create_token_price_config;
@@ -59,15 +59,19 @@ impl ContextTrait for Context {
         let token_price_cfg = create_token_price_config();
         let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core).await;
         let db = create_roller_database().await;
-        let indexer = match roller_cfg.is_data_source_enable(ChainDataSource::Indexer) {
-            true => core_cfg_parser.indexer_cfg().map(IndexerStub::new),
+        let indexer = match roller_cfg.chain.is_data_source_enable(ChainDataSource::Indexer) {
+            true => Some(IndexerStub::new(
+                core_cfg_parser.indexer_cfg().ok_or_else(|| RollerError::NoIndexer)?,
+            )),
             false => None,
         };
 
-        let chain_explorer = match roller_cfg.is_data_source_enable(ChainDataSource::Explorer) {
-            true => core_cfg_parser
-                .chain_explorer_cfg(roller_cfg.chain.chain_id)
-                .map(ExplorerStub::new),
+        let chain_explorer = match roller_cfg.chain.is_data_source_enable(ChainDataSource::Explorer) {
+            true => Some(ExplorerStub::new(
+                core_cfg_parser
+                    .chain_explorer_cfg(roller_cfg.chain.chain_id)
+                    .ok_or_else(|| RollerError::NoChainExplorer)?,
+            )),
             false => None,
         };
 
@@ -78,7 +82,8 @@ impl ContextTrait for Context {
             .chain_providers_options(Box::new(core_cfg_parser.clone()))
             .build();
         let provider = providers.get_or_create_provider(roller_cfg.chain.chain_id).await?;
-        let sign_provider = create_sign_provider(roller_cfg.chain.chain_id, &core_cfg_parser).await;
+        let sign_endpoint = core_cfg_parser.sign_endpoint(roller_cfg.chain.chain_id);
+        let sign_provider = create_sign_provider(sign_endpoint).await?;
 
         Ok(Context {
             core_cfg_parser: Arc::new(core_cfg_parser),
@@ -125,22 +130,21 @@ impl ContextTrait for Context {
     }
 }
 
-async fn create_sign_provider(chain_id: u64, core_cfg_parser: &MystikoConfigParser) -> Provider {
-    let url = core_cfg_parser.sign_endpoint(chain_id);
+pub async fn create_sign_provider(url: &str) -> Result<Provider> {
     let option = ProviderOptions::builder().url(url.to_string()).build();
     if HTTP_REGEX.is_match(url) {
         let options = ProvidersOptions::Http(option);
         DefaultProviderFactory::new()
             .create_provider(options)
             .await
-            .expect("create sign provider failed")
+            .map_err(|e| e.into())
     } else if WS_REGEX.is_match(url) {
         let options = ProvidersOptions::Ws(option);
         DefaultProviderFactory::new()
             .create_provider(options)
             .await
-            .expect("create sign provider failed")
+            .map_err(|e| e.into())
     } else {
-        panic!("sign_endpoint is not valid");
+        Err(RollerError::LoadConfigError("sign endpoint is not valid".to_string()))
     }
 }

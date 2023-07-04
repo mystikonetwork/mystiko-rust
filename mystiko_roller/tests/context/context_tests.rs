@@ -9,7 +9,6 @@ use std::env;
 #[tokio::test]
 pub async fn test_context_new() {
     let _guard = ENV_MUTEX.write().await;
-    env::set_var("MYSTIKO_ROLLER.LOG_LEVEL", "OFF");
     evn_init();
     let _ = create_mock_provider_server(provider_server_port()).await;
     let c = Context::new().await;
@@ -21,7 +20,6 @@ pub async fn test_context_new() {
     let c = c.unwrap();
     assert!(c.indexer().is_none());
     assert!(c.chain_explorer().is_none());
-    env::remove_var("MYSTIKO_ROLLER.LOG_LEVEL");
 }
 
 // todo remove this test

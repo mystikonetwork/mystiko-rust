@@ -1,17 +1,19 @@
 {
   "log_level": "INFO",
-  "chain_data_sources": "indexer,explorer,provider",
   "core": {
     "is_staging": false
   },
   "chain": {
-    "chain_id": 97
+    "chain_id": 97,
+    "data_source_order": "indexer,explorer,provider"
   },
   "pull": {
     "check_interval_secs": 60,
     "max_empty_queue_count": 60,
     "batch_block_from_indexer": 100000,
-    "batch_block_from_provider": 500
+    "batch_block_from_provider": 500,
+    "batch_block_from_explorer": 500,
+    "explorer_request_timeout_secs": 5
   },
   "rollup": {
     "merkle_tree_height": 20,
