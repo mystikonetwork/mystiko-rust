@@ -7,7 +7,7 @@ use ethers_core::types::U256;
 use std::collections::HashMap;
 use std::ops::{Div, Mul};
 use std::time::SystemTime;
-use tracing::{debug, error};
+use tracing::error;
 
 pub struct TokenPrice {
     initialized: bool,

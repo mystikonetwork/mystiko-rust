@@ -14,7 +14,7 @@ use std::cmp::Ordering;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::time::{sleep, Duration};
-use tracing::{debug, error};
+use tracing::error;
 
 #[derive(Debug)]
 pub enum PoolAction {

@@ -8,7 +8,7 @@ use mystiko_indexer_client::client::IndexerClient;
 use mystiko_indexer_client::types::commitment_queued::CommitmentQueuedForContractRequest;
 use num_bigint::BigInt;
 use std::time::Duration;
-use tracing::{debug, info};
+use tracing::info;
 
 pub struct IndexerStub {
     client: IndexerClient,

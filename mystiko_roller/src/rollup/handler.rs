@@ -20,7 +20,7 @@ use std::cmp::Ordering;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
 pub struct RollupHandle {
     pub chain_id: u64,

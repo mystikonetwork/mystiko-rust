@@ -13,7 +13,7 @@ use ethers_providers::{JsonRpcClient, Middleware, Provider};
 use ethers_signers::{LocalWallet, Signer};
 use std::marker::PhantomData;
 use std::time::Duration;
-use tracing::{debug, info};
+use tracing::info;
 use typed_builder::TypedBuilder;
 
 pub struct TxManager<P> {

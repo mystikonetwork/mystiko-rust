@@ -185,7 +185,7 @@ pub fn create_token_price_config(run_mod: &str, cfg_path: &str) -> TokenPriceCon
 }
 
 pub fn create_tx_manager_config(run_mod: &str, cfg_path: &str) -> TxManagerConfig {
-    TxManagerConfig::new(&run_mod, Some(&cfg_path)).unwrap_or_else(|e| {
+    TxManagerConfig::new(run_mod, Some(cfg_path)).unwrap_or_else(|e| {
         error!("error occurred: {:?}", e);
         panic!("load tx manager config failed")
     })

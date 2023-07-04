@@ -10,7 +10,7 @@ use mystiko_downloader::DownloaderBuilder;
 use mystiko_protocol::rollup::{Rollup, RollupProof};
 use num_bigint::BigInt;
 use std::sync::Arc;
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
 pub struct CommitmentData {
     pub hash: BigInt,

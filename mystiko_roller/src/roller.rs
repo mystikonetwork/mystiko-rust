@@ -6,7 +6,7 @@ use crate::context::ContextTrait;
 use crate::pool::{Pool, PoolAction};
 use std::sync::Arc;
 use tokio::time::{sleep, Duration};
-use tracing::{debug, error, info, Instrument};
+use tracing::{error, info, Instrument};
 
 pub struct Roller {
     pub round: u64,
