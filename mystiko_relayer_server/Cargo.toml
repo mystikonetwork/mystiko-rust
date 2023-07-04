@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 actix-web = { version = "4" }
+actix-http = { version = "3.3.1" }
 anyhow = { version = "1.0" }
 async-trait = { version = "0.1.64" }
 config = { version = "0.13.3" }

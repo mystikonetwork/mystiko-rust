@@ -1,12 +1,12 @@
 network_type = "testnet"
 sqlite_db_path = "db.sqlite"
-coin_market_cap_api_key = ""
+coin_market_cap_api_key = "773d38a7-7c78-4790-94f5-2e15fb297ea9"
 
 [[accounts]]
 chain_id = 97
 available = true
 # Unique in the accounts list
-private_key = ""
+private_key = "eac14b2f62136a72601430dfb9abce2f4b98dabef428f5f92869ef85997e8f84"
 # If supported_erc20_list is empty, all erc20 tokens will not be supported
 supported_erc20_tokens = ["mtt"]
 balance_alarm_threshold = 0.05
@@ -16,7 +16,7 @@ balance_check_interval_ms = 500000
 chain_id = 5
 available = true
 # Unique in the accounts list
-private_key = ""
+private_key = "eac14b2f62136a72601430dfb9abce2f4b98dabef428f5f92869ef85997e8f84"
 # If supported_erc20_list is empty, all erc20 tokens will not be supported
 supported_erc20_tokens = ["mtt", "musd"]
 balance_alarm_threshold = "1"
