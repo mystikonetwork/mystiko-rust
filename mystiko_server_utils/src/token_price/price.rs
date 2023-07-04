@@ -7,7 +7,7 @@ use ethers_core::types::U256;
 use std::collections::HashMap;
 use std::ops::{Div, Mul};
 use std::time::SystemTime;
-use tracing::debug;
+use tracing::{debug, error};
 
 pub struct TokenPrice {
     initialized: bool,
@@ -37,6 +37,7 @@ impl TokenPrice {
     pub async fn price(&mut self, symbol: &str) -> Result<f64, TokenPriceError> {
         if let Err(e) = self.update_token_prices().await {
             if !self.initialized {
+                error!("token price not initialized");
                 return Err(e);
             }
         }
@@ -54,6 +55,7 @@ impl TokenPrice {
     ) -> Result<U256, TokenPriceError> {
         if let Err(e) = self.update_token_prices().await {
             if !self.initialized {
+                error!("token price not initialized");
                 return Err(e);
             }
         }
