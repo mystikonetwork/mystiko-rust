@@ -1,0 +1,9 @@
+{
+  "log_level": "DEBUG",
+  "chain": {
+    "chain_id": 1
+  },
+  "rollup": {
+    "force_rollup_block_count": 100
+  }
+}
