@@ -51,6 +51,7 @@ jobs:
       - name: Update Rust toolchain
         run: rustup install 1.69.0 && rustup override set 1.69.0
 
+
       - name: Clean
         run: cargo clean
 
