@@ -29,13 +29,10 @@ jobs:
     timeout-minutes: 140
     runs-on: ubuntu-latest
     container:
-      image: xd009642/tarpaulin:develop-nightly
+      image: xd009642/tarpaulin:0.19.0-nightly
       options: --security-opt seccomp=unconfined
 
     steps:
-      - name: Update Rust toolchain
-        run: rustup update nightly
-        
       - name: Install Git LFS
         run: |
           apt-get update -y && apt-get install -y git-lfs
