@@ -1,5 +1,6 @@
 mod common;
 
+use std::fs::remove_file;
 use crate::common::{TESTNET_CONFIG_PATH, TEST_MYSTIKO_CONFIG_PATH, TEST_RELAYER_CONFIG_PATH};
 use mystiko_relayer_server::application::{Application, ApplicationOptions};
 use mystiko_relayer_server::common::AppStateOptions;
@@ -20,4 +21,6 @@ async fn test_create_application() {
         .build();
     let app = Application::new(options).await;
     assert!(app.is_ok());
+    // delete db.sqlite
+    remove_file("./tests/files/db.sqlite").unwrap();
 }

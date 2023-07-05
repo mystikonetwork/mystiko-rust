@@ -1,5 +1,5 @@
 network_type = "testnet"
-sqlite_db_path = "db.sqlite"
+sqlite_db_path = "./tests/files/db.sqlite"
 coin_market_cap_api_key = "773d38a7-7c78-4790-94f5-2e15fb297ea9"
 
 [[accounts]]
