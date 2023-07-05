@@ -33,8 +33,8 @@ impl TxManagerConfig {
             s = s.set_default("max_gas_price", "0x174876e800")?;
         }
 
-        if config_path.is_some() {
-            let run_config_path = format!("{}/tx_manager.json", config_path.unwrap());
+        if let Some(path) = config_path {
+            let run_config_path = format!("{}/tx_manager.json", path);
             if Path::exists(Path::new(&run_config_path)) {
                 s = s.add_source(File::with_name(&run_config_path));
             }

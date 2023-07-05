@@ -1,7 +1,9 @@
 extern crate mystiko_roller;
 
 use crate::common::ENV_MUTEX;
-use mystiko_roller::config::roller::{create_mystiko_config, create_roller_config, CoreConfig, RollupConfig};
+use mystiko_roller::config::roller::{
+    create_mystiko_config, create_roller_config, ChainConfig, ChainDataSource, CoreConfig, RollupConfig,
+};
 use mystiko_roller::context::create_sign_provider;
 use std::env;
 
@@ -86,4 +88,32 @@ async fn test_create_signer_provider() {
     assert!(create_sign_provider("https://").await.is_err());
     assert!(create_sign_provider("wss://").await.is_err());
     assert!(create_sign_provider("error://").await.is_err());
+}
+
+#[tokio::test]
+async fn test_data_source() {
+    let chain = ChainConfig {
+        chain_id: 1,
+        data_source_order: "provider,explorer,indexer".to_string(),
+    };
+
+    let order = chain.get_data_source_order();
+    assert_eq!(
+        order,
+        vec![
+            ChainDataSource::Provider,
+            ChainDataSource::Explorer,
+            ChainDataSource::Indexer
+        ]
+    );
+}
+
+#[tokio::test]
+#[should_panic(expected = "invalid data source")]
+async fn test_data_source_panic() {
+    let chain = ChainConfig {
+        chain_id: 1,
+        data_source_order: "err".to_string(),
+    };
+    let _ = chain.get_data_source_order();
 }

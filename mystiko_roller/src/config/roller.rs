@@ -1,12 +1,11 @@
 use crate::common::env::load_roller_run_mod;
-use crate::common::error::{Result, RollerError};
+use crate::common::error::Result;
 use mehcode_config::{Config, Environment, File};
 use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
 use mystiko_server_utils::token_price::config::TokenPriceConfig;
 use mystiko_server_utils::tx_manager::config::TxManagerConfig;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::str::FromStr;
 use tracing::{error, info};
 
 #[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
@@ -24,6 +23,14 @@ pub struct RollerConfig {
 pub struct ChainConfig {
     pub chain_id: u64,
     pub data_source_order: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum ChainDataSource {
+    Indexer,
+    Provider,
+    Explorer,
 }
 
 impl ChainConfig {
@@ -104,27 +111,6 @@ impl RollupConfig {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
-#[serde(rename_all = "lowercase")]
-pub enum ChainDataSource {
-    Indexer,
-    Provider,
-    Explorer,
-}
-
-impl FromStr for ChainDataSource {
-    type Err = RollerError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        match s {
-            "indexer" => Ok(ChainDataSource::Indexer),
-            "explorer" => Ok(ChainDataSource::Explorer),
-            "provider" => Ok(ChainDataSource::Provider),
-            _ => Err(RollerError::LoadConfigError("chain data source invalid".to_string())),
-        }
-    }
-}
-
 impl RollerConfig {
     pub fn new(run_mod: &str, cfg_path: &str) -> Result<Self> {
         let mut s = Config::builder()
@@ -178,15 +164,9 @@ fn create_remote_options(core_config: &CoreConfig) -> RemoteOptions {
 }
 
 pub fn create_token_price_config(run_mod: &str, cfg_path: &str) -> TokenPriceConfig {
-    TokenPriceConfig::new(run_mod, Some(cfg_path)).unwrap_or_else(|e| {
-        error!("error occurred: {:?}", e);
-        panic!("load token price config failed")
-    })
+    TokenPriceConfig::new(run_mod, Some(cfg_path)).unwrap_or_else(|_| panic!("load token price config failed"))
 }
 
 pub fn create_tx_manager_config(run_mod: &str, cfg_path: &str) -> TxManagerConfig {
-    TxManagerConfig::new(run_mod, Some(cfg_path)).unwrap_or_else(|e| {
-        error!("error occurred: {:?}", e);
-        panic!("load tx manager config failed")
-    })
+    TxManagerConfig::new(run_mod, Some(cfg_path)).unwrap_or_else(|_| panic!("load tx manager config failed"))
 }

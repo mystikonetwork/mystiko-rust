@@ -46,8 +46,8 @@ impl TokenPriceConfig {
             s = s.set_default("price_cache_ttl", 1800)?;
         }
 
-        if config_path.is_some() {
-            let run_config_path = format!("{}/token_price.json", config_path.unwrap());
+        if let Some(path) = config_path {
+            let run_config_path = format!("{}/token_price.json", path);
             if Path::exists(Path::new(&run_config_path)) {
                 s = s.add_source(File::with_name(&run_config_path));
             }
