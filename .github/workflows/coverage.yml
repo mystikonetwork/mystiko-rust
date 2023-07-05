@@ -66,7 +66,6 @@ jobs:
         run: |
           DISK_USAGE=$(du -sh *)
           echo $DISK_USAGE
-          echo "DISK_USAGE=$DISK_USAGE" >> $GITHUB_ENV
 
       - name: Run tests
         run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-report
@@ -87,7 +86,6 @@ jobs:
         run: |
           DISK_USAGE=$(du -sh *)
           echo $DISK_USAGE
-          echo "DISK_USAGE=$DISK_USAGE" >> $GITHUB_ENV
 
 #      - name: Telegram Failure Notification
 #        uses: appleboy/telegram-action@master
