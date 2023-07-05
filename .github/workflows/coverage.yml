@@ -23,6 +23,7 @@ on:
       - 'codecov.yml'
       - '.github/workflows/coverage.yml'
 
+
 jobs:
   coverage:
     name: Coverage on stable
