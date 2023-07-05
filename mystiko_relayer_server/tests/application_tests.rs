@@ -1,9 +1,9 @@
 mod common;
 
-use std::fs::remove_file;
 use crate::common::{TESTNET_CONFIG_PATH, TEST_MYSTIKO_CONFIG_PATH, TEST_RELAYER_CONFIG_PATH};
 use mystiko_relayer_server::application::{Application, ApplicationOptions};
 use mystiko_relayer_server::common::AppStateOptions;
+use std::fs::remove_file;
 
 #[actix_rt::test]
 async fn test_create_application() {
