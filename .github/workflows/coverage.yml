@@ -44,32 +44,31 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2023-02-22
+          override: true
+          profile: minimal
+
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
-      - name: Update Rust toolchain
-        run: rustup install nightly-2023-02-17 && rustup override set nightly-2023-02-17
-
-#      - name: Cache
-#        uses: actions/cache@v3
-#        with:
-#          path: |
-#            ~/.cargo/bin/
-#            ~/.cargo/registry/index/
-#            ~/.cargo/registry/cache/
-#            ~/.cargo/git/db/
-#            target/
-#          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Get Space Usage
         run: |
           DISK_USAGE=$(du -sh *)
           echo $DISK_USAGE
-
-      - name: Clean data
-        run: |
-          cargo clean
 
       - name: Generate code coverage
         run: |
