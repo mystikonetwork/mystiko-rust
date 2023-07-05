@@ -28,6 +28,9 @@ jobs:
     name: Coverage on stable
     timeout-minutes: 140
     runs-on: ubuntu-latest
+    container:
+      image: xd009642/tarpaulin:develop-nightly
+      options: --security-opt seccomp=unconfined
 
     steps:
       - uses: actions/checkout@v3
@@ -37,19 +40,9 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly-2023-02-22
-          override: true
-          profile: minimal
-          components: llvm-tools-preview
-
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-
-      - name: Install cargo-llvm-cov cargo command
-        run: cargo install cargo-llvm-cov
 
       - name: Cache
         uses: actions/cache@v3
@@ -67,11 +60,9 @@ jobs:
           DISK_USAGE=$(du -sh *)
           echo $DISK_USAGE
 
-      - name: Run tests
-        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-report
-
-      - name: Generate coverage report
-        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-run --output-path lcov.info
+      - name: Generate code coverage
+        run: |
+          cargo +nightly tarpaulin --verbose --all-features --workspace --timeout 140 --out Xml
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v2
