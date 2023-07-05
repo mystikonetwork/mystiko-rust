@@ -62,14 +62,14 @@ jobs:
 #            target/
 #          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-
-      - name: Clean
-        run: cargo clean
-	
       - name: Get Space Usage
         run: |
           DISK_USAGE=$(du -sh *)
           echo $DISK_USAGE
+
+      - name: Clean data
+        run: |
+          cargo clean
 
       - name: Generate code coverage
         run: |
