@@ -28,8 +28,15 @@ jobs:
     name: Coverage on stable
     timeout-minutes: 140
     runs-on: ubuntu-latest
+    container:
+      image: xd009642/tarpaulin:0.25.2-nightly
+      options: --security-opt seccomp=unconfined
 
     steps:
+      - name: Install Git LFS
+        run: |
+          apt-get update -y && apt-get install -y git-lfs
+
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.PACKAGES_TOKEN }}
@@ -58,10 +65,11 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install tarpaulin
+      - name: Get Space Usage
         run: |
-          cargo install cargo-tarpaulin
-     
+          DISK_USAGE=$(du -sh *)
+          echo $DISK_USAGE
+
       - name: Generate code coverage
         run: |
           cargo +nightly tarpaulin --verbose --all-features --workspace --timeout 140 --out Xml
