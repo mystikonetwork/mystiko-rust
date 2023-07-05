@@ -43,6 +43,7 @@ impl Roller {
     }
 
     pub async fn start(&mut self) {
+        info!("roller start");
         if self.pools.is_empty() {
             return;
         }
