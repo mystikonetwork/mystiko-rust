@@ -62,6 +62,12 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+      - name: Get Space Usage
+        run: |
+          DISK_USAGE=$(du -sh *)
+          echo $DISK_USAGE
+          echo "DISK_USAGE=$DISK_USAGE" >> $GITHUB_ENV
+
       - name: Run tests
         run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-report
 
@@ -76,11 +82,18 @@ jobs:
 
       - run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
 
-      - name: Telegram Failure Notification
-        uses: appleboy/telegram-action@master
+      - name: Get Space Usage
         if: failure()
-        with:
-          message: ❗ Run coverage failed for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions) because of ${{ github.actor }}
-          format: markdown
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          DISK_USAGE=$(du -sh *)
+          echo $DISK_USAGE
+          echo "DISK_USAGE=$DISK_USAGE" >> $GITHUB_ENV
+
+#      - name: Telegram Failure Notification
+#        uses: appleboy/telegram-action@master
+#        if: failure()
+#        with:
+#          message: ❗ Run coverage failed for [${{ github.repository }}](https://github.com/${{ github.repository }}/actions) because of ${{ github.actor }}
+#          format: markdown
+#          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+#          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
