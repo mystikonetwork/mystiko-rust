@@ -33,6 +33,9 @@ jobs:
       options: --security-opt seccomp=unconfined
 
     steps:
+      - name: Update Rust toolchain
+        run: rustup update nightly
+        
       - name: Install Git LFS
         run: |
           apt-get update -y && apt-get install -y git-lfs
