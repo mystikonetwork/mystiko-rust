@@ -42,14 +42,10 @@ jobs:
           toolchain: nightly-2023-02-22
           override: true
           profile: minimal
-          components: llvm-tools-preview
 
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-
-      - name: Install cargo-llvm-cov cargo command
-        run: cargo install cargo-llvm-cov
 
       - name: Cache
         uses: actions/cache@v3
@@ -62,7 +58,7 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Generate code coverage
+      - name: Install tarpaulin
         run: |
           cargo install cargo-tarpaulin
      
