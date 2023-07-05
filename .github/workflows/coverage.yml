@@ -51,10 +51,6 @@ jobs:
       - name: Update Rust toolchain
         run: rustup install 1.69.0 && rustup override set 1.69.0
 
-
-      - name: Clean
-        run: cargo clean
-
 #      - name: Cache
 #        uses: actions/cache@v3
 #        with:
@@ -66,6 +62,10 @@ jobs:
 #            target/
 #          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+
+      - name: Clean
+        run: cargo clean
+	
       - name: Get Space Usage
         run: |
           DISK_USAGE=$(du -sh *)
