@@ -42,9 +42,10 @@ pub const SERVER_CONFIG_SYMBOL_INVALID: &str = "./tests/files/config_symbol_inva
 pub const TOKEN_PRICE_CONFIG_PATH: &str = "./tests/files/token_price.json";
 #[allow(dead_code)]
 pub const TEST_RELAYER_CONFIG_SINGLE_PATH: &str = "./tests/files/relayer_config_single.json";
+#[allow(dead_code)]
+pub const SERVER_CONFIG_ID_NOT_FOUND: &str = "./tests/files/config_id_not_found.toml";
 pub const TESTNET_CONFIG_PATH: &str = "./tests/files/config_test_testnet.toml";
 pub const MAINNET_CONFIG_PATH: &str = "./tests/files/config_test_mainnet.toml";
-pub const SERVER_CONFIG_ID_NOT_FOUND: &str = "./tests/files/config_id_not_found.toml";
 pub const TEST_RELAYER_CONFIG_PATH: &str = "./tests/files/relayer_config.json";
 pub const TEST_MYSTIKO_CONFIG_PATH: &str = "./tests/files/mystiko_config.json";
 pub const ARRAY_QUEUE_CAPACITY: usize = 10;
