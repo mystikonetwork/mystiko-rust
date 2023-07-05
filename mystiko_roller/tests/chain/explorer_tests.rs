@@ -1,10 +1,11 @@
-use crate::common::env_init;
+use crate::common::{env_init, ENV_MUTEX};
 use mystiko_roller::chain::explorer::ExplorerStub;
 use mystiko_roller::chain::ChainDataGiver;
 use mystiko_roller::config::roller::ChainDataSource;
 
 #[tokio::test]
 pub async fn test_explorer_stub() {
+    let _guard = ENV_MUTEX.write().await;
     env_init();
 
     let stub = ExplorerStub::new("http://localhost");

@@ -45,13 +45,13 @@ async fn test_load_roller_home_path() {
     let config_path = load_roller_config_path();
     assert_eq!(config_path, "./tests/test_files/config/base");
 
-    env::set_var("MYSTIKO_ROLLER_DATA_PATH", "../mystiko_circuits");
+    env::set_var("MYSTIKO_ROLLER_DATA_PATH", "./tests/test_files/db");
     let db_path = load_roller_db_path();
-    assert_eq!(db_path, "../mystiko_circuits");
+    assert_eq!(db_path, "./tests/test_files/db");
 
-    env::set_var("MYSTIKO_ROLLER_CIRCUITS_PATH", "./tests/db");
+    env::set_var("MYSTIKO_ROLLER_CIRCUITS_PATH", "./tests/test_files/circuits");
     let circuits_path = load_roller_circuits_path();
-    assert_eq!(circuits_path, "./tests/db");
+    assert_eq!(circuits_path, "./tests/test_files/circuits");
 
     env::remove_var("MYSTIKO_ROLLER_CONFIG_PATH");
     env::remove_var("MYSTIKO_ROLLER_DATA_PATH");

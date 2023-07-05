@@ -29,6 +29,7 @@ pub async fn test_run_roller_with_error() {
 
 #[tokio::test]
 pub async fn test_run_roller() {
+    let _guard = ENV_MUTEX.write().await;
     env_init();
     let mut r = Roller::new("mainnet", "./tests/test_files/config/roller_start")
         .await

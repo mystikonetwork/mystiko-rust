@@ -1,11 +1,12 @@
 extern crate mockito;
 
-use crate::common::env_init;
+use crate::common::{env_init, ENV_MUTEX};
 use crate::context::mock_context::provider_server_port;
 use mystiko_roller::context::{Context, ContextTrait};
 
 #[tokio::test]
 pub async fn test_context_new() {
+    let _guard = ENV_MUTEX.write().await;
     env_init();
 
     let _ = create_mock_provider_server(provider_server_port()).await;
