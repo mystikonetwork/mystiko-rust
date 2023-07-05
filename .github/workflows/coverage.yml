@@ -23,7 +23,6 @@ on:
       - 'codecov.yml'
       - '.github/workflows/coverage.yml'
 
-
 jobs:
   coverage:
     name: Coverage on stable
@@ -51,14 +50,20 @@ jobs:
           override: true
           profile: minimal
 
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-
-      - name: Get Space Usage
-        run: |
-          DISK_USAGE=$(du -sh *)
-          echo $DISK_USAGE
 
       - name: Generate code coverage
         run: |
