@@ -1,4 +1,7 @@
-use crate::common::{TestServer, SERVER_CONFIG_ID_NOT_FOUND, SERVER_CONFIG_SYMBOL_INVALID, TEST_RELAYER_CONFIG_PATH};
+use crate::common::{
+    TestServer, SERVER_CONFIG_ID_NOT_FOUND, SERVER_CONFIG_SYMBOL_INVALID, SERVER_CONFIG_VERSION_INVALID,
+    TEST_RELAYER_CONFIG_PATH,
+};
 use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
 use mystiko_relayer_server::configs::load_config;
 
@@ -58,4 +61,16 @@ async fn test_invalid_1() {
         validate.unwrap_err().to_string().as_str(),
         "chain_id 5 token TEST not found in relayer chain config"
     );
+}
+
+#[actix_rt::test]
+async fn test_invalid_2() {
+    let server_config = load_config(SERVER_CONFIG_VERSION_INVALID);
+    assert!(server_config.is_ok());
+    let relayer_config = RelayerConfig::from_json_file(TEST_RELAYER_CONFIG_PATH).await;
+    assert!(relayer_config.is_ok());
+    let server_config = server_config.unwrap();
+    let relayer_config = relayer_config.unwrap();
+    let validate = server_config.validation(&relayer_config);
+    assert!(validate.is_err());
 }

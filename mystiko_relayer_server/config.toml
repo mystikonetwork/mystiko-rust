@@ -1,3 +1,5 @@
+api_version = "v2"
+# testnet or mainnet
 network_type = "testnet"
 sqlite_db_path = "db.sqlite"
 coin_market_cap_api_key = ""

@@ -39,6 +39,8 @@ mock! {
 #[allow(dead_code)]
 pub const SERVER_CONFIG_SYMBOL_INVALID: &str = "./tests/files/config_symbol_invalid.toml";
 #[allow(dead_code)]
+pub const SERVER_CONFIG_VERSION_INVALID: &str = "./tests/files/config_version_invalid.toml";
+#[allow(dead_code)]
 pub const TOKEN_PRICE_CONFIG_PATH: &str = "./tests/files/token_price.json";
 #[allow(dead_code)]
 pub const TEST_RELAYER_CONFIG_SINGLE_PATH: &str = "./tests/files/relayer_config_single.json";

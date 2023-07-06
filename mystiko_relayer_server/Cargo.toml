@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = { version = "4" }
 actix-http = { version = "3.3.1" }
+actix-web = { version = "4" }
 anyhow = { version = "1.0" }
 async-trait = { version = "0.1.64" }
 config = { version = "0.13.3" }
@@ -18,6 +18,7 @@ ethers-core = { version = "2.0.4" }
 ethers-middleware = { version = "2.0.4" }
 ethers-signers = { version = "2.0.4" }
 hex = { version = "0.4.3" }
+lazy_static = { version = "1.4.0" }
 log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
@@ -33,6 +34,7 @@ mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 num-bigint = { version = "0.4", features = ["serde"] }
 num-traits = { version = "0.2.15" }
 rand = { version = "0.8.5" }
+regex = { version = "1.7.1" }
 rust_decimal = { version = "1.29.0" }
 secp256k1 = { version = "0.27.0" }
 serde = { version = "1.0.152", features = ["derive"] }
@@ -50,7 +52,6 @@ actix-rt = { version = "2.8.0" }
 async-trait = { version = "0.1.64" }
 async_once = { version = "0.2.6" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
-lazy_static = { version = "1.4.0" }
 mockall = { version = "0.11.4" }
 mockito = { version = "0.32.4" }
 mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
