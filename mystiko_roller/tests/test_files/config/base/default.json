@@ -8,12 +8,12 @@
     "data_source_order": "indexer,explorer,provider"
   },
   "pull": {
-    "check_interval_secs": 60,
-    "max_empty_queue_count": 60,
+    "check_interval_secs": 0,
+    "max_empty_queue_count": 10,
     "batch_block_from_indexer": 100000,
     "batch_block_from_provider": 500,
     "batch_block_from_explorer": 500,
-    "explorer_request_timeout_secs": 5
+    "explorer_request_timeout_secs": 1
   },
   "rollup": {
     "merkle_tree_height": 20,

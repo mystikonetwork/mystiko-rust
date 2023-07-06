@@ -1,6 +1,7 @@
 use crate::context::mock_context::{create_mock_context, get_pool_contracts, indexer_server_port, MockContext};
 use crate::test_files::load::load_commitments;
 use ethers_core::types::U256;
+use mystiko_roller::common::error::RollerError;
 use mystiko_roller::context::ContextTrait;
 use mystiko_roller::data::handler::{DataHandler, RollupPlan};
 use std::sync::Arc;
@@ -50,6 +51,12 @@ pub async fn test_insert_commitments() {
     assert_eq!(cms.len(), db_cms.len());
     assert_eq!(data.get_included_count(), 0);
     assert_eq!(data.get_commitments_queue_count(), cms.len());
+
+    let mut cm1 = cms[0].clone();
+    cm1.leaf_index = (cms.len() + 1000) as u32;
+    let cms1 = vec![cm1];
+    let result = data.insert_commitments(cms1.as_slice()).await;
+    assert!(matches!(result.err().unwrap(), RollerError::CommitmentMissing));
 
     let context_trait2: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let mut data2 = DataHandler::new(test_chain_id, &pool_contract, context_trait2).await;
@@ -137,6 +144,17 @@ pub async fn test_generate_plan() {
     );
     assert_eq!(data.get_included_count(), 2);
     assert_eq!(data.get_commitments_queue_count(), 4);
+}
+
+#[tokio::test]
+pub async fn test_empty_queue_counter() {
+    let test_chain_id = 102;
+    let (mut data, _) = create_data_handle(test_chain_id).await;
+    assert_eq!(data.get_empty_queue_counter(), 0);
+    data.inc_empty_queue_counter();
+    assert_eq!(data.get_empty_queue_counter(), 1);
+    data.set_empty_queue_counter(100);
+    assert_eq!(data.get_empty_queue_counter(), 100);
 }
 
 async fn create_data_handle(test_chain_id: u64) -> (DataHandler, Arc<MockContext>) {

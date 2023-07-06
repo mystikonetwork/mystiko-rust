@@ -111,7 +111,7 @@ impl RollupHandle {
         Ok(call_data)
     }
 
-    async fn log_rollup_transaction(&self, tx_hash: &str, include_count: usize, rollup_size: usize) {
+    pub async fn log_rollup_transaction(&self, tx_hash: &str, include_count: usize, rollup_size: usize) {
         self.data
             .read()
             .await
@@ -225,7 +225,6 @@ impl RollupHandle {
             .tx
             .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &signer)
             .await;
-
         match gas_limit {
             Ok(_) => panic!("must error when check queue"),
             Err(err) => {
@@ -239,7 +238,6 @@ impl RollupHandle {
                         panic!("unexpected estimate gas error {:?}", err);
                     }
                 }
-
                 error!("unexpected error {:?}", err);
                 Ok(true)
             }

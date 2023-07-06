@@ -74,7 +74,7 @@ pub async fn test_rollup_with_indexer() {
     let result = handle.rollup(c.indexer().unwrap()).await;
     assert!(matches!(result.err().unwrap(), RollerError::AnyhowError(_)));
 
-    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), 2, 3).await;
+    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), Some(2), Some(1)).await;
     let mock = c.mock_provider().await;
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
@@ -90,7 +90,28 @@ pub async fn test_rollup_with_indexer() {
     .await;
     let (cms1, _) = cms.split_at(3);
     data.write().await.insert_commitments(cms1).await.unwrap();
-    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), 2, 3).await;
+
+    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), Some(2), Some(2)).await;
+    let result = handle.rollup(c.indexer().unwrap()).await;
+    assert!(result.is_err());
+    std::mem::drop(server);
+}
+
+#[tokio::test]
+pub async fn test_rollup_with_indexer2() {
+    let test_chain_id = 303;
+    let (handle, data, c) = create_rollup_handle(test_chain_id, false).await;
+
+    let cms = load_commitments(
+        "tests/test_files/data/commitments.json",
+        Some(test_chain_id),
+        Some(handle.pool_contract_cfg.address()),
+    )
+    .await;
+    let (cms1, _) = cms.split_at(3);
+    data.write().await.insert_commitments(cms1).await.unwrap();
+
+    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), Some(2), Some(3)).await;
     let result = handle.rollup(c.indexer().unwrap()).await;
     assert!(result.is_ok());
     std::mem::drop(server);
@@ -170,11 +191,50 @@ pub async fn test_rollup_send_transaction() {
     std::mem::drop(token_price_server);
 }
 
+#[tokio::test]
+pub async fn test_rollup_log_transaction() {
+    let test_chain_id = 305;
+    let (handle, _, _) = create_rollup_handle(test_chain_id, false).await;
+    handle.log_rollup_transaction("", 1, 1).await;
+}
+
+#[tokio::test]
+#[should_panic(expected = "unexpected estimate gas error")]
+pub async fn test_commitment_queue_check_by_transaction() {
+    let test_chain_id = 306;
+    let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;
+    let result = handle.commitment_queue_check_by_transaction().await;
+    assert!(result.is_ok());
+
+    let mock = c.mock_provider().await;
+    let nonce = U256::from(100);
+    let gas_price = U256::from(1000000);
+    mock.push(gas_price).unwrap();
+    mock.push(nonce).unwrap();
+    let _ = handle.commitment_queue_check_by_transaction().await;
+}
+
+#[tokio::test]
+#[should_panic(expected = "must error when check queue")]
+pub async fn test_commitment_queue_check_by_transaction2() {
+    let test_chain_id = 307;
+    let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;
+
+    let mock = c.mock_provider().await;
+    let gas = U256::from(100_000_000_000u64);
+    let nonce = U256::from(100);
+    let gas_price = U256::from(1000000);
+    mock.push(gas).unwrap();
+    mock.push(gas_price).unwrap();
+    mock.push(nonce).unwrap();
+    let _ = handle.commitment_queue_check_by_transaction().await;
+}
+
 async fn create_mock_indexer_server(
     chain_id: u64,
     contract_address: &str,
-    block_number: u64,
-    included_count: u32,
+    block_number: Option<u64>,
+    included_count: Option<u32>,
 ) -> Server {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), indexer_server_port(chain_id));
     let server = ServerBuilder::new().bind_addr(addr).run().unwrap();
@@ -183,23 +243,32 @@ async fn create_mock_indexer_server(
         "/chains/{}/address/{}/count/commitment-included",
         chain_id, contract_address
     );
-    let block_number_rsp = ApiResponse {
-        code: 0,
-        result: ContractSyncResponse {
-            chain_id: Some(chain_id),
-            contract_address: contract_address.to_string(),
-            current_sync_block_num: block_number,
-            current_sync_time: None,
-        },
-    };
-    let block_number_json = json_encoded(json!(block_number_rsp));
-    let included_count_rsp = ApiResponse {
-        code: 0,
-        result: included_count,
-    };
-    let included_count_json = json_encoded(json!(included_count_rsp));
-    server.expect(Expectation::matching(request::path(matches(block_number_path))).respond_with(block_number_json));
-    server.expect(Expectation::matching(request::path(matches(included_count_path))).respond_with(included_count_json));
+
+    if let Some(number) = block_number {
+        let block_number_rsp = ApiResponse {
+            code: 0,
+            result: ContractSyncResponse {
+                chain_id: Some(chain_id),
+                contract_address: contract_address.to_string(),
+                current_sync_block_num: number,
+                current_sync_time: None,
+            },
+        };
+        let block_number_json = json_encoded(json!(block_number_rsp));
+        server.expect(Expectation::matching(request::path(matches(block_number_path))).respond_with(block_number_json));
+    }
+
+    if let Some(included) = included_count {
+        let included_count_rsp = ApiResponse {
+            code: 0,
+            result: included,
+        };
+        let included_count_json = json_encoded(json!(included_count_rsp));
+        server.expect(
+            Expectation::matching(request::path(matches(included_count_path))).respond_with(included_count_json),
+        );
+    }
+
     server
 }
 

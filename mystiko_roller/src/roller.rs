@@ -42,27 +42,21 @@ impl Roller {
         })
     }
 
-    pub async fn start(&mut self) {
+    pub async fn start(&mut self) -> Result<()> {
         if self.pools.is_empty() {
-            return;
+            info!("no pool to run");
+            return Ok(());
         }
 
-        if let Err(e) = self.run(PoolAction::Init).await {
-            error!("Failed to run init: {:?}", e);
-            return;
-        }
+        self.run(PoolAction::Init).await?;
 
         loop {
-            if let Err(e) = self.run(PoolAction::Run).await {
-                error!("Failed to run: {:?}", e);
-                break;
-            }
-
+            self.run(PoolAction::Run).await?;
             sleep(Duration::from_secs(self.round_check_sec)).await;
             self.round += 1;
             if self.stop {
                 info!("roller stopped");
-                break;
+                return Ok(());
             }
         }
     }
@@ -85,7 +79,6 @@ impl Roller {
             match result {
                 Ok(pool) => self.pools.push(pool),
                 Err(e) => {
-                    error!("Failed to run pool: {:?}", e);
                     return Err(e);
                 }
             }
@@ -100,7 +93,7 @@ pub async fn run_roller() {
     let roller = Roller::new(&run_mod, &cfg_path).await;
     match roller {
         Ok(mut r) => {
-            r.start().await;
+            let _ = r.start().await.map_err(|e| error!("roller run failed {:?}", e));
         }
         Err(e) => {
             error!("roller start failed {:?}", e);

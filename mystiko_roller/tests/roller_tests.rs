@@ -9,6 +9,7 @@ pub mod common;
 mod config;
 pub mod context;
 mod data;
+mod pool;
 mod pull;
 mod rollup;
 pub mod test_files;
@@ -35,6 +36,7 @@ pub async fn test_run_roller() {
         .await
         .unwrap();
     r.stop = true;
-    r.start().await;
+    let result = r.start().await;
+    assert!(result.is_ok());
     assert_eq!(r.round, 1);
 }

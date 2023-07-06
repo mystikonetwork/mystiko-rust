@@ -18,6 +18,8 @@ pub async fn test_context_new() {
     let c = c.unwrap();
     assert!(c.indexer().is_none());
     assert!(c.chain_explorer().is_none());
+
+    let _ = c.token_price().await;
 }
 
 // todo remove this test

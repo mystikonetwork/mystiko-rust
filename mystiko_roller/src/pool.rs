@@ -24,11 +24,11 @@ pub enum PoolAction {
 
 pub struct Pool {
     pub index: String,
-    context: Arc<dyn ContextTrait>,
-    stub_provider: Arc<ProviderStub>,
-    data: Arc<RwLock<DataHandler>>,
+    pub context: Arc<dyn ContextTrait>,
+    pub data: Arc<RwLock<DataHandler>>,
     pull: PullHandle,
     rollup: RollupHandle,
+    stub_provider: Arc<ProviderStub>,
 }
 
 impl Pool {
@@ -67,6 +67,7 @@ impl Pool {
     pub async fn run(self) -> Result<Pool> {
         let chain_data_sources = self.context.cfg().chain.get_data_source_order();
         let check_time = Duration::from_secs(self.context.cfg().pull.check_interval_secs);
+        println!("chain data sources: {:?}", chain_data_sources);
         for source in &chain_data_sources {
             let giver: Arc<dyn ChainDataGiver> = match source {
                 ChainDataSource::Indexer => self.context.indexer().unwrap(),
@@ -99,7 +100,6 @@ impl Pool {
     pub async fn check_commitment_queue(&self) -> Result<()> {
         let queue_len = self.data.read().await.get_commitments_queue_count();
         let include_count = self.data.read().await.get_included_count();
-
         match queue_len.cmp(&include_count) {
             Ordering::Greater => {
                 self.data.write().await.set_empty_queue_counter(0);
