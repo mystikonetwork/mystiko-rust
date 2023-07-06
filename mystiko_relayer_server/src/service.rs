@@ -14,7 +14,7 @@ use mystiko_ethers::provider::pool::ProviderPool;
 use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{
-    ContractInfo, RegisterInfoRequest, RegisterInfoResponse, RegisterOptions, RelayTransactResponse,
+    ContractInfo, PingResponse, RegisterInfoRequest, RegisterInfoResponse, RegisterOptions, RelayTransactResponse,
     RelayTransactStatusResponse, TransactRequestData,
 };
 use mystiko_server_utils::token_price::price::TokenPrice;
@@ -26,6 +26,12 @@ use std::ops::Mul;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use validator::Validate;
+
+#[get("/ping")]
+pub async fn ping(data: Data<AppState>) -> actix_web::Result<impl Responder, ResponseError> {
+    let api_version = data.server_config.api_version.to_string();
+    Ok(success(PingResponse::builder().api_version(api_version).build()))
+}
 
 #[post("/info")]
 pub async fn info(

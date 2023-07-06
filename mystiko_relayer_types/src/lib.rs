@@ -117,6 +117,11 @@ pub struct RegisterInfoResponse {
     pub contracts: Option<Vec<ContractInfo>>,
 }
 
+#[derive(TypedBuilder, Serialize, Deserialize, Debug)]
+pub struct PingResponse {
+    pub api_version: String,
+}
+
 #[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ContractInfo {
     pub asset_symbol: String,
