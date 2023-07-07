@@ -67,7 +67,6 @@ impl Pool {
     pub async fn run(self) -> Result<Pool> {
         let chain_data_sources = self.context.cfg().chain.get_data_source_order();
         let check_time = Duration::from_secs(self.context.cfg().pull.check_interval_secs);
-        println!("chain data sources: {:?}", chain_data_sources);
         for source in &chain_data_sources {
             let giver: Arc<dyn ChainDataGiver> = match source {
                 ChainDataSource::Indexer => self.context.indexer().unwrap(),
@@ -118,7 +117,7 @@ impl Pool {
                 Ok(())
             }
             Ordering::Less => {
-                panic!("unexpected check commitment queue");
+                panic!("commitment queue {} < included count {}", queue_len, include_count);
             }
         }
     }

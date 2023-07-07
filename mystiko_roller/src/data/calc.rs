@@ -9,7 +9,7 @@ pub fn circuit_type_from_rollup_size(rollup_size: usize) -> CircuitType {
         4 => CircuitType::Rollup4,
         8 => CircuitType::Rollup8,
         16 => CircuitType::Rollup16,
-        _ => panic!("un support rollup size: {}", rollup_size),
+        _ => panic!("unsupported rollup size: {}", rollup_size),
     }
 }
 

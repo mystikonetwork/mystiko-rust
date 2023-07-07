@@ -164,8 +164,7 @@ impl RollupHandle {
                 .await
                 .set_latest_rollup_block_number(block_number.as_u64());
         } else {
-            error!("rollup transaction block number is none receipt {:?}", receipt);
-            panic!("rollup transaction block number is none");
+            panic!("rollup transaction block number is none, receipt {:?}", receipt);
         }
 
         info!("rollup transaction have been confirmed");
@@ -226,7 +225,7 @@ impl RollupHandle {
             .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &signer)
             .await;
         match gas_limit {
-            Ok(_) => panic!("must error when check queue"),
+            Ok(_) => panic!("must error for commitment queue check"),
             Err(err) => {
                 let err_string = format!("{}", err);
                 if matches!(err, TxManagerError::EstimateGasError(_)) {

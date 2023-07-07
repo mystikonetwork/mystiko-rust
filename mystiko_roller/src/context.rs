@@ -54,15 +54,15 @@ impl ContextTrait for Context {
     async fn new(run_mod: &str, cfg_path: &str) -> Result<Self> {
         info!("roller config path: {:?}", cfg_path);
 
-        let roller_cfg = create_roller_config(run_mod, cfg_path);
+        let roller_cfg = create_roller_config(run_mod, cfg_path)?;
         trace_init(&roller_cfg.log_level);
-        let token_price_cfg = create_token_price_config(run_mod, cfg_path);
-        let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core, cfg_path).await;
+        let token_price_cfg = create_token_price_config(run_mod, cfg_path)?;
+        let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core, cfg_path).await?;
         let db = create_roller_database().await;
         let indexer = match roller_cfg.chain.is_data_source_enable(ChainDataSource::Indexer) {
             true => Some(IndexerStub::new(
                 core_cfg_parser.indexer_cfg().ok_or_else(|| RollerError::NoIndexer)?,
-            )),
+            )?),
             false => None,
         };
 

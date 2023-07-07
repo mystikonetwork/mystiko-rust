@@ -11,7 +11,7 @@ use std::env;
 async fn test_read_config() {
     let _guard = ENV_MUTEX.write().await;
 
-    let cfg = create_roller_config("testnet", "tests/test_files/config/only_roller");
+    let cfg = create_roller_config("testnet", "tests/test_files/config/only_roller").unwrap();
     assert_eq!(cfg.chain.chain_id, 5);
     assert_eq!(
         cfg.core.remote_base_url,
@@ -20,11 +20,11 @@ async fn test_read_config() {
     assert_eq!(cfg.core.git_revision, Some("0187435".to_string()));
     assert_eq!(cfg.rollup.force_rollup_block_count, 20);
 
-    let cfg = create_roller_config("mainnet", "tests/test_files/config/base");
+    let cfg = create_roller_config("mainnet", "tests/test_files/config/base").unwrap();
     assert_eq!(cfg.chain.chain_id, 1);
     assert_eq!(cfg.rollup.force_rollup_block_count, 100);
 
-    let cfg = create_roller_config("mainnet", "tests/test_files/config/base");
+    let cfg = create_roller_config("mainnet", "tests/test_files/config/base").unwrap();
     assert_eq!(cfg.chain.chain_id, 1);
     assert_eq!(cfg.core.remote_base_url, None);
     assert_eq!(cfg.core.git_revision, None);
@@ -32,7 +32,7 @@ async fn test_read_config() {
 
     env::set_var("MYSTIKO_ROLLER.CHAIN.CHAIN_ID", "123456789");
     env::set_var("MYSTIKO_ROLLER.ROLLUP.FORCE_ROLLUP_BLOCK_COUNT", "200");
-    let cfg = create_roller_config("mainnet", "tests/test_files/config/base");
+    let cfg = create_roller_config("mainnet", "tests/test_files/config/base").unwrap();
     assert_eq!(cfg.chain.chain_id, 123456789);
     assert_eq!(cfg.rollup.force_rollup_block_count, 200);
 
@@ -61,26 +61,25 @@ async fn test_get_rollup_cost() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "failed load core config from local file")]
 async fn test_create_mystiko_config1() {
     let core_cfg = CoreConfig {
         is_staging: false,
         remote_base_url: None,
         git_revision: None,
     };
-    let _ = create_mystiko_config(&core_cfg, "tests/test_files/config/wrong_mystiko_config").await;
-    env::remove_var("MYSTIKO_ROLLER_CONFIG_PATH");
+    let result = create_mystiko_config(&core_cfg, "tests/test_files/config/wrong_mystiko_config").await;
+    assert!(result.is_err());
 }
 
 #[tokio::test]
-#[should_panic(expected = "failed load core config from remote")]
 async fn test_create_mystiko_config2() {
     let core_cfg = CoreConfig {
         is_staging: false,
         remote_base_url: Some("https://new.static.mystiko.network/config".to_string()),
         git_revision: Some("1234567".to_string()),
     };
-    let _ = create_mystiko_config(&core_cfg, "./tests/test_files/config/only_roller").await;
+    let result = create_mystiko_config(&core_cfg, "./tests/test_files/config/only_roller").await;
+    assert!(result.is_err());
 }
 
 #[tokio::test]
@@ -109,11 +108,11 @@ async fn test_data_source() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "invalid data source")]
 async fn test_data_source_panic() {
     let chain = ChainConfig {
         chain_id: 1,
         data_source_order: "err".to_string(),
     };
-    let _ = chain.get_data_source_order();
+    let result = chain.get_data_source_order();
+    assert!(result.is_empty());
 }

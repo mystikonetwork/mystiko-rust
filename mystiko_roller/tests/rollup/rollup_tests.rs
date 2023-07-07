@@ -300,7 +300,7 @@ async fn create_rollup_handle(
 
     let c = Arc::new(c);
     let pool_contract = get_pool_contracts(&c);
-    let tx_manager_cfg = create_tx_manager_config("testnet", "tests/test_files/config/base");
+    let tx_manager_cfg = create_tx_manager_config("testnet", "tests/test_files/config/base").unwrap();
     let context_trait: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let data = DataHandler::new(chain_id, &pool_contract, context_trait).await;
     let data_rc = Arc::new(RwLock::new(data));

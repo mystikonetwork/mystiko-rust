@@ -46,9 +46,9 @@ impl MockContext {
 #[async_trait]
 impl ContextTrait for MockContext {
     async fn new(run_mod: &str, cfg_path: &str) -> Result<Self> {
-        let roller_cfg = create_roller_config(run_mod, cfg_path);
+        let roller_cfg = create_roller_config(run_mod, cfg_path).unwrap();
 
-        let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core, cfg_path).await;
+        let core_cfg_parser = MystikoConfigParser::new(&roller_cfg.core, cfg_path).await.unwrap();
         let db = create_memory_database().await;
 
         let indexer_port = load_env_mock_indexer_port();
@@ -57,13 +57,13 @@ impl ContextTrait for MockContext {
             timeout_ms: 15000,
         };
         let indexer_cfg = IndexerConfig::new(Arc::new(raw_indexer_cfg));
-        let indexer = IndexerStub::new(&indexer_cfg);
+        let indexer = IndexerStub::new(&indexer_cfg).unwrap();
         let chain_explorer = core_cfg_parser
             .chain_explorer_cfg(roller_cfg.chain.chain_id)
             .map(ExplorerStub::new);
         let api_key = load_coin_market_api_key().unwrap();
 
-        let mut token_price_cfg = create_token_price_config(run_mod, cfg_path);
+        let mut token_price_cfg = create_token_price_config(run_mod, cfg_path).unwrap();
         token_price_cfg.base_url = format!(
             "http://127.0.0.1:{}",
             token_price_server_port(indexer_port.parse::<u16>().unwrap())

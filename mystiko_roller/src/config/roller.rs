@@ -44,7 +44,7 @@ impl ChainConfig {
                 "indexer" => data_sources.push(ChainDataSource::Indexer),
                 "provider" => data_sources.push(ChainDataSource::Provider),
                 _ => {
-                    panic!("invalid data source: {}", source);
+                    error!("invalid data source: {}", source);
                 }
             }
         }
@@ -129,25 +129,19 @@ impl RollerConfig {
     }
 }
 
-pub fn create_roller_config(run_mod: &str, cfg_path: &str) -> RollerConfig {
-    RollerConfig::new(run_mod, cfg_path).unwrap_or_else(|_| panic!("load roller config failed"))
+pub fn create_roller_config(run_mod: &str, cfg_path: &str) -> Result<RollerConfig> {
+    RollerConfig::new(run_mod, cfg_path)
 }
 
-pub async fn create_mystiko_config(core_config: &CoreConfig, cfg_path: &str) -> MystikoConfig {
+pub async fn create_mystiko_config(core_config: &CoreConfig, cfg_path: &str) -> Result<MystikoConfig> {
     let config_file = cfg_path.to_string() + "/mystiko.json";
     if Path::exists(Path::new(&config_file)) {
-        return MystikoConfig::from_json_file(&config_file).await.unwrap_or_else(|e| {
-            error!("error occurred: {:?}", e);
-            panic!("failed load core config from local file")
-        });
+        return MystikoConfig::from_json_file(&config_file).await.map_err(|e| e.into());
     }
 
     info!("load core configure from remote url");
     let remote_options = create_remote_options(core_config);
-    MystikoConfig::from_remote(&remote_options).await.unwrap_or_else(|e| {
-        error!("error occurred: {:?}", e);
-        panic!("failed load core config from remote")
-    })
+    MystikoConfig::from_remote(&remote_options).await.map_err(|e| e.into())
 }
 
 fn create_remote_options(core_config: &CoreConfig) -> RemoteOptions {
@@ -163,10 +157,10 @@ fn create_remote_options(core_config: &CoreConfig) -> RemoteOptions {
     remote_options
 }
 
-pub fn create_token_price_config(run_mod: &str, cfg_path: &str) -> TokenPriceConfig {
-    TokenPriceConfig::new(run_mod, Some(cfg_path)).unwrap_or_else(|_| panic!("load token price config failed"))
+pub fn create_token_price_config(run_mod: &str, cfg_path: &str) -> Result<TokenPriceConfig> {
+    TokenPriceConfig::new(run_mod, Some(cfg_path)).map_err(|e| e.into())
 }
 
-pub fn create_tx_manager_config(run_mod: &str, cfg_path: &str) -> TxManagerConfig {
-    TxManagerConfig::new(run_mod, Some(cfg_path)).unwrap_or_else(|_| panic!("load tx manager config failed"))
+pub fn create_tx_manager_config(run_mod: &str, cfg_path: &str) -> Result<TxManagerConfig> {
+    TxManagerConfig::new(run_mod, Some(cfg_path)).map_err(|e| e.into())
 }

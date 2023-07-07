@@ -19,9 +19,9 @@ pub struct MystikoConfigParser {
 }
 
 impl MystikoConfigParser {
-    pub async fn new(core_cfg: &CoreConfig, cfg_path: &str) -> Self {
-        let cfg = create_mystiko_config(core_cfg, cfg_path).await;
-        MystikoConfigParser { cfg }
+    pub async fn new(core_cfg: &CoreConfig, cfg_path: &str) -> Result<Self> {
+        let cfg = create_mystiko_config(core_cfg, cfg_path).await?;
+        Ok(MystikoConfigParser { cfg })
     }
 
     pub fn pool_contracts(&self, chain_id: u64) -> Vec<PoolContractConfig> {

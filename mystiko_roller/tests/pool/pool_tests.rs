@@ -58,7 +58,7 @@ async fn create_pool_handle(test_chain_id: u64) -> (Pool, Arc<MockContext>, Stri
     let c = create_mock_context(indexer_server_port(test_chain_id)).await;
     let c = Arc::new(c);
     let pool_contracts = c.core_cfg_parser().pool_contracts(c.cfg().chain.chain_id);
-    let tx_manager_cfg = create_tx_manager_config("testnet", "tests/test_files/config/base");
+    let tx_manager_cfg = create_tx_manager_config("testnet", "tests/test_files/config/base").unwrap();
     let c2: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let pool = Pool::new(0, pool_contracts[0].clone(), &tx_manager_cfg, c2).await;
     (pool, c, pool_contracts[0].address().to_string())
