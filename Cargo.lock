@@ -3669,7 +3669,6 @@ dependencies = [
  "num-bigint 0.4.3",
  "num-traits 0.2.15",
  "rand 0.8.5",
- "regex 1.8.4",
  "rust_decimal",
  "secp256k1",
  "serde",
