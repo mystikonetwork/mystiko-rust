@@ -46,10 +46,10 @@ async fn test_invalidate_request() {
         })
         .to_request();
     let resp: ApiResponse<RelayTransactResponse> = call_and_read_body_json(&app, req).await;
-    assert!(resp.error.is_some());
+    assert!(resp.error_message.is_some());
     assert_eq!(resp.code, ResponseCode::ValidateError as i32);
     assert_eq!(
-        resp.error.unwrap(),
+        resp.error_message.unwrap(),
         ResponseError::ValidateError {
             error: "circuit_type: Validation error: invalid circuit type [{\"value\": String(\"rollup1\")}]"
                 .parse()
@@ -94,8 +94,11 @@ async fn test_repeated_transaction() {
     let req = TestRequest::post().uri("/transact").set_json(request).to_request();
     let resp: ApiResponse<RelayTransactResponse> = call_and_read_body_json(&app, req).await;
     assert_eq!(resp.code, ResponseCode::RepeatedTransaction as i32);
-    assert!(resp.error.is_some());
-    assert_eq!(resp.error.unwrap(), ResponseError::RepeatedTransaction.to_string());
+    assert!(resp.error_message.is_some());
+    assert_eq!(
+        resp.error_message.unwrap(),
+        ResponseError::RepeatedTransaction.to_string()
+    );
 }
 
 #[actix_rt::test]
@@ -131,9 +134,9 @@ async fn test_chain_id_not_found() {
 
     let resp: ApiResponse<RelayTransactResponse> = call_and_read_body_json(&app, req).await;
     assert_eq!(resp.code, ResponseCode::ChainIdNotFound as i32);
-    assert!(resp.error.is_some());
+    assert!(resp.error_message.is_some());
     assert_eq!(
-        resp.error.unwrap(),
+        resp.error_message.unwrap(),
         ResponseError::ChainIdNotFoundInRelayerConfig { chain_id: 1 }.to_string()
     );
 }
@@ -168,19 +171,19 @@ async fn test_send_main_transaction_to_queue_successful() {
         .set_json(get_valid_transact_request_data())
         .to_request();
     let resp: ApiResponse<RelayTransactResponse> = call_and_read_body_json(&app, req).await;
-    assert!(resp.error.is_none());
-    assert!(resp.result.is_some());
+    assert!(resp.error_message.is_none());
+    assert!(resp.data.is_some());
     assert_eq!(resp.code, ResponseCode::Successful as i32);
 
-    let uuid = resp.result.unwrap().uuid;
+    let uuid = resp.data.unwrap().uuid;
     let req = TestRequest::get()
         .uri(&format!("/transaction/status/{}", uuid))
         .to_request();
     let resp: ApiResponse<RelayTransactStatusResponse> = call_and_read_body_json(&app, req).await;
-    assert!(resp.error.is_none());
-    assert!(resp.result.is_some());
+    assert!(resp.error_message.is_none());
+    assert!(resp.data.is_some());
     assert_eq!(resp.code, ResponseCode::Successful as i32);
-    let status = resp.result.unwrap().status;
+    let status = resp.data.unwrap().status;
     assert_eq!(&status, &TransactStatus::Queued);
 }
 
@@ -217,19 +220,19 @@ async fn test_send_erc20_transaction_to_queue_successful() {
         .set_json(transact_data)
         .to_request();
     let resp: ApiResponse<RelayTransactResponse> = call_and_read_body_json(&app, req).await;
-    assert!(resp.error.is_none());
-    assert!(resp.result.is_some());
+    assert!(resp.error_message.is_none());
+    assert!(resp.data.is_some());
     assert_eq!(resp.code, ResponseCode::Successful as i32);
 
-    let uuid = resp.result.unwrap().uuid;
+    let uuid = resp.data.unwrap().uuid;
     let req = TestRequest::get()
         .uri(&format!("/transaction/status/{}", uuid))
         .to_request();
     let resp: ApiResponse<RelayTransactStatusResponse> = call_and_read_body_json(&app, req).await;
-    assert!(resp.error.is_none());
-    assert!(resp.result.is_some());
+    assert!(resp.error_message.is_none());
+    assert!(resp.data.is_some());
     assert_eq!(resp.code, ResponseCode::Successful as i32);
-    let status = resp.result.unwrap().status;
+    let status = resp.data.unwrap().status;
     assert_eq!(&status, &TransactStatus::Queued);
 }
 

@@ -22,8 +22,8 @@ pub enum ResponseCode {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiResponse<T> {
     pub code: i32,
-    pub result: Option<T>,
-    pub error: Option<String>,
+    pub data: Option<T>,
+    pub error_message: Option<String>,
 }
 
 impl<T> Responder for ApiResponse<T>
@@ -45,8 +45,8 @@ where
 {
     ApiResponse {
         code: ResponseCode::Successful as i32,
-        result: Some(result),
-        error: None,
+        data: Some(result),
+        error_message: None,
     }
 }
 
@@ -56,7 +56,7 @@ where
 {
     ApiResponse {
         code: ResponseCode::Failed as i32,
-        result,
-        error,
+        data: result,
+        error_message: error,
     }
 }

@@ -53,8 +53,8 @@ impl actix_web::error::ResponseError for ResponseError {
     fn error_response(&self) -> HttpResponse<BoxBody> {
         let response_json: ApiResponse<()> = ApiResponse {
             code: get_error_code(self) as i32,
-            result: None,
-            error: Some(self.to_string()),
+            data: None,
+            error_message: Some(self.to_string()),
         };
         HttpResponse::build(self.status_code())
             .insert_header(ContentType::json())

@@ -45,7 +45,7 @@ async fn test_successful() {
         .set_json(RegisterInfoRequest::builder().chain_id(chain_id).build())
         .to_request();
     let resp: ApiResponse<RegisterInfoResponse> = call_and_read_body_json(&app, req).await;
-    let result = resp.result.unwrap();
+    let result = resp.data.unwrap();
     let contracts = result.contracts.unwrap();
 
     assert_eq!(resp.code, ResponseCode::Successful as i32);
@@ -111,7 +111,7 @@ async fn test_options_successful_0() {
     let resp: ApiResponse<RegisterInfoResponse> = call_and_read_body_json(&app, req).await;
     mock.assert_async().await;
 
-    let result = resp.result.unwrap();
+    let result = resp.data.unwrap();
     let contracts = result.contracts.unwrap();
 
     assert_eq!(resp.code, ResponseCode::Successful as i32);
@@ -165,7 +165,7 @@ async fn test_options_successful_1() {
         )
         .to_request();
     let resp: ApiResponse<RegisterInfoResponse> = call_and_read_body_json(&app, req).await;
-    let result = resp.result.unwrap();
+    let result = resp.data.unwrap();
     let contracts = result.contracts.unwrap();
 
     assert_eq!(resp.code, ResponseCode::Successful as i32);
@@ -214,7 +214,7 @@ async fn test_unsupported_asset_symbol() {
         .to_request();
 
     let resp: ApiResponse<RegisterInfoResponse> = call_and_read_body_json(&app, req).await;
-    let result = resp.result.unwrap();
+    let result = resp.data.unwrap();
     assert_eq!(resp.code, ResponseCode::Successful as i32);
     assert!(!result.support);
     assert_eq!(result.available, Some(false));
@@ -256,7 +256,7 @@ async fn test_unavailable() {
         .to_request();
 
     let resp: ApiResponse<RegisterInfoResponse> = call_and_read_body_json(&app, req).await;
-    let result = resp.result.unwrap();
+    let result = resp.data.unwrap();
     assert_eq!(resp.code, ResponseCode::Successful as i32);
     assert!(result.support);
     assert_eq!(result.available, Some(false));
@@ -332,7 +332,7 @@ async fn test_not_supported_chain_id() {
         .set_json(RegisterInfoRequest::builder().chain_id(chain_id).build())
         .to_request();
     let resp: ApiResponse<RegisterInfoResponse> = call_and_read_body_json(&app, req).await;
-    let result = resp.result.unwrap();
+    let result = resp.data.unwrap();
     assert_eq!(resp.code, ResponseCode::Successful as i32);
     assert!(!result.support);
     assert_eq!(result.available, Some(false));
@@ -371,10 +371,10 @@ async fn test_get_gas_price_error() {
     let resp: ApiResponse<RegisterInfoResponse> = call_and_read_body_json(&app, req).await;
 
     assert_eq!(resp.code, ResponseCode::GetGasPriceError as i32);
-    assert!(resp.result.is_none());
-    assert!(resp.error.is_some());
+    assert!(resp.data.is_none());
+    assert!(resp.error_message.is_some());
     assert_eq!(
-        resp.error.unwrap(),
+        resp.error_message.unwrap(),
         ResponseError::GetGasPriceError { chain_id: 5 }.to_string()
     );
 }

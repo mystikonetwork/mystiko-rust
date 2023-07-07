@@ -253,11 +253,11 @@ impl RelayerClient {
                     0 => Ok(parsed_resp),
                     _ => Err(RelayerClientError::ApiResponseError {
                         code: parsed_resp.code,
-                        message: parsed_resp.error.unwrap_or_default(),
+                        message: parsed_resp.error_message.unwrap_or_default(),
                     }),
                 };
                 let res_body = handled_resp?;
-                return Ok(res_body.result.unwrap());
+                return Ok(res_body.data.unwrap());
             }
         }
         Err(RelayerClientError::UnsupportedContentTypeError(

@@ -3,7 +3,7 @@ use crate::common::{init_app_state, AppStateOptions};
 use crate::database::init_sqlite_database;
 use crate::handler::account::AccountHandler;
 use crate::handler::transaction::TransactionHandler;
-use crate::service::{info, ping, transact, transaction_status};
+use crate::service::{handshake, info, transact, transaction_status};
 use actix_web::middleware::Logger;
 use actix_web::web::{scope, Data};
 use actix_web::{App, HttpServer};
@@ -85,7 +85,7 @@ pub async fn run_application<'a>(options: ApplicationOptions<'a>) -> Result<()> 
             .app_data(Data::new(transaction_handler.clone()))
             .app_data(Data::new(token_price.clone()))
             .app_data(Data::new(providers.clone()))
-            .service(ping)
+            .service(handshake)
             .service(
                 scope("/api/v2")
                     .service(info)

@@ -118,7 +118,7 @@ pub struct RegisterInfoResponse {
 }
 
 #[derive(TypedBuilder, Serialize, Deserialize, Debug)]
-pub struct PingResponse {
+pub struct HandshakeResponse {
     pub api_version: Vec<String>,
 }
 

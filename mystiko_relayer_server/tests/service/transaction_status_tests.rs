@@ -34,9 +34,9 @@ async fn test_id_not_found() {
     let req = TestRequest::get().uri("/transaction/status/123456").to_request();
     let resp: ApiResponse<RelayTransactStatusResponse> = call_and_read_body_json(&app, req).await;
     assert_eq!(resp.code, ResponseCode::TransactionNotFound as i32);
-    assert!(resp.error.is_some());
+    assert!(resp.error_message.is_some());
     assert_eq!(
-        resp.error.unwrap(),
+        resp.error_message.unwrap(),
         ResponseError::TransactionNotFound {
             id: "123456".parse().unwrap()
         }
@@ -79,10 +79,10 @@ async fn test_successful() {
         .to_request();
     let resp: ApiResponse<RelayTransactStatusResponse> = call_and_read_body_json(&app, req).await;
     assert_eq!(resp.code, ResponseCode::Successful as i32);
-    assert!(resp.error.is_none());
-    assert!(resp.result.is_some());
+    assert!(resp.error_message.is_none());
+    assert!(resp.data.is_some());
 
-    let info = resp.result.unwrap();
+    let info = resp.data.unwrap();
     assert_eq!(info.uuid, id);
     assert_eq!(info.status, TransactStatus::Queued);
 }
