@@ -1,21 +1,16 @@
 use anyhow::{bail, Result};
 use config::Config;
-use lazy_static::lazy_static;
 use log::debug;
 use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
 use mystiko_types::NetworkType;
-use regex::Regex;
+use mystiko_validator::validate::is_api_version;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-lazy_static! {
-    static ref REGEX_API_VERSION: Regex = Regex::new(r"^v\d+$").unwrap();
-}
-
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfig {
-    #[validate(regex(path = "REGEX_API_VERSION"))]
-    pub api_version: String,
+    #[validate(custom(function = "is_api_version"))]
+    pub api_version: Vec<String>,
     pub network_type: NetworkType,
     #[validate(contains = ".sqlite")]
     pub sqlite_db_path: String,

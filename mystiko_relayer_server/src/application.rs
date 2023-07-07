@@ -71,9 +71,10 @@ pub async fn run_application<'a>(options: ApplicationOptions<'a>) -> Result<()> 
 
     // run http server
     info!(
-        "Application server start at {}:{}, api version: {}",
+        "Application server start at {}:{}, available api version: {:?}",
         options.host, options.port, &app_state.server_config.api_version
     );
+
     HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())
@@ -86,7 +87,7 @@ pub async fn run_application<'a>(options: ApplicationOptions<'a>) -> Result<()> 
             .app_data(Data::new(providers.clone()))
             .service(ping)
             .service(
-                scope(format!("/api/{}", app_state.server_config.api_version).as_str())
+                scope("/api/v2")
                     .service(info)
                     .service(transact)
                     .service(transaction_status),

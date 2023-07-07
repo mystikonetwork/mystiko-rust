@@ -16,5 +16,6 @@ async fn test_ping() {
     let result = resp.result.unwrap();
 
     assert_eq!(resp.code, ResponseCode::Successful as i32);
-    assert_eq!(result.api_version.as_str(), "v2")
+    assert_eq!(result.api_version.len(), 1);
+    assert_eq!(result.api_version.get(0).unwrap(), "v2");
 }

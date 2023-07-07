@@ -3665,6 +3665,7 @@ dependencies = [
  "mystiko_storage_sqlite",
  "mystiko_types",
  "mystiko_utils",
+ "mystiko_validator",
  "num-bigint 0.4.3",
  "num-traits 0.2.15",
  "rand 0.8.5",

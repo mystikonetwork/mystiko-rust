@@ -23,6 +23,7 @@ log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
+mystiko_validator = { version = "0.1.0", path = "../mystiko_validator" }
 mystiko_relayer_config = { version = "0.1.0", path = "../mystiko_relayer_config" }
 mystiko_relayer_types = { version = "0.1.0", path = "../mystiko_relayer_types" }
 mystiko_server_utils = { version = "0.1.0", path = "../mystiko_server_utils" }

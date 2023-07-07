@@ -1,4 +1,5 @@
-api_version = "v2"
+# available api version list
+api_version = ["v2"]
 # testnet or mainnet
 network_type = "testnet"
 sqlite_db_path = "db.sqlite"

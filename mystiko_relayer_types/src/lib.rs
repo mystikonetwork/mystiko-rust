@@ -119,7 +119,7 @@ pub struct RegisterInfoResponse {
 
 #[derive(TypedBuilder, Serialize, Deserialize, Debug)]
 pub struct PingResponse {
-    pub api_version: String,
+    pub api_version: Vec<String>,
 }
 
 #[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone, PartialEq)]

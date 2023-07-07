@@ -29,7 +29,7 @@ use validator::Validate;
 
 #[get("/ping")]
 pub async fn ping(data: Data<AppState>) -> actix_web::Result<impl Responder, ResponseError> {
-    let api_version = data.server_config.api_version.to_string();
+    let api_version = data.server_config.api_version.clone();
     Ok(success(PingResponse::builder().api_version(api_version).build()))
 }
 
