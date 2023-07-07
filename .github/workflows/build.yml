@@ -18,7 +18,10 @@ jobs:
           toolchain: nightly-2023-02-22
           override: true
           profile: minimal
-          components: rustfmt, clippy
+          components: rustfmt, clippy, llvm-tools-preview
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
       - name: Cache
         uses: actions/cache@v3
         with:
@@ -29,13 +32,31 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install cargo-llvm-cov cargo command
+        run: cargo install cargo-llvm-cov
+
       - name: Build
         run: RUSTFLAGS="-D warnings" ./scripts/build.sh
+
       - name: Check format
         run: cargo fmt --all -- --check
       - name: Run clippy
         timeout-minutes: 60
         run: cargo clippy --all-targets -j 4 -- -D warnings
+
+      - name: Run tests
+        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-report
+
+      - name: Generate coverage report
+        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-run --output-path lcov.info
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
       - run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
