@@ -10,7 +10,7 @@ anyhow = { version = "1.0" }
 mystiko_relayer_abi = { version = "0.1.0", path = "../mystiko_relayer_abi" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 mystiko_validator = { version = "0.1.0", path = "../mystiko_validator" }
-reqwest = { version = "0.11.14" }
+reqwest = { version = "0.11.14", features = ["rustls-tls"], default-features = false }
 rust_decimal = { version = "1.29.0" }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }
