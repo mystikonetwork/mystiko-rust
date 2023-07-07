@@ -3,4 +3,4 @@
 # Exit if any sub command fails
 set -e
 
-cargo build
+RUSTFLAGS="-D warnings" cargo build

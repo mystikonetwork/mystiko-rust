@@ -16,7 +16,7 @@ mystiko_relayer_abi = { version = "0.1.0", path = "../mystiko_relayer_abi" }
 mystiko_relayer_config = { version = "0.1.0", path = "../mystiko_relayer_config" }
 mystiko_relayer_types = { version = "0.1.0", path = "../mystiko_relayer_types" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 rust_decimal = { version = "1.29.0" }
 rustc-hex = { version = "2.1.0" }
 serde = { version = "1.0.152", features = ["derive"] }

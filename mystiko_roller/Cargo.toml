@@ -3,9 +3,6 @@ name = "mystiko_roller"
 version = "0.1.0"
 edition = "2021"
 
-[features]
-build-openssl = ["openssl"]
-
 [dependencies]
 anyhow = { version = "1.0" }
 async-trait = { version = "0.1.64" }
@@ -20,14 +17,12 @@ tracing = { version = "0.1.37" }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"]}
 dotenv = { version = "0.15.0" }
 num-bigint = { version = "0.4.3" }
-reqwest = { version = "0.11.14", features = ["json"]}
+reqwest = { version = "0.11.14", features = ["json", "rustls-tls"], default-features = false }
 serde = { version = "1.0.152" }
 serde_json = { version = "1.0.91", features = ["preserve_order"] }
 thiserror = { version = "1.0", default-features = false }
 typed-builder = { version = "0.14.0" }
 tokio = { version = "1.26.0", features = ["time","full"] }
-# compile openssl-sys from source to avoid reqwest::Client error on alpine
-openssl = { version = "0.10.54", optional = true, features = ["vendored"] }
 
 # mystiko
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
