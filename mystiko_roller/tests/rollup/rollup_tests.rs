@@ -163,7 +163,7 @@ pub async fn test_rollup_send_transaction() {
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
     let result = handle.send_rollup_transaction(&plan, &proof).await;
-    assert_eq!(result.unwrap(), tx_hash.to_string());
+    assert_eq!(result.unwrap(), tx_hash);
 
     let plan = RollupPlan {
         sizes: vec![1],
@@ -187,7 +187,7 @@ pub async fn test_rollup_send_transaction() {
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
     let result = handle.send_rollup_transaction(&plan, &proof).await;
-    assert_eq!(result.unwrap(), tx_hash.to_string());
+    assert_eq!(result.unwrap(), tx_hash);
     std::mem::drop(token_price_server);
 }
 
@@ -195,7 +195,8 @@ pub async fn test_rollup_send_transaction() {
 pub async fn test_rollup_log_transaction() {
     let test_chain_id = 305;
     let (handle, _, _) = create_rollup_handle(test_chain_id, false).await;
-    handle.log_rollup_transaction("", 1, 1).await;
+    let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
+    handle.log_transaction(&tx_hash, 1, 1).await;
 }
 
 #[tokio::test]
@@ -215,7 +216,7 @@ pub async fn test_commitment_queue_check_by_transaction() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "must error when check queue")]
+#[should_panic(expected = "must error for commitment queue check")]
 pub async fn test_commitment_queue_check_by_transaction2() {
     let test_chain_id = 307;
     let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;

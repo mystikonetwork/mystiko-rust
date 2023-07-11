@@ -46,7 +46,7 @@ pub struct DataHandler {
     commitments: Vec<CommitmentData>,
     tree: Option<MerkleTree>,
     next_sync_block: u64,
-    empty_queue_counter: u64,
+    empty_queue_counter: u32,
     latest_rollup_block_number: u64,
 }
 
@@ -64,7 +64,7 @@ impl DataHandler {
         }
     }
 
-    pub fn get_empty_queue_counter(&self) -> u64 {
+    pub fn get_empty_queue_counter(&self) -> u32 {
         self.empty_queue_counter
     }
 
@@ -72,7 +72,7 @@ impl DataHandler {
         self.empty_queue_counter += 1;
     }
 
-    pub fn set_empty_queue_counter(&mut self, counter: u64) {
+    pub fn set_empty_queue_counter(&mut self, counter: u32) {
         self.empty_queue_counter = counter;
     }
 

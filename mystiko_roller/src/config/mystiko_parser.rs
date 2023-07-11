@@ -24,7 +24,7 @@ impl MystikoConfigParser {
         Ok(MystikoConfigParser { cfg })
     }
 
-    pub fn pool_contracts(&self, chain_id: u64) -> Vec<PoolContractConfig> {
+    pub fn pool_contracts_cfg(&self, chain_id: u64) -> Vec<PoolContractConfig> {
         self.cfg
             .find_chain(chain_id)
             .expect("can not find the chain")
@@ -43,11 +43,11 @@ impl MystikoConfigParser {
         Some(chain.explorer_url())
     }
 
-    pub fn chain(&self, chain_id: u64) -> &ChainConfig {
+    pub fn chain_cfg(&self, chain_id: u64) -> &ChainConfig {
         self.cfg.find_chain(chain_id).expect("can not find the chain")
     }
 
-    pub fn sign_endpoint(&self, chain_id: u64) -> &str {
+    pub fn signer_endpoint(&self, chain_id: u64) -> &str {
         let chain = self.cfg.find_chain(chain_id).expect("can not find the chain");
         chain.signer_endpoint()
     }

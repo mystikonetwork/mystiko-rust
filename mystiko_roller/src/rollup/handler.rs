@@ -6,7 +6,7 @@ use crate::context::ContextTrait;
 use crate::core::slice::SlicePattern;
 use crate::data::handler::{DataHandler, ProofInfo, RollupPlan};
 use crate::rollup::static_data::{STATIC_ERROR_INVALID_LEAF_HASH, STATIC_ERROR_INVALID_ROLLUP_SIZE, STATIC_PROOF_DATA};
-use ethers_core::types::{Address, Bytes, U256};
+use ethers_core::types::{Address, Bytes, H256, U256};
 use ethers_signers::{LocalWallet, Signer};
 use mystiko_abi::commitment_pool::{CommitmentPool, RollupRequest};
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
@@ -78,7 +78,7 @@ impl RollupHandle {
         });
 
         let core_cfg_parser = self.context.core_cfg_parser();
-        let chain_config = core_cfg_parser.chain(self.chain_id);
+        let chain_config = core_cfg_parser.chain_cfg(self.chain_id);
         let asset_symbol = chain_config.asset_symbol().to_string();
         let asset_decimals = chain_config.asset_decimals();
         let swap_amount = self
@@ -111,7 +111,7 @@ impl RollupHandle {
         Ok(call_data)
     }
 
-    pub async fn log_rollup_transaction(&self, tx_hash: &str, include_count: usize, rollup_size: usize) {
+    pub async fn log_transaction(&self, tx_hash: &H256, include_count: usize, rollup_size: usize) {
         self.data
             .read()
             .await
@@ -120,7 +120,7 @@ impl RollupHandle {
             .for_each(|cm| info!("rollup commitment {:?} in transaction {:?}", cm.hash, tx_hash));
     }
 
-    pub async fn send_rollup_transaction(&self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<String> {
+    pub async fn send_rollup_transaction(&self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<H256> {
         info!("send rollup transaction");
         let signer = self.context.signer();
         let tx_data = self.build_rollup_transaction_param(plan.sizes[0], proof_info).await?;
@@ -168,7 +168,7 @@ impl RollupHandle {
         }
 
         info!("rollup transaction have been confirmed");
-        Ok(receipt.transaction_hash.to_string())
+        Ok(receipt.transaction_hash)
     }
 
     async fn build_rollup_plan(&self, included_count: usize) -> Result<(RollupPlan, ProofInfo)> {
@@ -195,8 +195,7 @@ impl RollupHandle {
                 info!("do rollup {:?}", included_count);
                 let (plan, proof) = self.build_rollup_plan(included_count).await?;
                 let tx_hash = self.send_rollup_transaction(&plan, &proof).await?;
-                self.log_rollup_transaction(&tx_hash, included_count, plan.sizes[0])
-                    .await;
+                self.log_transaction(&tx_hash, included_count, plan.sizes[0]).await;
                 Ok(())
             }
         }

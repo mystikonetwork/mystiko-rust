@@ -11,7 +11,7 @@ pub async fn test_circuit_type_from_rollup_size() {
 }
 
 #[test]
-#[should_panic(expected = "un support rollup size: 32")]
+#[should_panic(expected = "unsupported rollup size: 32")]
 fn test_test_circuit_type_from_rollup_size_32() {
     let _ = circuit_type_from_rollup_size(32);
 }

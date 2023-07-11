@@ -60,7 +60,7 @@ impl ContextTrait for MockContext {
         let indexer = IndexerStub::new(&indexer_cfg).unwrap();
         let chain_explorer = core_cfg_parser
             .chain_explorer_cfg(roller_cfg.chain.chain_id)
-            .map(ExplorerStub::new);
+            .map(|url| ExplorerStub::new(url, roller_cfg.pull.explorer_request_timeout_secs).unwrap());
         let api_key = load_coin_market_api_key().unwrap();
 
         let mut token_price_cfg = create_token_price_config(run_mod, cfg_path).unwrap();
@@ -158,6 +158,10 @@ pub fn token_price_server_port(indexer_server_port: u16) -> u16 {
     indexer_server_port + 5000
 }
 
+pub fn explorer_server_port(chain_id: u64) -> u16 {
+    chain_id as u16 + 20000 + 8000
+}
+
 pub async fn create_mock_context(indexer_port: u16) -> MockContext {
     let _guard = ENV_MUTEX.write().await;
     env_init();
@@ -168,6 +172,6 @@ pub async fn create_mock_context(indexer_port: u16) -> MockContext {
 }
 
 pub fn get_pool_contracts(c: &MockContext) -> PoolContractConfig {
-    let pool_contracts = c.core_cfg_parser().pool_contracts(c.cfg().chain.chain_id);
+    let pool_contracts = c.core_cfg_parser().pool_contracts_cfg(c.cfg().chain.chain_id);
     pool_contracts[0].clone()
 }

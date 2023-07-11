@@ -22,19 +22,6 @@ pub async fn test_context_new() {
     let _ = c.token_price().await;
 }
 
-// todo remove this test
-//
-// #[tokio::test]
-// pub async fn test_mock_context_new() {
-//     let c = create_mock_context(20001).await;
-//     let provider = c.provider().await.unwrap();
-//     let moc = c.mock_provider().await;
-//     let block_number = U64::from("0x100");
-//     moc.push(block_number).expect("push block number failed");
-//     let number = provider.get_block_number().await.unwrap();
-//     assert_eq!(number, block_number);
-// }
-
 async fn create_mock_provider_server(port: u16) -> mockito::Server {
     let mut http_server = mockito::Server::new_with_port_async(port).await;
     let _ = http_server

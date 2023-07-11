@@ -10,8 +10,8 @@ use std::env;
 #[tokio::test]
 async fn test_read_config() {
     let _guard = ENV_MUTEX.write().await;
-
     let cfg = create_roller_config("testnet", "tests/test_files/config/only_roller").unwrap();
+
     assert_eq!(cfg.chain.chain_id, 5);
     assert_eq!(
         cfg.core.remote_base_url,
@@ -35,6 +35,10 @@ async fn test_read_config() {
     let cfg = create_roller_config("mainnet", "tests/test_files/config/base").unwrap();
     assert_eq!(cfg.chain.chain_id, 123456789);
     assert_eq!(cfg.rollup.force_rollup_block_count, 200);
+
+    cfg.pull.batch_block(ChainDataSource::Indexer);
+    cfg.pull.batch_block(ChainDataSource::Explorer);
+    cfg.pull.batch_block(ChainDataSource::Provider);
 
     env::remove_var("MYSTIKO_ROLLER.CHAIN.CHAIN_ID");
     env::remove_var("MYSTIKO_ROLLER.ROLLUP.FORCE_ROLLUP_BLOCK_COUNT");
@@ -105,6 +109,14 @@ async fn test_data_source() {
             ChainDataSource::Indexer
         ]
     );
+
+    let chain = ChainConfig {
+        chain_id: 1,
+        data_source_order: "provider,error,indexer".to_string(),
+    };
+
+    let order = chain.get_data_source_order();
+    assert_eq!(order, vec![ChainDataSource::Provider, ChainDataSource::Indexer]);
 }
 
 #[tokio::test]

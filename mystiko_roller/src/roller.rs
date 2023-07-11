@@ -11,7 +11,7 @@ use tracing::{error, info, Instrument};
 pub struct Roller {
     pub round: u64,
     pub stop: bool,
-    round_check_sec: u64,
+    round_check_secs: u64,
     pools: Vec<Pool>,
 }
 
@@ -19,7 +19,9 @@ impl Roller {
     pub async fn new(run_mod: &str, cfg_path: &str) -> Result<Roller> {
         let context = Arc::new(Context::new(run_mod, cfg_path).await?);
         info!("starting roller {:?}", context.cfg().chain.chain_id);
-        let pool_contracts = context.core_cfg_parser().pool_contracts(context.cfg().chain.chain_id);
+        let pool_contracts = context
+            .core_cfg_parser()
+            .pool_contracts_cfg(context.cfg().chain.chain_id);
         let mut pools = Vec::new();
         let tx_manager_cfg = create_tx_manager_config(run_mod, cfg_path)?;
         for (index, pool_contract) in pool_contracts.into_iter().enumerate() {
@@ -35,7 +37,7 @@ impl Roller {
         }
 
         Ok(Roller {
-            round_check_sec: context.cfg().pull.check_interval_secs,
+            round_check_secs: context.cfg().pull.check_interval_secs,
             round: 0,
             stop: false,
             pools,
@@ -52,7 +54,7 @@ impl Roller {
 
         loop {
             self.run(PoolAction::Run).await?;
-            sleep(Duration::from_secs(self.round_check_sec)).await;
+            sleep(Duration::from_secs(self.round_check_secs)).await;
             self.round += 1;
             if self.stop {
                 info!("roller stopped");

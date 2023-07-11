@@ -6,6 +6,7 @@ use mystiko_protocol::error::ProtocolError;
 use mystiko_server_utils::token_price::error::TokenPriceError;
 use mystiko_server_utils::tx_manager::error::TxManagerError;
 use mystiko_storage::error::StorageError;
+use reqwest::Error as ReqwestError;
 use serde_json::Error as SerdeJsonError;
 use thiserror::Error;
 use tokio::task::JoinError;
@@ -36,6 +37,8 @@ pub enum RollerError {
     CircuitNotFound,
     #[error("invalid commitment hash")]
     InvalidCommitmentHash,
+    #[error("invalid event logs {0}")]
+    InvalidEventLogs(String),
     #[error("invalid call data {0}")]
     InvalidCallData(String),
     #[error("rpc call error {0}")]
@@ -58,6 +61,10 @@ pub enum RollerError {
     JoinError(#[from] JoinError),
     #[error(transparent)]
     AnyhowError(#[from] AnyhowError),
+    #[error(transparent)]
+    ReqwestError(#[from] ReqwestError),
+    #[error("explorer error msg {1} code {0}")]
+    StubExplorerError(String, i32),
     #[error("commitment missing")]
     CommitmentMissing,
     #[error("new runtime error")]

@@ -71,7 +71,8 @@ impl ContextTrait for Context {
                 core_cfg_parser
                     .chain_explorer_cfg(roller_cfg.chain.chain_id)
                     .ok_or_else(|| RollerError::NoChainExplorer)?,
-            )),
+                roller_cfg.pull.explorer_request_timeout_secs,
+            )?),
             false => None,
         };
 
@@ -82,8 +83,8 @@ impl ContextTrait for Context {
             .chain_providers_options(Box::new(core_cfg_parser.clone()))
             .build();
         let provider = providers.get_or_create_provider(roller_cfg.chain.chain_id).await?;
-        let sign_endpoint = core_cfg_parser.sign_endpoint(roller_cfg.chain.chain_id);
-        let sign_provider = create_sign_provider(sign_endpoint).await?;
+        let signer_endpoint = core_cfg_parser.signer_endpoint(roller_cfg.chain.chain_id);
+        let sign_provider = create_sign_provider(signer_endpoint).await?;
 
         Ok(Context {
             core_cfg_parser: Arc::new(core_cfg_parser),

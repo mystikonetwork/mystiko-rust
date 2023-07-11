@@ -30,13 +30,17 @@ pub async fn test_run_roller_with_error() {
 
 #[tokio::test]
 pub async fn test_run_roller() {
-    let _guard = ENV_MUTEX.write().await;
-    env_init();
-    let mut r = Roller::new("mainnet", "./tests/test_files/config/roller_start")
-        .await
-        .unwrap();
+    let mut r = create_roller().await;
     r.stop = true;
     let result = r.start().await;
     assert!(result.is_ok());
     assert_eq!(r.round, 1);
+}
+
+async fn create_roller() -> Roller {
+    let _guard = ENV_MUTEX.write().await;
+    env_init();
+    Roller::new("mainnet", "./tests/test_files/config/roller_start")
+        .await
+        .unwrap()
 }

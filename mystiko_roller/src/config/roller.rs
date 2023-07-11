@@ -69,7 +69,7 @@ pub struct CoreConfig {
 #[allow(unused)]
 pub struct PullConfig {
     pub check_interval_secs: u64,
-    pub max_empty_queue_count: u64,
+    pub max_empty_queue_count: u32,
     pub batch_block_from_indexer: u32,
     pub batch_block_from_provider: u32,
     pub batch_block_from_explorer: u32,

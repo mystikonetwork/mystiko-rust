@@ -1,15 +1,13 @@
-use crate::chain::ChainDataGiver;
+use crate::chain::{parse_event_logs, ChainDataGiver};
 use crate::common::error::{Result, RollerError};
 use crate::config::roller::ChainDataSource;
 use crate::db::document::commitment::CommitmentInfo;
 use async_trait::async_trait;
-use ethers_contract::parse_log;
 use ethers_core::abi::Address;
 use ethers_core::types::{BlockNumber, U64};
 use ethers_providers::Middleware;
-use mystiko_abi::commitment_pool::{CommitmentPool, CommitmentQueuedFilter};
+use mystiko_abi::commitment_pool::CommitmentPool;
 use mystiko_ethers::provider::factory::Provider;
-use mystiko_utils::convert::u256_to_big_int;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -71,26 +69,7 @@ impl ChainDataGiver for ProviderStub {
             .from_block(BlockNumber::Number(U64::from(start)))
             .to_block(BlockNumber::Number(U64::from(end)));
         let logs = self.provider.get_logs(&event.filter).await?;
-        let events = logs
-            .into_iter()
-            .map(|log| Ok(parse_log(log)?))
-            .collect::<Result<Vec<CommitmentQueuedFilter>>>()?;
-
-        // todo get commitment block number
-        let cms = events
-            .iter()
-            .map(|cm| {
-                Ok(CommitmentInfo {
-                    chain_id,
-                    contract_address: contract_address.to_string(),
-                    commitment_hash: u256_to_big_int(&cm.commitment),
-                    block_number: start,
-                    rollup_fee: cm.rollup_fee.to_string(),
-                    leaf_index: cm.leaf_index.as_u32(),
-                    tx_hash: "".to_string(),
-                })
-            })
-            .collect::<Result<Vec<CommitmentInfo>>>()?;
+        let cms = parse_event_logs(chain_id, contract_address, logs)?;
         Ok(cms)
     }
 }
