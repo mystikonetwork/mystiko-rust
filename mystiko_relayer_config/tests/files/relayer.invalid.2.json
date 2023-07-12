@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.0.1",
   "gitRevision": "3f25038",
   "chains": [
     {
@@ -12,19 +12,16 @@
         {
           "assetType": "main",
           "assetSymbol": "ETH",
-          "assetDecimals": 18,
           "relayerFeeOfTenThousandth": 25
         },
         {
           "assetType": "erc20",
           "assetSymbol": "MTT",
-          "assetDecimals": 18,
           "relayerFeeOfTenThousandth": 25
         },
         {
           "assetType": "erc20",
           "assetSymbol": "mUSD",
-          "assetDecimals": 6,
           "relayerFeeOfTenThousandth": 25
         }
       ],

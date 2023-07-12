@@ -154,7 +154,6 @@ async fn test_all_register_info() {
             chain_id: anvil.chain_id(),
             options: Some(RegisterOptions {
                 asset_symbol: "TEST".to_string(),
-                asset_decimals: 16,
                 circuit_type: CircuitType::Transaction1x0,
                 show_unavailable: false,
             }),
@@ -574,6 +573,7 @@ fn create_relayer_config_json_str(chain_id: u64, address: Address) -> String {
                     "name": "Local",
                     "chainId": chain_id,
                     "assetSymbol": "TEST",
+                    "assetDecimals": 18,
                     "relayerContractAddress": address,
                     "contracts": [],
                     "transactionInfo": {

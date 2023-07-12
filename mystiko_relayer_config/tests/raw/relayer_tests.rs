@@ -92,7 +92,25 @@ async fn test_import_valid_json_file() {
 }
 
 #[tokio::test]
-async fn test_import_invalid_json_file() {
-    let file_config = create_raw_from_file::<RawRelayerConfig>("tests/files/relayer.invalid.json").await;
+async fn test_import_invalid_json_file_0() {
+    let file_config = create_raw_from_file::<RawRelayerConfig>("tests/files/relayer.invalid.0.json").await;
     assert!(file_config.is_err());
+    let err_msg = file_config.unwrap_err().to_string();
+    assert_eq!(err_msg.as_str(), "missing field `assetDecimals` at line 48 column 5");
+}
+
+#[tokio::test]
+async fn test_import_invalid_json_file_1() {
+    let file_config = create_raw_from_file::<RawRelayerConfig>("tests/files/relayer.invalid.1.json").await;
+    assert!(file_config.is_err());
+    let err_msg = file_config.unwrap_err().to_string();
+    assert_eq!(err_msg.as_str(), "missing field `assetType` at line 16 column 9");
+}
+
+#[tokio::test]
+async fn test_import_invalid_json_file_2() {
+    let file_config = create_raw_from_file::<RawRelayerConfig>("tests/files/relayer.invalid.2.json").await;
+    assert!(file_config.is_err());
+    let err_msg = file_config.unwrap_err().to_string();
+    assert_eq!(err_msg.as_str(), "missing field `assetDecimals` at line 16 column 9");
 }

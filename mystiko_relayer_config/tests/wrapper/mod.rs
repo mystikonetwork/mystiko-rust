@@ -1,4 +1,4 @@
-mod asset_test;
-mod chain_test;
-mod relayer_test;
-mod transaction_info_test;
+mod asset_tests;
+mod chain_tests;
+mod relayer_tests;
+mod transaction_info_tests;
