@@ -14,7 +14,7 @@ async fn test_success_responder() {
     let body = test::read_body(ServiceResponse::new(request, resp)).await;
 
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(body, "{\"code\":0,\"result\":\"Success\",\"error\":null}");
+    assert_eq!(body, "{\"code\":0,\"data\":\"Success\",\"message\":null}");
 }
 
 #[tokio::test]
@@ -28,5 +28,5 @@ async fn test_failed_responder() {
     let body = test::read_body(ServiceResponse::new(request, resp)).await;
 
     assert_eq!(status, StatusCode::OK);
-    assert_eq!(body, "{\"code\":-1,\"result\":null,\"error\":\"Error\"}");
+    assert_eq!(body, "{\"code\":-1,\"data\":null,\"message\":\"Error\"}");
 }
