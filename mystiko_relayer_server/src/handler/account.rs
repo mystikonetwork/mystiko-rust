@@ -13,7 +13,6 @@ use sha3::{Digest, Keccak256};
 use std::str::FromStr;
 use std::sync::Arc;
 
-#[derive(Debug)]
 pub struct AccountHandler<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
 }

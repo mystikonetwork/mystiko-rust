@@ -27,4 +27,8 @@ fn test_get_error_code() {
     assert_eq!(code, ResponseCode::ChainIdNotFound);
     let code = get_error_code(&ResponseError::AccountNotFoundInDatabase);
     assert_eq!(code, ResponseCode::AccountNotFoundInDatabase);
+    let code = get_error_code(&ResponseError::TransactionFailed {
+        error: "err".to_string(),
+    });
+    assert_eq!(code, ResponseCode::Failed);
 }

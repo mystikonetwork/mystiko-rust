@@ -20,7 +20,7 @@ pub struct ContractResponse {
     pub minimum_gas_fee: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JobStatusResponse {
     pub id: String,
@@ -31,7 +31,7 @@ pub struct JobStatusResponse {
     pub error: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ResponseQueueData {
     pub hash: String,

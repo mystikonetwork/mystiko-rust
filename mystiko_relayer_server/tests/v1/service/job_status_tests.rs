@@ -2,9 +2,11 @@ use crate::common::TestServer;
 use actix_web::test::{call_and_read_body_json, init_service, TestRequest};
 use actix_web::web::Data;
 use actix_web::App;
+use ethers_core::abi::AbiEncode;
+use ethers_core::types::TxHash;
 use mystiko_relayer_server::database::Database;
 use mystiko_relayer_server::error::ResponseError;
-use mystiko_relayer_server::handler::transaction::TransactionHandler;
+use mystiko_relayer_server::handler::transaction::{TransactionHandler, UpdateTransactionOptions};
 use mystiko_relayer_server::v1::response::JobStatusResponse;
 use mystiko_relayer_server::v1::service::job_status;
 use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
@@ -41,6 +43,18 @@ async fn test_successful_v1() {
     let insert = server.transaction_handler.create_by_request(request).await;
     assert!(insert.is_ok());
     let id = insert.unwrap().id;
+    let update = server
+        .transaction_handler
+        .update_by_id(
+            &id,
+            &UpdateTransactionOptions {
+                status: Some(TransactStatus::Pending),
+                error_message: None,
+                transaction_hash: Some(TxHash::random().encode_hex()),
+            },
+        )
+        .await;
+    assert!(update.is_ok());
 
     let req = TestRequest::get().uri(&format!("/jobs/{}", id)).to_request();
     let resp: ApiResponse<JobStatusResponse> = call_and_read_body_json(&app, req).await;
@@ -50,7 +64,7 @@ async fn test_successful_v1() {
 
     let info = resp.data.unwrap();
     assert_eq!(info.id, id);
-    assert_eq!(info.status, TransactStatus::Queued);
+    assert_eq!(info.status, TransactStatus::Pending);
 }
 
 #[actix_rt::test]

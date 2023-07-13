@@ -359,7 +359,6 @@ async fn gas_price_by_chain_id(chain_id: u64, providers: Data<Arc<RwLock<Provide
 }
 
 fn convert_sig_pk(sig_pk: String) -> Result<[u8; 32]> {
-    // convert 0x0000000000000000000000007e47ad819977cf3a513a544ed977791ceeb9688a to [u8; 32]
     let decode = hex::decode(&sig_pk[2..])?;
     let mut result = [0u8; 32];
     result.copy_from_slice(decode.as_slice());

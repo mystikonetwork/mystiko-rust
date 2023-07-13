@@ -146,6 +146,21 @@ async fn create_default_providers() {
 }
 
 #[actix_rt::test]
+async fn create_providers_chain_id_not_found() {
+    let server = TestServer::new(None).await.unwrap();
+    let app_state = server.app_state;
+    let mut providers = ProviderPool::builder()
+        .chain_providers_options(Box::new(app_state))
+        .build();
+    let provider = providers.get_or_create_provider(999).await;
+    assert!(provider.is_err());
+    assert_eq!(
+        provider.unwrap_err().to_string(),
+        "No provider configuration found for chain id 999"
+    );
+}
+
+#[actix_rt::test]
 async fn init_app_state_from_remote() {
     // testnet
     let app_state = init_app_state(
