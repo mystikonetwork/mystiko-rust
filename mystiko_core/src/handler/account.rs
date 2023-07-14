@@ -18,6 +18,7 @@ use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_types::AccountStatus;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -31,7 +32,7 @@ pub struct AccountHandler<F: StatementFormatter, S: Storage> {
     wallets: WalletHandler<F, S>,
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
 pub struct CreateAccountOptions {
     pub wallet_password: String,
     #[builder(default, setter(strip_option))]
@@ -42,7 +43,7 @@ pub struct CreateAccountOptions {
     pub secret_key: Option<String>,
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
 pub struct UpdateAccountOptions {
     pub wallet_password: String,
     #[builder(default, setter(strip_option))]
