@@ -110,9 +110,7 @@ where
                 TypedTransaction::try_from(tx).expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
             }
             false => {
-                // todo remove get gas price from provider
-                let gas_price = self.gas_price_legacy_tx(provider).await?;
-                let tx = self.build_legacy_tx(to, data, value, &gas_price, provider).await?;
+                let tx = self.build_legacy_tx(to, data, value, &max_gas_price, provider).await?;
                 TypedTransaction::try_from(tx).expect("Failed to convert TransactionRequest to TypedTransaction")
             }
         };

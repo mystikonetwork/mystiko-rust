@@ -158,7 +158,6 @@ pub async fn test_rollup_send_transaction() {
     mock.push(transaction.clone()).unwrap();
     mock.push(tx_hash).unwrap();
     mock.push(price).unwrap();
-    mock.push(price).unwrap();
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
     mock.push(price).unwrap();
@@ -181,7 +180,6 @@ pub async fn test_rollup_send_transaction() {
     mock.push(block_number).unwrap();
     mock.push(transaction.clone()).unwrap();
     mock.push(tx_hash).unwrap();
-    mock.push(price).unwrap();
     mock.push(price).unwrap();
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
@@ -208,8 +206,6 @@ pub async fn test_commitment_queue_check_by_transaction() {
 
     let mock = c.mock_provider().await;
     let nonce = U256::from(100);
-    let gas_price = U256::from(1000000);
-    mock.push(gas_price).unwrap();
     mock.push(nonce).unwrap();
     let result = handle.commitment_queue_check_by_transaction().await;
     assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
@@ -224,9 +220,7 @@ pub async fn test_commitment_queue_check_by_transaction2() {
     let mock = c.mock_provider().await;
     let gas = U256::from(100_000_000_000u64);
     let nonce = U256::from(100);
-    let gas_price = U256::from(1000000);
     mock.push(gas).unwrap();
-    mock.push(gas_price).unwrap();
     mock.push(nonce).unwrap();
     let _ = handle.commitment_queue_check_by_transaction().await;
 }

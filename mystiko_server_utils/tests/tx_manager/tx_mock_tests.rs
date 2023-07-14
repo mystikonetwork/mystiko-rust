@@ -137,7 +137,6 @@ async fn test_send_legacy_tx() {
     assert_eq!(gas_price.to_string(), "1000000");
 
     mock.push(gas).unwrap();
-    mock.push(nonce).unwrap();
     mock.push(price).unwrap();
     let gas = tx
         .estimate_gas(to_address, vec![].as_slice(), &value, &max_gas_price, &provider)
@@ -259,14 +258,6 @@ async fn test_legacy_tx_with_error() {
     assert!(matches!(gas_price.err().unwrap(), TxManagerError::GasPriceError(_)));
 
     let max_gas_price = U256::from(100_000_000_000u64);
-    mock.push(price).unwrap();
-    let value = ethers_core::utils::parse_ether("1").unwrap();
-    let gas = tx
-        .estimate_gas(to_address, vec![].as_slice(), &value, &max_gas_price, &provider)
-        .await;
-    assert!(matches!(gas.err().unwrap(), TxManagerError::NonceError(_)));
-
-    mock.push(nonce).unwrap();
     mock.push(price).unwrap();
     let value = ethers_core::utils::parse_ether("1").unwrap();
     let gas = tx
