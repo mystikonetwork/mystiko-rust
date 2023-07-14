@@ -1,5 +1,6 @@
 use crate::channel::transact_channel;
-use crate::common::{init_app_state, AppStateOptions};
+use crate::common::init_app_state;
+use crate::configs::load_config;
 use crate::database::init_sqlite_database;
 use crate::handler::account::AccountHandler;
 use crate::handler::transaction::TransactionHandler;
@@ -10,43 +11,56 @@ use actix_web::middleware::Logger;
 use actix_web::web::{scope, Data};
 use actix_web::{http, App, HttpServer};
 use anyhow::Result;
-use log::info;
+use log::{info, LevelFilter};
 use mystiko_ethers::provider::pool::ProviderPool;
 use mystiko_server_utils::token_price::config::TokenPriceConfig;
 use mystiko_server_utils::token_price::price::TokenPrice;
+use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
 #[derive(TypedBuilder)]
 pub struct ApplicationOptions<'a> {
-    host: &'a str,
-    port: u16,
     array_queue_capacity: usize,
-    app_state_options: AppStateOptions<'a>,
+    server_config_path: &'a str,
 }
 
 #[allow(clippy::needless_lifetimes)]
 pub async fn run_application<'a>(options: ApplicationOptions<'a>) -> Result<()> {
+    // init server config
+    let server_config = load_config(options.server_config_path)?;
+    // try init logger
+    let _ = env_logger::builder()
+        .filter_module("", LevelFilter::from_str(&server_config.settings.log_level)?)
+        .try_init();
+
+    info!("load server config successful");
+
+    let host = server_config.settings.host.as_str();
+    let port = &server_config.settings.port;
+    let api_version = &server_config.settings.api_version;
+    let sqlite_db_path = &server_config.settings.sqlite_db_path;
+    let accounts = &server_config.accounts;
+    let network_type = &server_config.settings.network_type;
+    let coin_market_cap_api_key = &server_config.settings.coin_market_cap_api_key;
+
     // init app state
-    let app_state = init_app_state(options.app_state_options).await?;
+    let app_state = init_app_state(server_config.clone()).await?;
 
     // init sqlite db connection
-    let db = Arc::new(init_sqlite_database(&app_state.server_config.sqlite_db_path).await?);
+    let db = Arc::new(init_sqlite_database(sqlite_db_path).await?);
 
     // create account handler
-    let account_handler = Arc::new(AccountHandler::new(db.clone(), &app_state.server_config.accounts).await?);
+    let account_handler = Arc::new(AccountHandler::new(db.clone(), accounts).await?);
 
     // create transaction handler
     let transaction_handler = Arc::new(TransactionHandler::new(db.clone()));
 
     // init token price
     let token_price = Arc::new(RwLock::new(TokenPrice::new(
-        &TokenPriceConfig::new(
-            serde_json::to_string(&app_state.server_config.network_type)?.as_str(),
-            None,
-        )?,
-        &app_state.server_config.coin_market_cap_api_key,
+        &TokenPriceConfig::new(serde_json::to_string(network_type)?.as_str(), None)?,
+        coin_market_cap_api_key,
     )?));
 
     // init transact channel
@@ -74,7 +88,7 @@ pub async fn run_application<'a>(options: ApplicationOptions<'a>) -> Result<()> 
     // run http server
     info!(
         "Application server start at {}:{}, available api version: {:?}",
-        options.host, options.port, &app_state.server_config.api_version
+        host, port, api_version
     );
 
     HttpServer::new(move || {
@@ -106,7 +120,7 @@ pub async fn run_application<'a>(options: ApplicationOptions<'a>) -> Result<()> 
                     .service(transaction_status),
             )
     })
-    .bind((options.host, options.port))?
+    .bind((host, *port))?
     .run()
     .await?;
 

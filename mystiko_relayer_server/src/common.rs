@@ -1,8 +1,7 @@
-use crate::configs::{load_config, ServerConfig};
+use crate::configs::ServerConfig;
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_middleware::providers::Quorum;
-use log::{info, LevelFilter};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_ethers::provider::factory::ProvidersOptions;
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
@@ -10,10 +9,8 @@ use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
 use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
 use mystiko_types::NetworkType::Testnet;
 use mystiko_types::ProviderType;
-use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use typed_builder::TypedBuilder;
 
 #[derive(Clone, Debug)]
 pub struct AppState {
@@ -53,31 +50,14 @@ impl ChainProvidersOptions for AppState {
     }
 }
 
-#[derive(TypedBuilder)]
-pub struct AppStateOptions<'a> {
-    log_level: &'a str,
-    server_config_path: &'a str,
-    #[builder(default)]
-    relayer_config_path: Option<&'a str>,
-    #[builder(default)]
-    mystiko_config_path: Option<&'a str>,
-}
-
-#[allow(clippy::needless_lifetimes)]
-pub async fn init_app_state<'a>(options: AppStateOptions<'a>) -> Result<AppState> {
-    // try init logger
-    let _ = env_logger::builder()
-        .filter_module("", LevelFilter::from_str(options.log_level)?)
-        .try_init();
-
-    // load server config
-    let server_config = load_config(options.server_config_path)?;
-    info!("load server config successful");
+pub async fn init_app_state(server_config: ServerConfig) -> Result<AppState> {
+    let relayer_config_path = &server_config.options.relayer_config_path;
+    let mystiko_config_path = &server_config.options.mystiko_config_path;
 
     // load default relayer config
-    let relayer_config = match options.relayer_config_path {
+    let relayer_config = match relayer_config_path {
         None => {
-            if server_config.network_type == Testnet {
+            if server_config.settings.network_type == Testnet {
                 RelayerConfig::from_remote_default_testnet().await?
             } else {
                 RelayerConfig::from_remote_default_mainnet().await?
@@ -87,9 +67,9 @@ pub async fn init_app_state<'a>(options: AppStateOptions<'a>) -> Result<AppState
     };
 
     // load default mystiko config
-    let mystiko_config = match options.mystiko_config_path {
+    let mystiko_config = match mystiko_config_path {
         None => {
-            if server_config.network_type == Testnet {
+            if server_config.settings.network_type == Testnet {
                 MystikoConfig::from_remote_default_testnet().await?
             } else {
                 MystikoConfig::from_remote_default_mainnet().await?

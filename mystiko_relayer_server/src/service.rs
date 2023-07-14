@@ -28,7 +28,7 @@ use validator::Validate;
 
 #[get("/handshake")]
 pub async fn handshake(data: Data<AppState>) -> actix_web::Result<impl Responder, ResponseError> {
-    let api_version = data.server_config.api_version.clone();
+    let api_version = data.server_config.settings.api_version.clone();
     let package_version = env!("CARGO_PKG_VERSION");
     Ok(success(
         HandshakeResponse::builder()

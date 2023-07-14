@@ -305,7 +305,13 @@ pub async fn transact_v1(
 }
 
 pub fn parse_transact_request(request: TransactRequestV1, asset_decimals: u32) -> Result<TransactRequestData> {
-    // convert sig_pk
+    let sig_pk = convert_sig_pk(request.sig_pk)?;
+    let out_encrypted_notes = convert_out_encrypted_notes(request.out_encrypted_notes)?;
+    info!("2");
+    let random_auditing_public_key = convert_random_auditing_public_key(request.random_auditing_public_key.as_str())?;
+    info!("3");
+    let encrypted_auditor_notes = convert_encrypted_auditor_notes(request.encrypted_auditor_notes)?;
+    info!("4");
     Ok(TransactRequestData {
         contract_param: TransactRequest {
             proof: Proof {
@@ -325,18 +331,16 @@ pub fn parse_transact_request(request: TransactRequestV1, asset_decimals: u32) -
             root_hash: request.root_hash,
             serial_numbers: request.serial_numbers,
             sig_hashes: request.sig_hashes,
-            sig_pk: convert_sig_pk(request.sig_pk)?,
+            sig_pk,
             public_amount: request.public_amount,
             relayer_fee_amount: request.relayer_fee_amount,
             out_commitments: request.out_commitments,
             out_rollup_fees: request.out_rollup_fees,
             public_recipient: request.public_recipient,
             relayer_address: request.relayer_address,
-            out_encrypted_notes: convert_out_encrypted_notes(request.out_encrypted_notes)?,
-            random_auditing_public_key: convert_random_auditing_public_key(
-                request.random_auditing_public_key.as_str(),
-            )?,
-            encrypted_auditor_notes: convert_encrypted_auditor_notes(request.encrypted_auditor_notes)?,
+            out_encrypted_notes,
+            random_auditing_public_key,
+            encrypted_auditor_notes,
         },
         transaction_type: convert_transaction_type(request.transaction_type),
         bridge_type: request.bridge_type,
@@ -368,7 +372,7 @@ fn convert_sig_pk(sig_pk: String) -> Result<[u8; 32]> {
 fn convert_out_encrypted_notes(out_encrypted_notes: Vec<String>) -> Result<Vec<Bytes>> {
     let mut result: Vec<Bytes> = vec![];
     for notes in out_encrypted_notes {
-        let decode = hex::decode(notes)?;
+        let decode = hex::decode(&notes[2..])?;
         let bytes: Bytes = Bytes::from(decode);
         result.push(bytes);
     }

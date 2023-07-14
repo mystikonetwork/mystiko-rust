@@ -12,7 +12,8 @@ use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
 use mystiko_relayer_server::channel::consumer::TransactionConsumer;
 use mystiko_relayer_server::channel::{transact_channel, TransactSendersMap};
-use mystiko_relayer_server::common::{init_app_state, AppState, AppStateOptions};
+use mystiko_relayer_server::common::{init_app_state, AppState};
+use mystiko_relayer_server::configs::load_config;
 use mystiko_relayer_server::database::Database;
 use mystiko_relayer_server::handler::account::AccountHandler;
 use mystiko_relayer_server::handler::transaction::TransactionHandler;
@@ -46,10 +47,12 @@ pub const TOKEN_PRICE_CONFIG_PATH: &str = "./tests/files/token_price.json";
 pub const TEST_RELAYER_CONFIG_SINGLE_PATH: &str = "./tests/files/relayer_config_single.json";
 #[allow(dead_code)]
 pub const SERVER_CONFIG_ID_NOT_FOUND: &str = "./tests/files/config_id_not_found.toml";
+#[allow(dead_code)]
+pub const TEST_RELAYER_CONFIG_PATH: &str = "./tests/files/relayer_config.json";
+#[allow(dead_code)]
+pub const TEST_MYSTIKO_CONFIG_PATH: &str = "./tests/files/mystiko_config.json";
 pub const TESTNET_CONFIG_PATH: &str = "./tests/files/config_test_testnet.toml";
 pub const MAINNET_CONFIG_PATH: &str = "./tests/files/config_test_mainnet.toml";
-pub const TEST_RELAYER_CONFIG_PATH: &str = "./tests/files/relayer_config.json";
-pub const TEST_MYSTIKO_CONFIG_PATH: &str = "./tests/files/mystiko_config.json";
 pub const ARRAY_QUEUE_CAPACITY: usize = 10;
 
 pub struct TestServer {
@@ -65,17 +68,10 @@ pub struct TestServer {
 
 impl TestServer {
     pub async fn new(mock: Option<MockProvider>) -> Result<Self> {
+        // load server config
+        let server_config = load_config(TESTNET_CONFIG_PATH)?;
         // init app state
-        let app_state = init_app_state(
-            AppStateOptions::builder()
-                .server_config_path(TESTNET_CONFIG_PATH)
-                .relayer_config_path(Some(TEST_RELAYER_CONFIG_PATH))
-                .mystiko_config_path(Some(TEST_MYSTIKO_CONFIG_PATH))
-                .log_level("debug")
-                .build(),
-        )
-        .await
-        .unwrap();
+        let app_state = init_app_state(server_config).await?;
 
         // create database in memory
         let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
@@ -162,27 +158,18 @@ async fn create_providers_chain_id_not_found() {
 
 #[actix_rt::test]
 async fn init_app_state_from_remote() {
+    let mut server_config = load_config(TESTNET_CONFIG_PATH).unwrap();
+    server_config.options.mystiko_config_path = None;
+    server_config.options.relayer_config_path = None;
     // testnet
-    let app_state = init_app_state(
-        AppStateOptions::builder()
-            .log_level("error")
-            .server_config_path(TESTNET_CONFIG_PATH)
-            .relayer_config_path(None)
-            .mystiko_config_path(None)
-            .build(),
-    )
-    .await;
+    let app_state = init_app_state(server_config).await;
     assert!(app_state.is_ok());
+
     // mainnet
-    let app_state = init_app_state(
-        AppStateOptions::builder()
-            .log_level("error")
-            .server_config_path(MAINNET_CONFIG_PATH)
-            .relayer_config_path(None)
-            .mystiko_config_path(None)
-            .build(),
-    )
-    .await;
+    let mut server_config = load_config(MAINNET_CONFIG_PATH).unwrap();
+    server_config.options.mystiko_config_path = None;
+    server_config.options.relayer_config_path = None;
+    let app_state = init_app_state(server_config).await;
     assert!(app_state.is_ok());
 }
 

@@ -1,7 +1,13 @@
-api_version = ["v2"]
+[settings]
+# testnet or mainnet
 network_type = "mainnet"
+log_level = "debug"
+host = "0.0.0.0"
+port = 8090
+coin_market_cap_api_key = "773d38a7-7c78-4790-94f5-2e15fb297ae9"
 sqlite_db_path = "db.sqlite"
-coin_market_cap_api_key = "773d38a7-7c78-4790-94f5-2e15fb297ea9"
+# available api version list
+api_version = ["v2"]
 
 [[accounts]]
 chain_id = 1

@@ -1,9 +1,11 @@
-# available api version list
-api_version = ["v1", "v2"]
-# testnet or mainnet
+[settings]
 network_type = "testnet"
-sqlite_db_path = "db.sqlite"
+log_level = "debug"
+host = "0.0.0.0"
+port = "8090"
 coin_market_cap_api_key = ""
+sqlite_db_path = "db.sqlite"
+api_version = ["v1", "v2"]
 
 [[accounts]]
 chain_id = 97

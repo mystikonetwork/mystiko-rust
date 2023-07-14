@@ -9,15 +9,35 @@ use validator::Validate;
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
 pub struct ServerConfig {
+    #[validate]
+    pub settings: Settings,
+    #[validate]
+    pub accounts: Vec<AccountConfig>,
+    #[validate]
+    #[serde(default)]
+    pub options: Options,
+}
+
+#[derive(Validate, Serialize, Deserialize, Debug, Clone)]
+pub struct Settings {
     #[validate(custom(function = "is_api_version"))]
     pub api_version: Vec<String>,
     pub network_type: NetworkType,
     #[validate(contains = ".sqlite")]
     pub sqlite_db_path: String,
+    pub log_level: String,
+    pub host: String,
+    pub port: u16,
     #[validate(length(min = 1))]
     pub coin_market_cap_api_key: String,
-    #[validate]
-    pub accounts: Vec<AccountConfig>,
+}
+
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, Default)]
+pub struct Options {
+    #[serde(default)]
+    pub mystiko_config_path: Option<String>,
+    #[serde(default)]
+    pub relayer_config_path: Option<String>,
 }
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]
