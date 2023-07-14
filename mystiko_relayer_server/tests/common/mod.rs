@@ -4,6 +4,7 @@ use ethereum_types::U256;
 use ethers_core::types::Bytes;
 use ethers_middleware::providers::MockProvider;
 use ethers_providers::Provider;
+use log::LevelFilter;
 use mockall::mock;
 use mockito::{Server, ServerGuard};
 use mystiko_abi::commitment_pool::TransactRequest;
@@ -25,7 +26,6 @@ use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use std::str::FromStr;
 use std::sync::Arc;
-use log::LevelFilter;
 use tokio::sync::RwLock;
 
 mock! {
