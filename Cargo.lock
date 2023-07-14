@@ -3307,6 +3307,7 @@ dependencies = [
  "mystiko_utils",
  "rand_core 0.6.4",
  "regex 1.9.0",
+ "serde",
  "thiserror",
  "tokio",
  "typed-builder",

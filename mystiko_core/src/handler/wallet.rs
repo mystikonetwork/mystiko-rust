@@ -13,6 +13,7 @@ use mystiko_storage::storage::Storage;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use rand_core::OsRng;
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -36,7 +37,7 @@ pub struct WalletHandler<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
 pub struct CreateWalletOptions {
     pub password: String,
     #[builder(default, setter(strip_option))]
