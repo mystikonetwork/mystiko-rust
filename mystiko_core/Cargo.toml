@@ -25,6 +25,7 @@ mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 rand_core = { version = "0.6.4", features = ["std"] }
 regex = { version = "1.7.3" }
+serde = { version = "1.0.152", features = ["derive", "rc"] }
 thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.26.0", features = ["sync"] }
 typed-builder = { version = "0.14.0" }

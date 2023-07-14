@@ -16,6 +16,7 @@ use mystiko_storage::filter::{QueryFilter, SubFilter};
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_types::ProviderType;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Duration;
 use typed_builder::TypedBuilder;
@@ -24,7 +25,7 @@ pub const DEFAULT_PROVIDER_TIMEOUT_MS: u32 = 5000;
 pub const DEFAULT_PROVIDER_MAX_TRY_COUNT: u32 = 2;
 pub const DEFAULT_PROVIDER_QUORUM_WEIGHT: u32 = 1;
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
 pub struct UpdateProviderOptions {
     url: String,
     #[builder(default, setter(strip_option))]
@@ -35,7 +36,7 @@ pub struct UpdateProviderOptions {
     quorum_weight: Option<u32>,
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
 pub struct UpdateChainOptions {
     #[builder(default, setter(strip_option))]
     pub name: Option<String>,
