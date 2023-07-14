@@ -307,11 +307,8 @@ pub async fn transact_v1(
 pub fn parse_transact_request(request: TransactRequestV1, asset_decimals: u32) -> Result<TransactRequestData> {
     let sig_pk = convert_sig_pk(request.sig_pk)?;
     let out_encrypted_notes = convert_out_encrypted_notes(request.out_encrypted_notes)?;
-    info!("2");
     let random_auditing_public_key = convert_random_auditing_public_key(request.random_auditing_public_key.as_str())?;
-    info!("3");
     let encrypted_auditor_notes = convert_encrypted_auditor_notes(request.encrypted_auditor_notes)?;
-    info!("4");
     Ok(TransactRequestData {
         contract_param: TransactRequest {
             proof: Proof {
@@ -376,7 +373,6 @@ fn convert_out_encrypted_notes(out_encrypted_notes: Vec<String>) -> Result<Vec<B
         let bytes: Bytes = Bytes::from(decode);
         result.push(bytes);
     }
-    info!("convert out encrypted notes {:?}", result);
     Ok(result)
 }
 
