@@ -25,6 +25,7 @@ use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use std::str::FromStr;
 use std::sync::Arc;
+use log::LevelFilter;
 use tokio::sync::RwLock;
 
 mock! {
@@ -70,6 +71,11 @@ impl TestServer {
     pub async fn new(mock: Option<MockProvider>) -> Result<Self> {
         // load server config
         let server_config = load_config(TESTNET_CONFIG_PATH)?;
+
+        let _ = env_logger::builder()
+            .filter_module("", LevelFilter::from_str(&server_config.settings.log_level)?)
+            .try_init();
+
         // init app state
         let app_state = init_app_state(server_config).await?;
 
