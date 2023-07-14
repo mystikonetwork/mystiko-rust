@@ -13,14 +13,12 @@ pub async fn test_insert_commitments() {
     let pool_contract = get_pool_contracts(&c);
 
     assert_eq!(data.get_next_sync_block(), 0);
-    data.set_next_sync_block(2);
-    assert_eq!(data.get_next_sync_block(), 2);
-    data.set_next_sync_block(1);
+    data.update_next_sync_block(2);
     assert_eq!(data.get_next_sync_block(), 2);
     assert_eq!(data.get_included_count(), 0);
     assert_eq!(data.get_commitments_queue_count(), 0);
 
-    data.load_commitment_from_db().await.unwrap();
+    data.init().await.unwrap();
     assert_eq!(data.get_next_sync_block(), pool_contract.start_block());
     assert_eq!(data.get_included_count(), 0);
     assert_eq!(data.get_commitments_queue_count(), 0);
@@ -60,7 +58,7 @@ pub async fn test_insert_commitments() {
 
     let context_trait2: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let mut data2 = DataHandler::new(test_chain_id, &pool_contract, context_trait2).await;
-    data2.load_commitment_from_db().await.unwrap();
+    data2.init().await.unwrap();
     let db_cms = c
         .db()
         .await
@@ -150,11 +148,11 @@ pub async fn test_generate_plan() {
 pub async fn test_empty_queue_counter() {
     let test_chain_id = 102;
     let (mut data, _) = create_data_handle(test_chain_id).await;
-    assert_eq!(data.get_empty_queue_counter(), 0);
-    data.inc_empty_queue_counter();
-    assert_eq!(data.get_empty_queue_counter(), 1);
-    data.set_empty_queue_counter(100);
-    assert_eq!(data.get_empty_queue_counter(), 100);
+    assert_eq!(data.get_empty_queue_check_counter(), 0);
+    data.inc_empty_queue_check_counter();
+    assert_eq!(data.get_empty_queue_check_counter(), 1);
+    data.set_empty_queue_check_counter(100);
+    assert_eq!(data.get_empty_queue_check_counter(), 100);
 }
 
 async fn create_data_handle(test_chain_id: u64) -> (DataHandler, Arc<MockContext>) {

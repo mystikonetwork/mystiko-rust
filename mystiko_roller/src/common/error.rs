@@ -2,6 +2,7 @@ use anyhow::Error as AnyhowError;
 use ethers_core::abi::Error as AbiError;
 use ethers_providers::ProviderError;
 use mehcode_config::ConfigError;
+use mystiko_crypto::error::MerkleTreeError;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_server_utils::token_price::error::TokenPriceError;
 use mystiko_server_utils::tx_manager::error::TxManagerError;
@@ -56,6 +57,8 @@ pub enum RollerError {
     #[error(transparent)]
     TxManagerError(#[from] TxManagerError),
     #[error(transparent)]
+    MerkleTreeError(#[from] MerkleTreeError),
+    #[error(transparent)]
     ProtocolError(#[from] ProtocolError),
     #[error(transparent)]
     JoinError(#[from] JoinError),
@@ -63,8 +66,8 @@ pub enum RollerError {
     AnyhowError(#[from] AnyhowError),
     #[error(transparent)]
     ReqwestError(#[from] ReqwestError),
-    #[error("explorer error msg {1} code {0}")]
-    StubExplorerError(String, i32),
+    #[error("explorer error {0}")]
+    ExplorerError(String),
     #[error("commitment missing")]
     CommitmentMissing,
     #[error("new runtime error")]

@@ -90,6 +90,7 @@ impl PullConfig {
 #[allow(unused)]
 pub struct RollupConfig {
     pub merkle_tree_height: u32,
+    pub max_gas_price: u64,
     pub force_rollup_block_count: u64,
     pub rollup1_gas_cost: u32,
     pub rollup2_gas_cost: u32,
@@ -161,6 +162,6 @@ pub fn create_token_price_config(run_mod: &str, cfg_path: &str) -> Result<TokenP
     TokenPriceConfig::new(run_mod, Some(cfg_path)).map_err(|e| e.into())
 }
 
-pub fn create_tx_manager_config(run_mod: &str, cfg_path: &str) -> Result<TxManagerConfig> {
-    TxManagerConfig::new(run_mod, Some(cfg_path)).map_err(|e| e.into())
+pub fn create_tx_manager_config(cfg_path: &str) -> Result<TxManagerConfig> {
+    TxManagerConfig::new(Some(cfg_path)).map_err(|e| e.into())
 }

@@ -52,12 +52,12 @@ impl PullHandle {
                     let end = std::cmp::min(start + batch as u64 - 1, latest_block);
                     self.pull_queued_commitments(giver.clone(), start, end).await?;
                 }
-                self.data.write().await.set_next_sync_block(latest_block + 1);
+                self.data.write().await.update_next_sync_block(latest_block + 1);
             }
             Ordering::Equal => {}
             Ordering::Greater => {
                 info!(
-                    "start block {:?} is greater/equal than {:?} latest block {:?}",
+                    "current block {:?} is bigger than {:?} latest block {:?}",
                     current_block,
                     giver.data_source(),
                     latest_block

@@ -9,21 +9,24 @@ use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_downloader::DownloaderBuilder;
 use mystiko_protocol::rollup::{Rollup, RollupProof};
 use num_bigint::BigInt;
+use std::cmp::Ordering;
 use std::sync::Arc;
 use tracing::{error, info};
 
 pub struct CommitmentData {
-    pub hash: BigInt,
-    rollup_fee: U256,
-    block_number: u64,
+    pub cm: BigInt,
+    pub rollup_fee: U256,
+    pub block_number: u64,
+    pub deposit_tx: String,
 }
 
 impl CommitmentData {
     pub fn from(info: &CommitmentInfo) -> Self {
         CommitmentData {
-            hash: info.commitment_hash.clone(),
+            cm: info.commitment_hash.clone(),
             rollup_fee: U256::from_str_radix(&info.rollup_fee, 10).expect("rollup fee error"),
             block_number: info.block_number,
+            deposit_tx: info.tx_hash.clone(),
         }
     }
 }
@@ -44,62 +47,80 @@ pub struct DataHandler {
     pool_contract: PoolContractConfig,
     context: Arc<dyn ContextTrait>,
     commitments: Vec<CommitmentData>,
-    tree: Option<MerkleTree>,
+    tree: MerkleTree,
+    empty_queue_check_counter: u32,
     next_sync_block: u64,
-    empty_queue_counter: u32,
-    latest_rollup_block_number: u64,
+    latest_rollup_tx_block_number: u64,
 }
 
 impl DataHandler {
     pub async fn new(chain_id: u64, pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait + Send>) -> Self {
+        let height = context.cfg().rollup.merkle_tree_height;
+        let tree = MerkleTree::new(None, Some(height), None).unwrap();
         DataHandler {
             chain_id,
             pool_contract: pool_contract.clone(),
             context,
-            next_sync_block: 0_u64,
             commitments: vec![],
-            tree: None,
-            empty_queue_counter: 0,
-            latest_rollup_block_number: 1,
+            tree,
+            empty_queue_check_counter: 0,
+            next_sync_block: 0_u64,
+            latest_rollup_tx_block_number: 0_u64,
         }
     }
 
-    pub fn get_empty_queue_counter(&self) -> u32 {
-        self.empty_queue_counter
+    pub async fn init(&mut self) -> Result<()> {
+        let cms = self
+            .context
+            .db()
+            .await
+            .find_all_commitment(self.chain_id, self.pool_contract.address())
+            .await;
+        info!("init load {:?} commitments from db", cms.len());
+
+        for doc in &cms {
+            self.push_commitment_in_queue(&doc.data)?;
+        }
+
+        self.revert_next_sync_block();
+        info!("start block number at {:?}", self.next_sync_block);
+        Ok(())
     }
 
-    pub fn inc_empty_queue_counter(&mut self) {
-        self.empty_queue_counter += 1;
+    pub fn get_empty_queue_check_counter(&self) -> u32 {
+        self.empty_queue_check_counter
     }
 
-    pub fn set_empty_queue_counter(&mut self, counter: u32) {
-        self.empty_queue_counter = counter;
+    pub fn inc_empty_queue_check_counter(&mut self) {
+        self.empty_queue_check_counter += 1;
     }
 
-    pub fn get_latest_rollup_block_number(&self) -> u64 {
-        self.latest_rollup_block_number
+    pub fn set_empty_queue_check_counter(&mut self, counter: u32) {
+        self.empty_queue_check_counter = counter;
     }
 
-    pub fn set_latest_rollup_block_number(&mut self, block_number: u64) {
-        self.latest_rollup_block_number = block_number;
+    pub fn get_latest_rollup_tx_block_number(&self) -> u64 {
+        self.latest_rollup_tx_block_number
+    }
+
+    pub fn set_latest_rollup_tx_block_number(&mut self, block_number: u64) {
+        self.latest_rollup_tx_block_number = block_number;
     }
 
     pub fn get_next_sync_block(&self) -> u64 {
         self.next_sync_block
     }
 
-    pub fn set_next_sync_block(&mut self, block_number: u64) {
-        if block_number > self.next_sync_block {
-            self.next_sync_block = block_number;
-        }
+    pub fn update_next_sync_block(&mut self, block_number: u64) {
+        self.next_sync_block = block_number;
     }
 
-    pub fn reset_next_sync_block(&mut self) {
-        if let Some(last_commitment) = self.commitments.last() {
-            self.set_next_sync_block(last_commitment.block_number);
-        } else {
-            self.set_next_sync_block(self.pool_contract.start_block());
-        }
+    pub fn revert_next_sync_block(&mut self) {
+        let block_number = match self.commitments.last() {
+            Some(cm) => cm.block_number,
+            None => self.pool_contract.start_block(),
+        };
+        self.next_sync_block = block_number;
     }
 
     pub fn get_batch_commitments(&self, start: usize, count: usize) -> &[CommitmentData] {
@@ -114,7 +135,7 @@ impl DataHandler {
     fn push_commitment_in_queue(&mut self, cm: &CommitmentInfo) -> Result<()> {
         let expect_leaf_index = self.commitments.len();
         if cm.leaf_index as usize != expect_leaf_index {
-            self.reset_next_sync_block();
+            self.revert_next_sync_block();
             error!(
                 "leaf index mismatch insert {:?} expect {:?}, revert next sync block number to {:?}",
                 cm.leaf_index,
@@ -129,32 +150,16 @@ impl DataHandler {
         Ok(())
     }
 
-    pub async fn load_commitment_from_db(&mut self) -> Result<()> {
-        let cms = self
-            .context
-            .db()
-            .await
-            .find_all_commitment(self.chain_id, self.pool_contract.address())
-            .await;
-
-        info!("load {:?} commitments from db", cms.len());
-
-        for doc in &cms {
-            self.push_commitment_in_queue(&doc.data)?;
-        }
-
-        self.reset_next_sync_block();
-        info!("start block number at {:?}", self.next_sync_block);
-        Ok(())
-    }
-
     pub async fn insert_commitments(&mut self, cms: &[CommitmentInfo]) -> Result<()> {
         for cm in cms {
             let index = cm.leaf_index as usize;
             if index < self.commitments.len() {
-                assert_eq!(self.commitments[index].hash, cm.commitment_hash);
+                assert_eq!(self.commitments[index].cm, cm.commitment_hash);
             } else {
-                info!("push commitment in queue {:?} {:?}", cm.leaf_index, cm.commitment_hash);
+                info!(
+                    "push commitment in queue {:?} {:?} from deposit tx {:?}",
+                    cm.leaf_index, cm.commitment_hash, cm.tx_hash
+                );
                 self.push_commitment_in_queue(cm)?;
                 self.context.db().await.insert_commitment(cm).await;
             }
@@ -163,18 +168,11 @@ impl DataHandler {
     }
 
     pub fn get_included_count(&self) -> usize {
-        self.tree.as_ref().map_or(0, |t| t.count())
+        self.tree.count()
     }
 
     pub fn get_commitments_queue_count(&self) -> usize {
         self.commitments.len()
-    }
-
-    fn rebuild_tree(&mut self, count: usize) {
-        info!("rebuild merkle tree with included count {:?}", count);
-        let height = self.context.cfg().rollup.merkle_tree_height;
-        let init_elem: Vec<BigInt> = self.commitments.iter().take(count).map(|cm| cm.hash.clone()).collect();
-        self.tree = Some(MerkleTree::new(Some(init_elem), Some(height), None).expect("rebuild merkle tree meet error"));
     }
 
     fn build_rollup_plan(&self, force_rollup_block_count: u64) -> RollupPlan {
@@ -203,21 +201,24 @@ impl DataHandler {
         }
     }
 
-    pub fn generate_plan(&mut self, included: usize, force_rollup_block_count: u64) -> Result<RollupPlan> {
-        assert!(included <= self.commitments.len());
-        let tree_count = self.tree.as_ref().map_or(0, |t| t.count());
-        if self.tree.is_none() || tree_count > included {
-            self.rebuild_tree(included);
-        } else if tree_count < included {
-            if let Some(tree) = &mut self.tree {
+    pub fn generate_plan(&mut self, included_count: usize, force_rollup_block_count: u64) -> Result<RollupPlan> {
+        assert!(included_count <= self.commitments.len());
+        let tree_len = self.tree.count();
+        match tree_len.cmp(&included_count) {
+            Ordering::Equal => {}
+            Ordering::Less => {
                 let cms = self
                     .commitments
                     .iter()
-                    .skip(tree_count)
-                    .take(included - tree_count)
-                    .map(|cm| cm.hash.clone())
+                    .skip(tree_len)
+                    .take(included_count - tree_len)
+                    .map(|cm| cm.cm.clone())
                     .collect();
-                tree.bulk_insert(cms).expect("tree bulk insert error");
+                self.tree.bulk_insert(cms)?;
+            }
+            Ordering::Greater => {
+                info!("revert merkle tree with included count {:?}", included_count);
+                self.tree.revert(included_count)?
             }
         }
 
@@ -229,14 +230,13 @@ impl DataHandler {
         let rollup_size = plan.sizes[0];
 
         info!("generate proof size {:?}", rollup_size);
-        let tree = self.tree.as_mut().unwrap();
-        let tree_len = tree.count();
+        let tree_len = self.tree.count();
         let new_leaves = self
             .commitments
             .iter()
             .skip(tree_len)
             .take(plan.sizes[0])
-            .map(|cm| cm.hash.clone())
+            .map(|cm| cm.cm.clone())
             .collect();
 
         let circuits_type = circuit_type_from_rollup_size(rollup_size);
@@ -258,7 +258,7 @@ impl DataHandler {
             .read_bytes_failover(circuits_cfg.proving_key_file(), None)
             .await?;
 
-        let mut rollup = Rollup::new(tree, new_leaves, program, abi, pkey);
+        let mut rollup = Rollup::new(&mut self.tree, new_leaves, program, abi, pkey);
         let proof = rollup.prove()?;
         Ok(ProofInfo { r: proof })
     }

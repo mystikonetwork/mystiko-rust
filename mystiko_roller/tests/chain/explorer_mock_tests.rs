@@ -38,11 +38,11 @@ pub async fn test_explorer_rpc_error_response() {
     let result = stub.get_included_count(2, "error_address1").await;
     assert!(matches!(result.err().unwrap(), RollerError::ReqwestError(_)));
     let result = stub.get_included_count(2, "error_address2").await;
-    assert!(matches!(result.err().unwrap(), RollerError::StubExplorerError(_, _)));
+    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
     let result = stub.get_included_count(2, "error_address3").await;
-    assert!(matches!(result.err().unwrap(), RollerError::StubExplorerError(_, _)));
+    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
     let result = stub.get_included_count(2, "error_address4").await;
-    assert!(matches!(result.err().unwrap(), RollerError::StubExplorerError(_, _)));
+    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
 }
 
 #[tokio::test]
@@ -50,11 +50,11 @@ pub async fn test_explorer_api_error_response() {
     let server = create_explorer_api_error_server(3).await;
     let stub = create_explorer_stub(&server.url("").to_string(), "test_explorer").await;
     let result = stub.get_queued_commitments(3, "", 100, 1000).await;
-    assert!(matches!(result.err().unwrap(), RollerError::StubExplorerError(_, _)));
+    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
     let result = stub.get_queued_commitments(3, "", 200, 1000).await;
-    assert!(matches!(result.err().unwrap(), RollerError::StubExplorerError(_, _)));
+    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
     let result = stub.get_queued_commitments(3, "", 300, 1000).await;
-    assert!(matches!(result.err().unwrap(), RollerError::SerdeJsonError(_)));
+    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
 }
 
 async fn create_explorer_server(chain_id: u64, contract_address: &str, key: &str) -> Server {
@@ -149,7 +149,7 @@ async fn create_explorer_api_error_server(chain_id: u64) -> Server {
     let commitment_query = "module=logs&action=getLogs&fromBlock=100";
     let commitment_rsp = ExplorerApiResponse {
         status: "0".to_string(),
-        message: "OK".to_string(),
+        message: "No records found".to_string(),
         result: json!(vec!["error1".to_string()]),
     };
     let commitment_json = json_encoded(json!(commitment_rsp));
@@ -157,7 +157,7 @@ async fn create_explorer_api_error_server(chain_id: u64) -> Server {
 
     let commitment_query = "module=logs&action=getLogs&fromBlock=200";
     let commitment_rsp = ExplorerApiResponse {
-        status: "1".to_string(),
+        status: "2".to_string(),
         message: "Error".to_string(),
         result: json!(vec!["error2".to_string()]),
     };

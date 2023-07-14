@@ -31,7 +31,7 @@ pub async fn test_rollup_with_provider() {
     assert!(matches!(result.err().unwrap(), RollerError::ProviderError(_)));
 
     let mock = c.mock_provider().await;
-    let block_number = U64::from("0x1");
+    let block_number = U64::from("0x0");
     mock.push(block_number).unwrap();
     let result = handle.rollup(stub_provider.clone()).await;
     assert!(result.is_ok());
@@ -126,6 +126,7 @@ pub async fn test_rollup_send_transaction() {
         total_fee: U256::from("10000000000000000"),
         force: false,
     };
+    let token_price_server = create_mock_token_price_server(test_chain_id).await;
 
     let proof = get_proof();
     let result = handle.send_rollup_transaction(&plan, &proof).await;
@@ -139,7 +140,6 @@ pub async fn test_rollup_send_transaction() {
     let result = handle.send_rollup_transaction(&plan, &proof).await;
     assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
 
-    let token_price_server = create_mock_token_price_server(test_chain_id).await;
     let gas = U256::from(100_000_000_000u64);
     let nonce = U256::from(100);
     let price = U256::from(1000000);
@@ -200,19 +200,19 @@ pub async fn test_rollup_log_transaction() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "unexpected estimate gas error")]
 pub async fn test_commitment_queue_check_by_transaction() {
     let test_chain_id = 306;
     let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;
     let result = handle.commitment_queue_check_by_transaction().await;
-    assert!(result.is_ok());
+    assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
 
     let mock = c.mock_provider().await;
     let nonce = U256::from(100);
     let gas_price = U256::from(1000000);
     mock.push(gas_price).unwrap();
     mock.push(nonce).unwrap();
-    let _ = handle.commitment_queue_check_by_transaction().await;
+    let result = handle.commitment_queue_check_by_transaction().await;
+    assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
 }
 
 #[tokio::test]
@@ -301,7 +301,7 @@ async fn create_rollup_handle(
 
     let c = Arc::new(c);
     let pool_contract = get_pool_contracts(&c);
-    let tx_manager_cfg = create_tx_manager_config("testnet", "tests/test_files/config/base").unwrap();
+    let tx_manager_cfg = create_tx_manager_config("tests/test_files/config/base").unwrap();
     let context_trait: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let data = DataHandler::new(chain_id, &pool_contract, context_trait).await;
     let data_rc = Arc::new(RwLock::new(data));

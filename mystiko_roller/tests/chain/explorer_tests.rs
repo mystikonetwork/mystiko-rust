@@ -1,6 +1,7 @@
 use crate::common::ENV_MUTEX;
 use mystiko_roller::chain::explorer::ExplorerStub;
 use mystiko_roller::chain::ChainDataGiver;
+use mystiko_roller::common::error::RollerError;
 use mystiko_roller::config::roller::ChainDataSource;
 use mystiko_roller::db::document::commitment::CommitmentInfo;
 use num_bigint::BigInt;
@@ -8,11 +9,11 @@ use std::env;
 use std::str::FromStr;
 
 #[tokio::test]
-pub async fn test_explorer_stub() {
+pub async fn test_explorer() {
     let stub = {
         let _guard = ENV_MUTEX.write().await;
         env::set_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY", "");
-        let stub = ExplorerStub::new("https://api.polygonscan.com", 5);
+        let stub = ExplorerStub::new("https://api.bscscan.com", 5);
         env::remove_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY");
         stub
     };
@@ -22,13 +23,41 @@ pub async fn test_explorer_stub() {
     let data_source = stub.data_source();
     assert_eq!(data_source, ChainDataSource::Explorer);
     let result = stub
-        .get_latest_block_number(137, "0x95Dfa68De44eCe33F64C4Ac8e5D569B2C5e90A51")
+        .get_latest_block_number(0, "0x95Dfa68De44eCe33F64C4Ac8e5D569B2C5e90A51")
         .await;
-    assert!(result.unwrap() >= 44789729);
+    assert!(result.unwrap() > 1000);
+}
+
+#[tokio::test]
+pub async fn test_explorer_stub_key_error() {
+    let stub = {
+        let _guard = ENV_MUTEX.write().await;
+        env::set_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY", "");
+        let stub = ExplorerStub::new("https://api.bscscan.com", 5);
+        env::remove_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY");
+        stub
+    };
+
+    assert!(stub.is_ok());
+    let stub = stub.unwrap();
+    let data_source = stub.data_source();
+    assert_eq!(data_source, ChainDataSource::Explorer);
     let result = stub
-        .get_included_count(137, "0x95Dfa68De44eCe33F64C4Ac8e5D569B2C5e90A51")
+        .get_latest_block_number(0, "0x95Dfa68De44eCe33F64C4Ac8e5D569B2C5e90A51")
         .await;
-    assert!(result.unwrap() >= 13223);
+    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
+}
+
+#[tokio::test]
+pub async fn test_get_commitment() {
+    let stub = {
+        let _guard = ENV_MUTEX.write().await;
+        env::set_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY", "");
+        let stub = ExplorerStub::new("https://api.polygonscan.com", 5).unwrap();
+        env::remove_var("MYSTIKO_ROLLER_CHAIN_EXPLORER_API_KEY");
+        stub
+    };
+
     let result = stub
         .get_queued_commitments(137, "0x95Dfa68De44eCe33F64C4Ac8e5D569B2C5e90A51", 44899568, 44899569)
         .await;

@@ -8,7 +8,7 @@ use mystiko_indexer_client::client::IndexerClient;
 use mystiko_indexer_client::types::commitment_queued::CommitmentQueuedForContractRequest;
 use num_bigint::BigInt;
 use std::time::Duration;
-use tracing::info;
+use tracing::debug;
 
 pub struct IndexerStub {
     client: IndexerClient,
@@ -53,7 +53,7 @@ impl ChainDataGiver for IndexerStub {
         start: u64,
         end: u64,
     ) -> Result<Vec<CommitmentInfo>> {
-        info!("get indexer queued commitment start: {:}, end: {:} ", start, end);
+        debug!("get indexer queued commitment start: {:}, end: {:} ", start, end);
 
         self.client
             .find_commitment_queued_for_contract(&CommitmentQueuedForContractRequest {

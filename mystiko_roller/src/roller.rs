@@ -23,7 +23,7 @@ impl Roller {
             .core_cfg_parser()
             .pool_contracts_cfg(context.cfg().chain.chain_id);
         let mut pools = Vec::new();
-        let tx_manager_cfg = create_tx_manager_config(run_mod, cfg_path)?;
+        let tx_manager_cfg = create_tx_manager_config(cfg_path)?;
         for (index, pool_contract) in pool_contracts.into_iter().enumerate() {
             info!("create pool instance t{:?} {:?}", index, pool_contract.address());
             let pool = Pool::new(

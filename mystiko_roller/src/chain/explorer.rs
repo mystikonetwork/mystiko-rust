@@ -1,15 +1,15 @@
-use crate::chain::{parse_event_logs, ChainDataGiver};
+use crate::chain::event_log::{parse_event_logs, IntermediateLog};
+use crate::chain::ChainDataGiver;
 use crate::common::env::load_chain_explorer_api_key;
 use crate::common::error::{Result, RollerError};
 use crate::config::roller::ChainDataSource;
 use crate::db::document::commitment::CommitmentInfo;
 use async_trait::async_trait;
-use ethers_core::types::Log;
 use reqwest::header::{HeaderValue, ACCEPT};
 use reqwest::Response;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::fmt::Debug;
 use std::time::Duration;
 
@@ -36,7 +36,9 @@ where
     T: DeserializeOwned + Serialize,
 {
     fn process_response_data(&self) -> Result<T> {
-        let result = serde_json::from_value::<T>(self.result.clone())?;
+        let result = serde_json::from_value::<T>(self.result.clone()).map_err(|e| {
+            RollerError::ExplorerError(format!("rpc invalid response data: {:?}, error: {}", self.result, e))
+        })?;
         Ok(result)
     }
 }
@@ -46,14 +48,13 @@ where
     T: DeserializeOwned + Serialize,
 {
     fn process_response_data(&self) -> Result<T> {
-        if self.status == "1" && self.message == "OK" {
-            let result = serde_json::from_value::<T>(self.result.clone())?;
+        if self.status == "1" || (self.status == "0" && self.message == "No records found") {
+            let result = serde_json::from_value::<T>(self.result.clone()).map_err(|e| {
+                RollerError::ExplorerError(format!("api invalid response data: {:?}, error: {}", self.result, e))
+            })?;
             Ok(result)
         } else {
-            Err(RollerError::StubExplorerError(
-                self.result.to_string(),
-                self.status.parse::<i32>().unwrap_or(-1),
-            ))
+            Err(RollerError::ExplorerError(format!("status error {}", json!(self))))
         }
     }
 }
@@ -104,20 +105,25 @@ impl ExplorerStub {
             .headers()
             .get("content-type")
             .and_then(|value| value.to_str().ok())
-            .ok_or_else(|| RollerError::StubExplorerError("content type not found".to_string(), -1))?;
+            .ok_or_else(|| RollerError::ExplorerError("content type not found".to_string()))?;
 
         if !content_type.contains("application/json") {
-            return Err(RollerError::StubExplorerError(
-                "content type not supported".to_string(),
-                -1,
-            ));
+            return Err(RollerError::ExplorerError("content type not supported".to_string()));
         }
 
         let data = response.bytes().await?;
-        let response = serde_json::from_slice::<R>(data.as_ref());
-        match response {
+        let rsp_result = serde_json::from_slice::<R>(data.as_ref());
+        match rsp_result {
             Ok(r) => r.process_response_data(),
-            Err(err) => Err(RollerError::StubExplorerError(err.to_string(), -1)),
+            Err(_) => Err(self.process_response_error(data.as_ref())),
+        }
+    }
+
+    fn process_response_error(&self, data: &[u8]) -> RollerError {
+        let result = serde_json::from_slice::<ExplorerApiResponse>(data);
+        match result {
+            Ok(r) => RollerError::ExplorerError(format!("error response {}", json!(r))),
+            Err(_) => RollerError::ExplorerError(format!("unknown error {:?}", data)),
         }
     }
 }
@@ -133,10 +139,9 @@ impl ChainDataGiver for ExplorerStub {
         let _ = contract_address;
         let action = "/api?module=proxy&action=eth_blockNumber";
         let url = format!("{}{}&apikey={}", self.url, action, self.key);
-
         let rsp = self.get::<ExplorerRpcResponse, String>(&url).await?;
         let block_number = u64::from_str_radix(rsp.trim_start_matches("0x"), 16)
-            .map_err(|_| RollerError::StubExplorerError(format!("invalid block number response: {}", rsp), -1))?;
+            .map_err(|_| RollerError::ExplorerError(format!("invalid block number response: {}", rsp)))?;
         Ok(block_number)
     }
 
@@ -149,7 +154,7 @@ impl ChainDataGiver for ExplorerStub {
         let url = format!("{}{}&apikey={}", self.url, action, self.key);
         let rsp = self.get::<ExplorerRpcResponse, String>(&url).await?;
         let included_count = u64::from_str_radix(rsp.trim_start_matches("0x"), 16)
-            .map_err(|_| RollerError::StubExplorerError(format!("invalid included count response: {}", rsp), -1))?;
+            .map_err(|_| RollerError::ExplorerError(format!("invalid included count response: {}", rsp)))?;
         Ok(included_count as usize)
     }
 
@@ -166,7 +171,7 @@ impl ChainDataGiver for ExplorerStub {
             start, end, contract_address,
         );
         let url = format!("{}{}&apikey={}", self.url, action, self.key);
-        let logs = self.get::<ExplorerApiResponse, Vec<Log>>(&url).await?;
+        let logs = self.get::<ExplorerApiResponse, Vec<IntermediateLog>>(&url).await?;
         let cms = parse_event_logs(chain_id, contract_address, logs)?;
         Ok(cms)
     }

@@ -19,7 +19,7 @@ use typed_builder::TypedBuilder;
 pub struct TxManager<P> {
     _marker: PhantomData<P>,
     config: TxManagerConfig,
-    chain_id: U64,
+    chain_id: u64,
     wallet: LocalWallet,
     is_1559_tx: bool,
 }
@@ -27,7 +27,7 @@ pub struct TxManager<P> {
 #[derive(Debug, Clone, TypedBuilder)]
 pub struct TxBuilder {
     config: TxManagerConfig,
-    chain_id: U64,
+    chain_id: u64,
     wallet: LocalWallet,
 }
 
@@ -69,8 +69,8 @@ where
             .estimate_eip1559_fees()
             .await
             .map_err(|e| TxManagerError::GasPriceError(e.to_string()))?;
-        if priority_fee < self.config.min_priority_fee_per_gas {
-            priority_fee = self.config.min_priority_fee_per_gas;
+        if priority_fee < self.config.min_priority_fee_per_gas.into() {
+            priority_fee = self.config.min_priority_fee_per_gas.into();
         }
         Ok((max_fee_per_gas, priority_fee))
     }
@@ -93,18 +93,24 @@ where
         }
     }
 
-    pub async fn estimate_gas(&self, to: Address, data: &[u8], value: &U256, provider: &Provider<P>) -> Result<U256> {
+    pub async fn estimate_gas(
+        &self,
+        to: Address,
+        data: &[u8],
+        value: &U256,
+        max_gas_price: &U256,
+        provider: &Provider<P>,
+    ) -> Result<U256> {
         let typed_tx = match self.is_1559_tx {
             true => {
-                let max_fee_per_gas = self.choose_max_gas_price(None);
                 let priority_fee = self.config.min_priority_fee_per_gas;
-
                 let tx = self
-                    .build_1559_tx(to, data, value, &max_fee_per_gas, &priority_fee, provider)
+                    .build_1559_tx(to, data, value, max_gas_price, &priority_fee.into(), provider)
                     .await?;
                 TypedTransaction::try_from(tx).expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
             }
             false => {
+                // todo remove get gas price from provider
                 let gas_price = self.gas_price_legacy_tx(provider).await?;
                 let tx = self.build_legacy_tx(to, data, value, &gas_price, provider).await?;
                 TypedTransaction::try_from(tx).expect("Failed to convert TransactionRequest to TypedTransaction")
@@ -124,22 +130,21 @@ where
         data: &[u8],
         value: &U256,
         gas_limit: &U256,
-        tx_max_gas_price: Option<U256>,
+        tx_max_gas_price: &U256,
         provider: &Provider<P>,
     ) -> Result<TxHash> {
         info!(
             "send tx to {:?} with gas_limit {:?} and max_gas_price {:?}",
-            to, gas_limit, tx_max_gas_price
+            to, gas_limit, *tx_max_gas_price
         );
 
         let gas_limit = gas_limit * (100 + self.config.gas_limit_reserve_percentage) / 100;
         if self.is_1559_tx {
             let (max_fee_per_gas, priority_fee) = self.gas_price_1559_tx(provider).await?;
-            let max_gas_price = self.choose_max_gas_price(tx_max_gas_price);
-            if max_fee_per_gas + priority_fee > max_gas_price {
+            if max_fee_per_gas + priority_fee > *tx_max_gas_price {
                 return Err(TxManagerError::GasPriceError("gas price too high".into()));
             }
-            let max_fee_per_gas = max_gas_price - priority_fee;
+            let max_fee_per_gas = *tx_max_gas_price - priority_fee;
             let mut tx_request = self
                 .build_1559_tx(to, data, value, &max_fee_per_gas, &priority_fee, provider)
                 .await?;
@@ -147,8 +152,7 @@ where
             self.send_1559_tx(tx_request, provider).await
         } else {
             let gas_price = self.gas_price_legacy_tx(provider).await?;
-            let max_gas_price = self.choose_max_gas_price(tx_max_gas_price);
-            if gas_price > max_gas_price {
+            if gas_price > *tx_max_gas_price {
                 return Err(TxManagerError::GasPriceError("gas price too high".into()));
             }
             let mut tx_request = self.build_legacy_tx(to, data, value, &gas_price, provider).await?;
@@ -173,7 +177,7 @@ where
                     .get_block_number()
                     .await
                     .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?;
-                if current_block_number - block_number < self.config.confirm_blocks {
+                if current_block_number < block_number.saturating_add(self.config.confirm_blocks.into()) {
                     info!("waiting for tx to be confirmed");
                     continue;
                 }
@@ -275,13 +279,6 @@ where
 
     pub fn is_1559_tx(&self) -> bool {
         self.is_1559_tx
-    }
-
-    fn choose_max_gas_price(&self, tx_max_gas_price: Option<U256>) -> U256 {
-        match tx_max_gas_price {
-            Some(price) => std::cmp::min(price, self.config.max_gas_price),
-            None => self.config.max_gas_price,
-        }
     }
 
     async fn get_current_nonce(&self, provider: &Provider<P>) -> Result<U256> {

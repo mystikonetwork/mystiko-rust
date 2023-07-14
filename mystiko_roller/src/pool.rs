@@ -60,7 +60,7 @@ impl Pool {
     }
 
     pub async fn init(self) -> Result<Pool> {
-        self.data.write().await.load_commitment_from_db().await?;
+        self.data.write().await.init().await?;
         Ok(self)
     }
 
@@ -101,17 +101,19 @@ impl Pool {
         let include_count = self.data.read().await.get_included_count();
         match queue_len.cmp(&include_count) {
             Ordering::Greater => {
-                self.data.write().await.set_empty_queue_counter(0);
+                self.data.write().await.set_empty_queue_check_counter(0);
                 Ok(())
             }
             Ordering::Equal => {
-                self.data.write().await.inc_empty_queue_counter();
-                let empty_queue_counter = self.data.read().await.get_empty_queue_counter();
-                if empty_queue_counter > self.context.cfg().pull.max_empty_queue_count {
-                    if let Ok(false) = self.rollup.commitment_queue_check_by_transaction().await {
-                        self.data.write().await.reset_next_sync_block();
-                        self.data.write().await.set_empty_queue_counter(0);
+                self.data.write().await.inc_empty_queue_check_counter();
+                let check_counter = self.data.read().await.get_empty_queue_check_counter();
+                if check_counter > self.context.cfg().pull.max_empty_queue_count {
+                    if !self.rollup.commitment_queue_check_by_transaction().await? {
+                        self.data.write().await.revert_next_sync_block();
+                        self.data.write().await.set_latest_rollup_tx_block_number(0);
                         return Err(RollerError::CommitmentMissing);
+                    } else {
+                        self.data.write().await.set_empty_queue_check_counter(0);
                     }
                 }
                 Ok(())

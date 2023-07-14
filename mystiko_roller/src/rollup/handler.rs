@@ -51,7 +51,7 @@ impl RollupHandle {
         info!("local wallet address: {:?}", local_wallet.address());
         let builder = TxBuilder::builder()
             .config(tx_manager_cfg.clone())
-            .chain_id(chain_id.into())
+            .chain_id(chain_id)
             .wallet(local_wallet)
             .build();
         let signer = context.signer();
@@ -117,54 +117,54 @@ impl RollupHandle {
             .await
             .get_batch_commitments(include_count, rollup_size)
             .iter()
-            .for_each(|cm| info!("rollup commitment {:?} in transaction {:?}", cm.hash, tx_hash));
+            .for_each(|cm| {
+                info!(
+                    "rollup commitment {:?} from deposit tx {:?} with {}",
+                    cm.cm, cm.deposit_tx, tx_hash
+                )
+            });
     }
 
+    // todo check if tx meet revert error when run two roller at the same time
     pub async fn send_rollup_transaction(&self, plan: &RollupPlan, proof_info: &ProofInfo) -> Result<H256> {
         info!("send rollup transaction");
         let signer = self.context.signer();
         let tx_data = self.build_rollup_transaction_param(plan.sizes[0], proof_info).await?;
+        let max_gas_price = self.calc_tx_max_gas_price(plan).await?;
+        let gas_price: U256 = if max_gas_price > self.cfg.max_gas_price.into() || !plan.force {
+            max_gas_price
+        } else {
+            self.cfg.max_gas_price.into()
+        };
+
         let gas_limit = self
             .tx
-            .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &signer)
+            .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &gas_price, &signer)
             .await?;
         info!("rollup transaction gas limit: {:?}", gas_limit);
-        let tx_hash = if plan.force {
-            info!("force send rollup transaction");
-            self.tx
-                .send(
-                    self.to_address,
-                    tx_data.as_slice(),
-                    &U256::zero(),
-                    &gas_limit,
-                    None,
-                    &signer,
-                )
-                .await?
-        } else {
-            let max_gas_price = self.calc_tx_max_gas_price(plan).await?;
-            info!("send rollup transaction with max gas price {:?}", max_gas_price);
-            self.tx
-                .send(
-                    self.to_address,
-                    tx_data.as_slice(),
-                    &U256::zero(),
-                    &gas_limit,
-                    Some(max_gas_price),
-                    &signer,
-                )
-                .await?
-        };
-        info!("send rollup transaction hash: {:?}", tx_hash.to_string());
 
+        info!("send rollup transaction with gas price {:?}", gas_price);
+        let tx_hash = self
+            .tx
+            .send(
+                self.to_address,
+                tx_data.as_slice(),
+                &U256::zero(),
+                &gas_limit,
+                &gas_price,
+                &signer,
+            )
+            .await?;
+
+        info!("send rollup transaction hash: {:?}", tx_hash.to_string());
         let receipt = self.tx.confirm(&signer, tx_hash).await?;
         if let Some(block_number) = receipt.block_number {
             self.data
                 .write()
                 .await
-                .set_latest_rollup_block_number(block_number.as_u64());
+                .set_latest_rollup_tx_block_number(block_number.as_u64());
         } else {
-            panic!("rollup transaction block number is none, receipt {:?}", receipt);
+            error!("receipt block number is none");
         }
 
         info!("rollup transaction have been confirmed");
@@ -205,7 +205,7 @@ impl RollupHandle {
         let latest_block = giver
             .get_latest_block_number(self.chain_id, self.pool_contract_cfg.address())
             .await?;
-        if latest_block <= self.data.read().await.get_latest_rollup_block_number() {
+        if latest_block <= self.data.read().await.get_latest_rollup_tx_block_number() {
             info!("giver {:?} latest {:?} block slow", giver.data_source(), latest_block);
             return Ok(());
         }
@@ -221,7 +221,13 @@ impl RollupHandle {
         let tx_data = self.build_rollup_transaction_param(1, &STATIC_PROOF_DATA).await?;
         let gas_limit = self
             .tx
-            .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &signer)
+            .estimate_gas(
+                self.to_address,
+                tx_data.as_slice(),
+                &U256::zero(),
+                &self.cfg.max_gas_price.into(),
+                &signer,
+            )
             .await;
         match gas_limit {
             Ok(_) => panic!("must error for commitment queue check"),
@@ -229,15 +235,18 @@ impl RollupHandle {
                 let err_string = format!("{}", err);
                 if matches!(err, TxManagerError::EstimateGasError(_)) {
                     if err_string.contains(&*STATIC_ERROR_INVALID_ROLLUP_SIZE) {
+                        info!("commitment queue empty");
                         return Ok(true);
                     } else if err_string.contains(&*STATIC_ERROR_INVALID_LEAF_HASH) {
+                        error!("commitment queue not empty, should do pull");
                         return Ok(false);
                     } else {
-                        panic!("unexpected estimate gas error {:?}", err);
+                        error!("unexpected estimate gas error {:?}", err);
+                        return Err(err.into());
                     }
                 }
                 error!("unexpected error {:?}", err);
-                Ok(true)
+                Err(err.into())
             }
         }
     }

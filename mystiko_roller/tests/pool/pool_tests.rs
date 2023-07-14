@@ -48,7 +48,7 @@ pub async fn test_check_commitment_queue() {
     assert!(result.is_ok());
 
     for _ in 0..pool.context.cfg().pull.max_empty_queue_count + 1 {
-        pool.data.write().await.inc_empty_queue_counter();
+        pool.data.write().await.inc_empty_queue_check_counter();
     }
     let result = pool.check_commitment_queue().await;
     assert!(result.is_ok());
@@ -58,7 +58,7 @@ async fn create_pool_handle(test_chain_id: u64) -> (Pool, Arc<MockContext>, Stri
     let c = create_mock_context(indexer_server_port(test_chain_id)).await;
     let c = Arc::new(c);
     let pool_contracts = c.core_cfg_parser().pool_contracts_cfg(c.cfg().chain.chain_id);
-    let tx_manager_cfg = create_tx_manager_config("testnet", "tests/test_files/config/base").unwrap();
+    let tx_manager_cfg = create_tx_manager_config("tests/test_files/config/base").unwrap();
     let c2: Arc<dyn ContextTrait + Send> = Arc::clone(&c) as Arc<dyn ContextTrait + Send>;
     let pool = Pool::new(0, pool_contracts[0].clone(), &tx_manager_cfg, c2).await;
     (pool, c, pool_contracts[0].address().to_string())

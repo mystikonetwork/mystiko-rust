@@ -1,4 +1,5 @@
-use crate::chain::{parse_event_logs, ChainDataGiver};
+use crate::chain::event_log::parse_event_logs;
+use crate::chain::ChainDataGiver;
 use crate::common::error::{Result, RollerError};
 use crate::config::roller::ChainDataSource;
 use crate::db::document::commitment::CommitmentInfo;
