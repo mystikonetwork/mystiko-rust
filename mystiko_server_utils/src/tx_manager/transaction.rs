@@ -110,7 +110,7 @@ where
                 TypedTransaction::try_from(tx).expect("Failed to convert Eip1559TransactionRequest to TypedTransaction")
             }
             false => {
-                let tx = self.build_legacy_tx(to, data, value, &max_gas_price, provider).await?;
+                let tx = self.build_legacy_tx(to, data, value, max_gas_price, provider).await?;
                 TypedTransaction::try_from(tx).expect("Failed to convert TransactionRequest to TypedTransaction")
             }
         };
