@@ -207,10 +207,12 @@ impl TransactionConsumer {
     }
 
     async fn get_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>> {
-        let mut pool = self.providers.write().await;
-        let provider = pool.get_or_create_provider(chain_id).await?;
-        drop(pool);
-
+        let provider = self
+            .providers
+            .write()
+            .await
+            .get_or_create_provider(chain_id)
+            .await?;
         Ok(provider)
     }
 
