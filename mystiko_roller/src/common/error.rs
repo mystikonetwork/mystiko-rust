@@ -70,6 +70,6 @@ pub enum RollerError {
     ExplorerError(String),
     #[error("commitment missing")]
     CommitmentMissing,
-    #[error("new runtime error")]
-    RuntimeError,
+    #[error("new runtime error {0}")]
+    RuntimeError(String),
 }

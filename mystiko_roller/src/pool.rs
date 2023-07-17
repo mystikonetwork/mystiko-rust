@@ -10,7 +10,6 @@ use mystiko_server_utils::tx_manager::error::TxManagerError::GasPriceError;
 use crate::chain::provider::ProviderStub;
 use crate::chain::ChainDataGiver;
 use mystiko_server_utils::tx_manager::config::TxManagerConfig;
-use std::cmp::Ordering;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::time::{sleep, Duration};
@@ -92,36 +91,8 @@ impl Pool {
 
     pub async fn run_from_one_source<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
         self.pull.pull(giver.clone()).await?;
-        self.check_commitment_queue().await?;
+        self.rollup.check_commitment_queue(giver.clone()).await?;
         self.rollup.rollup(giver).await
-    }
-
-    pub async fn check_commitment_queue(&self) -> Result<()> {
-        let queue_len = self.data.read().await.get_commitments_queue_count();
-        let include_count = self.data.read().await.get_included_count();
-        match queue_len.cmp(&include_count) {
-            Ordering::Greater => {
-                self.data.write().await.set_empty_queue_check_counter(0);
-                Ok(())
-            }
-            Ordering::Equal => {
-                self.data.write().await.inc_empty_queue_check_counter();
-                let check_counter = self.data.read().await.get_empty_queue_check_counter();
-                if check_counter > self.context.cfg().pull.max_empty_queue_count {
-                    if !self.rollup.commitment_queue_check_by_transaction().await? {
-                        self.data.write().await.revert_next_sync_block();
-                        self.data.write().await.set_latest_rollup_tx_block_number(0);
-                        return Err(RollerError::CommitmentMissing);
-                    } else {
-                        self.data.write().await.set_empty_queue_check_counter(0);
-                    }
-                }
-                Ok(())
-            }
-            Ordering::Less => {
-                panic!("commitment queue {} < included count {}", queue_len, include_count);
-            }
-        }
     }
 
     fn should_failover(&self, err: &RollerError) -> bool {

@@ -1,5 +1,5 @@
 use crate::context::mock_context::{create_mock_context, indexer_server_port, MockContext};
-use crate::test_files::load::{load_commitment_logs, load_commitments};
+use crate::test_files::load::load_commitment_logs;
 use ethers_core::types::{Log, U64};
 use mystiko_roller::chain::provider::ProviderStub;
 use mystiko_roller::config::roller::create_tx_manager_config;
@@ -27,31 +27,6 @@ pub async fn test_run_from_one_source() {
     let stub_provider = Arc::new(ProviderStub::new(&addr, c.provider()));
     let result = pool.run_from_one_source(stub_provider).await;
     assert!(result.is_err());
-}
-
-#[tokio::test]
-pub async fn test_check_commitment_queue() {
-    let test_chain_id = 403;
-    let (pool, _, _) = create_pool_handle(test_chain_id).await;
-    let result = pool.check_commitment_queue().await;
-    assert!(result.is_ok());
-
-    let cms = load_commitments(
-        "tests/test_files/data/commitments.json",
-        Some(test_chain_id),
-        Some("0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411"),
-    )
-    .await;
-    let (cms1, _) = cms.split_at(3);
-    pool.data.write().await.insert_commitments(cms1).await.unwrap();
-    let result = pool.check_commitment_queue().await;
-    assert!(result.is_ok());
-
-    for _ in 0..pool.context.cfg().pull.max_empty_queue_count + 1 {
-        pool.data.write().await.inc_empty_queue_check_counter();
-    }
-    let result = pool.check_commitment_queue().await;
-    assert!(result.is_ok());
 }
 
 async fn create_pool_handle(test_chain_id: u64) -> (Pool, Arc<MockContext>, String) {

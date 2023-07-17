@@ -51,6 +51,7 @@ async fn test_get_rollup_cost() {
         merkle_tree_height: 32,
         max_gas_price: 100,
         force_rollup_block_count: 100,
+        max_empty_queue_count: 30,
         rollup1_gas_cost: 1,
         rollup2_gas_cost: 2,
         rollup4_gas_cost: 3,

@@ -21,6 +21,7 @@
     "merkle_tree_height": 20,
     "max_gas_price": 100000000000,
     "force_rollup_block_count": 100,
+    "max_empty_queue_count": 30,
     "rollup1_gas_cost": 331000,
     "rollup2_gas_cost": 336000,
     "rollup4_gas_cost": 340000,

@@ -1,7 +1,7 @@
 use crate::chain::ChainDataGiver;
 use crate::common::env::load_roller_private_key;
 use crate::common::error::{Result, RollerError};
-use crate::config::roller::RollupConfig;
+use crate::config::roller::{ChainDataSource, RollupConfig};
 use crate::context::ContextTrait;
 use crate::core::slice::SlicePattern;
 use crate::data::handler::{DataHandler, ProofInfo, RollupPlan};
@@ -119,7 +119,7 @@ impl RollupHandle {
             .iter()
             .for_each(|cm| {
                 info!(
-                    "rollup commitment {:?} from deposit tx {:?} with {}",
+                    "rollup commitment 0x{:x} from deposit tx {:?} with {}",
                     cm.cm, cm.deposit_tx, tx_hash
                 )
             });
@@ -183,16 +183,20 @@ impl RollupHandle {
         Ok((plan, proof))
     }
 
-    async fn do_rollup(&self, included_count: usize) -> Result<()> {
+    async fn do_rollup(&self, data_source: &ChainDataSource, included_count: usize) -> Result<()> {
         let queue_count = self.data.read().await.get_commitments_queue_count();
         match queue_count.cmp(&(included_count)) {
             Ordering::Equal => Ok(()),
             Ordering::Less => {
-                error!("commitment slow {:?}, included: {:?}", queue_count, included_count);
+                error!(
+                    "commitment queue {:?} slow than {:?} included count: {:?}",
+                    queue_count, data_source, included_count
+                );
                 Err(RollerError::CommitmentQueueSlow)
             }
             Ordering::Greater => {
-                info!("do rollup {:?}", included_count);
+                // todo check commitment tree root match?
+                info!("do rollup {:?} {:?}", data_source, included_count);
                 let (plan, proof) = self.build_rollup_plan(included_count).await?;
                 let tx_hash = self.send_rollup_transaction(&plan, &proof).await?;
                 self.log_transaction(&tx_hash, included_count, plan.sizes[0]).await;
@@ -213,7 +217,39 @@ impl RollupHandle {
         let included_count = giver
             .get_included_count(self.chain_id, self.pool_contract_cfg.address())
             .await?;
-        self.do_rollup(included_count).await
+        self.do_rollup(&giver.data_source(), included_count).await
+    }
+
+    pub async fn check_commitment_queue<T: ChainDataGiver + ?Sized>(&self, giver: Arc<T>) -> Result<()> {
+        let queue_len = self.data.read().await.get_commitments_queue_count();
+        let include_count = giver
+            .get_included_count(self.chain_id, self.pool_contract_cfg.address())
+            .await?;
+        let source = &giver.data_source();
+        match queue_len.cmp(&include_count) {
+            Ordering::Greater => {
+                self.data.write().await.reset_giver_check_counter(source, 0);
+                Ok(())
+            }
+            Ordering::Equal => {
+                self.data.write().await.inc_giver_check_counter(source);
+                let counter = self.data.read().await.get_giver_check_counter(source)?;
+                if counter > self.cfg.max_empty_queue_count {
+                    info!("{:?} commitment check at included count {}", source, include_count);
+                    if !self.commitment_queue_check_by_transaction().await? {
+                        self.data.write().await.revert_next_sync_block();
+                        self.data.write().await.set_latest_rollup_tx_block_number(0);
+                        return Err(RollerError::CommitmentMissing);
+                    } else {
+                        self.data.write().await.reset_giver_check_counter(source, 0);
+                    }
+                }
+                Ok(())
+            }
+            Ordering::Less => {
+                panic!("commitment queue {} < included count {}", queue_len, include_count);
+            }
+        }
     }
 
     pub async fn commitment_queue_check_by_transaction(&self) -> Result<bool> {
@@ -234,16 +270,15 @@ impl RollupHandle {
             Err(err) => {
                 let err_string = format!("{}", err);
                 if matches!(err, TxManagerError::EstimateGasError(_)) {
-                    if err_string.contains(&*STATIC_ERROR_INVALID_ROLLUP_SIZE) {
-                        info!("commitment queue empty");
-                        return Ok(true);
+                    return if err_string.contains(&*STATIC_ERROR_INVALID_ROLLUP_SIZE) {
+                        Ok(true)
                     } else if err_string.contains(&*STATIC_ERROR_INVALID_LEAF_HASH) {
                         error!("commitment queue not empty, should do pull");
-                        return Ok(false);
+                        Ok(false)
                     } else {
                         error!("unexpected estimate gas error {:?}", err);
-                        return Err(err.into());
-                    }
+                        Err(err.into())
+                    };
                 }
                 error!("unexpected error {:?}", err);
                 Err(err.into())

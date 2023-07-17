@@ -2,6 +2,7 @@ use crate::context::mock_context::{create_mock_context, get_pool_contracts, inde
 use crate::test_files::load::load_commitments;
 use ethers_core::types::U256;
 use mystiko_roller::common::error::RollerError;
+use mystiko_roller::config::roller::ChainDataSource;
 use mystiko_roller::context::ContextTrait;
 use mystiko_roller::data::handler::{DataHandler, RollupPlan};
 use std::sync::Arc;
@@ -145,14 +146,14 @@ pub async fn test_generate_plan() {
 }
 
 #[tokio::test]
-pub async fn test_empty_queue_counter() {
+pub async fn test_giver_check_counter() {
     let test_chain_id = 102;
     let (mut data, _) = create_data_handle(test_chain_id).await;
-    assert_eq!(data.get_empty_queue_check_counter(), 0);
-    data.inc_empty_queue_check_counter();
-    assert_eq!(data.get_empty_queue_check_counter(), 1);
-    data.set_empty_queue_check_counter(100);
-    assert_eq!(data.get_empty_queue_check_counter(), 100);
+    assert_eq!(data.get_giver_check_counter(&ChainDataSource::Indexer).unwrap(), 0);
+    data.inc_giver_check_counter(&ChainDataSource::Indexer);
+    assert_eq!(data.get_giver_check_counter(&ChainDataSource::Indexer).unwrap(), 1);
+    data.reset_giver_check_counter(&ChainDataSource::Indexer, 100);
+    assert_eq!(data.get_giver_check_counter(&ChainDataSource::Indexer).unwrap(), 100);
 }
 
 async fn create_data_handle(test_chain_id: u64) -> (DataHandler, Arc<MockContext>) {

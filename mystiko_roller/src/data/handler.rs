@@ -1,5 +1,6 @@
 use crate::common::env::load_roller_circuits_path;
 use crate::common::error::{Result, RollerError};
+use crate::config::roller::ChainDataSource;
 use crate::context::ContextTrait;
 use crate::data::calc::{calc_rollup_size_array, circuit_type_from_rollup_size};
 use crate::db::document::commitment::CommitmentInfo;
@@ -10,6 +11,7 @@ use mystiko_downloader::DownloaderBuilder;
 use mystiko_protocol::rollup::{Rollup, RollupProof};
 use num_bigint::BigInt;
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::{error, info};
 
@@ -48,14 +50,15 @@ pub struct DataHandler {
     context: Arc<dyn ContextTrait>,
     commitments: Vec<CommitmentData>,
     tree: MerkleTree,
-    empty_queue_check_counter: u32,
     next_sync_block: u64,
     latest_rollup_tx_block_number: u64,
+    counters: HashMap<ChainDataSource, u32>,
 }
 
 impl DataHandler {
     pub async fn new(chain_id: u64, pool_contract: &PoolContractConfig, context: Arc<dyn ContextTrait + Send>) -> Self {
         let height = context.cfg().rollup.merkle_tree_height;
+        let sources = context.cfg().chain.get_data_source_order();
         let tree = MerkleTree::new(None, Some(height), None).unwrap();
         DataHandler {
             chain_id,
@@ -63,9 +66,9 @@ impl DataHandler {
             context,
             commitments: vec![],
             tree,
-            empty_queue_check_counter: 0,
             next_sync_block: 0_u64,
             latest_rollup_tx_block_number: 0_u64,
+            counters: sources.iter().map(|k| (k.clone(), 0_u32)).collect(),
         }
     }
 
@@ -87,16 +90,23 @@ impl DataHandler {
         Ok(())
     }
 
-    pub fn get_empty_queue_check_counter(&self) -> u32 {
-        self.empty_queue_check_counter
+    pub fn get_giver_check_counter(&self, source: &ChainDataSource) -> Result<u32> {
+        self.counters
+            .get(source)
+            .copied()
+            .ok_or_else(|| RollerError::RuntimeError("not found source counter".to_string()))
     }
 
-    pub fn inc_empty_queue_check_counter(&mut self) {
-        self.empty_queue_check_counter += 1;
+    pub fn inc_giver_check_counter(&mut self, source: &ChainDataSource) {
+        if let Some(counter) = self.counters.get_mut(source) {
+            *counter += 1;
+        }
     }
 
-    pub fn set_empty_queue_check_counter(&mut self, counter: u32) {
-        self.empty_queue_check_counter = counter;
+    pub fn reset_giver_check_counter(&mut self, source: &ChainDataSource, counter: u32) {
+        if let Some(c) = self.counters.get_mut(source) {
+            *c = counter;
+        }
     }
 
     pub fn get_latest_rollup_tx_block_number(&self) -> u64 {
@@ -157,7 +167,7 @@ impl DataHandler {
                 assert_eq!(self.commitments[index].cm, cm.commitment_hash);
             } else {
                 info!(
-                    "push commitment in queue {:?} {:?} from deposit tx {:?}",
+                    "push commitment in queue {:?} 0x{:x} from deposit tx {:?}",
                     cm.leaf_index, cm.commitment_hash, cm.tx_hash
                 );
                 self.push_commitment_in_queue(cm)?;

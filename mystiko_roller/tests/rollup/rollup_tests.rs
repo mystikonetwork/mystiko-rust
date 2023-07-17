@@ -11,9 +11,10 @@ use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::types::sync_response::ContractSyncResponse;
 use mystiko_roller::chain::provider::ProviderStub;
 use mystiko_roller::common::error::RollerError;
-use mystiko_roller::config::roller::create_tx_manager_config;
+use mystiko_roller::config::roller::{create_tx_manager_config, ChainDataSource};
 use mystiko_roller::context::ContextTrait;
 use mystiko_roller::data::handler::{DataHandler, RollupPlan};
+use mystiko_roller::db::document::commitment::CommitmentInfo;
 use mystiko_roller::rollup::handler::RollupHandle;
 use mystiko_server_utils::token_price::query::CurrencyQuoteResponse;
 use serde_json::json;
@@ -120,7 +121,7 @@ pub async fn test_rollup_with_indexer2() {
 #[tokio::test]
 pub async fn test_rollup_send_transaction() {
     let test_chain_id = 1;
-    let (handle, _, c) = create_rollup_handle(test_chain_id, true).await;
+    let (handle, data, c) = create_rollup_handle(test_chain_id, true).await;
     let plan = RollupPlan {
         sizes: vec![1],
         total_fee: U256::from("10000000000000000"),
@@ -151,7 +152,7 @@ pub async fn test_rollup_send_transaction() {
 
     let transaction = get_transaction();
     let block_number = U64::from(6203183);
-    let transaction_receipt = get_transaction_receipt();
+    let mut transaction_receipt = get_transaction_receipt();
     let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
     mock.push(transaction_receipt.clone()).unwrap();
     mock.push(block_number).unwrap();
@@ -176,6 +177,20 @@ pub async fn test_rollup_send_transaction() {
     let result = handle.send_rollup_transaction(&plan, &proof).await;
     assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
 
+    let plan = RollupPlan {
+        sizes: vec![1],
+        total_fee: U256::from("100"),
+        force: true,
+    };
+    mock.push(price).unwrap();
+    mock.push(gas).unwrap();
+    mock.push(nonce).unwrap();
+    mock.push(price).unwrap();
+    let result = handle.send_rollup_transaction(&plan, &proof).await;
+    assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
+
+    data.write().await.set_latest_rollup_tx_block_number(100);
+    transaction_receipt.block_number = None;
     mock.push(transaction_receipt.clone()).unwrap();
     mock.push(block_number).unwrap();
     mock.push(transaction.clone()).unwrap();
@@ -186,21 +201,51 @@ pub async fn test_rollup_send_transaction() {
     mock.push(price).unwrap();
     let result = handle.send_rollup_transaction(&plan, &proof).await;
     assert_eq!(result.unwrap(), tx_hash);
+    assert_eq!(data.read().await.get_latest_rollup_tx_block_number(), 100);
+
+    transaction_receipt.block_number = Some(U64::from(1203183));
+    mock.push(transaction_receipt.clone()).unwrap();
+    mock.push(block_number).unwrap();
+    mock.push(transaction.clone()).unwrap();
+    mock.push(tx_hash).unwrap();
+    mock.push(price).unwrap();
+    mock.push(gas).unwrap();
+    mock.push(nonce).unwrap();
+    mock.push(price).unwrap();
+    let result = handle.send_rollup_transaction(&plan, &proof).await;
+    assert_eq!(result.unwrap(), tx_hash);
+    assert_eq!(
+        data.read().await.get_latest_rollup_tx_block_number(),
+        transaction_receipt.block_number.unwrap().as_u64()
+    );
+
     std::mem::drop(token_price_server);
 }
 
 #[tokio::test]
 pub async fn test_rollup_log_transaction() {
     let test_chain_id = 305;
-    let (handle, _, _) = create_rollup_handle(test_chain_id, false).await;
+    let (handle, data, _) = create_rollup_handle(test_chain_id, false).await;
+    let cm = CommitmentInfo {
+        chain_id: 1,
+        contract_address: "1".to_string(),
+        commitment_hash: Default::default(),
+        block_number: 10,
+        rollup_fee: "".to_string(),
+        leaf_index: 0,
+        tx_hash: "0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d".to_string(),
+    };
+    data.write().await.insert_commitments(&[cm]).await.unwrap();
     let tx_hash = H256::from_str("0x090b19818d9d087a49c3d2ecee4829ee4acea46089c1381ac5e588188627466d").unwrap();
-    handle.log_transaction(&tx_hash, 1, 1).await;
+    handle.log_transaction(&tx_hash, 0, 1).await;
+    handle.log_transaction(&tx_hash, 1, 2).await;
 }
 
 #[tokio::test]
 pub async fn test_commitment_queue_check_by_transaction() {
     let test_chain_id = 306;
     let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;
+
     let result = handle.commitment_queue_check_by_transaction().await;
     assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
 
@@ -223,6 +268,55 @@ pub async fn test_commitment_queue_check_by_transaction2() {
     mock.push(gas).unwrap();
     mock.push(nonce).unwrap();
     let _ = handle.commitment_queue_check_by_transaction().await;
+}
+
+#[tokio::test]
+#[should_panic(expected = "commitment queue 0 < included count 1")]
+pub async fn test_giver_commitment_queue_panic() {
+    let test_chain_id = 308;
+    let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;
+    let stub_provider = Arc::new(ProviderStub::new(handle.pool_contract_cfg.address(), c.provider()));
+    let mock = c.mock_provider().await;
+    let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
+    mock.push::<Bytes, _>(include_count.clone()).unwrap();
+    let _ = handle.check_commitment_queue(stub_provider.clone()).await;
+}
+
+#[tokio::test]
+pub async fn test_giver_commitment_queue() {
+    let test_chain_id = 308;
+    let (handle, data, c) = create_rollup_handle(test_chain_id, false).await;
+    let stub_provider = Arc::new(ProviderStub::new(handle.pool_contract_cfg.address(), c.provider()));
+
+    let result = handle.check_commitment_queue(stub_provider.clone()).await;
+    assert!(matches!(result.err().unwrap(), RollerError::ContractCallError(_)));
+
+    let mock = c.mock_provider().await;
+    let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
+    mock.push::<Bytes, _>(include_count.clone()).unwrap();
+
+    let cms = load_commitments(
+        "tests/test_files/data/commitments.json",
+        Some(test_chain_id),
+        Some("0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411"),
+    )
+    .await;
+    let (cms1, _) = cms.split_at(3);
+    data.write().await.insert_commitments(cms1).await.unwrap();
+    let result = handle.check_commitment_queue(stub_provider.clone()).await;
+    assert!(result.is_ok());
+
+    let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000003").unwrap();
+    mock.push::<Bytes, _>(include_count.clone()).unwrap();
+    let result = handle.check_commitment_queue(stub_provider.clone()).await;
+    assert!(result.is_ok());
+
+    data.write()
+        .await
+        .reset_giver_check_counter(&ChainDataSource::Provider, c.cfg().rollup.max_empty_queue_count + 1);
+    mock.push::<Bytes, _>(include_count.clone()).unwrap();
+    let result = handle.check_commitment_queue(stub_provider.clone()).await;
+    assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
 }
 
 async fn create_mock_indexer_server(

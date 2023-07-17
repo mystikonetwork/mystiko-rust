@@ -25,7 +25,7 @@ pub struct ChainConfig {
     pub data_source_order: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum ChainDataSource {
     Indexer,
@@ -69,7 +69,6 @@ pub struct CoreConfig {
 #[allow(unused)]
 pub struct PullConfig {
     pub check_interval_secs: u64,
-    pub max_empty_queue_count: u32,
     pub batch_block_from_indexer: u32,
     pub batch_block_from_provider: u32,
     pub batch_block_from_explorer: u32,
@@ -91,6 +90,7 @@ impl PullConfig {
 pub struct RollupConfig {
     pub merkle_tree_height: u32,
     pub max_gas_price: u64,
+    pub max_empty_queue_count: u32,
     pub force_rollup_block_count: u64,
     pub rollup1_gas_cost: u32,
     pub rollup2_gas_cost: u32,
