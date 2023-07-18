@@ -91,7 +91,7 @@ impl TransactionConsumer {
         .await;
 
         // wait transaction until confirmed
-        info!("Wait for the transaction(hash={}) to be confirmed", tx_hash.as_str());
+        info!("Wait for the transaction(hash = {}, chain_id = {}) to be confirmed", tx_hash.as_str(), data.chain_id);
         self.wait_confirm(&signer, &tx_hash).await
     }
 
@@ -200,7 +200,6 @@ impl TransactionConsumer {
 
     async fn wait_confirm(&self, provider: &Arc<Provider>, tx_hash: &str) -> Result<String> {
         let tx_hash = TxHash::from_str(tx_hash)?;
-        info!("wait transaction hash {:?} until confirmed", tx_hash);
         let receipt = self.tx_manager.confirm(provider, tx_hash).await?;
         Ok(receipt.transaction_hash.encode_hex())
     }
