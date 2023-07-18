@@ -4,13 +4,13 @@ use crate::zkp::generate_proof::generate_proof;
 use anyhow::Result;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
+use std::io::Cursor;
 use zokrates_ast::ir::{self, ProgEnum};
 use zokrates_ast::typed::abi::Abi;
 use zokrates_bellman::Bellman;
 use zokrates_field::{Bn128Field, Field};
 use zokrates_proof_systems::groth16::ProofPoints;
 use zokrates_proof_systems::{Backend, G1Affine, G2Affine, G2AffineFq2, Scheme, G16};
-use std::io::Cursor;
 
 type ZokratesSystemProof = zokrates_proof_systems::Proof<Bn128Field, G16>;
 

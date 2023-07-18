@@ -23,6 +23,11 @@ pub fn compute_witness<T: Field>(
     let args = convert_args(abi_spec, json_args_str)?;
     let interpreter = zokrates_interpreter::Interpreter::default();
     interpreter
-        .execute(&args,ir_prog.statements.into_iter(), &ir_prog.arguments,&ir_prog.solvers)
+        .execute(
+            &args,
+            ir_prog.statements.into_iter(),
+            &ir_prog.arguments,
+            &ir_prog.solvers,
+        )
         .map_err(|e| ZkpError::ComputeWitnessError(e.to_string()))
 }
