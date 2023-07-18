@@ -76,10 +76,10 @@ impl TransactionConsumer {
         // estimate gas
         let estimate_gas = self.estimate_gas(contract_address, &call_data, &signer).await?;
         // validate relayer fee
-        let max_gas_price_ref = self.validate_relayer_fee(&signer, data, &estimate_gas).await?;
+        let max_gas_price = self.validate_relayer_fee(&signer, data, &estimate_gas).await?;
         // send transaction
         let tx_hash = self
-            .send(contract_address, &call_data, &signer, &estimate_gas, max_gas_price_ref)
+            .send(contract_address, &call_data, &signer, &estimate_gas, max_gas_price)
             .await?;
 
         // update transaction status to pending
@@ -160,8 +160,13 @@ impl TransactionConsumer {
             );
         }
 
-        // max gas price = relayer_fee_amount_main / estimate_gas
-        let max_gas_price = relayer_fee_amount_main.div(estimate_gas);
+        // max gas price_ref = relayer_fee_amount_main / estimate_gas
+        let max_gas_price_ref = relayer_fee_amount_main.div(estimate_gas);
+        let max_gas_price = if max_gas_price_ref.gt(&gas_price.mul(3)) {
+            gas_price.mul(3)
+        } else {
+            max_gas_price_ref
+        };
         debug!(
             "relayer_fee_amount(symbol = {}, amount = {}), estimate_gas = {}, calculate max gas price = {}",
             self.main_asset_symbol, relayer_fee_amount_main, estimate_gas, max_gas_price,
