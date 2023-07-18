@@ -13,7 +13,7 @@ use mystiko_server_utils::token_price::price::TokenPrice;
 use mystiko_server_utils::tx_manager::transaction::TxManager;
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
-use std::ops::{Add, Mul};
+use std::ops::{Div, Mul};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -76,9 +76,11 @@ impl TransactionConsumer {
         // estimate gas
         let estimate_gas = self.estimate_gas(contract_address, &call_data, &signer).await?;
         // validate relayer fee
-        self.validate_relayer_fee(&signer, data, &estimate_gas).await?;
+        let max_gas_price_ref = self.validate_relayer_fee(&signer, data, &estimate_gas).await?;
         // send transaction
-        let tx_hash = self.send(contract_address, &call_data, &signer, &estimate_gas).await?;
+        let tx_hash = self
+            .send(contract_address, &call_data, &signer, &estimate_gas, max_gas_price_ref)
+            .await?;
 
         // update transaction status to pending
         self.update_transaction_status(
@@ -104,79 +106,74 @@ impl TransactionConsumer {
         provider: &Arc<Provider>,
         data: &TransactRequestData,
         estimate_gas: &U256,
-    ) -> Result<()> {
+    ) -> Result<U256> {
         let out_rollup_fees = &data.contract_param.out_rollup_fees;
         let relayer_fee_amount = &data.contract_param.relayer_fee_amount;
         let asset_symbol = &data.asset_symbol;
         let asset_decimals = data.asset_decimals;
 
-        debug!("out rollup fees {:?}", out_rollup_fees);
-        debug!("relayer fee amount {:?}", relayer_fee_amount);
+        debug!("out rollup fees = {:?}", out_rollup_fees);
+        debug!("relayer fee amount = {:?}", relayer_fee_amount);
+        debug!(
+            "chain_id = {}, circuit_type = {:?}, estimate_gas = {}",
+            self.chain_id, &data.circuit_type, estimate_gas
+        );
 
         let gas_price = self.tx_manager.gas_price(provider).await?;
-        debug!("chain id {} gas price {}", self.chain_id, gas_price);
-        let estimate_transaction_fee = gas_price.mul(estimate_gas);
-        debug!("estimate transaction fee {}", estimate_transaction_fee);
+        debug!("chain id = {}, gas price = {}", self.chain_id, gas_price);
+        let estimate_transaction_fee_amount = gas_price.mul(estimate_gas);
+        debug!("estimate transaction fee amount = {}", estimate_transaction_fee_amount);
 
         // swap estimate gas to asset symbol
         let mut price_service = self.token_price.write().await;
+        // swap relayer fee to main asset symbol
         debug!(
-            "main asset symbol {} decimals {} asset symbol {} decimals {}",
-            self.main_asset_symbol, self.main_asset_decimals, asset_symbol, asset_decimals
+            "relayer asset symbol = {}, decimals = {} swap to main asset symbol = {} decimals = {}",
+            asset_symbol, asset_decimals, self.main_asset_symbol, self.main_asset_decimals
         );
-        let estimate_symbol_transaction_fee = price_service
+        let relayer_fee_amount_main = price_service
             .swap(
-                self.main_asset_symbol.as_str(),
-                self.main_asset_decimals,
-                estimate_transaction_fee,
                 asset_symbol,
                 asset_decimals,
+                *relayer_fee_amount,
+                self.main_asset_symbol.as_str(),
+                self.main_asset_decimals,
             )
             .await?;
         drop(price_service);
         debug!(
-            "swap asset symbol {} amount {} to symbol {} amount {}",
-            self.main_asset_symbol, estimate_transaction_fee, asset_symbol, estimate_symbol_transaction_fee
+            "swap relayer asset symbol = {} amount = {} to main symbol = {} amount = {}",
+            asset_symbol, relayer_fee_amount, self.main_asset_symbol, relayer_fee_amount_main
         );
 
-        // relayer_fee_amount - estimate_gas - out_rollup_fees > 0
-        let mut total_out_rollup_fee = U256::zero();
-        for fee in out_rollup_fees {
-            total_out_rollup_fee = total_out_rollup_fee.add(fee);
-        }
-        debug!("total rollup fee {}", total_out_rollup_fee);
-
-        if relayer_fee_amount.lt(&estimate_symbol_transaction_fee) {
+        // relayer_fee_amount_main > estimate_transaction_fee
+        if relayer_fee_amount_main.lt(&estimate_transaction_fee_amount) {
             bail!(
-                "Relayer fee amount not enough(asset_symbol:{},asset_decimals:{},relayer_fee_amount:{},\
-                total_out_rollup_fee:{},estimate_gas:{},gas_price:{},estimate_transaction_fee:{}(symbol:{} amount:{})",
-                asset_symbol,
-                asset_decimals,
-                relayer_fee_amount,
-                total_out_rollup_fee,
-                estimate_gas,
-                gas_price,
-                estimate_transaction_fee,
-                asset_symbol,
-                estimate_symbol_transaction_fee,
+                "Relayer fee amount not enough(relayer_fee_amount_main(symbol = {},decimals = {},amount = {}) \
+                less than estimate_transaction_fee_amount(symbol = {},decimals = {},amount = {})",
+                self.main_asset_symbol,
+                self.main_asset_decimals,
+                relayer_fee_amount_main,
+                self.main_asset_symbol,
+                self.main_asset_decimals,
+                estimate_transaction_fee_amount,
             );
         }
 
-        info!(
-            "validate relayer fee amount successful: asset_symbol:{},asset_decimals:{},relayer_fee_amount:{},\
-            total_out_rollup_fee:{},estimate_gas:{},gas_price:{},estimate_transaction_fee:{}(symbol:{} amount:{})",
-            asset_symbol,
-            asset_decimals,
-            relayer_fee_amount,
-            total_out_rollup_fee,
-            estimate_gas,
-            gas_price,
-            estimate_transaction_fee,
-            asset_symbol,
-            estimate_symbol_transaction_fee,
+        // max gas price = relayer_fee_amount_main / estimate_gas
+        let max_gas_price = relayer_fee_amount_main.div(estimate_gas);
+        debug!(
+            "relayer_fee_amount(symbol = {}, amount = {}), estimate_gas = {}, calculate max gas price = {}",
+            self.main_asset_symbol, relayer_fee_amount_main, estimate_gas, max_gas_price,
         );
 
-        Ok(())
+        info!(
+            "validate relayer fee amount successful: relayer_fee_amount = {}\
+            (asset_symbol = {}, asset_decimals = {}), max gas price reference value = {}",
+            relayer_fee_amount, asset_symbol, asset_decimals, max_gas_price,
+        );
+
+        Ok(max_gas_price)
     }
 
     async fn send(
@@ -185,6 +182,7 @@ impl TransactionConsumer {
         call_data: &Bytes,
         provider: &Arc<Provider>,
         gas_limit: &U256,
+        max_gas_price: U256,
     ) -> Result<String> {
         let tx_hash = self
             .tx_manager
@@ -193,7 +191,7 @@ impl TransactionConsumer {
                 call_data.as_slice(),
                 &U256::zero(),
                 gas_limit,
-                None,
+                Some(max_gas_price),
                 provider,
             )
             .await?
