@@ -381,13 +381,13 @@ fn convert_encrypted_auditor_notes(out_encrypted_notes: Vec<String>) -> Result<V
     for notes in &out_encrypted_notes {
         result.push(U256::from_dec_str(notes)?);
     }
-    info!("convert encrypted auditor notes {:?}", result);
+    debug!("convert encrypted auditor notes {:?}", result);
     Ok(result)
 }
 
 fn convert_random_auditing_public_key(key: &str) -> Result<U256> {
     let result = U256::from_dec_str(key)?;
-    info!("convert random auditing public key {:?}", result);
+    debug!("convert random auditing public key {:?}", result);
     Ok(result)
 }
 

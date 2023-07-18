@@ -91,7 +91,11 @@ impl TransactionConsumer {
         .await;
 
         // wait transaction until confirmed
-        info!("Wait for the transaction(hash = {}, chain_id = {}) to be confirmed", tx_hash.as_str(), data.chain_id);
+        info!(
+            "Wait for the transaction(hash = {}, chain_id = {}) to be confirmed",
+            tx_hash.as_str(),
+            data.chain_id
+        );
         self.wait_confirm(&signer, &tx_hash).await
     }
 

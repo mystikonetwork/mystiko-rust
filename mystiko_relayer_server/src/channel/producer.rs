@@ -33,8 +33,10 @@ impl TransactionProducer {
     pub async fn send(&self, data: TransactRequestData) -> Result<Document<Transaction>> {
         // save data to database
         let transaction = self.handler.create_by_request(data.clone()).await?;
-        info!("successfully created a transaction(id = {}, chain_id = {}, transaction_type = {:?})",
-            &transaction.id, &transaction.data.chain_id, &transaction.data.transaction_type);
+        info!(
+            "successfully created a transaction(id = {}, chain_id = {}, transaction_type = {:?})",
+            &transaction.id, &transaction.data.chain_id, &transaction.data.transaction_type
+        );
 
         // send transaction to queue
         let queue = self
@@ -45,8 +47,10 @@ impl TransactionProducer {
 
         match queue {
             Ok(_) => {
-                info!("successfully sent a transaction to queue(id = {}, chain_id = {}, transaction_type = {:?})",
-                    &transaction.id, &transaction.data.chain_id, &transaction.data.transaction_type);
+                info!(
+                    "successfully sent a transaction to queue(id = {}, chain_id = {}, transaction_type = {:?})",
+                    &transaction.id, &transaction.data.chain_id, &transaction.data.transaction_type
+                );
                 Ok(transaction)
             }
             Err(err) => {
