@@ -40,13 +40,14 @@ blake2 = { version = "0.10.6"}
 hmac = { version = "0.12.1"}
 md5 = { version = "0.7.0"}
 
-zokrates_common = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
-zokrates_ast = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
-zokrates_field = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
-zokrates_interpreter = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
-zokrates_abi = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
-zokrates_proof_systems = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
-zokrates_bellman = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "d9006cb" }
+pest-ast = "=0.3.3"
+zokrates_common = { git = "https://github.com/Zokrates/ZoKrates", tag = "0.8.7" }
+zokrates_ast = { git = "https://github.com/Zokrates/ZoKrates", tag = "0.8.7" }
+zokrates_field = { git = "https://github.com/Zokrates/ZoKrates", tag = "0.8.7", features = ["multicore"] }
+zokrates_interpreter = { git = "https://github.com/Zokrates/ZoKrates", tag = "0.8.7" }
+zokrates_abi = { git = "https://github.com/Zokrates/ZoKrates", tag = "0.8.7" }
+zokrates_proof_systems = { git = "https://github.com/Zokrates/ZoKrates", tag = "0.8.7" }
+zokrates_bellman = { git = "https://github.com/Zokrates/ZoKrates", tag = "0.8.7", features = ["multicore"] }
 
 [dev-dependencies]
 mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
