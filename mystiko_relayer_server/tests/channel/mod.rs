@@ -15,6 +15,7 @@ async fn init_provider_not_found() {
     let result = transact_channel::init(
         &server_config,
         &app_state.relayer_config,
+        &app_state.mystiko_config,
         server.providers.clone(),
         server.transaction_handler.clone(),
         server.token_price.clone(),
@@ -44,25 +45,21 @@ async fn find_producer_by_id_and_symbol_none() {
 }
 
 #[actix_rt::test]
+#[should_panic(expected = "chain id 97 config not found in relayer config")]
 async fn init_chain_id_not_found() {
     let server = TestServer::new(None).await.unwrap();
     let app_state = server.app_state;
     let relayer_config = RelayerConfig::from_json_file(TEST_RELAYER_CONFIG_SINGLE_PATH)
         .await
         .unwrap();
-    let result = transact_channel::init(
+    let _ = transact_channel::init(
         &app_state.server_config,
         &relayer_config,
+        &app_state.mystiko_config,
         server.providers.clone(),
         server.transaction_handler.clone(),
         server.token_price.clone(),
         10,
     )
     .await;
-    assert!(result.is_err());
-    let err = result.err().unwrap();
-    assert_eq!(
-        err.to_string().as_str(),
-        "chain id 97 config not found in relayer config"
-    );
 }

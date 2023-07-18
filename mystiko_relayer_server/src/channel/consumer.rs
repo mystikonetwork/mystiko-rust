@@ -27,6 +27,7 @@ pub struct TransactionConsumer {
     pub main_asset_decimals: u32,
     pub receiver: Receiver<(String, TransactRequestData)>,
     pub providers: Arc<RwLock<ProviderPool>>,
+    pub signer: Arc<Provider>,
     pub handler: Arc<TransactionHandler<SqlStatementFormatter, SqliteStorage>>,
     pub token_price: Arc<RwLock<TokenPrice>>,
     pub tx_manager: TxManager<ProviderWrapper<Box<dyn JsonRpcClientWrapper>>>,
@@ -65,21 +66,19 @@ impl TransactionConsumer {
 
     async fn consume(&mut self, uuid: &str, data: &TransactRequestData) -> Result<String> {
         // get provider
-        let provider = self.get_provider(self.chain_id).await?;
+        let signer = self.signer.clone();
         // parse address to Address
         let contract_address = Address::from_str(&data.pool_address)?;
         // build call data
         let call_data = self
-            .build_call_data(contract_address, &provider, &data.contract_param, &data.signature)
+            .build_call_data(contract_address, &signer, &data.contract_param, &data.signature)
             .await?;
         // estimate gas
-        let estimate_gas = self.estimate_gas(contract_address, &call_data, &provider).await?;
+        let estimate_gas = self.estimate_gas(contract_address, &call_data, &signer).await?;
         // validate relayer fee
-        self.validate_relayer_fee(&provider, data, &estimate_gas).await?;
+        self.validate_relayer_fee(&signer, data, &estimate_gas).await?;
         // send transaction
-        let tx_hash = self
-            .send(contract_address, &call_data, &provider, &estimate_gas)
-            .await?;
+        let tx_hash = self.send(contract_address, &call_data, &signer, &estimate_gas).await?;
 
         // update transaction status to pending
         self.update_transaction_status(
@@ -93,7 +92,7 @@ impl TransactionConsumer {
 
         // wait transaction until confirmed
         info!("Wait for the transaction(hash={}) to be confirmed", tx_hash.as_str());
-        self.wait_confirm(&provider, &tx_hash).await
+        self.wait_confirm(&signer, &tx_hash).await
     }
 
     async fn validate_relayer_fee(
@@ -204,11 +203,6 @@ impl TransactionConsumer {
         info!("wait transaction hash {:?} until confirmed", tx_hash);
         let receipt = self.tx_manager.confirm(provider, tx_hash).await?;
         Ok(receipt.transaction_hash.encode_hex())
-    }
-
-    async fn get_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>> {
-        let provider = self.providers.write().await.get_or_create_provider(chain_id).await?;
-        Ok(provider)
     }
 
     async fn build_call_data(

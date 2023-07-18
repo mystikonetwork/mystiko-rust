@@ -113,15 +113,20 @@ impl TestServer {
         let providers = Arc::new(RwLock::new(pool));
 
         // senders and consumers
-        let (senders, consumers) = transact_channel::init(
+        let (senders, mut consumers) = transact_channel::init(
             &app_state.server_config,
             &app_state.relayer_config,
+            &app_state.mystiko_config,
             providers.clone(),
             transaction_handler.clone(),
             token_price.clone(),
             ARRAY_QUEUE_CAPACITY,
         )
         .await?;
+
+        for consumer in &mut consumers {
+            consumer.signer = provider.clone();
+        }
 
         Ok(TestServer {
             app_state,

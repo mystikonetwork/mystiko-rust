@@ -20,7 +20,12 @@ pub mod transact_channel {
     use crate::handler::transaction::TransactionHandler;
     use anyhow::{bail, Result};
     use ethers_signers::{LocalWallet, Signer};
+    use mystiko_config::wrapper::mystiko::MystikoConfig;
+    use mystiko_ethers::provider::factory::{
+        DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions, HTTP_REGEX, WS_REGEX,
+    };
     use mystiko_ethers::provider::pool::ProviderPool;
+    use mystiko_ethers::provider::types::ProviderOptions;
     use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
     use mystiko_relayer_types::TransactRequestData;
     use mystiko_server_utils::token_price::price::TokenPrice;
@@ -39,6 +44,7 @@ pub mod transact_channel {
     pub async fn init(
         server_config: &ServerConfig,
         relayer_config: &RelayerConfig,
+        mystiko_config: &MystikoConfig,
         providers: Arc<RwLock<ProviderPool>>,
         handler: Arc<TransactionHandler<SqlStatementFormatter, SqliteStorage>>,
         token_price: Arc<RwLock<TokenPrice>>,
@@ -81,23 +87,45 @@ pub mod transact_channel {
             // build tx manager
             let tx_manager = tx_builder.build_tx(&provider).await;
 
-            if let Some(chain_config) = relayer_config.find_chain_config(chain_id) {
-                consumers.push(TransactionConsumer {
-                    chain_id,
-                    main_asset_symbol: String::from(chain_config.asset_symbol()),
-                    main_asset_decimals: chain_config.asset_decimals(),
-                    receiver,
-                    providers: providers.clone(),
-                    handler: handler.clone(),
-                    token_price: token_price.clone(),
-                    tx_manager,
-                });
-            } else {
-                bail!("chain id {} config not found in relayer config", chain_id)
-            }
+            // create signer provider
+            let mystiko_chain_config = mystiko_config
+                .find_chain(chain_id)
+                .unwrap_or_else(|| panic!("chain id {} config not found in mystiko config", chain_id));
+            let signer_endpoint = mystiko_chain_config.signer_endpoint();
+            let signer_provider = create_signer_provider(signer_endpoint).await?;
+
+            // found relayer chain config
+            let relayer_chain_config = relayer_config
+                .find_chain_config(chain_id)
+                .unwrap_or_else(|| panic!("chain id {} config not found in relayer config", chain_id));
+
+            consumers.push(TransactionConsumer {
+                chain_id,
+                main_asset_symbol: String::from(relayer_chain_config.asset_symbol()),
+                main_asset_decimals: relayer_chain_config.asset_decimals(),
+                receiver,
+                providers: providers.clone(),
+                signer: Arc::new(signer_provider),
+                handler: handler.clone(),
+                token_price: token_price.clone(),
+                tx_manager,
+            });
         }
 
         Ok((transact_senders_map, consumers))
+    }
+
+    pub async fn create_signer_provider(url: &str) -> Result<Provider> {
+        let option = ProviderOptions::builder().url(url.to_string()).build();
+        if HTTP_REGEX.is_match(url) {
+            let options = ProvidersOptions::Http(option);
+            DefaultProviderFactory::new().create_provider(options).await
+        } else if WS_REGEX.is_match(url) {
+            let options = ProvidersOptions::Ws(option);
+            DefaultProviderFactory::new().create_provider(options).await
+        } else {
+            bail!("url {} signer endpoint is not valid", url)
+        }
     }
 
     pub fn find_producer_by_id_and_symbol(
