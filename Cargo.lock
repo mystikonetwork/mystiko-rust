@@ -3382,7 +3382,6 @@ dependencies = [
  "babyjubjub-rs",
  "base64 0.21.2",
  "blake2 0.10.6",
- "bytes",
  "cbc",
  "elliptic-curve 0.12.3",
  "ff_ce 0.11.0",

@@ -10,6 +10,7 @@ use zokrates_bellman::Bellman;
 use zokrates_field::{Bn128Field, Field};
 use zokrates_proof_systems::groth16::ProofPoints;
 use zokrates_proof_systems::{Backend, G1Affine, G2Affine, G2AffineFq2, Scheme, G16};
+use std::io::Cursor;
 
 type ZokratesSystemProof = zokrates_proof_systems::Proof<Bn128Field, G16>;
 
@@ -129,7 +130,8 @@ impl ZKProof {
         json_args_str: &str,
     ) -> Result<Self, ZkpError> {
         let abi: Abi = serde_json::from_slice(abi_spec)?;
-        let prog = match ir::ProgEnum::deserialize(program) {
+        let cursor = Cursor::new(program);
+        let prog = match ir::ProgEnum::deserialize(cursor) {
             Ok(p) => p.collect(),
             Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
         };
