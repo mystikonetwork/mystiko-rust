@@ -3,40 +3,20 @@ use std::env;
 
 #[tokio::test]
 async fn test_read_config() {
-    let cfg = TxManagerConfig::new("testnet", None).unwrap();
-    assert_eq!(cfg.max_gas_price.to_string(), "200000000000");
-    assert_eq!(cfg.max_confirm_count, 100);
-    assert_eq!(cfg.gas_limit_reserve_percentage, 10);
-
-    let cfg = TxManagerConfig::new("mainnet", None).unwrap();
-    assert_eq!(cfg.max_gas_price.to_string(), "100000000000");
-    assert_eq!(cfg.max_confirm_count, 100);
-    assert_eq!(cfg.gas_limit_reserve_percentage, 10);
-
-    let cfg = TxManagerConfig::new("testnet", Some("tests/tx_manager/files")).unwrap();
-    assert_eq!(cfg.max_gas_price.to_string(), "500000000000");
-
-    env::set_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE", "0x45d964b800");
-    env::set_var("MYSTIKO_TX_MANAGER.MAX_CONFIRM_COUNT", "10");
-    env::set_var("MYSTIKO_TX_MANAGER.GAS_LIMIT_RESERVE_PERCENTAGE", "20");
-    let cfg = TxManagerConfig::new("mainnet", None).unwrap();
-    assert_eq!(cfg.max_gas_price.to_string(), "300000000000");
-    assert_eq!(cfg.max_confirm_count, 10);
-    assert_eq!(cfg.gas_limit_reserve_percentage, 20);
-
-    let cfg = TxManagerConfig::new("testnet", Some("tests/tx_manager/files")).unwrap();
-    assert_eq!(cfg.max_gas_price.to_string(), "300000000000");
-
     // test invalid config
-
-    env::set_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE", "0x3b9aca00");
-    let cfg = TxManagerConfig::new("mainnet", None);
+    let cfg = TxManagerConfig::new(Some("tests/tx_manager/files/invalid"));
     assert!(cfg.is_err());
 
-    env::set_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE", "0x45d964b800");
-    env::set_var("MYSTIKO_TX_MANAGER.MAX_PRIORITY_FEE_PER_GAS", "0x5f5e100");
-    let cfg = TxManagerConfig::new("mainnet", None);
-    assert!(cfg.is_err());
-    env::remove_var("MYSTIKO_TX_MANAGER.MAX_PRIORITY_FEE_PER_GAS");
-    env::remove_var("MYSTIKO_TX_MANAGER.MAX_GAS_PRICE");
+    let cfg = TxManagerConfig::new(None).unwrap();
+    assert_eq!(cfg.max_confirm_count, 100);
+    assert_eq!(cfg.gas_limit_reserve_percentage, 10);
+
+    let cfg = TxManagerConfig::new(Some("tests/tx_manager/files")).unwrap();
+    assert_eq!(cfg.max_confirm_count, 123456);
+
+    env::set_var("MYSTIKO_TX_MANAGER.MAX_CONFIRM_COUNT", "112");
+    env::set_var("MYSTIKO_TX_MANAGER.GAS_LIMIT_RESERVE_PERCENTAGE", "24");
+    let cfg = TxManagerConfig::new(None).unwrap();
+    assert_eq!(cfg.max_confirm_count, 112);
+    assert_eq!(cfg.gas_limit_reserve_percentage, 24);
 }

@@ -1,0 +1,47 @@
+[package]
+name = "mystiko_roller"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { version = "1.0" }
+async-trait = { version = "0.1.64" }
+config = { version = "0.13.3" }
+ethers-core  = { version = "2.0.4" }
+ethers-contract  = { version = "2.0.4" }
+ethers-providers = { version = "2.0.4", features = ["ws"] }
+ethers-signers = { version = "2.0.4"}
+futures = { version = "0.3.28" }
+lazy_static = { version = "1.4.0" }
+tracing = { version = "0.1.37" }
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"]}
+dotenv = { version = "0.15.0" }
+num-bigint = { version = "0.4.3" }
+reqwest = { version = "0.11.14", features = ["json", "rustls-tls"], default-features = false }
+serde = { version = "1.0.152" }
+serde_json = { version = "1.0.91", features = ["preserve_order"] }
+thiserror = { version = "1.0", default-features = false }
+typed-builder = { version = "0.14.0" }
+tokio = { version = "1.26.0", features = ["time","full"] }
+
+# mystiko
+mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
+mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
+mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
+mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
+mystiko_downloader = { version = "0.1.0", path = "../mystiko_downloader" }
+mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
+mystiko_server_utils = { version = "0.1.0", path = "../mystiko_server_utils" }
+mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
+mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
+mystiko_protocol = { version = "0.1.0", path = "../mystiko_protocol" }
+mystiko_indexer_client = { version = "0.1.0", path = "../mystiko_indexer_client" }
+mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
+mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
+
+[dev-dependencies]
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+ethers-contract = { version = "2.0.4"}
+httptest= { version = "0.15.4" }
+mockito = { version = "0.32.4" }

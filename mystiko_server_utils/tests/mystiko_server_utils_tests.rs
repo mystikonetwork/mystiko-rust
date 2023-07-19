@@ -1,4 +1,3 @@
-#![feature(assert_matches)]
 extern crate ethers_core;
 extern crate mystiko_server_utils;
 

@@ -16,6 +16,7 @@ members = [
     "mystiko_relayer_config",
     "mystiko_relayer_server",
     "mystiko_relayer_types",
+    "mystiko_roller",
     "mystiko_server_utils",
     "mystiko_storage",
     "mystiko_storage_macros",

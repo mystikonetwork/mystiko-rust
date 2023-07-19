@@ -141,6 +141,91 @@ async fn test_update() {
 }
 
 #[tokio::test]
+async fn test_reverse_error() {
+    let mut tree = MerkleTree::new(None, None, None).unwrap();
+    let result = tree.revert(1);
+    assert!(matches!(result.err().unwrap(), MerkleTreeError::IndexOutOfBounds));
+
+    let result = tree.revert(0);
+    assert!(result.is_ok());
+}
+
+#[tokio::test]
+async fn test_tree_reverse_level_change() {
+    for level in [3, 4, 5, 6, 20] {
+        let e1 = BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
+        let e2 = BigInt::parse_bytes(b"02d18bd99c2ce3d70411809537b64bfbbac5f51a7b7e2eeb8d84346162f9c707", 16).unwrap();
+        let e3 = BigInt::parse_bytes(b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3", 16).unwrap();
+        let e4 = BigInt::parse_bytes(b"1910433764d42a31380011ba6b129d61db48c3f48a281ae277f8d5e6e8e92210", 16).unwrap();
+        let e5 = BigInt::parse_bytes(b"2c4c7b8f5a000a30f4f4cffdcbe2ebb5cb8c377acaa3a6f27d137db5d0bcf108", 16).unwrap();
+        let e6 = BigInt::parse_bytes(b"160461ed9f689597820c9b695469232b9c52425e227084e398dc539ff173bf60", 16).unwrap();
+
+        let tree0 = MerkleTree::new(None, Some(level), None).unwrap();
+        let tree1 = MerkleTree::new(Some(vec![e1.clone()]), Some(level), None).unwrap();
+        let tree2 = MerkleTree::new(Some(vec![e1.clone(), e2.clone()]), Some(level), None).unwrap();
+        let tree3 = MerkleTree::new(Some(vec![e1.clone(), e2.clone(), e3.clone()]), Some(level), None).unwrap();
+        let tree4 = MerkleTree::new(
+            Some(vec![e1.clone(), e2.clone(), e3.clone(), e4.clone()]),
+            Some(level),
+            None,
+        )
+        .unwrap();
+        let tree5 = MerkleTree::new(
+            Some(vec![e1.clone(), e2.clone(), e3.clone(), e4.clone(), e5.clone()]),
+            Some(level),
+            None,
+        )
+        .unwrap();
+        let mut tree6 = MerkleTree::new(
+            Some(vec![
+                e1.clone(),
+                e2.clone(),
+                e3.clone(),
+                e4.clone(),
+                e5.clone(),
+                e6.clone(),
+            ]),
+            Some(level),
+            None,
+        )
+        .unwrap();
+        let result = tree6.revert(5);
+        assert!(result.is_ok());
+        assert_eq!(tree6.root(), tree5.root());
+        let result = tree6.revert(4);
+        assert!(result.is_ok());
+        assert_eq!(tree6.root(), tree4.root());
+        let result = tree6.revert(3);
+        assert!(result.is_ok());
+        assert_eq!(tree6.root(), tree3.root());
+        let result = tree6.revert(2);
+        assert!(result.is_ok());
+        assert_eq!(tree6.root(), tree2.root());
+        let result = tree6.revert(1);
+        assert!(result.is_ok());
+        assert_eq!(tree6.root(), tree1.root());
+        let result = tree6.revert(0);
+        assert!(result.is_ok());
+        assert_eq!(tree6.root(), tree0.root());
+    }
+}
+
+#[tokio::test]
+async fn test_tree_reverse_element_change() {
+    for count in 0..33 {
+        for step in 0..count + 1 {
+            let e1 =
+                BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
+
+            let tree_base = MerkleTree::new(Some(vec![e1.clone(); step]), Some(5), None).unwrap();
+            let mut tree = MerkleTree::new(Some(vec![e1.clone(); count]), Some(5), None).unwrap();
+            tree.revert(step).unwrap();
+            assert_eq!(tree.root(), tree_base.root());
+        }
+    }
+}
+
+#[tokio::test]
 async fn test_path() {
     let e1 = BigInt::parse_bytes(b"12d7aafbf3d4c1852ad3634d69607fc9ea8028f2d5724fcf3b917e71fd2dbff6", 16).unwrap();
     let e2 = BigInt::parse_bytes(b"062c3655c709b4b58142b9b270f5a5b06b8df8921cbbb261a7729eae759e7ec3", 16).unwrap();
@@ -161,5 +246,5 @@ async fn test_path() {
     assert_eq!(result3.0, vec![default_zero, hash_two(&e1, &e2)]);
 
     let result4 = tree.path(4);
-    assert_eq!(result4.err().unwrap(), MerkleTreeError::IndexOutOfBounds);
+    assert!(matches!(result4.err().unwrap(), MerkleTreeError::IndexOutOfBounds));
 }
