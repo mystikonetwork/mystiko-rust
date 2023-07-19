@@ -18,11 +18,9 @@ jobs:
           submodules: recursive
           persist-credentials: false
       - name: Toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly-2023-02-22
-          override: true
-          profile: minimal
+          toolchain: stable
           components: rustfmt, clippy, llvm-tools-preview
       - uses: foundry-rs/foundry-toolchain@v1
         with:
