@@ -109,7 +109,6 @@ fn test_send_successful_main_v1() {
         // mock consumer
         let gas = U256::from(100_000_000_000u64);
         let nonce = U256::from(100);
-        let price = U256::from(1000000);
         let tx_hash = TxHash::random();
         let block_number = U64::from(10000);
 
@@ -162,7 +161,6 @@ fn test_send_successful_main_v1() {
         mock_provider.push(Some(transaction_info)).unwrap();
         mock_provider.push(tx_hash).unwrap();
         mock_provider.push(nonce).unwrap();
-        mock_provider.push(price).unwrap();
 
         // mock server
         let id_bytes = read_file_bytes(TOKEN_PRICE_CONFIG_PATH).await.unwrap();
@@ -224,7 +222,6 @@ fn test_send_successful_erc20_v1() {
         // mock consumer
         let gas = U256::from(100_000_000_000u64);
         let nonce = U256::from(100);
-        let price = U256::from(1000000);
         let tx_hash = TxHash::random();
         let block_number = U64::from(10000);
 
@@ -277,7 +274,6 @@ fn test_send_successful_erc20_v1() {
         mock_provider.push(Some(transaction_info)).unwrap();
         mock_provider.push(tx_hash).unwrap();
         mock_provider.push(nonce).unwrap();
-        mock_provider.push(price).unwrap();
 
         // mock server
         let id_bytes = read_file_bytes(TOKEN_PRICE_CONFIG_PATH).await.unwrap();

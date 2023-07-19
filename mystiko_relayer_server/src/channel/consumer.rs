@@ -198,7 +198,7 @@ impl TransactionConsumer {
                 call_data.as_slice(),
                 &U256::zero(),
                 gas_limit,
-                Some(max_gas_price),
+                &max_gas_price,
                 provider,
             )
             .await?
@@ -271,7 +271,13 @@ impl TransactionConsumer {
         debug!("estimate gas for contract_address: {:?}", contract_address);
         let estimate_gas = self
             .tx_manager
-            .estimate_gas(contract_address, call_data.as_slice(), &U256::zero(), provider)
+            .estimate_gas(
+                contract_address,
+                call_data.as_slice(),
+                &U256::zero(),
+                &U256::from(100_000_000_000u64),
+                provider,
+            )
             .await?;
         debug!("estimate gas successful: {}", estimate_gas);
         Ok(estimate_gas)

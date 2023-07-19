@@ -85,7 +85,6 @@ fn test_consumer_execution_successful() {
         mock_provider.push(tx_hash).unwrap();
         mock_provider.push(price).unwrap();
         mock_provider.push(price).unwrap();
-        mock_provider.push(price).unwrap();
         mock_provider.push(gas).unwrap();
         mock_provider.push(nonce).unwrap();
         mock_provider.push(price).unwrap();
