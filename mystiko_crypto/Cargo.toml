@@ -51,3 +51,8 @@ zokrates_bellman = { git = "https://github.com/mystikonetwork/ZoKrates", rev = "
 [dev-dependencies]
 mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
 tokio = { version = "1.26.0", features = ["macros", "rt", "full", "test-util"] }
+criterion = { version = "0.5.1", features = ["html_reports"] }
+
+[[bench]]
+name = "mystiko_crypto_bench"
+harness = false

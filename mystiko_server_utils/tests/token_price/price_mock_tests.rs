@@ -9,7 +9,6 @@ use mystiko_server_utils::token_price::error::TokenPriceError;
 use mystiko_server_utils::token_price::price::TokenPrice;
 use mystiko_server_utils::token_price::query::{CurrencyMapResponse, CurrencyQuoteResponse};
 use serde_json::json;
-use std::assert_matches::assert_matches;
 
 #[tokio::test]
 async fn test_get_token_id() {
@@ -128,11 +127,11 @@ async fn test_tokne_price_not_init_err() {
     default_cfg.base_url = "http://error.com".to_string();
     let mut tp = TokenPrice::new(&default_cfg, "").unwrap();
     let price = tp.price("ETH").await;
-    assert_matches!(price.err().unwrap(), TokenPriceError::ReqwestError(_));
+    assert!(matches!(price.err().unwrap(), TokenPriceError::ReqwestError(_)));
 
     let amount_a = U256::from(10000000);
     let amount_b = tp.swap("USDT", 6, amount_a, "USDT", 6).await;
-    assert_matches!(amount_b.err().unwrap(), TokenPriceError::ReqwestError(_));
+    assert!(matches!(amount_b.err().unwrap(), TokenPriceError::ReqwestError(_)));
 }
 
 #[tokio::test]

@@ -9,6 +9,10 @@ use poseidon_rs::{Fr, Poseidon};
 use sha2::{Sha256, Sha512};
 use sha3::{Digest, Keccak256};
 
+lazy_static! {
+    static ref G_POSEIDON_INSTANCE: Poseidon = Poseidon::new();
+}
+
 pub fn poseidon_bigint(arr: &[BigInt]) -> BigInt {
     let arr_fr: Vec<Fr> = arr.iter().map(|n| Fr::from_str(&n.to_string()).unwrap()).collect();
 
@@ -23,8 +27,7 @@ pub fn poseidon(arr: &[BigInt]) -> BigInt {
 }
 
 pub fn poseidon_fr(arr: &[Fr]) -> BigInt {
-    let poseidon = Poseidon::new();
-    let ph = poseidon.hash(arr.to_vec()).unwrap();
+    let ph = G_POSEIDON_INSTANCE.hash(arr.to_vec()).unwrap();
     fr_to_bigint(&ph)
 }
 

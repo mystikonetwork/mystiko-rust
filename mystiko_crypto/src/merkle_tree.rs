@@ -46,24 +46,25 @@ impl MerkleTree {
     }
 
     fn rebuild(&mut self) {
+        self.layers.reserve(self.max_levels as usize);
         for level in 1..(self.max_levels + 1) as usize {
-            self.layers.push(vec![]);
+            let mut new_layer = vec![];
             let len = self.layers[level - 1].len();
-            if len == 0 {
-                continue;
-            }
+            if len != 0 {
+                let count: usize = (len + 1) / 2;
+                new_layer.reserve(count);
+                for i in 0..count {
+                    let first = &self.layers[level - 1][i * 2];
+                    let second = if i * 2 + 1 < len {
+                        &self.layers[level - 1][i * 2 + 1]
+                    } else {
+                        &self.zeros[level - 1]
+                    };
 
-            let count: usize = (len + 1) / 2;
-            for i in 0..count {
-                let first = self.layers[level - 1][i * 2].clone();
-                let second = if i * 2 + 1 < len {
-                    self.layers[level - 1][i * 2 + 1].clone()
-                } else {
-                    self.zeros[level - 1].clone()
-                };
-
-                self.layers[level].push(hash_two(&first, &second));
+                    new_layer.push(hash_two(first, second));
+                }
             }
+            self.layers.push(new_layer);
         }
     }
 
@@ -108,6 +109,37 @@ impl MerkleTree {
         }
 
         self.insert(elements[elements.len() - 1].clone())
+    }
+
+    pub fn revert(&mut self, count: usize) -> Result<(), MerkleTreeError> {
+        let layer_size = self.layers[0].len();
+        if count > layer_size {
+            return Err(MerkleTreeError::IndexOutOfBounds);
+        }
+
+        if count == layer_size {
+            return Ok(());
+        }
+
+        self.layers[0].truncate(count);
+        let mut new_layer_size = count;
+        for level in 1..(self.max_levels + 1) as usize {
+            if new_layer_size == 0 {
+                self.layers[level] = vec![];
+            } else {
+                new_layer_size >>= 1;
+                assert!(self.layers[level].len() >= new_layer_size);
+                self.layers[level].truncate(new_layer_size);
+            }
+        }
+
+        if !self.layers[0].is_empty() {
+            let index = self.layers[0].len() - 1;
+            let elem = self.layers[0][index].clone();
+            self.update(index, elem).unwrap();
+        }
+
+        Ok(())
     }
 
     fn update_layers(&mut self, level: usize, index: usize, element: BigInt) {

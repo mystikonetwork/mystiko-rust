@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cargo fmt --all -- --check
-cargo clippy -j 4 -- -D warnings
+cargo clippy --all-targets -j 4 -- -D warnings

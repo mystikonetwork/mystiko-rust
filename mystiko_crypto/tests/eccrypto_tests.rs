@@ -50,10 +50,10 @@ async fn test_random_data() {
     let ec_data = ECCryptoData::from_bytes(data.as_slice()).unwrap();
     let ec_data2 = ec_data;
     let ec_data3 = ECCryptoData::from_bytes(&ec_data2.to_vec().as_slice()[0..2]);
-    assert_eq!(ec_data3.err().unwrap(), CryptoError::DataLengthError);
+    assert!(matches!(ec_data3.err().unwrap(), CryptoError::DataLengthError));
 
     let data = encrypt(&pk.as_slice()[0..32], text.as_slice());
-    assert_eq!(data.err().unwrap(), CryptoError::KeyLengthError);
+    assert!(matches!(data.err().unwrap(), CryptoError::KeyLengthError));
 
     let data = vec![1, 2, 3];
     let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &data);

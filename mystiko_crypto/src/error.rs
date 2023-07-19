@@ -39,22 +39,6 @@ pub enum ZkpError {
     NotSupport,
 }
 
-impl PartialEq for ZkpError {
-    fn eq(&self, other: &Self) -> bool {
-        matches!(
-            (self, other),
-            (Self::SerdeJsonError(_), Self::SerdeJsonError(_))
-                | (Self::AbiParseError(_), Self::AbiParseError(_))
-                | (Self::DeserializeProgramError(_), Self::DeserializeProgramError(_))
-                | (Self::ComputeWitnessError(_), Self::ComputeWitnessError(_))
-                | (Self::ProofError(_), Self::ProofError(_))
-                | (Self::VKError(_), Self::VKError(_))
-                | (Self::MismatchError(_), Self::MismatchError(_))
-                | (Self::NotSupport, Self::NotSupport)
-        )
-    }
-}
-
 #[derive(Error, Debug)]
 pub enum CryptoError {
     #[error("data length error")]
@@ -67,17 +51,4 @@ pub enum CryptoError {
     DecryptError(String),
     #[error("internal error")]
     InternalError,
-}
-
-impl PartialEq for CryptoError {
-    fn eq(&self, other: &Self) -> bool {
-        matches!(
-            (self, other),
-            (Self::DataLengthError, Self::DataLengthError)
-                | (Self::KeyLengthError, Self::KeyLengthError)
-                | (Self::MacMismatchError, Self::MacMismatchError)
-                | (Self::DecryptError(_), Self::DecryptError(_))
-                | (Self::InternalError, Self::InternalError)
-        )
-    }
 }

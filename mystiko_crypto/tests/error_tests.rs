@@ -5,18 +5,24 @@ use mystiko_crypto::error::{CryptoError, MerkleTreeError, SecretShareError, ZkpE
 #[tokio::test]
 async fn test_error() {
     let merkle_err = MerkleTreeError::MerkleTreeIsFull;
-    assert_ne!(merkle_err, MerkleTreeError::IndexOutOfBounds);
+    assert!(!matches!(merkle_err, MerkleTreeError::IndexOutOfBounds));
+    assert!(!matches!(merkle_err, MerkleTreeError::Unknown));
 
-    let share_err = SecretShareError::ThresholdOutOfBounds;
-    assert_ne!(share_err, SecretShareError::SharesOutOfBounds);
+    let secret_share_err = SecretShareError::SharesOutOfBounds;
+    assert!(!matches!(secret_share_err, SecretShareError::ThresholdOutOfBounds));
 
-    let zkp_err = ZkpError::ComputeWitnessError(String::from(""));
-    assert_ne!(zkp_err, ZkpError::NotSupport);
-    let zkp_err = ZkpError::ProofError(String::from(""));
-    assert_ne!(zkp_err, ZkpError::NotSupport);
     let zkp_err = ZkpError::NotSupport;
-    assert_eq!(zkp_err, ZkpError::NotSupport);
+    assert!(!matches!(zkp_err, ZkpError::SerdeJsonError(_)));
+    assert!(!matches!(zkp_err, ZkpError::AbiParseError(_)));
+    assert!(!matches!(zkp_err, ZkpError::DeserializeProgramError(_)));
+    assert!(!matches!(zkp_err, ZkpError::ComputeWitnessError(_)));
+    assert!(!matches!(zkp_err, ZkpError::ProofError(_)));
+    assert!(!matches!(zkp_err, ZkpError::VKError(_)));
+    assert!(!matches!(zkp_err, ZkpError::MismatchError(_)));
 
-    let ec_err = CryptoError::DataLengthError;
-    assert_ne!(ec_err, CryptoError::InternalError);
+    let crypto_err = CryptoError::DataLengthError;
+    assert!(!matches!(crypto_err, CryptoError::KeyLengthError));
+    assert!(!matches!(crypto_err, CryptoError::MacMismatchError));
+    assert!(!matches!(crypto_err, CryptoError::DecryptError(_)));
+    assert!(!matches!(crypto_err, CryptoError::InternalError));
 }

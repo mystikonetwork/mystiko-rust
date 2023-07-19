@@ -21,14 +21,14 @@ async fn test_send_1559_tx() {
     let chain_id = provider.get_chainid().await.unwrap();
     let wallet: LocalWallet = anvil.keys().first().unwrap().clone().into();
     let wallet = wallet.with_chain_id(chain_id.as_u64());
-    let mut cfg = TxManagerConfig::new("testnet", None).unwrap();
-    cfg.confirm_blocks = U64::zero();
+    let mut cfg = TxManagerConfig::new(None).unwrap();
+    cfg.confirm_blocks = 0;
     let to = anvil.addresses()[1];
     let value = ethers_core::utils::parse_ether("1").unwrap();
 
     let builder = TxBuilder::builder()
         .config(cfg)
-        .chain_id(chain_id.as_u64().into())
+        .chain_id(chain_id.as_u64())
         .wallet(wallet)
         .build();
     let tx = builder.build_tx(&provider).await;
@@ -37,13 +37,16 @@ async fn test_send_1559_tx() {
     let gas_price = tx.gas_price(&provider).await.unwrap();
     assert!(gas_price > U256::zero());
 
-    let gas = tx.estimate_gas(to, vec![].as_slice(), &value, &provider).await.unwrap();
+    let max_gas_price = U256::from(100_000_000_000u64);
+    let gas = tx
+        .estimate_gas(to, vec![].as_slice(), &value, &max_gas_price, &provider)
+        .await
+        .unwrap();
     assert!(gas > U256::zero());
 
-    let max_gas_price = Some(U256::from(100_000_000_000u64));
     let before = provider.get_balance(to, None).await.unwrap();
     let tx_hash = tx
-        .send(to, vec![].as_slice(), &value, &gas, max_gas_price, &provider)
+        .send(to, vec![].as_slice(), &value, &gas, &max_gas_price, &provider)
         .await
         .unwrap();
     let receipt = tx.confirm(&provider, tx_hash).await.unwrap();
@@ -63,14 +66,14 @@ async fn test_send_legacy_tx() {
     let endpoint = anvil.endpoint();
 
     let provider = Provider::<Http>::try_from(endpoint).unwrap();
-    let chain_id: U64 = provider.get_chainid().await.unwrap().as_u64().into();
+    let chain_id = provider.get_chainid().await.unwrap().as_u64();
     let wallet: LocalWallet = anvil.keys().first().unwrap().clone().into();
-    let wallet = wallet.with_chain_id(chain_id.as_u64());
+    let wallet = wallet.with_chain_id(chain_id);
 
     let force_chain = vec![chain_id];
-    let mut cfg = TxManagerConfig::new("testnet", None).unwrap();
+    let mut cfg = TxManagerConfig::new(None).unwrap();
     cfg.force_gas_price_chains = force_chain;
-    cfg.confirm_blocks = U64::zero();
+    cfg.confirm_blocks = 0;
 
     let to = anvil.addresses()[1];
     let value = ethers_core::utils::parse_ether("1").unwrap();
@@ -86,13 +89,17 @@ async fn test_send_legacy_tx() {
     let gas_price = tx.gas_price(&provider).await.unwrap();
     assert!(gas_price > U256::zero());
 
-    let gas = tx.estimate_gas(to, vec![].as_slice(), &value, &provider).await.unwrap();
+    let max_gas_price = U256::from(100_000_000_000u64);
+
+    let gas = tx
+        .estimate_gas(to, vec![].as_slice(), &value, &max_gas_price, &provider)
+        .await
+        .unwrap();
     assert!(gas > U256::zero());
 
-    let max_gas_price = Some(U256::from(100_000_000_000u64));
     let before = provider.get_balance(to, None).await.unwrap();
     let tx_hash = tx
-        .send(to, vec![].as_slice(), &value, &gas, max_gas_price, &provider)
+        .send(to, vec![].as_slice(), &value, &gas, &max_gas_price, &provider)
         .await
         .unwrap();
     let receipt = tx.confirm(&provider, tx_hash).await.unwrap();
