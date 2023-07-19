@@ -4,8 +4,6 @@ services:
     image: "mystikonetwork/gas-relayer-server:latest"
     container_name: gas-relayer-server
     restart: always
-    environment:
-      - MYSTIKO_TX_MANAGER.MAX_GAS_PRICE=0xe8d4a51000
     volumes:
       - type: bind
         source: ./config.toml
