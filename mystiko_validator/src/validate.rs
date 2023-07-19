@@ -14,6 +14,7 @@ lazy_static! {
     static ref NO_SYMBOL_NUMERIC: Regex = Regex::new(r"^[0-9]+$").unwrap();
     static ref NUMERIC_WITH_SYMBOL: Regex = Regex::new(r"^[+-]?([0-9]*[.])?[0-9]+$").unwrap();
     static ref IS_GIT_REVISION: Regex = Regex::new(r"\b[0-9a-f]{7,40}\b").unwrap();
+    static ref IS_API_VERSION: Regex = Regex::new(r"^v\d+$").unwrap();
 }
 
 pub fn is_ethereum_address(address: &str) -> Result<(), ValidationError> {
@@ -91,4 +92,13 @@ pub fn is_numeric(s: &str, no_symbol: bool) -> bool {
     } else {
         NUMERIC_WITH_SYMBOL.is_match(s)
     }
+}
+
+pub fn is_api_version(array: &[String]) -> Result<(), ValidationError> {
+    for version in array {
+        if !IS_API_VERSION.is_match(version) {
+            return Err(ValidationError::new("api version is invalid"));
+        }
+    }
+    Ok(())
 }

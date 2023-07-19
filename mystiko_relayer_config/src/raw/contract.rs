@@ -7,7 +7,6 @@ use validator::Validate;
 #[derive(TypedBuilder, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawContractConfig {
-    #[serde(default = "default_asset_type")]
     #[builder(default = default_asset_type())]
     pub asset_type: AssetType,
 
@@ -15,7 +14,6 @@ pub struct RawContractConfig {
     pub asset_symbol: String,
 
     #[validate(range(min = 1))]
-    #[serde(default = "default_asset_decimals")]
     #[builder(default = default_asset_decimals())]
     pub asset_decimals: u32,
 
