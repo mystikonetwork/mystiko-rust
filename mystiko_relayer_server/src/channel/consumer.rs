@@ -1,6 +1,5 @@
 use crate::handler::transaction::{TransactionHandler, UpdateTransactionOptions};
 use anyhow::{bail, Result};
-use core::slice::SlicePattern;
 use ethers_core::abi::{AbiEncode, Address};
 use ethers_core::types::{Bytes, TxHash, U256};
 use log::{debug, error, info};
@@ -75,10 +74,14 @@ impl TransactionConsumer {
         let call_data = self
             .build_call_data(contract_address, &signer, &data.contract_param, &data.signature)
             .await?;
+        // get gas price
+        let gas_price = self.tx_manager.gas_price(&signer).await?;
         // estimate gas
-        let estimate_gas = self.estimate_gas(contract_address, &call_data, &signer).await?;
+        let estimate_gas = self
+            .estimate_gas(contract_address, &call_data, &signer, gas_price)
+            .await?;
         // validate relayer fee
-        let max_gas_price = self.validate_relayer_fee(&signer, data, &estimate_gas).await?;
+        let max_gas_price = self.validate_relayer_fee(data, &estimate_gas, gas_price).await?;
         // send transaction
         let tx_hash = self
             .send(contract_address, &call_data, &signer, &estimate_gas, max_gas_price)
@@ -105,9 +108,9 @@ impl TransactionConsumer {
 
     async fn validate_relayer_fee(
         &mut self,
-        provider: &Arc<Provider>,
         data: &TransactRequestData,
         estimate_gas: &U256,
+        gas_price: U256,
     ) -> Result<U256> {
         let out_rollup_fees = &data.contract_param.out_rollup_fees;
         let relayer_fee_amount = &data.contract_param.relayer_fee_amount;
@@ -120,9 +123,8 @@ impl TransactionConsumer {
             "chain_id = {}, circuit_type = {:?}, estimate_gas = {}",
             self.chain_id, &data.circuit_type, estimate_gas
         );
-
-        let gas_price = self.tx_manager.gas_price(provider).await?;
         debug!("chain id = {}, gas price = {}", self.chain_id, gas_price);
+
         let estimate_transaction_fee_amount = gas_price.mul(estimate_gas);
         debug!("estimate transaction fee amount = {}", estimate_transaction_fee_amount);
 
@@ -195,7 +197,7 @@ impl TransactionConsumer {
             .tx_manager
             .send(
                 contract_address,
-                call_data.as_slice(),
+                call_data.to_vec().as_slice(),
                 &U256::zero(),
                 gas_limit,
                 &max_gas_price,
@@ -267,15 +269,16 @@ impl TransactionConsumer {
         contract_address: Address,
         call_data: &Bytes,
         provider: &Arc<Provider>,
+        gas_price: U256,
     ) -> Result<U256> {
         debug!("estimate gas for contract_address: {:?}", contract_address);
         let estimate_gas = self
             .tx_manager
             .estimate_gas(
                 contract_address,
-                call_data.as_slice(),
+                call_data.to_vec().as_slice(),
                 &U256::zero(),
-                &U256::from(100_000_000_000u64),
+                &gas_price,
                 provider,
             )
             .await?;

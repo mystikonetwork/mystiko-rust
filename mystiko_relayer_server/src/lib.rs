@@ -1,4 +1,3 @@
-#![feature(slice_pattern)]
 extern crate actix_web;
 extern crate anyhow;
 extern crate async_trait;
