@@ -3,7 +3,7 @@ use actix_web::http::header::ContentType;
 use actix_web::{HttpRequest, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum ResponseCode {
     Successful = 0,
     Failed = -1,
@@ -15,13 +15,16 @@ pub enum ResponseCode {
     TransactionChannelError = -7,
     TransactionNotFound = -8,
     GetGasPriceError = -9,
+    ChainIdNotFound = -10,
+    AccountNotFoundInDatabase = -11,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiResponse<T> {
     pub code: i32,
-    pub result: Option<T>,
-    pub error: Option<String>,
+    pub data: Option<T>,
+    // error message
+    pub message: Option<String>,
 }
 
 impl<T> Responder for ApiResponse<T>
@@ -43,8 +46,8 @@ where
 {
     ApiResponse {
         code: ResponseCode::Successful as i32,
-        result: Some(result),
-        error: None,
+        data: Some(result),
+        message: None,
     }
 }
 
@@ -54,7 +57,7 @@ where
 {
     ApiResponse {
         code: ResponseCode::Failed as i32,
-        result,
-        error,
+        data: result,
+        message: error,
     }
 }

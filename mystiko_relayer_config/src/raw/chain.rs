@@ -19,7 +19,6 @@ pub struct RawChainConfig {
     pub asset_symbol: String,
 
     #[validate(range(min = 1))]
-    #[serde(default = "default_asset_decimals")]
     #[builder(default = default_asset_decimals())]
     pub asset_decimals: u32,
 

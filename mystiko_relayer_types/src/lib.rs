@@ -13,7 +13,6 @@ pub mod response;
 use mystiko_abi::commitment_pool::TransactRequest;
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use mystiko_validator::validate::is_ethereum_address;
-use num_bigint::BigInt;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use typed_builder::TypedBuilder;
@@ -92,6 +91,7 @@ pub struct RegisterInfoRequest {
     pub chain_id: u64,
     #[validate]
     #[serde(default)]
+    #[builder(default)]
     pub options: Option<RegisterOptions>,
 }
 
@@ -99,8 +99,6 @@ pub struct RegisterInfoRequest {
 pub struct RegisterOptions {
     #[validate(length(min = 1))]
     pub asset_symbol: String,
-    #[validate(range(min = 1))]
-    pub asset_decimals: u32,
     #[validate(custom = "is_valid_circuit_type")]
     pub circuit_type: CircuitType,
     pub show_unavailable: bool,
@@ -118,11 +116,17 @@ pub struct RegisterInfoResponse {
     pub contracts: Option<Vec<ContractInfo>>,
 }
 
+#[derive(TypedBuilder, Serialize, Deserialize, Debug)]
+pub struct HandshakeResponse {
+    pub package_version: String,
+    pub api_version: Vec<String>,
+}
+
 #[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ContractInfo {
     pub asset_symbol: String,
     pub relayer_fee_of_ten_thousandth: u32,
-    pub minimum_gas_fee: Option<BigInt>,
+    pub minimum_gas_fee: Option<String>,
 }
 
 fn is_valid_circuit_type(value: &CircuitType) -> Result<(), ValidationError> {

@@ -1,0 +1,58 @@
+[package]
+name = "mystiko_relayer_server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-cors = { version = "0.6.4" }
+actix-http = { version = "3.3.1" }
+actix-web = { version = "4" }
+anyhow = { version = "1.0" }
+async-trait = { version = "0.1.64" }
+config = { version = "0.13.3" }
+derive_more = { version = "0.99.17" }
+env_logger = { version = "0.10.0" }
+ethereum-types = { version = "0.14.1" }
+ethers-core = { version = "2.0.4" }
+ethers-middleware = { version = "2.0.4" }
+ethers-signers = { version = "2.0.4" }
+hex = { version = "0.4.3" }
+log = { version = "0.4.17" }
+mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
+mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
+mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
+mystiko_validator = { version = "0.1.0", path = "../mystiko_validator" }
+mystiko_relayer_config = { version = "0.1.0", path = "../mystiko_relayer_config" }
+mystiko_relayer_types = { version = "0.1.0", path = "../mystiko_relayer_types" }
+mystiko_server_utils = { version = "0.1.0", path = "../mystiko_server_utils" }
+mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
+mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
+mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
+mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
+num-bigint = { version = "0.4", features = ["serde"] }
+num-traits = { version = "0.2.15" }
+rand = { version = "0.8.5" }
+rust_decimal = { version = "1.29.0" }
+secp256k1 = { version = "0.27.0" }
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = { version = "1.0.91" }
+sha3 = { version = "0.10.8" }
+sqlx = { version = "0.7.0", features = [ "runtime-tokio", "tls-rustls", "sqlite" ] }
+thiserror = { version = "1.0", default-features = false }
+tokio = { version = "1.27.0", features = ["full"] }
+typed-builder = { version = "0.14.0" }
+validator = { version = "0.16.0", features = ["derive"] }
+
+[dev-dependencies]
+actix-http = { version = "3.3.1" }
+actix-rt = { version = "2.8.0" }
+async-trait = { version = "0.1.64" }
+async_once = { version = "0.2.6" }
+ethers-providers = { version = "2.0.4", features = ["ws"] }
+mockall = { version = "0.11.4" }
+mockito = { version = "0.32.4" }
+mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
+lazy_static = { version = "1.4.0" }
