@@ -4,6 +4,7 @@ use crate::zkp::generate_proof::generate_proof;
 use anyhow::Result;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
+use std::io::Cursor;
 use zokrates_ast::ir::{self, ProgEnum};
 use zokrates_ast::typed::abi::Abi;
 use zokrates_bellman::Bellman;
@@ -129,7 +130,8 @@ impl ZKProof {
         json_args_str: &str,
     ) -> Result<Self, ZkpError> {
         let abi: Abi = serde_json::from_slice(abi_spec)?;
-        let prog = match ir::ProgEnum::deserialize(program) {
+        let cursor = Cursor::new(program);
+        let prog = match ir::ProgEnum::deserialize(cursor) {
             Ok(p) => p.collect(),
             Err(err) => return Err(ZkpError::DeserializeProgramError(err)),
         };

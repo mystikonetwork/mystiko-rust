@@ -36,7 +36,7 @@ pub struct DefaultProviderFactory;
 
 impl DefaultProviderFactory {
     pub fn new() -> Self {
-        Self::default()
+        Default::default()
     }
 }
 

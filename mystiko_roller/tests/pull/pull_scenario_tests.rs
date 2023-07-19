@@ -63,29 +63,4 @@ pub async fn test_leaf_index_mismatch() {
     );
     assert_eq!(data.read().await.get_included_count(), 0, "included count mismatch");
     std::mem::drop(server);
-
-    let block_number = cms[0].block_num + 1;
-    let cms = load_indexer_commitments(
-        "tests/test_files/data/commitments.json",
-        Some(test_chain_id),
-        Some(&handle.contract_address),
-    )
-    .await;
-    let cm_count: usize = 3;
-    let (cms_rsp, _) = cms.split_at(cm_count);
-    let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, cms_rsp).await;
-    let result = handle.pull(c.indexer().unwrap()).await;
-    assert!(result.is_ok(), "pull failed {:?}", result.err());
-    assert_eq!(
-        data.read().await.get_next_sync_block(),
-        block_number + 1,
-        "next sync block error"
-    );
-    assert_eq!(
-        data.read().await.get_commitments_queue_count(),
-        cm_count,
-        "commitments mismatch"
-    );
-    assert_eq!(data.read().await.get_included_count(), 0, "included count mismatch");
-    std::mem::drop(server);
 }

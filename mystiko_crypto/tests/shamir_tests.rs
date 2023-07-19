@@ -16,10 +16,7 @@ async fn test_secret_sharing() {
     assert_eq!(result.err().unwrap(), SecretShareError::SharesOutOfBounds);
 
     let result = split(secret, 5, 7, None);
-    assert_eq!(
-        result.err().unwrap(),
-        SecretShareError::ThresholdOutOfBounds
-    );
+    assert_eq!(result.err().unwrap(), SecretShareError::ThresholdOutOfBounds);
 }
 
 #[tokio::test]

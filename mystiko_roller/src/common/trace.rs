@@ -8,7 +8,7 @@ pub fn trace_init(level: &str) {
         .add_directive(LevelFilter::WARN.into())
         .add_directive(format!("mystiko_={}", level).parse().expect("invalid log level"));
 
-    let formatter = Format::default().with_timer(time::SystemTime::default());
+    let formatter = Format::default().with_timer::<time::SystemTime>(Default::default());
 
     let subscriber = fmt::Subscriber::builder()
         .with_env_filter(filter)
