@@ -167,10 +167,22 @@ where
             let tx = provider
                 .get_transaction(tx_hash)
                 .await
-                .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?
-                .ok_or_else(|| TxManagerError::TxDropped)?;
+                .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?;
 
-            if let Some(block_number) = tx.block_number {
+            // try again for some provider error of lose transaction for a while
+            let tx_repeat = match tx {
+                Some(t) => t,
+                None => {
+                    tokio::time::sleep(Duration::from_secs(self.config.confirm_interval_secs)).await;
+                    provider
+                        .get_transaction(tx_hash)
+                        .await
+                        .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?
+                        .ok_or_else(|| TxManagerError::TxDropped)?
+                }
+            };
+
+            if let Some(block_number) = tx_repeat.block_number {
                 let current_block_number = provider
                     .get_block_number()
                     .await

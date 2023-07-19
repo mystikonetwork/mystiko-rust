@@ -3,7 +3,6 @@ use crate::common::env::load_roller_private_key;
 use crate::common::error::{Result, RollerError};
 use crate::config::roller::{ChainDataSource, RollupConfig};
 use crate::context::ContextTrait;
-use crate::core::slice::SlicePattern;
 use crate::data::handler::{DataHandler, ProofInfo, RollupPlan};
 use crate::rollup::static_data::{STATIC_ERROR_INVALID_LEAF_HASH, STATIC_ERROR_INVALID_ROLLUP_SIZE, STATIC_PROOF_DATA};
 use ethers_core::types::{Address, Bytes, H256, U256};
@@ -139,7 +138,13 @@ impl RollupHandle {
 
         let gas_limit = self
             .tx
-            .estimate_gas(self.to_address, tx_data.as_slice(), &U256::zero(), &gas_price, &signer)
+            .estimate_gas(
+                self.to_address,
+                tx_data.to_vec().as_slice(),
+                &U256::zero(),
+                &gas_price,
+                &signer,
+            )
             .await?;
         info!("rollup transaction gas limit: {:?}", gas_limit);
 
@@ -148,7 +153,7 @@ impl RollupHandle {
             .tx
             .send(
                 self.to_address,
-                tx_data.as_slice(),
+                tx_data.to_vec().as_slice(),
                 &U256::zero(),
                 &gas_limit,
                 &gas_price,
@@ -259,7 +264,7 @@ impl RollupHandle {
             .tx
             .estimate_gas(
                 self.to_address,
-                tx_data.as_slice(),
+                tx_data.to_vec().as_slice(),
                 &U256::zero(),
                 &self.cfg.max_gas_price.into(),
                 &signer,

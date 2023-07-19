@@ -1,4 +1,3 @@
-#![feature(slice_pattern)]
 extern crate async_trait;
 extern crate config as mehcode_config;
 extern crate core;

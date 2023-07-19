@@ -338,7 +338,17 @@ async fn test_confirm_with_error() {
 
     mock.push(json!(null)).unwrap();
     let receipt = tx.confirm(&provider, tx_hash).await;
+    assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
+
+    mock.push(json!(null)).unwrap();
+    mock.push(json!(null)).unwrap();
+    let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::TxDropped));
+
+    mock.push(transaction.clone()).unwrap();
+    mock.push(json!(null)).unwrap();
+    let receipt = tx.confirm(&provider, tx_hash).await;
+    assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
     mock.push(transaction.clone()).unwrap();
     let receipt = tx.confirm(&provider, tx_hash).await;
