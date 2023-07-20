@@ -17,14 +17,23 @@ jobs:
           lfs: true
           submodules: recursive
           persist-credentials: false
+
       - name: Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           components: rustfmt, clippy, llvm-tools-preview
-      - uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Setup Foundry
+        uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Cache
         uses: actions/cache@v3
         with:
@@ -35,31 +44,33 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install cargo-llvm-cov cargo command
-        run: cargo install cargo-llvm-cov --force
+      - name: Cargo Install
+        run: cargo install cargo-llvm-cov protoc-gen-prost-crate --force
 
       - name: Build
         run: RUSTFLAGS="-D warnings" ./scripts/build.sh
 
-      - name: Check format
+      - name: Check Format
         run: cargo fmt --all -- --check
-      - name: Run clippy
+
+      - name: Run Clippy
         timeout-minutes: 60
         run: cargo clippy --all-targets -j 4 -- -D warnings
 
-      - name: Run tests
-        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-report
+      - name: Run Test
+        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --lcov --no-report
 
-      - name: Generate coverage report
-        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi)" --lcov --no-run --output-path lcov.info
+      - name: Generate Coverage
+        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --lcov --no-run --output-path lcov.info
 
-      - name: Upload coverage report
+      - name: Upload Coverage
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
-      - run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
+      - name: Check Dirty Files
+        run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
         if: failure()
@@ -68,6 +79,7 @@ jobs:
           format: markdown
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
       - name: Telegram Success Notification
         uses: appleboy/telegram-action@master
         if: success()
