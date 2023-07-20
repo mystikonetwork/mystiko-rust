@@ -10,9 +10,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         .expect("failed to execute process");
     io::stdout().write_all(&output.stdout)?;
     io::stderr().write_all(&output.stderr)?;
-    if output.status.success() {
-        Ok(())
-    } else {
-        Err("protobuf build failed".into())
+    if !output.status.success() {
+        print!(
+            "cargo:warning={}",
+            "Protobuf code generate failed, use previous generated files"
+        );
     }
+    Ok(())
 }
