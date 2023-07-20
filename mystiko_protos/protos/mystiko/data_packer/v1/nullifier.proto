@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package mystiko.data_packer.v1;
+
+message Nullifier {
+  bytes nullifier = 1;
+  bytes creation_transaction_hash = 2;
+}

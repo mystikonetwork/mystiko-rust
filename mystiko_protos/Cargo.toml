@@ -1,0 +1,11 @@
+[package]
+name = "mystiko_protos"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+prost = { version = "0.11.9" }
+bytes = { version = "1.4.0" }
+
+[build-dependencies]
+prost-build  = { version = "0.11.9" }
