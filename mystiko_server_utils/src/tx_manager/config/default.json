@@ -1,5 +1,4 @@
 {
-  "max_gas_price": "0x174876e800",
   "min_priority_fee_per_gas": "0x3b9aca00",
   "max_priority_fee_per_gas": "0xba43b7400",
   "confirm_blocks": 2,
@@ -7,7 +6,7 @@
   "confirm_interval_secs": 5,
   "gas_limit_reserve_percentage": 10,
   "force_gas_price_chains": [
-    "0xfa",
-    "0xfa2"
+    "250",
+    "4002"
   ]
 }
