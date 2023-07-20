@@ -19,4 +19,8 @@ async fn test_read_config() {
     let cfg = TxManagerConfig::new(None).unwrap();
     assert_eq!(cfg.max_confirm_count, 112);
     assert_eq!(cfg.gas_limit_reserve_percentage, 24);
+    let min_priority_fee_per_gas = cfg.get_min_priority_fee_per_gas(137);
+    assert_eq!(min_priority_fee_per_gas, 30000000000);
+    let min_priority_fee_per_gas = cfg.get_min_priority_fee_per_gas(1);
+    assert_eq!(min_priority_fee_per_gas, 1000000000);
 }
