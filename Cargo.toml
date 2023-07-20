@@ -11,6 +11,7 @@ members = [
     "mystiko_fs",
     "mystiko_indexer_client",
     "mystiko_protocol",
+    "mystiko_protos",
     "mystiko_relayer_abi",
     "mystiko_relayer_client",
     "mystiko_relayer_config",
