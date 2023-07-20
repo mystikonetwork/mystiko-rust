@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package mystiko.data_packer.v1;
+
+import "mystiko/data_packer/v1/commitment.proto";
+import "mystiko/data_packer/v1/nullifier.proto";
+
+message ContractData {
+  uint64 start_block = 1;
+  uint64 end_block = 2;
+  bytes contract_address = 3;
+  repeated Commitment commitments= 4;
+  repeated Nullifier nullifiers = 5;
+}
+
+message ChainData {
+  repeated ContractData contract_data = 1;
+}
