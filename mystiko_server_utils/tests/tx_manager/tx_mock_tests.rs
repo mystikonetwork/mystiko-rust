@@ -19,7 +19,7 @@ use std::str::FromStr;
 async fn test_gas_price() {
     let (provider, mock) = Provider::mocked();
     let mut cfg = TxManagerConfig::new(None).unwrap();
-    cfg.min_priority_fee_per_gas = 4_000_000_123;
+    cfg.min_priority_fee_by_chain.insert("2000".to_string(), 4_000_000_123);
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
     let builder = TxBuilder::builder()

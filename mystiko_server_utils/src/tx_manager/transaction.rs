@@ -69,8 +69,9 @@ where
             .estimate_eip1559_fees()
             .await
             .map_err(|e| TxManagerError::GasPriceError(e.to_string()))?;
-        if priority_fee < self.config.min_priority_fee_per_gas.into() {
-            priority_fee = self.config.min_priority_fee_per_gas.into();
+        let cfg_min_priority_fee: U256 = self.config.get_min_priority_fee_per_gas(self.chain_id).into();
+        if priority_fee < cfg_min_priority_fee {
+            priority_fee = cfg_min_priority_fee;
         }
         Ok((max_fee_per_gas, priority_fee))
     }
@@ -103,7 +104,7 @@ where
     ) -> Result<U256> {
         let typed_tx = match self.is_1559_tx {
             true => {
-                let priority_fee = self.config.min_priority_fee_per_gas;
+                let priority_fee = self.config.get_min_priority_fee_per_gas(self.chain_id);
                 let tx = self
                     .build_1559_tx(to, data, value, max_gas_price, &priority_fee.into(), provider)
                     .await?;
@@ -149,6 +150,7 @@ where
             tx_request.gas = Some(gas_limit);
             self.send_1559_tx(tx_request, provider).await
         } else {
+            // todo change gas
             let gas_price = self.gas_price_legacy_tx(provider).await?;
             if gas_price > *tx_max_gas_price {
                 return Err(TxManagerError::GasPriceError("gas price too high".into()));
@@ -170,6 +172,7 @@ where
                 .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?;
 
             // try again for some provider error of lose transaction for a while
+            // todo polygon provider bug, more wait time
             let tx_repeat = match tx {
                 Some(t) => t,
                 None => {
