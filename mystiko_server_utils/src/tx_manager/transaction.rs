@@ -166,14 +166,14 @@ where
         for _ in 0..self.config.max_confirm_count {
             tokio::time::sleep(Duration::from_secs(self.config.confirm_interval_secs)).await;
 
-            let tx = provider
+            let tx_first = provider
                 .get_transaction(tx_hash)
                 .await
                 .map_err(|why| TxManagerError::ConfirmTxError(why.to_string()))?;
 
             // try again for some provider error of lose transaction for a while
             // todo polygon provider bug, more wait time
-            let tx_repeat = match tx {
+            let tx = match tx_first {
                 Some(t) => t,
                 None => {
                     tokio::time::sleep(Duration::from_secs(self.config.confirm_interval_secs)).await;
@@ -185,7 +185,7 @@ where
                 }
             };
 
-            if let Some(block_number) = tx_repeat.block_number {
+            if let Some(block_number) = tx.block_number {
                 let current_block_number = provider
                     .get_block_number()
                     .await
