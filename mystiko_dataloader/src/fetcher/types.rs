@@ -1,5 +1,5 @@
 use crate::data::contract::ContractData;
-use crate::data::raw::RawData;
+use crate::data::types::LoadedData;
 use crate::filter::ContractFilter;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -32,7 +32,7 @@ pub struct ContractFetchOption {
 pub type FetchResult<R> = Result<Vec<Result<ContractData<R>>>>;
 
 #[async_trait]
-pub trait DataFetcher<R: RawData>: Send + Sync {
+pub trait DataFetcher<R: LoadedData>: Send + Sync {
     async fn fetch_chain(&self, option: &ChainFetchOption) -> FetchResult<R>;
 
     async fn fetch_contracts(&self, options: &[ContractFetchOption]) -> FetchResult<R>;
@@ -41,7 +41,7 @@ pub trait DataFetcher<R: RawData>: Send + Sync {
 #[async_trait]
 impl<R> DataFetcher<R> for Box<dyn DataFetcher<R>>
 where
-    R: RawData,
+    R: LoadedData,
 {
     async fn fetch_chain(&self, option: &ChainFetchOption) -> FetchResult<R> {
         Ok(self.as_ref().fetch_chain(option).await?)

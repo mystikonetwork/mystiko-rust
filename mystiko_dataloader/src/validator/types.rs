@@ -1,5 +1,5 @@
 use crate::data::chain::ChainData;
-use crate::data::raw::RawData;
+use crate::data::types::LoadedData;
 use anyhow::Result;
 use async_trait::async_trait;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
@@ -14,14 +14,14 @@ pub struct ValidateOption {
 }
 
 #[async_trait]
-pub trait DataValidator<R: RawData>: Send + Sync {
+pub trait DataValidator<R: LoadedData>: Send + Sync {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> Result<bool>;
 }
 
 #[async_trait]
 impl<R> DataValidator<R> for Box<dyn DataValidator<R>>
 where
-    R: RawData,
+    R: LoadedData,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> Result<bool> {
         Ok(self.as_ref().validate(data, option).await?)

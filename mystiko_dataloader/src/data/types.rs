@@ -3,36 +3,51 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub enum RawDataType {
+pub enum DataType {
     Full = 0,
     Lite = 1,
 }
 
-pub trait RawData: Send + Sync {
-    fn data_type() -> RawDataType;
-}
-
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct FullRawData {
+pub struct FullData {
     pub commitments: Vec<Commitment>,
     pub nullifiers: Vec<Nullifier>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct LiteRawData {
+pub struct LiteData {
     pub commitments: Vec<Commitment>,
 }
 
-impl RawData for FullRawData {
-    fn data_type() -> RawDataType {
-        RawDataType::Full
+#[derive(Debug, Clone, PartialEq)]
+pub enum Data<'a> {
+    Full(&'a FullData),
+    Lite(&'a LiteData),
+}
+
+pub trait LoadedData: Send + Sync {
+    fn data_type() -> DataType;
+    fn data(&self) -> Data;
+}
+
+impl LoadedData for FullData {
+    fn data_type() -> DataType {
+        DataType::Full
+    }
+
+    fn data(&self) -> Data {
+        Data::Full(self)
     }
 }
 
-impl RawData for LiteRawData {
-    fn data_type() -> RawDataType {
-        RawDataType::Lite
+impl LoadedData for LiteData {
+    fn data_type() -> DataType {
+        DataType::Lite
+    }
+
+    fn data(&self) -> Data {
+        Data::Lite(self)
     }
 }

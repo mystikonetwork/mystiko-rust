@@ -1,4 +1,4 @@
-use crate::data::raw::RawData;
+use crate::data::types::LoadedData;
 use crate::fetcher::types::DataFetcher;
 use crate::filter::ContractFilter;
 use crate::handler::types::DataHandler;
@@ -39,7 +39,7 @@ pub struct ChainDataLoader<R, F = Box<dyn DataFetcher<R>>, V = Box<dyn DataValid
     _phantom: std::marker::PhantomData<R>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ChainDataLoaderBuilder<
     R,
     F = Box<dyn DataFetcher<R>>,
@@ -57,7 +57,7 @@ pub struct ChainDataLoaderBuilder<
 
 impl<R, F, V, H> ChainDataLoader<R, F, V, H>
 where
-    R: RawData,
+    R: LoadedData,
     F: DataFetcher<R>,
     V: DataValidator<R>,
     H: DataHandler<R>,
@@ -81,7 +81,7 @@ where
 
 impl<R, F, V, H> ChainDataLoaderBuilder<R, F, V, H>
 where
-    R: RawData,
+    R: LoadedData,
     F: DataFetcher<R>,
     V: DataValidator<R>,
     H: DataHandler<R>,
@@ -114,32 +114,56 @@ where
     }
 
     pub fn add_fetcher(mut self, fetcher: F) -> Self {
-        self.fetchers.push(Arc::new(fetcher));
-        self
+        self.add_shared_fetcher(Arc::new(fetcher))
     }
 
     pub fn add_fetchers(mut self, fetchers: Vec<F>) -> Self {
-        self.fetchers.extend(fetchers.into_iter().map(|f| Arc::new(f)));
+        self.add_shared_fetchers(fetchers.into_iter().map(Arc::new).collect())
+    }
+
+    pub fn add_shared_fetcher(mut self, fetcher: Arc<F>) -> Self {
+        self.fetchers.push(fetcher);
+        self
+    }
+
+    pub fn add_shared_fetchers(mut self, fetchers: Vec<Arc<F>>) -> Self {
+        self.fetchers.extend(fetchers);
         self
     }
 
     pub fn add_validator(mut self, validator: V) -> Self {
-        self.validators.push(Arc::new(validator));
-        self
+        self.add_shared_validator(Arc::new(validator))
     }
 
     pub fn add_validators(mut self, validators: Vec<V>) -> Self {
-        self.validators.extend(validators.into_iter().map(|v| Arc::new(v)));
+        self.add_shared_validators(validators.into_iter().map(Arc::new).collect())
+    }
+
+    pub fn add_shared_validator(mut self, validator: Arc<V>) -> Self {
+        self.validators.push(validator);
+        self
+    }
+
+    pub fn add_shared_validators(mut self, validators: Vec<Arc<V>>) -> Self {
+        self.validators.extend(validators);
         self
     }
 
     pub fn add_handler(mut self, handler: H) -> Self {
-        self.handlers.push(Arc::new(handler));
-        self
+        self.add_shared_handler(Arc::new(handler))
     }
 
     pub fn add_handlers(mut self, handlers: Vec<H>) -> Self {
-        self.handlers.extend(handlers.into_iter().map(|h| Arc::new(h)));
+        self.add_shared_handlers(handlers.into_iter().map(Arc::new).collect())
+    }
+
+    pub fn add_shared_handler(mut self, handler: Arc<H>) -> Self {
+        self.handlers.push(handler);
+        self
+    }
+
+    pub fn add_shared_handlers(mut self, handlers: Vec<Arc<H>>) -> Self {
+        self.handlers.extend(handlers);
         self
     }
 
