@@ -3633,6 +3633,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_dataloader"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "mystiko_protos",
+ "serde",
+ "typed-builder",
+]
+
+[[package]]
 name = "mystiko_downloader"
 version = "0.1.0"
 dependencies = [
