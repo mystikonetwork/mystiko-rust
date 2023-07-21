@@ -160,6 +160,9 @@ impl serde::Serialize for Commitment {
         if self.rollup_transaction_hash.is_some() {
             len += 1;
         }
+        if self.relay_transaction_hash.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.data.v1.Commitment", len)?;
         if !self.commitment_hash.is_empty() {
             struct_ser.serialize_field("commitmentHash", pbjson::private::base64::encode(&self.commitment_hash).as_str())?;
@@ -184,6 +187,9 @@ impl serde::Serialize for Commitment {
         if let Some(v) = self.rollup_transaction_hash.as_ref() {
             struct_ser.serialize_field("rollupTransactionHash", pbjson::private::base64::encode(&v).as_str())?;
         }
+        if let Some(v) = self.relay_transaction_hash.as_ref() {
+            struct_ser.serialize_field("relayTransactionHash", pbjson::private::base64::encode(&v).as_str())?;
+        }
         struct_ser.end()
     }
 }
@@ -207,6 +213,8 @@ impl<'de> serde::Deserialize<'de> for Commitment {
             "creationTransactionHash",
             "rollup_transaction_hash",
             "rollupTransactionHash",
+            "relay_transaction_hash",
+            "relayTransactionHash",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -218,6 +226,7 @@ impl<'de> serde::Deserialize<'de> for Commitment {
             EncryptedNote,
             CreationTransactionHash,
             RollupTransactionHash,
+            RelayTransactionHash,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -246,6 +255,7 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                             "encryptedNote" | "encrypted_note" => Ok(GeneratedField::EncryptedNote),
                             "creationTransactionHash" | "creation_transaction_hash" => Ok(GeneratedField::CreationTransactionHash),
                             "rollupTransactionHash" | "rollup_transaction_hash" => Ok(GeneratedField::RollupTransactionHash),
+                            "relayTransactionHash" | "relay_transaction_hash" => Ok(GeneratedField::RelayTransactionHash),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -272,6 +282,7 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                 let mut encrypted_note__ = None;
                 let mut creation_transaction_hash__ = None;
                 let mut rollup_transaction_hash__ = None;
+                let mut relay_transaction_hash__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::CommitmentHash => {
@@ -328,6 +339,14 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                                 map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
+                        GeneratedField::RelayTransactionHash => {
+                            if relay_transaction_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("relayTransactionHash"));
+                            }
+                            relay_transaction_hash__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(Commitment {
@@ -338,6 +357,7 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                     encrypted_note: encrypted_note__,
                     creation_transaction_hash: creation_transaction_hash__,
                     rollup_transaction_hash: rollup_transaction_hash__,
+                    relay_transaction_hash: relay_transaction_hash__,
                 })
             }
         }
