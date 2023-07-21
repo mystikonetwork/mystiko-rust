@@ -19,7 +19,7 @@ use std::str::FromStr;
 async fn test_gas_price() {
     let (provider, mock) = Provider::mocked();
     let mut cfg = TxManagerConfig::new(None).unwrap();
-    cfg.min_priority_fee_per_gas = 4_000_000_123;
+    cfg.min_priority_fee_by_chain.insert("2000".to_string(), 4_000_000_123);
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
     let builder = TxBuilder::builder()
@@ -300,14 +300,11 @@ async fn test_legacy_tx_with_error() {
 async fn test_confirm_with_error() {
     let (provider, mock) = Provider::mocked();
 
-    let transaction = get_transaction();
+    let mut transaction = get_transaction();
     let mut transaction_receipt = get_transaction_receipt();
-    let nonce = U256::from(100);
-    let price = U256::from(1000000);
 
     let chain_id = 2000u64;
     let wallet = LocalWallet::new(&mut rand::thread_rng()).with_chain_id(chain_id);
-    let to_address = wallet.address();
     let mut cfg = TxManagerConfig::new(None).unwrap();
     cfg.confirm_interval_secs = 0;
     cfg.max_confirm_count = 4;
@@ -323,19 +320,6 @@ async fn test_confirm_with_error() {
     let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
-    let value = ethers_core::utils::parse_ether("1").unwrap();
-    let max_gas_price = U256::from(100_000_000_000u64);
-    let gas = U256::from(100_000_000_000u64);
-    mock.push(tx_hash).unwrap();
-    mock.push(nonce).unwrap();
-    mock.push(price).unwrap();
-    let _ = tx
-        .send(to_address, vec![].as_slice(), &value, &gas, &max_gas_price, &provider)
-        .await;
-
-    let receipt = tx.confirm(&provider, tx_hash).await;
-    assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
-
     mock.push(json!(null)).unwrap();
     let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
@@ -345,23 +329,39 @@ async fn test_confirm_with_error() {
     let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::TxDropped));
 
+    transaction.block_number = None;
     mock.push(transaction.clone()).unwrap();
     mock.push(json!(null)).unwrap();
     let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
+    transaction.block_number = Some(U64::from(100));
+    let block_number1 = U64::from(10);
+    let block_number2 = U64::from(110);
+    mock.push(block_number2).unwrap();
     mock.push(transaction.clone()).unwrap();
+    mock.push(block_number1).unwrap();
+    mock.push(transaction.clone()).unwrap();
+    mock.push(json!(null)).unwrap();
     let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
     transaction_receipt.status = Some(U64::from(0));
     mock.push(transaction_receipt.clone()).unwrap();
+    mock.push(block_number2).unwrap();
     mock.push(transaction.clone()).unwrap();
     let receipt = tx.confirm(&provider, tx_hash).await;
     assert!(matches!(receipt.err().unwrap(), TxManagerError::ConfirmTxError(_)));
 
+    transaction_receipt.status = Some(U64::from(1));
+    mock.push(transaction_receipt.clone()).unwrap();
+    mock.push(block_number2).unwrap();
+    mock.push(transaction.clone()).unwrap();
+    let receipt = tx.confirm(&provider, tx_hash).await;
+    assert_eq!(receipt.unwrap(), transaction_receipt);
+
+    transaction.block_number = None;
     for _ in 0..cfg.max_confirm_count {
-        mock.push(json!(null)).unwrap();
         mock.push(transaction.clone()).unwrap();
     }
     let receipt = tx.confirm(&provider, tx_hash).await;
