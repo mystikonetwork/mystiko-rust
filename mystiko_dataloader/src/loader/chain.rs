@@ -6,21 +6,29 @@ use crate::validator::types::DataValidator;
 use anyhow::{Error, Result};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{RwLock, RwLockReadGuard};
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
-pub struct ChainDataLoaderState {
+pub struct ContractState {
+    pub loaded_block: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize, TypedBuilder)]
+#[builder(field_defaults(default, setter(into)))]
+pub struct ChainState {
     pub loaded_block: u64,
     pub is_running: bool,
     pub is_loading: bool,
+    pub contract_states: HashMap<String, ContractState>,
 }
 
 #[derive(Debug, Clone, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
-pub struct ChainDataLoaderStartOption {
+pub struct StartOption {
     #[builder(setter(strip_option))]
     pub load_interval_ms: Option<u64>,
     #[builder(setter(strip_option))]
@@ -35,7 +43,7 @@ pub struct ChainDataLoader<R, F = Box<dyn DataFetcher<R>>, V = Box<dyn DataValid
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
     handlers: Vec<Arc<H>>,
-    state: RwLock<ChainDataLoaderState>,
+    state: RwLock<ChainState>,
     _phantom: std::marker::PhantomData<R>,
 }
 
@@ -66,15 +74,15 @@ where
         ChainDataLoaderBuilder::new()
     }
 
-    pub async fn start(&mut self, _options: &ChainDataLoaderStartOption) -> Result<()> {
+    pub async fn start(&self, _options: &StartOption) -> Result<()> {
         todo!()
     }
 
-    pub async fn stop(&mut self) -> Result<()> {
+    pub async fn stop(&self) -> Result<()> {
         todo!()
     }
 
-    pub async fn state(&self) -> RwLockReadGuard<ChainDataLoaderState> {
+    pub async fn state(&self) -> RwLockReadGuard<ChainState> {
         self.state.read().await
     }
 }
@@ -113,11 +121,11 @@ where
         self
     }
 
-    pub fn add_fetcher(mut self, fetcher: F) -> Self {
+    pub fn add_fetcher(self, fetcher: F) -> Self {
         self.add_shared_fetcher(Arc::new(fetcher))
     }
 
-    pub fn add_fetchers(mut self, fetchers: Vec<F>) -> Self {
+    pub fn add_fetchers(self, fetchers: Vec<F>) -> Self {
         self.add_shared_fetchers(fetchers.into_iter().map(Arc::new).collect())
     }
 
@@ -131,11 +139,11 @@ where
         self
     }
 
-    pub fn add_validator(mut self, validator: V) -> Self {
+    pub fn add_validator(self, validator: V) -> Self {
         self.add_shared_validator(Arc::new(validator))
     }
 
-    pub fn add_validators(mut self, validators: Vec<V>) -> Self {
+    pub fn add_validators(self, validators: Vec<V>) -> Self {
         self.add_shared_validators(validators.into_iter().map(Arc::new).collect())
     }
 
@@ -149,11 +157,11 @@ where
         self
     }
 
-    pub fn add_handler(mut self, handler: H) -> Self {
+    pub fn add_handler(self, handler: H) -> Self {
         self.add_shared_handler(Arc::new(handler))
     }
 
-    pub fn add_handlers(mut self, handlers: Vec<H>) -> Self {
+    pub fn add_handlers(self, handlers: Vec<H>) -> Self {
         self.add_shared_handlers(handlers.into_iter().map(Arc::new).collect())
     }
 
@@ -169,10 +177,11 @@ where
 
     pub fn build(self) -> Result<ChainDataLoader<R, F, V, H>> {
         if let Some(config) = self.config {
-            let state = ChainDataLoaderState {
+            let state = ChainState {
                 loaded_block: self.initial_block,
                 is_running: false,
                 is_loading: false,
+                contract_states: HashMap::<String, ContractState>::new(),
             };
             Ok(ChainDataLoader {
                 config,
