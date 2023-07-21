@@ -3637,8 +3637,11 @@ name = "mystiko_dataloader"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
+ "mystiko_config",
  "mystiko_protos",
  "serde",
+ "tokio",
  "typed-builder",
 ]
 

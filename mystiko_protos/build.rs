@@ -2,6 +2,7 @@ use std::error::Error;
 use std::process::Command;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    println!("cargo:rerun-if-changed=schema/");
     let output = Command::new("bash")
         .arg("scripts/build-protos.sh")
         .current_dir(env!("CARGO_MANIFEST_DIR"))

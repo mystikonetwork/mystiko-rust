@@ -8,17 +8,19 @@ pub enum RawDataType {
     Lite = 1,
 }
 
-pub trait RawData {
+pub trait RawData: Send + Sync {
     fn data_type() -> RawDataType;
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct FullRawData {
     pub commitments: Vec<Commitment>,
     pub nullifiers: Vec<Nullifier>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct LiteRawData {
     pub commitments: Vec<Commitment>,
 }

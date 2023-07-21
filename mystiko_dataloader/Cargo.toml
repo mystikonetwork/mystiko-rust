@@ -5,6 +5,9 @@ edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0.69" }
+async-trait = { version = "0.1.64" }
+mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos" }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
+tokio = { version = "1.26.0", features = ["sync"] }
 typed-builder = { version = "0.14.0" }
