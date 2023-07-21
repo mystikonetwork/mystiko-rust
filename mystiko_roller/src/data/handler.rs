@@ -9,14 +9,14 @@ use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_downloader::DownloaderBuilder;
 use mystiko_protocol::rollup::{Rollup, RollupProof};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::{error, info};
 
 pub struct CommitmentData {
-    pub cm: BigInt,
+    pub cm: BigUint,
     pub rollup_fee: U256,
     pub block_number: u64,
     pub deposit_tx: String,
@@ -68,7 +68,7 @@ impl DataHandler {
             tree,
             next_sync_block: 0_u64,
             latest_rollup_tx_block_number: 0_u64,
-            counters: sources.iter().map(|k| (k.clone(), 0_u32)).collect(),
+            counters: sources.iter().map(|k| (k.clone(), 0u32)).collect(),
         }
     }
 

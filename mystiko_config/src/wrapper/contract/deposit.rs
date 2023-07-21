@@ -5,7 +5,7 @@ use crate::wrapper::contract::pool::PoolContractConfig;
 use anyhow::{Error, Result};
 use mystiko_types::{AssetType, BridgeType, ContractType};
 use mystiko_utils::convert::decimal_to_number;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use num_traits::{NumCast, Zero};
 use std::fmt::Debug;
 use std::str::FromStr;
@@ -80,8 +80,8 @@ impl DepositContractConfig {
         self.raw.disabled
     }
 
-    pub fn min_amount(&self) -> Result<BigInt> {
-        Ok(BigInt::from_str(&self.raw.min_amount)?)
+    pub fn min_amount(&self) -> Result<BigUint> {
+        Ok(BigUint::from_str(&self.raw.min_amount)?)
     }
 
     pub fn min_amount_number<T>(&self) -> Result<T>
@@ -92,8 +92,8 @@ impl DepositContractConfig {
         decimal_to_number::<T, String>(&self.raw.min_amount, Some(asset_decimals))
     }
 
-    pub fn max_amount(&self) -> Result<BigInt> {
-        Ok(BigInt::from_str(&self.raw.max_amount)?)
+    pub fn max_amount(&self) -> Result<BigUint> {
+        Ok(BigUint::from_str(&self.raw.max_amount)?)
     }
 
     pub fn max_amount_number<T>(&self) -> Result<T>
@@ -104,8 +104,8 @@ impl DepositContractConfig {
         decimal_to_number::<T, String>(&self.raw.max_amount, Some(asset_decimals))
     }
 
-    pub fn min_bridge_fee(&self) -> Result<BigInt> {
-        Ok(BigInt::from_str(&self.raw.min_bridge_fee)?)
+    pub fn min_bridge_fee(&self) -> Result<BigUint> {
+        Ok(BigUint::from_str(&self.raw.min_bridge_fee)?)
     }
 
     pub fn min_bridge_fee_number<T>(&self) -> Result<T>
@@ -116,8 +116,8 @@ impl DepositContractConfig {
         decimal_to_number::<T, String>(&self.raw.min_bridge_fee, Some(asset_decimals))
     }
 
-    pub fn min_executor_fee(&self) -> Result<BigInt> {
-        Ok(BigInt::from_str(&self.raw.min_executor_fee)?)
+    pub fn min_executor_fee(&self) -> Result<BigUint> {
+        Ok(BigUint::from_str(&self.raw.min_executor_fee)?)
     }
 
     pub fn min_executor_fee_number<T>(&self) -> Result<T>
@@ -128,7 +128,7 @@ impl DepositContractConfig {
         decimal_to_number::<T, String>(&self.raw.min_executor_fee, Some(asset_decimals))
     }
 
-    pub fn min_rollup_fee(&self) -> Result<BigInt> {
+    pub fn min_rollup_fee(&self) -> Result<BigUint> {
         self.pool_contract().min_rollup_fee()
     }
 
@@ -167,7 +167,7 @@ impl DepositContractConfig {
         self.asset().asset_decimals()
     }
 
-    pub fn recommended_amounts(&self) -> Result<Vec<BigInt>> {
+    pub fn recommended_amounts(&self) -> Result<Vec<BigUint>> {
         self.asset().recommended_amounts()
     }
 

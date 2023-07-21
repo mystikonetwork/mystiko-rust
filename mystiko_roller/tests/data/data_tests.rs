@@ -52,7 +52,7 @@ pub async fn test_insert_commitments() {
     assert_eq!(data.get_commitments_queue_count(), cms.len());
 
     let mut cm1 = cms[0].clone();
-    cm1.leaf_index = (cms.len() + 1000) as u32;
+    cm1.leaf_index = (cms.len() + 1000) as u64;
     let cms1 = vec![cm1];
     let result = data.insert_commitments(cms1.as_slice()).await;
     assert!(matches!(result.err().unwrap(), RollerError::CommitmentMissing));

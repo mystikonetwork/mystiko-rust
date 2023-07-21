@@ -7,7 +7,7 @@ use mystiko_config::wrapper::circuit::CircuitConfig;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_types::{AssetType, BridgeType, CircuitType, ContractType};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -42,14 +42,14 @@ async fn test_create() {
     assert_eq!(
         config.recommended_amounts().unwrap(),
         vec![
-            BigInt::from_str("1000000000000000000").unwrap(),
-            BigInt::from_str("10000000000000000000").unwrap(),
+            BigUint::from_str("1000000000000000000").unwrap(),
+            BigUint::from_str("10000000000000000000").unwrap(),
         ]
     );
     assert_eq!(config.recommended_amounts_number::<u32>().unwrap(), vec![1, 10]);
     assert_eq!(
         config.min_rollup_fee().unwrap(),
-        BigInt::from_str("120000000000000000").unwrap()
+        BigUint::from_str("120000000000000000").unwrap()
     );
     assert_eq!(config.min_rollup_fee_number::<f64>().unwrap(), 0.12);
     assert_eq!(config.circuits_names(), &vec![String::from("circuit-1.0")]);
@@ -98,14 +98,14 @@ async fn test_create_contract_config() {
     assert_eq!(
         config.recommended_amounts().unwrap(),
         vec![
-            BigInt::from_str("1000000000000000000").unwrap(),
-            BigInt::from_str("10000000000000000000").unwrap(),
+            BigUint::from_str("1000000000000000000").unwrap(),
+            BigUint::from_str("10000000000000000000").unwrap(),
         ]
     );
     assert_eq!(config.recommended_amounts_number::<u32>().unwrap(), vec![1, 10]);
     assert_eq!(
         config.min_rollup_fee().unwrap(),
-        BigInt::from_str("120000000000000000").unwrap()
+        BigUint::from_str("120000000000000000").unwrap()
     );
     assert_eq!(config.min_rollup_fee_number::<f64>().unwrap(), 0.12);
 }

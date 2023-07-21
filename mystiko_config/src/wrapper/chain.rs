@@ -10,7 +10,7 @@ use crate::wrapper::contract::ContractConfig;
 use crate::wrapper::provider::ProviderConfig;
 use anyhow::{Error, Result};
 use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use num_traits::{NumCast, Zero};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -94,7 +94,7 @@ impl ChainConfig {
         self.raw.asset_decimals
     }
 
-    pub fn recommended_amounts(&self) -> Result<Vec<BigInt>> {
+    pub fn recommended_amounts(&self) -> Result<Vec<BigUint>> {
         self.main_asset().recommended_amounts()
     }
 

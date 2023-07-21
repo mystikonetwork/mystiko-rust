@@ -10,7 +10,7 @@ use mystiko_crypto::crypto::decrypt_asymmetric;
 use mystiko_crypto::ecies;
 use mystiko_crypto::shamir;
 use mystiko_crypto::zkp::proof::ZKProof;
-use num_bigint::{BigInt, Sign};
+use num_bigint::BigUint;
 use std::ops::Shr;
 use typed_builder::TypedBuilder;
 
@@ -22,18 +22,18 @@ pub struct Transaction {
     pub in_verify_sks: Vec<VerifySk>,
     pub in_enc_pks: Vec<EncPk>,
     pub in_enc_sks: Vec<EncSk>,
-    pub in_commitments: Vec<BigInt>,
+    pub in_commitments: Vec<BigUint>,
     pub in_private_notes: Vec<EncryptedNote>,
     pub path_indices: Vec<Vec<usize>>,
-    pub path_elements: Vec<Vec<BigInt>>,
+    pub path_elements: Vec<Vec<BigUint>>,
     pub sig_pk: SigPk,
-    pub tree_root: BigInt,
+    pub tree_root: BigUint,
     pub public_amount: TxAmount,
     pub relayer_fee_amount: TxAmount,
     pub rollup_fee_amounts: Vec<TxAmount>,
     pub out_verify_pks: Vec<VerifyPk>,
     pub out_amounts: Vec<TxAmount>,
-    pub out_commitments: Vec<BigInt>,
+    pub out_commitments: Vec<BigUint>,
     pub out_random_ps: Vec<RandomSk>,
     pub out_random_rs: Vec<RandomSk>,
     pub out_random_ss: Vec<RandomSk>,
@@ -139,8 +139,7 @@ impl Transaction {
         array.push(serde_json::json!(bigint_slice_to_strings(&self.out_commitments)));
         array.push(serde_json::json!(bigint_slice_to_strings(&self.rollup_fee_amounts)));
         array.push(serde_json::json!(is_neg(&unpacked_random_auditing_pk.0)));
-        array.push(serde_json::json!(BigInt::from_bytes_le(
-            Sign::Plus,
+        array.push(serde_json::json!(BigUint::from_bytes_le(
             &unpacked_random_auditing_pk.1
         )
         .to_string()));
@@ -165,17 +164,14 @@ impl Transaction {
         array.push(serde_json::json!(bytes_to_strings(&self.out_random_rs)));
         array.push(serde_json::json!(bytes_to_strings(&self.out_random_ss)));
         array.push(serde_json::json!(bytes_to_strings(&self.out_verify_pks)));
-        array.push(serde_json::json!(BigInt::from_bytes_le(
-            Sign::Plus,
+        array.push(serde_json::json!(BigUint::from_bytes_le(
             &unpacked_random_auditing_pk.0
         )
         .to_string()));
         array.push(serde_json::json!(bytes_to_strings(&auditor_public_key_xs)));
-        array.push(serde_json::json!(BigInt::from_bytes_le(
-            Sign::Plus,
-            &random_auditing_sk
-        )
-        .to_string()));
+        array.push(serde_json::json!(
+            BigUint::from_bytes_le(&random_auditing_sk).to_string()
+        ));
         array.push(serde_json::json!(coefficients));
         array.push(serde_json::json!(commitment_shares));
         let tx_param = serde_json::Value::Array(array).to_string();
@@ -192,17 +188,17 @@ impl Transaction {
 }
 
 fn is_neg(key: &[u8]) -> bool {
-    let key_big_int = BigInt::from_bytes_le(Sign::Plus, key);
-    let field_size_half: BigInt = FIELD_SIZE.clone().shr(1);
+    let key_big_int = BigUint::from_bytes_le(key);
+    let field_size_half: BigUint = FIELD_SIZE.clone().shr(1);
     key_big_int.gt(&field_size_half)
 }
 
-fn bigint_slice_to_strings(v: &[BigInt]) -> Vec<String> {
+fn bigint_slice_to_strings(v: &[BigUint]) -> Vec<String> {
     v.iter().map(|n| n.to_string()).collect()
 }
 
 fn bytes_to_strings<T: AsRef<[u8]>>(v: &[T]) -> Vec<String> {
     v.iter()
-        .map(|n| BigInt::from_bytes_le(Sign::Plus, n.as_ref()).to_string())
+        .map(|n| BigUint::from_bytes_le(n.as_ref()).to_string())
         .collect()
 }

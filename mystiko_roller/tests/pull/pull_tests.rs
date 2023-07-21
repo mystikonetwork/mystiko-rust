@@ -106,7 +106,7 @@ pub async fn test_pull_from_indexer() {
     let (cms_rsp, _) = cms.split_at(cm_count);
     let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, cms_rsp).await;
     let result = handle.pull(c.indexer().unwrap()).await;
-    assert!(result.is_ok());
+    assert!(result.is_ok(), "pull failed {:?}", result.err());
     assert_eq!(
         data.read().await.get_next_sync_block(),
         block_number + 1,

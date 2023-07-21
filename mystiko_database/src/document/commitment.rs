@@ -4,7 +4,7 @@ use mystiko_storage::column::{IndexColumns, UniqueColumns};
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::CommitmentStatus;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -14,7 +14,7 @@ pub struct Commitment {
     #[column(length_limit = 64)]
     pub contract_address: String,
     #[column(length_limit = 128)]
-    pub commitment_hash: BigInt,
+    pub commitment_hash: BigUint,
     #[column(length_limit = 16)]
     pub asset_symbol: String,
     pub asset_decimals: u32,
@@ -23,14 +23,14 @@ pub struct Commitment {
     #[column(length_limit = 32)]
     pub status: CommitmentStatus,
     #[column(length_limit = 128)]
-    pub rollup_fee_amount: Option<BigInt>,
+    pub rollup_fee_amount: Option<BigUint>,
     pub encrypted_note: Option<String>,
     #[column(length_limit = 128)]
-    pub leaf_index: Option<BigInt>,
+    pub leaf_index: Option<BigUint>,
     #[column(length_limit = 128)]
-    pub amount: Option<BigInt>,
+    pub amount: Option<BigUint>,
     #[column(length_limit = 128)]
-    pub nullifier: Option<BigInt>,
+    pub nullifier: Option<BigUint>,
     #[column(length_limit = 128)]
     pub shielded_address: Option<String>,
     #[column(length_limit = 128)]

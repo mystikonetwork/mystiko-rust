@@ -14,12 +14,12 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 pub async fn test_explorer_stub() {
     let stub = create_explorer_stub("http://error", "test_explorer").await;
     assert_eq!(stub.data_source(), ChainDataSource::Explorer);
-    let block_number = stub.get_latest_block_number(1, "").await;
+    let block_number = stub.get_latest_block_number(401, "").await;
     assert!(matches!(block_number.err().unwrap(), RollerError::ReqwestError(_)));
 
     let server = create_explorer_server(1, "0x7f88f2a3cf18e96844e14cae59ec97b908734c01", "test_explorer").await;
     let stub = create_explorer_stub(&server.url("").to_string(), "test_explorer").await;
-    let block_number = stub.get_latest_block_number(1, "").await;
+    let block_number = stub.get_latest_block_number(401, "").await;
     assert_eq!(block_number.unwrap(), 256);
     let block_number = stub
         .get_included_count(1, "0x7f88f2a3cf18e96844e14cae59ec97b908734c01")
@@ -33,28 +33,40 @@ pub async fn test_explorer_stub() {
 
 #[tokio::test]
 pub async fn test_explorer_rpc_error_response() {
-    let server = create_explorer_rpc_error_server(2).await;
+    let server = create_explorer_rpc_error_server(402).await;
     let stub = create_explorer_stub(&server.url("").to_string(), "test_explorer").await;
-    let result = stub.get_included_count(2, "error_address1").await;
+    let result = stub.get_included_count(402, "error_address1").await;
     assert!(matches!(result.err().unwrap(), RollerError::ReqwestError(_)));
-    let result = stub.get_included_count(2, "error_address2").await;
+    let result = stub.get_included_count(402, "error_address2").await;
     assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
-    let result = stub.get_included_count(2, "error_address3").await;
+    let result = stub.get_included_count(402, "error_address3").await;
     assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
-    let result = stub.get_included_count(2, "error_address4").await;
+    let result = stub.get_included_count(402, "error_address4").await;
     assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
 }
 
 #[tokio::test]
 pub async fn test_explorer_api_error_response() {
-    let server = create_explorer_api_error_server(3).await;
+    let server = create_explorer_api_error_server(403).await;
     let stub = create_explorer_stub(&server.url("").to_string(), "test_explorer").await;
-    let result = stub.get_queued_commitments(3, "", 100, 1000).await;
-    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
-    let result = stub.get_queued_commitments(3, "", 200, 1000).await;
-    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
-    let result = stub.get_queued_commitments(3, "", 300, 1000).await;
-    assert!(matches!(result.err().unwrap(), RollerError::ExplorerError(_)));
+    let result = stub.get_queued_commitments(403, "", 100, 1000).await;
+    assert!(
+        matches!(result.as_ref().err().unwrap(), RollerError::ExplorerError(_)),
+        "{:?}",
+        result.as_ref().err().unwrap()
+    );
+    let result = stub.get_queued_commitments(403, "", 200, 1000).await;
+    assert!(
+        matches!(result.as_ref().err().unwrap(), RollerError::ExplorerError(_)),
+        "{:?}",
+        result.as_ref().err().unwrap()
+    );
+    let result = stub.get_queued_commitments(403, "", 300, 1000).await;
+    assert!(
+        matches!(result.as_ref().err().unwrap(), RollerError::ExplorerError(_)),
+        "{:?}",
+        result.as_ref().err().unwrap()
+    );
 }
 
 async fn create_explorer_server(chain_id: u64, contract_address: &str, key: &str) -> Server {

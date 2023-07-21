@@ -2,7 +2,7 @@ use mystiko_config::raw::asset::RawAssetConfig;
 use mystiko_config::raw::create_raw_from_file;
 use mystiko_config::wrapper::asset::AssetConfig;
 use mystiko_types::AssetType;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -20,8 +20,8 @@ async fn test_create() {
     assert_eq!(
         config.recommended_amounts().unwrap(),
         vec![
-            BigInt::from_str("10000000000000000").unwrap(),
-            BigInt::from_str("100000000000000000").unwrap(),
+            BigUint::from_str("10000000000000000").unwrap(),
+            BigUint::from_str("100000000000000000").unwrap(),
         ]
     );
     assert_eq!(config.recommended_amounts_number::<u32>().unwrap(), vec![1, 10]);

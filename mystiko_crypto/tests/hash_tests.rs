@@ -3,8 +3,8 @@ extern crate num_bigint;
 
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::hash::{blake2b_512, checksum, keccak256, poseidon, poseidon_bigint, sha256_mod};
-use mystiko_crypto::utils::{random_bigint, random_bytes};
-use num_bigint::BigInt;
+use mystiko_crypto::utils::{random_biguint, random_bytes};
+use num_bigint::BigUint;
 
 #[tokio::test]
 async fn test_keccak256() {
@@ -21,7 +21,7 @@ async fn test_keccak256() {
 async fn test_sha256_mod() {
     // compatible test with js
     let data1 = b"baad";
-    let hash_js = BigInt::parse_bytes(
+    let hash_js = BigUint::parse_bytes(
         b"21386729550194668992953605105751046526972920509576226227329140564650153218040",
         10,
     )
@@ -40,9 +40,9 @@ async fn test_sha256_mod() {
 
 #[tokio::test]
 async fn test_poseidon_compatible_with_js() {
-    let b1 = BigInt::from(1);
-    let b2 = BigInt::from(2);
-    let expect_hash = BigInt::parse_bytes(
+    let b1 = BigUint::from(1u32);
+    let b2 = BigUint::from(2u32);
+    let expect_hash = BigUint::parse_bytes(
         b"7853200120776062878684798364095072458815029376092732009249414926327459813530",
         10,
     )
@@ -54,9 +54,9 @@ async fn test_poseidon_compatible_with_js() {
 #[tokio::test]
 async fn test_poseidon_bigint() {
     let size = random_bytes(1);
-    let b1 = random_bigint(size[0] as usize, &FIELD_SIZE);
+    let b1 = random_biguint(size[0] as usize, &FIELD_SIZE);
     let size = random_bytes(1);
-    let b2 = random_bigint(size[0] as usize, &FIELD_SIZE);
+    let b2 = random_biguint(size[0] as usize, &FIELD_SIZE);
     poseidon_bigint(&[b1, b2]);
 }
 

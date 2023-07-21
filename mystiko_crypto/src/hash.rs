@@ -4,7 +4,7 @@ use crate::utils::mod_floor;
 use blake2::Blake2b512;
 use ff::PrimeField;
 use hmac::{Hmac, Mac};
-use num_bigint::{BigInt, Sign};
+use num_bigint::BigUint;
 use poseidon_rs::{Fr, Poseidon};
 use sha2::{Sha256, Sha512};
 use sha3::{Digest, Keccak256};
@@ -13,20 +13,20 @@ lazy_static! {
     static ref G_POSEIDON_INSTANCE: Poseidon = Poseidon::new();
 }
 
-pub fn poseidon_bigint(arr: &[BigInt]) -> BigInt {
+pub fn poseidon_bigint(arr: &[BigUint]) -> BigUint {
     let arr_fr: Vec<Fr> = arr.iter().map(|n| Fr::from_str(&n.to_string()).unwrap()).collect();
 
     poseidon_fr(arr_fr.as_slice())
 }
 
-pub fn poseidon(arr: &[BigInt]) -> BigInt {
+pub fn poseidon(arr: &[BigUint]) -> BigUint {
     assert!(arr.len() < 7);
     let hash = poseidon_bigint(arr);
     assert!(hash < FIELD_SIZE.clone());
     hash
 }
 
-pub fn poseidon_fr(arr: &[Fr]) -> BigInt {
+pub fn poseidon_fr(arr: &[Fr]) -> BigUint {
     let ph = G_POSEIDON_INSTANCE.hash(arr.to_vec()).unwrap();
     fr_to_bigint(&ph)
 }
@@ -37,14 +37,14 @@ pub fn sha512(msg: &[u8]) -> Vec<u8> {
     hasher.finalize().to_vec()
 }
 
-pub fn sha256(msg: &[u8]) -> BigInt {
+pub fn sha256(msg: &[u8]) -> BigUint {
     let mut hasher = Sha256::new();
     hasher.update(msg);
     let result = hasher.finalize();
-    BigInt::from_bytes_be(Sign::Plus, &result)
+    BigUint::from_bytes_be(&result)
 }
 
-pub fn sha256_mod(msg: &[u8]) -> BigInt {
+pub fn sha256_mod(msg: &[u8]) -> BigUint {
     let hash = sha256(msg);
     mod_floor(&hash, &FIELD_SIZE)
 }

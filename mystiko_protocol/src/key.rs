@@ -4,13 +4,13 @@ use babyjubjub_rs::PrivateKey;
 use k256::SecretKey;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::eccrypto::public_key_to_vec;
-use mystiko_crypto::utils::{bigint_to_32_bytes, fr_to_bytes};
+use mystiko_crypto::utils::{biguint_to_32_bytes, fr_to_bytes};
 
 pub fn verification_secret_key(raw_secret_key: &VerifySk) -> VerifySk {
     let pk = PrivateKey::import(raw_secret_key.to_vec()).unwrap();
-    let sk = pk.scalar_key();
+    let sk = pk.scalar_key().to_biguint().unwrap();
     assert!(sk < FIELD_SIZE.clone());
-    bigint_to_32_bytes(&sk)
+    biguint_to_32_bytes(&sk)
 }
 
 pub fn verification_public_key(raw_secret_key: &VerifySk) -> VerifyPk {
