@@ -1,16 +1,16 @@
 use std::error::Error;
-use std::io::{self, Write};
 use std::process::Command;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let output = Command::new("buf")
-        .arg("generate")
+    let output = Command::new("bash")
+        .arg("scripts/build-protos.sh")
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output();
     let success = match output {
         Ok(output) => {
-            io::stdout().write_all(&output.stdout)?;
-            io::stderr().write_all(&output.stderr)?;
+            if !output.stderr.is_empty() {
+                println!("cargo:warning={}", String::from_utf8_lossy(&output.stderr));
+            }
             output.status.success()
         }
         Err(e) => {
