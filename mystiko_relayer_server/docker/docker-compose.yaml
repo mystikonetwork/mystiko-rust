@@ -1,7 +1,7 @@
 version: '3'
 services:
   gas-relayer-server:
-    image: "mystikonetwork/gas-relayer-server:latest"
+    image: "mystikonetwork/gas-relayer-server:rust-latest"
     container_name: gas-relayer-server
     restart: always
     volumes:
