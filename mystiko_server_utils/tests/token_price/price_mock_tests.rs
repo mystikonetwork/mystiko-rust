@@ -219,7 +219,7 @@ async fn test_internal_error() {
 pub async fn create_mock_token_price_server(id: Option<bool>, price: Option<bool>) -> (ServerGuard, Vec<Mock>) {
     let mut server = Server::new_async().await;
     let mut mocks = vec![];
-    if let Some(_) = id {
+    if id.is_some() {
         let id_bytes = read_file_bytes("./tests/token_price/files/token_ids.json")
             .await
             .unwrap();
@@ -236,7 +236,7 @@ pub async fn create_mock_token_price_server(id: Option<bool>, price: Option<bool
         mocks.push(mock);
     }
 
-    if let Some(_) = price {
+    if price.is_some() {
         let price_bytes = read_file_bytes("./../mystiko_server_utils/tests/token_price/files/token_price.json")
             .await
             .unwrap();

@@ -288,7 +288,7 @@ async fn create_explorer_server(
 ) -> (ServerGuard, Vec<Mock>) {
     let mut server = Server::new_async().await;
     let mut mocks = vec![];
-    if let Some(_) = block {
+    if block.is_some() {
         let block_number_rsp = ExplorerRpcResponse {
             jsonrpc: "1.0".to_string(),
             id: 1,
@@ -310,7 +310,7 @@ async fn create_explorer_server(
         mocks.push(mock);
     }
 
-    if let Some(_) = include_count {
+    if include_count.is_some() {
         let included_count_rsp = ExplorerRpcResponse {
             jsonrpc: "1.0".to_string(),
             id: 1,
@@ -334,7 +334,7 @@ async fn create_explorer_server(
         mocks.push(mock);
     }
 
-    if let Some(_) = cms {
+    if cms.is_some() {
         let logs = load_commitment_logs("tests/test_files/data/commitment_logs.json").await;
         let commitment_rsp = ExplorerApiResponse {
             status: "1".to_string(),
