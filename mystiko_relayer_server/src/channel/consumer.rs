@@ -67,15 +67,22 @@ impl TransactionConsumer {
 
     async fn consume(&mut self, uuid: &str, data: &TransactRequestData) -> Result<String> {
         // get provider
+        let provider = self
+            .providers
+            .write()
+            .await
+            .get_or_create_provider(data.chain_id)
+            .await?;
+        // get signer
         let signer = self.signer.clone();
         // parse address to Address
         let contract_address = Address::from_str(&data.pool_address)?;
         // build call data
         let call_data = self
-            .build_call_data(contract_address, &signer, &data.contract_param, &data.signature)
+            .build_call_data(contract_address, &provider, &data.contract_param, &data.signature)
             .await?;
         // get gas price
-        let gas_price = self.tx_manager.gas_price(&signer).await?;
+        let gas_price = self.tx_manager.gas_price(&provider).await?;
         // estimate gas
         let estimate_gas = self
             .estimate_gas(contract_address, &call_data, &signer, gas_price)
