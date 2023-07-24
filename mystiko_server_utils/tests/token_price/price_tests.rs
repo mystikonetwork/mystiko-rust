@@ -1,4 +1,3 @@
-extern crate httptest;
 extern crate mystiko_fs;
 
 use ethers_core::types::U256;

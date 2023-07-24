@@ -4,7 +4,7 @@ use mystiko_storage::column::{IndexColumns, UniqueColumns};
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{BridgeType, DepositStatus};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -16,11 +16,11 @@ pub struct Deposit {
     #[column(length_limit = 64)]
     pub pool_address: String,
     #[column(length_limit = 128)]
-    pub commitment_hash: BigInt,
+    pub commitment_hash: BigUint,
     #[column(length_limit = 128)]
-    pub hash_k: BigInt,
+    pub hash_k: BigUint,
     #[column(length_limit = 128)]
-    pub random_s: BigInt,
+    pub random_s: BigUint,
     pub encrypted_note: String,
     #[column(length_limit = 16)]
     pub asset_symbol: String,
@@ -30,19 +30,19 @@ pub struct Deposit {
     #[column(length_limit = 32)]
     pub bridge_type: BridgeType,
     #[column(length_limit = 128)]
-    pub amount: BigInt,
+    pub amount: BigUint,
     #[column(length_limit = 128)]
-    pub rollup_fee_amount: BigInt,
+    pub rollup_fee_amount: BigUint,
     #[column(length_limit = 128)]
-    pub bridge_fee_amount: BigInt,
+    pub bridge_fee_amount: BigUint,
     #[column(length_limit = 64)]
     pub bridge_fee_asset_address: Option<String>,
     #[column(length_limit = 128)]
-    pub executor_fee_amount: BigInt,
+    pub executor_fee_amount: BigUint,
     #[column(length_limit = 64)]
     pub executor_fee_asset_address: Option<String>,
     #[column(length_limit = 128)]
-    pub service_fee_amount: BigInt,
+    pub service_fee_amount: BigUint,
     #[column(length_limit = 128)]
     pub shielded_recipient_address: String,
     #[column(length_limit = 32)]

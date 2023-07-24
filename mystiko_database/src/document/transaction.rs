@@ -4,7 +4,7 @@ use mystiko_storage::column::IndexColumns;
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{TransactionStatus, TransactionType};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -20,21 +20,21 @@ pub struct Transaction {
     pub asset_address: Option<String>,
     pub proof: Option<String>,
     #[column(length_limit = 128)]
-    pub root_hash: BigInt,
-    pub input_commitments: Vec<BigInt>,
-    pub output_commitments: Option<Vec<BigInt>>,
-    pub nullifiers: Option<Vec<BigInt>>,
+    pub root_hash: BigUint,
+    pub input_commitments: Vec<BigUint>,
+    pub output_commitments: Option<Vec<BigUint>>,
+    pub nullifiers: Option<Vec<BigUint>>,
     #[column(length_limit = 255)]
     pub signature_public_key: Option<String>,
     pub signature_public_key_hashes: Option<Vec<String>>,
     #[column(length_limit = 128)]
-    pub amount: BigInt,
+    pub amount: BigUint,
     #[column(length_limit = 128)]
-    pub public_amount: BigInt,
+    pub public_amount: BigUint,
     #[column(length_limit = 128)]
-    pub rollup_fee_amount: BigInt,
+    pub rollup_fee_amount: BigUint,
     #[column(length_limit = 128)]
-    pub gas_relayer_fee_amount: BigInt,
+    pub gas_relayer_fee_amount: BigUint,
     #[column(length_limit = 128)]
     pub shielded_address: Option<String>,
     #[column(length_limit = 64)]
@@ -44,7 +44,7 @@ pub struct Transaction {
     #[column(length_limit = 255)]
     pub signature: Option<String>,
     #[column(length_limit = 128)]
-    pub random_auditing_public_key: Option<BigInt>,
+    pub random_auditing_public_key: Option<BigUint>,
     pub encrypted_auditor_notes: Option<Vec<String>>,
     #[column(length_limit = 16)]
     pub transaction_type: TransactionType,

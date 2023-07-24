@@ -4,7 +4,7 @@ use mystiko_roller::chain::ChainDataGiver;
 use mystiko_roller::common::error::RollerError;
 use mystiko_roller::config::roller::ChainDataSource;
 use mystiko_roller::db::document::commitment::CommitmentInfo;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::env;
 use std::str::FromStr;
 
@@ -66,7 +66,7 @@ pub async fn test_get_commitment() {
         vec![CommitmentInfo {
             chain_id: 137,
             contract_address: "0x95Dfa68De44eCe33F64C4Ac8e5D569B2C5e90A51".to_string(),
-            commitment_hash: BigInt::from_str(
+            commitment_hash: BigUint::from_str(
                 "8856492658588389416279023856973501927042415036331927671035138352783086871533"
             )
             .unwrap(),

@@ -3,7 +3,7 @@ use mystiko_storage::column::IndexColumns;
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 
 #[derive(CollectionBuilder, Clone, Debug, PartialEq)]
 #[collection(indexes = indexes())]
@@ -24,26 +24,26 @@ pub struct Transaction {
     pub circuit_type: CircuitType,
     pub proof: String,
     #[column(length_limit = 128)]
-    pub root_hash: BigInt,
-    pub output_commitments: Option<Vec<BigInt>>,
+    pub root_hash: BigUint,
+    pub output_commitments: Option<Vec<BigUint>>,
     #[column(length_limit = 255)]
     pub signature: String,
-    pub serial_numbers: Option<Vec<BigInt>>,
-    pub sig_hashes: Option<Vec<BigInt>>,
+    pub serial_numbers: Option<Vec<BigUint>>,
+    pub sig_hashes: Option<Vec<BigUint>>,
     #[column(length_limit = 255)]
     pub sig_pk: String,
     #[column(length_limit = 128)]
-    pub public_amount: BigInt,
+    pub public_amount: BigUint,
     #[column(length_limit = 128)]
-    pub gas_relayer_fee_amount: BigInt,
-    pub out_rollup_fees: Option<Vec<BigInt>>,
+    pub gas_relayer_fee_amount: BigUint,
+    pub out_rollup_fees: Option<Vec<BigUint>>,
     #[column(length_limit = 64)]
     pub public_recipient: String,
     #[column(length_limit = 64)]
     pub relayer_recipient_address: String,
     pub out_encrypted_notes: Option<Vec<String>>,
     #[column(length_limit = 255)]
-    pub random_auditing_public_key: BigInt,
+    pub random_auditing_public_key: BigUint,
     pub error_message: Option<String>,
     #[column(length_limit = 128)]
     pub transaction_hash: Option<String>,

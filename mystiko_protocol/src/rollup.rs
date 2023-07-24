@@ -4,13 +4,13 @@ use anyhow::Result;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::hash::keccak256;
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_crypto::utils::{bigint_to_be_32_bytes, mod_floor};
-use num_bigint::{BigInt, Sign};
+use mystiko_crypto::utils::{biguint_to_be_32_bytes, mod_floor};
+use num_bigint::BigUint;
 
 #[derive(Debug)]
 pub struct Rollup<'a> {
     tree: &'a mut MerkleTree,
-    new_leaves: Vec<BigInt>,
+    new_leaves: Vec<BigUint>,
     program: Vec<u8>,
     abi: Vec<u8>,
     proving_key: Vec<u8>,
@@ -19,14 +19,14 @@ pub struct Rollup<'a> {
 #[derive(Debug, Clone)]
 pub struct RollupProof {
     pub zk_proof: ZKProof,
-    pub new_root: BigInt,
-    pub leaves_hash: BigInt,
+    pub new_root: BigUint,
+    pub leaves_hash: BigUint,
 }
 
 impl<'a> Rollup<'a> {
     pub fn new(
         tree: &'a mut MerkleTree,
-        new_leaves: Vec<BigInt>,
+        new_leaves: Vec<BigUint>,
         program: Vec<u8>,
         abi: Vec<u8>,
         proving_key: Vec<u8>,
@@ -88,19 +88,19 @@ fn is_power_of_two(a_number: usize) -> bool {
     a_number != 0 && (a_number & (a_number - 1)) == 0
 }
 
-fn path_indices_number(path_indices: &[usize]) -> BigInt {
+fn path_indices_number(path_indices: &[usize]) -> BigUint {
     let binary_string = path_indices
         .iter()
         .rev()
         .map(|x| format!("{:b}", x))
         .collect::<String>();
-    BigInt::parse_bytes(binary_string.as_bytes(), 2).unwrap()
+    BigUint::parse_bytes(binary_string.as_bytes(), 2).unwrap()
 }
 
-fn calc_leaves_hash(leaves: &[BigInt]) -> BigInt {
-    let leaf_buffer: Vec<u8> = leaves.iter().flat_map(bigint_to_be_32_bytes).collect();
+fn calc_leaves_hash(leaves: &[BigUint]) -> BigUint {
+    let leaf_buffer: Vec<u8> = leaves.iter().flat_map(biguint_to_be_32_bytes).collect();
     let hash = keccak256(leaf_buffer.as_slice());
-    let hash = BigInt::from_bytes_be(Sign::Plus, &hash);
+    let hash = BigUint::from_bytes_be(&hash);
     mod_floor(&hash, &FIELD_SIZE)
 }
 
@@ -121,27 +121,27 @@ mod tests {
     #[test]
     fn test_path_indices_number() {
         let path = [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1];
-        let expect_indices = BigInt::from(1373u32);
+        let expect_indices = BigUint::from(1373u32);
         let indices = path_indices_number(&path);
         assert_eq!(indices, expect_indices);
 
         let path = [0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1];
-        let expect_indices = BigInt::from(1492u32);
+        let expect_indices = BigUint::from(1492u32);
         let indices = path_indices_number(&path);
         assert_eq!(indices, expect_indices);
     }
 
     #[test]
     fn test_calc_leave_hash() {
-        let r1 = BigInt::from(66051u32);
-        let r2 = BigInt::from(197121u32);
-        let r3 = BigInt::parse_bytes(
+        let r1 = BigUint::from(66051u32);
+        let r2 = BigUint::from(197121u32);
+        let r3 = BigUint::parse_bytes(
             b"5999809398626971894156481321441750001229812699285374901473004231265197659290",
             10,
         )
         .unwrap();
         let leaves = [r1, r2, r3];
-        let expect_hash = BigInt::parse_bytes(
+        let expect_hash = BigUint::parse_bytes(
             b"6310518973517441342440727149209914865806190787755638376161673961442084637476",
             10,
         )

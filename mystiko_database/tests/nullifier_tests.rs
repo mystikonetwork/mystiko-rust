@@ -4,7 +4,7 @@ use mystiko_storage::document::Document;
 use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::sync::Arc;
 
 async fn create_nullifiers() -> NullifierCollection<SqlStatementFormatter, SqliteStorage> {
@@ -26,7 +26,7 @@ async fn test_nullifiers_crud() {
             .insert(&Nullifier {
                 chain_id: 1,
                 contract_address: String::from("contract_address 1"),
-                nullifier: BigInt::from(1),
+                nullifier: BigUint::from(1u32),
                 transaction_hash: String::from("transaction_hash 1"),
             })
             .await
@@ -38,13 +38,13 @@ async fn test_nullifiers_crud() {
                 Nullifier {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
-                    nullifier: BigInt::from(2),
+                    nullifier: BigUint::from(2u32),
                     transaction_hash: String::from("transaction_hash 2"),
                 },
                 Nullifier {
                     chain_id: 3,
                     contract_address: String::from("contract_address 3"),
-                    nullifier: BigInt::from(3),
+                    nullifier: BigUint::from(3u32),
                     transaction_hash: String::from("transaction_hash 3"),
                 },
             ])
@@ -121,7 +121,7 @@ async fn test_nullifier_serde() {
         .insert(&Nullifier {
             chain_id: 1,
             contract_address: String::from("contract_address 1"),
-            nullifier: BigInt::from(1),
+            nullifier: BigUint::from(1u32),
             transaction_hash: String::from("transaction_hash 1"),
         })
         .await

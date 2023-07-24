@@ -3,7 +3,7 @@
 use mystiko_storage::column::{IndexColumns, UniqueColumns};
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -13,7 +13,7 @@ pub struct Nullifier {
     #[column(length_limit = 64)]
     pub contract_address: String,
     #[column(length_limit = 128)]
-    pub nullifier: BigInt,
+    pub nullifier: BigUint,
     #[column(length_limit = 128)]
     pub transaction_hash: String,
 }

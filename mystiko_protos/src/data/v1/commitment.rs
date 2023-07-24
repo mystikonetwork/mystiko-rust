@@ -1,15 +1,15 @@
 use crate::data::v1::Commitment;
-use mystiko_utils::convert::bytes_to_big_int;
+use mystiko_utils::convert::bytes_to_biguint;
 use mystiko_utils::hex::encode_hex_with_prefix;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 
 impl Commitment {
-    pub fn commitment_hash_as_bigint(&self) -> BigInt {
-        bytes_to_big_int(&self.commitment_hash)
+    pub fn commitment_hash_as_bigint(&self) -> BigUint {
+        bytes_to_biguint(&self.commitment_hash)
     }
 
-    pub fn rollup_fee_as_bigint(&self) -> Option<BigInt> {
-        self.rollup_fee.as_ref().map(|fee| bytes_to_big_int(fee))
+    pub fn rollup_fee_as_bigint(&self) -> Option<BigUint> {
+        self.rollup_fee.as_ref().map(|fee| bytes_to_biguint(fee))
     }
 
     pub fn creation_transaction_hash_as_hex(&self) -> Option<String> {

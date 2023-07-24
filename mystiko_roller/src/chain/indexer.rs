@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use mystiko_config::wrapper::indexer::IndexerConfig;
 use mystiko_indexer_client::client::IndexerClient;
 use mystiko_indexer_client::types::commitment_queued::CommitmentQueuedForContractRequest;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::time::Duration;
 use tracing::debug;
 
@@ -67,14 +67,14 @@ impl ChainDataGiver for IndexerStub {
             .iter()
             .map(|cm| {
                 let commitment_hash =
-                    BigInt::parse_bytes(cm.commit_hash.as_bytes(), 10).ok_or(RollerError::InvalidCommitmentHash)?;
+                    BigUint::parse_bytes(cm.commit_hash.as_bytes(), 10).ok_or(RollerError::InvalidCommitmentHash)?;
                 Ok(CommitmentInfo {
                     chain_id,
                     contract_address: contract_address.to_string(),
                     commitment_hash,
                     block_number: cm.block_num,
                     rollup_fee: cm.rollup_fee.clone(),
-                    leaf_index: cm.leaf_index,
+                    leaf_index: cm.leaf_index as u64,
                     tx_hash: cm.tx_hash.clone(),
                 })
             })

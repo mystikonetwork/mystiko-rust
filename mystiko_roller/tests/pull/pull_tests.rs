@@ -1,7 +1,7 @@
 extern crate ethers_contract;
-extern crate httptest;
 
-use crate::pull::{create_mock_indexer_server, create_pull_handle};
+use crate::context::mock_server::{config_mock_indexer_server, create_mock_indexer_server};
+use crate::pull::create_pull_handle;
 use crate::test_files::load::{load_commitment_logs, load_indexer_commitments};
 use ethers_core::types::{Log, U64};
 use mystiko_roller::chain::provider::ProviderStub;
@@ -12,7 +12,7 @@ use std::sync::Arc;
 #[tokio::test]
 pub async fn test_pull_from_provider() {
     let test_chain_id = 201;
-    let (handle, data, c) = create_pull_handle(test_chain_id, true).await;
+    let (handle, data, c) = create_pull_handle(test_chain_id, 10000, 10000, true).await;
     let stub_provider = Arc::new(ProviderStub::new(&handle.contract_address, c.provider()));
     let result = handle.pull(stub_provider.clone()).await;
     assert!(matches!(result.err().unwrap(), RollerError::ProviderError(_)));
@@ -76,11 +76,23 @@ pub async fn test_pull_from_provider() {
 #[tokio::test]
 pub async fn test_pull_from_indexer() {
     let test_chain_id = 202;
-    let (handle, data, c) = create_pull_handle(test_chain_id, false).await;
-
     let block_number = 10;
-    let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, &[]).await;
+    let (mut server, indexer_port) = create_mock_indexer_server().await;
+    let (handle, data, c) = create_pull_handle(test_chain_id, indexer_port, 10000, false).await;
+    let mocks = config_mock_indexer_server(
+        &mut server,
+        test_chain_id,
+        &handle.contract_address,
+        Some(block_number),
+        None,
+        Some(&[]),
+    )
+    .await;
+
     let result = handle.pull(c.indexer().unwrap()).await;
+    for mock in mocks {
+        mock.assert_async().await;
+    }
     assert!(result.is_ok());
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -93,7 +105,6 @@ pub async fn test_pull_from_indexer() {
         "commitments mismatch"
     );
     assert_eq!(data.read().await.get_included_count(), 0, "included count mismatch");
-    std::mem::drop(server);
 
     let cms = load_indexer_commitments(
         "tests/test_files/data/commitments.json",
@@ -104,9 +115,20 @@ pub async fn test_pull_from_indexer() {
     let block_number = 128;
     let cm_count: usize = 2;
     let (cms_rsp, _) = cms.split_at(cm_count);
-    let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, cms_rsp).await;
+    let mocks = config_mock_indexer_server(
+        &mut server,
+        test_chain_id,
+        &handle.contract_address,
+        Some(block_number),
+        None,
+        Some(cms_rsp),
+    )
+    .await;
     let result = handle.pull(c.indexer().unwrap()).await;
-    assert!(result.is_ok());
+    for mock in mocks {
+        mock.assert_async().await;
+    }
+    assert!(result.is_ok(), "pull failed {:?}", result.err());
     assert_eq!(
         data.read().await.get_next_sync_block(),
         block_number + 1,
@@ -118,7 +140,6 @@ pub async fn test_pull_from_indexer() {
         "commitments mismatch"
     );
     assert_eq!(data.read().await.get_included_count(), 0, "included count mismatch");
-    std::mem::drop(server);
 
     let cms = load_indexer_commitments(
         "tests/test_files/data/commitments.json",
@@ -129,8 +150,19 @@ pub async fn test_pull_from_indexer() {
     let block_number = 256;
     let cm_count: usize = 18;
     let (cms_rsp, _) = cms.split_at(cm_count);
-    let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, cms_rsp).await;
+    let mocks = config_mock_indexer_server(
+        &mut server,
+        test_chain_id,
+        &handle.contract_address,
+        Some(block_number),
+        None,
+        Some(cms_rsp),
+    )
+    .await;
     let result = handle.pull(c.indexer().unwrap()).await;
+    for mock in mocks {
+        mock.assert_async().await;
+    }
     assert!(result.is_ok());
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -143,5 +175,4 @@ pub async fn test_pull_from_indexer() {
         "commitments mismatch"
     );
     assert_eq!(data.read().await.get_included_count(), 0, "included count mismatch");
-    std::mem::drop(server);
 }
