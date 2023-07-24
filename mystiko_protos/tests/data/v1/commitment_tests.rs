@@ -14,6 +14,7 @@ fn test_wrappers() {
         .encrypted_note(Some(decode_hex("0x6c0c").unwrap()))
         .creation_transaction_hash(Some(decode_hex("0xdead").unwrap()))
         .rollup_transaction_hash(Some(decode_hex("0xbeef").unwrap()))
+        .relay_transaction_hash(Some(decode_hex("0xfeed").unwrap()))
         .build();
     assert_eq!(commitment.commitment_hash_as_bigint(), BigInt::from(1234));
     assert_eq!(commitment.rollup_fee_as_bigint(), Some(BigInt::from(5678)));
@@ -22,6 +23,7 @@ fn test_wrappers() {
         Some("0xdead".to_string())
     );
     assert_eq!(commitment.rollup_transaction_hash_as_hex(), Some("0xbeef".to_string()));
+    assert_eq!(commitment.relay_transaction_hash_as_hex(), Some("0xfeed".to_string()));
     let commitment_bytes = commitment.encode_to_vec();
     let commitment_json = serde_json::to_string(&commitment).unwrap();
     assert_eq!(

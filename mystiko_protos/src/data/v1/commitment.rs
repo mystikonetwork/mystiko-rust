@@ -23,4 +23,10 @@ impl Commitment {
             .as_ref()
             .map(|hash| encode_hex_with_prefix(hash))
     }
+
+    pub fn relay_transaction_hash_as_hex(&self) -> Option<String> {
+        self.relay_transaction_hash
+            .as_ref()
+            .map(|hash| encode_hex_with_prefix(hash))
+    }
 }
