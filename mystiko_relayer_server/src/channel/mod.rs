@@ -70,9 +70,7 @@ pub mod transact_channel {
             let wallet: LocalWallet = pk.parse::<LocalWallet>()?.with_chain_id(chain_id);
 
             // create tx manager config
-            let tx_manager_config = TxManagerConfig::new(Some(
-                serde_json::to_string(&server_config.settings.network_type)?.as_str(),
-            ))?;
+            let tx_manager_config = TxManagerConfig::new(None)?;
             // create tx builder
             let tx_builder = TxBuilder::builder()
                 .config(tx_manager_config)
