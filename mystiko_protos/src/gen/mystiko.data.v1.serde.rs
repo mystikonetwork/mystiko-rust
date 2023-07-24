@@ -145,6 +145,15 @@ impl serde::Serialize for Commitment {
         if self.status != 0 {
             len += 1;
         }
+        if self.block_number != 0 {
+            len += 1;
+        }
+        if self.included_block_number.is_some() {
+            len += 1;
+        }
+        if self.src_chain_block_number.is_some() {
+            len += 1;
+        }
         if self.leaf_index.is_some() {
             len += 1;
         }
@@ -171,6 +180,15 @@ impl serde::Serialize for Commitment {
             let v = CommitmentStatus::from_i32(self.status)
                 .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
             struct_ser.serialize_field("status", &v)?;
+        }
+        if self.block_number != 0 {
+            struct_ser.serialize_field("blockNumber", ToString::to_string(&self.block_number).as_str())?;
+        }
+        if let Some(v) = self.included_block_number.as_ref() {
+            struct_ser.serialize_field("includedBlockNumber", ToString::to_string(&v).as_str())?;
+        }
+        if let Some(v) = self.src_chain_block_number.as_ref() {
+            struct_ser.serialize_field("srcChainBlockNumber", ToString::to_string(&v).as_str())?;
         }
         if let Some(v) = self.leaf_index.as_ref() {
             struct_ser.serialize_field("leafIndex", ToString::to_string(&v).as_str())?;
@@ -203,6 +221,12 @@ impl<'de> serde::Deserialize<'de> for Commitment {
             "commitment_hash",
             "commitmentHash",
             "status",
+            "block_number",
+            "blockNumber",
+            "included_block_number",
+            "includedBlockNumber",
+            "src_chain_block_number",
+            "srcChainBlockNumber",
             "leaf_index",
             "leafIndex",
             "rollup_fee",
@@ -221,6 +245,9 @@ impl<'de> serde::Deserialize<'de> for Commitment {
         enum GeneratedField {
             CommitmentHash,
             Status,
+            BlockNumber,
+            IncludedBlockNumber,
+            SrcChainBlockNumber,
             LeafIndex,
             RollupFee,
             EncryptedNote,
@@ -250,6 +277,9 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                         match value {
                             "commitmentHash" | "commitment_hash" => Ok(GeneratedField::CommitmentHash),
                             "status" => Ok(GeneratedField::Status),
+                            "blockNumber" | "block_number" => Ok(GeneratedField::BlockNumber),
+                            "includedBlockNumber" | "included_block_number" => Ok(GeneratedField::IncludedBlockNumber),
+                            "srcChainBlockNumber" | "src_chain_block_number" => Ok(GeneratedField::SrcChainBlockNumber),
                             "leafIndex" | "leaf_index" => Ok(GeneratedField::LeafIndex),
                             "rollupFee" | "rollup_fee" => Ok(GeneratedField::RollupFee),
                             "encryptedNote" | "encrypted_note" => Ok(GeneratedField::EncryptedNote),
@@ -277,6 +307,9 @@ impl<'de> serde::Deserialize<'de> for Commitment {
             {
                 let mut commitment_hash__ = None;
                 let mut status__ = None;
+                let mut block_number__ = None;
+                let mut included_block_number__ = None;
+                let mut src_chain_block_number__ = None;
                 let mut leaf_index__ = None;
                 let mut rollup_fee__ = None;
                 let mut encrypted_note__ = None;
@@ -298,6 +331,30 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
                             status__ = Some(map.next_value::<CommitmentStatus>()? as i32);
+                        }
+                        GeneratedField::BlockNumber => {
+                            if block_number__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("blockNumber"));
+                            }
+                            block_number__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::IncludedBlockNumber => {
+                            if included_block_number__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("includedBlockNumber"));
+                            }
+                            included_block_number__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::SrcChainBlockNumber => {
+                            if src_chain_block_number__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("srcChainBlockNumber"));
+                            }
+                            src_chain_block_number__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
                         }
                         GeneratedField::LeafIndex => {
                             if leaf_index__.is_some() {
@@ -352,6 +409,9 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                 Ok(Commitment {
                     commitment_hash: commitment_hash__.unwrap_or_default(),
                     status: status__.unwrap_or_default(),
+                    block_number: block_number__.unwrap_or_default(),
+                    included_block_number: included_block_number__,
+                    src_chain_block_number: src_chain_block_number__,
                     leaf_index: leaf_index__,
                     rollup_fee: rollup_fee__,
                     encrypted_note: encrypted_note__,
@@ -579,12 +639,18 @@ impl serde::Serialize for Nullifier {
         if !self.nullifier.is_empty() {
             len += 1;
         }
+        if self.block_number != 0 {
+            len += 1;
+        }
         if !self.transaction_hash.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.data.v1.Nullifier", len)?;
         if !self.nullifier.is_empty() {
             struct_ser.serialize_field("nullifier", pbjson::private::base64::encode(&self.nullifier).as_str())?;
+        }
+        if self.block_number != 0 {
+            struct_ser.serialize_field("blockNumber", ToString::to_string(&self.block_number).as_str())?;
         }
         if !self.transaction_hash.is_empty() {
             struct_ser.serialize_field("transactionHash", pbjson::private::base64::encode(&self.transaction_hash).as_str())?;
@@ -600,6 +666,8 @@ impl<'de> serde::Deserialize<'de> for Nullifier {
     {
         const FIELDS: &[&str] = &[
             "nullifier",
+            "block_number",
+            "blockNumber",
             "transaction_hash",
             "transactionHash",
         ];
@@ -607,6 +675,7 @@ impl<'de> serde::Deserialize<'de> for Nullifier {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Nullifier,
+            BlockNumber,
             TransactionHash,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -630,6 +699,7 @@ impl<'de> serde::Deserialize<'de> for Nullifier {
                     {
                         match value {
                             "nullifier" => Ok(GeneratedField::Nullifier),
+                            "blockNumber" | "block_number" => Ok(GeneratedField::BlockNumber),
                             "transactionHash" | "transaction_hash" => Ok(GeneratedField::TransactionHash),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -651,6 +721,7 @@ impl<'de> serde::Deserialize<'de> for Nullifier {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut nullifier__ = None;
+                let mut block_number__ = None;
                 let mut transaction_hash__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -660,6 +731,14 @@ impl<'de> serde::Deserialize<'de> for Nullifier {
                             }
                             nullifier__ = 
                                 Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::BlockNumber => {
+                            if block_number__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("blockNumber"));
+                            }
+                            block_number__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
                         GeneratedField::TransactionHash => {
@@ -674,6 +753,7 @@ impl<'de> serde::Deserialize<'de> for Nullifier {
                 }
                 Ok(Nullifier {
                     nullifier: nullifier__.unwrap_or_default(),
+                    block_number: block_number__.unwrap_or_default(),
                     transaction_hash: transaction_hash__.unwrap_or_default(),
                 })
             }
