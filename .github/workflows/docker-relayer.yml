@@ -22,10 +22,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: mystikonetwork/gas-relayer-server
+          images: mystikonetwork/gas-relayer
           tags: |
-            type=raw,value=rust-{{tag}}
-            type=raw,value=rust-latest
+            type=raw,value={{tag}}
+            type=raw,value=latest
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
