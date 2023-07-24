@@ -432,6 +432,7 @@ impl serde::Serialize for CommitmentStatus {
     {
         let variant = match self {
             Self::Unspecified => "COMMITMENT_STATUS_UNSPECIFIED",
+            Self::SrcSucceeded => "COMMITMENT_STATUS_SRC_SUCCEEDED",
             Self::Queued => "COMMITMENT_STATUS_QUEUED",
             Self::Included => "COMMITMENT_STATUS_INCLUDED",
         };
@@ -446,6 +447,7 @@ impl<'de> serde::Deserialize<'de> for CommitmentStatus {
     {
         const FIELDS: &[&str] = &[
             "COMMITMENT_STATUS_UNSPECIFIED",
+            "COMMITMENT_STATUS_SRC_SUCCEEDED",
             "COMMITMENT_STATUS_QUEUED",
             "COMMITMENT_STATUS_INCLUDED",
         ];
@@ -491,6 +493,7 @@ impl<'de> serde::Deserialize<'de> for CommitmentStatus {
             {
                 match value {
                     "COMMITMENT_STATUS_UNSPECIFIED" => Ok(CommitmentStatus::Unspecified),
+                    "COMMITMENT_STATUS_SRC_SUCCEEDED" => Ok(CommitmentStatus::SrcSucceeded),
                     "COMMITMENT_STATUS_QUEUED" => Ok(CommitmentStatus::Queued),
                     "COMMITMENT_STATUS_INCLUDED" => Ok(CommitmentStatus::Included),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
