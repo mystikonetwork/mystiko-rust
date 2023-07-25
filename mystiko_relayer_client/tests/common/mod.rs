@@ -109,7 +109,7 @@ pub async fn mock_register_info_server(server: Arc<RwLock<ServerGuard>>, chain_i
         relayer_contract_address: Some(MOCK_CONTRACT_ADDRESS.to_string()),
         contracts: Some(vec![]),
     });
-    let mock = server
+    server
         .write()
         .await
         .mock("POST", format!("/{}", INFO_URL_PATH).as_str())
@@ -118,8 +118,7 @@ pub async fn mock_register_info_server(server: Arc<RwLock<ServerGuard>>, chain_i
         .with_body(to_string(&response).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
-        .await;
-    mock
+        .await
 }
 
 pub async fn mock_relay_transact_server(server: Arc<RwLock<ServerGuard>>) -> Mock {
