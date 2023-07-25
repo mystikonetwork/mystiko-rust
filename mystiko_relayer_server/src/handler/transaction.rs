@@ -7,7 +7,7 @@ use mystiko_storage::document::Document;
 use mystiko_storage::filter::SubFilter;
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
-use mystiko_utils::convert::u256_to_big_int;
+use mystiko_utils::convert::u256_to_biguint;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -46,7 +46,7 @@ where
             asset_decimals: data.asset_decimals,
             circuit_type: data.circuit_type,
             proof: serde_json::to_string(&data.contract_param.proof)?,
-            root_hash: u256_to_big_int(&data.contract_param.root_hash),
+            root_hash: u256_to_biguint(&data.contract_param.root_hash),
             output_commitments: if data.contract_param.out_commitments.is_empty() {
                 None
             } else {
@@ -54,7 +54,7 @@ where
                     data.contract_param
                         .out_commitments
                         .iter()
-                        .map(u256_to_big_int)
+                        .map(u256_to_biguint)
                         .collect(),
                 )
             },
@@ -62,16 +62,16 @@ where
             serial_numbers: if data.contract_param.serial_numbers.is_empty() {
                 None
             } else {
-                Some(data.contract_param.serial_numbers.iter().map(u256_to_big_int).collect())
+                Some(data.contract_param.serial_numbers.iter().map(u256_to_biguint).collect())
             },
             sig_hashes: if data.contract_param.sig_hashes.is_empty() {
                 None
             } else {
-                Some(data.contract_param.sig_hashes.iter().map(u256_to_big_int).collect())
+                Some(data.contract_param.sig_hashes.iter().map(u256_to_biguint).collect())
             },
             sig_pk: serde_json::to_string(&data.contract_param.sig_pk).unwrap(),
-            public_amount: u256_to_big_int(&data.contract_param.public_amount),
-            gas_relayer_fee_amount: u256_to_big_int(&data.contract_param.relayer_fee_amount),
+            public_amount: u256_to_biguint(&data.contract_param.public_amount),
+            gas_relayer_fee_amount: u256_to_biguint(&data.contract_param.relayer_fee_amount),
             out_rollup_fees: if data.contract_param.out_rollup_fees.is_empty() {
                 None
             } else {
@@ -79,7 +79,7 @@ where
                     data.contract_param
                         .out_rollup_fees
                         .iter()
-                        .map(u256_to_big_int)
+                        .map(u256_to_biguint)
                         .collect(),
                 )
             },
@@ -96,7 +96,7 @@ where
                         .collect::<Vec<String>>(),
                 )
             },
-            random_auditing_public_key: u256_to_big_int(&data.contract_param.random_auditing_public_key),
+            random_auditing_public_key: u256_to_biguint(&data.contract_param.random_auditing_public_key),
             error_message: None,
             transaction_hash: None,
         };

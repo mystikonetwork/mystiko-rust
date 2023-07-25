@@ -1,14 +1,9 @@
-use crate::context::mock_context::{
-    create_mock_context, get_pool_contracts, indexer_server_port, token_price_server_port, MockContext,
-};
+use crate::context::mock_context::{create_mock_context, get_pool_contracts, MockContext};
+use crate::context::mock_server::{config_mock_indexer_server, create_mock_token_price_server};
 use crate::rollup::rollup_test_data::{get_proof, get_transaction, get_transaction_receipt};
 use crate::test_files::load::load_commitments;
 use ethers_core::types::{Bytes, H256, U256, U64};
-use httptest::responders::json_encoded;
-use httptest::{matchers::*, Expectation, Server, ServerBuilder};
-use mystiko_fs::read_file_bytes;
-use mystiko_indexer_client::response::ApiResponse;
-use mystiko_indexer_client::types::sync_response::ContractSyncResponse;
+use mockito::Server;
 use mystiko_roller::chain::provider::ProviderStub;
 use mystiko_roller::common::error::RollerError;
 use mystiko_roller::config::roller::{create_tx_manager_config, ChainDataSource};
@@ -16,9 +11,6 @@ use mystiko_roller::context::ContextTrait;
 use mystiko_roller::data::handler::{DataHandler, RollupPlan};
 use mystiko_roller::db::document::commitment::CommitmentInfo;
 use mystiko_roller::rollup::handler::RollupHandle;
-use mystiko_server_utils::token_price::query::CurrencyQuoteResponse;
-use serde_json::json;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -26,7 +18,7 @@ use tokio::sync::RwLock;
 #[tokio::test]
 pub async fn test_rollup_with_provider() {
     let chain_id = 301;
-    let (handle, data, c) = create_rollup_handle(chain_id, true).await;
+    let (handle, data, c) = create_rollup_handle(chain_id, 10000, 10000, true).await;
     let stub_provider = Arc::new(ProviderStub::new(handle.pool_contract_cfg.address(), c.provider()));
     let result = handle.rollup(stub_provider.clone()).await;
     assert!(matches!(result.err().unwrap(), RollerError::ProviderError(_)));
@@ -70,18 +62,37 @@ pub async fn test_rollup_with_provider() {
 
 #[tokio::test]
 pub async fn test_rollup_with_indexer() {
+    let mut server = Server::new_async().await;
+    let binding = server.host_with_port();
+    let indexer_port = binding.strip_prefix("127.0.0.1:").unwrap().parse::<u16>().unwrap();
     let test_chain_id = 302;
-    let (handle, data, c) = create_rollup_handle(test_chain_id, false).await;
+
+    let (handle, data, c) = create_rollup_handle(test_chain_id, indexer_port, 10000, false).await;
     let result = handle.rollup(c.indexer().unwrap()).await;
     assert!(matches!(result.err().unwrap(), RollerError::AnyhowError(_)));
 
-    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), Some(2), Some(1)).await;
+    let server_mocks = config_mock_indexer_server(
+        &mut server,
+        test_chain_id,
+        handle.pool_contract_cfg.address(),
+        Some(2),
+        Some(1),
+        None,
+    )
+    .await;
+
     let mock = c.mock_provider().await;
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
     let result = handle.rollup(c.indexer().unwrap()).await;
-    assert!(matches!(result.err().unwrap(), RollerError::CommitmentQueueSlow));
-    std::mem::drop(server);
+    for mock in server_mocks {
+        mock.assert_async().await;
+    }
+    assert!(
+        matches!(result.as_ref().err().unwrap(), RollerError::CommitmentQueueSlow),
+        "result: {:?}",
+        result.as_ref()
+    );
 
     let cms = load_commitments(
         "tests/test_files/data/commitments.json",
@@ -92,16 +103,29 @@ pub async fn test_rollup_with_indexer() {
     let (cms1, _) = cms.split_at(3);
     data.write().await.insert_commitments(cms1).await.unwrap();
 
-    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), Some(2), Some(2)).await;
+    let server_mocks = config_mock_indexer_server(
+        &mut server,
+        test_chain_id,
+        handle.pool_contract_cfg.address(),
+        Some(2),
+        Some(2),
+        None,
+    )
+    .await;
     let result = handle.rollup(c.indexer().unwrap()).await;
+    for mock in server_mocks {
+        mock.assert_async().await;
+    }
     assert!(result.is_err());
-    std::mem::drop(server);
 }
 
 #[tokio::test]
 pub async fn test_rollup_with_indexer2() {
+    let mut server = Server::new_async().await;
+    let binding = server.host_with_port();
+    let port = binding.strip_prefix("127.0.0.1:").unwrap().parse::<u16>().unwrap();
     let test_chain_id = 303;
-    let (handle, data, c) = create_rollup_handle(test_chain_id, false).await;
+    let (handle, data, c) = create_rollup_handle(test_chain_id, port, 10000, false).await;
 
     let cms = load_commitments(
         "tests/test_files/data/commitments.json",
@@ -112,25 +136,39 @@ pub async fn test_rollup_with_indexer2() {
     let (cms1, _) = cms.split_at(3);
     data.write().await.insert_commitments(cms1).await.unwrap();
 
-    let server = create_mock_indexer_server(test_chain_id, handle.pool_contract_cfg.address(), Some(2), Some(3)).await;
+    let server_mocks = config_mock_indexer_server(
+        &mut server,
+        test_chain_id,
+        handle.pool_contract_cfg.address(),
+        Some(2),
+        Some(3),
+        None,
+    )
+    .await;
     let result = handle.rollup(c.indexer().unwrap()).await;
+    for mock in server_mocks {
+        mock.assert_async().await;
+    }
     assert!(result.is_ok());
-    std::mem::drop(server);
 }
 
 #[tokio::test]
 pub async fn test_rollup_send_transaction() {
     let test_chain_id = 1;
-    let (handle, data, c) = create_rollup_handle(test_chain_id, true).await;
+    let (token_price_server, server_mock) = create_mock_token_price_server().await;
+    let binding = token_price_server.host_with_port();
+    let token_price_port = binding.strip_prefix("127.0.0.1:").unwrap().parse::<u16>().unwrap();
+
+    let (handle, data, c) = create_rollup_handle(test_chain_id, 10000, token_price_port, true).await;
     let plan = RollupPlan {
         sizes: vec![1],
         total_fee: U256::from("10000000000000000"),
         force: false,
     };
-    let token_price_server = create_mock_token_price_server(test_chain_id).await;
 
     let proof = get_proof();
     let result = handle.send_rollup_transaction(&plan, &proof).await;
+    println!("result: {:?}", result);
     assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
 
     let nonce = U256::from(100);
@@ -218,14 +256,13 @@ pub async fn test_rollup_send_transaction() {
         data.read().await.get_latest_rollup_tx_block_number(),
         transaction_receipt.block_number.unwrap().as_u64()
     );
-
-    std::mem::drop(token_price_server);
+    server_mock.assert_async().await;
 }
 
 #[tokio::test]
 pub async fn test_rollup_log_transaction() {
     let test_chain_id = 305;
-    let (handle, data, _) = create_rollup_handle(test_chain_id, false).await;
+    let (handle, data, _) = create_rollup_handle(test_chain_id, 10000, 10000, false).await;
     let cm = CommitmentInfo {
         chain_id: 1,
         contract_address: "1".to_string(),
@@ -244,7 +281,7 @@ pub async fn test_rollup_log_transaction() {
 #[tokio::test]
 pub async fn test_commitment_queue_check_by_transaction() {
     let test_chain_id = 306;
-    let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;
+    let (handle, _, c) = create_rollup_handle(test_chain_id, 10000, 10000, false).await;
 
     let result = handle.commitment_queue_check_by_transaction().await;
     assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
@@ -260,7 +297,7 @@ pub async fn test_commitment_queue_check_by_transaction() {
 #[should_panic(expected = "must error for commitment queue check")]
 pub async fn test_commitment_queue_check_by_transaction2() {
     let test_chain_id = 307;
-    let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;
+    let (handle, _, c) = create_rollup_handle(test_chain_id, 10000, 10000, false).await;
 
     let mock = c.mock_provider().await;
     let gas = U256::from(100_000_000_000u64);
@@ -274,7 +311,7 @@ pub async fn test_commitment_queue_check_by_transaction2() {
 #[should_panic(expected = "commitment queue 0 < included count 1")]
 pub async fn test_giver_commitment_queue_panic() {
     let test_chain_id = 308;
-    let (handle, _, c) = create_rollup_handle(test_chain_id, false).await;
+    let (handle, _, c) = create_rollup_handle(test_chain_id, 10000, 10000, false).await;
     let stub_provider = Arc::new(ProviderStub::new(handle.pool_contract_cfg.address(), c.provider()));
     let mock = c.mock_provider().await;
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
@@ -285,7 +322,7 @@ pub async fn test_giver_commitment_queue_panic() {
 #[tokio::test]
 pub async fn test_giver_commitment_queue() {
     let test_chain_id = 308;
-    let (handle, data, c) = create_rollup_handle(test_chain_id, false).await;
+    let (handle, data, c) = create_rollup_handle(test_chain_id, 10000, 10000, false).await;
     let stub_provider = Arc::new(ProviderStub::new(handle.pool_contract_cfg.address(), c.provider()));
 
     let result = handle.check_commitment_queue(stub_provider.clone()).await;
@@ -319,70 +356,13 @@ pub async fn test_giver_commitment_queue() {
     assert!(matches!(result.err().unwrap(), RollerError::TxManagerError(_)));
 }
 
-async fn create_mock_indexer_server(
-    chain_id: u64,
-    contract_address: &str,
-    block_number: Option<u64>,
-    included_count: Option<u32>,
-) -> Server {
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), indexer_server_port(chain_id));
-    let server = ServerBuilder::new().bind_addr(addr).run().unwrap();
-    let block_number_path = format!("/chains/{}/contracts/{}/block-number", chain_id, contract_address);
-    let included_count_path = format!(
-        "/chains/{}/address/{}/count/commitment-included",
-        chain_id, contract_address
-    );
-
-    if let Some(number) = block_number {
-        let block_number_rsp = ApiResponse {
-            code: 0,
-            result: ContractSyncResponse {
-                chain_id: Some(chain_id),
-                contract_address: contract_address.to_string(),
-                current_sync_block_num: number,
-                current_sync_time: None,
-            },
-        };
-        let block_number_json = json_encoded(json!(block_number_rsp));
-        server.expect(Expectation::matching(request::path(matches(block_number_path))).respond_with(block_number_json));
-    }
-
-    if let Some(included) = included_count {
-        let included_count_rsp = ApiResponse {
-            code: 0,
-            result: included,
-        };
-        let included_count_json = json_encoded(json!(included_count_rsp));
-        server.expect(
-            Expectation::matching(request::path(matches(included_count_path))).respond_with(included_count_json),
-        );
-    }
-
-    server
-}
-
-async fn create_mock_token_price_server(chain_id: u64) -> Server {
-    let indexer_port = indexer_server_port(chain_id);
-    let token_price_port = token_price_server_port(indexer_port);
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), token_price_port);
-    let server = ServerBuilder::new().bind_addr(addr).run().unwrap();
-
-    let id_bytes = read_file_bytes("./../mystiko_server_utils/tests/token_price/files/token_price.json")
-        .await
-        .unwrap();
-    let currency_quote: CurrencyQuoteResponse = serde_json::from_slice(&id_bytes).unwrap();
-    let resp_json = json_encoded(currency_quote);
-    server.expect(
-        Expectation::matching(request::method_path("GET", "/v2/cryptocurrency/quotes/latest")).respond_with(resp_json),
-    );
-    server
-}
-
 async fn create_rollup_handle(
     chain_id: u64,
+    indexer_port: u16,
+    token_price_port: u16,
     disable_indexer: bool,
 ) -> (RollupHandle, Arc<RwLock<DataHandler>>, Arc<MockContext>) {
-    let mut c = create_mock_context(indexer_server_port(chain_id)).await;
+    let mut c = create_mock_context(indexer_port, token_price_port).await;
     if disable_indexer {
         c.disable_indexer();
     }

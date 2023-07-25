@@ -11,7 +11,13 @@ lazy_static! {
 }
 
 pub fn set_env_mock_indexer_port(port: &str) {
+    dotenv().ok();
     env::set_var("MYSTIKO_MOCK_INDEXER_PORT", port);
+}
+
+pub fn set_env_mock_token_price_port(port: &str) {
+    dotenv().ok();
+    env::set_var("MYSTIKO_MOCK_TOKEN_PRICE_PORT", port);
 }
 
 pub fn load_env_mock_indexer_port() -> String {
@@ -19,6 +25,14 @@ pub fn load_env_mock_indexer_port() -> String {
     match env::var("MYSTIKO_MOCK_INDEXER_PORT") {
         Ok(value) => value,
         Err(_) => panic!("MYSTIKO_MOCK_INDEXER_PORT not set"),
+    }
+}
+
+pub fn load_env_mock_token_price_port() -> String {
+    dotenv().ok();
+    match env::var("MYSTIKO_MOCK_TOKEN_PRICE_PORT") {
+        Ok(value) => value,
+        Err(_) => panic!("MYSTIKO_MOCK_TOKEN_PRICE_PORT not set"),
     }
 }
 

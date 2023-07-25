@@ -4,7 +4,7 @@ use mystiko_config::raw::create_raw_from_file;
 use mystiko_config::wrapper::chain::{ChainConfig, MAIN_ASSET_ADDRESS};
 use mystiko_config::wrapper::circuit::CircuitConfig;
 use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -27,8 +27,8 @@ async fn test_create() {
     assert_eq!(
         config.main_asset().recommended_amounts().unwrap(),
         vec![
-            BigInt::from_str("1000000000000000000").unwrap(),
-            BigInt::from_str("10000000000000000000").unwrap()
+            BigUint::from_str("1000000000000000000").unwrap(),
+            BigUint::from_str("10000000000000000000").unwrap()
         ]
     );
     assert_eq!(

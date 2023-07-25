@@ -38,7 +38,7 @@ jobs:
           file: ./mystiko_roller/docker/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
+          push: true
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
         if: failure()

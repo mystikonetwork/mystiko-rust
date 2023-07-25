@@ -2,7 +2,7 @@ use crate::raw::asset::RawAssetConfig;
 use anyhow::Result;
 use mystiko_types::AssetType;
 use mystiko_utils::convert::decimal_to_number;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use num_traits::{NumCast, Zero};
 use std::str::FromStr;
 use std::sync::Arc;
@@ -36,10 +36,10 @@ impl AssetConfig {
         self.raw.asset_decimals
     }
 
-    pub fn recommended_amounts(&self) -> Result<Vec<BigInt>> {
-        let mut amounts: Vec<BigInt> = Vec::new();
+    pub fn recommended_amounts(&self) -> Result<Vec<BigUint>> {
+        let mut amounts: Vec<BigUint> = Vec::new();
         for amount_str in &self.raw.recommended_amounts {
-            amounts.push(BigInt::from_str(amount_str)?);
+            amounts.push(BigUint::from_str(amount_str)?);
         }
         Ok(amounts)
     }
