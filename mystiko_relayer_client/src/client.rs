@@ -32,7 +32,6 @@ pub const INFO_URL_PATH: &str = "api/v2/info";
 pub const TRANSACT_URL_PATH: &str = "api/v2/transact";
 pub const TRANSACTION_STATUS_URL_PATH: &str = "api/v2/transaction/status";
 
-#[derive(Debug)]
 pub struct RelayerClient {
     pub reqwest_client: Client,
     pub network_type: NetworkType,
@@ -83,8 +82,6 @@ impl RelayerClient {
     }
 
     pub async fn all_register_info(self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>> {
-        debug!("all register info {:?}", request);
-
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -153,8 +150,6 @@ impl RelayerClient {
     }
 
     pub async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse> {
-        debug!("gas relayer send transact: {:?}", request);
-
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -177,8 +172,6 @@ impl RelayerClient {
         &self,
         request: RelayTransactStatusRequest,
     ) -> Result<RelayTransactStatusResponse> {
-        debug!("relay transaction status {:?}", request);
-
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -198,8 +191,6 @@ impl RelayerClient {
     }
 
     pub async fn wait_transaction(&self, request: WaitingTransactionRequest) -> Result<RelayTransactStatusResponse> {
-        debug!("wait transaction {:?}", request);
-
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
