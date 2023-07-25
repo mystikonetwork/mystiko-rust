@@ -1,6 +1,6 @@
 use babyjubjub_rs::{decompress_point, Point};
 use ff::*;
-use num_bigint::{BigInt, Sign};
+use num_bigint::BigUint;
 use num_integer::Integer;
 use poseidon_rs::Fr;
 use rand::{distributions::Alphanumeric, Rng, RngCore};
@@ -9,15 +9,15 @@ use std::convert::TryInto;
 
 pub fn fr_to_bytes(fr: &Fr) -> [u8; 32] {
     let b = fr_to_bigint(fr);
-    bigint_to_32_bytes(&b)
+    biguint_to_32_bytes(&b)
 }
 
-pub fn fr_to_bigint(fr: &Fr) -> BigInt {
-    BigInt::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
+pub fn fr_to_bigint(fr: &Fr) -> BigUint {
+    BigUint::parse_bytes(to_hex(fr).as_bytes(), 16).unwrap()
 }
 
-pub fn bigint_to_be_32_bytes(num: &BigInt) -> [u8; 32] {
-    let (_, y_bytes) = num.to_bytes_be();
+pub fn biguint_to_be_32_bytes(num: &BigUint) -> [u8; 32] {
+    let y_bytes = num.to_bytes_be();
     if y_bytes.len() >= 32 {
         y_bytes[..32].try_into().unwrap()
     } else {
@@ -28,8 +28,8 @@ pub fn bigint_to_be_32_bytes(num: &BigInt) -> [u8; 32] {
     }
 }
 
-pub fn bigint_to_32_bytes(num: &BigInt) -> [u8; 32] {
-    let (_, y_bytes) = num.to_bytes_le();
+pub fn biguint_to_32_bytes(num: &BigUint) -> [u8; 32] {
+    let y_bytes = num.to_bytes_le();
     if y_bytes.len() >= 32 {
         y_bytes[..32].try_into().unwrap()
     } else {
@@ -45,8 +45,8 @@ pub fn babyjubjub_unpack_point(key: &[u8]) -> Point {
 }
 
 pub fn babyjubjub_public_key(x: &[u8], y: &[u8]) -> [u8; 32] {
-    let x_bigint = BigInt::from_bytes_le(num_bigint::Sign::Plus, x);
-    let y_bigint = BigInt::from_bytes_le(num_bigint::Sign::Plus, y);
+    let x_bigint = BigUint::from_bytes_le(x);
+    let y_bigint = BigUint::from_bytes_le(y);
 
     let point = Point {
         x: Fr::from_str(&x_bigint.to_string()).unwrap(),
@@ -55,13 +55,13 @@ pub fn babyjubjub_public_key(x: &[u8], y: &[u8]) -> [u8; 32] {
     point.compress()
 }
 
-pub fn mod_floor(a_number: &BigInt, prime: &BigInt) -> BigInt {
+pub fn mod_floor(a_number: &BigUint, prime: &BigUint) -> BigUint {
     a_number.mod_floor(prime)
 }
 
-pub fn random_bigint(size: usize, prime: &BigInt) -> BigInt {
+pub fn random_biguint(size: usize, prime: &BigUint) -> BigUint {
     let bytes = random_bytes(size);
-    let random_bigint = BigInt::from_bytes_le(Sign::Plus, &bytes);
+    let random_bigint = BigUint::from_bytes_le(&bytes);
     mod_floor(&random_bigint, prime)
 }
 

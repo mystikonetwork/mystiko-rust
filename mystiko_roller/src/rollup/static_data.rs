@@ -2,7 +2,7 @@ use crate::data::handler::ProofInfo;
 use lazy_static::lazy_static;
 use mystiko_crypto::zkp::proof::{G1Point, G2Point, Proof, ZKProof};
 use mystiko_protocol::rollup::RollupProof;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::str::FromStr;
 
 lazy_static! {
@@ -39,9 +39,9 @@ lazy_static! {
                     "0x0000000000000000000000000000000000000000000000000000000000000022".to_string(),
                 ],
             },
-            new_root: BigInt::from_str("13890566555204546011498387055273076146663528550252880433766037483427158257175")
+            new_root: BigUint::from_str("13890566555204546011498387055273076146663528550252880433766037483427158257175")
                 .unwrap(),
-            leaves_hash: BigInt::from_str(
+            leaves_hash: BigUint::from_str(
                 "910276693119302666391498604708974964643344764052861980510623737984921333007",
             )
             .unwrap(),

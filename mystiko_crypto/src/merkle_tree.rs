@@ -3,25 +3,25 @@ use crate::error::MerkleTreeError;
 use crate::hash::{keccak256, poseidon_fr};
 use anyhow::Result;
 use ff::*;
-use num_bigint::{BigInt, Sign};
+use num_bigint::BigUint;
 use num_integer::Integer;
 use poseidon_rs::Fr;
 
-type CompareFn = dyn Fn(&BigInt, &BigInt) -> bool;
+type CompareFn = dyn Fn(&BigUint, &BigUint) -> bool;
 
 #[derive(Debug, Clone)]
 pub struct MerkleTree {
     max_levels: u32,
     capacity: u32,
-    zeros: Vec<BigInt>,
-    layers: Vec<Vec<BigInt>>,
+    zeros: Vec<BigUint>,
+    layers: Vec<Vec<BigUint>>,
 }
 
 impl MerkleTree {
     pub fn new(
-        in_initial_elements: Option<Vec<BigInt>>,
+        in_initial_elements: Option<Vec<BigUint>>,
         in_max_levels: Option<u32>,
-        in_zero_element: Option<BigInt>,
+        in_zero_element: Option<BigUint>,
     ) -> Result<Self, MerkleTreeError> {
         let initial_elements = in_initial_elements.unwrap_or_default();
         let max_levels = in_max_levels.unwrap_or(20);
@@ -33,7 +33,7 @@ impl MerkleTree {
         }
 
         let zeros = calc_zeros(zero_element, &max_levels);
-        let layers: Vec<Vec<BigInt>> = vec![initial_elements];
+        let layers: Vec<Vec<BigUint>> = vec![initial_elements];
 
         let mut s = Self {
             max_levels,
@@ -68,7 +68,7 @@ impl MerkleTree {
         }
     }
 
-    pub fn root(&self) -> BigInt {
+    pub fn root(&self) -> BigUint {
         let levels = self.max_levels as usize;
         if self.layers[levels].is_empty() {
             self.zeros[levels].clone()
@@ -77,7 +77,7 @@ impl MerkleTree {
         }
     }
 
-    pub fn insert(&mut self, element: BigInt) -> Result<(), MerkleTreeError> {
+    pub fn insert(&mut self, element: BigUint) -> Result<(), MerkleTreeError> {
         if self.layers[0].len() >= self.capacity as usize {
             return Err(MerkleTreeError::MerkleTreeIsFull);
         }
@@ -85,7 +85,7 @@ impl MerkleTree {
         self.update(self.layers[0].len(), element)
     }
 
-    pub fn bulk_insert(&mut self, elements: Vec<BigInt>) -> Result<(), MerkleTreeError> {
+    pub fn bulk_insert(&mut self, elements: Vec<BigUint>) -> Result<(), MerkleTreeError> {
         if self.layers[0].len() + elements.len() > self.capacity as usize {
             return Err(MerkleTreeError::MerkleTreeIsFull);
         }
@@ -142,7 +142,7 @@ impl MerkleTree {
         Ok(())
     }
 
-    fn update_layers(&mut self, level: usize, index: usize, element: BigInt) {
+    fn update_layers(&mut self, level: usize, index: usize, element: BigUint) {
         assert!(index <= self.layers[level].len());
         if index < self.layers[level].len() {
             self.layers[level][index] = element;
@@ -151,7 +151,7 @@ impl MerkleTree {
         }
     }
 
-    pub fn update(&mut self, index: usize, element: BigInt) -> Result<(), MerkleTreeError> {
+    pub fn update(&mut self, index: usize, element: BigUint) -> Result<(), MerkleTreeError> {
         if index > self.layers[0].len() || index >= self.capacity as usize {
             return Err(MerkleTreeError::IndexOutOfBounds);
         }
@@ -173,12 +173,12 @@ impl MerkleTree {
         Ok(())
     }
 
-    pub fn path(&self, index: usize) -> Result<(Vec<BigInt>, Vec<usize>), MerkleTreeError> {
+    pub fn path(&self, index: usize) -> Result<(Vec<BigUint>, Vec<usize>), MerkleTreeError> {
         if index > self.layers[0].len() {
             return Err(MerkleTreeError::IndexOutOfBounds);
         }
 
-        let mut path_elements: Vec<BigInt> = vec![];
+        let mut path_elements: Vec<BigUint> = vec![];
         let mut path_indices: Vec<usize> = vec![];
         let mut current_index = index;
         for level in 0..self.max_levels as usize {
@@ -195,7 +195,7 @@ impl MerkleTree {
         Ok((path_elements, path_indices))
     }
 
-    pub fn elements(&self) -> Vec<BigInt> {
+    pub fn elements(&self) -> Vec<BigUint> {
         self.layers[0].clone()
     }
 
@@ -203,7 +203,7 @@ impl MerkleTree {
         self.layers[0].len()
     }
 
-    pub fn index_of(&self, element: &BigInt, comparator: Option<&CompareFn>) -> Option<usize> {
+    pub fn index_of(&self, element: &BigUint, comparator: Option<&CompareFn>) -> Option<usize> {
         match comparator {
             Some(cmp) => self.layers[0].iter().position(|el| cmp(element, el)),
             None => self.layers[0].iter().position(|value| value.eq(element)),
@@ -211,21 +211,21 @@ impl MerkleTree {
     }
 }
 
-pub fn calc_default_zero_element() -> BigInt {
+pub fn calc_default_zero_element() -> BigUint {
     let input = b"Welcome To Mystiko's Magic World!";
     let seed_hash = keccak256(input);
-    let seed_bigint = BigInt::from_bytes_be(Sign::Plus, &seed_hash);
+    let seed_bigint = BigUint::from_bytes_be(&seed_hash);
     seed_bigint.mod_floor(&FIELD_SIZE)
 }
 
-pub fn hash_two(first: &BigInt, second: &BigInt) -> BigInt {
+pub fn hash_two(first: &BigUint, second: &BigUint) -> BigUint {
     let b1: Fr = Fr::from_str(&first.to_string()).unwrap();
     let b2: Fr = Fr::from_str(&second.to_string()).unwrap();
     poseidon_fr(&[b1, b2])
 }
 
-pub fn calc_zeros(first_zero: BigInt, levels: &u32) -> Vec<BigInt> {
-    let mut z: Vec<BigInt> = vec![];
+pub fn calc_zeros(first_zero: BigUint, levels: &u32) -> Vec<BigUint> {
+    let mut z: Vec<BigUint> = vec![];
     z.push(first_zero);
     for i in 1..(levels + 1) as usize {
         z.push(hash_two(&z[i - 1], &z[i - 1]));

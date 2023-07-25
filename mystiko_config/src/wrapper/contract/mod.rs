@@ -3,7 +3,7 @@ use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
 use anyhow::Result;
 use mystiko_types::{AssetType, BridgeType, ContractType};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use num_traits::{NumCast, Zero};
 use std::sync::Arc;
 
@@ -80,7 +80,7 @@ impl ContractConfig {
         }
     }
 
-    pub fn min_rollup_fee(&self) -> Result<BigInt> {
+    pub fn min_rollup_fee(&self) -> Result<BigUint> {
         match self {
             ContractConfig::Deposit(config) => config.min_rollup_fee(),
             ContractConfig::Pool(config) => config.min_rollup_fee(),
@@ -123,7 +123,7 @@ impl ContractConfig {
         self.asset().asset_decimals()
     }
 
-    pub fn recommended_amounts(&self) -> Result<Vec<BigInt>> {
+    pub fn recommended_amounts(&self) -> Result<Vec<BigUint>> {
         self.asset().recommended_amounts()
     }
 

@@ -5,8 +5,8 @@ use crate::types::{EncSk, RandomSk, DECRYPTED_NOTE_SIZE, RANDOM_SK_SIZE};
 use anyhow::Result;
 use mystiko_crypto::crypto::{decrypt_asymmetric, encrypt_asymmetric};
 use mystiko_crypto::hash::poseidon;
-use mystiko_crypto::utils::{bigint_to_32_bytes, random_bytes};
-use num_bigint::{BigInt, Sign};
+use mystiko_crypto::utils::{biguint_to_32_bytes, random_bytes};
+use num_bigint::BigUint;
 use num_traits::identities::Zero;
 
 pub type EncryptedNote = Vec<u8>;
@@ -31,8 +31,8 @@ pub struct Note {
 }
 
 impl Note {
-    pub fn new(amount: Option<BigInt>, r: Option<(RandomSk, RandomSk, RandomSk)>) -> Self {
-        let amount = amount.unwrap_or(BigInt::zero());
+    pub fn new(amount: Option<BigUint>, r: Option<(RandomSk, RandomSk, RandomSk)>) -> Self {
+        let amount = amount.unwrap_or(BigUint::zero());
         let (random_p, random_r, random_s) = match r {
             Some(r) => (r.0, r.1, r.2),
             None => (generate_random_sk(), generate_random_sk(), generate_random_sk()),
@@ -52,7 +52,7 @@ impl Note {
         note_bytes.extend(&self.random_p);
         note_bytes.extend(&self.random_r);
         note_bytes.extend(&self.random_s);
-        note_bytes.extend(bigint_to_32_bytes(&self.amount));
+        note_bytes.extend(biguint_to_32_bytes(&self.amount));
         note_bytes
     }
 
@@ -66,7 +66,7 @@ impl Note {
         let random_r = chunks.next().unwrap();
         let random_s = chunks.next().unwrap();
         let amount = chunks.next().unwrap();
-        let amount = BigInt::from_bytes_le(Sign::Plus, amount);
+        let amount = BigUint::from_bytes_le(amount);
 
         Ok(Self {
             random_p: random_p.try_into().unwrap(),
@@ -76,16 +76,16 @@ impl Note {
         })
     }
 
-    pub fn random_p_big(&self) -> BigInt {
-        BigInt::from_bytes_le(Sign::Plus, &self.random_p)
+    pub fn random_p_big(&self) -> BigUint {
+        BigUint::from_bytes_le(&self.random_p)
     }
 
-    pub fn random_r_big(&self) -> BigInt {
-        BigInt::from_bytes_le(Sign::Plus, &self.random_r)
+    pub fn random_r_big(&self) -> BigUint {
+        BigUint::from_bytes_le(&self.random_r)
     }
 
-    pub fn random_s_big(&self) -> BigInt {
-        BigInt::from_bytes_le(Sign::Plus, &self.random_s)
+    pub fn random_s_big(&self) -> BigUint {
+        BigUint::from_bytes_le(&self.random_s)
     }
 }
 
@@ -94,8 +94,8 @@ pub struct Commitment {
     pub encrypted_note: EncryptedNote,
     pub note: Note,
     pub shielded_address: ShieldedAddress,
-    pub commitment_hash: BigInt,
-    pub k: BigInt,
+    pub commitment_hash: BigUint,
+    pub k: BigUint,
 }
 
 impl Commitment {
@@ -114,7 +114,7 @@ impl Commitment {
 
         let shielded_address = ShieldedAddress::from_public_key(&pk_verify, &pk_enc);
         let encrypted_note = encrypt_asymmetric(&pk_enc, note.to_vec().as_slice())?;
-        let pk_big = BigInt::from_bytes_le(Sign::Plus, &pk_verify);
+        let pk_big = BigUint::from_bytes_le(&pk_verify);
         let k = poseidon(&[pk_big, note.random_p_big(), note.random_r_big()]);
         let commitment_hash = poseidon(&[k.clone(), note.amount.clone(), note.random_s_big()]);
 

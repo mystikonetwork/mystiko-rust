@@ -1,4 +1,4 @@
-use crate::context::mock_context::{create_mock_context, indexer_server_port, MockContext};
+use crate::context::mock_context::{create_mock_context, MockContext};
 use crate::test_files::load::load_commitment_logs;
 use ethers_core::types::{Log, U64};
 use mystiko_roller::chain::provider::ProviderStub;
@@ -9,16 +9,14 @@ use std::sync::Arc;
 
 #[tokio::test]
 pub async fn test_run() {
-    let test_chain_id = 401;
-    let (pool, _, _) = create_pool_handle(test_chain_id).await;
+    let (pool, _, _) = create_pool_handle(0, 0).await;
     let result = pool.run().await;
     assert!(result.is_ok());
 }
 
 #[tokio::test]
 pub async fn test_run_from_one_source() {
-    let test_chain_id = 402;
-    let (pool, c, addr) = create_pool_handle(test_chain_id).await;
+    let (pool, c, addr) = create_pool_handle(0, 0).await;
     let mock = c.mock_provider().await;
     let logs = load_commitment_logs("tests/test_files/data/commitment_logs.json").await;
     let block_number = U64::from(256);
@@ -29,8 +27,8 @@ pub async fn test_run_from_one_source() {
     assert!(result.is_err());
 }
 
-async fn create_pool_handle(test_chain_id: u64) -> (Pool, Arc<MockContext>, String) {
-    let c = create_mock_context(indexer_server_port(test_chain_id)).await;
+async fn create_pool_handle(indexer_port: u16, token_price_port: u16) -> (Pool, Arc<MockContext>, String) {
+    let c = create_mock_context(indexer_port, token_price_port).await;
     let c = Arc::new(c);
     let pool_contracts = c.core_cfg_parser().pool_contracts_cfg(c.cfg().chain.chain_id);
     let tx_manager_cfg = create_tx_manager_config("tests/test_files/config/base").unwrap();

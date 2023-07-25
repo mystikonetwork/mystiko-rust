@@ -1,4 +1,4 @@
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 
 // Verification key sizes
 pub const VERIFY_PK_SIZE: usize = 32;
@@ -36,5 +36,5 @@ pub const AUDITING_THRESHOLD: u32 = 3;
 
 pub type SigPk = [u8; SIG_PK_SIZE];
 pub type RandomSk = [u8; RANDOM_SK_SIZE];
-pub type TxAmount = BigInt;
-pub type EncryptedShares = Vec<BigInt>;
+pub type TxAmount = BigUint;
+pub type EncryptedShares = Vec<BigUint>;

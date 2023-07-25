@@ -47,7 +47,7 @@ pub async fn load_indexer_commitments(
             block_num: cm.block_number,
             encrypted_note: "".to_string(),
             rollup_fee: cm.rollup_fee.to_string(),
-            leaf_index: cm.leaf_index,
+            leaf_index: cm.leaf_index as u32,
             create_at: None,
             status: None,
             contract_id: 0,

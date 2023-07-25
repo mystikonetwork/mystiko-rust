@@ -1,6 +1,6 @@
 use ethers_core::types::U256;
 use mystiko_utils::convert::{decimal_to_number, number_to_decimal};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use num_traits::ToPrimitive;
 use rust_decimal::Decimal;
 
@@ -12,8 +12,8 @@ fn test_decimal_to_number() {
     );
     assert_eq!(decimal_to_number::<f64, u32>(&1, Some(4)).unwrap(), 0.0001);
     assert_eq!(
-        decimal_to_number::<f64, BigInt>(&BigInt::from(-10), Some(3)).unwrap(),
-        -0.01
+        decimal_to_number::<f64, BigUint>(&BigUint::from(10u32), Some(3)).unwrap(),
+        0.01
     );
     assert_eq!(
         decimal_to_number::<f32, Decimal>(&Decimal::from(-100), Some(5)).unwrap(),
@@ -34,15 +34,15 @@ fn test_number_to_decimal() {
 #[test]
 fn test_u256_to_big_int() {
     assert_eq!(
-        mystiko_utils::convert::u256_to_big_int(&U256::from_dec_str("123456789").unwrap()),
-        BigInt::from(123456789)
+        mystiko_utils::convert::u256_to_biguint(&U256::from_dec_str("123456789").unwrap()),
+        BigUint::from(123456789u32)
     );
 }
 
 #[test]
 fn test_big_int_to_u256() {
     assert_eq!(
-        mystiko_utils::convert::big_int_to_u256(&BigInt::from(123456789)),
+        mystiko_utils::convert::biguint_to_u256(&BigUint::from(123456789u32)),
         U256::from_dec_str("123456789").unwrap()
     );
 }

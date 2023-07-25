@@ -5,7 +5,7 @@ use ethers_core::abi::{Error as AbiError, RawLog};
 use ethers_core::types::Log;
 use ethers_core::types::{Address, Bytes, H256, U64};
 use mystiko_abi::commitment_pool::CommitmentQueuedFilter;
-use mystiko_utils::convert::u256_to_big_int;
+use mystiko_utils::convert::u256_to_biguint;
 use serde::{Deserialize, Serialize};
 
 /// A Intermediate log struct for some explorer response log_index/transactionIndex/transaction_log_index is 0x
@@ -130,10 +130,10 @@ where
             Ok(CommitmentInfo {
                 chain_id,
                 contract_address: contract_address.to_string(),
-                commitment_hash: u256_to_big_int(&cm.commitment),
+                commitment_hash: u256_to_biguint(&cm.commitment),
                 block_number,
                 rollup_fee: cm.rollup_fee.to_string(),
-                leaf_index: cm.leaf_index.as_u32(),
+                leaf_index: cm.leaf_index.as_u64(),
                 tx_hash,
             })
         })
