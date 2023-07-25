@@ -1,4 +1,7 @@
-use crate::common::{env_init, load_env_mock_indexer_port, set_env_mock_indexer_port, ENV_MUTEX};
+use crate::common::{
+    env_init, load_env_mock_indexer_port, load_env_mock_token_price_port, set_env_mock_indexer_port,
+    set_env_mock_token_price_port, ENV_MUTEX,
+};
 use async_trait::async_trait;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
 use mystiko_config::raw::indexer::RawIndexerConfig;
@@ -64,10 +67,8 @@ impl ContextTrait for MockContext {
         let api_key = load_coin_market_api_key().unwrap();
 
         let mut token_price_cfg = create_token_price_config(run_mod, cfg_path).unwrap();
-        token_price_cfg.base_url = format!(
-            "http://127.0.0.1:{}",
-            token_price_server_port(indexer_port.parse::<u16>().unwrap())
-        );
+        let token_price_port = load_env_mock_token_price_port();
+        token_price_cfg.base_url = format!("http://127.0.0.1:{}", token_price_port);
         let token_price = TokenPrice::new(&token_price_cfg, &api_key).unwrap();
 
         let (_, mock) = EthersProvider::mocked();
@@ -146,26 +147,11 @@ fn create_mock_provider(provider: &MockProvider) -> Provider {
     Provider::new(ProviderWrapper::new(Box::new(failover_provider_builder.build())))
 }
 
-pub fn provider_server_port() -> u16 {
-    20000 + 1
-}
-
-pub fn indexer_server_port(chain_id: u64) -> u16 {
-    chain_id as u16 + 20000
-}
-
-pub fn token_price_server_port(indexer_server_port: u16) -> u16 {
-    indexer_server_port + 5000
-}
-
-pub fn explorer_server_port(chain_id: u64) -> u16 {
-    chain_id as u16 + 20000 + 8000
-}
-
-pub async fn create_mock_context(indexer_port: u16) -> MockContext {
+pub async fn create_mock_context(indexer_port: u16, token_price_port: u16) -> MockContext {
     let _guard = ENV_MUTEX.write().await;
     env_init();
     set_env_mock_indexer_port(&indexer_port.to_string());
+    set_env_mock_token_price_port(&token_price_port.to_string());
     MockContext::new("testnet", "tests/test_files/config/base")
         .await
         .unwrap()

@@ -1,17 +1,17 @@
 extern crate mystiko_crypto;
 extern crate num_bigint;
 
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::error::SecretShareError;
 use mystiko_crypto::shamir::{recover, split};
-use mystiko_crypto::utils::{mod_floor, random_bigint};
+use mystiko_crypto::utils::{mod_floor, random_biguint};
 use rand::prelude::SliceRandom;
 
 #[tokio::test]
 async fn test_secret_sharing() {
-    let secret = random_bigint(32, &FIELD_SIZE);
+    let secret = random_biguint(32, &FIELD_SIZE);
     let result = split(secret.clone(), 0, 17, None);
     assert_eq!(result.err().unwrap(), SecretShareError::SharesOutOfBounds);
 
@@ -21,7 +21,7 @@ async fn test_secret_sharing() {
 
 #[tokio::test]
 async fn test_secret_sharing1() {
-    let secret = random_bigint(32, &FIELD_SIZE);
+    let secret = random_biguint(32, &FIELD_SIZE);
     let ss = split(secret.clone(), 30, 17, None).unwrap();
     let mut shares = ss.shares;
     shares.shuffle(&mut rand::thread_rng());
@@ -32,8 +32,8 @@ async fn test_secret_sharing1() {
 
 #[tokio::test]
 async fn test_secret_sharing2() {
-    let mut secret = random_bigint(32, &FIELD_SIZE);
-    let field: BigInt = BigInt::parse_bytes(b"58995116542422524421248775517049", 10).unwrap();
+    let mut secret = random_biguint(32, &FIELD_SIZE);
+    let field: BigUint = BigUint::parse_bytes(b"58995116542422524421248775517049", 10).unwrap();
     secret = mod_floor(&secret, &field);
 
     let ss1 = split(secret.clone(), 5, 3, Some(field.clone())).unwrap();

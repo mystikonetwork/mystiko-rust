@@ -1,4 +1,5 @@
-use crate::pull::{create_mock_indexer_server, create_pull_handle};
+use crate::context::mock_server::{config_mock_indexer_server, create_mock_indexer_server};
+use crate::pull::create_pull_handle;
 use crate::test_files::load::load_indexer_commitments;
 use ethers_core::types::{Log, U64};
 use mystiko_roller::chain::provider::ProviderStub;
@@ -9,7 +10,7 @@ use std::sync::Arc;
 #[tokio::test]
 pub async fn test_block_number_slow() {
     let test_chain_id = 211;
-    let (handle, data, c) = create_pull_handle(test_chain_id, true).await;
+    let (handle, data, c) = create_pull_handle(test_chain_id, 10000, 10000, true).await;
     let stub_provider = Arc::new(ProviderStub::new(&handle.contract_address, c.provider()));
     let mock = c.mock_provider().await;
     let block_number1 = U64::from("0x100");
@@ -37,7 +38,9 @@ pub async fn test_block_number_slow() {
 #[tokio::test]
 pub async fn test_leaf_index_mismatch() {
     let test_chain_id = 212;
-    let (handle, data, c) = create_pull_handle(test_chain_id, false).await;
+    let (mut server, indexer_port) = create_mock_indexer_server().await;
+
+    let (handle, data, c) = create_pull_handle(test_chain_id, indexer_port, 10000, false).await;
     let mut cms = load_indexer_commitments(
         "tests/test_files/data/commitments.json",
         Some(test_chain_id),
@@ -48,8 +51,19 @@ pub async fn test_leaf_index_mismatch() {
     let block_number = 128;
     let cm_count: usize = 3;
     let (cms_rsp, _) = cms.split_at(cm_count);
-    let server = create_mock_indexer_server(test_chain_id, &handle.contract_address, block_number, cms_rsp).await;
+    let mocks = config_mock_indexer_server(
+        &mut server,
+        test_chain_id,
+        &handle.contract_address,
+        Some(block_number),
+        None,
+        Some(cms_rsp),
+    )
+    .await;
     let result = handle.pull(c.indexer().unwrap()).await;
+    for mock in mocks {
+        mock.assert_async().await;
+    }
     assert!(matches!(result.err().unwrap(), RollerError::CommitmentMissing));
     assert_eq!(
         data.read().await.get_next_sync_block(),
@@ -62,5 +76,4 @@ pub async fn test_leaf_index_mismatch() {
         "commitments mismatch"
     );
     assert_eq!(data.read().await.get_included_count(), 0, "included count mismatch");
-    std::mem::drop(server);
 }

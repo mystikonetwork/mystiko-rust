@@ -43,5 +43,4 @@ mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros"
 [dev-dependencies]
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
 ethers-contract = { version = "2.0.4"}
-httptest= { version = "0.15.4" }
 mockito = { version = "0.32.4" }

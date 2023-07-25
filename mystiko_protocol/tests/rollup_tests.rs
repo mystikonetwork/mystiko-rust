@@ -2,7 +2,7 @@ extern crate mystiko_crypto;
 extern crate mystiko_protocol;
 extern crate num_bigint;
 
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_fs::{read_file_bytes, read_gzip_file_bytes};
@@ -12,10 +12,10 @@ const FILE_PATH: &str = "./../mystiko_circuits/dist/zokrates/dev";
 
 #[tokio::test]
 async fn test_rollup1() {
-    let in_initial_elements = vec![BigInt::from(100), BigInt::from(200), BigInt::from(300)];
+    let in_initial_elements = vec![BigUint::from(100u32), BigUint::from(200u32), BigUint::from(300u32)];
     let in_initial_elements_count = in_initial_elements.len();
     let mut tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
-    let new_leaves = vec![BigInt::from(1u32)];
+    let new_leaves = vec![BigUint::from(1u32)];
     let new_leaves_count = new_leaves.len();
     let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup1.program.gz"))
         .await
@@ -47,10 +47,10 @@ async fn test_rollup1() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup2() {
-    let in_initial_elements = vec![BigInt::from(100), BigInt::from(200)];
+    let in_initial_elements = vec![BigUint::from(100u32), BigUint::from(200u32)];
     let in_initial_elements_count = in_initial_elements.len();
     let mut tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
-    let new_leaves = vec![BigInt::from(1u32), BigInt::from(2u32)];
+    let new_leaves = vec![BigUint::from(1u32), BigUint::from(2u32)];
     let new_leaves_count = new_leaves.len();
     let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup2.program.gz"))
         .await
@@ -81,9 +81,12 @@ async fn test_rollup2() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup4() {
-    let in_initial_elements = (100..=400).step_by(100).map(BigInt::from).collect::<Vec<BigInt>>();
+    let in_initial_elements = (100u32..=400u32)
+        .step_by(100)
+        .map(BigUint::from)
+        .collect::<Vec<BigUint>>();
     let in_initial_elements_count = in_initial_elements.len();
-    let new_leaves = (1..=4).map(BigInt::from).collect::<Vec<BigInt>>();
+    let new_leaves = (1u32..=4u32).map(BigUint::from).collect::<Vec<BigUint>>();
     let new_leaves_count = new_leaves.len();
     let mut tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
     let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup4.program.gz"))
@@ -115,9 +118,12 @@ async fn test_rollup4() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup8() {
-    let in_initial_elements = (100..=800).step_by(100).map(BigInt::from).collect::<Vec<BigInt>>();
+    let in_initial_elements = (100u32..=800u32)
+        .step_by(100)
+        .map(BigUint::from)
+        .collect::<Vec<BigUint>>();
     let in_initial_elements_count = in_initial_elements.len();
-    let new_leaves = (1..=8).map(BigInt::from).collect::<Vec<BigInt>>();
+    let new_leaves = (1u32..=8u32).map(BigUint::from).collect::<Vec<BigUint>>();
     let new_leaves_count = new_leaves.len();
     let mut tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
     let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup8.program.gz"))
@@ -149,9 +155,12 @@ async fn test_rollup8() {
 #[tokio::test]
 #[ignore]
 async fn test_rollup16() {
-    let in_initial_elements = (100..=1600).step_by(100).map(BigInt::from).collect::<Vec<BigInt>>();
+    let in_initial_elements = (100u32..=1600u32)
+        .step_by(100)
+        .map(BigUint::from)
+        .collect::<Vec<BigUint>>();
     let in_initial_elements_count = in_initial_elements.len();
-    let new_leaves = (1..=16).map(BigInt::from).collect::<Vec<BigInt>>();
+    let new_leaves = (1u32..=16u32).map(BigUint::from).collect::<Vec<BigUint>>();
     let new_leaves_count = new_leaves.len();
     let mut tree = MerkleTree::new(Some(in_initial_elements), None, None).unwrap();
     let program = read_gzip_file_bytes(&format!("{}/{}", FILE_PATH, "/Rollup16.program.gz"))

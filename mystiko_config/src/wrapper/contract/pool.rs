@@ -4,7 +4,7 @@ use crate::wrapper::circuit::CircuitConfig;
 use anyhow::{Error, Result};
 use mystiko_types::{AssetType, BridgeType, CircuitType, ContractType};
 use mystiko_utils::convert::decimal_to_number;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use num_traits::{NumCast, Zero};
 use std::fmt::Debug;
 use std::str::FromStr;
@@ -95,7 +95,7 @@ impl PoolContractConfig {
         self.asset().asset_decimals()
     }
 
-    pub fn recommended_amounts(&self) -> Result<Vec<BigInt>> {
+    pub fn recommended_amounts(&self) -> Result<Vec<BigUint>> {
         self.asset().recommended_amounts()
     }
 
@@ -106,8 +106,8 @@ impl PoolContractConfig {
         self.asset().recommended_amounts_number()
     }
 
-    pub fn min_rollup_fee(&self) -> Result<BigInt> {
-        Ok(BigInt::from_str(&self.raw.min_rollup_fee)?)
+    pub fn min_rollup_fee(&self) -> Result<BigUint> {
+        Ok(BigUint::from_str(&self.raw.min_rollup_fee)?)
     }
 
     pub fn min_rollup_fee_number<T>(&self) -> Result<T>

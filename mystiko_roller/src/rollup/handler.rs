@@ -14,7 +14,7 @@ use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
 use mystiko_server_utils::tx_manager::config::TxManagerConfig;
 use mystiko_server_utils::tx_manager::error::TxManagerError;
 use mystiko_server_utils::tx_manager::transaction::{TxBuilder, TxManager};
-use mystiko_utils::convert::big_int_to_u256;
+use mystiko_utils::convert::biguint_to_u256;
 use std::cmp::Ordering;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -99,8 +99,8 @@ impl RollupHandle {
         let request = RollupRequest {
             proof: proof_info.r.zk_proof.proof.convert_to()?,
             rollup_size: size as u32,
-            new_root: big_int_to_u256(&proof_info.r.new_root),
-            leaf_hash: big_int_to_u256(&proof_info.r.leaves_hash),
+            new_root: biguint_to_u256(&proof_info.r.new_root),
+            leaf_hash: biguint_to_u256(&proof_info.r.leaves_hash),
         };
 
         let call = self.commitment_contract.rollup(request);

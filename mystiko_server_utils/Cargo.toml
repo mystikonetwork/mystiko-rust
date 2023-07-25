@@ -26,5 +26,5 @@ tokio = { version = "1.26.0", features = ["time"] }
 [dev-dependencies]
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
 rand = { version = "0.8.5" }
-httptest= { version = "0.15.4" }
 mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
+mockito = { version = "0.32.4" }

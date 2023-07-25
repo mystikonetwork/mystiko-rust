@@ -11,7 +11,7 @@ use std::ops::Sub;
 use ethers_core::rand::thread_rng;
 use ethers_core::types::U256;
 use ethers_signers::{LocalWallet, Signer};
-use num_bigint::{BigInt, Sign};
+use num_bigint::BigUint;
 use num_traits::identities::Zero;
 
 use mystiko_crypto::ecies;
@@ -35,10 +35,10 @@ fn generate_eth_address() -> SigPk {
     wallet.address().as_bytes().try_into().unwrap()
 }
 
-fn u256_to_big_int(u: &U256) -> BigInt {
+fn u256_to_big_int(u: &U256) -> BigUint {
     let mut arr = [0u8; 32];
     u.to_little_endian(&mut arr[..]);
-    BigInt::from_bytes_le(Sign::Plus, &arr[..])
+    BigUint::from_bytes_le(&arr[..])
 }
 
 fn generate_transaction(
@@ -54,7 +54,7 @@ fn generate_transaction(
     let mut in_enc_pks: Vec<EncPk> = vec![];
     let mut in_enc_sks: Vec<EncSk> = vec![];
     let mut in_amounts: Vec<TxAmount> = vec![];
-    let mut in_commitments: Vec<BigInt> = vec![];
+    let mut in_commitments: Vec<BigUint> = vec![];
     let mut in_private_notes: Vec<EncryptedNote> = vec![];
 
     let in_amount = u256_to_big_int(&ethers_core::utils::parse_ether("200").unwrap());
@@ -83,7 +83,7 @@ fn generate_transaction(
     }
 
     let merkle_tree = MerkleTree::new(Some(in_commitments.clone()), Some(MERKLE_TREE_LEVELS), None).unwrap();
-    let mut path_elements: Vec<Vec<BigInt>> = vec![];
+    let mut path_elements: Vec<Vec<BigUint>> = vec![];
     let mut path_indices: Vec<Vec<usize>> = vec![];
     for i in 0..num_inputs as usize {
         let path = merkle_tree.path(i).unwrap();
@@ -97,7 +97,7 @@ fn generate_transaction(
     let mut out_enc_pks: Vec<EncPk> = vec![];
     let mut rollup_fee_amounts: Vec<TxAmount> = vec![];
     let mut out_amounts: Vec<TxAmount> = vec![];
-    let mut out_commitments: Vec<BigInt> = vec![];
+    let mut out_commitments: Vec<BigUint> = vec![];
     let mut out_random_ps: Vec<RandomSk> = vec![];
     let mut out_random_rs: Vec<RandomSk> = vec![];
     let mut out_random_ss: Vec<RandomSk> = vec![];
@@ -123,9 +123,9 @@ fn generate_transaction(
         out_random_ss.push(cm.note.random_s);
     }
 
-    let total_in = in_amounts.iter().fold(BigInt::zero(), |acc, x| acc + x);
-    let total_out = out_amounts.iter().fold(BigInt::zero(), |acc, x| acc + x);
-    let total_rollup_fee = rollup_fee_amounts.iter().fold(BigInt::zero(), |acc, x| acc + x);
+    let total_in = in_amounts.iter().fold(BigUint::zero(), |acc, x| acc + x);
+    let total_out = out_amounts.iter().fold(BigUint::zero(), |acc, x| acc + x);
+    let total_rollup_fee = rollup_fee_amounts.iter().fold(BigUint::zero(), |acc, x| acc + x);
 
     let public_amount = total_in
         .sub(total_out)

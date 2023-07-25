@@ -4,7 +4,7 @@ extern crate mystiko_protocol;
 extern crate num_bigint;
 
 use ff::hex;
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 
 use crate::mystiko_protocol::utils::{compute_nullifier, compute_sig_pk_hash};
 use mystiko_crypto::crypto::decrypt_asymmetric;
@@ -22,7 +22,7 @@ async fn test_nullifier_compatible_with_js() {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2,
     ];
     let expect_sn =
-        BigInt::parse_bytes(b"16287b6ec504e86341497b36ca78a4b94ea41a2daa58e4a26b2b3b39dfb39e53", 16).unwrap();
+        BigUint::parse_bytes(b"16287b6ec504e86341497b36ca78a4b94ea41a2daa58e4a26b2b3b39dfb39e53", 16).unwrap();
 
     let sk = verification_secret_key(&raw_key);
     let random_p = b"1234567812345678";
@@ -37,7 +37,7 @@ async fn test_sig_pk_hash_compatible_with_js() {
     ];
     let sig_pk = hex::decode("fb8B7C14EB7251D8A62876424E13D27d47C84288").unwrap();
     let sig_pk = sig_pk.try_into().unwrap();
-    let expect_sig_pk_hash = BigInt::parse_bytes(
+    let expect_sig_pk_hash = BigUint::parse_bytes(
         b"17300623865218087938631561261083046777856264605308935115400651673035276248790",
         10,
     )
@@ -93,7 +93,7 @@ async fn test_build_commitment() {
     let pk_verify = verification_public_key(raw_verify_key.as_slice().try_into().unwrap());
     let pk_enc = encryption_public_key(raw_enc_key.as_slice().try_into().unwrap());
     let sk_enc = encryption_secret_key(raw_enc_key.as_slice().try_into().unwrap());
-    let amount = BigInt::from(10u32);
+    let amount = BigUint::from(10u32);
     let note = Note::new(Some(amount.clone()), None);
     let cm1 = Commitment::new(
         ShieldedAddress::from_public_key(&pk_verify, &pk_enc),

@@ -9,7 +9,7 @@ use mystiko_config::wrapper::contract::deposit::DepositContractConfig;
 use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_types::{AssetType, BridgeType, ContractType};
-use num_bigint::BigInt;
+use num_bigint::BigUint;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -36,27 +36,27 @@ async fn test_create() {
     assert!(config.disabled());
     assert_eq!(
         config.min_amount().unwrap(),
-        BigInt::from_str("10000000000000000").unwrap()
+        BigUint::from_str("10000000000000000").unwrap()
     );
     assert_eq!(config.min_amount_number::<f64>().unwrap(), 0.01);
     assert_eq!(
         config.max_amount().unwrap(),
-        BigInt::from_str("100000000000000000").unwrap()
+        BigUint::from_str("100000000000000000").unwrap()
     );
     assert_eq!(config.max_amount_number::<f64>().unwrap(), 0.1);
     assert_eq!(
         config.min_bridge_fee().unwrap(),
-        BigInt::from_str("20000000000000000").unwrap()
+        BigUint::from_str("20000000000000000").unwrap()
     );
     assert_eq!(config.min_bridge_fee_number::<f64>().unwrap(), 0.02);
     assert_eq!(
         config.min_executor_fee().unwrap(),
-        BigInt::from_str("30000000000000000").unwrap()
+        BigUint::from_str("30000000000000000").unwrap()
     );
     assert_eq!(config.min_executor_fee_number::<f64>().unwrap(), 0.03);
     assert_eq!(
         config.min_rollup_fee().unwrap(),
-        BigInt::from_str("120000000000000000").unwrap()
+        BigUint::from_str("120000000000000000").unwrap()
     );
     assert_eq!(config.min_rollup_fee_number::<f64>().unwrap(), 0.12);
     assert_eq!(config.service_fee(), 2);
@@ -75,8 +75,8 @@ async fn test_create() {
     assert_eq!(
         config.recommended_amounts().unwrap(),
         vec![
-            BigInt::from_str("1000000000000000000").unwrap(),
-            BigInt::from_str("10000000000000000000").unwrap(),
+            BigUint::from_str("1000000000000000000").unwrap(),
+            BigUint::from_str("10000000000000000000").unwrap(),
         ]
     );
     assert_eq!(config.recommended_amounts_number::<u32>().unwrap(), vec![1, 10]);
@@ -120,7 +120,7 @@ async fn test_create_contract_config() {
     assert_eq!(config.bridge_type(), &BridgeType::Tbridge);
     assert_eq!(
         config.min_rollup_fee().unwrap(),
-        BigInt::from_str("120000000000000000").unwrap()
+        BigUint::from_str("120000000000000000").unwrap()
     );
     assert_eq!(config.min_rollup_fee_number::<f64>().unwrap(), 0.12);
     assert_eq!(
@@ -137,8 +137,8 @@ async fn test_create_contract_config() {
     assert_eq!(
         config.recommended_amounts().unwrap(),
         vec![
-            BigInt::from_str("1000000000000000000").unwrap(),
-            BigInt::from_str("10000000000000000000").unwrap(),
+            BigUint::from_str("1000000000000000000").unwrap(),
+            BigUint::from_str("10000000000000000000").unwrap(),
         ]
     );
     assert_eq!(config.recommended_amounts_number::<u32>().unwrap(), vec![1, 10]);
