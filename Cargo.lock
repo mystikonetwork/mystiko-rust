@@ -3605,9 +3605,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "futures",
+ "log",
  "mystiko_config",
  "mystiko_protos",
  "serde",
+ "thiserror",
  "tokio",
  "typed-builder",
 ]
