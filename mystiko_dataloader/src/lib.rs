@@ -1,4 +1,5 @@
 pub mod data;
+pub mod error;
 pub mod fetcher;
 pub mod filter;
 pub mod handler;

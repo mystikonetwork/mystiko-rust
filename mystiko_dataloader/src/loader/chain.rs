@@ -1,14 +1,18 @@
+use crate::data::chain::ChainData;
 use crate::data::types::LoadedData;
-use crate::fetcher::types::DataFetcher;
+use crate::error::{DataloaderError, Result};
+use crate::fetcher::types::{ChainFetchOption, DataFetcher};
 use crate::filter::ContractFilter;
-use crate::handler::types::DataHandler;
-use crate::validator::types::DataValidator;
-use anyhow::{Error, Result};
+use crate::handler::types::{DataHandler, HandleOption};
+use crate::validator::types::{DataValidator, ValidateOption};
+use log::error;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{RwLock, RwLockReadGuard};
+use std::time::Duration;
+use tokio::sync::RwLock;
+use tokio::time::sleep;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize, TypedBuilder)]
@@ -31,6 +35,8 @@ pub struct ChainState {
 pub struct StartOption {
     #[builder(setter(strip_option))]
     pub load_interval_ms: Option<u64>,
+    #[builder(setter(strip_option))]
+    pub max_batch_block: Option<u64>,
     #[builder(setter(strip_option))]
     pub contract_filter: Option<Arc<Box<dyn ContractFilter>>>,
 }
@@ -70,20 +76,121 @@ where
     V: DataValidator<R>,
     H: DataHandler<R>,
 {
-    pub fn builder() -> ChainDataLoaderBuilder<R, F, V, H> {
-        ChainDataLoaderBuilder::new()
+    async fn update_state(&self, chain_data: &ChainData<R>) -> Result<()> {
+        if chain_data.contracts_data.is_empty() {
+            return Ok(());
+        }
+
+        let mut state = self.state.write().await;
+        let mut min_end_block: u64 = chain_data.contracts_data[0].end_block;
+        for contract_data in &chain_data.contracts_data {
+            min_end_block = min_end_block.min(contract_data.end_block);
+
+            if let Some(contract_state) = state.contract_states.get_mut(&contract_data.address) {
+                contract_state.loaded_block = contract_data.end_block;
+            } else {
+                state.contract_states.insert(
+                    contract_data.address.clone(),
+                    ContractState {
+                        loaded_block: contract_data.end_block,
+                    },
+                );
+            }
+        }
+
+        state.loaded_block = min_end_block;
+        Ok(())
     }
 
-    pub async fn start(&self, _options: &StartOption) -> Result<()> {
-        todo!()
+    async fn run(&self, options: &StartOption) -> Result<()> {
+        let start_block = self.state.read().await.loaded_block;
+        let fetch_option = ChainFetchOption {
+            config: Arc::clone(&self.config),
+            chain_id: self.chain_id,
+            start_block,
+            end_block: start_block + options.max_batch_block.unwrap_or(1000000),
+            contract_filter: options.contract_filter.clone(),
+        };
+
+        let validator_option = ValidateOption {
+            config: Arc::clone(&self.config),
+        };
+
+        let handler_option = HandleOption {
+            config: Arc::clone(&self.config),
+        };
+
+        for fetcher in &self.fetchers {
+            let chain_data = match fetcher.fetch_chain(&fetch_option).await {
+                Err(_) => continue,
+                Ok(chain_data) => chain_data,
+            };
+
+            // todo refetch failed contract?
+            let validate_data = ChainData {
+                chain_id: self.chain_id,
+                contracts_data: chain_data
+                    .into_iter()
+                    .filter_map(|r| match r {
+                        Ok(data) => Some(data),
+                        Err(e) => {
+                            error!("fetch meet error {:?}", e);
+                            None
+                        }
+                    })
+                    .collect(),
+            };
+
+            for validator in &self.validators {
+                let result = validator.validate(&validate_data, &validator_option).await;
+                if let Err(_) | Ok(false) = result {
+                    break;
+                }
+
+                for handler in &self.handlers {
+                    handler.handle(&validate_data, &handler_option).await?;
+                }
+
+                return self.update_state(&validate_data).await;
+            }
+        }
+
+        Err(DataloaderError::LoaderRunError(
+            "failed fetch from all fetchers".to_string(),
+        ))
+    }
+
+    pub async fn start(&self, options: &StartOption) -> Result<()> {
+        let load_interval_ms = options.load_interval_ms.unwrap_or(10000);
+        self.state.write().await.loaded_block = self.initial_block;
+        self.state.write().await.is_loading = true;
+        loop {
+            if !self.state.read().await.is_loading {
+                break;
+            }
+
+            self.state.write().await.is_running = true;
+            self.run(options).await.unwrap_or_else(|e| {
+                error!("run error: {:?}", e);
+            });
+            self.state.write().await.is_running = false;
+
+            if !self.state.read().await.is_loading {
+                break;
+            }
+            sleep(Duration::from_millis(load_interval_ms)).await;
+        }
+
+        Ok(())
     }
 
     pub async fn stop(&self) -> Result<()> {
-        todo!()
+        self.state.write().await.is_loading = false;
+        Ok(())
     }
 
-    pub async fn state(&self) -> RwLockReadGuard<ChainState> {
-        self.state.read().await
+    pub async fn state(&self) -> ChainState {
+        self.state.read().await.clone()
     }
 }
 
@@ -176,6 +283,12 @@ where
     }
 
     pub fn build(self) -> Result<ChainDataLoader<R, F, V, H>> {
+        if self.fetchers.is_empty() || self.validators.is_empty() || self.handlers.is_empty() {
+            return Err(DataloaderError::LoaderInitError(
+                "fetchers, validators and handlers cannot be empty".to_string(),
+            ));
+        }
+
         if let Some(config) = self.config {
             let state = ChainState {
                 loaded_block: self.initial_block,
@@ -194,7 +307,7 @@ where
                 _phantom: std::marker::PhantomData,
             })
         } else {
-            Err(Error::msg("config is required"))
+            Err(DataloaderError::LoaderInitError("config is required".to_string()))
         }
     }
 }
