@@ -24,7 +24,8 @@ members = [
     "mystiko_storage_sqlite",
     "mystiko_types",
     "mystiko_utils",
-    "mystiko_validator"
+    "mystiko_validator",
+    "mystiko_etherscan_client"
 ]
 
 exclude = []
