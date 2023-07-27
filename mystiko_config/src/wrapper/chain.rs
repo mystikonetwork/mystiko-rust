@@ -26,6 +26,7 @@ pub struct ChainConfig {
     pool_contract_configs: Vec<Arc<PoolContractConfig>>,
     deposit_contract_configs: Vec<Arc<DepositContractConfig>>,
     provider_configs: Vec<Arc<ProviderConfig>>,
+    packer_sorted_granularities: Vec<u64>,
 }
 
 impl ChainConfig {
@@ -64,6 +65,8 @@ impl ChainConfig {
             &main_asset_config,
             &asset_configs,
         )?;
+        let mut packer_sorted_granularities = raw.packer_granularities.clone();
+        packer_sorted_granularities.sort();
         Ok(ChainConfig {
             raw,
             main_asset_config,
@@ -71,6 +74,7 @@ impl ChainConfig {
             pool_contract_configs,
             deposit_contract_configs,
             provider_configs,
+            packer_sorted_granularities,
         })
     }
 
@@ -143,6 +147,17 @@ impl ChainConfig {
 
     pub fn indexer_filter_size(&self) -> u64 {
         self.raw.indexer_filter_size
+    }
+
+    pub fn granularities(&self) -> &[u64] {
+        &self.packer_sorted_granularities
+    }
+
+    pub fn min_granularity(&self) -> Result<u64> {
+        match self.packer_sorted_granularities.first() {
+            Some(min_granularity) => Ok(*min_granularity),
+            None => Err(Error::msg("No granularities specified")),
+        }
     }
 
     pub fn pool_contracts(&self) -> Vec<&PoolContractConfig> {
@@ -380,6 +395,18 @@ impl ChainConfig {
         }
         for provider_config in self.providers() {
             provider_config.validate()?;
+        }
+        let mut last_granularity: Option<u64> = None;
+        for granularity in self.packer_sorted_granularities.iter() {
+            if let Some(last_granularity) = last_granularity {
+                if granularity % last_granularity != 0 {
+                    return Err(Error::msg(format!(
+                        "Granularities must be multiples of each other: {} is not a multiple of {}",
+                        granularity, last_granularity
+                    )));
+                }
+            }
+            last_granularity = Some(*granularity);
         }
         Ok(())
     }

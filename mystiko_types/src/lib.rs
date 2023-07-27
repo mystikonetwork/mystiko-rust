@@ -108,6 +108,20 @@ pub enum NetworkType {
     Mainnet,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum PackerChecksum {
+    #[default]
+    Sha512,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum PackerCompression {
+    #[default]
+    Zstd,
+}
+
 impl CircuitType {
     pub fn all() -> Vec<CircuitType> {
         vec![

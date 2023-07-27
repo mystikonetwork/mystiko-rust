@@ -188,7 +188,8 @@
         "assetDecimals": 16,
         "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
         "recommendedAmounts": ["1000000000000000000", "10000000000000000000"]
-      }]
+      }],
+      "packerGranularities": [2000, 4000, 8000, 16000]
     },
     {
       "chainId": 97,
@@ -337,7 +338,8 @@
         "assetSymbol": "MTT",
         "assetDecimals": 16,
         "assetAddress": "0xaA055A9888e414faF9f0DA3F4cb4C56Df8a4bdA9"
-      }]
+      }],
+      "packerGranularities": [2000, 4000, 8000, 16000, 32000]
     }
   ],
   "bridges": [
