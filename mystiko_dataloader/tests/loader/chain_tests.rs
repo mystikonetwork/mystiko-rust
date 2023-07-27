@@ -98,7 +98,7 @@ where
     R: LoadedData,
 {
     async fn validate(&self, _data: &ChainData<R>, _option: &ValidateOption) -> anyhow::Result<bool> {
-        match self.result.read().await.clone() {
+        match *self.result.read().await {
             Some(result) => Ok(result),
             None => Err(anyhow::Error::msg("error".to_string())),
         }
@@ -127,7 +127,7 @@ where
     R: LoadedData,
 {
     async fn handle(&self, _data: &ChainData<R>, _option: &HandleOption) -> anyhow::Result<()> {
-        if self.result.read().await.clone() {
+        if *self.result.read().await {
             Ok(())
         } else {
             Err(anyhow::Error::msg("handler error".to_string()))
@@ -140,7 +140,7 @@ pub struct MockListener {
 }
 
 impl MockListener {
-    pub fn new() -> Self {
+    fn new() -> Self {
         MockListener {
             event: RwLock::new(vec![]),
         }
@@ -152,6 +152,12 @@ impl MockListener {
 
     pub async fn clear(&self) {
         self.event.write().await.clear();
+    }
+}
+
+impl Default for MockListener {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -204,7 +210,7 @@ async fn create_loader(
     let fetcher = MockFetcher::new(fetcher_result);
     let validator = MockValidator::new(validator_result);
     let handler = MockHandler::new(handler_result);
-    let listener = MockListener::new();
+    let listener = MockListener::default();
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -266,7 +272,7 @@ async fn create_shared_loader(
         .map(|_| Arc::new(MockHandler::new(true)))
         .collect::<Vec<_>>();
     let listeners = (0..listener_count)
-        .map(|_| Arc::new(MockListener::new()))
+        .map(|_| Arc::new(MockListener::default()))
         .collect::<Vec<_>>();
 
     let loader = builder
@@ -295,10 +301,10 @@ async fn test_loader_start() {
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 987);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(loader.is_loading().await, false);
-    assert_eq!(state.is_running, false);
-    assert_eq!(loader.is_running().await, false);
+    assert!(!state.is_loading);
+    assert!(!loader.is_loading().await);
+    assert!(!state.is_running);
+    assert!(!loader.is_running().await);
     assert_eq!(state.recent_error, None);
     assert_eq!(loader.recent_error().await, None);
     let mut contract_states = HashMap::new();
@@ -323,10 +329,10 @@ async fn test_loader_start_batch_builder() {
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(loader.is_loading().await, false);
-    assert_eq!(state.is_running, false);
-    assert_eq!(loader.is_running().await, false);
+    assert!(!state.is_loading);
+    assert!(!loader.is_loading().await);
+    assert!(!state.is_running);
+    assert!(!loader.is_running().await);
     assert!(state.recent_error.is_some());
     assert!(loader.recent_error().await.is_some());
     assert_eq!(state.contract_states, HashMap::new());
@@ -342,15 +348,15 @@ async fn test_loader_start_shared_fetcher() {
     };
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.is_none());
 
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     assert_eq!(state.contract_states, HashMap::new());
     assert_eq!(
@@ -379,8 +385,8 @@ async fn test_loader_start_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     let mut contract_states = HashMap::new();
     contract_states.insert(
@@ -416,8 +422,8 @@ async fn test_loader_start_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     contract_states.insert(
         "0xAddress2".to_string(),
@@ -443,8 +449,8 @@ async fn test_loader_start_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
@@ -478,8 +484,8 @@ async fn test_loader_start_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block3);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     let mut contract_states = HashMap::new();
     contract_states.insert(
@@ -516,8 +522,8 @@ async fn test_loader_start_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block3);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
@@ -561,8 +567,8 @@ async fn test_loader_start_two_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block1);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(state.recent_error, None);
     let mut contract_states = HashMap::new();
     contract_states.insert(
@@ -587,8 +593,8 @@ async fn test_loader_start_two_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block1);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(state.recent_error, None);
     let mut contract_states = HashMap::new();
     contract_states.insert(
@@ -615,8 +621,8 @@ async fn test_loader_start_two_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block1);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(state.recent_error, None);
     let mut contract_states = HashMap::new();
     contract_states.insert(
@@ -655,8 +661,8 @@ async fn test_loader_start_two_shared_fetcher() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block2);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(state.recent_error, None);
     let mut contract_states = HashMap::new();
     contract_states.insert(
@@ -703,8 +709,8 @@ async fn test_loader_start_shared_validator() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(
         listeners[0].get_events().await,
         vec![
@@ -720,8 +726,8 @@ async fn test_loader_start_shared_validator() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(
         listeners[0].get_events().await,
         vec![
@@ -737,8 +743,8 @@ async fn test_loader_start_shared_validator() {
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(
         listeners[0].get_events().await,
         vec![
@@ -765,8 +771,8 @@ async fn test_loader_start_two_shared_validator() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(state.recent_error, None);
     assert_eq!(
         listeners[0].get_events().await,
@@ -789,8 +795,8 @@ async fn test_loader_start_two_shared_validator() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     assert_eq!(
         listeners[0].get_events().await,
@@ -824,8 +830,8 @@ async fn test_loader_start_shared_handler() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("handler error"));
     assert_eq!(
         listeners[0].get_events().await,
@@ -842,8 +848,8 @@ async fn test_loader_start_shared_handler() {
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("handler error"));
     assert_eq!(
         listeners[0].get_events().await,
@@ -878,8 +884,8 @@ async fn test_loader_start_two_shared_handler() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert_eq!(state.recent_error, None);
     assert_eq!(
         listeners[0].get_events().await,
@@ -902,8 +908,8 @@ async fn test_loader_start_two_shared_handler() {
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
     assert!(state.recent_error.unwrap().contains("handler error"));
     assert_eq!(
         listeners[0].get_events().await,
@@ -932,11 +938,11 @@ async fn test_add_shared_handler() {
         )))))
         .add_shared_validator(Arc::new(MockValidator::new(Some(true))))
         .add_shared_handler(Arc::new(MockHandler::new(true)))
-        .add_shared_listener(Arc::new(MockListener::new()))
+        .add_shared_listener(Arc::new(MockListener::default()))
         .build()
         .unwrap();
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
-    assert_eq!(state.is_loading, false);
-    assert_eq!(state.is_running, false);
+    assert!(!state.is_loading);
+    assert!(!state.is_running);
 }
