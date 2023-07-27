@@ -66,6 +66,7 @@ async fn test_create() {
     assert_eq!(config.assets().len(), 1);
     assert_eq!(config.granularities(), &vec![2000, 4000, 8000, 16000]);
     assert_eq!(config.min_granularity().unwrap(), 2000);
+    assert_eq!(config.start_block(), 1000000);
     assert_eq!(config.providers().len(), 1);
     assert_eq!(config.provider_type(), &ProviderType::Quorum);
     assert_eq!(config.provider_quorum_percentage(), 80);

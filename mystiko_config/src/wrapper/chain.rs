@@ -160,6 +160,14 @@ impl ChainConfig {
         }
     }
 
+    pub fn start_block(&self) -> u64 {
+        self.contracts_with_disabled()
+            .iter()
+            .map(|c| c.start_block())
+            .min()
+            .unwrap_or(0)
+    }
+
     pub fn pool_contracts(&self) -> Vec<&PoolContractConfig> {
         self.pool_contract_configs.iter().map(|c| c.as_ref()).collect()
     }
