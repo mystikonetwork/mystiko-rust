@@ -1,9 +1,15 @@
+extern crate ethers_providers;
+extern crate mystiko_etherscan_client;
+
 use std::str::FromStr;
 
 use ethers_core::types::H256;
 use mockito::*;
-use mystik_etherscan_client::client::{EtherScanClient, EtherScanClientOptions, GetLogsOptions};
 use mystiko_abi::commitment_pool::CommitmentQueuedFilter;
+use mystiko_etherscan_client::{
+    client::{EtherScanClient, EtherScanClientOptions, EtherScanModule, GetLogsOptions, GetOptions},
+    errors::EtherScanError,
+};
 
 struct TestClientSetupData {
     mocked_server: mockito::ServerGuard,
@@ -44,16 +50,17 @@ async fn test_eth_call() {
     let test_to = "test_to";
     let test_function_encoded_data = "test_function_encoded_data";
     let test_block_tag = Some("test_block_tag");
+    let params = Matcher::AllOf(vec![
+        Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+        Matcher::UrlEncoded("module".into(), "proxy".into()),
+        Matcher::UrlEncoded("action".into(), "eth_call".into()),
+        Matcher::UrlEncoded("to".into(), test_to.into()),
+        Matcher::UrlEncoded("data".into(), test_function_encoded_data.into()),
+        Matcher::UrlEncoded("tag".into(), test_block_tag.unwrap().to_string()),
+    ]);
     let m = mocked_server
         .mock("GET", "/api")
-        .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
-            Matcher::UrlEncoded("module".into(), "proxy".into()),
-            Matcher::UrlEncoded("action".into(), "eth_call".into()),
-            Matcher::UrlEncoded("to".into(), test_to.into()),
-            Matcher::UrlEncoded("data".into(), test_function_encoded_data.into()),
-            Matcher::UrlEncoded("tag".into(), test_block_tag.unwrap().to_string()),
-        ]))
+        .match_query(params.clone())
         .with_status(200)
         .with_body(serde_json::to_string(&mock_resp).unwrap())
         .with_header("content-type", "application/json")
@@ -65,6 +72,31 @@ async fn test_eth_call() {
     assert!(result.is_ok());
     let result = result.unwrap();
     assert_eq!(result, expect_result);
+    m.assert_async().await;
+
+    let mock_resp = serde_json::json!({
+        "jsonrpc": "2.0",
+        "id": 1
+    });
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(params.clone())
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .expect(1)
+        .create_async()
+        .await;
+    let result = ether_scan_client
+        .eth_call(test_to, test_function_encoded_data, test_block_tag)
+        .await;
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let err_msg = error.to_string();
+    assert_eq!(
+        err_msg,
+        EtherScanError::UnknownError("eth call error".to_string()).to_string()
+    );
     m.assert_async().await;
 }
 
@@ -81,13 +113,14 @@ async fn test_get_block_number() {
         "result": "0x10"
     });
 
+    let params = Matcher::AllOf(vec![
+        Matcher::UrlEncoded("action".into(), "eth_blockNumber".into()),
+        Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+        Matcher::UrlEncoded("module".into(), "proxy".into()),
+    ]);
     let m = mocked_server
         .mock("GET", "/api")
-        .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("action".into(), "eth_blockNumber".into()),
-            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
-            Matcher::UrlEncoded("module".into(), "proxy".into()),
-        ]))
+        .match_query(params.clone())
         .with_status(200)
         .with_body(serde_json::to_string(&mock_resp).unwrap())
         .with_header("content-type", "application/json")
@@ -98,40 +131,28 @@ async fn test_get_block_number() {
     let result = result.unwrap();
     assert_eq!(result.as_u64(), 16);
     m.assert_async().await;
-}
 
-#[tokio::test]
-async fn test_failed_for_max_rate_limit_reached() {
-    let TestClientSetupData {
-        mut mocked_server,
-        ether_scan_client,
-    } = setup().await.unwrap();
-
-    let error_msg = "Max rate limit reached, please use API Key for higher rate limit";
     let mock_resp = serde_json::json!({
-        "status": "0",
-        "message": "NOTOK",
-        "result": error_msg
+        "jsonrpc": "2.0",
+        "id": 1
     });
-
     let m = mocked_server
         .mock("GET", "/api")
-        .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("action".into(), "eth_blockNumber".into()),
-            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
-            Matcher::UrlEncoded("module".into(), "proxy".into()),
-        ]))
+        .match_query(params.clone())
         .with_status(200)
         .with_body(serde_json::to_string(&mock_resp).unwrap())
         .with_header("content-type", "application/json")
-        .expect(5)
+        .expect(1)
         .create_async()
         .await;
     let result = ether_scan_client.get_block_number().await;
     assert!(result.is_err());
     let error = result.unwrap_err();
-    let actual_error_msg = error.to_string();
-    assert!(actual_error_msg.contains(error_msg));
+    let err_msg = error.to_string();
+    assert_eq!(
+        err_msg,
+        EtherScanError::MissingCurrentBlock("get block number error".to_string()).to_string()
+    );
     m.assert_async().await;
 }
 
@@ -359,29 +380,191 @@ async fn test_fetch_event_logs() {
         from_block: block,
         to_block: block,
     };
+    let params = Matcher::AllOf(vec![
+        Matcher::UrlEncoded("action".into(), "getLogs".into()),
+        Matcher::UrlEncoded("module".into(), "logs".into()),
+        Matcher::UrlEncoded("fromBlock".into(), block.to_string()),
+        Matcher::UrlEncoded("toBlock".into(), block.to_string()),
+        Matcher::UrlEncoded("offset".into(), ether_scan_client.offset.to_string()),
+        Matcher::UrlEncoded("address".into(), address),
+        Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+    ]);
     let m = mocked_server
         .mock("GET", "/api")
-        .match_query(Matcher::AllOf(vec![
-            Matcher::UrlEncoded("action".into(), "getLogs".into()),
-            Matcher::UrlEncoded("module".into(), "logs".into()),
-            Matcher::UrlEncoded("fromBlock".into(), block.to_string()),
-            Matcher::UrlEncoded("toBlock".into(), block.to_string()),
-            Matcher::UrlEncoded("offset".into(), ether_scan_client.offset.to_string()),
-            Matcher::UrlEncoded("address".into(), address),
-            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
-        ]))
+        .match_query(params.clone())
         .with_status(200)
         .with_body(serde_json::to_string(&mock_resp).unwrap())
         .with_header("content-type", "application/json")
         .create_async()
         .await;
     let result = ether_scan_client
-        .fetch_event_logs::<CommitmentQueuedFilter>(options)
+        .fetch_event_logs::<CommitmentQueuedFilter>(options.clone())
         .await;
     assert!(result.is_ok());
     let result = result.unwrap();
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].raw.leaf_index.as_u64(), 1);
     assert_eq!(result[1].metadata.transaction_hash, H256::from_str(tx_hash).unwrap());
+    m.assert_async().await;
+
+    // logs.is_empty()
+    let mock_resp = serde_json::json!({
+        "status":"1",
+        "message":"OK",
+        "result":[]
+    });
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(params.clone())
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .expect(1)
+        .create_async()
+        .await;
+    let result = ether_scan_client
+        .fetch_event_logs::<CommitmentQueuedFilter>(options.clone())
+        .await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.len(), 0);
+    m.assert_async().await;
+
+    // get return None
+    let mock_resp = serde_json::json!({
+        "status":"1",
+        "message":"OK"
+    });
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(params.clone())
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .expect(1)
+        .create_async()
+        .await;
+    let result = ether_scan_client
+        .fetch_event_logs::<CommitmentQueuedFilter>(options.clone())
+        .await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.len(), 0);
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_failed_for_max_rate_limit_reached() {
+    let TestClientSetupData {
+        mut mocked_server,
+        ether_scan_client,
+    } = setup().await.unwrap();
+
+    let mock_resp = serde_json::json!({
+        "status": "0",
+        "message": "NOTOK",
+        "result": "Max rate limit reached, please use API Key for higher rate limit"
+    });
+    //normal
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+            Matcher::UrlEncoded("module".into(), "normal".into()),
+        ]))
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .expect(5)
+        .create_async()
+        .await;
+    let options = GetOptions::<String>::builder()
+        .url(format!(
+            "{}/api?module=normal&apikey=test_api_key",
+            &ether_scan_client.base_url
+        ))
+        .module(EtherScanModule::Normal)
+        .build();
+    let result = ether_scan_client.get_with_retry::<String, String>(options).await;
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let actual_error_msg = error.to_string();
+    let expect_error_msg = mock_resp.to_string();
+    assert_eq!(
+        actual_error_msg,
+        EtherScanError::ResponseError(format!("request failed: {}", expect_error_msg)).to_string()
+    );
+    m.assert_async().await;
+
+    //JsonRpcProxy
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+            Matcher::UrlEncoded("module".into(), "proxy".into()),
+        ]))
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .expect(5)
+        .create_async()
+        .await;
+    let options = GetOptions::<String>::builder()
+        .url(format!(
+            "{}/api?module=proxy&apikey=test_api_key",
+            &ether_scan_client.base_url
+        ))
+        .module(EtherScanModule::JsonRpcProxy)
+        .build();
+    let result = ether_scan_client.get_with_retry::<String, String>(options).await;
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let actual_error_msg = error.to_string();
+    assert_eq!(
+        actual_error_msg,
+        EtherScanError::ResponseError(format!("request failed with message: {}", expect_error_msg)).to_string()
+    );
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_handle_response_failed_for_content_type() {
+    let TestClientSetupData {
+        mut mocked_server,
+        ether_scan_client,
+    } = setup().await.unwrap();
+
+    let mock_resp = serde_json::json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": "success"
+    });
+
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+            Matcher::UrlEncoded("module".into(), "proxy".into()),
+        ]))
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/text")
+        .create_async()
+        .await;
+    let options = GetOptions::<String>::builder()
+        .url(format!(
+            "{}/api?module=proxy&apikey=test_api_key",
+            &ether_scan_client.base_url
+        ))
+        .module(EtherScanModule::JsonRpcProxy)
+        .build();
+    let result = ether_scan_client.handle_response::<String, String>(options).await;
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let actual_error_msg = error.to_string();
+    assert_eq!(
+        actual_error_msg,
+        EtherScanError::UnexpectedContentTypeError("application/text".to_string()).to_string()
+    );
     m.assert_async().await;
 }

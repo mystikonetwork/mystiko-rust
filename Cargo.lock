@@ -3471,25 +3471,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
 
 [[package]]
-name = "mystik_etherscan_client"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "ethers",
- "ethers-contract",
- "ethers-core",
- "ethers-providers",
- "mockito",
- "mystiko_abi",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "typed-builder",
-]
-
-[[package]]
 name = "mystiko_abi"
 version = "0.1.0"
 dependencies = [
@@ -3659,6 +3640,25 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-tungstenite 0.18.0",
+ "typed-builder",
+]
+
+[[package]]
+name = "mystiko_etherscan_client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "ethers",
+ "ethers-contract",
+ "ethers-core",
+ "ethers-providers",
+ "mockito",
+ "mystiko_abi",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
  "typed-builder",
 ]
 

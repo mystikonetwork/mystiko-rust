@@ -18,9 +18,10 @@ impl RetryPolicy for DefaultRetryPolicy {
         if current_retry_time >= self.max_retry_times {
             return false;
         }
-        let result = error.to_string();
-        if result.to_lowercase().contains("rate limit") {
-            return true;
+        if let EtherScanError::ResponseError(response_error) = error {
+            if response_error.to_string().to_lowercase().contains("rate limit") {
+                return true;
+            }
         }
         false
     }
