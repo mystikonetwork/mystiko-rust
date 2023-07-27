@@ -4,6 +4,7 @@ use crate::error::{DataloaderError, Result};
 use crate::fetcher::types::{ChainFetchOption, DataFetcher};
 use crate::filter::ContractFilter;
 use crate::handler::types::{DataHandler, HandleOption};
+use crate::loader::listener::{LoaderEvent, Loaderlistener};
 use crate::validator::types::{DataValidator, ValidateOption};
 use log::error;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
@@ -27,6 +28,7 @@ pub struct ChainState {
     pub loaded_block: u64,
     pub is_running: bool,
     pub is_loading: bool,
+    pub recent_error: Option<String>,
     pub contract_states: HashMap<String, ContractState>,
 }
 
@@ -42,13 +44,19 @@ pub struct StartOption {
 }
 
 #[derive(Debug)]
-pub struct ChainDataLoader<R, F = Box<dyn DataFetcher<R>>, V = Box<dyn DataValidator<R>>, H = Box<dyn DataHandler<R>>> {
+pub struct ChainDataLoader<
+    R,
+    F = Box<dyn DataFetcher<R>>,
+    V = Box<dyn DataValidator<R>>,
+    H = Box<dyn DataHandler<R>>,
+    L = Box<dyn Loaderlistener>,
+> {
     config: Arc<MystikoConfig>,
     chain_id: u64,
-    initial_block: u64,
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
     handlers: Vec<Arc<H>>,
+    listeners: Vec<Arc<L>>,
     state: RwLock<ChainState>,
     _phantom: std::marker::PhantomData<R>,
 }
@@ -59,6 +67,7 @@ pub struct ChainDataLoaderBuilder<
     F = Box<dyn DataFetcher<R>>,
     V = Box<dyn DataValidator<R>>,
     H = Box<dyn DataHandler<R>>,
+    L = Box<dyn Loaderlistener>,
 > {
     config: Option<Arc<MystikoConfig>>,
     chain_id: u64,
@@ -66,15 +75,17 @@ pub struct ChainDataLoaderBuilder<
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
     handlers: Vec<Arc<H>>,
+    listeners: Vec<Arc<L>>,
     _phantom: std::marker::PhantomData<R>,
 }
 
-impl<R, F, V, H> ChainDataLoader<R, F, V, H>
+impl<R, F, V, H, L> ChainDataLoader<R, F, V, H, L>
 where
     R: LoadedData,
     F: DataFetcher<R>,
     V: DataValidator<R>,
     H: DataHandler<R>,
+    L: Loaderlistener,
 {
     async fn update_state(&self, chain_data: &ChainData<R>) -> Result<()> {
         if chain_data.contracts_data.is_empty() {
@@ -82,10 +93,8 @@ where
         }
 
         let mut state = self.state.write().await;
-        let mut min_end_block: u64 = chain_data.contracts_data[0].end_block;
         for contract_data in &chain_data.contracts_data {
-            min_end_block = min_end_block.min(contract_data.end_block);
-
+            // Update contract_states
             if let Some(contract_state) = state.contract_states.get_mut(&contract_data.address) {
                 contract_state.loaded_block = contract_data.end_block;
             } else {
@@ -98,14 +107,25 @@ where
             }
         }
 
-        state.loaded_block = min_end_block;
+        if let Some((_, first_state)) = state.contract_states.iter().next() {
+            let mut min_end_block = first_state.loaded_block;
+
+            for (_, contract_state) in state.contract_states.iter() {
+                if contract_state.loaded_block < min_end_block {
+                    min_end_block = contract_state.loaded_block;
+                }
+            }
+
+            state.loaded_block = min_end_block;
+        }
+
         Ok(())
     }
 
-    async fn run(&self, options: &StartOption) -> Result<()> {
+    async fn execute_load(&self, options: &StartOption) -> Result<()> {
         let start_block = self.state.read().await.loaded_block;
         let fetch_option = ChainFetchOption {
-            config: Arc::clone(&self.config),
+            config: self.config.clone(),
             chain_id: self.chain_id,
             start_block,
             end_block: start_block + options.max_batch_block.unwrap_or(1000000),
@@ -113,11 +133,11 @@ where
         };
 
         let validator_option = ValidateOption {
-            config: Arc::clone(&self.config),
+            config: self.config.clone(),
         };
 
         let handler_option = HandleOption {
-            config: Arc::clone(&self.config),
+            config: self.config.clone(),
         };
 
         for fetcher in &self.fetchers {
@@ -141,65 +161,129 @@ where
                     .collect(),
             };
 
+            let mut validata_result = true;
             for validator in &self.validators {
                 let result = validator.validate(&validate_data, &validator_option).await;
                 if let Err(_) | Ok(false) = result {
+                    validata_result = false;
                     break;
                 }
-
-                for handler in &self.handlers {
-                    handler.handle(&validate_data, &handler_option).await?;
-                }
-
-                return self.update_state(&validate_data).await;
             }
+
+            if !validata_result {
+                continue;
+            }
+
+            for handler in &self.handlers {
+                handler.handle(&validate_data, &handler_option).await?;
+            }
+
+            return self.update_state(&validate_data).await;
         }
 
+        error!("failed fetch from all fetchers");
         Err(DataloaderError::LoaderRunError(
             "failed fetch from all fetchers".to_string(),
         ))
     }
 
+    async fn load(&self, options: &StartOption) {
+        {
+            let mut state_writer = self.state.write().await;
+            state_writer.is_loading = true;
+        }
+
+        self.emit_event(&LoaderEvent::LoadEvent).await;
+        let result = self.execute_load(options).await;
+        match result.as_ref() {
+            Ok(_) => {
+                self.emit_event(&LoaderEvent::LoadSuccessEvent).await;
+            }
+            Err(_) => {
+                self.emit_event(&LoaderEvent::LoadFailureEvent).await;
+            }
+        }
+
+        {
+            let current_time = chrono::Utc::now();
+            let mut state_writer = self.state.write().await;
+            if let Some(e) = result.err() {
+                state_writer.recent_error = Some(format!("{} {}", current_time, e));
+            }
+            state_writer.is_loading = false;
+        }
+    }
+
     pub async fn start(&self, options: &StartOption) -> Result<()> {
         let load_interval_ms = options.load_interval_ms.unwrap_or(10000);
-        self.state.write().await.loaded_block = self.initial_block;
-        self.state.write().await.is_loading = true;
+        if self.is_running().await {
+            return Err(DataloaderError::LoaderRunError("loader is already running".to_string()));
+        }
+
+        {
+            let mut state_writer = self.state.write().await;
+            if state_writer.is_running {
+                return Err(DataloaderError::LoaderRunError("loader is already running".to_string()));
+            }
+            state_writer.is_running = true;
+        }
+
+        self.emit_event(&LoaderEvent::StartEvent).await;
+
         loop {
-            if !self.state.read().await.is_loading {
+            if !self.is_running().await {
                 break;
             }
 
-            self.state.write().await.is_running = true;
-            self.run(options).await.unwrap_or_else(|e| {
-                error!("run error: {:?}", e);
-            });
-            self.state.write().await.is_running = false;
+            self.load(options).await;
 
-            if !self.state.read().await.is_loading {
+            if !self.is_running().await {
                 break;
             }
             sleep(Duration::from_millis(load_interval_ms)).await;
         }
 
+        self.emit_event(&LoaderEvent::StopEvent).await;
         Ok(())
     }
 
     pub async fn stop(&self) -> Result<()> {
-        self.state.write().await.is_loading = false;
+        self.state.write().await.is_running = false;
         Ok(())
     }
 
     pub async fn state(&self) -> ChainState {
         self.state.read().await.clone()
     }
+
+    pub async fn is_running(&self) -> bool {
+        self.state.read().await.is_running
+    }
+
+    pub async fn is_loading(&self) -> bool {
+        self.state.read().await.is_loading
+    }
+
+    pub async fn recent_error(&self) -> Option<String> {
+        self.state.read().await.recent_error.clone()
+    }
+
+    pub async fn emit_event(&self, event: &LoaderEvent) {
+        for listener in &self.listeners {
+            listener.callback(event).await.unwrap_or_else(|e| {
+                error!("emit event meet error {:?}", e);
+            });
+        }
+    }
 }
 
-impl<R, F, V, H> ChainDataLoaderBuilder<R, F, V, H>
+impl<R, F, V, H, L> ChainDataLoaderBuilder<R, F, V, H, L>
 where
     R: LoadedData,
     F: DataFetcher<R>,
     V: DataValidator<R>,
     H: DataHandler<R>,
+    L: Loaderlistener,
 {
     pub fn new() -> Self {
         Self {
@@ -209,6 +293,7 @@ where
             fetchers: Vec::new(),
             validators: Vec::new(),
             handlers: Vec::new(),
+            listeners: Vec::new(),
             _phantom: std::marker::PhantomData,
         }
     }
@@ -282,7 +367,25 @@ where
         self
     }
 
-    pub fn build(self) -> Result<ChainDataLoader<R, F, V, H>> {
+    pub fn add_listener(self, listener: L) -> Self {
+        self.add_shared_listener(Arc::new(listener))
+    }
+
+    pub fn add_listeners(self, listener: Vec<L>) -> Self {
+        self.add_shared_listeners(listener.into_iter().map(Arc::new).collect())
+    }
+
+    pub fn add_shared_listener(mut self, listener: Arc<L>) -> Self {
+        self.listeners.push(listener);
+        self
+    }
+
+    pub fn add_shared_listeners(mut self, listeners: Vec<Arc<L>>) -> Self {
+        self.listeners.extend(listeners);
+        self
+    }
+
+    pub fn build(self) -> Result<ChainDataLoader<R, F, V, H, L>> {
         if self.fetchers.is_empty() || self.validators.is_empty() || self.handlers.is_empty() {
             return Err(DataloaderError::LoaderInitError(
                 "fetchers, validators and handlers cannot be empty".to_string(),
@@ -294,15 +397,16 @@ where
                 loaded_block: self.initial_block,
                 is_running: false,
                 is_loading: false,
+                recent_error: None,
                 contract_states: HashMap::<String, ContractState>::new(),
             };
             Ok(ChainDataLoader {
                 config,
                 chain_id: self.chain_id,
-                initial_block: self.initial_block,
                 fetchers: self.fetchers,
                 validators: self.validators,
                 handlers: self.handlers,
+                listeners: self.listeners,
                 state: RwLock::new(state),
                 _phantom: std::marker::PhantomData,
             })
