@@ -50,6 +50,10 @@ async fn test_create() {
     );
     assert_eq!(config.indexer().unwrap().url(), "https://example.com");
     assert_eq!(
+        config.packer().unwrap().url(),
+        "https://static.mystiko.network/packer/v1"
+    );
+    assert_eq!(
         config
             .transaction_url(5, "0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e")
             .unwrap(),

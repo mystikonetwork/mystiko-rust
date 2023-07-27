@@ -8,6 +8,7 @@ use crate::wrapper::contract::deposit::DepositContractConfig;
 use crate::wrapper::contract::pool::PoolContractConfig;
 use crate::wrapper::contract::ContractConfig;
 use crate::wrapper::indexer::IndexerConfig;
+use crate::wrapper::packer::PackerConfig;
 use anyhow::{Error, Result};
 use mystiko_types::{BridgeType, CircuitType};
 use std::collections::HashMap;
@@ -22,6 +23,7 @@ pub struct MystikoConfig {
     circuit_configs: Vec<Arc<CircuitConfig>>,
     bridge_configs: Vec<Arc<BridgeConfig>>,
     indexer_config: Option<IndexerConfig>,
+    packer_config: Option<PackerConfig>,
     default_circuit_configs: HashMap<CircuitType, Arc<CircuitConfig>>,
     circuit_configs_by_name: HashMap<String, Arc<CircuitConfig>>,
 }
@@ -53,6 +55,7 @@ impl MystikoConfig {
             .map(|r| Arc::new(BridgeConfig::new(r.clone())))
             .collect();
         let indexer_config = raw.indexer.as_ref().map(|r| IndexerConfig::new(r.clone()));
+        let packer_config = raw.packer.as_ref().map(|r| PackerConfig::new(r.clone()));
         let default_circuit_configs = initialize_default_circuit_configs(&circuit_configs)?;
         let circuit_configs_by_name = initialize_circuit_configs_by_name(&circuit_configs)?;
         let chain_configs = initialize_chain_configs(&raw.chains, &default_circuit_configs, &circuit_configs_by_name)?;
@@ -62,6 +65,7 @@ impl MystikoConfig {
             bridge_configs,
             circuit_configs,
             indexer_config,
+            packer_config,
             default_circuit_configs,
             circuit_configs_by_name,
         })
@@ -133,6 +137,10 @@ impl MystikoConfig {
 
     pub fn indexer(&self) -> Option<&IndexerConfig> {
         self.indexer_config.as_ref()
+    }
+
+    pub fn packer(&self) -> Option<&PackerConfig> {
+        self.packer_config.as_ref()
     }
 
     pub fn country_blacklist(&self) -> Vec<&str> {
