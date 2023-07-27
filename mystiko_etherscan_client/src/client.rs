@@ -115,7 +115,7 @@ impl EtherScanClient {
         params.push(format!("to={}", to));
         params.push(format!("data={}", function_encoded_data));
         params.push(format!("tag={}", block_tag.unwrap_or("latest")));
-        let url = self.format_url(params);
+        let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
             .url(url)
             .module(EtherScanModule::JsonRpcProxy)
@@ -131,7 +131,7 @@ impl EtherScanClient {
         params.push("action=eth_blockNumber".to_string());
         params.push("module=proxy".to_string());
         params.push(format!("apikey={}", &self.api_key));
-        let url = self.format_url(params);
+        let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
             .url(url)
             .module(EtherScanModule::JsonRpcProxy)
@@ -151,7 +151,7 @@ impl EtherScanClient {
         params.push("boolean=false".to_string());
         params.push(format!("apikey={}", &self.api_key));
         params.push(format!("tag={:x}", block_number));
-        let url = self.format_url(params);
+        let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
             .url(url)
             .module(EtherScanModule::JsonRpcProxy)
@@ -165,7 +165,7 @@ impl EtherScanClient {
         params.push("module=proxy".to_string());
         params.push(format!("txhash={}", transaction_hash));
         params.push(format!("apikey={}", &self.api_key));
-        let url = self.format_url(params);
+        let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
             .url(url)
             .module(EtherScanModule::JsonRpcProxy)
@@ -179,7 +179,7 @@ impl EtherScanClient {
         params.push("module=proxy".to_string());
         params.push(format!("txhash={}", transaction_hash));
         params.push(format!("apikey={}", &self.api_key));
-        let url = self.format_url(params);
+        let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
             .url(url)
             .module(EtherScanModule::JsonRpcProxy)
@@ -203,7 +203,7 @@ impl EtherScanClient {
         let mut events: Vec<Event<R>> = Vec::new();
         let mut page = 1;
         loop {
-            let url = format!("{}&page={}", self.format_url(params.clone()), page);
+            let url = format!("{}&page={}", self.format_url(&params), page);
             let options = GetOptions::<String>::builder()
                 .module(EtherScanModule::Normal)
                 .url(url)
@@ -343,7 +343,7 @@ impl EtherScanClient {
         *last_request_time = Some(now);
     }
 
-    fn format_url(&self, params: Vec<String>) -> String {
+    fn format_url(&self, params: &[String]) -> String {
         format!("{}{}?{}", self.base_url, self.url_prefix, params.join("&"))
     }
 }
