@@ -45,6 +45,8 @@ pub async fn create_client(
     chain_id: Option<u64>,
     contract_address: Option<Address>,
 ) -> RelayerClient {
+    let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
+
     let mut server = Server::new_async().await;
     let mock = server
         .mock("GET", "/relayer_config/production/testnet/latest.json")
@@ -58,7 +60,6 @@ pub async fn create_client(
             RelayerClientOptions::builder()
                 .is_testnet(true)
                 .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
-                .log_level(LevelFilter::Debug)
                 .build(),
         ),
     )

@@ -3,7 +3,7 @@ use crate::types::register::RegisterInfo;
 use crate::types::result::Result;
 use ethers_core::types::Address;
 use futures::future::try_join_all;
-use log::{debug, LevelFilter};
+use log::debug;
 use mystiko_ethers::provider::pool::ProviderPool;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_config::wrapper::relayer::{RelayerConfig, RemoteOptions};
@@ -53,8 +53,6 @@ pub struct RelayerClientOptions {
     pub is_staging: bool,
     #[builder(default = Duration::from_millis(60000))]
     pub timeout: Duration,
-    #[builder(default = LevelFilter::Info)]
-    pub log_level: LevelFilter,
 }
 
 impl RelayerClient {
@@ -70,9 +68,6 @@ impl RelayerClient {
             .timeout(relayer_options.timeout)
             .build()
             .map_err(RelayerClientError::ReqwestError)?;
-        let _ = env_logger::builder()
-            .filter_module("", relayer_options.log_level)
-            .try_init();
         Ok(Self {
             reqwest_client,
             network_type,

@@ -73,7 +73,10 @@ impl TestServer {
         let server_config = load_config(TESTNET_CONFIG_PATH)?;
 
         let _ = env_logger::builder()
-            .filter_module("", LevelFilter::from_str(&server_config.settings.log_level)?)
+            .filter_module(
+                "mystiko_relayer_server",
+                LevelFilter::from_str(&server_config.settings.log_level)?,
+            )
             .try_init();
 
         // init app state

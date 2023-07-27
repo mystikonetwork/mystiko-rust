@@ -32,7 +32,10 @@ pub async fn run_application<'a>(options: ApplicationOptions<'a>) -> Result<()> 
     let server_config = load_config(options.server_config_path)?;
     // try init logger
     let _ = env_logger::builder()
-        .filter_module("", LevelFilter::from_str(&server_config.settings.log_level)?)
+        .filter_module(
+            "mystiko_relayer_server",
+            LevelFilter::from_str(&server_config.settings.log_level)?,
+        )
         .try_init();
 
     info!("load server config successful");
