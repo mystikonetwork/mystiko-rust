@@ -8,6 +8,7 @@ members = [
     "mystiko_database",
     "mystiko_downloader",
     "mystiko_ethers",
+    "mystiko_etherscan_client",
     "mystiko_fs",
     "mystiko_indexer_client",
     "mystiko_protocol",
@@ -24,8 +25,7 @@ members = [
     "mystiko_storage_sqlite",
     "mystiko_types",
     "mystiko_utils",
-    "mystiko_validator",
-    "mystiko_etherscan_client"
+    "mystiko_validator"
 ]
 
 exclude = []

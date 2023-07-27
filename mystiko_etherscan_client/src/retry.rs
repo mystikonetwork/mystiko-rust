@@ -1,27 +1,38 @@
-#[derive(Clone, Debug)]
-pub struct RetryPolicy {
+use std::fmt::Debug;
+
+use anyhow::Error;
+
+use typed_builder::TypedBuilder;
+
+pub trait RetryPolicy: Debug {
+    fn new(max_retry_times: u64) -> Self
+        where
+            Self: Sized;
+    fn is_retryable(&self, error: &Error, current_retry_time: u64) -> bool;
+}
+
+#[derive(Debug, TypedBuilder)]
+pub struct DefaultRetryPolicy {
     max_retry_times: u64,
 }
 
-impl RetryPolicy {
-    pub fn new(max_retry_times: u64) -> Self {
+impl RetryPolicy for DefaultRetryPolicy {
+    fn new(max_retry_times: u64) -> Self {
         Self { max_retry_times }
     }
-    pub fn is_retryable(&self, error: &anyhow::Error, current_retry_time: u64) -> bool {
+    fn is_retryable(&self, error: &anyhow::Error, current_retry_time: u64) -> bool {
         if current_retry_time >= self.max_retry_times {
-            //todo log
             return false;
         }
-        if let Some(result) = error.downcast_ref::<String>() {
-            if result.to_lowercase().contains("rate limit") {
-                return true;
-            }
+        let result = format!("{}", error);
+        if result.to_lowercase().contains("rate limit") {
+            return true;
         }
         false
     }
 }
 
-impl Default for RetryPolicy {
+impl Default for DefaultRetryPolicy {
     fn default() -> Self {
         Self::new(5)
     }

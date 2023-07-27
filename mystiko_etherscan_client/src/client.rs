@@ -16,12 +16,13 @@ use tokio::sync::Mutex;
 use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
 
-use crate::config::get_default_base_url;
-use crate::errors::EtherFetcherError;
+use crate::config::{DEFAULT_MAX_REQUESTS_PER_SECOND, DEFAULT_PAGE_OFFSET, DEFAULT_URL_PREFIX, get_default_base_url};
+use crate::errors::EtherScanError;
 use crate::response::{EtherScanResponse, JsonRpcResponse};
-use crate::retry::RetryPolicy;
+use crate::retry::{DefaultRetryPolicy, RetryPolicy};
 
 #[derive(Debug, Clone, Default, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct GetLogsOptions {
     pub address: String,
     pub from_block: u64,
@@ -29,11 +30,19 @@ pub struct GetLogsOptions {
 }
 
 #[derive(Debug, Clone, Default, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct GetOptions<U> {
     #[builder(setter(strip_option), default = None)]
     pub current_retry_time: Option<u64>,
     pub url: U,
-    pub module: String,
+    pub module: EtherScanModule,
+}
+
+#[derive(Debug, Clone, Default, PartialEq)]
+pub enum EtherScanModule {
+    #[default]
+    Normal = 1,
+    JsonRpcProxy = 2,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -42,18 +51,23 @@ pub struct Event<R> {
     pub metadata: LogMeta,
 }
 
-#[derive(Debug, Clone, Default, TypedBuilder)]
+#[derive(Debug, Default, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct EtherScanClientOptions {
     pub chain_id: u64,
     pub api_key: String,
     #[builder(setter(strip_option), default = None)]
     base_url: Option<String>,
     #[builder(setter(strip_option), default = None)]
-    offset: Option<u64>,
+    client: Option<Client>,
     #[builder(setter(strip_option), default = None)]
     max_requests_per_second: Option<u128>,
     #[builder(setter(strip_option), default = None)]
-    retry_policy: Option<RetryPolicy>,
+    offset: Option<u64>,
+    #[builder(setter(strip_option), default = None)]
+    retry_policy: Option<Box<dyn RetryPolicy>>,
+    #[builder(setter(strip_option), default = None)]
+    url_prefix: Option<String>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -61,35 +75,38 @@ pub struct EtherScanClient {
     pub chain_id: u64,
     pub offset: u64,
     pub base_url: String,
-    pub api_key: String,
-    pub client: reqwest::Client,
-    pub max_requests_per_second: u128,
-    pub retry_policy: RetryPolicy,
-    pub last_request_time: Mutex<Option<Instant>>,
+    api_key: String,
+    client: reqwest::Client,
+    last_request_time: Mutex<Option<Instant>>,
+    max_requests_per_second: u128,
+    retry_policy: Box<dyn RetryPolicy>,
+    url_prefix:String,
 }
 
 impl EtherScanClient {
-    pub fn new(options: EtherScanClientOptions) -> EtherScanClient {
+    pub fn new(options: EtherScanClientOptions) -> Result<Self> {
         let chain_id = options.chain_id;
-        let offset = options.offset.unwrap_or(1000);
+        let offset = options.offset.unwrap_or(DEFAULT_PAGE_OFFSET);
         let api_key = options.api_key;
-        let base_url = options.base_url.unwrap_or(get_default_base_url(chain_id).unwrap());
-        let axios_instance = Client::new();
-        let max_requests_per_second = options.max_requests_per_second.unwrap_or(5);
-        let retry_policy = options.retry_policy.unwrap_or(RetryPolicy::default());
-        Self {
+        let base_url = options.base_url.unwrap_or(get_default_base_url(chain_id)?);
+        let client = options.client.unwrap_or(Client::new());
+        let max_requests_per_second = options.max_requests_per_second.unwrap_or(DEFAULT_MAX_REQUESTS_PER_SECOND);
+        let retry_policy = options.retry_policy.unwrap_or(Box::<DefaultRetryPolicy>::default());
+        let url_prefix = options.url_prefix.unwrap_or(DEFAULT_URL_PREFIX.into());
+        Ok(Self {
             chain_id,
             offset,
             base_url,
             api_key,
-            client: axios_instance,
+            client,
             max_requests_per_second,
             last_request_time: None.into(),
             retry_policy,
-        }
+            url_prefix,
+        })
     }
 
-    pub async fn eth_call(&mut self, to: &str, function_encoded_data: &str, block_tag: Option<&str>) -> Result<String> {
+    pub async fn eth_call(&self, to: &str, function_encoded_data: &str, block_tag: Option<&str>) -> Result<String> {
         let mut params: Vec<String> = vec![];
         params.push("action=eth_call".to_string());
         params.push("module=proxy".to_string());
@@ -97,93 +114,79 @@ impl EtherScanClient {
         params.push(format!("to={}", to));
         params.push(format!("data={}", function_encoded_data));
         params.push(format!("tag={}", block_tag.unwrap_or("latest")));
-        let url = format!("{}/api?{}", self.base_url, params.join("&"));
+        let url = self.format_url(params);
         let options = GetOptions::<String>::builder()
             .url(url)
-            .module("proxy".to_string())
+            .module(EtherScanModule::JsonRpcProxy)
             .build();
-        return match self.get::<String, _>(options).await? {
-            Some(result) => return Ok(result),
+        match self.get::<String, _>(options).await? {
+            Some(result) => Ok(result),
             None => Err(anyhow!("eth call error")),
-        };
+        }
     }
 
-    pub async fn get_block_number(&mut self) -> Result<U64> {
+    pub async fn get_block_number(&self) -> Result<U64> {
         let mut params: Vec<String> = vec![];
         params.push("action=eth_blockNumber".to_string());
         params.push("module=proxy".to_string());
         params.push(format!("apikey={}", &self.api_key));
-        let url = format!("{}/api?{}", self.base_url, params.join("&"));
+        let url = self.format_url(params);
         let options = GetOptions::<String>::builder()
             .url(url)
-            .module("proxy".to_string())
+            .module(EtherScanModule::JsonRpcProxy)
             .build();
-        return match self.get::<U64, _>(options).await? {
+        match self.get::<U64, _>(options).await? {
             Some(result) => Ok(result),
-            None => Err(anyhow!(EtherFetcherError::CustomError(
+            None => Err(anyhow!(EtherScanError::MissingCurrentBlock(
                 "get block number error".to_string()
             ))),
-        };
+        }
     }
 
-    pub async fn get_block_by_number(&mut self, block_number: u64) -> Result<Block<Transaction>> {
+    pub async fn get_block_by_number(&self, block_number: u64) -> Result<Option<Block<Transaction>>> {
         let mut params: Vec<String> = vec![];
         params.push("action=eth_getBlockByNumber".to_string());
         params.push("module=proxy".to_string());
         params.push("boolean=false".to_string());
         params.push(format!("apikey={}", &self.api_key));
         params.push(format!("tag={:x}", block_number));
-        let url = format!("{}/api?{}", self.base_url, params.join("&"));
+        let url = self.format_url(params);
         let options = GetOptions::<String>::builder()
             .url(url)
-            .module("proxy".to_string())
+            .module(EtherScanModule::JsonRpcProxy)
             .build();
-        return match self.get::<Block<Transaction>, _>(options).await? {
-            Some(result) => return Ok(result),
-            None => Err(anyhow!(EtherFetcherError::CustomError(
-                "get block by number error".to_string()
-            ))),
-        };
+        self.get::<Block<Transaction>, _>(options).await
     }
-    pub async fn get_transaction_by_hash(&mut self, transaction_hash: &str) -> Result<Transaction> {
+
+    pub async fn get_transaction_by_hash(&self, transaction_hash: &str) -> Result<Option<Transaction>> {
         let mut params: Vec<String> = vec![];
         params.push("action=eth_getTransactionByHash".to_string());
         params.push("module=proxy".to_string());
         params.push(format!("txhash={}", transaction_hash));
         params.push(format!("apikey={}", &self.api_key));
-        let url = format!("{}/api?{}", self.base_url, params.join("&"));
+        let url = self.format_url(params);
         let options = GetOptions::<String>::builder()
             .url(url)
-            .module("proxy".to_string())
+            .module(EtherScanModule::JsonRpcProxy)
             .build();
-        return match self.get::<Transaction, _>(options).await? {
-            Some(result) => return Ok(result),
-            None => Err(anyhow!(EtherFetcherError::CustomError(
-                "get transaction by hash error".to_string()
-            ))),
-        };
+        self.get::<Transaction, _>(options).await
     }
 
-    pub async fn get_transaction_receipt(&mut self, transaction_hash: &str) -> Result<TransactionReceipt> {
+    pub async fn get_transaction_receipt(&self, transaction_hash: &str) -> Result<Option<TransactionReceipt>> {
         let mut params: Vec<String> = vec![];
         params.push("action=eth_getTransactionReceipt".to_string());
         params.push("module=proxy".to_string());
         params.push(format!("txhash={}", transaction_hash));
         params.push(format!("apikey={}", &self.api_key));
-        let url = format!("{}/api?{}", self.base_url, params.join("&"));
+        let url = self.format_url(params);
         let options = GetOptions::<String>::builder()
             .url(url)
-            .module("proxy".to_string())
+            .module(EtherScanModule::JsonRpcProxy)
             .build();
-        return match self.get::<TransactionReceipt, _>(options).await? {
-            Some(result) => return Ok(result),
-            None => Err(anyhow!(EtherFetcherError::CustomError(
-                "get transaction receipt error".to_string()
-            ))),
-        };
+        self.get::<TransactionReceipt, _>(options).await
     }
 
-    pub async fn fetch_event_logs<R>(&mut self, options: GetLogsOptions) -> Result<Vec<Event<R>>>
+    pub async fn fetch_event_logs<R>(&self, options: GetLogsOptions) -> Result<Vec<Event<R>>>
     where
         R: EthEvent + std::fmt::Debug,
     {
@@ -201,7 +204,7 @@ impl EtherScanClient {
         loop {
             let url = format!("{}/api?{}&page={}", self.base_url, params.join("&"), page);
             let options = GetOptions::<String>::builder()
-                .module("logs".to_string())
+                .module(EtherScanModule::Normal)
                 .url(url)
                 .build();
             if let Some(logs) = self.get::<Vec<Log>, _>(options).await? {
@@ -227,7 +230,7 @@ impl EtherScanClient {
         Ok(events)
     }
 
-    pub async fn get<R, U>(&mut self, options: GetOptions<U>) -> Result<Option<R>>
+    pub async fn get<R, U>(&self, options: GetOptions<U>) -> Result<Option<R>>
     where
         R: DeserializeOwned + Send + Serialize,
         U: IntoUrl + Clone,
@@ -250,7 +253,7 @@ impl EtherScanClient {
                         current_retry_time += 1;
                         continue;
                     } else {
-                        return Err(anyhow!("request error: {}", err));
+                        return Err(err);
                     }
                 }
             };
@@ -275,14 +278,14 @@ impl EtherScanClient {
             .and_then(|value| value.to_str().ok());
         if let Some(s) = content_type {
             if s.contains("application/json") {
-                if options.module == "proxy" {
+                if options.module == EtherScanModule::JsonRpcProxy {
                     return self.handle_response_with_proxy::<R>(response).await;
                 }
                 return self.handle_response_with_logs::<R>(response).await;
             }
         }
-        Err(anyhow!(EtherFetcherError::CustomError(
-            content_type.unwrap_or("").to_string()
+        Err(anyhow!(EtherScanError::UnexpectedContentTypeError(
+            content_type.unwrap_or_default().to_string()
         )))
     }
 
@@ -293,7 +296,7 @@ impl EtherScanClient {
         let response_text = response.text().await?;
         let response = serde_json::from_str::<EtherScanResponse<Value>>(&response_text)?;
         if response.status.ne("1") {
-            Err(anyhow!("request failed: {}", response_text))
+            Err(anyhow!(EtherScanError::ResponseError(format!("request failed: {}", response_text))))
         } else if let Some(result) = response.result {
             Ok(Some(serde_json::from_value::<R>(result)?))
         } else {
@@ -306,7 +309,7 @@ impl EtherScanClient {
         R: DeserializeOwned + Serialize,
     {
         let response = response.text().await?;
-        return match serde_json::from_str::<JsonRpcResponse<Value>>(&response) {
+        match serde_json::from_str::<JsonRpcResponse<Value>>(&response) {
             Ok(json_rpc_response) => {
                 if let Some(error) = json_rpc_response.error {
                     Err(error.into())
@@ -316,8 +319,8 @@ impl EtherScanClient {
                     Ok(None)
                 }
             }
-            Err(_) => Err(anyhow!("request failed with message: {}", response)),
-        };
+            Err(_) => Err(anyhow!(EtherScanError::ResponseError(format!("request failed with message: {}", response)))),
+        }
     }
 
     async fn throttle(&self) {
@@ -331,5 +334,9 @@ impl EtherScanClient {
             }
         }
         *last_request_time = Some(now);
+    }
+
+    fn format_url(&self, params: Vec<String>) -> String {
+        format!("{}{}?{}", self.base_url,self.url_prefix, params.join("&"))
     }
 }

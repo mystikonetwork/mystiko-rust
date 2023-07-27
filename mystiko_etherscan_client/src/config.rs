@@ -1,5 +1,9 @@
-use crate::errors::EtherFetcherError;
+use crate::errors::EtherScanError;
 use anyhow::{anyhow, Result};
+
+pub const DEFAULT_MAX_REQUESTS_PER_SECOND:u128 = 5;
+pub const DEFAULT_PAGE_OFFSET:u64 = 1000;
+pub const DEFAULT_URL_PREFIX:&str = "/api";
 
 const DEFAULT_MAINNET_ETHER_API_BASE_URL: &str = "https://api.etherscan.io";
 const DEFAULT_MAINNET_BSC_API_BASE_URL: &str = "https://api.bscscan.com";
@@ -28,8 +32,6 @@ pub fn get_default_base_url(chain_id: u64) -> Result<String> {
         43113 => Ok(String::from(DEFAULT_TESTNET_AVALANCHE_FUJI_API_BASE_URL)),
         4002 => Ok(String::from(DEFAULT_TESTNET_FANTOM_API_BASE_URL)),
         1287 => Ok(String::from(DEFAULT_TESTNET_MOONBASE_ALPHA_API_BASE_URL)),
-        _ => Err(anyhow!(EtherFetcherError::CustomError(String::from(
-            "Invalid chain id"
-        )))),
+        _ => Err(anyhow!(EtherScanError::UnsupportedChainIdError(chain_id))),
     }
 }

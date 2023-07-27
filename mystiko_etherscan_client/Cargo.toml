@@ -8,19 +8,19 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0.69" }
 ethers = { version = "2.0.2" }
+ethers-contract = { version = "2.0.4" }
 ethers-core = { version = "2.0.4" }
-reqwest = { version = "0.11.14" }
+ethers-providers = { version = "2.0.4"}
+reqwest = { version = "0.11.14", features = ["rustls-tls"], default-features = false }
 serde = { version = "1.0.152" }
 serde_json = { version = "1.0.91" }
 thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.26.0", features = ["time"] }
 typed-builder = { version = "0.14.0" }
-ethers-contract = { version = "2.0.4" }
-ethers-providers = { version = "2.0.4"}
 
 
 
 [dev-dependencies]
 mockito = { version = "0.32.4" }
-tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }

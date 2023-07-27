@@ -21,18 +21,18 @@ async fn setup() -> Result<TestClientSetupData, Error> {
 
 fn create_ether_scan_client(url: &str) -> EtherScanClient {
     let options = EtherScanClientOptions::builder()
-        .chain_id(56)
+        .chain_id(56u64)
         .api_key("test_api_key".to_owned())
         .base_url(url.to_string())
         .build();
-    EtherScanClient::new(options)
+    EtherScanClient::new(options).unwrap()
 }
 
 #[tokio::test]
 async fn test_eth_call() {
     let TestClientSetupData {
         mut mocked_server,
-        mut ether_scan_client,
+        ether_scan_client,
     } = setup().await.unwrap();
     let expect_result = "0x00000000000000000000000000000000000000000000000000601d8888141c00";
     let mock_resp = serde_json::json!({
@@ -71,7 +71,7 @@ async fn test_eth_call() {
 async fn test_get_block_number() {
     let TestClientSetupData {
         mut mocked_server,
-        mut ether_scan_client,
+        ether_scan_client,
     } = setup().await.unwrap();
 
     let mock_resp = serde_json::json!({
@@ -103,7 +103,7 @@ async fn test_get_block_number() {
 async fn test_failed_for_max_rate_limit_reached() {
     let TestClientSetupData {
         mut mocked_server,
-        mut ether_scan_client,
+        ether_scan_client,
     } = setup().await.unwrap();
 
     let error_msg = "Max rate limit reached, please use API Key for higher rate limit";
@@ -129,7 +129,7 @@ async fn test_failed_for_max_rate_limit_reached() {
     let result = ether_scan_client.get_block_number().await;
     assert!(result.is_err());
     let error = result.unwrap_err();
-    let actual_error_msg = error.downcast_ref::<String>().unwrap();
+    let actual_error_msg = format!("{}", error);
     assert!(actual_error_msg.contains(error_msg));
     m.assert_async().await;
 }
@@ -138,7 +138,7 @@ async fn test_failed_for_max_rate_limit_reached() {
 async fn test_get_block_by_number() {
     let TestClientSetupData {
         mut mocked_server,
-        mut ether_scan_client,
+        ether_scan_client,
     } = setup().await.unwrap();
 
     let mock_resp = serde_json::json!({
@@ -188,7 +188,7 @@ async fn test_get_block_by_number() {
     let result = ether_scan_client.get_block_by_number(block_number).await;
     assert!(result.is_ok());
     let result = result.unwrap();
-    assert_eq!(result.number.unwrap().as_u64(), 0xc63251);
+    assert_eq!(result.unwrap().number.unwrap().as_u64(), 0xc63251);
     m.assert_async().await;
 }
 
@@ -196,7 +196,7 @@ async fn test_get_block_by_number() {
 async fn test_get_transaction_by_hash() {
     let TestClientSetupData {
         mut mocked_server,
-        mut ether_scan_client,
+        ether_scan_client,
     } = setup().await.unwrap();
 
     let tx_hash = "0x9983332a52df5ad1dabf8fa81b1642e9383f302a399c532fc47ecb6a7a967166";
@@ -238,7 +238,7 @@ async fn test_get_transaction_by_hash() {
     let result = ether_scan_client.get_transaction_by_hash(tx_hash).await;
     assert!(result.is_ok());
     let result = result.unwrap();
-    assert_eq!(result.hash, H256::from_str(tx_hash).unwrap());
+    assert_eq!(result.unwrap().hash, H256::from_str(tx_hash).unwrap());
     m.assert_async().await;
 }
 
@@ -246,7 +246,7 @@ async fn test_get_transaction_by_hash() {
 async fn test_get_transaction_receipt() {
     let TestClientSetupData {
         mut mocked_server,
-        mut ether_scan_client,
+        ether_scan_client,
     } = setup().await.unwrap();
 
     let tx_hash = "0x2122b2317d6cf409846f80e829c1e45ecb30306907ba0a00a02730c78890739f";
@@ -300,7 +300,7 @@ async fn test_get_transaction_receipt() {
     let result = ether_scan_client.get_transaction_receipt(tx_hash).await;
     assert!(result.is_ok());
     let result = result.unwrap();
-    assert_eq!(result.transaction_hash, H256::from_str(tx_hash).unwrap());
+    assert_eq!(result.unwrap().transaction_hash, H256::from_str(tx_hash).unwrap());
     m.assert_async().await;
 }
 
@@ -308,7 +308,7 @@ async fn test_get_transaction_receipt() {
 async fn test_fetch_event_logs() {
     let TestClientSetupData {
         mut mocked_server,
-        mut ether_scan_client,
+        ether_scan_client,
     } = setup().await.unwrap();
 
     let block = 12878196u64;
