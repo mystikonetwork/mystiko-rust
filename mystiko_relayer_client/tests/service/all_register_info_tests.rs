@@ -1,6 +1,6 @@
 use crate::common::{
     create_client, create_provider_pool, deploy_contract, mock_handshake_supported_server, mock_register_info_server,
-    register_relayer,
+    register_relayer, relayer_config_json_string,
 };
 use ethers::signers::LocalWallet;
 use ethers_core::utils::Anvil;
@@ -126,17 +126,27 @@ async fn test_relayer_config_not_found() {
     let chain_id = 19999;
     let pool = create_provider_pool(chain_id, Some("http://127.0.0.1:50009".to_string())).await;
 
+    let mut server = Server::new_async().await;
+    let mock = server
+        .mock("GET", "/relayer_config/production/testnet/latest.json")
+        .with_body(relayer_config_json_string())
+        .create_async()
+        .await;
+
     let client = RelayerClient::new(
         Arc::new(RwLock::new(pool)),
         Some(
             RelayerClientOptions::builder()
                 .is_testnet(true)
+                .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
                 .log_level(LevelFilter::Debug)
                 .build(),
         ),
     )
     .await
     .unwrap();
+
+    mock.assert_async().await;
 
     let result = client
         .all_register_info(RegisterInfoRequest {

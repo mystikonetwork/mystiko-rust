@@ -57,11 +57,17 @@ pub async fn init_app_state(server_config: ServerConfig) -> Result<AppState> {
     // load default relayer config
     let relayer_config = match relayer_config_path {
         None => {
-            if server_config.settings.network_type == Testnet {
-                RelayerConfig::from_remote_default_testnet().await?
+            let mut options = if let Some(base_url) = &server_config.options.relayer_remote_config_base_url {
+                mystiko_relayer_config::wrapper::relayer::RemoteOptions::builder()
+                    .base_url(base_url.to_string())
+                    .build()
             } else {
-                RelayerConfig::from_remote_default_mainnet().await?
+                mystiko_relayer_config::wrapper::relayer::RemoteOptions::builder().build()
+            };
+            if server_config.settings.network_type == Testnet {
+                options.is_testnet = true;
             }
+            RelayerConfig::from_remote(&options).await?
         }
         Some(path) => RelayerConfig::from_json_file(path).await?,
     };
@@ -69,11 +75,17 @@ pub async fn init_app_state(server_config: ServerConfig) -> Result<AppState> {
     // load default mystiko config
     let mystiko_config = match mystiko_config_path {
         None => {
-            if server_config.settings.network_type == Testnet {
-                MystikoConfig::from_remote_default_testnet().await?
+            let mut options = if let Some(base_url) = &server_config.options.mystiko_remote_config_base_url {
+                mystiko_config::wrapper::mystiko::RemoteOptions::builder()
+                    .base_url(base_url.to_string())
+                    .build()
             } else {
-                MystikoConfig::from_remote_default_mainnet().await?
+                mystiko_config::wrapper::mystiko::RemoteOptions::builder().build()
+            };
+            if server_config.settings.network_type == Testnet {
+                options.is_testnet = true;
             }
+            MystikoConfig::from_remote(&options).await?
         }
         Some(path) => MystikoConfig::from_json_file(path).await?,
     };
