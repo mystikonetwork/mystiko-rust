@@ -178,7 +178,8 @@
       "signerEndpoint": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       "depositContracts": [],
       "poolContracts": [],
-      "assets": []
+      "assets": [],
+      "packerGranularities": [2000, 4000, 8000, 16000]
     },
     {
       "name": "BSC Testnet",
@@ -413,7 +414,8 @@
       "signerEndpoint": "https://rpc-mumbai.maticvigil.com",
       "depositContracts": [],
       "poolContracts": [],
-      "assets": []
+      "assets": [],
+      "packerGranularities": [2000, 4000, 8000, 16000]
     },
     {
       "name": "Avalanche Testnet",
