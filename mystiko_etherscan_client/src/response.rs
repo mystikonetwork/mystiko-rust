@@ -1,6 +1,8 @@
-use crate::errors::EtherScanError;
-use ethers_providers::JsonRpcError;
 use serde::{Deserialize, Serialize};
+
+use ethers_providers::JsonRpcError;
+
+use crate::errors::EtherScanError;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct EtherScanResponse<T> {

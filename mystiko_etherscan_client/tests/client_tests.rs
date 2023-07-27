@@ -1,8 +1,9 @@
+use std::str::FromStr;
+
 use ethers_core::types::H256;
 use mockito::*;
 use mystik_etherscan_client::client::{EtherScanClient, EtherScanClientOptions, GetLogsOptions};
 use mystiko_abi::commitment_pool::CommitmentQueuedFilter;
-use std::str::FromStr;
 
 struct TestClientSetupData {
     mocked_server: mockito::ServerGuard,

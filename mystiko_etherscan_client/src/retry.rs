@@ -1,6 +1,8 @@
-use crate::errors::EtherScanError;
 use std::fmt::Debug;
+
 use typed_builder::TypedBuilder;
+
+use crate::errors::EtherScanError;
 
 pub trait RetryPolicy: Debug {
     fn is_retryable(&self, error: &EtherScanError, current_retry_time: u64) -> bool;

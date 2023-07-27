@@ -1,10 +1,5 @@
-use crate::config::{get_default_base_url, DEFAULT_MAX_REQUESTS_PER_SECOND, DEFAULT_PAGE_OFFSET, DEFAULT_URL_PREFIX};
-use crate::errors::EtherScanError;
-use crate::response::{EtherScanResponse, JsonRpcResponse, Result};
-use crate::retry::{DefaultRetryPolicy, RetryPolicy};
-use ethers::types::U64;
-use ethers_contract::{EthEvent, LogMeta};
-use ethers_core::types::{Block, Log, Transaction, TransactionReceipt};
+use std::time::Duration;
+
 use reqwest::{
     header::{HeaderValue, ACCEPT},
     {Client, IntoUrl},
@@ -12,10 +7,18 @@ use reqwest::{
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::time::Duration;
+
+use ethers::types::U64;
+use ethers_contract::{EthEvent, LogMeta};
+use ethers_core::types::{Block, Log, Transaction, TransactionReceipt};
 use tokio::sync::Mutex;
 use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
+
+use crate::config::{get_default_base_url, DEFAULT_MAX_REQUESTS_PER_SECOND, DEFAULT_PAGE_OFFSET, DEFAULT_URL_PREFIX};
+use crate::errors::EtherScanError;
+use crate::response::{EtherScanResponse, JsonRpcResponse, Result};
+use crate::retry::{DefaultRetryPolicy, RetryPolicy};
 
 #[derive(Debug, Clone, Default, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
