@@ -182,13 +182,3 @@ async fn test_create_from_remote_error() {
         .build();
     assert!(RelayerConfig::from_remote(&options).await.is_err());
 }
-
-#[tokio::test]
-async fn test_create_from_remote_default_mainnet() {
-    assert!(RelayerConfig::from_remote_default_mainnet().await.is_ok());
-}
-
-#[tokio::test]
-async fn test_create_from_remote_default_testnet() {
-    assert!(RelayerConfig::from_remote_default_testnet().await.is_ok());
-}

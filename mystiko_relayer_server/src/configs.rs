@@ -38,6 +38,10 @@ pub struct Options {
     pub mystiko_config_path: Option<String>,
     #[serde(default)]
     pub relayer_config_path: Option<String>,
+    #[serde(default)]
+    pub mystiko_remote_config_base_url: Option<String>,
+    #[serde(default)]
+    pub relayer_remote_config_base_url: Option<String>,
 }
 
 #[derive(Validate, Serialize, Deserialize, Debug, Clone)]

@@ -8,7 +8,7 @@ use ethers::signers::{LocalWallet, Signer};
 use ethers_core::types::Address;
 use log::LevelFilter;
 use mockall::mock;
-use mockito::{Mock, ServerGuard};
+use mockito::{Mock, Server, ServerGuard};
 use mystiko_ethers::provider::factory::{DefaultProviderFactory, ProviderFactory, ProvidersOptions};
 use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
 use mystiko_ethers::provider::types::ProviderOptions;
@@ -45,17 +45,27 @@ pub async fn create_client(
     chain_id: Option<u64>,
     contract_address: Option<Address>,
 ) -> RelayerClient {
+    let mut server = Server::new_async().await;
+    let mock = server
+        .mock("GET", "/relayer_config/production/testnet/latest.json")
+        .with_body(relayer_config_json_string())
+        .create_async()
+        .await;
+
     let mut client = RelayerClient::new(
         Arc::new(RwLock::new(provider_pool)),
         Some(
             RelayerClientOptions::builder()
                 .is_testnet(true)
+                .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
                 .log_level(LevelFilter::Debug)
                 .build(),
         ),
     )
     .await
     .unwrap();
+    mock.assert_async().await;
+
     if chain_id.is_some() && contract_address.is_some() {
         client.relayer_config = Arc::new(
             RelayerConfig::from_json_str(create_relayer_config(chain_id.unwrap(), contract_address.unwrap()).as_str())
@@ -186,6 +196,108 @@ pub async fn register_relayer(
         .unwrap()
         .await
         .expect("contract register relayer error");
+}
+
+pub fn relayer_config_json_string() -> String {
+    let relayer_config = r#"
+        {
+            "chains":[
+                {
+                    "assetDecimals":18,
+                    "assetSymbol":"ETH",
+                    "chainId":5,
+                    "contracts":[
+                        {
+                            "assetDecimals":18,
+                            "assetSymbol":"ETH",
+                            "assetType":"main",
+                            "relayerFeeOfTenThousandth":25
+                        },
+                        {
+                            "assetDecimals":18,
+                            "assetSymbol":"MTT",
+                            "assetType":"erc20",
+                            "relayerFeeOfTenThousandth":25
+                        },
+                        {
+                            "assetDecimals":6,
+                            "assetSymbol":"mUSD",
+                            "assetType":"erc20",
+                            "relayerFeeOfTenThousandth":25
+                        }
+                    ],
+                    "name":"Ethereum Goerli",
+                    "relayerContractAddress":"0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc",
+                    "transactionInfo":{
+                        "erc20GasCost":{
+                            "transaction1x0":512985,
+                            "transaction1x1":629802,
+                            "transaction1x2":705494,
+                            "transaction2x0":611040,
+                            "transaction2x1":727970,
+                            "transaction2x2":803645
+                        },
+                        "mainGasCost":{
+                            "transaction1x0":500704,
+                            "transaction1x1":617592,
+                            "transaction1x2":705128,
+                            "transaction2x0":598799,
+                            "transaction2x1":708389,
+                            "transaction2x2":803183
+                        }
+                    }
+                },
+                {
+                    "assetDecimals":18,
+                    "assetSymbol":"BNB",
+                    "chainId":97,
+                    "contracts":[
+                        {
+                            "assetDecimals":18,
+                            "assetSymbol":"MTT",
+                            "assetType":"erc20",
+                            "relayerFeeOfTenThousandth":25
+                        },
+                        {
+                            "assetDecimals":6,
+                            "assetSymbol":"mUSD",
+                            "assetType":"erc20",
+                            "relayerFeeOfTenThousandth":25
+                        },
+                        {
+                            "assetDecimals":18,
+                            "assetSymbol":"BNB",
+                            "assetType":"main",
+                            "relayerFeeOfTenThousandth":25
+                        }
+                    ],
+                    "name":"BSC Testnet",
+                    "relayerContractAddress":"0xfC21Aa6a04f09565bC6eeDC182063Fd4E466670A",
+                    "transactionInfo":{
+                        "erc20GasCost":{
+                            "transaction1x0":537145,
+                            "transaction1x1":646754,
+                            "transaction1x2":724302,
+                            "transaction2x0":640808,
+                            "transaction2x1":756699,
+                            "transaction2x2":833563
+                        },
+                        "mainGasCost":{
+                            "transaction1x0":520800,
+                            "transaction1x1":636116,
+                            "transaction1x2":724104,
+                            "transaction2x0":630207,
+                            "transaction2x1":743273,
+                            "transaction2x2":833563
+                        }
+                    }
+                }
+            ],
+            "gitRevision":"6335708",
+            "version":"0.0.1"
+        }
+    "#;
+    relayer_config.to_string()
 }
 
 fn create_relayer_config(chain_id: u64, address: Address) -> String {
