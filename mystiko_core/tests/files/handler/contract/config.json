@@ -146,7 +146,8 @@
           ],
           "assetAddress": "0xb08AA0E20A4aEBc8E2B99d3247975D1C02959cFD"
         }
-      ]
+      ],
+      "packerGranularities": [2000, 4000, 8000, 16000]
     },
     {
       "name": "Ethereum Goerli",
@@ -386,7 +387,8 @@
           ],
           "assetAddress": "0x05d3586c0764353A6f1cb91Da0ab6C1311daa8E0"
         }
-      ]
+      ],
+      "packerGranularities": [2000, 4000, 8000, 16000]
     },
     {
       "name": "Polygon Testnet",
@@ -430,7 +432,8 @@
       "signerEndpoint": "https://api.avax-test.network/ext/bc/C/rpc",
       "depositContracts": [],
       "poolContracts": [],
-      "assets": []
+      "assets": [],
+      "packerGranularities": [2000, 4000, 8000, 16000]
     }
   ],
   "bridges": [
