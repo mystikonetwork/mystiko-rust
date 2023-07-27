@@ -9,8 +9,8 @@ use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_config::wrapper::relayer::{RelayerConfig, RemoteOptions};
 use mystiko_relayer_types::response::ApiResponse;
 use mystiko_relayer_types::{
-    RegisterInfoRequest, RegisterInfoResponse, RelayTransactRequest, RelayTransactResponse, RelayTransactStatusRequest,
-    RelayTransactStatusResponse, TransactStatus, WaitingTransactionRequest,
+    HandshakeResponse, RegisterInfoRequest, RegisterInfoResponse, RelayTransactRequest, RelayTransactResponse,
+    RelayTransactStatusRequest, RelayTransactStatusResponse, TransactStatus, WaitingTransactionRequest,
 };
 use mystiko_types::NetworkType;
 use reqwest::header::{HeaderValue, ACCEPT};
@@ -26,11 +26,12 @@ use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
 use validator::Validate;
 
-pub const INFO_URL_PATH: &str = "info";
-pub const TRANSACT_URL_PATH: &str = "transact";
-pub const TRANSACTION_STATUS_URL_PATH: &str = "transaction/status";
+pub const SUPPORTED_API_VERSION: &str = "v2";
+pub const HANDSHAKE_URL_PATH: &str = "handshake";
+pub const INFO_URL_PATH: &str = "api/v2/info";
+pub const TRANSACT_URL_PATH: &str = "api/v2/transact";
+pub const TRANSACTION_STATUS_URL_PATH: &str = "api/v2/transaction/status";
 
-#[derive(Debug)]
 pub struct RelayerClient {
     pub reqwest_client: Client,
     pub network_type: NetworkType,
@@ -69,7 +70,9 @@ impl RelayerClient {
             .timeout(relayer_options.timeout)
             .build()
             .map_err(RelayerClientError::ReqwestError)?;
-        log::set_max_level(relayer_options.log_level);
+        let _ = env_logger::builder()
+            .filter_module("", relayer_options.log_level)
+            .try_init();
         Ok(Self {
             reqwest_client,
             network_type,
@@ -79,8 +82,6 @@ impl RelayerClient {
     }
 
     pub async fn all_register_info(self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>> {
-        debug!("all register info {:?}", request);
-
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -125,8 +126,11 @@ impl RelayerClient {
             let self_clone = Arc::clone(&self_arc);
             let request = Arc::clone(&request);
 
-            let handler = tokio::spawn(async move { self_clone.register_info(&url, &name, &relayer, &request).await });
-            handlers.push(handler);
+            if self_clone.handshake(&url).await? {
+                let handler =
+                    tokio::spawn(async move { self_clone.register_info(&url, &name, &relayer, &request).await });
+                handlers.push(handler);
+            }
         }
 
         let all_response = try_join_all(handlers).await.map_err(RelayerClientError::JoinError)?;
@@ -146,10 +150,14 @@ impl RelayerClient {
     }
 
     pub async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse> {
-        debug!("gas relayer send transact: {:?}", request);
-
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
+
+        if !self.handshake(&request.relayer_url).await? {
+            return Err(RelayerClientError::UnsupportedApiVersion(
+                SUPPORTED_API_VERSION.to_string(),
+            ));
+        }
 
         let mut request_builder = self
             .reqwest_client
@@ -164,10 +172,14 @@ impl RelayerClient {
         &self,
         request: RelayTransactStatusRequest,
     ) -> Result<RelayTransactStatusResponse> {
-        debug!("relay transaction status {:?}", request);
-
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
+
+        if !self.handshake(&request.relayer_url).await? {
+            return Err(RelayerClientError::UnsupportedApiVersion(
+                SUPPORTED_API_VERSION.to_string(),
+            ));
+        }
 
         let response = self
             .get_data::<RelayTransactStatusResponse>(&format!(
@@ -179,8 +191,6 @@ impl RelayerClient {
     }
 
     pub async fn wait_transaction(&self, request: WaitingTransactionRequest) -> Result<RelayTransactStatusResponse> {
-        debug!("wait transaction {:?}", request);
-
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -235,6 +245,16 @@ impl RelayerClient {
             let interval = request.interval.unwrap_or(Duration::from_millis(500));
             sleep(interval).await;
         }
+    }
+
+    async fn handshake(&self, url: &str) -> Result<bool> {
+        let response = self
+            .get_data::<HandshakeResponse>(&format!("{}/{}", url, HANDSHAKE_URL_PATH))
+            .await?;
+        Ok(response
+            .api_version
+            .iter()
+            .any(|version| version.to_lowercase() == SUPPORTED_API_VERSION.to_lowercase()))
     }
 
     async fn handle_response<T>(&self, response: Response) -> Result<T>
@@ -353,9 +373,8 @@ async fn create_relayer_config(options: &RelayerClientOptions) -> Result<Arc<Rel
         RelayerConfig::from_remote(&remote_options).await
     };
 
-    if let Ok(config) = result {
-        Ok(Arc::new(config))
-    } else {
-        Err(RelayerClientError::CreateRelayerConfigError)
+    match result {
+        Ok(config) => Ok(Arc::new(config)),
+        Err(err) => Err(RelayerClientError::CreateRelayerConfigError(err.to_string())),
     }
 }
