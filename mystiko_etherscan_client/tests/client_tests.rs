@@ -129,7 +129,7 @@ async fn test_failed_for_max_rate_limit_reached() {
     let result = ether_scan_client.get_block_number().await;
     assert!(result.is_err());
     let error = result.unwrap_err();
-    let actual_error_msg = format!("{}", error);
+    let actual_error_msg = error.to_string();
     assert!(actual_error_msg.contains(error_msg));
     m.assert_async().await;
 }

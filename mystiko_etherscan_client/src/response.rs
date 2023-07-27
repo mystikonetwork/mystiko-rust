@@ -1,3 +1,4 @@
+use crate::errors::EtherScanError;
 use ethers_providers::JsonRpcError;
 use serde::{Deserialize, Serialize};
 
@@ -15,3 +16,5 @@ pub struct JsonRpcResponse<T> {
     pub error: Option<JsonRpcError>,
     pub result: Option<T>,
 }
+
+pub type Result<T> = anyhow::Result<T, EtherScanError>;
