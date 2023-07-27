@@ -567,4 +567,83 @@ async fn test_handle_response_failed_for_content_type() {
         EtherScanError::UnexpectedContentTypeError("application/text".to_string()).to_string()
     );
     m.assert_async().await;
+
+    //content-type is None
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+            Matcher::UrlEncoded("module".into(), "proxy".into()),
+        ]))
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .create_async()
+        .await;
+    let options = GetOptions::<String>::builder()
+        .url(format!(
+            "{}/api?module=proxy&apikey=test_api_key",
+            &ether_scan_client.base_url
+        ))
+        .module(EtherScanModule::JsonRpcProxy)
+        .build();
+    let result = ether_scan_client.handle_response::<String, String>(options).await;
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let actual_error_msg = error.to_string();
+    assert_eq!(
+        actual_error_msg,
+        EtherScanError::UnexpectedContentTypeError(String::new()).to_string()
+    );
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_handle_response_failed_for_json_rpc_error() {
+    let TestClientSetupData {
+        mut mocked_server,
+        ether_scan_client,
+    } = setup().await.unwrap();
+
+    let expect_error_msg = String::from("invalid argument 0: xxxx");
+    let mock_resp = serde_json::json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "error": {
+            "code": -32602,
+            "message": expect_error_msg
+        }
+    });
+
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+            Matcher::UrlEncoded("module".into(), "proxy".into()),
+        ]))
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let options = GetOptions::<String>::builder()
+        .url(format!(
+            "{}/api?module=proxy&apikey=test_api_key",
+            &ether_scan_client.base_url
+        ))
+        .module(EtherScanModule::JsonRpcProxy)
+        .build();
+    let result = ether_scan_client.handle_response::<String, String>(options).await;
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let actual_error_msg = error.to_string();
+    assert_eq!(
+        actual_error_msg,
+        EtherScanError::JsonRpcError(ethers_providers::JsonRpcError {
+            code: -32602,
+            message: expect_error_msg,
+            data: None,
+        })
+        .to_string()
+    );
+    m.assert_async().await;
 }

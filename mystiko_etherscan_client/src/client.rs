@@ -218,8 +218,8 @@ impl EtherScanClient {
                     let raw_log = log.into();
                     let event = R::decode_log(&raw_log)?;
                     events.push(Event { raw: event, metadata });
-                    page += 1;
                 }
+                page += 1;
                 if len < self.offset as usize {
                     break;
                 }
