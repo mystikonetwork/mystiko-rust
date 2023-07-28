@@ -115,6 +115,7 @@
           ]
         }
       ],
+      "packerGranularities": [2000, 4000, 8000, 16000],
       "chainId":5,
       "depositContracts":[
         {
@@ -1074,6 +1075,7 @@
           ]
         }
       ],
+      "packerGranularities": [2000, 4000, 8000, 16000],
       "chainId":97,
       "depositContracts":[
         {
@@ -1567,6 +1569,7 @@
           ]
         }
       ],
+      "packerGranularities": [2000, 4000, 8000, 16000],
       "chainId":80001,
       "depositContracts":[
         {
@@ -2028,6 +2031,7 @@
           ]
         }
       ],
+      "packerGranularities": [2000, 4000, 8000, 16000],
       "chainId":43113,
       "depositContracts":[
         {
@@ -2565,6 +2569,7 @@
           ]
         }
       ],
+      "packerGranularities": [2000, 4000, 8000, 16000],
       "chainId":4002,
       "depositContracts":[
         {
@@ -3024,6 +3029,7 @@
           ]
         }
       ],
+      "packerGranularities": [2000, 4000, 8000, 16000],
       "chainId":1287,
       "depositContracts":[
         {

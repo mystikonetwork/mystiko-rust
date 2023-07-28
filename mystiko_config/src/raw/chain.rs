@@ -94,6 +94,11 @@ pub struct RawChainConfig {
     #[serde(default)]
     #[builder(default = vec ! [])]
     pub assets: Vec<Arc<RawAssetConfig>>,
+
+    #[validate(length(min = 1), custom(function = "array_unique"))]
+    #[serde(default)]
+    #[builder(default)]
+    pub packer_granularities: Vec<u64>,
 }
 
 impl Hash for RawChainConfig {

@@ -5,6 +5,7 @@ use mystiko_config::raw::bridge::RawBridgeConfig;
 use mystiko_config::raw::create_raw_from_file;
 use mystiko_config::raw::indexer::RawIndexerConfig;
 use mystiko_config::raw::mystiko::RawMystikoConfig;
+use mystiko_config::raw::packer::RawPackerConfig;
 use std::sync::Arc;
 use validator::Validate;
 
@@ -92,6 +93,18 @@ async fn test_invalid_indexer() {
         RawIndexerConfig::builder()
             .url("not a url".to_string())
             .timeout_ms(1000)
+            .build(),
+    ));
+    assert!(config.validate().is_err());
+}
+
+#[tokio::test]
+async fn test_invalid_packer() {
+    let mut config = default_config().await;
+    config.packer = Some(Arc::new(
+        RawPackerConfig::builder()
+            .url("not a url".to_string())
+            .client_timeout_ms(1000u64)
             .build(),
     ));
     assert!(config.validate().is_err());

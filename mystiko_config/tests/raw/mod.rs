@@ -5,4 +5,5 @@ mod circuit_tests;
 mod contract;
 mod indexer_tests;
 mod mystiko_tests;
+mod packer_tests;
 mod provider_tests;
