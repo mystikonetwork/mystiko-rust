@@ -9,14 +9,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use ethers::types::U64;
-use ethers_contract::{EthEvent, LogMeta};
-use ethers_core::types::{Block, Log, Transaction, TransactionReceipt};
+use ethers_contract::EthEvent;
+use ethers_core::types::{Block, Transaction, TransactionReceipt};
 use tokio::sync::Mutex;
 use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
 
 use crate::config::{get_default_base_url, DEFAULT_MAX_REQUESTS_PER_SECOND, DEFAULT_PAGE_OFFSET, DEFAULT_URL_PREFIX};
 use crate::errors::EtherScanError;
+use crate::log::{Log, LogMeta};
 use crate::response::{EtherScanResponse, JsonRpcResponse, Result};
 use crate::retry::{DefaultRetryPolicy, RetryPolicy};
 
@@ -215,8 +216,7 @@ impl EtherScanClient {
                 let len = logs.len();
                 for log in logs.into_iter() {
                     let metadata: LogMeta = (&log).into();
-                    let raw_log = log.into();
-                    let event = R::decode_log(&raw_log)?;
+                    let event = R::decode_log(&log.into_raw())?;
                     events.push(Event { raw: event, metadata });
                 }
                 page += 1;
