@@ -6,5 +6,6 @@ extern crate serde_json;
 pub mod client;
 pub mod config;
 pub mod errors;
+pub mod log;
 pub mod response;
 pub mod retry;
