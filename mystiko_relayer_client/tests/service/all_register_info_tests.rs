@@ -133,13 +133,14 @@ async fn test_relayer_config_not_found() {
         .create_async()
         .await;
 
+    let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
+
     let client = RelayerClient::new(
         Arc::new(RwLock::new(pool)),
         Some(
             RelayerClientOptions::builder()
                 .is_testnet(true)
                 .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
-                .log_level(LevelFilter::Debug)
                 .build(),
         ),
     )

@@ -13,6 +13,7 @@ use mystiko_relayer_types::{RelayTransactStatusResponse, TransactRequestData, Tr
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorageBuilder;
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
+use serial_test::file_serial;
 use std::sync::Arc;
 
 lazy_static! {
@@ -88,6 +89,7 @@ async fn test_id_not_found() {
 }
 
 #[actix_rt::test]
+#[file_serial]
 async fn test_db_error() {
     // create test server
     let mut server = TestServer::new(None).await.unwrap();

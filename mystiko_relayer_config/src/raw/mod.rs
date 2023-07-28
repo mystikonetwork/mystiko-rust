@@ -9,8 +9,8 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::from_str;
 use std::fmt::Debug;
-use tokio::fs::File;
-use tokio::io::AsyncReadExt;
+use std::path::PathBuf;
+use tokio::fs::read_to_string;
 use validator::Validate;
 
 pub fn validate_raw<T>(raw: &T) -> anyhow::Result<()>
@@ -46,9 +46,7 @@ pub async fn create_raw_from_file<T>(json_file: &str) -> anyhow::Result<T>
 where
     T: Validate + Serialize + DeserializeOwned + Debug,
 {
-    let mut file = File::open(json_file).await?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).await?;
+    let contents = read_to_string(PathBuf::from(json_file)).await?;
     let result: T = from_str(&contents)?;
     create_raw::<T>(result)
 }

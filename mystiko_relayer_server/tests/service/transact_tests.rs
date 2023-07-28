@@ -12,12 +12,14 @@ use mystiko_relayer_server::service::{transact, transaction_status};
 use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
 use mystiko_relayer_types::{RelayTransactResponse, RelayTransactStatusResponse, TransactRequestData, TransactStatus};
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
+use serial_test::file_serial;
 
 lazy_static! {
     static ref SERVER: AsyncOnce<TestServer> = AsyncOnce::new(async { TestServer::new(None).await.unwrap() });
 }
 
 #[actix_rt::test]
+#[file_serial]
 async fn test_send_successful_main() {
     // create test server
     let mock_provider = MockProvider::new();
@@ -64,6 +66,7 @@ async fn test_send_successful_main() {
 }
 
 #[actix_rt::test]
+#[file_serial]
 async fn test_send_successful_erc20() {
     // create test server
     let mock_provider = MockProvider::new();

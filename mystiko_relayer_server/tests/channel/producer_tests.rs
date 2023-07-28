@@ -2,8 +2,10 @@ use crate::common::TestServer;
 use mystiko_relayer_server::channel::transact_channel;
 use mystiko_relayer_types::TransactRequestData;
 use mystiko_types::{AssetType, CircuitType, TransactionType};
+use serial_test::file_serial;
 
 #[actix_rt::test]
+#[file_serial]
 async fn send_closed_channel() {
     let server = TestServer::new(None).await.unwrap();
     let app_state = server.app_state;
