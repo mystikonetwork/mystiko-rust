@@ -1,6 +1,8 @@
 use mystiko_config::raw::packer::RawPackerConfig;
 use mystiko_config::raw::{create_raw, create_raw_from_file};
 use mystiko_types::{PackerChecksum, PackerCompression};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use validator::Validate;
 
 fn default_config() -> RawPackerConfig {
@@ -44,6 +46,21 @@ fn test_invalid_version() {
     let mut config = default_config();
     config.version = 0;
     assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_hash() {
+    let config1 = RawPackerConfig::builder()
+        .url("https://static.mystiko.network/packer/v1")
+        .build();
+    let config2 = RawPackerConfig::builder()
+        .url("https://static.mystiko.network/packer/v2")
+        .build();
+    let mut hasher1 = DefaultHasher::new();
+    let mut hasher2 = DefaultHasher::new();
+    config1.hash(&mut hasher1);
+    config2.hash(&mut hasher2);
+    assert_ne!(hasher1.finish(), hasher2.finish());
 }
 
 #[tokio::test]
