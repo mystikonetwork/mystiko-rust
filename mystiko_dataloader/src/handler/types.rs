@@ -24,6 +24,6 @@ where
     R: LoadedData,
 {
     async fn handle(&self, data: &ChainData<R>, option: &HandleOption) -> Result<()> {
-        Ok(self.as_ref().handle(data, option).await?)
+        self.as_ref().handle(data, option).await
     }
 }

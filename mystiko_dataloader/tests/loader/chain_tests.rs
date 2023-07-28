@@ -6,7 +6,7 @@ use mystiko_dataloader::data::types::{FullData, LoadedData};
 use mystiko_dataloader::fetcher::types::{ChainFetchOption, ContractFetchOption, DataFetcher, FetchResult};
 use mystiko_dataloader::handler::types::{DataHandler, HandleOption};
 use mystiko_dataloader::loader::chain::{ChainDataLoader, ChainDataLoaderBuilder, ContractState, StartOption};
-use mystiko_dataloader::loader::listener::{LoaderEvent, Loaderlistener};
+use mystiko_dataloader::loader::listener::{LoaderEvent, LoaderListener};
 use mystiko_dataloader::validator::types::{DataValidator, ValidateOption};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -136,7 +136,7 @@ where
 }
 
 pub struct MockListener {
-    pub event: RwLock<Vec<LoaderEvent>>,
+    pub event: RwLock<Vec<String>>,
 }
 
 impl MockListener {
@@ -146,12 +146,21 @@ impl MockListener {
         }
     }
 
-    pub async fn get_events(&self) -> Vec<LoaderEvent> {
-        self.event.read().await.clone()
+    fn convert_event(&self, event: &LoaderEvent) -> String {
+        match event {
+            LoaderEvent::StartEvent(e) => format!("StartEvent-{}", e.start_block),
+            LoaderEvent::StopEvent(e) => format!("StopEvent-{}", e.end_block),
+            LoaderEvent::LoadEvent(e) => format!("LoadEvent-{}", e.start_block),
+            LoaderEvent::LoadSuccessEvent(e) => format!("LoadSuccessEvent-{}", e.end_block),
+            LoaderEvent::LoadFailureEvent(e) => {
+                format!("LoadFailureEvent-{}-{}", e.end_block, e.load_error)
+            }
+        }
     }
 
-    pub async fn clear(&self) {
-        self.event.write().await.clear();
+    pub async fn drain_events(&self) -> Vec<String> {
+        let mut event = self.event.write().await;
+        event.drain(..).collect()
     }
 }
 
@@ -162,9 +171,10 @@ impl Default for MockListener {
 }
 
 #[async_trait]
-impl Loaderlistener for MockListener {
+impl LoaderListener for MockListener {
     async fn callback(&self, event: &LoaderEvent) -> anyhow::Result<()> {
-        self.event.write().await.push((*event).clone());
+        let event_str = self.convert_event(event);
+        self.event.write().await.push(event_str);
         Ok(())
     }
 }
@@ -198,12 +208,11 @@ async fn create_loader(
         ChainDataLoaderBuilder::new();
 
     let fetcher_result = match fetch_result {
-        true => FetchResult::Ok(vec![Ok(ContractData {
-            address: "0xAddress1".to_string(),
-            start_block: 1_u64,
-            end_block,
-            data: None,
-        })]),
+        true => FetchResult::Ok(vec![Ok(ContractData::builder()
+            .address("0xAddress1".to_string())
+            .start_block(1_u64)
+            .end_block(end_block)
+            .build())]),
         false => FetchResult::Err(anyhow::Error::msg("error".to_string())),
     };
 
@@ -292,11 +301,10 @@ async fn create_shared_loader(
 #[tokio::test]
 async fn test_loader_start() {
     let end_block = 987_u64;
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
+    let option = StartOption::builder()
+        .load_interval_ms(10_u64)
+        .max_batch_block(1000000_u64)
+        .build();
     let loader = Arc::new(create_loader(false, true, Some(true), true, end_block).await);
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
@@ -305,14 +313,11 @@ async fn test_loader_start() {
     assert!(!loader.is_loading().await);
     assert!(!state.is_running);
     assert!(!loader.is_running().await);
-    assert_eq!(state.recent_error, None);
-    assert_eq!(loader.recent_error().await, None);
+
     let mut contract_states = HashMap::new();
     contract_states.insert(
         "0xAddress1".to_string(),
-        ContractState {
-            loaded_block: end_block,
-        },
+        ContractState::builder().loaded_block(end_block).build(),
     );
     assert_eq!(state.contract_states, contract_states);
 }
@@ -320,11 +325,10 @@ async fn test_loader_start() {
 #[tokio::test]
 async fn test_loader_start_batch_builder() {
     let end_block = 765_u64;
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
+    let option = StartOption::builder()
+        .load_interval_ms(10_u64)
+        .max_batch_block(1000000_u64)
+        .build();
     let loader = Arc::new(create_loader(true, false, Some(true), true, end_block).await);
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
@@ -333,52 +337,45 @@ async fn test_loader_start_batch_builder() {
     assert!(!loader.is_loading().await);
     assert!(!state.is_running);
     assert!(!loader.is_running().await);
-    assert!(state.recent_error.is_some());
-    assert!(loader.recent_error().await.is_some());
     assert_eq!(state.contract_states, HashMap::new());
 }
 
 #[tokio::test]
 async fn test_loader_start_shared_fetcher() {
     let (loader, fetchers, _, _, listeners) = create_shared_loader(1, 1, 1, 1).await;
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
+    let option = StartOption::builder()
+        .load_interval_ms(10_u64)
+        .max_batch_block(1000000_u64)
+        .build();
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.is_none());
 
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     assert_eq!(state.contract_states, HashMap::new());
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadFailureEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadFailureEvent-123-loader run error failed fetch from all fetchers".to_string(),
+            "StopEvent-123".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     let end_block = 10_u64;
     fetchers[0]
         .set_result(FetchResult::Ok(vec![
-            Ok(ContractData {
-                address: "0xAddress1".to_string(),
-                start_block: 1_u64,
-                end_block,
-                data: None,
-            }),
+            Ok(ContractData::builder()
+                .address("0xAddress1".to_string())
+                .start_block(1_u64)
+                .end_block(end_block)
+                .build()),
             Err(anyhow::Error::msg("error".to_string())),
         ]))
         .await;
@@ -387,35 +384,30 @@ async fn test_loader_start_shared_fetcher() {
     assert_eq!(state.loaded_block, end_block);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     let mut contract_states = HashMap::new();
     contract_states.insert(
         "0xAddress1".to_string(),
-        ContractState {
-            loaded_block: end_block,
-        },
+        ContractState::builder().loaded_block(end_block).build(),
     );
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadSuccessEvent-10".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     let end_block2 = end_block + 10;
     fetchers[0]
         .set_result(FetchResult::Ok(vec![
-            Ok(ContractData {
-                address: "0xAddress2".to_string(),
-                start_block: 1_u64,
-                end_block: end_block2,
-                data: None,
-            }),
+            Ok(ContractData::builder()
+                .address("0xAddress2".to_string())
+                .start_block(1_u64)
+                .end_block(end_block2)
+                .build()),
             Err(anyhow::Error::msg("error".to_string())),
         ]))
         .await;
@@ -424,25 +416,21 @@ async fn test_loader_start_shared_fetcher() {
     assert_eq!(state.loaded_block, end_block);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     contract_states.insert(
         "0xAddress2".to_string(),
-        ContractState {
-            loaded_block: end_block2,
-        },
+        ContractState::builder().loaded_block(end_block2).build(),
     );
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-11".to_string(),
+            "LoadEvent-11".to_string(),
+            "LoadSuccessEvent-10".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     fetchers[0]
         .set_result(FetchResult::Err(anyhow::Error::msg("error".to_string())))
         .await;
@@ -451,34 +439,30 @@ async fn test_loader_start_shared_fetcher() {
     assert_eq!(state.loaded_block, end_block);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadFailureEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-11".to_string(),
+            "LoadEvent-11".to_string(),
+            "LoadFailureEvent-10-loader run error failed fetch from all fetchers".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 
     let end_block3 = end_block2 - 2;
-    listeners[0].clear().await;
     fetchers[0]
         .set_result(FetchResult::Ok(vec![
-            Ok(ContractData {
-                address: "0xAddress1".to_string(),
-                start_block: 1_u64,
-                end_block: end_block3,
-                data: None,
-            }),
-            Ok(ContractData {
-                address: "0xAddress3".to_string(),
-                start_block: 1_u64,
-                end_block: end_block3,
-                data: None,
-            }),
+            Ok(ContractData::builder()
+                .address("0xAddress1".to_string())
+                .start_block(1_u64)
+                .end_block(end_block3)
+                .build()),
+            Ok(ContractData::builder()
+                .address("0xAddress3".to_string())
+                .start_block(1_u64)
+                .end_block(end_block3)
+                .build()),
         ]))
         .await;
     loader_start(loader.clone(), option.clone()).await;
@@ -486,53 +470,44 @@ async fn test_loader_start_shared_fetcher() {
     assert_eq!(state.loaded_block, end_block3);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     let mut contract_states = HashMap::new();
     contract_states.insert(
         "0xAddress1".to_string(),
-        ContractState {
-            loaded_block: end_block3,
-        },
+        ContractState::builder().loaded_block(end_block3).build(),
     );
     contract_states.insert(
         "0xAddress2".to_string(),
-        ContractState {
-            loaded_block: end_block2,
-        },
+        ContractState::builder().loaded_block(end_block2).build(),
     );
     contract_states.insert(
         "0xAddress3".to_string(),
-        ContractState {
-            loaded_block: end_block3,
-        },
+        ContractState::builder().loaded_block(end_block3).build(),
     );
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-11".to_string(),
+            "LoadEvent-11".to_string(),
+            "LoadSuccessEvent-18".to_string(),
+            "StopEvent-18".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     fetchers[0].set_result(FetchResult::Ok(vec![])).await;
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block3);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-19".to_string(),
+            "LoadEvent-19".to_string(),
+            "LoadSuccessEvent-18".to_string(),
+            "StopEvent-18".to_string()
         ]
     );
 }
@@ -540,28 +515,26 @@ async fn test_loader_start_shared_fetcher() {
 #[tokio::test]
 async fn test_loader_start_two_shared_fetcher() {
     let (loader, fetchers, _, _, listeners) = create_shared_loader(2, 1, 1, 1).await;
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
+
+    let option = StartOption::builder()
+        .load_interval_ms(10_u64)
+        .max_batch_block(1000000_u64)
+        .build();
     let end_block1 = 10_u64;
     let end_block2 = 20_u64;
     fetchers[0]
-        .set_result(FetchResult::Ok(vec![Ok(ContractData {
-            address: "0xAddress1".to_string(),
-            start_block: 1_u64,
-            end_block: end_block1,
-            data: None,
-        })]))
+        .set_result(FetchResult::Ok(vec![Ok(ContractData::builder()
+            .address("0xAddress1".to_string())
+            .start_block(1_u64)
+            .end_block(end_block1)
+            .build())]))
         .await;
     fetchers[1]
-        .set_result(FetchResult::Ok(vec![Ok(ContractData {
-            address: "0xAddress2".to_string(),
-            start_block: 1_u64,
-            end_block: end_block2,
-            data: None,
-        })]))
+        .set_result(FetchResult::Ok(vec![Ok(ContractData::builder()
+            .address("0xAddress2".to_string())
+            .start_block(1_u64)
+            .end_block(end_block2)
+            .build())]))
         .await;
 
     loader_start(loader.clone(), option.clone()).await;
@@ -569,52 +542,43 @@ async fn test_loader_start_two_shared_fetcher() {
     assert_eq!(state.loaded_block, end_block1);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert_eq!(state.recent_error, None);
     let mut contract_states = HashMap::new();
     contract_states.insert(
         "0xAddress1".to_string(),
-        ContractState {
-            loaded_block: end_block1,
-        },
+        ContractState::builder().loaded_block(end_block1).build(),
     );
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadSuccessEvent-10".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
-
-    listeners[0].clear().await;
     fetchers[0].set_result(FetchResult::Ok(vec![])).await;
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block1);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert_eq!(state.recent_error, None);
     let mut contract_states = HashMap::new();
     contract_states.insert(
         "0xAddress1".to_string(),
-        ContractState {
-            loaded_block: end_block1,
-        },
+        ContractState::builder().loaded_block(end_block1).build(),
     );
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-11".to_string(),
+            "LoadEvent-11".to_string(),
+            "LoadSuccessEvent-10".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     fetchers[0]
         .set_result(FetchResult::Err(anyhow::Error::msg("error")))
         .await;
@@ -623,68 +587,59 @@ async fn test_loader_start_two_shared_fetcher() {
     assert_eq!(state.loaded_block, end_block1);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert_eq!(state.recent_error, None);
+
     let mut contract_states = HashMap::new();
     contract_states.insert(
         "0xAddress1".to_string(),
-        ContractState {
-            loaded_block: end_block1,
-        },
+        ContractState::builder().loaded_block(end_block1).build(),
     );
     contract_states.insert(
         "0xAddress2".to_string(),
-        ContractState {
-            loaded_block: end_block2,
-        },
+        ContractState::builder().loaded_block(end_block2).build(),
     );
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-11".to_string(),
+            "LoadEvent-11".to_string(),
+            "LoadSuccessEvent-10".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 
     let end_block3 = end_block2 + 10;
-    listeners[0].clear().await;
+
     fetchers[0]
-        .set_result(FetchResult::Ok(vec![Ok(ContractData {
-            address: "0xAddress1".to_string(),
-            start_block: 1_u64,
-            end_block: end_block3,
-            data: None,
-        })]))
+        .set_result(FetchResult::Ok(vec![Ok(ContractData::builder()
+            .address("0xAddress1".to_string())
+            .start_block(1_u64)
+            .end_block(end_block3)
+            .build())]))
         .await;
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block2);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert_eq!(state.recent_error, None);
+
     let mut contract_states = HashMap::new();
     contract_states.insert(
         "0xAddress1".to_string(),
-        ContractState {
-            loaded_block: end_block3,
-        },
+        ContractState::builder().loaded_block(end_block3).build(),
     );
     contract_states.insert(
         "0xAddress2".to_string(),
-        ContractState {
-            loaded_block: end_block2,
-        },
+        ContractState::builder().loaded_block(end_block2).build(),
     );
     assert_eq!(state.contract_states, contract_states);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-11".to_string(),
+            "LoadEvent-11".to_string(),
+            "LoadSuccessEvent-20".to_string(),
+            "StopEvent-20".to_string()
         ]
     );
 }
@@ -693,35 +648,33 @@ async fn test_loader_start_two_shared_fetcher() {
 async fn test_loader_start_shared_validator() {
     let (loader, fetchers, validators, _, listeners) = create_shared_loader(1, 1, 1, 1).await;
     let end_block = 10_u64;
-    let fetcher_result = FetchResult::Ok(vec![Ok(ContractData {
-        address: "0xF20B03c02234F968AdB56cCd2bA2e3F44359A820".to_string(),
-        start_block: 1_u64,
-        end_block,
-        data: None,
-    })]);
+    let fetcher_result = FetchResult::Ok(vec![Ok(ContractData::builder()
+        .address("0xAddress1".to_string())
+        .start_block(1_u64)
+        .end_block(end_block)
+        .build())]);
     fetchers[0].set_result(fetcher_result).await;
     validators[0].set_result(None).await;
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
+
+    let option = StartOption::builder()
+        .load_interval_ms(10_u64)
+        .max_batch_block(1000000_u64)
+        .build();
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
     assert!(!state.is_loading);
     assert!(!state.is_running);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadFailureEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadFailureEvent-123-loader run error failed fetch from all fetchers".to_string(),
+            "StopEvent-123".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     validators[0].set_result(Some(false)).await;
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
@@ -729,16 +682,15 @@ async fn test_loader_start_shared_validator() {
     assert!(!state.is_loading);
     assert!(!state.is_running);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadFailureEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadFailureEvent-123-loader run error failed fetch from all fetchers".to_string(),
+            "StopEvent-123".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     validators[0].set_result(Some(true)).await;
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
@@ -746,12 +698,12 @@ async fn test_loader_start_shared_validator() {
     assert!(!state.is_loading);
     assert!(!state.is_running);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadSuccessEvent-10".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 }
@@ -763,48 +715,40 @@ async fn test_loader_start_two_shared_validator() {
     validators[0].set_result(Some(true)).await;
     validators[1].set_result(Some(true)).await;
 
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
+    let option = StartOption::builder()
+        .load_interval_ms(10_u64)
+        .max_batch_block(1000000_u64)
+        .build();
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert_eq!(state.recent_error, None);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadSuccessEvent-123".to_string(),
+            "StopEvent-123".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     validators[0].set_result(Some(true)).await;
     validators[1].set_result(Some(false)).await;
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
+
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("failed fetch from all fetchers"));
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadFailureEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadFailureEvent-123-loader run error failed fetch from all fetchers".to_string(),
+            "StopEvent-123".to_string()
         ]
     );
 }
@@ -832,32 +776,29 @@ async fn test_loader_start_shared_handler() {
     assert_eq!(state.loaded_block, 123);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("handler error"));
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadFailureEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadFailureEvent-123-handler error".to_string(),
+            "StopEvent-123".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     handlers[0].set_result(true).await;
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("handler error"));
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadSuccessEvent-10".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 }
@@ -865,59 +806,49 @@ async fn test_loader_start_shared_handler() {
 #[tokio::test]
 async fn test_loader_start_two_shared_handler() {
     let (loader, fetchers, _, handlers, listeners) = create_shared_loader(1, 1, 2, 1).await;
+    let start_option = StartOption::builder()
+        .load_interval_ms(10_u64)
+        .max_batch_block(100000_u64)
+        .build();
 
     let end_block = 10_u64;
-    let fetcher_result = FetchResult::Ok(vec![Ok(ContractData {
-        address: "0xAddress1".to_string(),
-        start_block: 1_u64,
-        end_block,
-        data: None,
-    })]);
+    let fetcher_result = FetchResult::Ok(vec![Ok(ContractData::builder()
+        .address("0xAddress1".to_string())
+        .start_block(1_u64)
+        .end_block(end_block)
+        .build())]);
     fetchers[0].set_result(fetcher_result).await;
     handlers[0].set_result(true).await;
     handlers[1].set_result(true).await;
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
-    loader_start(loader.clone(), option.clone()).await;
+    loader_start(loader.clone(), start_option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert_eq!(state.recent_error, None);
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadSuccessEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-124".to_string(),
+            "LoadEvent-124".to_string(),
+            "LoadSuccessEvent-10".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 
-    listeners[0].clear().await;
     handlers[0].set_result(false).await;
     handlers[1].set_result(true).await;
-    let option = StartOption {
-        load_interval_ms: Some(10_u64),
-        max_batch_block: Some(1000000_u64),
-        contract_filter: None,
-    };
-    loader_start(loader.clone(), option.clone()).await;
+    loader_start(loader.clone(), start_option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
     assert!(!state.is_loading);
     assert!(!state.is_running);
-    assert!(state.recent_error.unwrap().contains("handler error"));
     assert_eq!(
-        listeners[0].get_events().await,
+        listeners[0].drain_events().await,
         vec![
-            LoaderEvent::StartEvent,
-            LoaderEvent::LoadEvent,
-            LoaderEvent::LoadFailureEvent,
-            LoaderEvent::StopEvent
+            "StartEvent-11".to_string(),
+            "LoadEvent-11".to_string(),
+            "LoadFailureEvent-10-handler error".to_string(),
+            "StopEvent-10".to_string()
         ]
     );
 }

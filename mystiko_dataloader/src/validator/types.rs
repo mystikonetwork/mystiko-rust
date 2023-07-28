@@ -24,6 +24,6 @@ where
     R: LoadedData,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> Result<bool> {
-        Ok(self.as_ref().validate(data, option).await?)
+        self.as_ref().validate(data, option).await
     }
 }

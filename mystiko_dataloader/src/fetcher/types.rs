@@ -15,7 +15,7 @@ pub struct ChainFetchOption {
     pub chain_id: u64,
     pub start_block: u64,
     pub end_block: u64,
-    #[builder(setter(strip_option))]
+    #[builder(default, setter(strip_option))]
     pub contract_filter: Option<Arc<Box<dyn ContractFilter>>>,
 }
 
@@ -44,10 +44,10 @@ where
     R: LoadedData,
 {
     async fn fetch_chain(&self, option: &ChainFetchOption) -> FetchResult<R> {
-        Ok(self.as_ref().fetch_chain(option).await?)
+        self.as_ref().fetch_chain(option).await
     }
 
     async fn fetch_contracts(&self, options: &[ContractFetchOption]) -> FetchResult<R> {
-        Ok(self.as_ref().fetch_contracts(options).await?)
+        self.as_ref().fetch_contracts(options).await
     }
 }

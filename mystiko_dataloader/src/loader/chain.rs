@@ -1,10 +1,12 @@
 use crate::data::chain::ChainData;
 use crate::data::types::LoadedData;
-use crate::error::{DataloaderError, Result};
+use crate::error::DataloaderError;
 use crate::fetcher::types::{ChainFetchOption, DataFetcher};
 use crate::filter::ContractFilter;
 use crate::handler::types::{DataHandler, HandleOption};
-use crate::loader::listener::{LoaderEvent, Loaderlistener};
+use crate::loader::listener::{
+    LoadEvent, LoadFailureEvent, LoadSuccessEvent, LoaderEvent, LoaderListener, StartEvent, StopEvent,
+};
 use crate::validator::types::{DataValidator, ValidateOption};
 use log::error;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
@@ -15,6 +17,8 @@ use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::time::sleep;
 use typed_builder::TypedBuilder;
+
+type Result<T> = anyhow::Result<T, DataloaderError>;
 
 #[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
@@ -28,7 +32,6 @@ pub struct ChainState {
     pub loaded_block: u64,
     pub is_running: bool,
     pub is_loading: bool,
-    pub recent_error: Option<String>,
     pub contract_states: HashMap<String, ContractState>,
 }
 
@@ -39,7 +42,7 @@ pub struct StartOption {
     pub load_interval_ms: Option<u64>,
     #[builder(setter(strip_option))]
     pub max_batch_block: Option<u64>,
-    #[builder(setter(strip_option))]
+    #[builder(default, setter(strip_option))]
     pub contract_filter: Option<Arc<Box<dyn ContractFilter>>>,
 }
 
@@ -49,7 +52,7 @@ pub struct ChainDataLoader<
     F = Box<dyn DataFetcher<R>>,
     V = Box<dyn DataValidator<R>>,
     H = Box<dyn DataHandler<R>>,
-    L = Box<dyn Loaderlistener>,
+    L = Box<dyn LoaderListener>,
 > {
     config: Arc<MystikoConfig>,
     chain_id: u64,
@@ -67,7 +70,7 @@ pub struct ChainDataLoaderBuilder<
     F = Box<dyn DataFetcher<R>>,
     V = Box<dyn DataValidator<R>>,
     H = Box<dyn DataHandler<R>>,
-    L = Box<dyn Loaderlistener>,
+    L = Box<dyn LoaderListener>,
 > {
     config: Option<Arc<MystikoConfig>>,
     chain_id: u64,
@@ -85,60 +88,130 @@ where
     F: DataFetcher<R>,
     V: DataValidator<R>,
     H: DataHandler<R>,
-    L: Loaderlistener,
+    L: LoaderListener,
 {
-    async fn update_state(&self, chain_data: &ChainData<R>) -> Result<()> {
-        if chain_data.contracts_data.is_empty() {
-            return Ok(());
-        }
+    pub async fn start(&self, options: &StartOption) -> Result<()> {
+        let load_interval_ms = options.load_interval_ms.unwrap_or(10000);
 
-        let mut state = self.state.write().await;
-        for contract_data in &chain_data.contracts_data {
-            // Update contract_states
-            if let Some(contract_state) = state.contract_states.get_mut(&contract_data.address) {
-                contract_state.loaded_block = contract_data.end_block;
-            } else {
-                state.contract_states.insert(
-                    contract_data.address.clone(),
-                    ContractState {
-                        loaded_block: contract_data.end_block,
-                    },
-                );
-            }
-        }
+        if !self.set_is_running(true).await {
+            self.emit_event(&LoaderEvent::StartEvent(
+                StartEvent::builder().start_block(self.loaded_block().await + 1).build(),
+            ))
+            .await;
 
-        if let Some((_, first_state)) = state.contract_states.iter().next() {
-            let mut min_end_block = first_state.loaded_block;
-
-            for (_, contract_state) in state.contract_states.iter() {
-                if contract_state.loaded_block < min_end_block {
-                    min_end_block = contract_state.loaded_block;
+            loop {
+                if !self.is_running().await {
+                    break;
                 }
+
+                self.load(options).await;
+
+                if !self.is_running().await {
+                    break;
+                }
+                sleep(Duration::from_millis(load_interval_ms)).await;
             }
 
-            state.loaded_block = min_end_block;
+            self.emit_event(&LoaderEvent::StopEvent(
+                StopEvent::builder().end_block(self.loaded_block().await).build(),
+            ))
+            .await;
+        } else {
+            error!("loader is already running");
         }
 
         Ok(())
     }
 
-    async fn execute_load(&self, options: &StartOption) -> Result<()> {
-        let start_block = self.state.read().await.loaded_block;
-        let fetch_option = ChainFetchOption {
-            config: self.config.clone(),
-            chain_id: self.chain_id,
-            start_block,
-            end_block: start_block + options.max_batch_block.unwrap_or(1000000),
-            contract_filter: options.contract_filter.clone(),
+    pub async fn stop(&self) -> Result<()> {
+        self.set_is_running(false).await;
+        Ok(())
+    }
+
+    pub async fn is_running(&self) -> bool {
+        self.state.read().await.is_running
+    }
+
+    pub async fn is_loading(&self) -> bool {
+        self.state.read().await.is_loading
+    }
+
+    pub async fn loaded_block(&self) -> u64 {
+        self.state.read().await.loaded_block
+    }
+
+    pub async fn state(&self) -> ChainState {
+        self.state.read().await.clone()
+    }
+
+    async fn set_is_running(&self, is_running: bool) -> bool {
+        let mut last_state = self.state.read().await.is_running;
+        if last_state != is_running {
+            let mut writer = self.state.write().await;
+            last_state = writer.is_running;
+            if last_state != is_running {
+                writer.is_running = is_running;
+            }
+        }
+        last_state
+    }
+
+    async fn set_is_loading(&self, is_loading: bool) -> bool {
+        let mut last_state = self.state.read().await.is_loading;
+        if last_state != is_loading {
+            let mut writer = self.state.write().await;
+            last_state = writer.is_loading;
+            if last_state != is_loading {
+                writer.is_loading = is_loading;
+            }
+        }
+        last_state
+    }
+
+    async fn load(&self, options: &StartOption) {
+        if !self.set_is_loading(true).await {
+            let start_block = self.loaded_block().await + 1;
+            self.emit_event(&LoaderEvent::LoadEvent(
+                LoadEvent::builder().start_block(start_block).build(),
+            ))
+            .await;
+            let result = self.execute_load(start_block, options).await;
+            match result {
+                Ok(_) => {
+                    self.emit_event(&LoaderEvent::LoadSuccessEvent(
+                        LoadSuccessEvent::builder().end_block(self.loaded_block().await).build(),
+                    ))
+                    .await;
+                }
+                Err(e) => {
+                    self.emit_event(&LoaderEvent::LoadFailureEvent(
+                        LoadFailureEvent::builder()
+                            .end_block(self.loaded_block().await)
+                            .load_error(e)
+                            .build(),
+                    ))
+                    .await;
+                }
+            }
+            self.set_is_loading(false).await;
+        }
+    }
+
+    async fn execute_load(&self, start_block: u64, options: &StartOption) -> Result<()> {
+        let fetch_option_builder = ChainFetchOption::builder()
+            .config(self.config.clone())
+            .chain_id(self.chain_id)
+            .start_block(start_block)
+            .end_block(start_block + options.max_batch_block.unwrap_or(1000000));
+
+        let fetch_option = if let Some(filter) = options.contract_filter.clone() {
+            fetch_option_builder.contract_filter(filter).build()
+        } else {
+            fetch_option_builder.build()
         };
 
-        let validator_option = ValidateOption {
-            config: self.config.clone(),
-        };
-
-        let handler_option = HandleOption {
-            config: self.config.clone(),
-        };
+        let validator_option = ValidateOption::builder().config(self.config.clone()).build();
+        let handler_option = HandleOption::builder().config(self.config.clone()).build();
 
         for fetcher in &self.fetchers {
             let chain_data = match fetcher.fetch_chain(&fetch_option).await {
@@ -147,30 +220,32 @@ where
             };
 
             // todo refetch failed contract?
-            let validate_data = ChainData {
-                chain_id: self.chain_id,
-                contracts_data: chain_data
-                    .into_iter()
-                    .filter_map(|r| match r {
-                        Ok(data) => Some(data),
-                        Err(e) => {
-                            error!("fetch meet error {:?}", e);
-                            None
-                        }
-                    })
-                    .collect(),
-            };
+            let validate_data = ChainData::builder()
+                .chain_id(self.chain_id)
+                .contracts_data(
+                    chain_data
+                        .into_iter()
+                        .filter_map(|r| match r {
+                            Ok(data) => Some(data),
+                            Err(e) => {
+                                error!("fetch meet error {:?}", e);
+                                None
+                            }
+                        })
+                        .collect::<Vec<_>>(),
+                )
+                .build();
 
-            let mut validata_result = true;
+            let mut validate_result = true;
             for validator in &self.validators {
                 let result = validator.validate(&validate_data, &validator_option).await;
                 if let Err(_) | Ok(false) = result {
-                    validata_result = false;
+                    validate_result = false;
                     break;
                 }
             }
 
-            if !validata_result {
+            if !validate_result {
                 continue;
             }
 
@@ -187,88 +262,36 @@ where
         ))
     }
 
-    async fn load(&self, options: &StartOption) {
-        {
-            let mut state_writer = self.state.write().await;
-            state_writer.is_loading = true;
-        }
+    async fn update_state(&self, chain_data: &ChainData<R>) -> Result<()> {
+        if !chain_data.contracts_data.is_empty() {
+            let mut state = self.state.write().await;
+            chain_data.contracts_data.iter().for_each(|contract_data| {
+                if let Some(contract_state) = state.contract_states.get_mut(&contract_data.address) {
+                    contract_state.loaded_block = contract_data.end_block;
+                } else {
+                    state.contract_states.insert(
+                        contract_data.address.clone(),
+                        ContractState {
+                            loaded_block: contract_data.end_block,
+                        },
+                    );
+                }
+            });
 
-        self.emit_event(&LoaderEvent::LoadEvent).await;
-        let result = self.execute_load(options).await;
-        match result.as_ref() {
-            Ok(_) => {
-                self.emit_event(&LoaderEvent::LoadSuccessEvent).await;
+            if let Some((_, first_state)) = state.contract_states.iter().next() {
+                let mut min_end_block = first_state.loaded_block;
+                state.contract_states.iter().for_each(|(_, contract_state)| {
+                    if contract_state.loaded_block < min_end_block {
+                        min_end_block = contract_state.loaded_block;
+                    }
+                });
+                state.loaded_block = min_end_block;
             }
-            Err(_) => {
-                self.emit_event(&LoaderEvent::LoadFailureEvent).await;
-            }
         }
-
-        {
-            let current_time = chrono::Utc::now();
-            let mut state_writer = self.state.write().await;
-            if let Some(e) = result.err() {
-                state_writer.recent_error = Some(format!("{} {}", current_time, e));
-            }
-            state_writer.is_loading = false;
-        }
-    }
-
-    pub async fn start(&self, options: &StartOption) -> Result<()> {
-        let load_interval_ms = options.load_interval_ms.unwrap_or(10000);
-        if self.is_running().await {
-            return Err(DataloaderError::LoaderRunError("loader is already running".to_string()));
-        }
-
-        {
-            let mut state_writer = self.state.write().await;
-            if state_writer.is_running {
-                return Err(DataloaderError::LoaderRunError("loader is already running".to_string()));
-            }
-            state_writer.is_running = true;
-        }
-
-        self.emit_event(&LoaderEvent::StartEvent).await;
-
-        loop {
-            if !self.is_running().await {
-                break;
-            }
-
-            self.load(options).await;
-
-            if !self.is_running().await {
-                break;
-            }
-            sleep(Duration::from_millis(load_interval_ms)).await;
-        }
-
-        self.emit_event(&LoaderEvent::StopEvent).await;
         Ok(())
     }
 
-    pub async fn stop(&self) -> Result<()> {
-        self.state.write().await.is_running = false;
-        Ok(())
-    }
-
-    pub async fn state(&self) -> ChainState {
-        self.state.read().await.clone()
-    }
-
-    pub async fn is_running(&self) -> bool {
-        self.state.read().await.is_running
-    }
-
-    pub async fn is_loading(&self) -> bool {
-        self.state.read().await.is_loading
-    }
-
-    pub async fn recent_error(&self) -> Option<String> {
-        self.state.read().await.recent_error.clone()
-    }
-
-    pub async fn emit_event(&self, event: &LoaderEvent) {
+    async fn emit_event(&self, event: &LoaderEvent) {
         for listener in &self.listeners {
             listener.callback(event).await.unwrap_or_else(|e| {
                 error!("emit event meet error {:?}", e);
@@ -283,7 +306,7 @@ where
     F: DataFetcher<R>,
     V: DataValidator<R>,
     H: DataHandler<R>,
-    L: Loaderlistener,
+    L: LoaderListener,
 {
     pub fn new() -> Self {
         Self {
@@ -397,7 +420,6 @@ where
                 loaded_block: self.initial_block,
                 is_running: false,
                 is_loading: false,
-                recent_error: None,
                 contract_states: HashMap::<String, ContractState>::new(),
             };
             Ok(ChainDataLoader {
