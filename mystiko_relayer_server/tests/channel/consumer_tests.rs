@@ -13,6 +13,7 @@ use mystiko_server_utils::token_price::query::CurrencyQuoteResponse;
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorageBuilder;
 use mystiko_types::AssetType;
+use serial_test::file_serial;
 use std::sync::Arc;
 use std::thread::sleep;
 use std::time::Duration;
@@ -182,6 +183,7 @@ fn test_consumer_execution_failed() {
 }
 
 #[test]
+#[file_serial]
 fn test_validate_relayer_fee_error() {
     // tokio runtime
     let rt = Runtime::new().unwrap();
@@ -299,6 +301,7 @@ fn test_validate_relayer_fee_error() {
 }
 
 #[test]
+#[file_serial]
 fn test_max_retry_update_transaction_status() {
     // tokio runtime
     let rt = Runtime::new().unwrap();
