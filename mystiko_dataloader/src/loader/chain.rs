@@ -1,50 +1,24 @@
 use crate::data::chain::ChainData;
 use crate::data::types::LoadedData;
-use crate::error::DataloaderError;
-use crate::fetcher::types::{ChainFetchOption, DataFetcher};
+use crate::error::DataLoaderError;
+use crate::error::DataLoaderError::LoaderRunError;
+use crate::fetcher::types::{ChainFetchOption, ContractFetchOption, DataFetcher, FetchOption};
 use crate::filter::ContractFilter;
 use crate::handler::types::{DataHandler, HandleOption};
 use crate::loader::listener::{
     LoadEvent, LoadFailureEvent, LoadSuccessEvent, LoaderEvent, LoaderListener, StartEvent, StopEvent,
 };
+use crate::loader::types::{ChainState, ContractState, StartOption, DEFAULT_LOAD_INTERVAL_MS, DEFAULT_MAX_BATCH_BLOCK};
 use crate::validator::types::{DataValidator, ValidateOption};
-use log::error;
+use log::{error, warn};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::time::sleep;
-use typed_builder::TypedBuilder;
 
-type Result<T> = anyhow::Result<T, DataloaderError>;
-
-#[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize, TypedBuilder)]
-#[builder(field_defaults(default, setter(into)))]
-pub struct ContractState {
-    pub loaded_block: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize, TypedBuilder)]
-#[builder(field_defaults(default, setter(into)))]
-pub struct ChainState {
-    pub loaded_block: u64,
-    pub is_running: bool,
-    pub is_loading: bool,
-    pub contract_states: HashMap<String, ContractState>,
-}
-
-#[derive(Debug, Clone, Default, TypedBuilder)]
-#[builder(field_defaults(default, setter(into)))]
-pub struct StartOption {
-    #[builder(setter(strip_option))]
-    pub load_interval_ms: Option<u64>,
-    #[builder(setter(strip_option))]
-    pub max_batch_block: Option<u64>,
-    #[builder(default, setter(strip_option))]
-    pub contract_filter: Option<Arc<Box<dyn ContractFilter>>>,
-}
+type Result<T> = anyhow::Result<T, DataLoaderError>;
 
 #[derive(Debug)]
 pub struct ChainDataLoader<
@@ -91,9 +65,10 @@ where
     L: LoaderListener,
 {
     pub async fn start(&self, options: &StartOption) -> Result<()> {
-        let load_interval_ms = options.load_interval_ms.unwrap_or(10000);
+        let load_interval_ms = options.load_interval_ms.unwrap_or(DEFAULT_LOAD_INTERVAL_MS);
 
         if !self.set_is_running(true).await {
+            self.merge_contract_states(options.contract_filter.clone()).await?;
             self.emit_event(&LoaderEvent::StartEvent(
                 StartEvent::builder().start_block(self.loaded_block().await + 1).build(),
             ))
@@ -117,7 +92,7 @@ where
             ))
             .await;
         } else {
-            error!("loader is already running");
+            warn!("loader is already running");
         }
 
         Ok(())
@@ -142,6 +117,10 @@ where
 
     pub async fn state(&self) -> ChainState {
         self.state.read().await.clone()
+    }
+
+    async fn contracts(&self) -> HashMap<String, ContractState> {
+        self.state.read().await.contract_states.clone()
     }
 
     async fn set_is_running(&self, is_running: bool) -> bool {
@@ -198,71 +177,115 @@ where
     }
 
     async fn execute_load(&self, start_block: u64, options: &StartOption) -> Result<()> {
-        let fetch_option_builder = ChainFetchOption::builder()
+        let end_block = start_block + options.max_batch_block.unwrap_or(DEFAULT_MAX_BATCH_BLOCK);
+        let chain_fetch_option = ChainFetchOption::builder()
             .config(self.config.clone())
             .chain_id(self.chain_id)
             .start_block(start_block)
-            .end_block(start_block + options.max_batch_block.unwrap_or(1000000));
+            .end_block(end_block)
+            .contract_filter(options.contract_filter.clone())
+            .build();
+        let mut contract_fetch_options;
 
-        let fetch_option = if let Some(filter) = options.contract_filter.clone() {
-            fetch_option_builder.contract_filter(filter).build()
-        } else {
-            fetch_option_builder.build()
-        };
-
-        let validator_option = ValidateOption::builder().config(self.config.clone()).build();
-        let handler_option = HandleOption::builder().config(self.config.clone()).build();
-
+        // todo filter state contract end_block > end_block?
+        let mut fetch_option = FetchOption::Chain(&chain_fetch_option);
+        let mut retry_contracts = self.contracts().await;
         for fetcher in &self.fetchers {
-            let chain_data = match fetcher.fetch_chain(&fetch_option).await {
-                Err(_) => continue,
+            let mut chain_data = match fetcher.fetch(&fetch_option).await {
+                Err(e) => {
+                    error!("fetch meet error {:?}", e);
+                    continue;
+                }
                 Ok(chain_data) => chain_data,
             };
 
-            // todo refetch failed contract?
-            let validate_data = ChainData::builder()
-                .chain_id(self.chain_id)
-                .contracts_data(
-                    chain_data
-                        .into_iter()
-                        .filter_map(|r| match r {
-                            Ok(data) => Some(data),
-                            Err(e) => {
-                                error!("fetch meet error {:?}", e);
-                                None
-                            }
-                        })
-                        .collect::<Vec<_>>(),
-                )
-                .build();
-
-            let mut validate_result = true;
-            for validator in &self.validators {
-                let result = validator.validate(&validate_data, &validator_option).await;
-                if let Err(_) | Ok(false) = result {
-                    validate_result = false;
-                    break;
-                }
-            }
-
-            if !validate_result {
+            let result = self.validate(&mut chain_data).await;
+            if result.is_err() {
+                error!("validate meet error {:?}", result.err());
                 continue;
             }
 
-            for handler in &self.handlers {
-                handler.handle(&validate_data, &handler_option).await?;
+            let result = self.handle(&mut chain_data).await;
+            if result.is_err() {
+                error!("handle meet error {:?}", result.err());
+                continue;
             }
 
-            return self.update_state(&validate_data).await;
+            self.update_state(&chain_data).await;
+
+            chain_data.contracts_data.iter().for_each(|d| {
+                retry_contracts.remove(&d.address);
+            });
+
+            if !retry_contracts.is_empty() {
+                // todo filter state contract end_block > end_block?
+                contract_fetch_options = retry_contracts
+                    .keys()
+                    .map(|key| {
+                        ContractFetchOption::builder()
+                            .config(self.config.clone())
+                            .chain_id(self.chain_id)
+                            .address(key.clone())
+                            .start_block(start_block)
+                            .end_block(end_block)
+                            .build()
+                    })
+                    .collect::<Vec<_>>();
+                fetch_option = FetchOption::Contracts(&contract_fetch_options);
+            } else {
+                return Ok(());
+            }
         }
 
         error!("failed fetch from all fetchers");
-        Err(DataloaderError::LoaderRunError(
+        Err(DataLoaderError::LoaderRunError(
             "failed fetch from all fetchers".to_string(),
         ))
     }
 
-    async fn update_state(&self, chain_data: &ChainData<R>) -> Result<()> {
+    async fn validate(&self, data: &mut ChainData<R>) -> Result<()> {
+        if !data.contracts_data.is_empty() {
+            let validator_option = ValidateOption::builder().config(self.config.clone()).build();
+            for validator in &self.validators {
+                let validate_result = validator.validate(data, &validator_option).await?;
+                let len = data.contracts_data.len();
+                if len != validate_result.contracts_result.len() {
+                    error!("validate result len mismatch");
+                    return Err(LoaderRunError("validate result len mismatch".to_string()));
+                }
+
+                for i in (0..len).rev() {
+                    if !validate_result.contracts_result[i].result {
+                        data.contracts_data.remove(i);
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    async fn handle(&self, data: &mut ChainData<R>) -> Result<()> {
+        if !data.contracts_data.is_empty() {
+            let handler_option = HandleOption::builder().config(self.config.clone()).build();
+            for handler in &self.handlers {
+                let handle_result = handler.handle(data, &handler_option).await?;
+                let len = data.contracts_data.len();
+                if len != handle_result.contracts_result.len() {
+                    error!("handle result len mismatch");
+                    return Err(LoaderRunError("handle result len mismatch".to_string()));
+                }
+
+                for i in (0..len).rev() {
+                    if !handle_result.contracts_result[i].result {
+                        data.contracts_data.remove(i);
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    async fn update_state(&self, chain_data: &ChainData<R>) {
         if !chain_data.contracts_data.is_empty() {
             let mut state = self.state.write().await;
             chain_data.contracts_data.iter().for_each(|contract_data| {
@@ -288,6 +311,19 @@ where
                 state.loaded_block = min_end_block;
             }
         }
+    }
+
+    async fn merge_contract_states(&self, filter: Option<Arc<Box<dyn ContractFilter>>>) -> Result<()> {
+        let init_states = build_contract_states(self.chain_id, self.config.clone(), filter)?;
+        let mut current_states = self.state.write().await;
+        init_states.iter().for_each(|(addr, init_state)| {
+            if !current_states.contract_states.contains_key(addr) {
+                if current_states.loaded_block > init_state.loaded_block {
+                    current_states.loaded_block = init_state.loaded_block;
+                }
+                current_states.contract_states.insert(addr.clone(), init_state.clone());
+            }
+        });
         Ok(())
     }
 
@@ -410,17 +446,18 @@ where
 
     pub fn build(self) -> Result<ChainDataLoader<R, F, V, H, L>> {
         if self.fetchers.is_empty() || self.validators.is_empty() || self.handlers.is_empty() {
-            return Err(DataloaderError::LoaderInitError(
+            return Err(DataLoaderError::LoaderInitError(
                 "fetchers, validators and handlers cannot be empty".to_string(),
             ));
         }
 
         if let Some(config) = self.config {
+            // let contract_states = build_contract_state_map(self.chain_id, config.clone(), None)?;
             let state = ChainState {
                 loaded_block: self.initial_block,
                 is_running: false,
                 is_loading: false,
-                contract_states: HashMap::<String, ContractState>::new(),
+                contract_states: HashMap::new(),
             };
             Ok(ChainDataLoader {
                 config,
@@ -433,7 +470,33 @@ where
                 _phantom: std::marker::PhantomData,
             })
         } else {
-            Err(DataloaderError::LoaderInitError("config is required".to_string()))
+            Err(DataLoaderError::LoaderInitError("config is required".to_string()))
+        }
+    }
+}
+
+fn build_contract_states(
+    chain_id: u64,
+    cfg: Arc<MystikoConfig>,
+    filter: Option<Arc<Box<dyn ContractFilter>>>,
+) -> Result<HashMap<String, ContractState>> {
+    match cfg.find_chain(chain_id) {
+        None => Err(DataLoaderError::LoaderInitError("chain not exist".to_string())),
+        Some(c) => {
+            let mut h = HashMap::new();
+            c.contracts_with_disabled().iter().for_each(|contract| {
+                let should_filter = match &filter {
+                    Some(f) => f.filter(chain_id, contract),
+                    None => false,
+                };
+                if !should_filter {
+                    h.insert(
+                        contract.address().to_string(),
+                        ContractState::builder().loaded_block(contract.start_block()).build(),
+                    );
+                }
+            });
+            Ok(h)
         }
     }
 }

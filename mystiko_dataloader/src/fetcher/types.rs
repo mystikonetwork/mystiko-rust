@@ -1,4 +1,4 @@
-use crate::data::contract::ContractData;
+use crate::data::chain::ChainData;
 use crate::data::types::LoadedData;
 use crate::filter::ContractFilter;
 use anyhow::Result;
@@ -8,6 +8,12 @@ use std::fmt::Debug;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
+#[derive(Debug, Clone)]
+pub enum FetchOption<'a> {
+    Chain(&'a ChainFetchOption),
+    Contracts(&'a Vec<ContractFetchOption>),
+}
+
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct ChainFetchOption {
@@ -15,7 +21,6 @@ pub struct ChainFetchOption {
     pub chain_id: u64,
     pub start_block: u64,
     pub end_block: u64,
-    #[builder(default, setter(strip_option))]
     pub contract_filter: Option<Arc<Box<dyn ContractFilter>>>,
 }
 
@@ -29,13 +34,11 @@ pub struct ContractFetchOption {
     pub end_block: u64,
 }
 
-pub type FetchResult<R> = Result<Vec<Result<ContractData<R>>>>;
+pub type FetchResult<R> = Result<ChainData<R>>;
 
 #[async_trait]
 pub trait DataFetcher<R: LoadedData>: Send + Sync {
-    async fn fetch_chain(&self, option: &ChainFetchOption) -> FetchResult<R>;
-
-    async fn fetch_contracts(&self, options: &[ContractFetchOption]) -> FetchResult<R>;
+    async fn fetch(&self, option: &FetchOption) -> FetchResult<R>;
 }
 
 #[async_trait]
@@ -43,11 +46,7 @@ impl<R> DataFetcher<R> for Box<dyn DataFetcher<R>>
 where
     R: LoadedData,
 {
-    async fn fetch_chain(&self, option: &ChainFetchOption) -> FetchResult<R> {
-        self.as_ref().fetch_chain(option).await
-    }
-
-    async fn fetch_contracts(&self, options: &[ContractFetchOption]) -> FetchResult<R> {
-        self.as_ref().fetch_contracts(options).await
+    async fn fetch(&self, option: &FetchOption) -> FetchResult<R> {
+        self.as_ref().fetch(option).await
     }
 }

@@ -2,7 +2,7 @@ use anyhow::Error as AnyhowError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum DataloaderError {
+pub enum DataLoaderError {
     #[error("loader init error {0}")]
     LoaderInitError(String),
     #[error("loader run error {0}")]
