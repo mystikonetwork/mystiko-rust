@@ -297,6 +297,9 @@ impl EtherScanClient {
         let response_text = response.text().await?;
         let response = serde_json::from_str::<EtherScanResponse<Value>>(&response_text)?;
         if response.status.ne("1") {
+            if response.message.to_lowercase().contains("no records found") {
+                return Ok(None);
+            }
             Err(EtherScanError::ResponseError(format!(
                 "request failed: {}",
                 response_text

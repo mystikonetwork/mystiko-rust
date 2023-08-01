@@ -9,6 +9,7 @@ use mystiko_abi::commitment_pool::CommitmentQueuedFilter;
 use mystiko_etherscan_client::{
     client::{EtherScanClient, EtherScanClientOptions, EtherScanModule, GetLogsOptions, GetOptions},
     errors::EtherScanError,
+    log::Log,
 };
 
 struct TestClientSetupData {
@@ -645,5 +646,46 @@ async fn test_handle_response_failed_for_json_rpc_error() {
         })
         .to_string()
     );
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_handle_logs_with_empty_response() {
+    let TestClientSetupData {
+        mut mocked_server,
+        ether_scan_client,
+    } = setup().await.unwrap();
+    let mock_resp = serde_json::json!({
+        "status": "0",
+        "message": "No records found",
+        "result": []
+    });
+
+    let m = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+            Matcher::UrlEncoded("module".into(), "logs".into()),
+            Matcher::UrlEncoded("action".into(), "getLogs".into()),
+            Matcher::UrlEncoded("address".into(), "address".into()),
+            Matcher::UrlEncoded("fromBlock".into(), "12878100".into()),
+            Matcher::UrlEncoded("toBlock".into(), "12878100".into()),
+        ]))
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let options = GetOptions::<String>::builder()
+        .url(format!(
+            "{}/api?module=logs&apikey=test_api_key&action=getLogs&address=address&fromBlock=12878100&toBlock=12878100",
+            &ether_scan_client.base_url
+        ))
+        .module(EtherScanModule::Normal)
+        .build();
+    let result = ether_scan_client.handle_response::<Vec<Log>, String>(options).await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert!(result.is_none());
     m.assert_async().await;
 }
