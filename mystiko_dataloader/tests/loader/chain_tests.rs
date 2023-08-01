@@ -1,16 +1,17 @@
 use async_trait::async_trait;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_dataloader::data::chain::{ChainData, ChainResult};
-use mystiko_dataloader::data::contract::{ContractData, ContractResult};
+use mystiko_dataloader::data::chain::ChainData;
+use mystiko_dataloader::data::contract::ContractData;
+use mystiko_dataloader::data::result::{ChainResult, ContractResult};
 use mystiko_dataloader::data::types::{FullData, LoadedData};
 use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOption, FetchResult};
 use mystiko_dataloader::filter::ContractFilter;
-use mystiko_dataloader::handler::types::{DataHandler, HandleOption};
+use mystiko_dataloader::handler::types::{DataHandler, HandleOption, HandleResult};
 use mystiko_dataloader::loader::chain::{ChainDataLoader, ChainDataLoaderBuilder};
 use mystiko_dataloader::loader::listener::{LoaderEvent, LoaderListener};
 use mystiko_dataloader::loader::types::StartOption;
-use mystiko_dataloader::validator::types::{DataValidator, ValidateOption};
+use mystiko_dataloader::validator::types::{DataValidator, ValidateOption, ValidateResult};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -32,6 +33,7 @@ impl MockContractFilter {
     pub fn clear(&mut self) {
         self.contracts.clear();
     }
+
     pub fn add_unfiltered_contract(&mut self, contract: &str) {
         self.contracts.insert(contract.to_string(), true);
     }
@@ -59,24 +61,17 @@ pub struct MockFetcher<R>
 where
     R: LoadedData,
 {
+    pub chain_id: u64,
     pub result: RwLock<Option<ChainData<R>>>,
-}
-
-impl<R> Default for MockFetcher<R>
-where
-    R: LoadedData + Clone,
-{
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl<R> MockFetcher<R>
 where
     R: LoadedData + Clone,
 {
-    pub fn new() -> Self {
+    pub fn new(chain_id: u64) -> Self {
         MockFetcher {
+            chain_id,
             result: RwLock::new(None),
         }
     }
@@ -96,18 +91,36 @@ where
     R: LoadedData + Clone,
 {
     async fn fetch(&self, _option: &FetchOption) -> FetchResult<R> {
-        let result = self.result.read().await;
-        return if result.is_some() {
-            Ok(result.as_ref().unwrap().clone())
+        if let Some(ref result) = *self.result.read().await {
+            let contract_results = result
+                .contracts_data
+                .clone()
+                .into_iter()
+                .map(|d| {
+                    ContractResult::builder()
+                        .address(d.address.clone())
+                        .result(Ok(ContractData::builder()
+                            .address(d.address)
+                            .start_block(d.start_block)
+                            .end_block(d.end_block)
+                            .build()))
+                        .build()
+                })
+                .collect::<Vec<_>>();
+
+            Ok(ChainResult::builder()
+                .chain_id(self.chain_id)
+                .contract_results(contract_results)
+                .build())
         } else {
             Err(anyhow::Error::msg("error".to_string()))
-        };
+        }
     }
 }
 
 pub struct MockValidator {
     all_success: RwLock<bool>,
-    result: RwLock<Option<ChainResult>>,
+    result: RwLock<ValidateResult>,
 }
 
 impl Default for MockValidator {
@@ -120,7 +133,7 @@ impl MockValidator {
     pub fn new() -> Self {
         MockValidator {
             all_success: RwLock::new(true),
-            result: RwLock::new(None),
+            result: RwLock::new(ValidateResult::Err(anyhow::Error::msg("validate error".to_string()))),
         }
     }
 
@@ -128,7 +141,7 @@ impl MockValidator {
         *self.all_success.write().await = true;
     }
 
-    pub async fn set_result(&self, result: Option<ChainResult>) {
+    pub async fn set_result(&self, result: ValidateResult) {
         *self.all_success.write().await = false;
         *self.result.write().await = result;
     }
@@ -139,36 +152,56 @@ impl<R> DataValidator<R> for MockValidator
 where
     R: LoadedData,
 {
-    async fn validate(&self, data: &ChainData<R>, _option: &ValidateOption) -> anyhow::Result<ChainResult> {
+    async fn validate(&self, data: &ChainData<R>, _option: &ValidateOption) -> ValidateResult {
         if *self.all_success.read().await {
-            return Ok(ChainResult::builder()
+            let contract_results = data
+                .contracts_data
+                .iter()
+                .map(|d| {
+                    ContractResult::builder()
+                        .address(d.address.clone())
+                        .result(Ok(()))
+                        .build()
+                })
+                .collect::<Vec<_>>();
+
+            Ok(ChainResult::builder()
                 .chain_id(data.chain_id)
-                .contracts_result(
-                    data.contracts_data
-                        .iter()
-                        .map(|d| {
-                            ContractResult::builder()
-                                .address(d.address.clone())
-                                .result(true)
-                                .build()
-                        })
-                        .collect::<Vec<_>>(),
-                )
-                .build());
+                .contract_results(contract_results)
+                .build())
         } else {
             let result = self.result.read().await;
-            return if result.is_some() {
-                Ok(result.as_ref().unwrap().clone())
-            } else {
-                Err(anyhow::Error::msg("validate error".to_string()))
-            };
+            match &*result {
+                Ok(result) => {
+                    let contract_results = result
+                        .contract_results
+                        .iter()
+                        .map(|d| match d.result {
+                            Ok(_) => ContractResult::builder()
+                                .address(d.address.clone())
+                                .result(Ok(()))
+                                .build(),
+                            Err(_) => ContractResult::builder()
+                                .address(d.address.clone())
+                                .result(Err(anyhow::Error::msg("error".to_string())))
+                                .build(),
+                        })
+                        .collect::<Vec<_>>();
+
+                    Ok(ChainResult::builder()
+                        .chain_id(result.chain_id)
+                        .contract_results(contract_results)
+                        .build())
+                }
+                Err(_) => Err(anyhow::Error::msg("handle error".to_string())),
+            }
         }
     }
 }
 
 pub struct MockHandler {
     all_success: RwLock<bool>,
-    result: RwLock<Option<ChainResult>>,
+    result: RwLock<HandleResult>,
 }
 
 impl Default for MockHandler {
@@ -180,7 +213,7 @@ impl MockHandler {
     pub fn new() -> Self {
         MockHandler {
             all_success: RwLock::new(true),
-            result: RwLock::new(None),
+            result: RwLock::new(HandleResult::Err(anyhow::Error::msg("handle error".to_string()))),
         }
     }
 
@@ -188,7 +221,7 @@ impl MockHandler {
         *self.all_success.write().await = true;
     }
 
-    pub async fn set_result(&self, result: Option<ChainResult>) {
+    pub async fn set_result(&self, result: HandleResult) {
         *self.all_success.write().await = false;
         *self.result.write().await = result;
     }
@@ -199,29 +232,49 @@ impl<R> DataHandler<R> for MockHandler
 where
     R: LoadedData,
 {
-    async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> anyhow::Result<ChainResult> {
+    async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
         if *self.all_success.read().await {
-            return Ok(ChainResult::builder()
+            let contract_results = data
+                .contracts_data
+                .iter()
+                .map(|d| {
+                    ContractResult::builder()
+                        .address(d.address.clone())
+                        .result(Ok(()))
+                        .build()
+                })
+                .collect::<Vec<_>>();
+
+            Ok(ChainResult::builder()
                 .chain_id(data.chain_id)
-                .contracts_result(
-                    data.contracts_data
-                        .iter()
-                        .map(|d| {
-                            ContractResult::builder()
-                                .address(d.address.clone())
-                                .result(true)
-                                .build()
-                        })
-                        .collect::<Vec<_>>(),
-                )
-                .build());
+                .contract_results(contract_results)
+                .build())
         } else {
             let result = self.result.read().await;
-            return if result.is_some() {
-                Ok(result.as_ref().unwrap().clone())
-            } else {
-                Err(anyhow::Error::msg("handle error".to_string()))
-            };
+            match &*result {
+                Ok(result) => {
+                    let contract_results = result
+                        .contract_results
+                        .iter()
+                        .map(|d| match d.result {
+                            Ok(_) => ContractResult::builder()
+                                .address(d.address.clone())
+                                .result(Ok(()))
+                                .build(),
+                            Err(_) => ContractResult::builder()
+                                .address(d.address.clone())
+                                .result(Err(anyhow::Error::msg("error".to_string())))
+                                .build(),
+                        })
+                        .collect::<Vec<_>>();
+
+                    Ok(ChainResult::builder()
+                        .chain_id(result.chain_id)
+                        .contract_results(contract_results)
+                        .build())
+                }
+                Err(_) => Err(anyhow::Error::msg("handle error".to_string())),
+            }
         }
     }
 }
@@ -294,15 +347,16 @@ async fn create_loader(
     contract_address: &str,
     end_block: u64,
 ) -> ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener> {
+    let chain_id = 1_u64;
     let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener> =
         ChainDataLoaderBuilder::new();
 
-    let fetcher = MockFetcher::new();
+    let fetcher = MockFetcher::new(chain_id);
     if fetch_result {
         fetcher
             .set_result(
                 ChainData::builder()
-                    .chain_id(1_u64)
+                    .chain_id(chain_id)
                     .contracts_data(vec![ContractData::builder()
                         .address(contract_address.to_string())
                         .start_block(1_u64)
@@ -327,7 +381,7 @@ async fn create_loader(
             .config(Arc::new(core_cfg))
             .add_fetchers(vec![fetcher])
             .add_validators(vec![validator])
-            .add_handlers(vec![handler])
+            .handler(handler)
             .add_listeners(vec![listener])
             .build()
             .unwrap()
@@ -338,7 +392,7 @@ async fn create_loader(
             .config(Arc::new(core_cfg))
             .add_fetcher(fetcher)
             .add_validator(validator)
-            .add_handler(handler)
+            .handler(handler)
             .add_listener(listener)
             .build()
             .unwrap()
@@ -348,15 +402,15 @@ async fn create_loader(
 async fn create_shared_loader(
     feature_count: usize,
     validator_count: usize,
-    handler_count: usize,
     listener_count: usize,
 ) -> (
     Arc<ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener>>,
     Vec<Arc<MockFetcher<FullData>>>,
     Vec<Arc<MockValidator>>,
-    Vec<Arc<MockHandler>>,
+    Arc<MockHandler>,
     Vec<Arc<MockListener>>,
 ) {
+    let chain_id = 1_u64;
     let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener> =
         ChainDataLoaderBuilder::new();
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
@@ -364,30 +418,28 @@ async fn create_shared_loader(
         .unwrap();
 
     let fetchers = (0..feature_count)
-        .map(|_| Arc::new(MockFetcher::new()))
+        .map(|_| Arc::new(MockFetcher::new(chain_id)))
         .collect::<Vec<_>>();
     let validators = (0..validator_count)
         .map(|_| Arc::new(MockValidator::new()))
         .collect::<Vec<_>>();
-    let handlers = (0..handler_count)
-        .map(|_| Arc::new(MockHandler::new()))
-        .collect::<Vec<_>>();
+    let handler = Arc::new(MockHandler::new());
     let listeners = (0..listener_count)
         .map(|_| Arc::new(MockListener::default()))
         .collect::<Vec<_>>();
 
     let loader = builder
-        .chain_id(1)
+        .chain_id(chain_id)
         .initial_block(123_u64)
         .config(Arc::new(core_cfg))
         .add_shared_fetchers(fetchers.clone())
         .add_shared_validators(validators.clone())
-        .add_shared_handlers(handlers.clone())
+        .shared_handler(handler.clone())
         .add_shared_listeners(listeners.clone())
         .build()
         .unwrap();
 
-    (Arc::new(loader), fetchers, validators, handlers, listeners)
+    (Arc::new(loader), fetchers, validators, handler, listeners)
 }
 
 #[tokio::test]
@@ -440,7 +492,7 @@ async fn test_loader_start_batch_builder() {
 
 #[tokio::test]
 async fn test_loader_start_shared_fetcher() {
-    let (loader, fetchers, _, _, listeners) = create_shared_loader(1, 1, 1, 1).await;
+    let (loader, fetchers, _, _, listeners) = create_shared_loader(1, 1, 1).await;
     let mut filter = MockContractFilter::new();
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let contract_address2 = "0x62121886c954d7e23077f52217b51c26ad26bE9e";
@@ -630,7 +682,7 @@ async fn test_loader_start_shared_fetcher() {
 
 #[tokio::test]
 async fn test_loader_start_two_shared_fetcher() {
-    let (loader, fetchers, _, _, listeners) = create_shared_loader(2, 1, 1, 1).await;
+    let (loader, fetchers, _, _, listeners) = create_shared_loader(2, 1, 1).await;
 
     let mut filter = MockContractFilter::new();
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
@@ -769,7 +821,7 @@ async fn test_loader_start_two_shared_fetcher() {
 
 #[tokio::test]
 async fn test_loader_start_shared_validator() {
-    let (loader, fetchers, validators, _, listeners) = create_shared_loader(1, 1, 1, 1).await;
+    let (loader, fetchers, validators, _, listeners) = create_shared_loader(1, 1, 1).await;
     let chain_id = 1_u64;
     let end_block = 10_u64;
     let option = StartOption::builder()
@@ -797,7 +849,9 @@ async fn test_loader_start_shared_validator() {
         )
         .build();
     fetchers[0].set_result(fetcher_result).await;
-    validators[0].set_result(None).await;
+    validators[0]
+        .set_result(Err(anyhow::Error::msg("error".to_string())))
+        .await;
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
@@ -813,7 +867,9 @@ async fn test_loader_start_shared_validator() {
         ]
     );
 
-    validators[0].set_result(None).await;
+    validators[0]
+        .set_result(Err(anyhow::Error::msg("error".to_string())))
+        .await;
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, 123);
@@ -848,7 +904,7 @@ async fn test_loader_start_shared_validator() {
 
 #[tokio::test]
 async fn test_loader_start_two_shared_validator() {
-    let (loader, fetchers, validators, _, listeners) = create_shared_loader(1, 2, 1, 1).await;
+    let (loader, fetchers, validators, _, listeners) = create_shared_loader(1, 2, 1).await;
     let chain_id = 1_u64;
     let contract_address = "0x7F88F2A3Cf18E96844E14CaE59EC97B908734C01";
     let end_block = 10_u64;
@@ -884,8 +940,9 @@ async fn test_loader_start_two_shared_validator() {
         ]
     );
 
-    validators[1].set_result(None).await;
-
+    validators[1]
+        .set_result(Err(anyhow::Error::msg("error".to_string())))
+        .await;
     loader_start(loader.clone(), option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
@@ -907,7 +964,7 @@ async fn test_loader_start_two_shared_validator() {
 
 #[tokio::test]
 async fn test_loader_start_shared_handler() {
-    let (loader, fetchers, _, handlers, listeners) = create_shared_loader(1, 1, 1, 1).await;
+    let (loader, fetchers, _, handler, listeners) = create_shared_loader(1, 1, 1).await;
     let chain_id = 1_u64;
     let contract_address = "0x7F88F2A3Cf18E96844E14CaE59EC97B908734C01";
     let end_block = 10_u64;
@@ -920,7 +977,7 @@ async fn test_loader_start_shared_handler() {
             .build()])
         .build();
     fetchers[0].set_result(fetcher_result).await;
-    handlers[0].set_result(None).await;
+    handler.set_result(Err(anyhow::Error::msg("error".to_string()))).await;
     let option = StartOption {
         load_interval_ms: Some(10_u64),
         max_batch_block: Some(1000000_u64),
@@ -941,7 +998,7 @@ async fn test_loader_start_shared_handler() {
         ]
     );
 
-    handlers[0].set_all_success().await;
+    handler.set_all_success().await;
     loader_start(loader.clone(), option).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
@@ -963,7 +1020,7 @@ async fn test_loader_start_shared_handler() {
 
 #[tokio::test]
 async fn test_loader_start_two_shared_handler() {
-    let (loader, fetchers, _, handlers, listeners) = create_shared_loader(1, 1, 2, 1).await;
+    let (loader, fetchers, _, handler, listeners) = create_shared_loader(1, 1, 1).await;
     let start_option = StartOption::builder()
         .load_interval_ms(10_u64)
         .max_batch_block(100000_u64)
@@ -998,7 +1055,7 @@ async fn test_loader_start_two_shared_handler() {
         ]
     );
 
-    handlers[1].set_result(None).await;
+    handler.set_result(Err(anyhow::Error::msg("error".to_string()))).await;
     loader_start(loader.clone(), start_option.clone()).await;
     let state = loader.state().await;
     assert_eq!(state.loaded_block, end_block);
@@ -1020,18 +1077,19 @@ async fn test_loader_start_two_shared_handler() {
 
 #[tokio::test]
 async fn test_add_shared_handler() {
+    let chain_id = 1_u64;
     let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener> =
         ChainDataLoaderBuilder::new();
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
     let loader = builder
-        .chain_id(1)
+        .chain_id(chain_id)
         .initial_block(123_u64)
         .config(Arc::new(core_cfg))
-        .add_shared_fetcher(Arc::new(MockFetcher::new()))
+        .add_shared_fetcher(Arc::new(MockFetcher::new(chain_id)))
         .add_shared_validator(Arc::new(MockValidator::new()))
-        .add_shared_handler(Arc::new(MockHandler::new()))
+        .shared_handler(Arc::new(MockHandler::new()))
         .add_shared_listener(Arc::new(MockListener::default()))
         .build()
         .unwrap();

@@ -1,4 +1,5 @@
-use crate::data::chain::ChainData;
+use crate::data::contract::ContractData;
+use crate::data::result::ChainResult;
 use crate::data::types::LoadedData;
 use crate::filter::ContractFilter;
 use anyhow::Result;
@@ -34,7 +35,7 @@ pub struct ContractFetchOption {
     pub end_block: u64,
 }
 
-pub type FetchResult<R> = Result<ChainData<R>>;
+pub type FetchResult<R> = Result<ChainResult<ContractData<R>>>;
 
 #[async_trait]
 pub trait DataFetcher<R: LoadedData>: Send + Sync {

@@ -11,10 +11,3 @@ pub struct ContractData<R: LoadedData> {
     #[builder(default, setter(strip_option))]
     pub data: Option<R>,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
-#[builder(field_defaults(setter(into)))]
-pub struct ContractResult {
-    pub address: String,
-    pub result: bool,
-}

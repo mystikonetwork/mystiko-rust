@@ -1,7 +1,7 @@
 use crate::data::chain::ChainData;
+use crate::data::result::UnwrappedChainResult;
 use crate::data::types::LoadedData;
 use crate::error::DataLoaderError;
-use crate::error::DataLoaderError::LoaderRunError;
 use crate::fetcher::types::{ChainFetchOption, ContractFetchOption, DataFetcher, FetchOption};
 use crate::filter::ContractFilter;
 use crate::handler::types::{DataHandler, HandleOption};
@@ -32,7 +32,7 @@ pub struct ChainDataLoader<
     chain_id: u64,
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
-    handlers: Vec<Arc<H>>,
+    handler: Arc<H>,
     listeners: Vec<Arc<L>>,
     state: RwLock<ChainState>,
     _phantom: std::marker::PhantomData<R>,
@@ -51,7 +51,7 @@ pub struct ChainDataLoaderBuilder<
     initial_block: u64,
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
-    handlers: Vec<Arc<H>>,
+    handler: Option<Arc<H>>,
     listeners: Vec<Arc<L>>,
     _phantom: std::marker::PhantomData<R>,
 }
@@ -156,9 +156,9 @@ where
             .await;
             let result = self.execute_load(start_block, options).await;
             match result {
-                Ok(_) => {
+                Ok(loaded_block) => {
                     self.emit_event(&LoaderEvent::LoadSuccessEvent(
-                        LoadSuccessEvent::builder().end_block(self.loaded_block().await).build(),
+                        LoadSuccessEvent::builder().end_block(loaded_block).build(),
                     ))
                     .await;
                 }
@@ -176,7 +176,7 @@ where
         }
     }
 
-    async fn execute_load(&self, start_block: u64, options: &StartOption) -> Result<()> {
+    async fn execute_load(&self, start_block: u64, options: &StartOption) -> Result<u64> {
         let end_block = start_block + options.max_batch_block.unwrap_or(DEFAULT_MAX_BATCH_BLOCK);
         let chain_fetch_option = ChainFetchOption::builder()
             .config(self.config.clone())
@@ -185,56 +185,40 @@ where
             .end_block(end_block)
             .contract_filter(options.contract_filter.clone())
             .build();
-        let mut contract_fetch_options;
 
         // todo filter state contract end_block > end_block?
         let mut fetch_option = FetchOption::Chain(&chain_fetch_option);
+        let mut contracts_fetch_option;
         let mut retry_contracts = self.contracts().await;
         for fetcher in &self.fetchers {
-            let mut chain_data = match fetcher.fetch(&fetch_option).await {
+            let mut chain_data = match self.fetch(fetcher, fetch_option.clone()).await {
                 Err(e) => {
-                    error!("fetch meet error {:?}", e);
+                    warn!("fetch meet error {:?}, try next fetcher", e);
                     continue;
                 }
-                Ok(chain_data) => chain_data,
+                Ok(d) => d,
             };
 
-            let result = self.validate(&mut chain_data).await;
-            if result.is_err() {
-                error!("validate meet error {:?}", result.err());
+            if let Err(e) = self.validate(&mut chain_data).await {
+                warn!("validate meet error {:?}, try next fetcher", e);
                 continue;
-            }
+            };
 
-            let result = self.handle(&mut chain_data).await;
-            if result.is_err() {
-                error!("handle meet error {:?}", result.err());
+            if let Err(e) = self.handle(&mut chain_data).await {
+                warn!("handle meet error {:?}, try next fetcher", e);
                 continue;
-            }
+            };
 
-            self.update_state(&chain_data).await;
-
-            chain_data.contracts_data.iter().for_each(|d| {
-                retry_contracts.remove(&d.address);
-            });
-
-            if !retry_contracts.is_empty() {
-                // todo filter state contract end_block > end_block?
-                contract_fetch_options = retry_contracts
-                    .keys()
-                    .map(|key| {
-                        ContractFetchOption::builder()
-                            .config(self.config.clone())
-                            .chain_id(self.chain_id)
-                            .address(key.clone())
-                            .start_block(start_block)
-                            .end_block(end_block)
-                            .build()
-                    })
-                    .collect::<Vec<_>>();
-                fetch_option = FetchOption::Contracts(&contract_fetch_options);
-            } else {
-                return Ok(());
-            }
+            let loaded_block = self.update_state(&chain_data).await;
+            match self.build_retry_fetch_option(&mut chain_data, &mut retry_contracts, start_block, end_block) {
+                Some(option) => {
+                    contracts_fetch_option = option;
+                    fetch_option = FetchOption::Contracts(&contracts_fetch_option);
+                }
+                None => {
+                    return Ok(loaded_block);
+                }
+            };
         }
 
         error!("failed fetch from all fetchers");
@@ -243,22 +227,33 @@ where
         ))
     }
 
+    async fn fetch(&self, fetcher: &Arc<F>, option: FetchOption<'_>) -> Result<ChainData<R>> {
+        let fetch_result = match fetcher.fetch(&option).await {
+            Err(e) => {
+                return Err(DataLoaderError::AnyhowError(e));
+            }
+            Ok(chain_data) => chain_data,
+        };
+
+        let unwrapped = UnwrappedChainResult::from(fetch_result);
+        unwrapped.log_warning("fetch");
+        Ok(unwrapped.result)
+    }
+
     async fn validate(&self, data: &mut ChainData<R>) -> Result<()> {
         if !data.contracts_data.is_empty() {
             let validator_option = ValidateOption::builder().config(self.config.clone()).build();
             for validator in &self.validators {
                 let validate_result = validator.validate(data, &validator_option).await?;
-                let len = data.contracts_data.len();
-                if len != validate_result.contracts_result.len() {
-                    error!("validate result len mismatch");
-                    return Err(LoaderRunError("validate result len mismatch".to_string()));
-                }
+                let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
+                unwrapped.log_warning("validate");
 
-                for i in (0..len).rev() {
-                    if !validate_result.contracts_result[i].result {
-                        data.contracts_data.remove(i);
-                    }
-                }
+                let _ = unwrapped.contract_errors.iter().map(|c| {
+                    data.contracts_data
+                        .iter()
+                        .position(|d| d.address == c.address)
+                        .map(|i| data.contracts_data.remove(i));
+                });
             }
         }
         Ok(())
@@ -267,25 +262,52 @@ where
     async fn handle(&self, data: &mut ChainData<R>) -> Result<()> {
         if !data.contracts_data.is_empty() {
             let handler_option = HandleOption::builder().config(self.config.clone()).build();
-            for handler in &self.handlers {
-                let handle_result = handler.handle(data, &handler_option).await?;
-                let len = data.contracts_data.len();
-                if len != handle_result.contracts_result.len() {
-                    error!("handle result len mismatch");
-                    return Err(LoaderRunError("handle result len mismatch".to_string()));
-                }
+            let handle_result = self.handler.handle(data, &handler_option).await?;
+            let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(handle_result);
+            unwrapped.log_warning("handle");
 
-                for i in (0..len).rev() {
-                    if !handle_result.contracts_result[i].result {
-                        data.contracts_data.remove(i);
-                    }
-                }
-            }
+            let _ = unwrapped.contract_errors.iter().map(|c| {
+                data.contracts_data
+                    .iter()
+                    .position(|d| d.address == c.address)
+                    .map(|i| data.contracts_data.remove(i));
+            });
         }
         Ok(())
     }
 
-    async fn update_state(&self, chain_data: &ChainData<R>) {
+    fn build_retry_fetch_option(
+        &self,
+        data: &mut ChainData<R>,
+        retry_contracts: &mut HashMap<String, ContractState>,
+        start_block: u64,
+        end_block: u64,
+    ) -> Option<Vec<ContractFetchOption>> {
+        data.contracts_data.iter().for_each(|d| {
+            retry_contracts.remove(&d.address);
+        });
+
+        // todo filter state contract end_block > end_block?
+        if !retry_contracts.is_empty() {
+            let contract_fetch_options = retry_contracts
+                .keys()
+                .map(|key| {
+                    ContractFetchOption::builder()
+                        .config(self.config.clone())
+                        .chain_id(self.chain_id)
+                        .address(key.clone())
+                        .start_block(start_block)
+                        .end_block(end_block)
+                        .build()
+                })
+                .collect::<Vec<_>>();
+            Some(contract_fetch_options)
+        } else {
+            None
+        }
+    }
+
+    async fn update_state(&self, chain_data: &ChainData<R>) -> u64 {
         if !chain_data.contracts_data.is_empty() {
             let mut state = self.state.write().await;
             chain_data.contracts_data.iter().for_each(|contract_data| {
@@ -310,6 +332,10 @@ where
                 });
                 state.loaded_block = min_end_block;
             }
+
+            state.loaded_block
+        } else {
+            self.loaded_block().await
         }
     }
 
@@ -351,7 +377,7 @@ where
             initial_block: 0,
             fetchers: Vec::new(),
             validators: Vec::new(),
-            handlers: Vec::new(),
+            handler: None,
             listeners: Vec::new(),
             _phantom: std::marker::PhantomData,
         }
@@ -408,21 +434,12 @@ where
         self
     }
 
-    pub fn add_handler(self, handler: H) -> Self {
-        self.add_shared_handler(Arc::new(handler))
+    pub fn handler(self, handler: H) -> Self {
+        self.shared_handler(Arc::new(handler))
     }
 
-    pub fn add_handlers(self, handlers: Vec<H>) -> Self {
-        self.add_shared_handlers(handlers.into_iter().map(Arc::new).collect())
-    }
-
-    pub fn add_shared_handler(mut self, handler: Arc<H>) -> Self {
-        self.handlers.push(handler);
-        self
-    }
-
-    pub fn add_shared_handlers(mut self, handlers: Vec<Arc<H>>) -> Self {
-        self.handlers.extend(handlers);
+    pub fn shared_handler(mut self, handler: Arc<H>) -> Self {
+        self.handler = Some(handler);
         self
     }
 
@@ -445,14 +462,17 @@ where
     }
 
     pub fn build(self) -> Result<ChainDataLoader<R, F, V, H, L>> {
-        if self.fetchers.is_empty() || self.validators.is_empty() || self.handlers.is_empty() {
+        if self.fetchers.is_empty() || self.validators.is_empty() || self.handler.is_none() {
             return Err(DataLoaderError::LoaderInitError(
-                "fetchers, validators and handlers cannot be empty".to_string(),
+                "fetchers, validators cannot be empty".to_string(),
             ));
         }
 
+        let handle = self
+            .handler
+            .ok_or_else(|| DataLoaderError::LoaderInitError("handler cannot be None".to_string()))?;
+
         if let Some(config) = self.config {
-            // let contract_states = build_contract_state_map(self.chain_id, config.clone(), None)?;
             let state = ChainState {
                 loaded_block: self.initial_block,
                 is_running: false,
@@ -464,7 +484,7 @@ where
                 chain_id: self.chain_id,
                 fetchers: self.fetchers,
                 validators: self.validators,
-                handlers: self.handlers,
+                handler: handle,
                 listeners: self.listeners,
                 state: RwLock::new(state),
                 _phantom: std::marker::PhantomData,
