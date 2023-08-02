@@ -22,14 +22,15 @@ pub struct LiteData {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Data<'a> {
-    Full(&'a FullData),
-    Lite(&'a LiteData),
+pub enum Data {
+    Full(FullData),
+    Lite(LiteData),
 }
 
 pub trait LoadedData: Send + Sync {
     fn data_type() -> DataType;
-    fn data(&self) -> Data;
+    fn from_data(data: Data) -> Self;
+    fn into_data(self) -> Data;
 }
 
 impl LoadedData for FullData {
@@ -37,7 +38,17 @@ impl LoadedData for FullData {
         DataType::Full
     }
 
-    fn data(&self) -> Data {
+    fn from_data(data: Data) -> Self {
+        match data {
+            Data::Full(full_data) => full_data,
+            Data::Lite(lite_data) => FullData {
+                commitments: lite_data.commitments,
+                nullifiers: Vec::new(),
+            },
+        }
+    }
+
+    fn into_data(self) -> Data {
         Data::Full(self)
     }
 }
@@ -47,7 +58,16 @@ impl LoadedData for LiteData {
         DataType::Lite
     }
 
-    fn data(&self) -> Data {
+    fn from_data(data: Data) -> Self {
+        match data {
+            Data::Full(full_data) => LiteData {
+                commitments: full_data.commitments,
+            },
+            Data::Lite(lite_data) => lite_data,
+        }
+    }
+
+    fn into_data(self) -> Data {
         Data::Lite(self)
     }
 }

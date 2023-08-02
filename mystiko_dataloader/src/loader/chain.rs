@@ -68,7 +68,7 @@ where
         let load_interval_ms = options.load_interval_ms.unwrap_or(DEFAULT_LOAD_INTERVAL_MS);
 
         if !self.set_is_running(true).await {
-            self.merge_contract_states(options.contract_filter.clone()).await?;
+            self.merge_contract_states(&options.contract_filter).await?;
             self.emit_event(&LoaderEvent::StartEvent(
                 StartEvent::builder().start_block(self.loaded_block().await + 1).build(),
             ))
@@ -117,10 +117,6 @@ where
 
     pub async fn state(&self) -> ChainState {
         self.state.read().await.clone()
-    }
-
-    async fn contracts(&self) -> HashMap<String, ContractState> {
-        self.state.read().await.contract_states.clone()
     }
 
     async fn set_is_running(&self, is_running: bool) -> bool {
@@ -186,10 +182,14 @@ where
             .contract_filter(options.contract_filter.clone())
             .build();
 
-        // todo filter state contract end_block > end_block?
         let mut fetch_option = FetchOption::Chain(&chain_fetch_option);
         let mut contracts_fetch_option;
-        let mut retry_contracts = self.contracts().await;
+        let mut retry_contracts: Vec<String> =
+            build_contracts_by_filter_option(self.chain_id, self.config.clone(), &options.contract_filter)?
+                .keys()
+                .cloned()
+                .collect();
+
         for fetcher in &self.fetchers {
             let mut chain_data = match self.fetch(fetcher, fetch_option.clone()).await {
                 Err(e) => {
@@ -279,18 +279,20 @@ where
     fn build_retry_fetch_option(
         &self,
         data: &mut ChainData<R>,
-        retry_contracts: &mut HashMap<String, ContractState>,
+        retry_contracts: &mut Vec<String>,
         start_block: u64,
         end_block: u64,
     ) -> Option<Vec<ContractFetchOption>> {
         data.contracts_data.iter().for_each(|d| {
-            retry_contracts.remove(&d.address);
+            retry_contracts
+                .iter()
+                .position(|r| *r == d.address)
+                .map(|i| retry_contracts.remove(i));
         });
 
-        // todo filter state contract end_block > end_block?
         if !retry_contracts.is_empty() {
             let contract_fetch_options = retry_contracts
-                .keys()
+                .iter()
                 .map(|key| {
                     ContractFetchOption::builder()
                         .config(self.config.clone())
@@ -339,8 +341,8 @@ where
         }
     }
 
-    async fn merge_contract_states(&self, filter: Option<Arc<Box<dyn ContractFilter>>>) -> Result<()> {
-        let init_states = build_contract_states(self.chain_id, self.config.clone(), filter)?;
+    async fn merge_contract_states(&self, filter: &Option<Arc<Box<dyn ContractFilter>>>) -> Result<()> {
+        let init_states = build_contracts_by_filter_option(self.chain_id, self.config.clone(), filter)?;
         let mut current_states = self.state.write().await;
         init_states.iter().for_each(|(addr, init_state)| {
             if !current_states.contract_states.contains_key(addr) {
@@ -356,7 +358,7 @@ where
     async fn emit_event(&self, event: &LoaderEvent) {
         for listener in &self.listeners {
             listener.callback(event).await.unwrap_or_else(|e| {
-                error!("emit event meet error {:?}", e);
+                warn!("emit event meet error {:?}", e);
             });
         }
     }
@@ -462,10 +464,8 @@ where
     }
 
     pub fn build(self) -> Result<ChainDataLoader<R, F, V, H, L>> {
-        if self.fetchers.is_empty() || self.validators.is_empty() || self.handler.is_none() {
-            return Err(DataLoaderError::LoaderInitError(
-                "fetchers, validators cannot be empty".to_string(),
-            ));
+        if self.fetchers.is_empty() {
+            return Err(DataLoaderError::LoaderInitError("fetchers cannot be empty".to_string()));
         }
 
         let handle = self
@@ -495,13 +495,13 @@ where
     }
 }
 
-fn build_contract_states(
+fn build_contracts_by_filter_option(
     chain_id: u64,
     cfg: Arc<MystikoConfig>,
-    filter: Option<Arc<Box<dyn ContractFilter>>>,
+    filter: &Option<Arc<Box<dyn ContractFilter>>>,
 ) -> Result<HashMap<String, ContractState>> {
     match cfg.find_chain(chain_id) {
-        None => Err(DataLoaderError::LoaderInitError("chain not exist".to_string())),
+        None => Err(DataLoaderError::UnsupportedChainError(chain_id)),
         Some(c) => {
             let mut h = HashMap::new();
             c.contracts_with_disabled().iter().for_each(|contract| {
