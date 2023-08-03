@@ -9,6 +9,7 @@ members = [
     "mystiko_dataloader",
     "mystiko_downloader",
     "mystiko_ethers",
+    "mystiko_etherscan_client",
     "mystiko_fs",
     "mystiko_indexer_client",
     "mystiko_protocol",

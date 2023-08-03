@@ -5,6 +5,7 @@ pub mod circuit;
 pub mod contract;
 pub mod indexer;
 pub mod mystiko;
+pub mod packer;
 pub mod provider;
 
 use ::validator::Validate;

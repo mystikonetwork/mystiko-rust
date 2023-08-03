@@ -6,7 +6,9 @@ const SQLITE_DATABASE_PATH: &str = "./tests/files/sqlite_database_test.db";
 #[actix_rt::test]
 async fn test_init_sqlite_database() {
     // try init logger
-    let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
+    let _ = env_logger::builder()
+        .filter_module("mystiko_relayer_server", LevelFilter::Debug)
+        .try_init();
     let sqlite = init_sqlite_database(SQLITE_DATABASE_PATH).await;
     assert!(sqlite.is_ok());
     // delete database file

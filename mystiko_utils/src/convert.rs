@@ -37,13 +37,17 @@ where
 }
 
 pub fn u256_to_biguint(u: &U256) -> BigUint {
+    bytes_to_biguint(&u256_to_bytes(u))
+}
+
+pub fn u256_to_bytes(u: &U256) -> Vec<u8> {
     let mut arr = [0u8; 32];
     u.to_little_endian(&mut arr[..]);
-    bytes_to_biguint(&arr)
+    arr.to_vec()
 }
 
 pub fn biguint_to_u256(b: &BigUint) -> U256 {
-    U256::from_little_endian(&biguint_to_bytes(b))
+    bytes_to_u256(&biguint_to_bytes(b))
 }
 
 pub fn biguint_to_bytes(b: &BigUint) -> Vec<u8> {
@@ -52,4 +56,8 @@ pub fn biguint_to_bytes(b: &BigUint) -> Vec<u8> {
 
 pub fn bytes_to_biguint(b: &[u8]) -> BigUint {
     BigUint::from_bytes_le(b)
+}
+
+pub fn bytes_to_u256(b: &[u8]) -> U256 {
+    U256::from_little_endian(b)
 }

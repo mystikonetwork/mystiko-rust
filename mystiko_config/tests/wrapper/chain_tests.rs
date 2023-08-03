@@ -64,6 +64,9 @@ async fn test_create() {
         0xc478553f5920534885934acd4c24890470f22469f79b0c34abc8a258af4dcd77"
     );
     assert_eq!(config.assets().len(), 1);
+    assert_eq!(config.granularities(), &vec![2000, 4000, 8000, 16000]);
+    assert_eq!(config.min_granularity().unwrap(), 2000);
+    assert_eq!(config.start_block(), 1000000);
     assert_eq!(config.providers().len(), 1);
     assert_eq!(config.provider_type(), &ProviderType::Quorum);
     assert_eq!(config.provider_quorum_percentage(), 80);
@@ -368,4 +371,32 @@ async fn create_raw_circuit_configs() -> Vec<RawCircuitConfig> {
         .await
         .unwrap();
     serde_json::from_str::<Vec<RawCircuitConfig>>(&contents).unwrap()
+}
+
+#[tokio::test]
+async fn test_invalid_granularities() {
+    let (default_circuit_configs, circuit_configs, raw_config, _) = setup(SetupOptions::default()).await;
+    let mut raw_config = raw_config.as_ref().clone();
+    raw_config.packer_granularities = vec![1000u64, 1010u64];
+    let config = ChainConfig::new(
+        Arc::new(raw_config),
+        default_circuit_configs.as_ref(),
+        circuit_configs.as_ref(),
+    )
+    .unwrap();
+    assert!(config.validate().is_err());
+}
+
+#[tokio::test]
+async fn test_empty_granularities() {
+    let (default_circuit_configs, circuit_configs, raw_config, _) = setup(SetupOptions::default()).await;
+    let mut raw_config = raw_config.as_ref().clone();
+    raw_config.packer_granularities = vec![];
+    let config = ChainConfig::new(
+        Arc::new(raw_config),
+        default_circuit_configs.as_ref(),
+        circuit_configs.as_ref(),
+    )
+    .unwrap();
+    assert!(config.min_granularity().is_err());
 }

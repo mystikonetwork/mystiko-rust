@@ -99,6 +99,7 @@ fn default_config() -> RawChainConfig {
         .deposit_contracts(vec![Arc::new(deposit_contract_config)])
         .pool_contracts(vec![Arc::new(pool_contract_config)])
         .assets(vec![Arc::new(asset_config)])
+        .packer_granularities(vec![2000, 4000, 8000, 16000])
         .build();
     create_raw::<RawChainConfig>(raw_chain_config).unwrap()
 }
@@ -129,6 +130,7 @@ fn test_default_values() {
         .deposit_contracts(vec![Arc::new(deposit_contract_config)])
         .pool_contracts(vec![Arc::new(pool_contract_config)])
         .assets(vec![Arc::new(asset_config)])
+        .packer_granularities(vec![2000, 4000, 8000, 16000])
         .build();
     assert_eq!(raw_config.event_filter_size, 200000);
     assert_eq!(raw_config.indexer_filter_size, 500000);
@@ -322,6 +324,15 @@ fn test_invalid_deposit_contracts() {
 fn test_invalid_assets() {
     let mut config = default_config();
     config.assets.push(Arc::new(init_assets_config()));
+    assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_invalid_granularities() {
+    let mut config = default_config();
+    config.packer_granularities = vec![];
+    assert!(config.validate().is_err());
+    config.packer_granularities = vec![1000u64, 1000u64];
     assert!(config.validate().is_err());
 }
 

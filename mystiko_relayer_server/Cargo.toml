@@ -52,6 +52,7 @@ actix-rt = { version = "2.8.0" }
 async-trait = { version = "0.1.64" }
 async_once = { version = "0.2.6" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
+serial_test = { version = "2.0.0", features = ["file_locks"] }
 mockall = { version = "0.11.4" }
 mockito = { version = "0.32.4" }
 mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }

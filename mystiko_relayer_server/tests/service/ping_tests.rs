@@ -5,8 +5,10 @@ use actix_web::App;
 use mystiko_relayer_server::service::handshake;
 use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
 use mystiko_relayer_types::HandshakeResponse;
+use serial_test::file_serial;
 
 #[actix_rt::test]
+#[file_serial]
 async fn test_ping() {
     let server = TestServer::new(None).await.unwrap();
     let app = init_service(

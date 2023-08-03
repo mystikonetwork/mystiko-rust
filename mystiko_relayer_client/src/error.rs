@@ -17,8 +17,8 @@ pub enum RelayerClientError {
     TransactionFailed(String, String),
     #[error("call relayer contract error {0}")]
     CallRelayerContractError(String),
-    #[error("create relayer config error")]
-    CreateRelayerConfigError,
+    #[error("create relayer config error {0}")]
+    CreateRelayerConfigError(String),
     #[error(transparent)]
     ReqwestError(#[from] reqwest::Error),
     #[error(transparent)]
@@ -31,4 +31,6 @@ pub enum RelayerClientError {
     JoinError(#[from] JoinError),
     #[error(transparent)]
     ValidationErrors(#[from] ValidationErrors),
+    #[error("relayer unsupported api version {0}")]
+    UnsupportedApiVersion(String),
 }
