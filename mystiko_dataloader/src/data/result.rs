@@ -2,7 +2,6 @@ use crate::data::chain::ChainData;
 use crate::data::contract::ContractData;
 use crate::data::types::LoadedData;
 use anyhow::Result;
-use log::warn;
 use std::fmt::{Debug, Display, Formatter};
 use thiserror::Error;
 use typed_builder::TypedBuilder;
@@ -33,14 +32,6 @@ pub struct ChainResult<T> {
 pub struct UnwrappedChainResult<T> {
     pub result: T,
     pub contract_errors: Vec<ContractError>,
-}
-
-impl<T> UnwrappedChainResult<T> {
-    pub fn log_warning(&self, action: &str) {
-        for error in self.contract_errors.iter() {
-            warn!("contract {:?} meet error {:?}", action, error);
-        }
-    }
 }
 
 impl<R> From<ChainResult<ContractData<R>>> for UnwrappedChainResult<ChainData<R>>

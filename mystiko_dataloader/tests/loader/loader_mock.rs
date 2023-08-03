@@ -1,4 +1,7 @@
+use anyhow::Result;
 use async_trait::async_trait;
+use ethers_core::types::U64;
+use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::chain::ChainData;
@@ -6,55 +9,19 @@ use mystiko_dataloader::data::contract::ContractData;
 use mystiko_dataloader::data::result::{ChainResult, ContractResult};
 use mystiko_dataloader::data::types::{FullData, LoadedData};
 use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOption, FetchResult};
-use mystiko_dataloader::filter::ContractFilter;
 use mystiko_dataloader::handler::types::{DataHandler, HandleOption, HandleResult};
 use mystiko_dataloader::loader::chain::{ChainDataLoader, ChainDataLoaderBuilder};
 use mystiko_dataloader::loader::listener::{LoaderEvent, LoaderListener};
 use mystiko_dataloader::loader::types::StartOption;
 use mystiko_dataloader::validator::types::{DataValidator, ValidateOption, ValidateResult};
-use std::collections::HashMap;
+use mystiko_ethers::provider::factory::Provider;
+use mystiko_ethers::provider::failover::FailoverProvider;
+use mystiko_ethers::provider::wrapper::ProviderWrapper;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::time::sleep;
-
-#[derive(Debug, Clone)]
-pub struct MockContractFilter {
-    contracts: HashMap<String, bool>,
-}
-
-impl MockContractFilter {
-    pub fn new() -> Self {
-        MockContractFilter {
-            contracts: HashMap::new(),
-        }
-    }
-
-    pub fn clear(&mut self) {
-        self.contracts.clear();
-    }
-
-    pub fn add_unfiltered_contract(&mut self, contract: &str) {
-        self.contracts.insert(contract.to_string(), true);
-    }
-
-    pub fn add_unfiltered_contracts(&mut self, contracts: &[&str]) {
-        contracts.iter().for_each(|&c| {
-            self.contracts.insert(c.to_string(), true);
-        });
-    }
-}
-
-impl Default for MockContractFilter {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ContractFilter for MockContractFilter {
-    fn filter(&self, _chain_id: u64, contract_config: &ContractConfig) -> bool {
-        !self.contracts.contains_key(contract_config.address())
-    }
-}
 
 pub struct MockFetcher<R>
 where
@@ -198,22 +165,54 @@ where
     }
 }
 
-pub struct MockHandler {
+pub struct MockHandler<R>
+where
+    R: LoadedData,
+{
+    contracts: RwLock<Vec<ContractConfig>>,
+    chain_loaded_blocks: RwLock<Vec<u64>>,
+    contract_loaded_blocks: RwLock<HashMap<String, u64>>,
     all_success: RwLock<bool>,
     result: RwLock<HandleResult>,
+    data: RwLock<Vec<ChainData<R>>>,
 }
 
-impl Default for MockHandler {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl MockHandler {
+impl<R> MockHandler<R>
+where
+    R: LoadedData + Clone,
+{
     pub fn new() -> Self {
         MockHandler {
+            contracts: RwLock::new(vec![]),
+            chain_loaded_blocks: RwLock::new(vec![]),
+            contract_loaded_blocks: RwLock::new(HashMap::new()),
             all_success: RwLock::new(true),
             result: RwLock::new(HandleResult::Err(anyhow::Error::msg("handle error".to_string()))),
+            data: RwLock::new(vec![]),
         }
+    }
+
+    pub async fn set_contracts(&self, chain_id: u64, contracts: HashSet<&str>, core_cfg: Arc<MystikoConfig>) {
+        let c = core_cfg
+            .find_chain(chain_id)
+            .unwrap()
+            .contracts_with_disabled()
+            .into_iter()
+            .filter(|c| contracts.contains(c.address()))
+            .collect::<Vec<_>>();
+
+        *self.contracts.write().await = c;
+    }
+
+    pub async fn set_chain_loaded_blocks(&self, blocks: Vec<u64>) {
+        self.chain_loaded_blocks.write().await.extend(blocks);
+    }
+
+    pub async fn set_contract_loaded_block(&self, contract_address: &str, block: u64) {
+        self.contract_loaded_blocks
+            .write()
+            .await
+            .insert(contract_address.to_string(), block);
     }
 
     pub async fn set_all_success(&self) {
@@ -224,14 +223,70 @@ impl MockHandler {
         *self.all_success.write().await = false;
         *self.result.write().await = result;
     }
+
+    pub async fn drain_data(&self) -> Vec<ChainData<R>> {
+        self.data.write().await.drain(..).collect()
+    }
 }
 
 #[async_trait]
-impl<R> DataHandler<R> for MockHandler
+impl<R> DataHandler<R> for MockHandler<R>
 where
     R: LoadedData,
 {
+    async fn loading_contracts(&self, _chain_id: u64) -> Result<Option<Vec<ContractConfig>>> {
+        if self.contracts.read().await.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(self.contracts.read().await.clone()))
+        }
+    }
+
+    async fn chain_loaded_block(&self, _chain_id: u64) -> anyhow::Result<Option<u64>> {
+        let mut loaded_blocks = self.chain_loaded_blocks.write().await;
+        if loaded_blocks.is_empty() {
+            Ok(None)
+        } else {
+            let block = loaded_blocks.pop().unwrap();
+            if block == 0_u64 {
+                Err(anyhow::Error::msg("chain loaded block error".to_string()))
+            } else {
+                Ok(Some(block))
+            }
+        }
+    }
+
+    async fn contract_loaded_block(&self, _chain_id: u64, contract_address: &str) -> anyhow::Result<Option<u64>> {
+        let loaded_blocks = self.contract_loaded_blocks.read().await;
+        if loaded_blocks.is_empty() {
+            Ok(None)
+        } else {
+            loaded_blocks
+                .get(contract_address)
+                .map(|v| Some(*v))
+                .ok_or_else(|| anyhow::Error::msg("error".to_string()))
+        }
+    }
+
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
+        self.data.write().await.push(
+            ChainData::builder()
+                .chain_id(data.chain_id)
+                .contracts_data(
+                    data.contracts_data
+                        .iter()
+                        .map(|d| {
+                            ContractData::builder()
+                                .address(d.address.clone())
+                                .start_block(d.start_block)
+                                .end_block(d.end_block)
+                                .build()
+                        })
+                        .collect::<Vec<_>>(),
+                )
+                .build(),
+        );
+
         if *self.all_success.read().await {
             let contract_results = data
                 .contracts_data
@@ -292,11 +347,11 @@ impl MockListener {
     fn convert_event(&self, event: &LoaderEvent) -> String {
         match event {
             LoaderEvent::StartEvent(e) => format!("StartEvent-{}", e.start_block),
-            LoaderEvent::StopEvent(e) => format!("StopEvent-{}", e.end_block),
+            LoaderEvent::StopEvent(e) => format!("StopEvent-{}", e.loaded_block),
             LoaderEvent::LoadEvent(e) => format!("LoadEvent-{}", e.start_block),
-            LoaderEvent::LoadSuccessEvent(e) => format!("LoadSuccessEvent-{}", e.end_block),
+            LoaderEvent::LoadSuccessEvent(e) => format!("LoadSuccessEvent-{}", e.loaded_block),
             LoaderEvent::LoadFailureEvent(e) => {
-                format!("LoadFailureEvent-{}-{}", e.end_block, e.load_error)
+                format!("LoadFailureEvent-{}-{}", e.loaded_block, e.load_error)
             }
         }
     }
@@ -323,9 +378,15 @@ impl LoaderListener for MockListener {
 }
 
 pub async fn loader_start(
-    loader: Arc<ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener>>,
-    option: StartOption,
+    loader: Arc<ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>>,
+    max_batch_block: u64,
 ) {
+    let option = StartOption::builder()
+        .load_interval_ms(10_u64)
+        .max_batch_block(max_batch_block)
+        .delay_block(2_u64)
+        .build();
+
     let loader_clone1 = loader.clone();
     let loader_clone2 = loader.clone();
     let handle1 = tokio::spawn(async move { loader_clone1.start(&option).await });
@@ -345,10 +406,16 @@ pub async fn create_loader(
     fetch_result: bool,
     contract_address: &str,
     end_block: u64,
-) -> ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener> {
+) -> ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener> {
     let chain_id = 1_u64;
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener> =
-        ChainDataLoaderBuilder::new();
+
+    let builder: ChainDataLoaderBuilder<
+        FullData,
+        MockFetcher<FullData>,
+        MockValidator,
+        MockHandler<FullData>,
+        MockListener,
+    > = ChainDataLoaderBuilder::new();
 
     let fetcher = MockFetcher::new(chain_id);
     if fetch_result {
@@ -369,6 +436,14 @@ pub async fn create_loader(
     let validator = MockValidator::new();
     let handler = MockHandler::new();
     let listener = MockListener::default();
+
+    let (_, mock) = EthersProvider::mocked();
+    let provider = create_mock_provider(&mock);
+    let provider = Arc::new(provider);
+
+    let block_number = U64::from(10000);
+    mock.push(block_number).unwrap();
+
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -376,45 +451,54 @@ pub async fn create_loader(
     if batch {
         builder
             .chain_id(1)
-            .initial_block(123_u64)
             .config(Arc::new(core_cfg))
             .add_fetchers(vec![fetcher])
             .add_validators(vec![validator])
             .handler(handler)
             .add_listeners(vec![listener])
+            .shared_provider(provider)
             .build()
             .unwrap()
     } else {
         builder
             .chain_id(1)
-            .initial_block(123_u64)
             .config(Arc::new(core_cfg))
             .add_fetcher(fetcher)
             .add_validator(validator)
             .handler(handler)
             .add_listener(listener)
+            .shared_provider(provider)
             .build()
             .unwrap()
     }
 }
 
 pub async fn create_shared_loader(
+    chain_id: u64,
     feature_count: usize,
     validator_count: usize,
     listener_count: usize,
 ) -> (
-    Arc<ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener>>,
+    Arc<MystikoConfig>,
+    Arc<ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>>,
     Vec<Arc<MockFetcher<FullData>>>,
     Vec<Arc<MockValidator>>,
-    Arc<MockHandler>,
+    Arc<MockHandler<FullData>>,
     Vec<Arc<MockListener>>,
+    Arc<MockProvider>,
 ) {
-    let chain_id = 1_u64;
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler, MockListener> =
-        ChainDataLoaderBuilder::new();
-    let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
-        .await
-        .unwrap();
+    let builder: ChainDataLoaderBuilder<
+        FullData,
+        MockFetcher<FullData>,
+        MockValidator,
+        MockHandler<FullData>,
+        MockListener,
+    > = ChainDataLoaderBuilder::new();
+    let core_cfg = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
 
     let fetchers = (0..feature_count)
         .map(|_| Arc::new(MockFetcher::new(chain_id)))
@@ -427,16 +511,82 @@ pub async fn create_shared_loader(
         .map(|_| Arc::new(MockListener::default()))
         .collect::<Vec<_>>();
 
+    let (_, mock) = EthersProvider::mocked();
+    let provider = create_mock_provider(&mock);
+    let provider = Arc::new(provider);
+
     let loader = builder
         .chain_id(chain_id)
-        .initial_block(123_u64)
-        .config(Arc::new(core_cfg))
+        .config(core_cfg.clone())
         .add_shared_fetchers(fetchers.clone())
         .add_shared_validators(validators.clone())
         .shared_handler(handler.clone())
         .add_shared_listeners(listeners.clone())
+        .shared_provider(provider)
         .build()
         .unwrap();
 
-    (Arc::new(loader), fetchers, validators, handler, listeners)
+    (
+        core_cfg.clone(),
+        Arc::new(loader),
+        fetchers,
+        validators,
+        handler,
+        listeners,
+        Arc::new(mock),
+    )
+}
+
+#[derive(Debug, Default)]
+struct MockProviderRetryPolicy;
+
+impl RetryPolicy<MockError> for MockProviderRetryPolicy {
+    fn should_retry(&self, _error: &MockError) -> bool {
+        false
+    }
+
+    fn backoff_hint(&self, _error: &MockError) -> Option<Duration> {
+        Duration::from_secs(10).into()
+    }
+}
+
+fn create_mock_provider(provider: &MockProvider) -> Provider {
+    let retry_provider_builder = RetryClientBuilder::default();
+    let inner_provider = retry_provider_builder.build(provider.clone(), Box::<MockProviderRetryPolicy>::default());
+
+    let mut provider_builder = FailoverProvider::dyn_rpc();
+    provider_builder = provider_builder.add_provider(Box::new(inner_provider));
+    Provider::new(ProviderWrapper::new(Box::new(provider_builder.build())))
+}
+
+pub fn chain_data_partial_eq(a: &Vec<ChainData<FullData>>, b: &Vec<ChainData<FullData>>) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+
+    for i in 0..a.len() {
+        if a[i].chain_id != b[i].chain_id {
+            return false;
+        }
+
+        if a[i].contracts_data.len() != b[i].contracts_data.len() {
+            return false;
+        }
+
+        for j in 0..a[i].contracts_data.len() {
+            if a[i].contracts_data[j].address != b[i].contracts_data[j].address {
+                return false;
+            }
+
+            if a[i].contracts_data[j].start_block != b[i].contracts_data[j].start_block {
+                return false;
+            }
+
+            if a[i].contracts_data[j].end_block != b[i].contracts_data[j].end_block {
+                return false;
+            }
+        }
+    }
+
+    true
 }

@@ -3605,9 +3605,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "ethers-core",
+ "ethers-providers",
  "futures",
  "log",
  "mystiko_config",
+ "mystiko_ethers",
  "mystiko_protos",
  "serde",
  "thiserror",

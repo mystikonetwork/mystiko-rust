@@ -1,4 +1,5 @@
 use anyhow::Error as AnyhowError;
+use ethers_providers::ProviderError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -9,6 +10,8 @@ pub enum DataLoaderError {
     UnsupportedChainError(u64),
     #[error("loader run error {0}")]
     LoaderRunError(String),
+    #[error(transparent)]
+    ProviderError(#[from] ProviderError),
     #[error(transparent)]
     AnyhowError(#[from] AnyhowError),
 }
