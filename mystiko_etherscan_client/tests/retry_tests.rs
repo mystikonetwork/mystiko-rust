@@ -22,6 +22,7 @@ fn test_is_retryable() {
     assert!(!retry_policy.is_retryable(&error, current_retry_times));
 
     //is_retryable return true
+    let retry_policy = DefaultRetryPolicy::new(7);
     let error = EtherScanError::ResponseError(String::from(
         "Max rate limit reached, please use API Key for higher rate limit",
     ));
