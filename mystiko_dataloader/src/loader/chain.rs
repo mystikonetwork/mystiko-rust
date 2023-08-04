@@ -9,7 +9,7 @@ use crate::loader::listener::{
     LoadEvent, LoadFailureEvent, LoadSuccessEvent, LoaderEvent, LoaderListener, StartEvent, StopEvent,
 };
 use crate::loader::types::{
-    LoaderState, StartOption, DEFAULT_DELAY_BLOCK, DEFAULT_LOAD_INTERVAL_MS, DEFAULT_MAX_BATCH_BLOCK,
+    LoadOption, LoaderState, ScheduleOption, DEFAULT_DELAY_BLOCK, DEFAULT_SCHEDULE_INTERVAL_MS,
 };
 use crate::validator::types::{DataValidator, ValidateOption};
 use ethers_providers::Middleware;
@@ -46,7 +46,7 @@ where
     H: DataHandler<R>,
     L: LoaderListener,
 {
-    pub async fn start(&self, options: StartOption) -> Result<Option<JoinHandle<()>>> {
+    pub async fn schedule(&self, options: ScheduleOption) -> Result<Option<JoinHandle<()>>> {
         if !self.set_is_running(true).await {
             let join_handle = self.run(options).await;
             match join_handle {
@@ -62,15 +62,20 @@ where
         }
     }
 
-    async fn run(&self, options: StartOption) -> Result<JoinHandle<()>> {
-        let (chain_cfg, contracts) = self.executor.build_start_param().await?;
+    pub async fn load(&self, options: Option<LoadOption>) -> Result<()> {
+        let chain_cfg = self.executor.build_start_param().await?;
+        self.executor.try_load(&chain_cfg, &options).await
+    }
+
+    async fn run(&self, options: ScheduleOption) -> Result<JoinHandle<()>> {
+        let chain_cfg = self.executor.build_start_param().await?;
         let executor = self.executor.clone();
-        let join_handle = tokio::spawn(async move { executor.start(chain_cfg, contracts, options.clone()).await });
+        let join_handle = tokio::spawn(async move { executor.start(chain_cfg, options.clone()).await });
         Ok(join_handle)
     }
 
-    pub async fn stop(&self) {
-        self.executor.set_is_running(false).await;
+    pub async fn stop_schedule(&self) {
+        self.set_is_running(false).await;
     }
 
     pub async fn is_running(&self) -> bool {
@@ -131,18 +136,17 @@ where
     H: DataHandler<R>,
     L: LoaderListener,
 {
-    async fn build_start_param(&self) -> Result<(ChainConfig, Vec<ContractConfig>)> {
+    async fn build_start_param(&self) -> Result<ChainConfig> {
         let chain_cfg = self
             .config
             .find_chain(self.chain_id)
             .ok_or_else(|| DataLoaderError::UnsupportedChainError(self.chain_id))?
             .clone();
-        let contracts = self.build_loading_contracts(&chain_cfg).await?;
-        Ok((chain_cfg, contracts))
+        Ok(chain_cfg)
     }
 
-    async fn start(&self, chain_cfg: ChainConfig, contracts: Vec<ContractConfig>, options: StartOption) {
-        let load_interval_ms = options.load_interval_ms.unwrap_or(DEFAULT_LOAD_INTERVAL_MS);
+    async fn start(&self, chain_cfg: ChainConfig, options: ScheduleOption) {
+        let schedule_interval_ms = options.schedule_interval_ms.unwrap_or(DEFAULT_SCHEDULE_INTERVAL_MS);
         self.emit_event(&LoaderEvent::StartEvent(StartEvent::builder().build()))
             .await;
 
@@ -151,12 +155,17 @@ where
                 break;
             }
 
-            self.try_load(&chain_cfg, &contracts, &options).await;
+            self.try_load(&chain_cfg, &options.load_option)
+                .await
+                .unwrap_or_else(|e| {
+                    warn!("try load meet error {:?}", e);
+                });
 
             if !self.is_running().await {
                 break;
             }
-            sleep(Duration::from_millis(load_interval_ms)).await;
+
+            sleep(Duration::from_millis(schedule_interval_ms)).await;
         }
 
         self.emit_event(&LoaderEvent::StopEvent(StopEvent::builder().build()))
@@ -195,16 +204,17 @@ where
         last_state
     }
 
-    async fn try_load(&self, chain_cfg: &ChainConfig, contracts: &[ContractConfig], options: &StartOption) {
+    async fn try_load(&self, chain_cfg: &ChainConfig, options: &Option<LoadOption>) -> Result<()> {
         if !self.set_is_loading(true).await {
-            self.load(chain_cfg, contracts, options).await.unwrap_or_else(|e| {
-                warn!("load meet error {:?}", e);
-            });
+            let result = self.load(chain_cfg, options).await;
             self.set_is_loading(false).await;
+            result
+        } else {
+            Err(DataLoaderError::LoaderRunError("loader is already loading".to_string()))
         }
     }
 
-    async fn load(&self, chain_cfg: &ChainConfig, contracts: &[ContractConfig], options: &StartOption) -> Result<()> {
+    async fn load(&self, chain_cfg: &ChainConfig, options: &Option<LoadOption>) -> Result<()> {
         let chain_start_block = self.build_chain_start_block(chain_cfg).await?;
         let chain_target_block = self.build_chain_target_block(chain_start_block, options).await?;
         self.emit_event(&LoaderEvent::LoadEvent(
@@ -216,7 +226,7 @@ where
         .await;
 
         let result = self
-            .execute_load(contracts, chain_start_block, chain_target_block, options)
+            .execute_load(chain_cfg, chain_start_block, chain_target_block)
             .await;
         let chain_loaded_block = self.build_chain_loaded_block(chain_cfg).await.unwrap_or_else(|e| {
             warn!("load build chain loaded block meet error {:?}", e);
@@ -249,23 +259,22 @@ where
 
     async fn execute_load(
         &self,
-        contracts: &[ContractConfig],
+        chain_cfg: &ChainConfig,
         chain_start_block: u64,
         chain_target_block: u64,
-        options: &StartOption,
     ) -> Result<()> {
-        // todo support configure fetch option of  None to load all contracts
+        let (chain_filter, mut contracts) = self.build_loading_contracts(chain_cfg).await?;
+        let contracts_option = if chain_filter { Some(contracts.clone()) } else { None };
         let chain_fetch_option = ChainFetchOption::builder()
             .config(self.config.clone())
             .chain_id(self.chain_id)
             .start_block(chain_start_block)
             .target_block(chain_target_block)
-            .contracts(Some(contracts.to_vec()))
+            .contracts(contracts_option)
             .build();
 
         let mut fetch_option = FetchOption::Chain(&chain_fetch_option);
         let mut contracts_fetch_option;
-        let mut retry_contracts = contracts.to_vec();
 
         for fetcher in &self.fetchers {
             let mut chain_data = match self.fetch(fetcher, fetch_option.clone()).await {
@@ -286,17 +295,12 @@ where
                 continue;
             };
 
-            match self
-                .build_retry_fetch_option(&mut chain_data, &mut retry_contracts, chain_target_block, options)
-                .await
-            {
-                Some(retry_fetch_option) => {
-                    contracts_fetch_option = retry_fetch_option;
-                    fetch_option = FetchOption::Contracts(&contracts_fetch_option);
-                }
-                None => {
-                    return Ok(());
-                }
+            let retry_fetch_options = self.build_retry_fetch_option(&mut contracts, chain_target_block).await;
+            if !retry_fetch_options.is_empty() {
+                contracts_fetch_option = retry_fetch_options;
+                fetch_option = FetchOption::Contracts(&contracts_fetch_option);
+            } else {
+                return Ok(());
             };
         }
 
@@ -337,6 +341,8 @@ where
                         .map(|i| data.contracts_data.remove(i));
                 });
             }
+        } else {
+            warn!("validate contract data is empty")
         }
         Ok(())
     }
@@ -357,15 +363,15 @@ where
         Ok(())
     }
 
-    async fn build_loading_contracts(&self, chain: &ChainConfig) -> Result<Vec<ContractConfig>> {
+    async fn build_loading_contracts(&self, chain: &ChainConfig) -> Result<(bool, Vec<ContractConfig>)> {
         if let Some(contracts) = self.handler.loading_contracts(self.chain_id).await? {
             if !contracts.is_empty() {
-                return Ok(contracts);
+                return Ok((true, contracts));
             }
         } else {
             let contracts = chain.contracts_with_disabled();
             if !contracts.is_empty() {
-                return Ok(contracts);
+                return Ok((false, contracts));
             }
         }
 
@@ -385,22 +391,20 @@ where
         Ok(start_block)
     }
 
-    async fn build_chain_target_block(&self, start_block: u64, option: &StartOption) -> Result<u64> {
-        let delay_block = option.delay_block.unwrap_or(DEFAULT_DELAY_BLOCK);
+    async fn build_chain_target_block(&self, start_block: u64, option: &Option<LoadOption>) -> Result<u64> {
+        let delay_block = match option {
+            None => DEFAULT_DELAY_BLOCK,
+            Some(o) => o.delay_block.unwrap_or(DEFAULT_DELAY_BLOCK),
+        };
+
         let latest = self.provider.get_block_number().await?.as_u64();
-        let latest = if latest > delay_block {
+        let latest = if latest > delay_block && latest - delay_block >= start_block {
             latest - delay_block
         } else {
             return Err(LoaderRunError("latest block too small".to_string()));
         };
 
-        let max_batch_block = option.max_batch_block.unwrap_or(DEFAULT_MAX_BATCH_BLOCK);
-        let target_block = if latest > start_block + max_batch_block {
-            start_block + max_batch_block
-        } else {
-            latest
-        };
-        Ok(target_block)
+        Ok(latest)
     }
 
     async fn build_contract_start_block(&self, contract: &ContractConfig) -> Result<u64> {
@@ -413,57 +417,31 @@ where
         Ok(start_block)
     }
 
-    fn build_contract_target_block(&self, start_block: u64, target_block: u64, option: &StartOption) -> u64 {
-        let max_batch_block = option.max_batch_block.unwrap_or(DEFAULT_MAX_BATCH_BLOCK);
-        if target_block > start_block + max_batch_block {
-            start_block + max_batch_block
-        } else {
-            target_block
-        }
-    }
-
     async fn build_retry_fetch_option(
         &self,
-        data: &mut ChainData<R>,
-        retry_contracts: &mut Vec<ContractConfig>,
+        contracts: &mut Vec<ContractConfig>,
         chain_target_block: u64,
-        start_option: &StartOption,
-    ) -> Option<Vec<ContractFetchOption>> {
-        // Removing contracts that already fetch to chain_target_block
-        retry_contracts.retain(|r| {
-            !data
-                .contracts_data
-                .iter()
-                .any(|d| r.address() == d.address && d.end_block >= chain_target_block)
-        });
-
-        if !retry_contracts.is_empty() {
-            let mut contract_fetch_options = Vec::new();
-
-            for contract_cfg in retry_contracts {
-                if let Ok(contract_start_block) = self.build_contract_start_block(contract_cfg).await {
-                    // skip contract that already fetch to chain_target_block
-                    if contract_start_block > chain_target_block {
-                        continue;
-                    }
-
-                    let contract_target_block =
-                        self.build_contract_target_block(contract_start_block, chain_target_block, start_option);
-                    let fetch_option = ContractFetchOption::builder()
-                        .config(self.config.clone())
-                        .chain_id(self.chain_id)
-                        .address(contract_cfg.address().to_string())
-                        .start_block(contract_start_block)
-                        .target_block(contract_target_block)
-                        .build();
-                    contract_fetch_options.push(fetch_option);
+    ) -> Vec<ContractFetchOption> {
+        let mut contract_fetch_options = Vec::new();
+        for contract_cfg in contracts {
+            if let Ok(contract_start_block) = self.build_contract_start_block(contract_cfg).await {
+                // skip contract that already fetch to chain_target_block
+                if contract_start_block > chain_target_block {
+                    continue;
                 }
-            }
 
-            Some(contract_fetch_options)
-        } else {
-            None
+                let fetch_option = ContractFetchOption::builder()
+                    .config(self.config.clone())
+                    .chain_id(self.chain_id)
+                    .address(contract_cfg.address().to_string())
+                    .start_block(contract_start_block)
+                    .target_block(chain_target_block)
+                    .build();
+                contract_fetch_options.push(fetch_option);
+            }
         }
+
+        contract_fetch_options
     }
 
     async fn emit_event(&self, event: &LoaderEvent) {

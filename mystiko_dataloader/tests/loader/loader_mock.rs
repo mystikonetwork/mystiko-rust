@@ -12,7 +12,7 @@ use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOption, FetchResult};
 use mystiko_dataloader::handler::types::{DataHandler, HandleOption, HandleResult};
 use mystiko_dataloader::loader::chain::{ChainDataLoader, ChainDataLoaderBuilder};
 use mystiko_dataloader::loader::listener::{LoaderEvent, LoaderListener};
-use mystiko_dataloader::loader::types::StartOption;
+use mystiko_dataloader::loader::types::{LoadOption, ScheduleOption};
 use mystiko_dataloader::validator::types::{DataValidator, ValidateOption, ValidateResult};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
@@ -172,8 +172,8 @@ where
     R: LoadedData,
 {
     contracts: RwLock<Vec<ContractConfig>>,
-    chain_loaded_blocks: RwLock<Vec<u64>>,
-    contract_loaded_blocks: RwLock<HashMap<String, u64>>,
+    chain_loaded_blocks_error: RwLock<bool>,
+    contract_loaded_blocks_error: RwLock<HashMap<String, bool>>,
     all_success: RwLock<bool>,
     result: RwLock<HandleResult>,
     data: RwLock<HashMap<String, ContractData<R>>>,
@@ -195,8 +195,8 @@ where
     pub fn new() -> Self {
         MockHandler {
             contracts: RwLock::new(vec![]),
-            chain_loaded_blocks: RwLock::new(vec![]),
-            contract_loaded_blocks: RwLock::new(HashMap::new()),
+            chain_loaded_blocks_error: RwLock::new(false),
+            contract_loaded_blocks_error: RwLock::new(HashMap::new()),
             all_success: RwLock::new(true),
             result: RwLock::new(HandleResult::Err(anyhow::Error::msg("handle error".to_string()))),
             data: RwLock::new(HashMap::new()),
@@ -215,15 +215,15 @@ where
         *self.contracts.write().await = c;
     }
 
-    pub async fn set_chain_loaded_blocks(&self, blocks: Vec<u64>) {
-        self.chain_loaded_blocks.write().await.extend(blocks);
+    pub async fn set_chain_loaded_blocks_error(&self, b_error: bool) {
+        *self.chain_loaded_blocks_error.write().await = b_error;
     }
 
-    pub async fn set_contract_loaded_block(&self, contract_address: &str, block: u64) {
-        self.contract_loaded_blocks
+    pub async fn set_contract_loaded_blocks_error(&self, contract_address: &str, b_error: bool) {
+        self.contract_loaded_blocks_error
             .write()
             .await
-            .insert(contract_address.to_string(), block);
+            .insert(contract_address.to_string(), b_error);
     }
 
     pub async fn set_all_success(&self) {
@@ -259,29 +259,32 @@ where
     }
 
     async fn chain_loaded_block(&self, _chain_id: u64) -> anyhow::Result<Option<u64>> {
-        let mut loaded_blocks = self.chain_loaded_blocks.write().await;
-        if loaded_blocks.is_empty() {
-            Ok(None)
-        } else {
-            let block = loaded_blocks.pop().unwrap();
-            if block == 0_u64 {
-                Err(anyhow::Error::msg("chain loaded block error".to_string()))
-            } else {
-                Ok(Some(block))
-            }
+        if *self.chain_loaded_blocks_error.read().await {
+            return Err(anyhow::Error::msg("error".to_string()));
         }
+
+        let data = self.data.read().await;
+        let min_end_block = data.iter().map(|(_, v)| v.end_block).min();
+
+        Ok(min_end_block)
     }
 
     async fn contract_loaded_block(&self, _chain_id: u64, contract_address: &str) -> anyhow::Result<Option<u64>> {
-        let loaded_blocks = self.contract_loaded_blocks.read().await;
-        if loaded_blocks.is_empty() {
-            Ok(None)
-        } else {
-            loaded_blocks
-                .get(contract_address)
-                .map(|v| Some(*v))
-                .ok_or_else(|| anyhow::Error::msg("error".to_string()))
+        if let Some(blocks) = self.contract_loaded_blocks_error.read().await.get(contract_address) {
+            if *blocks {
+                return Err(anyhow::Error::msg("error".to_string()));
+            }
         }
+
+        let end_block = self
+            .data
+            .read()
+            .await
+            .get(contract_address)
+            .map(|d| d.end_block)
+            .unwrap_or(0_u64);
+
+        Ok(Some(end_block))
     }
 
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
@@ -402,18 +405,21 @@ impl LoaderListener for MockListener {
 type ChainDataLoaderFullDataType =
     ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>;
 
-pub async fn loader_start(loader: Arc<ChainDataLoaderFullDataType>, max_batch_block: u64) {
+pub async fn loader_start(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
     INIT.call_once(|| {
         std::env::set_var("RUST_LOG", "trace");
         env_logger::init();
     });
 
-    let option = StartOption::builder()
-        .load_interval_ms(10_u64)
-        .max_batch_block(max_batch_block)
-        .delay_block(2_u64)
+    let load_option = match delay_block {
+        None => LoadOption::builder().build(),
+        Some(d) => LoadOption::builder().delay_block(d).build(),
+    };
+    let option = ScheduleOption::builder()
+        .schedule_interval_ms(5_u64)
+        .load_option(load_option)
         .build();
-    let handle = loader.start(option).await.unwrap().unwrap();
+    let handle = loader.schedule(option).await.unwrap().unwrap();
     let mut running = false;
     for _ in 0..100 {
         let _ = sleep(std::time::Duration::from_millis(1_u64)).await;
@@ -423,7 +429,7 @@ pub async fn loader_start(loader: Arc<ChainDataLoaderFullDataType>, max_batch_bl
         }
     }
     assert!(running);
-    loader.stop().await;
+    loader.stop_schedule().await;
     let result = futures::try_join!(handle);
     assert!(result.is_ok());
 }
