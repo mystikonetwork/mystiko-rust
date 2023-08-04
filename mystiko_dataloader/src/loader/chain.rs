@@ -67,13 +67,6 @@ where
         self.executor.try_load(&chain_cfg, &options).await
     }
 
-    async fn run(&self, options: ScheduleOption) -> Result<JoinHandle<()>> {
-        let chain_cfg = self.executor.build_start_param().await?;
-        let executor = self.executor.clone();
-        let join_handle = tokio::spawn(async move { executor.start(chain_cfg, options.clone()).await });
-        Ok(join_handle)
-    }
-
     pub async fn stop_schedule(&self) {
         self.set_is_running(false).await;
     }
@@ -88,6 +81,13 @@ where
 
     async fn set_is_running(&self, is_running: bool) -> bool {
         self.executor.set_is_running(is_running).await
+    }
+
+    async fn run(&self, options: ScheduleOption) -> Result<JoinHandle<()>> {
+        let chain_cfg = self.executor.build_start_param().await?;
+        let executor = self.executor.clone();
+        let join_handle = tokio::spawn(async move { executor.start(chain_cfg, options.clone()).await });
+        Ok(join_handle)
     }
 }
 
