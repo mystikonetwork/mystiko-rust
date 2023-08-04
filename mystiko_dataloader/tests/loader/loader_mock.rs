@@ -371,13 +371,13 @@ impl MockListener {
 
     fn convert_event(&self, event: &LoaderEvent) -> String {
         match event {
-            LoaderEvent::StartEvent(_) => "StartEvent".to_string(),
+            LoaderEvent::ScheduleEvent(_) => "ScheduleEvent".to_string(),
             LoaderEvent::LoadEvent(e) => format!("LoadEvent-{}-{}", e.start_block, e.target_block),
             LoaderEvent::LoadSuccessEvent(e) => format!("LoadSuccessEvent-{}-{}", e.start_block, e.loaded_block),
             LoaderEvent::LoadFailureEvent(e) => {
                 format!("LoadFailureEvent-{}-{}-{}", e.start_block, e.loaded_block, e.load_error)
             }
-            LoaderEvent::StopEvent(_) => "StopEvent".to_string(),
+            LoaderEvent::StopScheduleEvent(_) => "StopScheduleEvent".to_string(),
         }
     }
 
@@ -405,7 +405,29 @@ impl LoaderListener for MockListener {
 type ChainDataLoaderFullDataType =
     ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>;
 
-pub async fn loader_start(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
+#[derive(Clone, Copy, Debug)]
+pub enum LoaderRunType {
+    Schedule,
+    Load,
+}
+
+pub async fn loader_run(run_type: LoaderRunType, loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
+    match run_type {
+        LoaderRunType::Schedule => {
+            loader_schedule(loader.clone(), delay_block).await;
+        }
+        LoaderRunType::Load => {
+            loader_load(loader.clone(), delay_block).await;
+        }
+    }
+}
+
+async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
+    let load_option = delay_block.map(|d| LoadOption::builder().delay_block(d).build());
+    let _ = loader.load(load_option).await;
+}
+
+async fn loader_schedule(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
     INIT.call_once(|| {
         std::env::set_var("RUST_LOG", "trace");
         env_logger::init();
@@ -621,4 +643,22 @@ pub fn contract_data_partial_eq(a: &HashMap<String, ContractData<FullData>>, b: 
     }
 
     true
+}
+
+pub async fn events_check(run_type: LoaderRunType, listeners: &[Arc<MockListener>], events: Vec<String>) {
+    let mut total_event = vec![];
+    match run_type {
+        LoaderRunType::Schedule => {
+            total_event.push("ScheduleEvent".to_string());
+            total_event.extend(events);
+            total_event.push("StopScheduleEvent".to_string());
+        }
+        LoaderRunType::Load => {
+            total_event.extend(events);
+        }
+    }
+
+    for listener in listeners.iter() {
+        assert_eq!(listener.drain_events().await, total_event.clone());
+    }
 }

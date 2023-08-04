@@ -6,11 +6,11 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]
-pub struct StartEvent {}
+pub struct ScheduleEvent {}
 
 #[derive(Debug, TypedBuilder, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]
-pub struct StopEvent {}
+pub struct StopScheduleEvent {}
 
 #[derive(Debug, TypedBuilder, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]
@@ -36,8 +36,8 @@ pub struct LoadFailureEvent {
 
 #[derive(Debug)]
 pub enum LoaderEvent {
-    StartEvent(StartEvent),
-    StopEvent(StopEvent),
+    ScheduleEvent(ScheduleEvent),
+    StopScheduleEvent(StopScheduleEvent),
     LoadEvent(LoadEvent),
     LoadSuccessEvent(LoadSuccessEvent),
     LoadFailureEvent(LoadFailureEvent),

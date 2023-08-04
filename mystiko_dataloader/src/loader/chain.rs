@@ -6,7 +6,7 @@ use crate::error::DataLoaderError::LoaderRunError;
 use crate::fetcher::types::{ChainFetchOption, ContractFetchOption, DataFetcher, FetchOption};
 use crate::handler::types::{DataHandler, HandleOption};
 use crate::loader::listener::{
-    LoadEvent, LoadFailureEvent, LoadSuccessEvent, LoaderEvent, LoaderListener, StartEvent, StopEvent,
+    LoadEvent, LoadFailureEvent, LoadSuccessEvent, LoaderEvent, LoaderListener, ScheduleEvent, StopScheduleEvent,
 };
 use crate::loader::types::{
     LoadOption, LoaderState, ScheduleOption, DEFAULT_DELAY_BLOCK, DEFAULT_SCHEDULE_INTERVAL_MS,
@@ -63,7 +63,7 @@ where
     }
 
     pub async fn load(&self, options: Option<LoadOption>) -> Result<()> {
-        let chain_cfg = self.executor.build_start_param().await?;
+        let chain_cfg = self.executor.build_load_param().await?;
         self.executor.try_load(&chain_cfg, &options).await
     }
 
@@ -84,9 +84,9 @@ where
     }
 
     async fn run(&self, options: ScheduleOption) -> Result<JoinHandle<()>> {
-        let chain_cfg = self.executor.build_start_param().await?;
+        let chain_cfg = self.executor.build_load_param().await?;
         let executor = self.executor.clone();
-        let join_handle = tokio::spawn(async move { executor.start(chain_cfg, options.clone()).await });
+        let join_handle = tokio::spawn(async move { executor.schedule(chain_cfg, options.clone()).await });
         Ok(join_handle)
     }
 }
@@ -136,7 +136,7 @@ where
     H: DataHandler<R>,
     L: LoaderListener,
 {
-    async fn build_start_param(&self) -> Result<ChainConfig> {
+    async fn build_load_param(&self) -> Result<ChainConfig> {
         let chain_cfg = self
             .config
             .find_chain(self.chain_id)
@@ -145,9 +145,9 @@ where
         Ok(chain_cfg)
     }
 
-    async fn start(&self, chain_cfg: ChainConfig, options: ScheduleOption) {
+    async fn schedule(&self, chain_cfg: ChainConfig, options: ScheduleOption) {
         let schedule_interval_ms = options.schedule_interval_ms.unwrap_or(DEFAULT_SCHEDULE_INTERVAL_MS);
-        self.emit_event(&LoaderEvent::StartEvent(StartEvent::builder().build()))
+        self.emit_event(&LoaderEvent::ScheduleEvent(ScheduleEvent::builder().build()))
             .await;
 
         loop {
@@ -168,7 +168,7 @@ where
             sleep(Duration::from_millis(schedule_interval_ms)).await;
         }
 
-        self.emit_event(&LoaderEvent::StopEvent(StopEvent::builder().build()))
+        self.emit_event(&LoaderEvent::StopScheduleEvent(StopScheduleEvent::builder().build()))
             .await;
     }
 
@@ -263,7 +263,7 @@ where
         chain_start_block: u64,
         chain_target_block: u64,
     ) -> Result<()> {
-        let (chain_filter, mut contracts) = self.build_loading_contracts(chain_cfg).await?;
+        let (chain_filter, contracts) = self.build_loading_contracts(chain_cfg).await?;
         let contracts_option = if chain_filter { Some(contracts.clone()) } else { None };
         let chain_fetch_option = ChainFetchOption::builder()
             .config(self.config.clone())
@@ -290,12 +290,12 @@ where
                 continue;
             };
 
-            if let Err(e) = self.handle(&mut chain_data).await {
+            if let Err(e) = self.handle(&chain_data).await {
                 warn!("handle meet error {:?}, try next fetcher", e);
                 continue;
             };
 
-            let retry_fetch_options = self.build_retry_fetch_option(&mut contracts, chain_target_block).await;
+            let retry_fetch_options = self.build_retry_fetch_option(&contracts, chain_target_block).await;
             if !retry_fetch_options.is_empty() {
                 contracts_fetch_option = retry_fetch_options;
                 fetch_option = FetchOption::Contracts(&contracts_fetch_option);
@@ -347,17 +347,13 @@ where
         Ok(())
     }
 
-    async fn handle(&self, data: &mut ChainData<R>) -> Result<()> {
+    async fn handle(&self, data: &ChainData<R>) -> Result<()> {
         if !data.contracts_data.is_empty() {
             let handler_option = HandleOption::builder().config(self.config.clone()).build();
             let handle_result = self.handler.handle(data, &handler_option).await?;
             let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(handle_result);
             unwrapped.contract_errors.iter().for_each(|c| {
                 warn!("handle contract {:?} meet error {:?}", c.address, c.source);
-                data.contracts_data
-                    .iter()
-                    .position(|d| d.address == c.address)
-                    .map(|i| data.contracts_data.remove(i));
             });
         }
         Ok(())
@@ -419,7 +415,7 @@ where
 
     async fn build_retry_fetch_option(
         &self,
-        contracts: &mut Vec<ContractConfig>,
+        contracts: &Vec<ContractConfig>,
         chain_target_block: u64,
     ) -> Vec<ContractFetchOption> {
         let mut contract_fetch_options = Vec::new();

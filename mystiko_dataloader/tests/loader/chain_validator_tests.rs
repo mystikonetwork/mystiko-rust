@@ -1,4 +1,6 @@
-use crate::loader::loader_mock::{contract_data_partial_eq, create_shared_loader, loader_start};
+use crate::loader::loader_mock::{
+    contract_data_partial_eq, create_shared_loader, events_check, loader_run, LoaderRunType,
+};
 use ethers_core::types::U64;
 use mystiko_dataloader::data::chain::ChainData;
 use mystiko_dataloader::data::contract::ContractData;
@@ -32,20 +34,19 @@ async fn test_loader_start_without_validator() {
     let mut contracts = HashSet::new();
     contracts.insert(contract_address1);
     handler.set_contracts(chain_id, contracts, cfg.clone()).await;
-    mock_provider.push(U64::from(target_block)).unwrap();
-    loader_start(loader.clone(), Some(2)).await;
-    assert!(!loader.is_loading().await);
-    assert!(!loader.is_running().await);
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
-    assert_eq!(
-        listeners[0].drain_events().await,
-        vec![
-            "StartEvent".to_string(),
+
+    for run_type in [LoaderRunType::Schedule, LoaderRunType::Load] {
+        mock_provider.push(U64::from(target_block)).unwrap();
+        loader_run(run_type, loader.clone(), Some(delay_block)).await;
+        assert!(!loader.is_loading().await);
+        assert!(!loader.is_running().await);
+        assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
+        let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!("LoadSuccessEvent-{:?}-{:?}", start_block, target_block),
-            "StopEvent".to_string()
-        ]
-    );
+        ];
+        events_check(run_type, &listeners, events).await;
+    }
 }
 
 #[tokio::test]
@@ -75,148 +76,121 @@ async fn test_loader_start_one_validator() {
             .end_block(target_block - delay_block)
             .build(),
     ];
-    let fetcher_result = ChainData::builder()
-        .chain_id(chain_id)
-        .contracts_data(contract_data.clone())
-        .build();
-    fetchers[0].set_result(fetcher_result).await;
-    let mut contracts = HashSet::new();
-    contracts.insert(contract_address1);
-    contracts.insert(contract_address2);
-    handler.set_contracts(chain_id, contracts, cfg.clone()).await;
-    mock_provider.push(U64::from(target_block)).unwrap();
-    loader_start(loader.clone(), Some(delay_block)).await;
-    assert!(!loader.is_loading().await);
-    assert!(!loader.is_running().await);
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert_eq!(
-        listeners[0].drain_events().await,
-        vec![
-            "StartEvent".to_string(),
+
+    for run_type in [LoaderRunType::Schedule, LoaderRunType::Load] {
+        // validator two contract data success
+        let fetcher_result = ChainData::builder()
+            .chain_id(chain_id)
+            .contracts_data(contract_data.clone())
+            .build();
+        fetchers[0].set_result(fetcher_result).await;
+        let mut contracts = HashSet::new();
+        contracts.insert(contract_address1);
+        contracts.insert(contract_address2);
+        handler.set_contracts(chain_id, contracts, cfg.clone()).await;
+        validators[0].set_all_success().await;
+        mock_provider.push(U64::from(target_block)).unwrap();
+        loader_run(run_type, loader.clone(), Some(delay_block)).await;
+        assert!(!loader.is_loading().await);
+        assert!(!loader.is_running().await);
+        assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
+        let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!("LoadSuccessEvent-{:?}-{:?}", start_block, target_block - delay_block),
-            "StopEvent".to_string()
-        ]
-    );
+        ];
+        events_check(run_type, &listeners, events).await;
 
-    // validator two contract data success
-    mock_provider.push(U64::from(target_block)).unwrap();
-    loader_start(loader.clone(), Some(delay_block)).await;
-    assert!(!loader.is_loading().await);
-    assert!(!loader.is_running().await);
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert_eq!(
-        listeners[0].drain_events().await,
-        vec![
-            "StartEvent".to_string(),
-            format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
-            format!("LoadSuccessEvent-{:?}-{:?}", start_block, target_block - delay_block),
-            "StopEvent".to_string()
-        ]
-    );
-
-    // validator meet error
-    mock_provider.push(U64::from(target_block)).unwrap();
-    validators[0]
-        .set_result(Err(anyhow::Error::msg("error".to_string())))
-        .await;
-    loader_start(loader.clone(), Some(2)).await;
-    assert!(!loader.is_loading().await);
-    assert!(!loader.is_running().await);
-    assert!(handler.drain_data().await.is_empty());
-    assert_eq!(
-        listeners[0].drain_events().await,
-        vec![
-            "StartEvent".to_string(),
+        // validator meet error
+        mock_provider.push(U64::from(target_block)).unwrap();
+        validators[0]
+            .set_result(Err(anyhow::Error::msg("error".to_string())))
+            .await;
+        loader_run(run_type, loader.clone(), Some(delay_block)).await;
+        assert!(!loader.is_loading().await);
+        assert!(!loader.is_running().await);
+        assert!(handler.drain_data().await.is_empty());
+        let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
                 "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
                 start_block,
                 start_block - 1
             ),
-            "StopEvent".to_string()
-        ]
-    );
+        ];
+        events_check(run_type, &listeners, events).await;
 
-    // validator contract1 error
-    let contract_data1 = vec![ContractData::builder()
-        .address(contract_address1)
-        .start_block(start_block)
-        .end_block(target_block - delay_block)
-        .build()];
-    validators[0]
-        .set_result(Ok(ChainResult::builder()
-            .chain_id(chain_id)
-            .contract_results(vec![
-                ContractResult::builder()
-                    .address(contract_address1.to_string())
-                    .result(Ok(()))
-                    .build(),
-                ContractResult::builder()
-                    .address(contract_address2.to_string())
-                    .result(Err(anyhow::Error::msg("error".to_string())))
-                    .build(),
-            ])
-            .build()))
-        .await;
-    mock_provider.push(U64::from(target_block)).unwrap();
-    loader_start(loader.clone(), Some(2)).await;
-    assert!(!loader.is_loading().await);
-    assert!(!loader.is_running().await);
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
-    assert_eq!(
-        listeners[0].drain_events().await,
-        vec![
-            "StartEvent".to_string(),
+        // validator contract1 error
+        let contract_data1 = vec![ContractData::builder()
+            .address(contract_address1)
+            .start_block(start_block)
+            .end_block(target_block - delay_block)
+            .build()];
+        validators[0]
+            .set_result(Ok(ChainResult::builder()
+                .chain_id(chain_id)
+                .contract_results(vec![
+                    ContractResult::builder()
+                        .address(contract_address1.to_string())
+                        .result(Ok(()))
+                        .build(),
+                    ContractResult::builder()
+                        .address(contract_address2.to_string())
+                        .result(Err(anyhow::Error::msg("error".to_string())))
+                        .build(),
+                ])
+                .build()))
+            .await;
+        mock_provider.push(U64::from(target_block)).unwrap();
+        loader_run(run_type, loader.clone(), Some(delay_block)).await;
+        assert!(!loader.is_loading().await);
+        assert!(!loader.is_running().await);
+        assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
+        let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
                 "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
                 start_block,
                 target_block - delay_block
             ),
-            "StopEvent".to_string()
-        ]
-    );
+        ];
+        events_check(run_type, &listeners, events).await;
 
-    // validator contract2 error
-    let contract_data2 = vec![ContractData::builder()
-        .address(contract_address2)
-        .start_block(start_block)
-        .end_block(target_block - delay_block)
-        .build()];
-    validators[0]
-        .set_result(Ok(ChainResult::builder()
-            .chain_id(chain_id)
-            .contract_results(vec![
-                ContractResult::builder()
-                    .address(contract_address2.to_string())
-                    .result(Ok(()))
-                    .build(),
-                ContractResult::builder()
-                    .address(contract_address1.to_string())
-                    .result(Err(anyhow::Error::msg("error".to_string())))
-                    .build(),
-            ])
-            .build()))
-        .await;
-    mock_provider.push(U64::from(target_block)).unwrap();
-    loader_start(loader.clone(), Some(2)).await;
-    assert!(!loader.is_loading().await);
-    assert!(!loader.is_running().await);
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data2));
-    assert_eq!(
-        listeners[0].drain_events().await,
-        vec![
-            "StartEvent".to_string(),
+        // validator contract2 error
+        let contract_data2 = vec![ContractData::builder()
+            .address(contract_address2)
+            .start_block(start_block)
+            .end_block(target_block - delay_block)
+            .build()];
+        validators[0]
+            .set_result(Ok(ChainResult::builder()
+                .chain_id(chain_id)
+                .contract_results(vec![
+                    ContractResult::builder()
+                        .address(contract_address2.to_string())
+                        .result(Ok(()))
+                        .build(),
+                    ContractResult::builder()
+                        .address(contract_address1.to_string())
+                        .result(Err(anyhow::Error::msg("error".to_string())))
+                        .build(),
+                ])
+                .build()))
+            .await;
+        mock_provider.push(U64::from(target_block)).unwrap();
+        loader_run(run_type, loader.clone(), Some(delay_block)).await;
+        assert!(!loader.is_loading().await);
+        assert!(!loader.is_running().await);
+        assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data2));
+        let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
                 "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
                 start_block,
                 target_block - delay_block
             ),
-            "StopEvent".to_string()
-        ]
-    );
+        ];
+        events_check(run_type, &listeners, events).await;
+    }
 }
 
 #[tokio::test]

@@ -1,5 +1,6 @@
 use crate::loader::loader_mock::{
-    create_loader, create_shared_loader, loader_start, MockFetcher, MockHandler, MockListener, MockValidator,
+    create_loader, create_shared_loader, loader_run, LoaderRunType, MockFetcher, MockHandler, MockListener,
+    MockValidator,
 };
 use ethers_core::types::U64;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
@@ -103,15 +104,16 @@ async fn test_loader_start() {
     let end_block = 987_u64;
 
     let loader = Arc::new(create_loader(false, true, contract_address, end_block).await);
-    loader_start(loader, None).await;
+    loader_run(LoaderRunType::Load, loader, None).await;
 }
 
 #[tokio::test]
 async fn test_loader_start_batch_builder() {
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let end_block = 765_u64;
+    let delay_block = 2_u64;
     let loader = Arc::new(create_loader(true, false, contract_address, end_block).await);
-    loader_start(loader.clone(), Some(2)).await;
+    loader_run(LoaderRunType::Load, loader.clone(), Some(delay_block)).await;
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
 }
@@ -119,6 +121,8 @@ async fn test_loader_start_batch_builder() {
 #[tokio::test]
 async fn test_loader_start_meet_error() {
     let chain_id = 12345678901234567890_u64;
+    let delay_block = 2_u64;
+
     let (_cfg, loader, _fetchers, _, _handler, listeners, _mock_provider) =
         create_shared_loader(chain_id, 1, 1, 1).await;
     let result = loader
@@ -136,35 +140,35 @@ async fn test_loader_start_meet_error() {
     let chain_id = 1_u64;
     let (_cfg, loader, _fetchers, _, _handler, listeners, _mock_provider) =
         create_shared_loader(chain_id, 1, 1, 1).await;
-    loader_start(loader.clone(), Some(2)).await;
+    loader_run(LoaderRunType::Schedule, loader.clone(), Some(delay_block)).await;
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
     assert_eq!(
         listeners[0].drain_events().await,
-        vec!["StartEvent".to_string(), "StopEvent".to_string()]
+        vec!["ScheduleEvent".to_string(), "StopScheduleEvent".to_string()]
     );
 
     // test build_chain_target_block meet error
     let (_cfg, loader, _fetchers, _, _handler, listeners, _mock_provider) =
         create_shared_loader(chain_id, 1, 1, 1).await;
-    loader_start(loader.clone(), Some(2)).await;
+    loader_run(LoaderRunType::Schedule, loader.clone(), Some(delay_block)).await;
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
     assert_eq!(
         listeners[0].drain_events().await,
-        vec!["StartEvent".to_string(), "StopEvent".to_string()]
+        vec!["ScheduleEvent".to_string(), "StopScheduleEvent".to_string()]
     );
 
     // test build_chain_target_block target_block is too small
     let (_cfg, loader, _fetchers, _, _handler, listeners, mock_provider) =
         create_shared_loader(chain_id, 1, 1, 1).await;
     mock_provider.push(U64::from(1_u64)).unwrap();
-    loader_start(loader.clone(), Some(2)).await;
+    loader_run(LoaderRunType::Schedule, loader.clone(), Some(delay_block)).await;
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
     assert_eq!(
         listeners[0].drain_events().await,
-        vec!["StartEvent".to_string(), "StopEvent".to_string()]
+        vec!["ScheduleEvent".to_string(), "StopScheduleEvent".to_string()]
     );
 }
 
@@ -192,21 +196,23 @@ async fn test_loader_already_running() {
 #[tokio::test]
 async fn test_restart_loader() {
     let chain_id = 1_u64;
+    let delay_block = 2_u64;
 
     let (_cfg, loader, _fetchers, _, _, listeners, _mock_provider) = create_shared_loader(chain_id, 1, 1, 1).await;
-    loader_start(loader.clone(), Some(2)).await;
+
+    loader_run(LoaderRunType::Schedule, loader.clone(), Some(delay_block)).await;
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
     assert_eq!(
         listeners[0].drain_events().await,
-        vec!["StartEvent".to_string(), "StopEvent".to_string()]
+        vec!["ScheduleEvent".to_string(), "StopScheduleEvent".to_string()]
     );
 
-    loader_start(loader.clone(), Some(2)).await;
+    loader_run(LoaderRunType::Schedule, loader.clone(), Some(delay_block)).await;
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
     assert_eq!(
         listeners[0].drain_events().await,
-        vec!["StartEvent".to_string(), "StopEvent".to_string()]
+        vec!["ScheduleEvent".to_string(), "StopScheduleEvent".to_string()]
     );
 }
