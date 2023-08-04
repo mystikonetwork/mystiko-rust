@@ -6,15 +6,11 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]
-pub struct StartEvent {
-    pub start_block: u64,
-}
+pub struct StartEvent {}
 
 #[derive(Debug, TypedBuilder, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]
-pub struct StopEvent {
-    pub loaded_block: u64,
-}
+pub struct StopEvent {}
 
 #[derive(Debug, TypedBuilder, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]

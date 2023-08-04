@@ -18,10 +18,12 @@ use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::sync::{Arc, Once};
 use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::time::sleep;
+
+static INIT: Once = Once::new();
 
 pub struct MockFetcher<R>
 where
@@ -174,7 +176,16 @@ where
     contract_loaded_blocks: RwLock<HashMap<String, u64>>,
     all_success: RwLock<bool>,
     result: RwLock<HandleResult>,
-    data: RwLock<Vec<ChainData<R>>>,
+    data: RwLock<HashMap<String, ContractData<R>>>,
+}
+
+impl<R> Default for MockHandler<R>
+where
+    R: LoadedData + Clone,
+{
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<R> MockHandler<R>
@@ -188,7 +199,7 @@ where
             contract_loaded_blocks: RwLock::new(HashMap::new()),
             all_success: RwLock::new(true),
             result: RwLock::new(HandleResult::Err(anyhow::Error::msg("handle error".to_string()))),
-            data: RwLock::new(vec![]),
+            data: RwLock::new(HashMap::new()),
         }
     }
 
@@ -224,8 +235,13 @@ where
         *self.result.write().await = result;
     }
 
-    pub async fn drain_data(&self) -> Vec<ChainData<R>> {
-        self.data.write().await.drain(..).collect()
+    pub async fn drain_data(&self) -> HashMap<String, ContractData<R>> {
+        let mut data_write = self.data.write().await;
+        let mut drained_data = HashMap::new();
+        data_write.drain().for_each(|(k, v)| {
+            drained_data.insert(k, v);
+        });
+        drained_data
     }
 }
 
@@ -269,24 +285,6 @@ where
     }
 
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
-        self.data.write().await.push(
-            ChainData::builder()
-                .chain_id(data.chain_id)
-                .contracts_data(
-                    data.contracts_data
-                        .iter()
-                        .map(|d| {
-                            ContractData::builder()
-                                .address(d.address.clone())
-                                .start_block(d.start_block)
-                                .end_block(d.end_block)
-                                .build()
-                        })
-                        .collect::<Vec<_>>(),
-                )
-                .build(),
-        );
-
         if *self.all_success.read().await {
             let contract_results = data
                 .contracts_data
@@ -298,6 +296,18 @@ where
                         .build()
                 })
                 .collect::<Vec<_>>();
+
+            let mut data_write = self.data.write().await;
+            data.contracts_data.iter().for_each(|d| {
+                data_write.insert(
+                    d.address.clone(),
+                    ContractData::builder()
+                        .address(d.address.clone())
+                        .start_block(d.start_block)
+                        .end_block(d.end_block)
+                        .build(),
+                );
+            });
 
             Ok(ChainResult::builder()
                 .chain_id(data.chain_id)
@@ -321,6 +331,18 @@ where
                                 .build(),
                         })
                         .collect::<Vec<_>>();
+
+                    let mut data_write = self.data.write().await;
+                    data.contracts_data.iter().for_each(|d| {
+                        data_write.insert(
+                            d.address.clone(),
+                            ContractData::builder()
+                                .address(d.address.clone())
+                                .start_block(d.start_block)
+                                .end_block(d.end_block)
+                                .build(),
+                        );
+                    });
 
                     Ok(ChainResult::builder()
                         .chain_id(result.chain_id)
@@ -346,13 +368,13 @@ impl MockListener {
 
     fn convert_event(&self, event: &LoaderEvent) -> String {
         match event {
-            LoaderEvent::StartEvent(e) => format!("StartEvent-{}", e.start_block),
-            LoaderEvent::StopEvent(e) => format!("StopEvent-{}", e.loaded_block),
-            LoaderEvent::LoadEvent(e) => format!("LoadEvent-{}", e.start_block),
-            LoaderEvent::LoadSuccessEvent(e) => format!("LoadSuccessEvent-{}", e.loaded_block),
+            LoaderEvent::StartEvent(_) => "StartEvent".to_string(),
+            LoaderEvent::LoadEvent(e) => format!("LoadEvent-{}-{}", e.start_block, e.target_block),
+            LoaderEvent::LoadSuccessEvent(e) => format!("LoadSuccessEvent-{}-{}", e.start_block, e.loaded_block),
             LoaderEvent::LoadFailureEvent(e) => {
-                format!("LoadFailureEvent-{}-{}", e.loaded_block, e.load_error)
+                format!("LoadFailureEvent-{}-{}-{}", e.start_block, e.loaded_block, e.load_error)
             }
+            LoaderEvent::StopEvent(_) => "StopEvent".to_string(),
         }
     }
 
@@ -377,27 +399,32 @@ impl LoaderListener for MockListener {
     }
 }
 
-pub async fn loader_start(
-    loader: Arc<ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>>,
-    max_batch_block: u64,
-) {
+type ChainDataLoaderFullDataType =
+    ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>;
+
+pub async fn loader_start(loader: Arc<ChainDataLoaderFullDataType>, max_batch_block: u64) {
+    INIT.call_once(|| {
+        std::env::set_var("RUST_LOG", "trace");
+        env_logger::init();
+    });
+
     let option = StartOption::builder()
         .load_interval_ms(10_u64)
         .max_batch_block(max_batch_block)
         .delay_block(2_u64)
         .build();
-
-    let loader_clone1 = loader.clone();
-    let loader_clone2 = loader.clone();
-    let handle1 = tokio::spawn(async move { loader_clone1.start(&option).await });
-    let handle2 = tokio::spawn(async move {
-        let _ = sleep(std::time::Duration::from_millis(2_u64)).await;
-        loader_clone2.stop().await
-    });
-
-    let result = futures::try_join!(handle1);
-    assert!(result.is_ok());
-    let result = futures::try_join!(handle2);
+    let handle = loader.start(option).await.unwrap().unwrap();
+    let mut running = false;
+    for _ in 0..100 {
+        let _ = sleep(std::time::Duration::from_millis(1_u64)).await;
+        if loader.is_running().await {
+            running = true;
+            break;
+        }
+    }
+    assert!(running);
+    loader.stop().await;
+    let result = futures::try_join!(handle);
     assert!(result.is_ok());
 }
 
@@ -559,32 +586,31 @@ fn create_mock_provider(provider: &MockProvider) -> Provider {
     Provider::new(ProviderWrapper::new(Box::new(provider_builder.build())))
 }
 
-pub fn chain_data_partial_eq(a: &Vec<ChainData<FullData>>, b: &Vec<ChainData<FullData>>) -> bool {
+pub fn contract_data_partial_eq(a: &HashMap<String, ContractData<FullData>>, b: &Vec<ContractData<FullData>>) -> bool {
     if a.len() != b.len() {
+        println!("a.len() != b.len() {:?} {:?}", a.len(), b.len());
         return false;
     }
 
-    for i in 0..a.len() {
-        if a[i].chain_id != b[i].chain_id {
+    for d in b.iter() {
+        if let Some(v) = a.get(&d.address) {
+            if v.address != d.address {
+                println!("v.address != d.address");
+                return false;
+            }
+
+            if v.start_block != d.start_block {
+                println!("v.start_block != d.start_block");
+                return false;
+            }
+
+            if v.end_block != d.end_block {
+                println!("v.end_block != d.end_block");
+                return false;
+            }
+        } else {
+            println!("Address not found: {}", &d.address);
             return false;
-        }
-
-        if a[i].contracts_data.len() != b[i].contracts_data.len() {
-            return false;
-        }
-
-        for j in 0..a[i].contracts_data.len() {
-            if a[i].contracts_data[j].address != b[i].contracts_data[j].address {
-                return false;
-            }
-
-            if a[i].contracts_data[j].start_block != b[i].contracts_data[j].start_block {
-                return false;
-            }
-
-            if a[i].contracts_data[j].end_block != b[i].contracts_data[j].end_block {
-                return false;
-            }
         }
     }
 
