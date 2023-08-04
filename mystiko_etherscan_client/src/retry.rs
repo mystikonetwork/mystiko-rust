@@ -13,6 +13,12 @@ pub struct DefaultRetryPolicy {
     max_retry_times: u64,
 }
 
+impl DefaultRetryPolicy {
+    pub fn new(max_retry_times: u64) -> Self {
+        Self { max_retry_times }
+    }
+}
+
 impl RetryPolicy for DefaultRetryPolicy {
     fn is_retryable(&self, error: &EtherScanError, current_retry_time: u64) -> bool {
         if current_retry_time >= self.max_retry_times {
@@ -29,6 +35,6 @@ impl RetryPolicy for DefaultRetryPolicy {
 
 impl Default for DefaultRetryPolicy {
     fn default() -> Self {
-        DefaultRetryPolicy { max_retry_times: 5 }
+        Self::new(5)
     }
 }

@@ -32,8 +32,6 @@ pub struct GetLogsOptions {
 #[derive(Debug, Clone, Default, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct GetOptions<U> {
-    #[builder(setter(strip_option), default = None)]
-    pub current_retry_time: Option<u64>,
     pub url: U,
     pub module: EtherScanModule,
 }
@@ -239,12 +237,12 @@ impl EtherScanClient {
         self.get_with_retry::<R, U>(options).await
     }
 
-    pub async fn get_with_retry<R, U>(&self, options: GetOptions<U>) -> Result<Option<R>>
+    async fn get_with_retry<R, U>(&self, options: GetOptions<U>) -> Result<Option<R>>
     where
         R: DeserializeOwned + Send + Serialize,
         U: IntoUrl + Clone,
     {
-        let mut current_retry_time = options.current_retry_time.unwrap_or(1);
+        let mut current_retry_time = 1;
         loop {
             self.throttle().await;
             match self.handle_response(options.clone()).await {

@@ -486,7 +486,7 @@ async fn test_failed_for_max_rate_limit_reached() {
         ))
         .module(EtherScanModule::Normal)
         .build();
-    let result = ether_scan_client.get_with_retry::<String, String>(options).await;
+    let result = ether_scan_client.get::<String, String>(options).await;
     assert!(result.is_err());
     let error = result.unwrap_err();
     let actual_error_msg = error.to_string();
@@ -517,7 +517,7 @@ async fn test_failed_for_max_rate_limit_reached() {
         ))
         .module(EtherScanModule::JsonRpcProxy)
         .build();
-    let result = ether_scan_client.get_with_retry::<String, String>(options).await;
+    let result = ether_scan_client.get::<String, String>(options).await;
     assert!(result.is_err());
     let error = result.unwrap_err();
     let actual_error_msg = error.to_string();
