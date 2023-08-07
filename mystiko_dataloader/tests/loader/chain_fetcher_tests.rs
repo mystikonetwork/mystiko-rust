@@ -9,7 +9,7 @@ use std::collections::HashSet;
 #[tokio::test]
 async fn test_loader_start_shared_fetcher_error() {
     let chain_id = 1_u64;
-    let (cfg, loader, _fetchers, _, handler, listeners, mock_provider) = create_shared_loader(chain_id, 1, 1, 1).await;
+    let (cfg, loader, fetchers, _, handler, listeners, mock_provider) = create_shared_loader(chain_id, 1, 1, 1).await;
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
 
@@ -17,8 +17,8 @@ async fn test_loader_start_shared_fetcher_error() {
     let target_block = start_block + 1000;
     let delay_block = 2;
 
-    // fetch return error
     for run_type in [LoaderRunType::Schedule, LoaderRunType::Load] {
+        // fetch return error
         mock_provider.push(U64::from(target_block)).unwrap();
         loader_run(run_type, loader.clone(), Some(delay_block)).await;
         assert!(!loader.is_loading().await);
@@ -27,7 +27,25 @@ async fn test_loader_start_shared_fetcher_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                start_block,
+                start_block - 1
+            ),
+        ];
+        events_check(run_type, &listeners, events).await;
+
+        // fetch return date empty
+        let fetcher_result = ChainData::builder().chain_id(chain_id).contracts_data(vec![]).build();
+        fetchers[0].set_result(fetcher_result.clone()).await;
+        mock_provider.push(U64::from(target_block)).unwrap();
+        loader_run(run_type, loader.clone(), Some(delay_block)).await;
+        assert!(!loader.is_loading().await);
+        assert!(!loader.is_running().await);
+        assert!(handler.drain_data().await.is_empty());
+        let events = vec![
+            format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
+            format!(
+                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                 start_block,
                 start_block - 1
             ),
@@ -70,7 +88,7 @@ async fn test_loader_start_one_shared_fetcher_one_contract() {
                 let events = vec![
                     format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
                     format!(
-                        "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                        "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                         start_block,
                         target_block - delay_block - 1
                     ),
@@ -199,7 +217,7 @@ async fn test_loader_start_one_shared_fetcher_two_contract() {
                 let events = vec![
                     format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
                     format!(
-                        "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                        "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                         start_block,
                         target_block - delay_block - 1
                     ),
@@ -254,7 +272,7 @@ async fn test_loader_start_two_shared_fetcher() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                 start_block,
                 target_block - delay_block
             ),
@@ -302,7 +320,7 @@ async fn test_loader_start_two_shared_fetcher() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                 start_block,
                 target_block - delay_block - 1
             ),
@@ -363,7 +381,7 @@ async fn test_loader_start_two_shared_fetcher_with_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                 start_block,
                 start_block - 1
             ),
@@ -392,7 +410,7 @@ async fn test_loader_start_two_shared_fetcher_with_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                 start_block,
                 target_block - delay_block
             ),
@@ -422,7 +440,7 @@ async fn test_loader_start_two_shared_fetcher_with_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                 start_block,
                 target_block - delay_block
             ),

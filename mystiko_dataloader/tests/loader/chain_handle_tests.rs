@@ -32,6 +32,7 @@ async fn test_loader_start_shared_handler() {
     handler.set_contracts(chain_id, contracts, cfg.clone()).await;
 
     for run_type in [LoaderRunType::Load, LoaderRunType::Schedule] {
+        // handle error
         handler.set_result(Err(anyhow::Error::msg("error".to_string()))).await;
         mock_provider.push(U64::from(target_block)).unwrap();
         loader_run(run_type, loader.clone(), Some(delay_block)).await;
@@ -41,13 +42,14 @@ async fn test_loader_start_shared_handler() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-loader run error failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
                 start_block,
                 start_block - 1
             ),
         ];
         events_check(run_type, &listeners, events).await;
 
+        // handle success
         handler.set_all_success().await;
         mock_provider.push(U64::from(target_block)).unwrap();
         loader_run(run_type, loader.clone(), Some(delay_block)).await;
@@ -59,5 +61,7 @@ async fn test_loader_start_shared_handler() {
             format!("LoadSuccessEvent-{:?}-{:?}", start_block, target_block),
         ];
         events_check(run_type, &listeners, events).await;
+
+        // handle some error
     }
 }

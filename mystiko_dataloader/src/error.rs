@@ -8,8 +8,16 @@ pub enum DataLoaderError {
     LoaderInitError(String),
     #[error("unsupported chain (id = {0})")]
     UnsupportedChainError(u64),
-    #[error("loader run error {0}")]
-    LoaderRunError(String),
+    #[error("loader load error {0}")]
+    LoaderLoadError(String),
+    #[error("contracts empty")]
+    LoaderContractsEmpty,
+    #[error("failed fetch from all fetchers")]
+    LoaderFetchersFailed,
+    #[error("fetcher data empty")]
+    LoaderFetcherDataEmpty,
+    #[error("fetcher data all invalid")]
+    LoaderFetcherDataInvalid,
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
     #[error(transparent)]
