@@ -26,7 +26,7 @@ async fn test_builder_error() {
         .shared_handler(Arc::new(MockHandler::new()))
         .add_shared_listener(Arc::new(MockListener::default()))
         .build();
-    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderInitError(_)));
+    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderBuildError(_)));
 
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
@@ -47,7 +47,7 @@ async fn test_builder_error() {
         .shared_handler(Arc::new(MockHandler::new()))
         .add_shared_listener(Arc::new(MockListener::default()))
         .build();
-    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderInitError(_)));
+    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderBuildError(_)));
 
     let builder: ChainDataLoaderBuilder<
         FullData,
@@ -62,7 +62,7 @@ async fn test_builder_error() {
         .add_shared_validator(Arc::new(MockValidator::new()))
         .add_shared_listener(Arc::new(MockListener::default()))
         .build();
-    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderInitError(_)));
+    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderBuildError(_)));
 
     let builder: ChainDataLoaderBuilder<
         FullData,
@@ -79,7 +79,7 @@ async fn test_builder_error() {
         .shared_handler(Arc::new(MockHandler::new()))
         .add_shared_listener(Arc::new(MockListener::default()))
         .build();
-    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderInitError(_)));
+    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderBuildError(_)));
 
     let builder: ChainDataLoaderBuilder<
         FullData,
@@ -95,7 +95,7 @@ async fn test_builder_error() {
         .shared_handler(Arc::new(MockHandler::new()))
         .add_shared_listener(Arc::new(MockListener::default()))
         .build();
-    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderInitError(_)));
+    assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderBuildError(_)));
 }
 
 #[tokio::test]

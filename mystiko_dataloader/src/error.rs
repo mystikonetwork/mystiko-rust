@@ -5,21 +5,21 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum DataLoaderError {
     #[error("loader init error {0}")]
-    LoaderInitError(String),
-    #[error("unsupported chain (id = {0})")]
-    UnsupportedChainError(u64),
+    LoaderBuildError(String),
     #[error("loader load error {0}")]
     LoaderLoadError(String),
-    #[error("contracts empty")]
-    LoaderContractsEmpty,
-    #[error("failed fetch from all fetchers")]
-    LoaderFetchersFailed,
-    #[error("fetcher data empty")]
-    LoaderFetcherDataEmpty,
-    #[error("fetcher data all invalid")]
-    LoaderFetcherDataInvalid,
+    #[error("no contracts to be loaded")]
+    LoaderNoContractsError,
+    #[error("failed to fetch data from all fetchers")]
+    LoaderFetchersExhaustedError,
+    #[error("data to be validated is empty")]
+    LoaderEmptyValidateDataError,
+    #[error("data to be handled is empty")]
+    LoaderEmptyHandleDataError,
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
     #[error(transparent)]
-    AnyhowError(#[from] AnyhowError),
+    FetcherError(#[from] AnyhowError),
+    #[error("unsupported chain (id = {0})")]
+    UnsupportedChainError(u64),
 }

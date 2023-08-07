@@ -2,7 +2,6 @@ use crate::data::chain::ChainData;
 use crate::data::result::UnwrappedChainResult;
 use crate::data::types::LoadedData;
 use crate::error::DataLoaderError;
-use crate::error::DataLoaderError::LoaderLoadError;
 use crate::fetcher::types::{ChainFetchOption, ContractFetchOption, DataFetcher, FetchOption};
 use crate::handler::types::{DataHandler, HandleOption};
 use crate::loader::listener::{
@@ -27,6 +26,18 @@ use tokio::time::sleep;
 
 type Result<T> = anyhow::Result<T, DataLoaderError>;
 
+#[derive(Debug)]
+pub struct ChainDataLoader<
+    R,
+    F = Box<dyn DataFetcher<R>>,
+    V = Box<dyn DataValidator<R>>,
+    H = Box<dyn DataHandler<R>>,
+    L = Box<dyn LoaderListener>,
+> {
+    executor: Arc<ChainDataLoaderExecutor<R, F, V, H, L>>,
+    _phantom: std::marker::PhantomData<R>,
+}
+
 #[derive(Debug, Default)]
 pub struct ChainDataLoaderBuilder<
     R,
@@ -45,13 +56,85 @@ pub struct ChainDataLoaderBuilder<
     _phantom: std::marker::PhantomData<R>,
 }
 
+#[derive(Debug)]
+struct ChainDataLoaderExecutor<
+    R,
+    F = Box<dyn DataFetcher<R>>,
+    V = Box<dyn DataValidator<R>>,
+    H = Box<dyn DataHandler<R>>,
+    L = Box<dyn LoaderListener>,
+> {
+    config: Arc<MystikoConfig>,
+    chain_id: u64,
+    fetchers: Vec<Arc<F>>,
+    validators: Vec<Arc<V>>,
+    handler: Arc<H>,
+    listeners: Vec<Arc<L>>,
+    provider: Arc<Provider>,
+    state: RwLock<LoaderState>,
+    _phantom: std::marker::PhantomData<R>,
+}
+
+impl<R, F, V, H, L> ChainDataLoader<R, F, V, H, L>
+where
+    R: 'static + LoadedData,
+    F: 'static + DataFetcher<R>,
+    V: 'static + DataValidator<R>,
+    H: 'static + DataHandler<R>,
+    L: 'static + LoaderListener,
+{
+    pub async fn schedule(&self, options: ScheduleOption) -> Result<Option<JoinHandle<()>>> {
+        if !self.set_is_running(true).await {
+            let join_handle = self.run(options).await;
+            match join_handle {
+                Ok(h) => Ok(Some(h)),
+                Err(e) => {
+                    self.set_is_running(false).await;
+                    Err(e)
+                }
+            }
+        } else {
+            warn!("loader is already running");
+            Ok(None)
+        }
+    }
+
+    pub async fn load(&self, options: Option<LoadOption>) -> Result<()> {
+        let chain_cfg = self.executor.build_chain_config().await?;
+        self.executor.try_load(&chain_cfg, &options).await
+    }
+
+    pub async fn stop_schedule(&self) {
+        self.set_is_running(false).await;
+    }
+
+    pub async fn is_running(&self) -> bool {
+        self.executor.is_running().await
+    }
+
+    pub async fn is_loading(&self) -> bool {
+        self.executor.is_loading().await
+    }
+
+    async fn set_is_running(&self, is_running: bool) -> bool {
+        self.executor.set_is_running(is_running).await
+    }
+
+    async fn run(&self, options: ScheduleOption) -> Result<JoinHandle<()>> {
+        let chain_cfg = self.executor.build_chain_config().await?;
+        let executor = self.executor.clone();
+        let join_handle = tokio::spawn(async move { executor.schedule(chain_cfg, options.clone()).await });
+        Ok(join_handle)
+    }
+}
+
 impl<R, F, V, H, L> ChainDataLoaderBuilder<R, F, V, H, L>
 where
-    R: LoadedData,
-    F: DataFetcher<R>,
-    V: DataValidator<R>,
-    H: DataHandler<R>,
-    L: LoaderListener,
+    R: 'static + LoadedData,
+    F: 'static + DataFetcher<R>,
+    V: 'static + DataValidator<R>,
+    H: 'static + DataHandler<R>,
+    L: 'static + LoaderListener,
 {
     pub fn new() -> Self {
         Self {
@@ -147,19 +230,21 @@ where
     pub fn build(self) -> Result<ChainDataLoader<R, F, V, H, L>> {
         let config = self
             .config
-            .ok_or_else(|| DataLoaderError::LoaderInitError("config cannot be None".to_string()))?;
+            .ok_or_else(|| DataLoaderError::LoaderBuildError("config cannot be None".to_string()))?;
 
         if self.fetchers.is_empty() {
-            return Err(DataLoaderError::LoaderInitError("fetchers cannot be empty".to_string()));
+            return Err(DataLoaderError::LoaderBuildError(
+                "fetchers cannot be empty".to_string(),
+            ));
         }
 
         let handler = self
             .handler
-            .ok_or_else(|| DataLoaderError::LoaderInitError("handler cannot be None".to_string()))?;
+            .ok_or_else(|| DataLoaderError::LoaderBuildError("handler cannot be None".to_string()))?;
 
         let provider = self
             .provider
-            .ok_or_else(|| DataLoaderError::LoaderInitError("provider cannot be None".to_string()))?;
+            .ok_or_else(|| DataLoaderError::LoaderBuildError("provider cannot be None".to_string()))?;
 
         let state = LoaderState {
             is_running: false,
@@ -185,97 +270,13 @@ where
     }
 }
 
-#[derive(Debug)]
-pub struct ChainDataLoader<
-    R: 'static,
-    F: 'static = Box<dyn DataFetcher<R>>,
-    V: 'static = Box<dyn DataValidator<R>>,
-    H: 'static = Box<dyn DataHandler<R>>,
-    L: 'static = Box<dyn LoaderListener>,
-> {
-    executor: Arc<ChainDataLoaderExecutor<R, F, V, H, L>>,
-    _phantom: std::marker::PhantomData<R>,
-}
-
-impl<R, F, V, H, L> ChainDataLoader<R, F, V, H, L>
-where
-    R: LoadedData,
-    F: DataFetcher<R>,
-    V: DataValidator<R>,
-    H: DataHandler<R>,
-    L: LoaderListener,
-{
-    pub async fn schedule(&self, options: ScheduleOption) -> Result<Option<JoinHandle<()>>> {
-        if !self.set_is_running(true).await {
-            let join_handle = self.run(options).await;
-            match join_handle {
-                Ok(h) => Ok(Some(h)),
-                Err(e) => {
-                    self.set_is_running(false).await;
-                    Err(e)
-                }
-            }
-        } else {
-            warn!("loader is already running");
-            Ok(None)
-        }
-    }
-
-    pub async fn load(&self, options: Option<LoadOption>) -> Result<()> {
-        let chain_cfg = self.executor.build_chain_config().await?;
-        self.executor.try_load(&chain_cfg, &options).await
-    }
-
-    pub async fn stop_schedule(&self) {
-        self.set_is_running(false).await;
-    }
-
-    pub async fn is_running(&self) -> bool {
-        self.executor.is_running().await
-    }
-
-    pub async fn is_loading(&self) -> bool {
-        self.executor.is_loading().await
-    }
-
-    async fn set_is_running(&self, is_running: bool) -> bool {
-        self.executor.set_is_running(is_running).await
-    }
-
-    async fn run(&self, options: ScheduleOption) -> Result<JoinHandle<()>> {
-        let chain_cfg = self.executor.build_chain_config().await?;
-        let executor = self.executor.clone();
-        let join_handle = tokio::spawn(async move { executor.schedule(chain_cfg, options.clone()).await });
-        Ok(join_handle)
-    }
-}
-
-#[derive(Debug)]
-struct ChainDataLoaderExecutor<
-    R: 'static,
-    F: 'static = Box<dyn DataFetcher<R>>,
-    V: 'static = Box<dyn DataValidator<R>>,
-    H: 'static = Box<dyn DataHandler<R>>,
-    L: 'static = Box<dyn LoaderListener>,
-> {
-    config: Arc<MystikoConfig>,
-    chain_id: u64,
-    fetchers: Vec<Arc<F>>,
-    validators: Vec<Arc<V>>,
-    handler: Arc<H>,
-    listeners: Vec<Arc<L>>,
-    provider: Arc<Provider>,
-    state: RwLock<LoaderState>,
-    _phantom: std::marker::PhantomData<R>,
-}
-
 impl<R, F, V, H, L> ChainDataLoaderExecutor<R, F, V, H, L>
 where
-    R: LoadedData,
-    F: DataFetcher<R>,
-    V: DataValidator<R>,
-    H: DataHandler<R>,
-    L: LoaderListener,
+    R: 'static + LoadedData,
+    F: 'static + DataFetcher<R>,
+    V: 'static + DataValidator<R>,
+    H: 'static + DataHandler<R>,
+    L: 'static + LoaderListener,
 {
     async fn schedule(&self, chain_cfg: ChainConfig, options: ScheduleOption) {
         let schedule_interval_ms = options.schedule_interval_ms.unwrap_or(DEFAULT_SCHEDULE_INTERVAL_MS);
@@ -454,14 +455,14 @@ where
             };
         }
 
-        error!("failed fetch from all fetchers");
-        Err(DataLoaderError::LoaderFetchersFailed)
+        error!("failed to fetch data from all fetchers");
+        Err(DataLoaderError::LoaderFetchersExhaustedError)
     }
 
     async fn fetch(&self, fetcher: &Arc<F>, option: FetchOption<'_>) -> Result<ChainData<R>> {
         let fetch_result = match fetcher.fetch(&option).await {
             Err(e) => {
-                return Err(DataLoaderError::AnyhowError(e));
+                return Err(DataLoaderError::FetcherError(e));
             }
             Ok(chain_data) => chain_data,
         };
@@ -498,7 +499,7 @@ where
             Ok(())
         } else {
             warn!("fetcher contract data is empty");
-            Err(DataLoaderError::LoaderFetcherDataEmpty)
+            Err(DataLoaderError::LoaderEmptyValidateDataError)
         }
     }
 
@@ -513,7 +514,7 @@ where
             Ok(())
         } else {
             warn!("fetcher contract data all invalid");
-            Err(DataLoaderError::LoaderFetcherDataInvalid)
+            Err(DataLoaderError::LoaderEmptyHandleDataError)
         }
     }
 
@@ -538,7 +539,7 @@ where
             }
         }
 
-        Err(DataLoaderError::LoaderContractsEmpty)
+        Err(DataLoaderError::LoaderNoContractsError)
     }
 
     async fn build_chain_start_block(&self, chain_cfg: &ChainConfig) -> Result<u64> {
@@ -564,7 +565,7 @@ where
         if latest > delay_block && latest - delay_block >= start_block {
             Ok(latest - delay_block)
         } else {
-            Err(LoaderLoadError("latest block too small".to_string()))
+            Err(DataLoaderError::LoaderLoadError("latest block too small".to_string()))
         }
     }
 

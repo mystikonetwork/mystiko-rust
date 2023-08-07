@@ -27,7 +27,7 @@ async fn test_loader_start_shared_fetcher_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                 start_block,
                 start_block - 1
             ),
@@ -45,7 +45,7 @@ async fn test_loader_start_shared_fetcher_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                 start_block,
                 start_block - 1
             ),
@@ -88,7 +88,7 @@ async fn test_loader_start_one_shared_fetcher_one_contract() {
                 let events = vec![
                     format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
                     format!(
-                        "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                        "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                         start_block,
                         target_block - delay_block - 1
                     ),
@@ -217,7 +217,7 @@ async fn test_loader_start_one_shared_fetcher_two_contract() {
                 let events = vec![
                     format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
                     format!(
-                        "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                        "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                         start_block,
                         target_block - delay_block - 1
                     ),
@@ -272,7 +272,7 @@ async fn test_loader_start_two_shared_fetcher() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                 start_block,
                 target_block - delay_block
             ),
@@ -320,7 +320,7 @@ async fn test_loader_start_two_shared_fetcher() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                 start_block,
                 target_block - delay_block - 1
             ),
@@ -381,7 +381,7 @@ async fn test_loader_start_two_shared_fetcher_with_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                 start_block,
                 start_block - 1
             ),
@@ -410,7 +410,7 @@ async fn test_loader_start_two_shared_fetcher_with_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                 start_block,
                 target_block - delay_block
             ),
@@ -440,7 +440,7 @@ async fn test_loader_start_two_shared_fetcher_with_error() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                 start_block,
                 target_block - delay_block
             ),

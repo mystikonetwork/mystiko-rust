@@ -42,7 +42,7 @@ async fn test_loader_start_shared_handler() {
         let events = vec![
             format!("LoadEvent-{:?}-{:?}", start_block, target_block - delay_block),
             format!(
-                "LoadFailureEvent-{:?}-{:?}-failed fetch from all fetchers",
+                "LoadFailureEvent-{:?}-{:?}-failed to fetch data from all fetchers",
                 start_block,
                 start_block - 1
             ),
