@@ -26,7 +26,7 @@ pub struct ContractCommitment {
 #[derive(Debug, Clone, TypedBuilder)]
 pub struct ContractNullifier {
     pub contract_address: String,
-    pub commitment: Nullifier,
+    pub nullifier: Nullifier,
 }
 
 #[derive(Debug, Clone)]
@@ -59,6 +59,7 @@ pub struct NullifierQueryOption {
     pub start_block: Option<u64>,
     pub end_block: Option<u64>,
     pub contract_address: Option<Vec<String>>,
+    pub nullifier: Option<BigUint>,
     pub order_by: Option<NullifierOrderType>,
     pub offset: Option<u64>,
     pub limit: Option<u64>,
