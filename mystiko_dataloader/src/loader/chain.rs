@@ -528,7 +528,7 @@ where
     }
 
     async fn build_loading_contracts(&self, chain: &ChainConfig) -> Result<(bool, Vec<ContractConfig>)> {
-        if let Some(contracts) = self.handler.loading_contracts(self.chain_id).await? {
+        if let Some(contracts) = self.handler.query_loading_contracts(self.chain_id).await? {
             if !contracts.is_empty() {
                 return Ok((true, contracts));
             }
@@ -549,7 +549,7 @@ where
     async fn build_chain_loaded_block(&self, chain_cfg: &ChainConfig) -> Result<u64> {
         let start_block = self
             .handler
-            .chain_loaded_block(self.chain_id)
+            .query_chain_loaded_block(self.chain_id)
             .await?
             .unwrap_or_else(|| chain_cfg.start_block());
         Ok(start_block)
@@ -572,7 +572,7 @@ where
     async fn build_contract_start_block(&self, contract: &ContractConfig) -> Result<u64> {
         let start_block = self
             .handler
-            .contract_loaded_block(self.chain_id, contract.address())
+            .query_contract_loaded_block(self.chain_id, contract.address())
             .await?
             .unwrap_or(contract.start_block())
             + 1;
@@ -608,7 +608,7 @@ where
 
     async fn emit_event(&self, event: &LoaderEvent) {
         for listener in &self.listeners {
-            listener.callback(event).await.unwrap_or_else(|e| {
+            listener.callback(self.chain_id, event).await.unwrap_or_else(|e| {
                 warn!("emit event raised error {:?}", e);
             });
         }

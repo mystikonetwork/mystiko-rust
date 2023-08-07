@@ -9,7 +9,10 @@ use mystiko_dataloader::data::contract::ContractData;
 use mystiko_dataloader::data::result::{ChainResult, ContractResult};
 use mystiko_dataloader::data::types::{FullData, LoadedData};
 use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOption, FetchResult};
-use mystiko_dataloader::handler::types::{DataHandler, HandleOption, HandleResult};
+use mystiko_dataloader::handler::types::{
+    CommitmentQueryOption, ContractCommitment, ContractNullifier, DataHandler, HandleOption, HandleResult,
+    NullifierQueryOption,
+};
 use mystiko_dataloader::loader::chain::{ChainDataLoader, ChainDataLoaderBuilder};
 use mystiko_dataloader::loader::listener::{LoaderEvent, LoaderListener};
 use mystiko_dataloader::loader::types::{LoadOption, ScheduleOption};
@@ -250,7 +253,7 @@ impl<R> DataHandler<R> for MockHandler<R>
 where
     R: LoadedData,
 {
-    async fn loading_contracts(&self, _chain_id: u64) -> Result<Option<Vec<ContractConfig>>> {
+    async fn query_loading_contracts(&self, _chain_id: u64) -> Result<Option<Vec<ContractConfig>>> {
         if self.contracts.read().await.is_empty() {
             Ok(None)
         } else {
@@ -258,7 +261,7 @@ where
         }
     }
 
-    async fn chain_loaded_block(&self, _chain_id: u64) -> anyhow::Result<Option<u64>> {
+    async fn query_chain_loaded_block(&self, _chain_id: u64) -> anyhow::Result<Option<u64>> {
         if *self.chain_loaded_blocks_error.read().await {
             return Err(anyhow::Error::msg("error".to_string()));
         }
@@ -269,7 +272,7 @@ where
         Ok(min_end_block)
     }
 
-    async fn contract_loaded_block(&self, _chain_id: u64, contract_address: &str) -> anyhow::Result<Option<u64>> {
+    async fn query_contract_loaded_block(&self, _chain_id: u64, contract_address: &str) -> anyhow::Result<Option<u64>> {
         if let Some(blocks) = self.contract_loaded_blocks_error.read().await.get(contract_address) {
             if *blocks {
                 return Err(anyhow::Error::msg("error".to_string()));
@@ -285,6 +288,18 @@ where
             .unwrap_or(0_u64);
 
         Ok(Some(end_block))
+    }
+
+    async fn query_commitments(
+        &self,
+        _chain_id: u64,
+        _option: &CommitmentQueryOption,
+    ) -> Result<Vec<ContractCommitment>> {
+        Err(anyhow::Error::msg("query_commitments error".to_string()))
+    }
+
+    async fn query_nullifiers(&self, _chain_id: u64, _option: &NullifierQueryOption) -> Result<Vec<ContractNullifier>> {
+        Err(anyhow::Error::msg("query_commitments error".to_string()))
     }
 
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
@@ -395,7 +410,7 @@ impl Default for MockListener {
 
 #[async_trait]
 impl LoaderListener for MockListener {
-    async fn callback(&self, event: &LoaderEvent) -> anyhow::Result<()> {
+    async fn callback(&self, _chain_id: u64, event: &LoaderEvent) -> anyhow::Result<()> {
         let event_str = self.convert_event(event);
         self.event.write().await.push(event_str);
         Ok(())

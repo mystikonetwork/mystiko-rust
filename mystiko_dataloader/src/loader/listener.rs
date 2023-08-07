@@ -45,12 +45,12 @@ pub enum LoaderEvent {
 
 #[async_trait]
 pub trait LoaderListener: Send + Sync {
-    async fn callback(&self, event: &LoaderEvent) -> Result<()>;
+    async fn callback(&self, chain_id: u64, event: &LoaderEvent) -> Result<()>;
 }
 
 #[async_trait]
 impl LoaderListener for Box<dyn LoaderListener> {
-    async fn callback(&self, event: &LoaderEvent) -> Result<()> {
-        self.as_ref().callback(event).await
+    async fn callback(&self, chain_id: u64, event: &LoaderEvent) -> Result<()> {
+        self.as_ref().callback(chain_id, event).await
     }
 }

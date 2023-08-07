@@ -3636,6 +3636,7 @@ dependencies = [
  "mystiko_config",
  "mystiko_ethers",
  "mystiko_protos",
+ "num-bigint 0.4.3",
  "serde",
  "thiserror",
  "tokio",
