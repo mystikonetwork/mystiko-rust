@@ -6,6 +6,7 @@ members = [
     "mystiko_core",
     "mystiko_crypto",
     "mystiko_database",
+    "mystiko_dataloader",
     "mystiko_downloader",
     "mystiko_ethers",
     "mystiko_etherscan_client",

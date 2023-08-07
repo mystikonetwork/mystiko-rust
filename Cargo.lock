@@ -3623,6 +3623,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_dataloader"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "env_logger",
+ "ethers-core",
+ "ethers-providers",
+ "futures",
+ "log",
+ "mystiko_config",
+ "mystiko_ethers",
+ "mystiko_protos",
+ "num-bigint 0.4.3",
+ "serde",
+ "thiserror",
+ "tokio",
+ "typed-builder",
+]
+
+[[package]]
 name = "mystiko_downloader"
 version = "0.1.0"
 dependencies = [

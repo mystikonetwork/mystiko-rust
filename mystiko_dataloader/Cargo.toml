@@ -1,0 +1,25 @@
+[package]
+name = "mystiko_dataloader"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { version = "1.0.69" }
+async-trait = { version = "0.1.64" }
+ethers-providers = { version = "2.0.4", features = ["ws"] }
+futures = { version = "0.3.28" }
+log = { version = "0.4.17" }
+num-bigint = { version = "0.4.3" }
+serde = { version = "1.0.152", features = ["derive", "rc"] }
+thiserror = { version = "1.0", default-features = false }
+tokio = { version = "1.26.0", features = ["sync"] }
+typed-builder = { version = "0.14.0" }
+
+mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
+mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos" }
+
+[dev-dependencies]
+env_logger = { version = "0.10.0" }
+ethers-core = { version = "2.0.4" }
+futures = { version = "0.3.28" }
