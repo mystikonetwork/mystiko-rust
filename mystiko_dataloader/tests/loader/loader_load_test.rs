@@ -12,7 +12,7 @@ async fn test_loader_load_error() {
     ));
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
-    assert!(listeners[0].drain_events().await.is_empty());
+    assert!(listeners[0].is_event_empty().await);
 
     let chain_id = 1_u64;
     let (_cfg, loader, _fetchers, _, _, listeners, _mock_provider) = create_shared_loader(chain_id, 1, 1, 1).await;
@@ -20,5 +20,5 @@ async fn test_loader_load_error() {
     assert!(matches!(result.err().unwrap(), DataLoaderError::ProviderError(_)));
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
-    assert!(listeners[0].drain_events().await.is_empty());
+    assert!(listeners[0].is_event_empty().await);
 }

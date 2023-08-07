@@ -384,8 +384,8 @@ impl MockListener {
         }
     }
 
-    fn convert_event(&self, event: &LoaderEvent) -> String {
-        match event {
+    fn convert_event(&self, event: Arc<LoaderEvent>) -> String {
+        match &*event {
             LoaderEvent::ScheduleEvent(_) => "ScheduleEvent".to_string(),
             LoaderEvent::LoadEvent(e) => format!("LoadEvent-{}-{}", e.start_block, e.target_block),
             LoaderEvent::LoadSuccessEvent(e) => format!("LoadSuccessEvent-{}-{}", e.start_block, e.loaded_block),
@@ -396,9 +396,21 @@ impl MockListener {
         }
     }
 
+    pub async fn is_event_empty(&self) -> bool {
+        tokio::time::sleep(std::time::Duration::from_millis(5_u64)).await;
+        let events_guard = self.event.write().await;
+        events_guard.is_empty()
+    }
+
     pub async fn drain_events(&self) -> Vec<String> {
-        let mut event = self.event.write().await;
-        event.drain(..).collect()
+        loop {
+            let mut events_guard = self.event.write().await;
+            if !events_guard.is_empty() {
+                return events_guard.drain(..).collect();
+            }
+            drop(events_guard);
+            tokio::time::sleep(std::time::Duration::from_millis(2_u64)).await;
+        }
     }
 }
 
@@ -410,7 +422,7 @@ impl Default for MockListener {
 
 #[async_trait]
 impl LoaderListener for MockListener {
-    async fn callback(&self, _chain_id: u64, event: &LoaderEvent) -> anyhow::Result<()> {
+    async fn callback(&self, _chain_id: u64, event: Arc<LoaderEvent>) -> anyhow::Result<()> {
         let event_str = self.convert_event(event);
         self.event.write().await.push(event_str);
         Ok(())

@@ -134,7 +134,7 @@ async fn test_loader_start_meet_error() {
     );
     assert!(!loader.is_loading().await);
     assert!(!loader.is_running().await);
-    assert!(listeners[0].drain_events().await.is_empty());
+    assert!(listeners[0].is_event_empty().await);
 
     // test build_chain_start_block meet error
     let chain_id = 1_u64;

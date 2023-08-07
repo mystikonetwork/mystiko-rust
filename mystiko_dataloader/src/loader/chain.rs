@@ -20,6 +20,7 @@ use mystiko_ethers::provider::factory::Provider;
 use std::any::type_name;
 use std::sync::Arc;
 use std::time::Duration;
+use tokio::spawn;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
@@ -280,7 +281,7 @@ where
 {
     async fn schedule(&self, chain_cfg: ChainConfig, options: ScheduleOption) {
         let schedule_interval_ms = options.schedule_interval_ms.unwrap_or(DEFAULT_SCHEDULE_INTERVAL_MS);
-        self.emit_event(&LoaderEvent::ScheduleEvent(ScheduleEvent::builder().build()))
+        self.emit_event(LoaderEvent::ScheduleEvent(ScheduleEvent::builder().build()))
             .await;
 
         loop {
@@ -301,7 +302,7 @@ where
             sleep(Duration::from_millis(schedule_interval_ms)).await;
         }
 
-        self.emit_event(&LoaderEvent::StopScheduleEvent(StopScheduleEvent::builder().build()))
+        self.emit_event(LoaderEvent::StopScheduleEvent(StopScheduleEvent::builder().build()))
             .await;
     }
 
@@ -352,7 +353,7 @@ where
     async fn load(&self, chain_cfg: &ChainConfig, options: &Option<LoadOption>) -> Result<()> {
         let chain_start_block = self.build_chain_start_block(chain_cfg).await?;
         let chain_target_block = self.build_chain_target_block(chain_start_block, options).await?;
-        self.emit_event(&LoaderEvent::LoadEvent(
+        self.emit_event(LoaderEvent::LoadEvent(
             LoadEvent::builder()
                 .start_block(chain_start_block)
                 .target_block(chain_target_block)
@@ -370,7 +371,7 @@ where
 
         match result {
             Ok(_) => {
-                self.emit_event(&LoaderEvent::LoadSuccessEvent(
+                self.emit_event(LoaderEvent::LoadSuccessEvent(
                     LoadSuccessEvent::builder()
                         .start_block(chain_start_block)
                         .loaded_block(chain_loaded_block)
@@ -379,7 +380,7 @@ where
                 .await;
             }
             Err(e) => {
-                self.emit_event(&LoaderEvent::LoadFailureEvent(
+                self.emit_event(LoaderEvent::LoadFailureEvent(
                     LoadFailureEvent::builder()
                         .start_block(chain_start_block)
                         .loaded_block(chain_loaded_block)
@@ -606,12 +607,35 @@ where
         contract_fetch_options
     }
 
-    async fn emit_event(&self, event: &LoaderEvent) {
-        for listener in &self.listeners {
-            listener.callback(self.chain_id, event).await.unwrap_or_else(|e| {
-                warn!("emit event raised error {:?}", e);
+    async fn emit_event(&self, event: LoaderEvent) {
+        if !self.listeners.is_empty() {
+            let chain_id = self.chain_id;
+            let listeners = self.listeners.clone();
+            let event = Arc::new(event);
+            spawn(async move {
+                let _ = emit_event_task(listeners, chain_id, event).await;
             });
         }
+    }
+}
+
+async fn emit_event_task<L>(listeners: Vec<Arc<L>>, chain_id: u64, event: Arc<LoaderEvent>)
+where
+    L: LoaderListener + 'static,
+{
+    let mut handles = vec![];
+    for listener in listeners {
+        let event = event.clone();
+        let handle = spawn(async move {
+            listener.callback(chain_id, event).await.unwrap_or_else(|e| {
+                warn!("emit event raised error {:?}", e);
+            });
+        });
+        handles.push(handle);
+    }
+
+    if let Err(e) = futures::future::try_join_all(handles).await {
+        warn!("Error when handling event: {:?}", e);
     }
 }
 
