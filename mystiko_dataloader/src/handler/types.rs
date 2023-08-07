@@ -73,14 +73,18 @@ pub trait DataHandler<R: LoadedData>: Send + Sync {
     }
     async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<Option<u64>>;
     async fn query_contract_loaded_block(&self, chain_id: u64, contract_address: &str) -> Result<Option<u64>>;
-    async fn query_commitment(&self, chain_id: u64, option: &CommitmentQueryOption) -> Option<ContractCommitment> {
-        self.query_commitments(chain_id, option)
-            .await
-            .ok()
-            .and_then(|v| v.first().cloned())
+    async fn query_commitment(
+        &self,
+        chain_id: u64,
+        option: &CommitmentQueryOption,
+    ) -> Result<Option<ContractCommitment>> {
+        Ok(self.query_commitments(chain_id, option).await?.into_iter().next())
     }
     async fn query_commitments(&self, chain_id: u64, option: &CommitmentQueryOption)
         -> Result<Vec<ContractCommitment>>;
+    async fn query_nullifier(&self, chain_id: u64, option: &NullifierQueryOption) -> Result<Option<ContractNullifier>> {
+        Ok(self.query_nullifiers(chain_id, option).await?.into_iter().next())
+    }
     async fn query_nullifiers(&self, chain_id: u64, option: &NullifierQueryOption) -> Result<Vec<ContractNullifier>>;
     async fn handle(&self, data: &ChainData<R>, option: &HandleOption) -> HandleResult;
 }

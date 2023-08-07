@@ -623,18 +623,13 @@ async fn emit_event_task<L>(listeners: Vec<Arc<L>>, chain_id: u64, event: Arc<Lo
 where
     L: LoaderListener + 'static,
 {
-    let mut handles = vec![];
-    for listener in listeners {
-        let event = event.clone();
-        let handle = spawn(async move {
-            listener.callback(chain_id, event).await.unwrap_or_else(|e| {
-                warn!("emit event raised error {:?}", e);
-            });
-        });
-        handles.push(handle);
+    let mut futures = Vec::new();
+    for listener in &listeners {
+        futures.push(listener.callback(chain_id, event.clone()));
     }
 
-    if let Err(e) = futures::future::try_join_all(handles).await {
+    let results = futures::future::try_join_all(futures).await;
+    if let Err(e) = results {
         warn!("Error when handling event: {:?}", e);
     }
 }
