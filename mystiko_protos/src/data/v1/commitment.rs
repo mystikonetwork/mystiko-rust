@@ -12,20 +12,20 @@ impl Commitment {
         self.rollup_fee.as_ref().map(|fee| bytes_to_biguint(fee))
     }
 
-    pub fn creation_transaction_hash_as_hex(&self) -> Option<String> {
-        self.creation_transaction_hash
+    pub fn queued_transaction_hash_as_hex(&self) -> Option<String> {
+        self.queued_transaction_hash
             .as_ref()
             .map(|hash| encode_hex_with_prefix(hash))
     }
 
-    pub fn rollup_transaction_hash_as_hex(&self) -> Option<String> {
-        self.rollup_transaction_hash
+    pub fn included_transaction_hash_as_hex(&self) -> Option<String> {
+        self.included_transaction_hash
             .as_ref()
             .map(|hash| encode_hex_with_prefix(hash))
     }
 
-    pub fn relay_transaction_hash_as_hex(&self) -> Option<String> {
-        self.relay_transaction_hash
+    pub fn src_chain_transaction_hash_as_hex(&self) -> Option<String> {
+        self.src_chain_transaction_hash
             .as_ref()
             .map(|hash| encode_hex_with_prefix(hash))
     }

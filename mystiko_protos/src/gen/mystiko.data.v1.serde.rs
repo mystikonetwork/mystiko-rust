@@ -163,13 +163,13 @@ impl serde::Serialize for Commitment {
         if self.encrypted_note.is_some() {
             len += 1;
         }
-        if self.creation_transaction_hash.is_some() {
+        if self.queued_transaction_hash.is_some() {
             len += 1;
         }
-        if self.rollup_transaction_hash.is_some() {
+        if self.included_transaction_hash.is_some() {
             len += 1;
         }
-        if self.relay_transaction_hash.is_some() {
+        if self.src_chain_transaction_hash.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.data.v1.Commitment", len)?;
@@ -199,14 +199,14 @@ impl serde::Serialize for Commitment {
         if let Some(v) = self.encrypted_note.as_ref() {
             struct_ser.serialize_field("encryptedNote", pbjson::private::base64::encode(&v).as_str())?;
         }
-        if let Some(v) = self.creation_transaction_hash.as_ref() {
-            struct_ser.serialize_field("creationTransactionHash", pbjson::private::base64::encode(&v).as_str())?;
+        if let Some(v) = self.queued_transaction_hash.as_ref() {
+            struct_ser.serialize_field("queuedTransactionHash", pbjson::private::base64::encode(&v).as_str())?;
         }
-        if let Some(v) = self.rollup_transaction_hash.as_ref() {
-            struct_ser.serialize_field("rollupTransactionHash", pbjson::private::base64::encode(&v).as_str())?;
+        if let Some(v) = self.included_transaction_hash.as_ref() {
+            struct_ser.serialize_field("includedTransactionHash", pbjson::private::base64::encode(&v).as_str())?;
         }
-        if let Some(v) = self.relay_transaction_hash.as_ref() {
-            struct_ser.serialize_field("relayTransactionHash", pbjson::private::base64::encode(&v).as_str())?;
+        if let Some(v) = self.src_chain_transaction_hash.as_ref() {
+            struct_ser.serialize_field("srcChainTransactionHash", pbjson::private::base64::encode(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -233,12 +233,12 @@ impl<'de> serde::Deserialize<'de> for Commitment {
             "rollupFee",
             "encrypted_note",
             "encryptedNote",
-            "creation_transaction_hash",
-            "creationTransactionHash",
-            "rollup_transaction_hash",
-            "rollupTransactionHash",
-            "relay_transaction_hash",
-            "relayTransactionHash",
+            "queued_transaction_hash",
+            "queuedTransactionHash",
+            "included_transaction_hash",
+            "includedTransactionHash",
+            "src_chain_transaction_hash",
+            "srcChainTransactionHash",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -251,9 +251,9 @@ impl<'de> serde::Deserialize<'de> for Commitment {
             LeafIndex,
             RollupFee,
             EncryptedNote,
-            CreationTransactionHash,
-            RollupTransactionHash,
-            RelayTransactionHash,
+            QueuedTransactionHash,
+            IncludedTransactionHash,
+            SrcChainTransactionHash,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -283,9 +283,9 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                             "leafIndex" | "leaf_index" => Ok(GeneratedField::LeafIndex),
                             "rollupFee" | "rollup_fee" => Ok(GeneratedField::RollupFee),
                             "encryptedNote" | "encrypted_note" => Ok(GeneratedField::EncryptedNote),
-                            "creationTransactionHash" | "creation_transaction_hash" => Ok(GeneratedField::CreationTransactionHash),
-                            "rollupTransactionHash" | "rollup_transaction_hash" => Ok(GeneratedField::RollupTransactionHash),
-                            "relayTransactionHash" | "relay_transaction_hash" => Ok(GeneratedField::RelayTransactionHash),
+                            "queuedTransactionHash" | "queued_transaction_hash" => Ok(GeneratedField::QueuedTransactionHash),
+                            "includedTransactionHash" | "included_transaction_hash" => Ok(GeneratedField::IncludedTransactionHash),
+                            "srcChainTransactionHash" | "src_chain_transaction_hash" => Ok(GeneratedField::SrcChainTransactionHash),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -313,9 +313,9 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                 let mut leaf_index__ = None;
                 let mut rollup_fee__ = None;
                 let mut encrypted_note__ = None;
-                let mut creation_transaction_hash__ = None;
-                let mut rollup_transaction_hash__ = None;
-                let mut relay_transaction_hash__ = None;
+                let mut queued_transaction_hash__ = None;
+                let mut included_transaction_hash__ = None;
+                let mut src_chain_transaction_hash__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::CommitmentHash => {
@@ -380,27 +380,27 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                                 map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
-                        GeneratedField::CreationTransactionHash => {
-                            if creation_transaction_hash__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("creationTransactionHash"));
+                        GeneratedField::QueuedTransactionHash => {
+                            if queued_transaction_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("queuedTransactionHash"));
                             }
-                            creation_transaction_hash__ = 
+                            queued_transaction_hash__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
-                        GeneratedField::RollupTransactionHash => {
-                            if rollup_transaction_hash__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("rollupTransactionHash"));
+                        GeneratedField::IncludedTransactionHash => {
+                            if included_transaction_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("includedTransactionHash"));
                             }
-                            rollup_transaction_hash__ = 
+                            included_transaction_hash__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
-                        GeneratedField::RelayTransactionHash => {
-                            if relay_transaction_hash__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("relayTransactionHash"));
+                        GeneratedField::SrcChainTransactionHash => {
+                            if src_chain_transaction_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("srcChainTransactionHash"));
                             }
-                            relay_transaction_hash__ = 
+                            src_chain_transaction_hash__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
@@ -415,9 +415,9 @@ impl<'de> serde::Deserialize<'de> for Commitment {
                     leaf_index: leaf_index__,
                     rollup_fee: rollup_fee__,
                     encrypted_note: encrypted_note__,
-                    creation_transaction_hash: creation_transaction_hash__,
-                    rollup_transaction_hash: rollup_transaction_hash__,
-                    relay_transaction_hash: relay_transaction_hash__,
+                    queued_transaction_hash: queued_transaction_hash__,
+                    included_transaction_hash: included_transaction_hash__,
+                    src_chain_transaction_hash: src_chain_transaction_hash__,
                 })
             }
         }
