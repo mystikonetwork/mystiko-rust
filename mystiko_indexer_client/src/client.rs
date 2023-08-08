@@ -2,14 +2,17 @@ use crate::builder::IndexerClientBuilder;
 use crate::errors::ClientError;
 use crate::response::ApiResponse;
 use crate::types::{
-    commitment::{CommitmentResponse, CommitmentsForContractRequest},
+    commitment::{CommitmentForDataLoaderResponse, CommitmentResponse, CommitmentsForContractRequest},
     commitment_included::{
         CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest, CommitmentIncludedResponse,
     },
     commitment_queued::{
         CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest, CommitmentQueuedResponse,
     },
-    commitment_spent::{CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse},
+    commitment_spent::{
+        CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse, DataLoaderRequest,
+        DataLoaderResponse,
+    },
     sync_response::{ChainSyncRepsonse, ContractSyncResponse},
 };
 use anyhow::{anyhow, Result};
@@ -269,5 +272,31 @@ impl IndexerClient {
         };
         let resp = self.get_data::<u32>(&url).await?;
         Ok(resp)
+    }
+
+    pub async fn find_lite_data(
+        &self,
+        chain_id: u64,
+        request: Vec<DataLoaderRequest>,
+    ) -> Result<Vec<CommitmentForDataLoaderResponse>> {
+        let mut request_builder = self
+            .reqwest_client
+            .post(format!("{}/chains/{}/lite-data", &self.base_url, chain_id));
+        let params_map: HashMap<String, String> = HashMap::new();
+        request_builder = self.build_request_builder(request_builder, params_map, &request);
+        let response = self
+            .post_data::<Vec<CommitmentForDataLoaderResponse>>(request_builder)
+            .await?;
+        Ok(response)
+    }
+
+    pub async fn find_full_data(&self, chain_id: u64, request: Vec<DataLoaderRequest>) -> Result<DataLoaderResponse> {
+        let mut request_builder = self
+            .reqwest_client
+            .post(format!("{}/chains/{}/full-data", &self.base_url, chain_id));
+        let params_map: HashMap<String, String> = HashMap::new();
+        request_builder = self.build_request_builder(request_builder, params_map, &request);
+        let response = self.post_data::<DataLoaderResponse>(request_builder).await?;
+        Ok(response)
     }
 }

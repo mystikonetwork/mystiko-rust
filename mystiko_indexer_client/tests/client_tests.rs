@@ -1,3 +1,5 @@
+extern crate mystiko_indexer_client;
+
 use base64::{engine::general_purpose, Engine as _};
 use mockito::*;
 use mystiko_indexer_client::errors::ClientError;
@@ -16,7 +18,7 @@ use mystiko_indexer_client::{
         },
         commitment_spent::{
             CommitmentSpentFilter, CommitmentSpentForChainRequest, CommitmentSpentForContractRequest,
-            CommitmentSpentResponse,
+            CommitmentSpentResponse, DataLoaderRequest,
         },
         sync_response::{ChainSyncRepsonse, ContractSyncResponse},
     },
@@ -1312,5 +1314,168 @@ async fn test_count_commitment_included_for_contract() {
     assert!(resp.is_ok());
     let resp = resp.unwrap();
     assert_eq!(resp, test_resp);
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_find_lite_data() {
+    let TestClientSetupData {
+        mut mocked_server,
+        indexer_client,
+    } = setup().await.unwrap();
+    let test_chain_id = 1;
+    let test_address = "contractAddress";
+    let test_commitment_hash = "commitmentHash";
+    let mock_resp = serde_json::json!({
+        "code": 0,
+        "result": [{
+            "contractAddress": test_address,
+            "currentSyncBlockNum": 1888888,
+            "commitments": [
+                {
+                    "commitmentHash": test_commitment_hash,
+                    "status": "srcSucceeded",
+                    "blockNumber": 1666666,
+                    "includedBlockNumber": null,
+                    "srcChainBlockNumber": 1666666,
+                    "leafIndex": null,
+                    "rollupFee": null,
+                    "encryptedNote": null,
+                    "queuedTransactionHash": null,
+                    "includedTransactionHash": null,
+                    "srcChainTransactionHash": "srcChainTransactionHash"
+                },
+                {
+                    "commitmentHash": test_commitment_hash,
+                    "status": "Queued",
+                    "blockNumber": 1666666,
+                    "includedBlockNumber": null,
+                    "srcChainBlockNumber": null,
+                    "leafIndex": 0,
+                    "rollupFee": "200000000000000000",
+                    "encryptedNote": "encryptedNote",
+                    "queuedTransactionHash": "queuedTransactionHash",
+                    "includedTransactionHash": null,
+                    "srcChainTransactionHash": null
+                },
+                {
+                    "commitmentHash": test_commitment_hash,
+                    "status": "succeeded",
+                    "blockNumber": 1777777,
+                    "includedBlockNumber": 1777777,
+                    "srcChainBlockNumber": null,
+                    "leafIndex": null,
+                    "rollupFee": null,
+                    "encryptedNote": null,
+                    "queuedTransactionHash": null,
+                    "includedTransactionHash": "includedTransactionHash",
+                    "srcChainTransactionHash": null
+                }
+            ]
+        }]
+    });
+
+    let test_end_block = 2000000u64;
+    let path = format!("/chains/{}/lite-data", test_chain_id);
+    let request = vec![DataLoaderRequest::builder()
+        .contract_address(test_address.to_string())
+        .end_block(test_end_block)
+        .build()];
+    let m = mocked_server
+        .mock("post", path.as_str())
+        .with_status(200)
+        .match_body(Matcher::JsonString(serde_json::to_string(&request).unwrap()))
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let result = indexer_client.find_lite_data(test_chain_id, request).await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.len(), 1);
+    let resp = &result[0];
+    assert_eq!(resp.contract_address, test_address);
+    assert!(resp.current_sync_block_num < test_end_block);
+    let commitments = &resp.commitments;
+    assert_eq!(commitments.len(), 3);
+    assert_eq!(commitments[0].commitment_hash, test_commitment_hash);
+    m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_find_full_data() {
+    let TestClientSetupData {
+        mut mocked_server,
+        indexer_client,
+    } = setup().await.unwrap();
+    let test_chain_id = 1;
+    let test_address = "contractAddress";
+    let test_nullifier = "nullifier";
+    let mock_resp = serde_json::json!({
+        "code": 0,
+        "result": {
+            "commitmentResponses": [
+              {
+                "contractAddress": test_address,
+                "currentSyncBlockNum": 2000000,
+                "commitments": [
+                  {
+                    "commitmentHash": "commitmentHash",
+                    "status": "succeeded",
+                    "blockNumber": 1111111,
+                    "includedBlockNumber": 1111111,
+                    "srcChainBlockNumber": null,
+                    "leafIndex": null,
+                    "rollupFee": null,
+                    "encryptedNote": null,
+                    "queuedTransactionHash": null,
+                    "includedTransactionHash": "includedTransactionHash",
+                    "srcChainTransactionHash": null
+                  }
+                ]
+              }
+            ],
+            "nullifierResponses": [
+              {
+                "contractAddress": test_address,
+                "currentSyncBlockNum": 2000000,
+                "nullifiers": [
+                  {
+                    "nullifier": test_nullifier,
+                    "blockNumber": 1222222,
+                    "transactionHash": "transactionHash"
+                  }
+                ]
+              }
+            ]
+        }
+    });
+
+    let test_end_block = 2000000u64;
+    let path = format!("/chains/{}/full-data", test_chain_id);
+    let request = vec![DataLoaderRequest::builder()
+        .contract_address(test_address.to_string())
+        .end_block(test_end_block)
+        .build()];
+    let m = mocked_server
+        .mock("post", path.as_str())
+        .with_status(200)
+        .match_body(Matcher::JsonString(serde_json::to_string(&request).unwrap()))
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let result = indexer_client.find_full_data(test_chain_id, request).await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    let commitment_responses = result.commitment_responses;
+    assert_eq!(commitment_responses.len(), 1);
+    let resp = &commitment_responses[0];
+    assert!(resp.current_sync_block_num == test_end_block);
+    let nullifier_responses = result.nullifier_responses;
+    assert_eq!(nullifier_responses.len(), 1);
+    let nullifiers = &nullifier_responses[0].nullifiers;
+    assert_eq!(nullifiers.len(), 1);
+    assert_eq!(nullifiers[0].nullifier, test_nullifier);
     m.assert_async().await;
 }
