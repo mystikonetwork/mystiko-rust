@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Clone, Default)]
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
+
+#[napi]
+#[derive(Serialize, Deserialize, Debug, Eq, Hash, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum BridgeType {
     #[default]
@@ -12,14 +16,16 @@ pub enum BridgeType {
     Axelar,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum ContractType {
     Deposit,
     Pool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum AssetType {
     #[default]
@@ -27,7 +33,8 @@ pub enum AssetType {
     Main,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, Hash, Copy)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum CircuitType {
     Rollup1,
@@ -43,7 +50,8 @@ pub enum CircuitType {
     Transaction2x2,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum ProviderType {
     #[default]
@@ -51,7 +59,8 @@ pub enum ProviderType {
     Quorum,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum AccountStatus {
     Created,
@@ -59,7 +68,8 @@ pub enum AccountStatus {
     Scanned,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum CommitmentStatus {
     Init,
@@ -70,7 +80,8 @@ pub enum CommitmentStatus {
     Failed,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum DepositStatus {
     Init,
@@ -83,7 +94,8 @@ pub enum DepositStatus {
     Failed,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum TransactionStatus {
     Init,
@@ -94,35 +106,41 @@ pub enum TransactionStatus {
     Failed,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum TransactionType {
     Transfer,
     Withdraw,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum NetworkType {
     Testnet,
     Mainnet,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum PackerChecksum {
     #[default]
     Sha512,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[napi]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum PackerCompression {
     #[default]
     Zstd,
 }
 
+#[napi]
 impl CircuitType {
+    #[napi]
     pub fn all() -> Vec<CircuitType> {
         vec![
             CircuitType::Rollup1,

@@ -1,0 +1,15 @@
+{
+  "name": "mystiko_node_rs-darwin-universal",
+  "version": "0.0.0",
+  "os": [
+    "darwin"
+  ],
+  "main": "mystiko_node_rs.darwin-universal.node",
+  "files": [
+    "mystiko_node_rs.darwin-universal.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  }
+}

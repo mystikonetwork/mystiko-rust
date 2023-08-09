@@ -1,0 +1,18 @@
+{
+  "name": "mystiko_node_rs-win32-arm64-msvc",
+  "version": "0.0.0",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "mystiko_node_rs.win32-arm64-msvc.node",
+  "files": [
+    "mystiko_node_rs.win32-arm64-msvc.node"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10"
+  }
+}

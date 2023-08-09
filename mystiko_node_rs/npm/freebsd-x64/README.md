@@ -1,0 +1,3 @@
+# `mystiko_node_rs-freebsd-x64`
+
+This is the **x86_64-unknown-freebsd** binary for `mystiko_node_rs`

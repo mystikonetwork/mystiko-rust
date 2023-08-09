@@ -12,6 +12,7 @@ members = [
     "mystiko_etherscan_client",
     "mystiko_fs",
     "mystiko_indexer_client",
+    "mystiko_node_rs",
     "mystiko_protocol",
     "mystiko_protos",
     "mystiko_relayer_abi",
