@@ -8,7 +8,8 @@ use mystiko_dataloader::data::chain::ChainData;
 use mystiko_dataloader::data::contract::ContractData;
 use mystiko_dataloader::data::result::{ChainResult, ContractResult};
 use mystiko_dataloader::data::types::{FullData, LoadedData};
-use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOption, FetchResult};
+use mystiko_dataloader::error::DataValidatorError;
+use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOptions, FetchResult};
 use mystiko_dataloader::handler::types::{
     CommitmentQueryOption, ContractCommitment, ContractNullifier, DataHandler, HandleOption, HandleResult,
     NullifierQueryOption,
@@ -61,7 +62,7 @@ impl<R> DataFetcher<R> for MockFetcher<R>
 where
     R: LoadedData + Clone,
 {
-    async fn fetch(&self, _option: &FetchOption) -> FetchResult<R> {
+    async fn fetch(&self, _option: &FetchOptions) -> FetchResult<R> {
         if let Some(ref result) = *self.result.read().await {
             let contract_results = result
                 .contracts_data
@@ -104,7 +105,9 @@ impl MockValidator {
     pub fn new() -> Self {
         MockValidator {
             all_success: RwLock::new(true),
-            result: RwLock::new(ValidateResult::Err(anyhow::Error::msg("validate error".to_string()))),
+            result: RwLock::new(ValidateResult::Err(DataValidatorError::ValidatorValidateError(
+                "error".to_string(),
+            ))),
         }
     }
 
@@ -164,7 +167,7 @@ where
                         .contract_results(contract_results)
                         .build())
                 }
-                Err(_) => Err(anyhow::Error::msg("handle error".to_string())),
+                Err(_) => Err(DataValidatorError::ValidatorValidateError("error".to_string())),
             }
         }
     }

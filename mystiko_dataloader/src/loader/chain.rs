@@ -2,7 +2,7 @@ use crate::data::chain::ChainData;
 use crate::data::result::UnwrappedChainResult;
 use crate::data::types::LoadedData;
 use crate::error::DataLoaderError;
-use crate::fetcher::types::{ChainFetchOption, ContractFetchOption, DataFetcher, FetchOption};
+use crate::fetcher::types::{ContractFetchOptions, DataFetcher, FetchOptions};
 use crate::handler::types::{DataHandler, HandleOption};
 use crate::loader::listener::{
     LoadEvent, LoadFailureEvent, LoadSuccessEvent, LoaderEvent, LoaderListener, ScheduleEvent, StopScheduleEvent,
@@ -400,20 +400,33 @@ where
         chain_target_block: u64,
     ) -> Result<()> {
         let (chain_filter, contracts) = self.build_loading_contracts(chain_cfg).await?;
-        let contracts_option = if chain_filter { Some(contracts.clone()) } else { None };
-        let chain_fetch_option = ChainFetchOption::builder()
+        let contract_options = if chain_filter {
+            Some(
+                contracts
+                    .iter()
+                    .map(|c| {
+                        ContractFetchOptions::builder()
+                            .contract_config(c.clone())
+                            .start_block(None)
+                            .target_block(None)
+                            .build()
+                    })
+                    .collect(),
+            )
+        } else {
+            None
+        };
+
+        let mut fetch_option = FetchOptions::builder()
             .config(self.config.clone())
             .chain_id(self.chain_id)
             .start_block(chain_start_block)
             .target_block(chain_target_block)
-            .contracts(contracts_option)
+            .contract_options(contract_options)
             .build();
 
-        let mut fetch_option = FetchOption::Chain(&chain_fetch_option);
-        let mut contracts_fetch_option;
-
         for (index, fetcher) in self.fetchers.iter().enumerate() {
-            let mut chain_data = match self.fetch(fetcher, fetch_option.clone()).await {
+            let mut chain_data = match self.fetch(fetcher, &fetch_option).await {
                 Err(e) => {
                     warn!(
                         "fetcher(index={:?}, name={:?}) raised error {:?}, try next fetcher",
@@ -447,21 +460,21 @@ where
                 continue;
             };
 
-            let retry_fetch_options = self.build_retry_fetch_option(&contracts, chain_target_block).await;
-            if !retry_fetch_options.is_empty() {
-                contracts_fetch_option = retry_fetch_options;
-                fetch_option = FetchOption::Contracts(&contracts_fetch_option);
-            } else {
-                return Ok(());
-            };
+            let retry_fetch_options = self
+                .build_retry_fetch_options(&contracts, chain_start_block, chain_target_block)
+                .await;
+            match retry_fetch_options {
+                Some(o) => fetch_option = o,
+                None => return Ok(()),
+            }
         }
 
         error!("failed to fetch data from all fetchers");
         Err(DataLoaderError::LoaderFetchersExhaustedError)
     }
 
-    async fn fetch(&self, fetcher: &Arc<F>, option: FetchOption<'_>) -> Result<ChainData<R>> {
-        let fetch_result = match fetcher.fetch(&option).await {
+    async fn fetch(&self, fetcher: &Arc<F>, option: &FetchOptions) -> Result<ChainData<R>> {
+        let fetch_result = match fetcher.fetch(option).await {
             Err(e) => {
                 return Err(DataLoaderError::FetcherError(e));
             }
@@ -580,12 +593,13 @@ where
         Ok(start_block)
     }
 
-    async fn build_retry_fetch_option(
+    async fn build_retry_fetch_options(
         &self,
         contracts: &Vec<ContractConfig>,
+        chain_start_block: u64,
         chain_target_block: u64,
-    ) -> Vec<ContractFetchOption> {
-        let mut contract_fetch_options = Vec::new();
+    ) -> Option<FetchOptions> {
+        let mut contract_options: Vec<ContractFetchOptions> = vec![];
         for contract_cfg in contracts {
             if let Ok(contract_start_block) = self.build_contract_start_block(contract_cfg).await {
                 // skip contract that already fetch to chain_target_block
@@ -593,18 +607,27 @@ where
                     continue;
                 }
 
-                let fetch_option = ContractFetchOption::builder()
-                    .config(self.config.clone())
-                    .chain_id(self.chain_id)
-                    .address(contract_cfg.address().to_string())
-                    .start_block(contract_start_block)
-                    .target_block(chain_target_block)
+                let fetch_option = ContractFetchOptions::builder()
+                    .contract_config(contract_cfg.clone())
+                    .start_block(Some(contract_start_block))
+                    .target_block(Some(chain_target_block))
                     .build();
-                contract_fetch_options.push(fetch_option);
+                contract_options.push(fetch_option);
             }
         }
 
-        contract_fetch_options
+        if contract_options.is_empty() {
+            None
+        } else {
+            let options = FetchOptions::builder()
+                .config(self.config.clone())
+                .chain_id(self.chain_id)
+                .start_block(chain_start_block)
+                .target_block(chain_target_block)
+                .contract_options(Some(contract_options))
+                .build();
+            Some(options)
+        }
     }
 
     async fn emit_event(&self, event: LoaderEvent) {

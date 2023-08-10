@@ -9,37 +9,29 @@ use std::fmt::Debug;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Clone)]
-pub enum FetchOption<'a> {
-    Chain(&'a ChainFetchOption),
-    Contracts(&'a Vec<ContractFetchOption>),
-}
-
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct ChainFetchOption {
+pub struct FetchOptions {
     pub config: Arc<MystikoConfig>,
     pub chain_id: u64,
     pub start_block: u64,
     pub target_block: u64,
-    pub contracts: Option<Vec<ContractConfig>>,
+    pub contract_options: Option<Vec<ContractFetchOptions>>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct ContractFetchOption {
-    pub config: Arc<MystikoConfig>,
-    pub chain_id: u64,
-    pub address: String,
-    pub start_block: u64,
-    pub target_block: u64,
+pub struct ContractFetchOptions {
+    pub contract_config: ContractConfig,
+    pub start_block: Option<u64>,
+    pub target_block: Option<u64>,
 }
 
 pub type FetchResult<R> = Result<ChainResult<ContractData<R>>>;
 
 #[async_trait]
 pub trait DataFetcher<R: LoadedData>: Send + Sync {
-    async fn fetch(&self, option: &FetchOption) -> FetchResult<R>;
+    async fn fetch(&self, option: &FetchOptions) -> FetchResult<R>;
 }
 
 #[async_trait]
@@ -47,7 +39,7 @@ impl<R> DataFetcher<R> for Box<dyn DataFetcher<R>>
 where
     R: LoadedData,
 {
-    async fn fetch(&self, option: &FetchOption) -> FetchResult<R> {
+    async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         self.as_ref().fetch(option).await
     }
 }
