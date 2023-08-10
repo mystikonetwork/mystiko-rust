@@ -1,3 +1,6 @@
+use crate::fetcher::error::FetcherError;
+use crate::handler::error::HandlerError;
+use crate::validator::error::ValidatorError;
 use anyhow::Error as AnyhowError;
 use ethers_providers::ProviderError;
 use thiserror::Error;
@@ -18,6 +21,12 @@ pub enum DataLoaderError {
     LoaderEmptyHandleDataError,
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
+    #[error(transparent)]
+    FetcherError(#[from] FetcherError),
+    #[error(transparent)]
+    ValidatorError(#[from] ValidatorError),
+    #[error(transparent)]
+    HandlerError(#[from] HandlerError),
     #[error(transparent)]
     AnyhowError(#[from] AnyhowError),
     #[error("unsupported chain (id = {0})")]

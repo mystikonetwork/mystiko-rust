@@ -474,12 +474,7 @@ where
     }
 
     async fn fetch(&self, fetcher: &Arc<F>, option: &FetchOptions) -> Result<ChainData<R>> {
-        let fetch_result = match fetcher.fetch(option).await {
-            Err(e) => {
-                return Err(DataLoaderError::AnyhowError(e));
-            }
-            Ok(chain_data) => chain_data,
-        };
+        let fetch_result = fetcher.fetch(option).await?;
         let unwrapped = UnwrappedChainResult::from(fetch_result);
 
         // Log warnings for any contract errors

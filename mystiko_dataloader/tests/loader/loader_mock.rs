@@ -1,4 +1,3 @@
-use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::U64;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
@@ -9,6 +8,7 @@ use mystiko_dataloader::data::contract::ContractData;
 use mystiko_dataloader::data::result::{ChainResult, ContractResult};
 use mystiko_dataloader::data::types::{FullData, LoadedData};
 use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOptions, FetchResult};
+use mystiko_dataloader::handler::error::HandlerError;
 use mystiko_dataloader::handler::types::{
     CommitmentQueryOption, ContractCommitment, ContractNullifier, DataHandler, HandleOption, HandleResult,
     NullifierQueryOption,
@@ -84,7 +84,7 @@ where
                 .contract_results(contract_results)
                 .build())
         } else {
-            Err(anyhow::Error::msg("error".to_string()))
+            Err(anyhow::Error::msg("error".to_string()).into())
         }
     }
 }
@@ -104,7 +104,7 @@ impl MockValidator {
     pub fn new() -> Self {
         MockValidator {
             all_success: RwLock::new(true),
-            result: RwLock::new(ValidateResult::Err(anyhow::Error::msg("error".to_string()))),
+            result: RwLock::new(ValidateResult::Err(anyhow::Error::msg("error".to_string()).into())),
         }
     }
 
@@ -164,7 +164,7 @@ where
                         .contract_results(contract_results)
                         .build())
                 }
-                Err(_) => Err(anyhow::Error::msg("error".to_string())),
+                Err(_) => Err(anyhow::Error::msg("error".to_string()).into()),
             }
         }
     }
@@ -201,7 +201,7 @@ where
             chain_loaded_blocks_error: RwLock::new(false),
             contract_loaded_blocks_error: RwLock::new(HashMap::new()),
             all_success: RwLock::new(true),
-            result: RwLock::new(HandleResult::Err(anyhow::Error::msg("handle error".to_string()))),
+            result: RwLock::new(HandleResult::Err(anyhow::Error::msg("handle error".to_string()).into())),
             data: RwLock::new(HashMap::new()),
         }
     }
@@ -248,12 +248,14 @@ where
     }
 }
 
+pub type HandlerErrorResult<T> = anyhow::Result<T, HandlerError>;
+
 #[async_trait]
 impl<R> DataHandler<R> for MockHandler<R>
 where
     R: LoadedData,
 {
-    async fn query_loading_contracts(&self, _chain_id: u64) -> Result<Option<Vec<ContractConfig>>> {
+    async fn query_loading_contracts(&self, _chain_id: u64) -> HandlerErrorResult<Option<Vec<ContractConfig>>> {
         if self.contracts.read().await.is_empty() {
             Ok(None)
         } else {
@@ -261,9 +263,9 @@ where
         }
     }
 
-    async fn query_chain_loaded_block(&self, _chain_id: u64) -> anyhow::Result<Option<u64>> {
+    async fn query_chain_loaded_block(&self, _chain_id: u64) -> HandlerErrorResult<Option<u64>> {
         if *self.chain_loaded_blocks_error.read().await {
-            return Err(anyhow::Error::msg("error".to_string()));
+            return Err(anyhow::Error::msg("error".to_string()).into());
         }
 
         let data = self.data.read().await;
@@ -272,10 +274,14 @@ where
         Ok(min_end_block)
     }
 
-    async fn query_contract_loaded_block(&self, _chain_id: u64, contract_address: &str) -> anyhow::Result<Option<u64>> {
+    async fn query_contract_loaded_block(
+        &self,
+        _chain_id: u64,
+        contract_address: &str,
+    ) -> HandlerErrorResult<Option<u64>> {
         if let Some(blocks) = self.contract_loaded_blocks_error.read().await.get(contract_address) {
             if *blocks {
-                return Err(anyhow::Error::msg("error".to_string()));
+                return Err(anyhow::Error::msg("error".to_string()).into());
             }
         }
 
@@ -294,12 +300,16 @@ where
         &self,
         _chain_id: u64,
         _option: &CommitmentQueryOption,
-    ) -> Result<Vec<ContractCommitment>> {
-        Err(anyhow::Error::msg("query_commitments error".to_string()))
+    ) -> HandlerErrorResult<Vec<ContractCommitment>> {
+        Err(anyhow::Error::msg("query_commitments error".to_string()).into())
     }
 
-    async fn query_nullifiers(&self, _chain_id: u64, _option: &NullifierQueryOption) -> Result<Vec<ContractNullifier>> {
-        Err(anyhow::Error::msg("query_commitments error".to_string()))
+    async fn query_nullifiers(
+        &self,
+        _chain_id: u64,
+        _option: &NullifierQueryOption,
+    ) -> HandlerErrorResult<Vec<ContractNullifier>> {
+        Err(anyhow::Error::msg("query_commitments error".to_string()).into())
     }
 
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
@@ -367,7 +377,7 @@ where
                         .contract_results(contract_results)
                         .build())
                 }
-                Err(_) => Err(anyhow::Error::msg("handle error".to_string())),
+                Err(_) => Err(anyhow::Error::msg("handle error".to_string()).into()),
             }
         }
     }

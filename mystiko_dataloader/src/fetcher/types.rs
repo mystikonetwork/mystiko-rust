@@ -1,13 +1,15 @@
 use crate::data::contract::ContractData;
 use crate::data::result::ChainResult;
 use crate::data::types::LoadedData;
-use anyhow::Result;
+use crate::fetcher::error::FetcherError;
 use async_trait::async_trait;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use std::fmt::Debug;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
+
+pub type Result<T> = anyhow::Result<T, FetcherError>;
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
