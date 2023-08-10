@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use mockito::*;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::types::FullData;
@@ -10,7 +11,6 @@ use mystiko_dataloader::fetcher::{indexer::IndexerFetcher, types::DataFetcher};
 use mystiko_indexer_client::builder::IndexerClientBuilder;
 use mystiko_indexer_client::types::commitment_spent::DataLoaderRequest;
 use std::sync::Arc;
-use log::LevelFilter;
 
 #[tokio::test]
 async fn test_fulldata_fetch() {
@@ -310,7 +310,7 @@ async fn test_litedata_fetch() {
             .unwrap()
             .commitments[1]
             .block_number,
-            1777777
+        1777777
     );
     m.assert_async().await;
 }
