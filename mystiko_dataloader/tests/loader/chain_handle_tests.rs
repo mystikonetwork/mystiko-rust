@@ -33,7 +33,9 @@ async fn test_loader_start_shared_handler() {
 
     for run_type in [LoaderRunType::Load, LoaderRunType::Schedule] {
         // handle error
-        handler.set_result(Err(anyhow::Error::msg("error".to_string()))).await;
+        handler
+            .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
+            .await;
         mock_provider.push(U64::from(target_block)).unwrap();
         loader_run(run_type, loader.clone(), Some(delay_block)).await;
         assert!(!loader.is_running().await);
