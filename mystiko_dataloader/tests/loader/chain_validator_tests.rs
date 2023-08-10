@@ -103,7 +103,7 @@ async fn test_loader_start_one_validator() {
         // validator meet error
         mock_provider.push(U64::from(target_block)).unwrap();
         validators[0]
-            .set_result(Err(anyhow::Error::msg("error".to_string())))
+            .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
             .await;
         loader_run(run_type, loader.clone(), Some(delay_block)).await;
         assert!(!loader.is_loading().await);

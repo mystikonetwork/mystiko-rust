@@ -1,7 +1,7 @@
 use crate::data::chain::ChainData;
 use crate::data::result::ChainResult;
 use crate::data::types::LoadedData;
-use anyhow::Result;
+use crate::handler::error::HandlerError;
 use async_trait::async_trait;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
@@ -10,6 +10,8 @@ use num_bigint::BigUint;
 use std::fmt::Debug;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
+
+pub type Result<T> = anyhow::Result<T, HandlerError>;
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
@@ -30,25 +32,39 @@ pub struct ContractNullifier {
 }
 
 #[derive(Debug, Clone)]
-pub enum CommitmentOrderType {
+pub enum OrderType {
+    ASC,
+    DESC,
+}
+
+#[derive(Debug, Clone)]
+pub enum CommitmentOrderByType {
     BlockNumber,
     LeafIndex,
 }
 
 #[derive(Debug, Clone)]
-pub enum NullifierOrderType {
+pub enum NullifierOrderByType {
     BlockNumber,
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, Default, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct CommitmentQueryOption {
+    #[builder(default, setter(strip_option))]
     pub start_block: Option<u64>,
+    #[builder(default, setter(strip_option))]
     pub end_block: Option<u64>,
+    #[builder(default, setter(strip_option))]
     pub contract_address: Option<Vec<String>>,
-    pub commitment_hash: Option<BigUint>,
+    #[builder(default, setter(strip_option))]
+    pub commitment_hash: Option<Vec<BigUint>>,
+    #[builder(default, setter(strip_option))]
     pub status: Option<CommitmentStatus>,
-    pub order_by: Option<CommitmentOrderType>,
+    #[builder(default, setter(strip_option))]
+    pub order_by: Option<CommitmentOrderByType>,
+    #[builder(default, setter(strip_option))]
+    pub order: Option<OrderType>,
     pub offset: Option<u64>,
     pub limit: Option<u64>,
 }
@@ -56,11 +72,18 @@ pub struct CommitmentQueryOption {
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct NullifierQueryOption {
+    #[builder(default, setter(strip_option))]
     pub start_block: Option<u64>,
+    #[builder(default, setter(strip_option))]
     pub end_block: Option<u64>,
+    #[builder(default, setter(strip_option))]
     pub contract_address: Option<Vec<String>>,
+    #[builder(default, setter(strip_option))]
     pub nullifier: Option<BigUint>,
-    pub order_by: Option<NullifierOrderType>,
+    #[builder(default, setter(strip_option))]
+    pub order_by: Option<NullifierOrderByType>,
+    #[builder(default, setter(strip_option))]
+    pub order: Option<OrderType>,
     pub offset: Option<u64>,
     pub limit: Option<u64>,
 }
