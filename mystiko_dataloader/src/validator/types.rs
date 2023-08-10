@@ -1,14 +1,13 @@
 use crate::data::chain::ChainData;
 use crate::data::result::ChainResult;
 use crate::data::types::LoadedData;
-use crate::error::DataValidatorError;
 use async_trait::async_trait;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use std::fmt::Debug;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-pub type Result<T> = anyhow::Result<T, DataValidatorError>;
+pub type Result<T> = anyhow::Result<T, anyhow::Error>;
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]

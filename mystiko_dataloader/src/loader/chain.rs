@@ -476,7 +476,7 @@ where
     async fn fetch(&self, fetcher: &Arc<F>, option: &FetchOptions) -> Result<ChainData<R>> {
         let fetch_result = match fetcher.fetch(option).await {
             Err(e) => {
-                return Err(DataLoaderError::FetcherError(e));
+                return Err(DataLoaderError::AnyhowError(e));
             }
             Ok(chain_data) => chain_data,
         };
