@@ -1766,7 +1766,7 @@ async fn test_find_full_data() {
               "error": false
             },
             {
-              "contractAddress": "contractAddress",
+              "contractAddress": "contractAddress1",
               "startBlock": 1000000,
               "actualEndBlock": 2000000,
               "commitments": [],
