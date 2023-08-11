@@ -115,7 +115,8 @@ pub struct CommitmentResponse {
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentForDataLoaderResponse {
     pub contract_address: String,
-    pub current_sync_block_num: u64,
+    pub start_block: u64,
+    pub actual_end_block: u64,
     pub commitments: Vec<CommitmentForDataLoader>,
 }
 
