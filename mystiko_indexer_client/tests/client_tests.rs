@@ -1330,6 +1330,8 @@ async fn test_find_lite_data() {
             "contractAddress": test_address,
             "startBlock": test_contract_start_block,
             "actualEndBlock": 2000000,
+            "errorMsg": null,
+            "error": false,
             "commitments": [
                 {
                     "commitmentHash": test_commitment_hash,
@@ -1415,6 +1417,8 @@ async fn test_find_lite_data() {
             "contractAddress": "test_address1",
             "startBlock": test_chain_start_block,
             "actualEndBlock": 2000000,
+            "errorMsg": null,
+            "error": false,
             "commitments": [
                 {
                     "commitmentHash": "test_commitment_hash1",
@@ -1434,6 +1438,8 @@ async fn test_find_lite_data() {
             "contractAddress": test_address,
             "startBlock": test_chain_start_block,
             "actualEndBlock": 1888888,
+            "errorMsg": null,
+            "error": false,
             "commitments": [
                 {
                     "commitmentHash": test_commitment_hash,
@@ -1476,6 +1482,90 @@ async fn test_find_lite_data() {
     assert_eq!(commitments.len(), 1);
     assert_ne!(commitments[0].commitment_hash, test_commitment_hash);
     m.assert_async().await;
+
+    //test with error
+    let empty_contract_error_msg = String::from("The contract address cannot be null when request body exist.");
+    let block_error_msg = String::from("The endBlock cannot be smaller than startBlock of contract.");
+    let mock_resp = serde_json::json!({
+        "code": 0,
+        "result": [
+            {
+              "contractAddress": "",
+              "startBlock": test_contract_start_block,
+              "actualEndBlock": 2000000,
+              "commitments": [],
+              "errorMsg": empty_contract_error_msg,
+              "error": true
+            },{
+                "contractAddress": test_address,
+                "startBlock": test_contract_start_block,
+                "actualEndBlock": 2000000,
+                "errorMsg": null,
+                "error": false,
+                "commitments": []
+            },{
+                "contractAddress": "contractAddress1",
+                "startBlock": test_contract_start_block,
+                "actualEndBlock": test_contract_start_block-1,
+                "commitments": [],
+                "errorMsg": block_error_msg,
+                "error": true
+            }
+        ]
+    });
+    let path = format!("/chains/{}/lite-data", test_chain_id);
+    let request = vec![
+        DataLoaderRequest::builder()
+            .contract_address(String::new())
+            .start_block(test_contract_start_block)
+            .end_block(2000000u64)
+            .build(),
+        DataLoaderRequest::builder()
+            .contract_address(test_address.to_string())
+            .start_block(test_contract_start_block)
+            .end_block(2000000u64)
+            .build(),
+        DataLoaderRequest::builder()
+            .contract_address("contractAddress1".to_string())
+            .start_block(test_contract_start_block)
+            .end_block(test_contract_start_block - 1)
+            .build(),
+    ];
+    let test_chain_end_block = 2000000u64;
+    let m = mocked_server
+        .mock("post", path.as_str())
+        .with_status(200)
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("startBlock".into(), "1000000".into()),
+            Matcher::UrlEncoded("endBlock".into(), test_chain_end_block.to_string()),
+        ]))
+        .match_body(Matcher::JsonString(serde_json::to_string(&request).unwrap()))
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let result = indexer_client
+        .find_lite_data(test_chain_id, 1000000u64, test_chain_end_block, Some(request))
+        .await;
+    assert!(result.is_ok());
+
+    let result = result.unwrap();
+    assert_eq!(result.len(), 3);
+
+    let empty_contract_error_result = &result[0];
+    assert!(empty_contract_error_result.is_error);
+    assert_eq!(
+        empty_contract_error_result.error_msg.as_ref(),
+        Some(&empty_contract_error_msg)
+    );
+
+    let result_normal = &result[1];
+    assert!(!result_normal.is_error);
+
+    let block_error_msg_result = &result[2];
+    assert!(block_error_msg_result.is_error);
+    assert_eq!(block_error_msg_result.error_msg.as_ref(), Some(&block_error_msg));
+    m.assert_async().await;
 }
 
 #[tokio::test]
@@ -1494,6 +1584,8 @@ async fn test_find_full_data() {
                 "contractAddress": test_address,
                 "startBlock": 1000001,
                 "actualEndBlock": 2000000,
+                "errorMsg": null,
+                "error": false,
                 "commitments": [
                   {
                     "commitmentHash": "commitmentHash",
@@ -1556,6 +1648,7 @@ async fn test_find_full_data() {
     assert_eq!(nullifiers.len(), 1);
     assert_eq!(nullifiers[0].nullifier, test_nullifier);
     m.assert_async().await;
+
     //test without request
     let mock_resp = serde_json::json!({
         "code": 0,
@@ -1564,6 +1657,8 @@ async fn test_find_full_data() {
                 "contractAddress": "test_address1",
                 "startBlock": 2000000,
                 "actualEndBlock": 2888888,
+                "errorMsg": null,
+                "error": false,
                 "commitments": [{
                     "commitmentHash": "commitmentHash1",
                     "status": "succeeded",
@@ -1587,6 +1682,8 @@ async fn test_find_full_data() {
                 "contractAddress": test_address,
                 "startBlock": 2000000,
                 "actualEndBlock": 3000000,
+                "errorMsg": null,
+                "error": false,
                 "commitments": [
                   {
                     "commitmentHash": "commitmentHash2",
@@ -1642,5 +1739,101 @@ async fn test_find_full_data() {
     let nullifiers = &result[0].nullifiers;
     assert_eq!(nullifiers.len(), 1);
     assert_ne!(nullifiers[0].nullifier, test_nullifier);
+    m.assert_async().await;
+
+    //test with error
+    let empty_contract_error_msg = String::from("The contract address cannot be null when request body exist.");
+    let block_error_msg = String::from("The endBlock cannot be smaller than startBlock of contract.");
+    let mock_resp = serde_json::json!({
+        "code": 0,
+        "result": [
+            {
+              "contractAddress": "",
+              "startBlock": 1000000,
+              "actualEndBlock": 2000000,
+              "commitments": [],
+              "nullifiers": [],
+              "errorMsg": empty_contract_error_msg,
+              "error": true
+            },
+            {
+              "contractAddress": test_address,
+              "startBlock": 1000000,
+              "actualEndBlock": 2000000,
+              "commitments": [],
+              "nullifiers": [],
+              "errorMsg": null,
+              "error": false
+            },
+            {
+              "contractAddress": "contractAddress",
+              "startBlock": 1000000,
+              "actualEndBlock": 2000000,
+              "commitments": [],
+              "nullifiers": [],
+              "errorMsg": block_error_msg,
+              "error": true
+            }
+        ]
+    });
+
+    let test_contract_start_block = 1000000u64;
+    let test_contract_end_block = 2000000u64;
+    let path = format!("/chains/{}/full-data", test_chain_id);
+    let request = vec![
+        DataLoaderRequest::builder()
+            .contract_address(String::new())
+            .start_block(test_contract_start_block)
+            .end_block(test_contract_end_block)
+            .build(),
+        DataLoaderRequest::builder()
+            .contract_address(test_address.to_string())
+            .start_block(test_contract_start_block)
+            .end_block(test_contract_end_block)
+            .build(),
+        DataLoaderRequest::builder()
+            .contract_address("contractAddress1".to_string())
+            .start_block(test_contract_end_block + 1)
+            .end_block(test_contract_end_block)
+            .build(),
+    ];
+    let m = mocked_server
+        .mock("post", path.as_str())
+        .with_status(200)
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("startBlock".into(), test_contract_start_block.to_string()),
+            Matcher::UrlEncoded("endBlock".into(), test_contract_end_block.to_string()),
+        ]))
+        .match_body(Matcher::JsonString(serde_json::to_string(&request).unwrap()))
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let result = indexer_client
+        .find_full_data(
+            test_chain_id,
+            test_contract_start_block,
+            test_contract_end_block,
+            Some(request),
+        )
+        .await;
+    assert!(result.is_ok());
+
+    let result = result.unwrap();
+    assert_eq!(result.len(), 3);
+
+    let empty_contract_error_result = &result[0];
+    assert!(empty_contract_error_result.is_error);
+    assert_eq!(
+        empty_contract_error_result.error_msg.as_ref(),
+        Some(&empty_contract_error_msg)
+    );
+
+    let result_normal = &result[1];
+    assert!(!result_normal.is_error);
+
+    let block_error_msg_result = &result[2];
+    assert!(block_error_msg_result.is_error);
+    assert_eq!(block_error_msg_result.error_msg.as_ref(), Some(&block_error_msg));
     m.assert_async().await;
 }

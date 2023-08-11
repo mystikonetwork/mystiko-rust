@@ -118,6 +118,9 @@ pub struct CommitmentForDataLoaderResponse {
     pub start_block: u64,
     pub actual_end_block: u64,
     pub commitments: Vec<CommitmentForDataLoader>,
+    #[serde(default, rename = "error")]
+    pub is_error: bool,
+    pub error_msg: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TypedBuilder)]

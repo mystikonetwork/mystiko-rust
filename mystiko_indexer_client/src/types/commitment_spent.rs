@@ -84,6 +84,9 @@ pub struct ContractFullDataResponse {
     pub actual_end_block: u64,
     pub commitments: Vec<CommitmentForDataLoader>,
     pub nullifiers: Vec<NullifierForDataLoader>,
+    #[serde(default, rename = "error")]
+    pub is_error: bool,
+    pub error_msg: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TypedBuilder)]
