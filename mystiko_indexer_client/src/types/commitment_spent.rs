@@ -1,4 +1,4 @@
-use crate::types::commitment::CommitmentForDataLoaderResponse;
+use crate::types::commitment::CommitmentForDataLoader;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
@@ -78,17 +78,15 @@ pub struct DataLoaderRequest {
 
 #[derive(Debug, Serialize, Deserialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct DataLoaderResponse {
-    pub commitment_responses: Vec<CommitmentForDataLoaderResponse>,
-    pub nullifier_responses: Vec<NullifierForDataLoaderResponse>,
-}
-
-#[derive(Debug, Serialize, Deserialize, TypedBuilder)]
-#[serde(rename_all = "camelCase")]
-pub struct NullifierForDataLoaderResponse {
+pub struct ContractFullDataResponse {
     pub contract_address: String,
-    pub current_sync_block_num: u64,
+    pub start_block: u64,
+    pub actual_end_block: u64,
+    pub commitments: Vec<CommitmentForDataLoader>,
     pub nullifiers: Vec<NullifierForDataLoader>,
+    #[serde(default, rename = "error")]
+    pub is_error: bool,
+    pub error_msg: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TypedBuilder)]
