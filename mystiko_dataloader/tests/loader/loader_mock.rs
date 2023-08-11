@@ -10,8 +10,7 @@ use mystiko_dataloader::data::types::{FullData, LoadedData};
 use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOptions, FetchResult};
 use mystiko_dataloader::handler::error::HandlerError;
 use mystiko_dataloader::handler::types::{
-    CommitmentQueryOption, ContractCommitment, ContractNullifier, DataHandler, HandleOption, HandleResult,
-    NullifierQueryOption,
+    CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption,
 };
 use mystiko_dataloader::loader::chain::{ChainDataLoader, ChainDataLoaderBuilder};
 use mystiko_dataloader::loader::listener::{LoaderEvent, LoaderListener};
@@ -20,6 +19,7 @@ use mystiko_dataloader::validator::types::{DataValidator, ValidateOption, Valida
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
+use mystiko_protos::data::v1::{Commitment, Nullifier};
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Once};
 use std::time::Duration;
@@ -296,20 +296,20 @@ where
         Ok(Some(end_block))
     }
 
-    async fn query_commitments(
-        &self,
-        _chain_id: u64,
-        _option: &CommitmentQueryOption,
-    ) -> HandlerErrorResult<Vec<ContractCommitment>> {
+    async fn query_commitments(&self, _option: &CommitmentQueryOption) -> HandlerErrorResult<Vec<Commitment>> {
         Err(anyhow::Error::msg("query_commitments error".to_string()).into())
     }
 
-    async fn query_nullifiers(
-        &self,
-        _chain_id: u64,
-        _option: &NullifierQueryOption,
-    ) -> HandlerErrorResult<Vec<ContractNullifier>> {
+    async fn count_commitments(&self, option: &CommitmentQueryOption) -> HandlerErrorResult<u64> {
+        Ok(self.query_commitments(option).await?.len() as u64)
+    }
+
+    async fn query_nullifiers(&self, _option: &NullifierQueryOption) -> HandlerErrorResult<Vec<Nullifier>> {
         Err(anyhow::Error::msg("query_commitments error".to_string()).into())
+    }
+
+    async fn count_nullifiers(&self, option: &NullifierQueryOption) -> HandlerErrorResult<u64> {
+        Ok(self.query_nullifiers(option).await?.len() as u64)
     }
 
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
