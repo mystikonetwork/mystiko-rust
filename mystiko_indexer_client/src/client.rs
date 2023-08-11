@@ -10,8 +10,8 @@ use crate::types::{
         CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest, CommitmentQueuedResponse,
     },
     commitment_spent::{
-        CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse, DataLoaderRequest,
-        DataLoaderResponse,
+        CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse,
+        ContractFullDataResponse, DataLoaderRequest,
     },
     sync_response::{ChainSyncRepsonse, ContractSyncResponse},
 };
@@ -277,12 +277,15 @@ impl IndexerClient {
     pub async fn find_lite_data(
         &self,
         chain_id: u64,
-        request: Vec<DataLoaderRequest>,
+        start_block: u64,
+        end_block: u64,
+        request: Option<Vec<DataLoaderRequest>>,
     ) -> Result<Vec<CommitmentForDataLoaderResponse>> {
         let mut request_builder = self
             .reqwest_client
             .post(format!("{}/chains/{}/lite-data", &self.base_url, chain_id));
         let params_map: HashMap<String, String> = HashMap::new();
+        let params_map = self.build_block_params_map(params_map, &Some(start_block), &Some(end_block));
         request_builder = self.build_request_builder(request_builder, params_map, &request);
         let response = self
             .post_data::<Vec<CommitmentForDataLoaderResponse>>(request_builder)
@@ -290,13 +293,20 @@ impl IndexerClient {
         Ok(response)
     }
 
-    pub async fn find_full_data(&self, chain_id: u64, request: Vec<DataLoaderRequest>) -> Result<DataLoaderResponse> {
+    pub async fn find_full_data(
+        &self,
+        chain_id: u64,
+        start_block: u64,
+        end_block: u64,
+        request: Option<Vec<DataLoaderRequest>>,
+    ) -> Result<Vec<ContractFullDataResponse>> {
         let mut request_builder = self
             .reqwest_client
             .post(format!("{}/chains/{}/full-data", &self.base_url, chain_id));
         let params_map: HashMap<String, String> = HashMap::new();
+        let params_map = self.build_block_params_map(params_map, &Some(start_block), &Some(end_block));
         request_builder = self.build_request_builder(request_builder, params_map, &request);
-        let response = self.post_data::<DataLoaderResponse>(request_builder).await?;
+        let response = self.post_data::<Vec<ContractFullDataResponse>>(request_builder).await?;
         Ok(response)
     }
 }
