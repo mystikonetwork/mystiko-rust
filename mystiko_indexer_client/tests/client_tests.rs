@@ -1378,8 +1378,8 @@ async fn test_find_lite_data() {
     let path = format!("/chains/{}/lite-data", test_chain_id);
     let request = vec![DataLoaderRequest::builder()
         .contract_address(test_address.to_string())
-        .start_block(test_contract_start_block)
-        .end_block(2000000u64)
+        .start_block(Some(test_contract_start_block))
+        .end_block(Some(2000000u64))
         .build()];
     let test_chain_end_block = 1999999u64;
     let m = mocked_server
@@ -1517,18 +1517,18 @@ async fn test_find_lite_data() {
     let request = vec![
         DataLoaderRequest::builder()
             .contract_address(String::new())
-            .start_block(test_contract_start_block)
-            .end_block(2000000u64)
+            .start_block(Some(test_contract_start_block))
+            .end_block(Some(2000000u64))
             .build(),
         DataLoaderRequest::builder()
             .contract_address(test_address.to_string())
-            .start_block(test_contract_start_block)
-            .end_block(2000000u64)
+            .start_block(Some(test_contract_start_block))
+            .end_block(Some(2000000u64))
             .build(),
         DataLoaderRequest::builder()
             .contract_address("contractAddress1".to_string())
-            .start_block(test_contract_start_block)
-            .end_block(test_contract_start_block - 1)
+            .start_block(Some(test_contract_start_block))
+            .end_block(Some(test_contract_start_block - 1))
             .build(),
     ];
     let test_chain_end_block = 2000000u64;
@@ -1617,8 +1617,8 @@ async fn test_find_full_data() {
     let path = format!("/chains/{}/full-data", test_chain_id);
     let request = vec![DataLoaderRequest::builder()
         .contract_address(test_address.to_string())
-        .start_block(test_contract_start_block)
-        .end_block(test_end_block)
+        .start_block(Some(test_contract_start_block))
+        .end_block(Some(test_end_block))
         .build()];
     let m = mocked_server
         .mock("post", path.as_str())
@@ -1644,11 +1644,12 @@ async fn test_find_full_data() {
     assert_eq!(commitments.len(), 1);
     let resp = &commitments[0];
     assert!(resp.block_number <= test_end_block);
-    let nullifiers = &result[0].nullifiers;
+    let nullifiers_opt = &result[0].nullifiers;
+    assert!(nullifiers_opt.is_some());
+    let nullifiers = nullifiers_opt.as_ref().unwrap();
     assert_eq!(nullifiers.len(), 1);
     assert_eq!(nullifiers[0].nullifier, test_nullifier);
     m.assert_async().await;
-
     //test without request
     let mock_resp = serde_json::json!({
         "code": 0,
@@ -1736,7 +1737,9 @@ async fn test_find_full_data() {
     assert_eq!(commitments.len(), 1);
     let resp = &commitments[0];
     assert!(resp.block_number <= test_end_block);
-    let nullifiers = &result[0].nullifiers;
+    let nullifiers_opt = &result[0].nullifiers;
+    assert!(nullifiers_opt.is_some());
+    let nullifiers = nullifiers_opt.as_ref().unwrap();
     assert_eq!(nullifiers.len(), 1);
     assert_ne!(nullifiers[0].nullifier, test_nullifier);
     m.assert_async().await;
@@ -1783,18 +1786,18 @@ async fn test_find_full_data() {
     let request = vec![
         DataLoaderRequest::builder()
             .contract_address(String::new())
-            .start_block(test_contract_start_block)
-            .end_block(test_contract_end_block)
+            .start_block(Some(test_contract_start_block))
+            .end_block(Some(test_contract_end_block))
             .build(),
         DataLoaderRequest::builder()
             .contract_address(test_address.to_string())
-            .start_block(test_contract_start_block)
-            .end_block(test_contract_end_block)
+            .start_block(Some(test_contract_start_block))
+            .end_block(Some(test_contract_end_block))
             .build(),
         DataLoaderRequest::builder()
             .contract_address("contractAddress1".to_string())
-            .start_block(test_contract_end_block + 1)
-            .end_block(test_contract_end_block)
+            .start_block(Some(test_contract_end_block + 1))
+            .end_block(Some(test_contract_end_block))
             .build(),
     ];
     let m = mocked_server
