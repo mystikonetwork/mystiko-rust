@@ -103,7 +103,9 @@ where
     ) -> Result<ContractData<R>> {
         if contract_response.is_error {
             Err(anyhow!(FetcherError::FetchContractResultError(
-                contract_response.error_msg.unwrap_or(String::from("unknow error"))
+                contract_response
+                    .error_msg
+                    .unwrap_or_else(|| String::from("unkonw error"))
             )))
         } else {
             let data = match R::data_type() {

@@ -178,7 +178,7 @@ async fn test_fulldata_fetch() {
     assert!(result2.contract_results[0].result.is_err());
     assert_eq!(
         result2.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        format!("fetcher contract with error: {}", block_error_msg.to_string())
+        format!("fetcher contract with error: {}", block_error_msg)
     );
     m.assert_async().await;
 }
