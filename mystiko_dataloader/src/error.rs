@@ -31,8 +31,4 @@ pub enum DataLoaderError {
     AnyhowError(#[from] AnyhowError),
     #[error("unsupported chain (id = {0})")]
     UnsupportedChainError(u64),
-    #[error("fetcher params validate error: {0}")]
-    FetcherParamsError(String),
-    #[error("fetcher assemble data error: {0}")]
-    FetcherAssembleDataError(String),
 }

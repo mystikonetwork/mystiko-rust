@@ -10,14 +10,14 @@ use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 pub type Result<T> = anyhow::Result<T, FetcherError>;
+
 #[derive(Clone, TypedBuilder)]
 pub struct LogPrefixOptions {
     pub chain_id: u64,
     pub address: String,
-    pub from_block: u64,
-    pub to_block: u64,
+    pub start_block: u64,
+    pub end_block: u64,
 }
-
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
