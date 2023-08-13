@@ -1,8 +1,9 @@
 use crate::builder::IndexerClientBuilder;
 use crate::errors::ClientError;
 use crate::response::ApiResponse;
+use crate::types::commitment::ContractResultDataResponse;
 use crate::types::{
-    commitment::{CommitmentForDataLoaderResponse, CommitmentResponse, CommitmentsForContractRequest},
+    commitment::{CommitmentResponse, CommitmentsForContractRequest},
     commitment_included::{
         CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest, CommitmentIncludedResponse,
     },
@@ -10,8 +11,7 @@ use crate::types::{
         CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest, CommitmentQueuedResponse,
     },
     commitment_spent::{
-        CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse,
-        ContractFullDataResponse, DataLoaderRequest,
+        CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse, DataLoaderRequest,
     },
     sync_response::{ChainSyncRepsonse, ContractSyncResponse},
 };
@@ -280,7 +280,7 @@ impl IndexerClient {
         start_block: u64,
         end_block: u64,
         request: Option<Vec<DataLoaderRequest>>,
-    ) -> Result<Vec<CommitmentForDataLoaderResponse>> {
+    ) -> Result<Vec<ContractResultDataResponse>> {
         let mut request_builder = self
             .reqwest_client
             .post(format!("{}/chains/{}/lite-data", &self.base_url, chain_id));
@@ -288,7 +288,7 @@ impl IndexerClient {
         let params_map = self.build_block_params_map(params_map, &Some(start_block), &Some(end_block));
         request_builder = self.build_request_builder(request_builder, params_map, &request);
         let response = self
-            .post_data::<Vec<CommitmentForDataLoaderResponse>>(request_builder)
+            .post_data::<Vec<ContractResultDataResponse>>(request_builder)
             .await?;
         Ok(response)
     }
@@ -299,14 +299,16 @@ impl IndexerClient {
         start_block: u64,
         end_block: u64,
         request: Option<Vec<DataLoaderRequest>>,
-    ) -> Result<Vec<ContractFullDataResponse>> {
+    ) -> Result<Vec<ContractResultDataResponse>> {
         let mut request_builder = self
             .reqwest_client
             .post(format!("{}/chains/{}/full-data", &self.base_url, chain_id));
         let params_map: HashMap<String, String> = HashMap::new();
         let params_map = self.build_block_params_map(params_map, &Some(start_block), &Some(end_block));
         request_builder = self.build_request_builder(request_builder, params_map, &request);
-        let response = self.post_data::<Vec<ContractFullDataResponse>>(request_builder).await?;
+        let response = self
+            .post_data::<Vec<ContractResultDataResponse>>(request_builder)
+            .await?;
         Ok(response)
     }
 }
