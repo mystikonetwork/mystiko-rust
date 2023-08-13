@@ -102,10 +102,9 @@ where
         contract_response: ContractResultDataResponse,
     ) -> Result<ContractData<R>> {
         if contract_response.is_error {
-            Err(anyhow!(FetcherError::FetchContractResultError(format!(
-                "{}",
+            Err(anyhow!(FetcherError::FetchContractResultError(
                 contract_response.error_msg.unwrap_or(String::from("unknow error"))
-            ))))
+            )))
         } else {
             let data = match R::data_type() {
                 DataType::Full => {
@@ -168,7 +167,7 @@ where
     }
 }
 
-fn convert_to_sorted_commitments(commitment_resp: &Vec<CommitmentForDataLoader>) -> Vec<Commitment> {
+fn convert_to_sorted_commitments(commitment_resp: &[CommitmentForDataLoader]) -> Vec<Commitment> {
     let mut commitments = commitment_resp
         .iter()
         .map(|commit| {
