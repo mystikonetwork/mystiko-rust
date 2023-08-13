@@ -1,3 +1,4 @@
+use crate::types::commitment_spent::NullifierForDataLoader;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
@@ -113,11 +114,12 @@ pub struct CommitmentResponse {
 
 #[derive(Debug, Serialize, Deserialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct CommitmentForDataLoaderResponse {
+pub struct ContractResultDataResponse {
     pub contract_address: String,
     pub start_block: u64,
     pub actual_end_block: u64,
     pub commitments: Vec<CommitmentForDataLoader>,
+    pub nullifiers: Option<Vec<NullifierForDataLoader>>,
     #[serde(default, rename = "error")]
     pub is_error: bool,
     pub error_msg: Option<String>,
