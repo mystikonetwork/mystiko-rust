@@ -111,8 +111,8 @@ where
             let data = match R::data_type() {
                 DataType::Full => {
                     let fulldata = FullData::builder()
-                        .commitments(convert_to_sorted_commitments(contract_response.commitments.as_ref()))
-                        .nullifiers(convert_to_sorted_nullifiers(contract_response.nullifiers.as_ref()))
+                        .commitments(self.convert_to_sorted_commitments(contract_response.commitments.as_ref()))
+                        .nullifiers(self.convert_to_sorted_nullifiers(contract_response.nullifiers.as_ref()))
                         .build();
                     info!(
                         "{} fetch {} commitments and {} nullifiers",
@@ -131,7 +131,7 @@ where
                 }
                 DataType::Lite => {
                     let litedata = LiteData::builder()
-                        .commitments(convert_to_sorted_commitments(contract_response.commitments.as_ref()))
+                        .commitments(self.convert_to_sorted_commitments(contract_response.commitments.as_ref()))
                         .build();
                     info!(
                         "{} fetch {} commitments",
@@ -157,6 +157,75 @@ where
         }
     }
 
+    fn convert_to_sorted_commitments(&self, commitment_resp: &[CommitmentForDataLoader]) -> Vec<Commitment> {
+        let mut commitments = commitment_resp
+            .iter()
+            .map(|commit| {
+                Commitment::builder()
+                    .commitment_hash(commit.commitment_hash.as_bytes())
+                    .status(self.convert_status(&commit.status))
+                    .block_number(commit.block_number)
+                    .included_block_number(commit.included_block_number)
+                    .src_chain_block_number(commit.src_chain_block_number)
+                    .leaf_index(commit.leaf_index)
+                    .rollup_fee(commit.rollup_fee.as_ref().map(|rf| rf.as_bytes().to_vec()))
+                    .encrypted_note(commit.encrypted_note.as_ref().map(|en| en.as_bytes().to_vec()))
+                    .queued_transaction_hash(
+                        commit
+                            .queued_transaction_hash
+                            .as_ref()
+                            .map(|qth| qth.as_bytes().to_vec()),
+                    )
+                    .included_transaction_hash(
+                        commit
+                            .included_transaction_hash
+                            .as_ref()
+                            .map(|ith| ith.as_bytes().to_vec()),
+                    )
+                    .src_chain_transaction_hash(
+                        commit
+                            .src_chain_transaction_hash
+                            .as_ref()
+                            .map(|scth| scth.as_bytes().to_vec()),
+                    )
+                    .build()
+            })
+            .collect::<Vec<Commitment>>();
+        commitments.sort_by(|a, b| a.block_number.cmp(&b.block_number));
+        commitments
+    }
+
+    fn convert_to_sorted_nullifiers(
+        &self,
+        nullifiers_resp_opt: Option<&Vec<NullifierForDataLoader>>,
+    ) -> Vec<Nullifier> {
+        if let Some(nullifiers_resp) = nullifiers_resp_opt {
+            let mut nullifiers = nullifiers_resp
+                .iter()
+                .map(|nullifier| {
+                    Nullifier::builder()
+                        .block_number(nullifier.block_number)
+                        .transaction_hash(nullifier.transaction_hash.as_bytes().to_vec())
+                        .nullifier(nullifier.nullifier.as_bytes().to_vec())
+                        .build()
+                })
+                .collect::<Vec<Nullifier>>();
+            nullifiers.sort_by(|a, b| a.block_number.cmp(&b.block_number));
+            nullifiers
+        } else {
+            Vec::new()
+        }
+    }
+
+    fn convert_status(&self, deposit_status: &DepositStatus) -> CommitmentStatus {
+        match deposit_status {
+            DepositStatus::SrcSucceeded => CommitmentStatus::SrcSucceeded,
+            DepositStatus::Queued => CommitmentStatus::Queued,
+            DepositStatus::Succeeded => CommitmentStatus::Included,
+            DepositStatus::Failed => CommitmentStatus::Unspecified,
+        }
+    }
+
     fn get_log_prefix_with_block(&self, opt: &LogPrefixOptions) -> String {
         format!(
             "IndexerFetcher[type={:?}, chain_id={}, address={}, from_block={}, to_block={}]",
@@ -166,71 +235,5 @@ where
             opt.start_block,
             opt.end_block
         )
-    }
-}
-
-fn convert_to_sorted_commitments(commitment_resp: &[CommitmentForDataLoader]) -> Vec<Commitment> {
-    let mut commitments = commitment_resp
-        .iter()
-        .map(|commit| {
-            Commitment::builder()
-                .commitment_hash(commit.commitment_hash.as_bytes())
-                .status(convert_status(&commit.status))
-                .block_number(commit.block_number)
-                .included_block_number(commit.included_block_number)
-                .src_chain_block_number(commit.src_chain_block_number)
-                .leaf_index(commit.leaf_index)
-                .rollup_fee(commit.rollup_fee.as_ref().map(|rf| rf.as_bytes().to_vec()))
-                .encrypted_note(commit.encrypted_note.as_ref().map(|en| en.as_bytes().to_vec()))
-                .queued_transaction_hash(
-                    commit
-                        .queued_transaction_hash
-                        .as_ref()
-                        .map(|qth| qth.as_bytes().to_vec()),
-                )
-                .included_transaction_hash(
-                    commit
-                        .included_transaction_hash
-                        .as_ref()
-                        .map(|ith| ith.as_bytes().to_vec()),
-                )
-                .src_chain_transaction_hash(
-                    commit
-                        .src_chain_transaction_hash
-                        .as_ref()
-                        .map(|scth| scth.as_bytes().to_vec()),
-                )
-                .build()
-        })
-        .collect::<Vec<Commitment>>();
-    commitments.sort_by(|a, b| a.block_number.cmp(&b.block_number));
-    commitments
-}
-
-fn convert_to_sorted_nullifiers(nullifiers_resp_opt: Option<&Vec<NullifierForDataLoader>>) -> Vec<Nullifier> {
-    if let Some(nullifiers_resp) = nullifiers_resp_opt {
-        let mut nullifiers = nullifiers_resp
-            .iter()
-            .map(|nullifier| {
-                Nullifier::builder()
-                    .block_number(nullifier.block_number)
-                    .transaction_hash(nullifier.transaction_hash.as_bytes().to_vec())
-                    .nullifier(nullifier.nullifier.as_bytes().to_vec())
-                    .build()
-            })
-            .collect::<Vec<Nullifier>>();
-        nullifiers.sort_by(|a, b| a.block_number.cmp(&b.block_number));
-        nullifiers
-    } else {
-        Vec::new()
-    }
-}
-
-fn convert_status(deposit_status: &DepositStatus) -> CommitmentStatus {
-    match deposit_status {
-        DepositStatus::SrcSucceeded => CommitmentStatus::SrcSucceeded,
-        DepositStatus::Queued => CommitmentStatus::Queued,
-        DepositStatus::Succeeded => CommitmentStatus::Included,
-        DepositStatus::Failed => CommitmentStatus::Unspecified,
     }
 }
