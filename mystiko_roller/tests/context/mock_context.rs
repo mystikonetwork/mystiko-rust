@@ -120,7 +120,7 @@ impl ContextTrait for MockContext {
 }
 
 async fn create_memory_database() -> RollerDatabase<SqlStatementFormatter, SqliteStorage> {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
     RollerDatabase::new(formatter, storage).await
 }

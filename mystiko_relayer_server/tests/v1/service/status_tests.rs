@@ -348,7 +348,7 @@ async fn test_account_not_found_in_db_v1() {
     // create test server
     let mut server = TestServer::new(None).await.unwrap();
     let database = Database::new(
-        SqlStatementFormatter::default(),
+        SqlStatementFormatter::sqlite(),
         SqliteStorageBuilder::new().in_memory().build().await.unwrap(),
     );
     database.migrate().await.unwrap();

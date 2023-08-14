@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 async fn create_transactions() -> TransactionCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let transactions = TransactionCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
+    let transactions = TransactionCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     transactions.migrate().await.unwrap();
     assert!(transactions.collection_exists().await.unwrap());
     transactions

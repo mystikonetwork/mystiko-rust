@@ -2,8 +2,6 @@ use crate::common::TestServer;
 use actix_web::test::{call_and_read_body_json, init_service, TestRequest};
 use actix_web::web::Data;
 use actix_web::App;
-use async_once::AsyncOnce;
-use lazy_static::lazy_static;
 use mystiko_relayer_server::database::Database;
 use mystiko_relayer_server::error::ResponseError;
 use mystiko_relayer_server::handler::transaction::TransactionHandler;
@@ -16,14 +14,10 @@ use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use serial_test::file_serial;
 use std::sync::Arc;
 
-lazy_static! {
-    static ref SERVER: AsyncOnce<TestServer> = AsyncOnce::new(async { TestServer::new(None).await.unwrap() });
-}
-
 #[actix_rt::test]
 async fn test_successful() {
     // create test server
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()
@@ -66,7 +60,7 @@ async fn test_successful() {
 #[actix_rt::test]
 async fn test_id_not_found() {
     // create test server
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()
@@ -94,7 +88,7 @@ async fn test_db_error() {
     // create test server
     let mut server = TestServer::new(None).await.unwrap();
     let database = Database::new(
-        SqlStatementFormatter::default(),
+        SqlStatementFormatter::sqlite(),
         SqliteStorageBuilder::new().in_memory().build().await.unwrap(),
     );
     let transaction_handler = TransactionHandler::new(Arc::new(database));

@@ -2,10 +2,8 @@ use crate::common::{get_valid_transact_request_data, TestServer};
 use actix_web::test::{call_and_read_body_json, init_service, TestRequest};
 use actix_web::web::Data;
 use actix_web::App;
-use async_once::AsyncOnce;
 use ethereum_types::U256;
 use ethers_providers::MockProvider;
-use lazy_static::lazy_static;
 use mystiko_relayer_server::channel::transact_channel;
 use mystiko_relayer_server::error::ResponseError;
 use mystiko_relayer_server::service::{transact, transaction_status};
@@ -13,10 +11,6 @@ use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
 use mystiko_relayer_types::{RelayTransactResponse, RelayTransactStatusResponse, TransactRequestData, TransactStatus};
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use serial_test::file_serial;
-
-lazy_static! {
-    static ref SERVER: AsyncOnce<TestServer> = AsyncOnce::new(async { TestServer::new(None).await.unwrap() });
-}
 
 #[actix_rt::test]
 #[file_serial]
@@ -118,7 +112,7 @@ async fn test_send_successful_erc20() {
 #[actix_rt::test]
 async fn test_invalid_request() {
     // create test server
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()
@@ -160,7 +154,7 @@ async fn test_invalid_request() {
 #[actix_rt::test]
 async fn test_repeated_transaction() {
     // create test server
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()
@@ -199,7 +193,7 @@ async fn test_repeated_transaction() {
 #[actix_rt::test]
 async fn test_chain_id_not_found() {
     // create test server
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()

@@ -7,7 +7,7 @@ pub async fn create_database() -> Database<SqlStatementFormatter, SqliteStorage>
         .filter_module("mystiko_core", log::LevelFilter::Info)
         .is_test(true)
         .try_init();
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
     Database::new(formatter, storage)
 }

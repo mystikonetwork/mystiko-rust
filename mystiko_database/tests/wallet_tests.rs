@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 async fn create_wallets() -> WalletCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let wallets = WalletCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
+    let wallets = WalletCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     wallets.migrate().await.unwrap();
     assert!(wallets.collection_exists().await.unwrap());
     wallets

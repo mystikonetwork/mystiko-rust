@@ -1,7 +1,7 @@
 use mystiko_storage::column::{Column, ColumnType, ColumnValue, IndexColumns, UniqueColumns};
 use mystiko_storage::document::{Document, DocumentData};
 use mystiko_storage::filter::{Condition, ConditionOperator, Order, QueryFilter, QueryFilterBuilder, SubFilter};
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::formatter::sql::{SqlStatementFormatter, SqlType};
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::migration::types::{
     AddColumnMigration, AddIndexMigration, DropColumnMigration, Migration, RenameColumnMigration,
@@ -60,7 +60,7 @@ pub struct TestDocument {
 
 #[test]
 fn test_format_insert() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let document1 = create_test_document("1", true);
     let statement1 = formatter.format_insert(&document1);
     assert_eq!(
@@ -100,7 +100,7 @@ fn test_format_insert() {
 
 #[test]
 fn test_format_update() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let document1 = create_test_document("1", true);
     let statement1 = formatter.format_update(&document1);
     assert_eq!(
@@ -145,7 +145,7 @@ fn test_format_update() {
 
 #[test]
 fn test_format_delete() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let document1 = create_test_document("1", true);
     let statement1 = formatter.format_delete(&document1);
     assert_eq!(statement1.statement, "DELETE FROM `test_documents` WHERE `id` = ?");
@@ -160,7 +160,7 @@ fn test_format_delete() {
 
 #[test]
 fn test_format_delete_by_filter() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let statement1 = formatter.format_delete_by_filter::<TestDocument, QueryFilter>(None);
     assert_eq!(statement1.statement, "DELETE FROM `test_documents`");
     assert!(statement1.column_values.is_empty());
@@ -197,7 +197,7 @@ fn test_format_delete_by_filter() {
 
 #[test]
 fn test_format_count() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let statement1 = formatter.format_count::<TestDocument, QueryFilter>(None);
     assert_eq!(statement1.statement.statement, "SELECT COUNT(*) FROM `test_documents`");
     let statement1 = formatter.format_count::<TestDocument, _>(Some(QueryFilterBuilder::new().build()));
@@ -236,6 +236,7 @@ fn test_format_count() {
     assert_eq!(statement4.statement.column_values, vec![ColumnValue::U8(1)]);
     let formatter = SqlStatementFormatter::builder()
         .count_mark(String::from("MY_COUNT(*)"))
+        .sql_type(SqlType::Sqlite)
         .build();
     let statement5 = formatter.format_count::<TestDocument, QueryFilter>(None);
     assert_eq!(statement5.count_column, "MY_COUNT(*)");
@@ -247,7 +248,7 @@ fn test_format_count() {
 
 #[test]
 fn test_format_find() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let statement1 = formatter.format_find::<TestDocument, QueryFilter>(None);
     assert_eq!(
         statement1.statement,
@@ -318,7 +319,10 @@ fn test_format_find() {
         FROM `test_documents` WHERE `field5` = ? ORDER BY `field1` DESC LIMIT 1 OFFSET 2"
     );
     assert_eq!(statement4.column_values, vec![ColumnValue::U8(1)]);
-    let formatter = SqlStatementFormatter::builder().value_mark(String::from("$")).build();
+    let formatter = SqlStatementFormatter::builder()
+        .value_mark(String::from("$"))
+        .sql_type(SqlType::Sqlite)
+        .build();
     let statement5 = formatter.format_find::<TestDocument, _>(Some(SubFilter::equal(TestDocumentColumn::Field5, 1u8)));
     assert_eq!(
         statement5.statement,
@@ -334,7 +338,7 @@ fn test_format_find() {
 
 #[test]
 fn test_format_create_collection_migration() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let statements = formatter.format_migration_batch::<TestDocument>(&Document::<TestDocument>::migrations());
     assert_eq!(statements.len(), 3);
     let statement1 = statements.get(0).unwrap();
@@ -401,11 +405,63 @@ fn test_format_create_collection_migration() {
         "CREATE INDEX `test_documents_index_field9_field11` ON `test_documents` (`field9`, `field11`)"
     );
     assert!(statement3.column_values.is_empty());
+    let formatter = SqlStatementFormatter::mysql();
+    let statements = formatter.format_migration_batch::<TestDocument>(&Document::<TestDocument>::migrations());
+    assert_eq!(
+        statements[0].statement,
+        "CREATE TABLE IF NOT EXISTS `test_documents` (\
+    `id` VARCHAR(64) NOT NULL PRIMARY KEY, \
+    `created_at` BIGINT NOT NULL, \
+    `updated_at` BIGINT NOT NULL, \
+    `field1` TINYINT NOT NULL, \
+    `field2` TINYINT, \
+    `field3` VARCHAR(1) NOT NULL, \
+    `field4` VARCHAR(1), \
+    `field5` TINYINT UNSIGNED NOT NULL, \
+    `field6` TINYINT UNSIGNED, \
+    `field7` SMALLINT UNSIGNED NOT NULL, \
+    `field8` SMALLINT UNSIGNED, \
+    `field9` INT UNSIGNED NOT NULL, \
+    `field10` INT UNSIGNED, \
+    `field11` BIGINT UNSIGNED NOT NULL, \
+    `field12` BIGINT UNSIGNED, \
+    `field13` VARCHAR(40) NOT NULL, \
+    `field14` VARCHAR(40), \
+    `field15` BIGINT UNSIGNED NOT NULL, \
+    `field16` BIGINT UNSIGNED, \
+    `field17` TINYINT NOT NULL, \
+    `field18` TINYINT, \
+    `field19` SMALLINT NOT NULL, \
+    `field20` SMALLINT, \
+    `field21` INT NOT NULL, \
+    `field22` INT, \
+    `field23` BIGINT NOT NULL, \
+    `field24` BIGINT, \
+    `field25` VARCHAR(40) NOT NULL, \
+    `field26` VARCHAR(40), \
+    `field27` BIGINT NOT NULL, \
+    `field28` BIGINT, \
+    `field29` FLOAT NOT NULL, \
+    `field30` FLOAT, \
+    `field31` DOUBLE NOT NULL, \
+    `field32` DOUBLE, \
+    `field33` VARCHAR(64) NOT NULL, \
+    `field34` TEXT, \
+    `field35` TEXT NOT NULL, \
+    `field36` VARCHAR(128), \
+    `field37` TEXT NOT NULL, \
+    `field38` TEXT, \
+    `field39` VARCHAR(256) NOT NULL, \
+    `field40` TEXT, \
+    CONSTRAINT `my_unique_1` UNIQUE (`field1`), \
+    CONSTRAINT `test_documents_unique_field3_field5` UNIQUE (`field3`, `field5`)\
+    )"
+    );
 }
 
 #[test]
 fn test_format_add_index_migration() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let migration: Migration = AddIndexMigration::builder()
         .index_name("my_index_1")
         .column_names(vec![
@@ -426,7 +482,7 @@ fn test_format_add_index_migration() {
 
 #[test]
 fn test_format_add_column_migration() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let migration: Migration = AddColumnMigration::builder()
         .column(
             Column::builder()
@@ -450,7 +506,7 @@ fn test_format_add_column_migration() {
 
 #[test]
 fn test_format_drop_column_migration() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let migration: Migration = DropColumnMigration::builder().column_name("field1").build().into();
     let statements = formatter.format_migration::<TestDocument>(&migration);
     assert_eq!(statements.len(), 1);
@@ -461,7 +517,7 @@ fn test_format_drop_column_migration() {
 
 #[test]
 fn test_format_rename_column_migration() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let migration: Migration = RenameColumnMigration::builder()
         .old_column_name("field1")
         .new_column_name("field41")
@@ -479,7 +535,7 @@ fn test_format_rename_column_migration() {
 
 #[test]
 fn test_format_sub_filter() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let mut filter: QueryFilter = SubFilter::equal(TestDocumentColumn::Field1, true).into();
     let mut statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field1` = ?");
@@ -539,7 +595,7 @@ fn test_format_sub_filter() {
 
 #[test]
 fn test_format_condition() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let mut condition = Condition {
         operator: ConditionOperator::AND,
         sub_filters: vec![],
@@ -586,7 +642,7 @@ fn test_format_condition() {
 
 #[test]
 fn test_format_query_filter() {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let mut filter = QueryFilterBuilder::new().build();
     let mut statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents`");

@@ -45,7 +45,7 @@ impl<F: StatementFormatter, S: Storage> RollerDatabase<F, S> {
 }
 
 pub async fn create_roller_database() -> RollerDatabase<SqlStatementFormatter, SqliteStorage> {
-    let formatter = SqlStatementFormatter::default();
+    let formatter = SqlStatementFormatter::sqlite();
     let config_path = load_roller_db_path();
     let mut db_path = PathBuf::from(config_path);
     db_path.push("roller.db");
