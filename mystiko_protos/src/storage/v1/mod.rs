@@ -1,0 +1,1 @@
+pub use crate::gen::mystiko::storage::v1::*;
