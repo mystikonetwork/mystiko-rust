@@ -4,6 +4,7 @@ use ethereum_types::U256;
 use ethers_core::types::Bytes;
 use ethers_middleware::providers::MockProvider;
 use ethers_providers::Provider;
+use lazy_static::lazy_static;
 use log::LevelFilter;
 use mockall::mock;
 use mockito::{Server, ServerGuard};
@@ -26,7 +27,7 @@ use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 
 mock! {
     #[derive(Debug)]
@@ -142,6 +143,19 @@ impl TestServer {
             mock_server: server,
         })
     }
+
+    #[allow(dead_code)]
+    pub async fn singleton() -> Arc<TestServer> {
+        let mut server_opt = SERVER.lock().await;
+        if server_opt.is_none() {
+            *server_opt = Some(Arc::new(TestServer::new(None).await.unwrap()));
+        }
+        server_opt.clone().unwrap()
+    }
+}
+
+lazy_static! {
+    pub static ref SERVER: Mutex<Option<Arc<TestServer>>> = Mutex::new(None);
 }
 
 #[actix_rt::test]

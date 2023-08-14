@@ -3,7 +3,7 @@ use mystiko_storage::document::{DocumentColumn, DocumentData};
 use mystiko_storage::filter::{Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_macros::CollectionBuilder;
-use mystiko_storage_mysql::MySqlStorage;
+use mystiko_storage_mysql::{MySqlStorage, MySqlStorageOptions};
 use num_bigint::{BigInt, BigUint};
 use sqlx::MySqlPool;
 use std::sync::Arc;
@@ -156,6 +156,24 @@ async fn test_collection_exists(pool: MySqlPool) {
     assert!(!collection.collection_exists().await.unwrap());
     collection.migrate().await.unwrap();
     assert!(collection.collection_exists().await.unwrap());
+}
+
+#[sqlx::test]
+async fn test_builder(_pool: MySqlPool) {
+    let database_url = std::env::var("DATABASE_URL").unwrap();
+    let parsed_url = url::Url::parse(&database_url).unwrap();
+    let options = MySqlStorageOptions::builder()
+        .database(parsed_url.path().trim_start_matches('/').to_owned())
+        .host(parsed_url.host_str().unwrap().to_owned())
+        .port(parsed_url.port().unwrap())
+        .username(parsed_url.username().to_owned())
+        .password(parsed_url.password().unwrap().to_owned())
+        .max_connections(1u32)
+        .min_connections(1u32)
+        .max_lifetime(std::time::Duration::from_secs(120))
+        .idle_timeout(std::time::Duration::from_secs(60))
+        .build();
+    let _ = MySqlStorage::connect(options).await.unwrap();
 }
 
 async fn create_collection(pool: MySqlPool) -> TestDocumentCollection<SqlStatementFormatter, MySqlStorage> {

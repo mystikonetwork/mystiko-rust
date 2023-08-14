@@ -24,6 +24,13 @@ jobs:
           toolchain: stable
           components: rustfmt, clippy, llvm-tools-preview
 
+      - name: Setup MySql
+        uses: mirromutth/mysql-action@v1
+        with:
+          mysql version: '8.0'
+          mysql database: 'mystiko_rust_tests'
+          mysql root password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+
       - name: Setup Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
@@ -59,6 +66,8 @@ jobs:
 
       - name: Run Test
         run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --lcov --no-report
+        env:
+          DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
 
       - name: Generate Coverage
         run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --lcov --no-run --output-path lcov.info

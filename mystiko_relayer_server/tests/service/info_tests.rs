@@ -2,10 +2,8 @@ use crate::common::{TestServer, TOKEN_PRICE_CONFIG_PATH};
 use actix_web::test::{call_and_read_body_json, init_service, TestRequest};
 use actix_web::web::Data;
 use actix_web::App;
-use async_once::AsyncOnce;
 use ethereum_types::U256;
 use ethers_providers::MockProvider;
-use lazy_static::lazy_static;
 use mockito::Matcher;
 use mystiko_fs::read_file_bytes;
 use mystiko_relayer_server::database::Database;
@@ -20,14 +18,10 @@ use mystiko_storage_sqlite::SqliteStorageBuilder;
 use mystiko_types::CircuitType;
 use std::sync::Arc;
 
-lazy_static! {
-    static ref SERVER: AsyncOnce<TestServer> = AsyncOnce::new(async { TestServer::new(None).await.unwrap() });
-}
-
 #[actix_rt::test]
 async fn test_no_option_successful() {
     // create test server
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()
@@ -183,7 +177,7 @@ async fn test_successful_with_options_main() {
 
 #[actix_rt::test]
 async fn test_unsupported_asset_symbol() {
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()
@@ -225,7 +219,7 @@ async fn test_unsupported_asset_symbol() {
 
 #[actix_rt::test]
 async fn test_relayer_unavailable() {
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()
@@ -267,7 +261,7 @@ async fn test_relayer_unavailable() {
 
 #[actix_rt::test]
 async fn test_chain_id_not_found() {
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     let result = minimum_gas_fee(
         server.app_state.relayer_config.as_ref(),
         9999,
@@ -290,7 +284,7 @@ async fn test_chain_id_not_found() {
 
 #[actix_rt::test]
 async fn test_contract_config_not_found() {
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     let result = minimum_gas_fee(
         server.app_state.relayer_config.as_ref(),
         5,
@@ -314,7 +308,7 @@ async fn test_contract_config_not_found() {
 #[actix_rt::test]
 async fn test_not_supported_chain_id() {
     // create test server
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()
@@ -341,7 +335,7 @@ async fn test_not_supported_chain_id() {
 #[actix_rt::test]
 async fn test_gas_price_error() {
     // create test server
-    let server = SERVER.get().await;
+    let server = TestServer::singleton().await;
     // init service
     let app = init_service(
         App::new()

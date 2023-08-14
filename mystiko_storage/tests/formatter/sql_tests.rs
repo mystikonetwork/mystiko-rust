@@ -405,6 +405,58 @@ fn test_format_create_collection_migration() {
         "CREATE INDEX `test_documents_index_field9_field11` ON `test_documents` (`field9`, `field11`)"
     );
     assert!(statement3.column_values.is_empty());
+    let formatter = SqlStatementFormatter::mysql();
+    let statements = formatter.format_migration_batch::<TestDocument>(&Document::<TestDocument>::migrations());
+    assert_eq!(
+        statements[0].statement,
+        "CREATE TABLE IF NOT EXISTS `test_documents` (\
+    `id` VARCHAR(64) NOT NULL PRIMARY KEY, \
+    `created_at` BIGINT NOT NULL, \
+    `updated_at` BIGINT NOT NULL, \
+    `field1` TINYINT NOT NULL, \
+    `field2` TINYINT, \
+    `field3` VARCHAR(1) NOT NULL, \
+    `field4` VARCHAR(1), \
+    `field5` TINYINT UNSIGNED NOT NULL, \
+    `field6` TINYINT UNSIGNED, \
+    `field7` SMALLINT UNSIGNED NOT NULL, \
+    `field8` SMALLINT UNSIGNED, \
+    `field9` INT UNSIGNED NOT NULL, \
+    `field10` INT UNSIGNED, \
+    `field11` BIGINT UNSIGNED NOT NULL, \
+    `field12` BIGINT UNSIGNED, \
+    `field13` VARCHAR(40) NOT NULL, \
+    `field14` VARCHAR(40), \
+    `field15` BIGINT UNSIGNED NOT NULL, \
+    `field16` BIGINT UNSIGNED, \
+    `field17` TINYINT NOT NULL, \
+    `field18` TINYINT, \
+    `field19` SMALLINT NOT NULL, \
+    `field20` SMALLINT, \
+    `field21` INT NOT NULL, \
+    `field22` INT, \
+    `field23` BIGINT NOT NULL, \
+    `field24` BIGINT, \
+    `field25` VARCHAR(40) NOT NULL, \
+    `field26` VARCHAR(40), \
+    `field27` BIGINT NOT NULL, \
+    `field28` BIGINT, \
+    `field29` FLOAT NOT NULL, \
+    `field30` FLOAT, \
+    `field31` DOUBLE NOT NULL, \
+    `field32` DOUBLE, \
+    `field33` VARCHAR(64) NOT NULL, \
+    `field34` TEXT, \
+    `field35` TEXT NOT NULL, \
+    `field36` VARCHAR(128), \
+    `field37` TEXT NOT NULL, \
+    `field38` TEXT, \
+    `field39` VARCHAR(256) NOT NULL, \
+    `field40` TEXT, \
+    CONSTRAINT `my_unique_1` UNIQUE (`field1`), \
+    CONSTRAINT `test_documents_unique_field3_field5` UNIQUE (`field3`, `field5`)\
+    )"
+    );
 }
 
 #[test]
