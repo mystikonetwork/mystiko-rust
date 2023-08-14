@@ -25,7 +25,7 @@ jobs:
           components: rustfmt, clippy, llvm-tools-preview
 
       - name: Setup MySql
-        uses: mirromutth/mysql-action@v1
+        uses: mirromutth/mysql-action@v1.1
         with:
           mysql version: '8.0'
           mysql database: 'mystiko_rust_tests'
