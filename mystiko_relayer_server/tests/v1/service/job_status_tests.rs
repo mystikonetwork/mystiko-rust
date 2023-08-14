@@ -94,7 +94,7 @@ async fn test_id_not_found_v1() {
 async fn test_db_error_v1() {
     let mut server = TestServer::new(None).await.unwrap();
     let database = Database::new(
-        SqlStatementFormatter::default(),
+        SqlStatementFormatter::sqlite(),
         SqliteStorageBuilder::new().in_memory().build().await.unwrap(),
     );
     let transaction_handler = TransactionHandler::new(Arc::new(database));

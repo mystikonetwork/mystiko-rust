@@ -22,5 +22,4 @@ typed-builder = { version = "0.14.0" }
 validator = { version = "0.16.0", features = ["derive"] }
 
 [dev-dependencies]
-async_once = { version = "0.2.6" }
 mockito = { version = "0.32.4" }

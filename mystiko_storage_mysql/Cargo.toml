@@ -1,0 +1,19 @@
+[package]
+name = "mystiko_storage_mysql"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { version = "1.0.69" }
+async-trait = { version = "0.1.64" }
+mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+num-bigint = { version = "0.4", features = ["serde"] }
+serde_json = { version = "1.0.91" }
+sqlx = { version = "0.7.0", features = [ "runtime-tokio", "tls-rustls", "mysql" ] }
+tokio = { version = "1.26.0", features = ["sync"] }
+typed-builder = { version = "0.14.0" }
+
+[dev-dependencies]
+tempfile = { version = "3.4.0" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }

@@ -84,7 +84,7 @@ impl TestServer {
 
         // create database in memory
         let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
-        let database = Database::new(SqlStatementFormatter::default(), storage);
+        let database = Database::new(SqlStatementFormatter::sqlite(), storage);
         database.migrate().await.unwrap();
         let db = Arc::new(database);
 

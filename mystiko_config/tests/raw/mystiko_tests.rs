@@ -1,5 +1,3 @@
-use async_once::AsyncOnce;
-use lazy_static::lazy_static;
 use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
 use mystiko_config::raw::bridge::RawBridgeConfig;
 use mystiko_config::raw::create_raw_from_file;
@@ -15,13 +13,9 @@ async fn default_config() -> RawMystikoConfig {
         .unwrap()
 }
 
-lazy_static! {
-    static ref CONFIG_CREATER: AsyncOnce<RawMystikoConfig> = AsyncOnce::new(async { default_config().await });
-}
-
 #[tokio::test]
 async fn test_valid_success() {
-    let config = CONFIG_CREATER.get().await;
+    let config = default_config().await;
     assert!(config.validate().is_ok());
 }
 

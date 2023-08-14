@@ -11,12 +11,19 @@ use typed_builder::TypedBuilder;
 const DEFAULT_VALUE_MARK: &str = "?";
 const DEFAULT_COUNT_MARK: &str = "COUNT(*)";
 
-#[derive(Clone, Debug, Default, TypedBuilder)]
+#[derive(Debug, Clone)]
+pub enum SqlType {
+    Sqlite,
+    MySql,
+}
+
+#[derive(Clone, Debug, TypedBuilder)]
 pub struct SqlStatementFormatter {
     #[builder(default, setter(strip_option))]
     value_mark: Option<String>,
     #[builder(default, setter(strip_option))]
     count_mark: Option<String>,
+    sql_type: SqlType,
 }
 
 impl StatementFormatter for SqlStatementFormatter {
@@ -199,9 +206,11 @@ impl StatementFormatter for SqlStatementFormatter {
 
     fn format_migration<T: DocumentData>(&self, migration: &Migration) -> Vec<Statement> {
         match migration {
-            Migration::CreateCollection(migration) => format_create_collection_migration::<T>(migration),
+            Migration::CreateCollection(migration) => {
+                format_create_collection_migration::<T>(migration, &self.sql_type)
+            }
             Migration::AddIndex(migration) => vec![format_add_index_migration::<T>(migration)],
-            Migration::AddColumn(migration) => vec![format_add_column_migration::<T>(migration)],
+            Migration::AddColumn(migration) => vec![format_add_column_migration::<T>(migration, &self.sql_type)],
             Migration::DropColumn(migration) => vec![format_drop_column_migration::<T>(migration)],
             Migration::RenameColumn(migration) => vec![format_rename_column_migration::<T>(migration)],
         }
@@ -209,6 +218,14 @@ impl StatementFormatter for SqlStatementFormatter {
 }
 
 impl SqlStatementFormatter {
+    pub fn sqlite() -> Self {
+        Self::builder().sql_type(SqlType::Sqlite).build()
+    }
+
+    pub fn mysql() -> Self {
+        Self::builder().sql_type(SqlType::MySql).build()
+    }
+
     fn value_mark(&self) -> String {
         self.value_mark.clone().unwrap_or(DEFAULT_VALUE_MARK.into())
     }
@@ -332,10 +349,13 @@ fn format_order_by(order_by: &OrderBy) -> String {
     format!("ORDER BY {} {}", column_names.join(", "), order)
 }
 
-fn format_create_collection_migration<T: DocumentData>(migration: &CreateCollectionMigration) -> Vec<Statement> {
+fn format_create_collection_migration<T: DocumentData>(
+    migration: &CreateCollectionMigration,
+    sql_type: &SqlType,
+) -> Vec<Statement> {
     let mut columns_sql: Vec<String> = Vec::new();
     for column in migration.columns.iter() {
-        columns_sql.push(format_column_sql(column));
+        columns_sql.push(format_column_sql(column, sql_type));
     }
     let mut unique_columns_sql: Vec<String> = Vec::new();
     for unique_columns in migration.unique_columns.iter() {
@@ -398,12 +418,12 @@ fn format_add_index_migration<T: DocumentData>(migration: &AddIndexMigration) ->
     )
 }
 
-fn format_add_column_migration<T: DocumentData>(migration: &AddColumnMigration) -> Statement {
+fn format_add_column_migration<T: DocumentData>(migration: &AddColumnMigration, sql_type: &SqlType) -> Statement {
     Statement::new(
         format!(
             "ALTER TABLE `{}` ADD COLUMN {}",
             T::collection_name(),
-            format_column_sql(&migration.column)
+            format_column_sql(&migration.column, sql_type)
         ),
         vec![],
     )
@@ -432,9 +452,13 @@ fn format_rename_column_migration<T: DocumentData>(migration: &RenameColumnMigra
     )
 }
 
-fn format_column_sql(column: &Column) -> String {
+fn format_column_sql(column: &Column, sql_type: &SqlType) -> String {
     let mut column_sql = String::new();
-    column_sql.push_str(&format!("`{}` {}", column.column_name, get_column_sql_type(column)));
+    column_sql.push_str(&format!(
+        "`{}` {}",
+        column.column_name,
+        get_column_sql_type(column, sql_type)
+    ));
     if !column.nullable {
         column_sql.push_str(" NOT NULL");
     }
@@ -444,7 +468,7 @@ fn format_column_sql(column: &Column) -> String {
     column_sql
 }
 
-fn get_column_sql_type(column: &Column) -> String {
+fn get_column_sql_type(column: &Column, sql_type: &SqlType) -> String {
     match column.column_type {
         ColumnType::Bool => "TINYINT".into(),
         ColumnType::Char => "VARCHAR(1)".into(),
@@ -454,12 +478,27 @@ fn get_column_sql_type(column: &Column) -> String {
         ColumnType::I64 => "BIGINT".into(),
         ColumnType::I128 => "VARCHAR(40)".into(),
         ColumnType::ISize => "BIGINT".into(),
-        ColumnType::U8 => "TINYINT".into(),
-        ColumnType::U16 => "SMALLINT".into(),
-        ColumnType::U32 => "INT".into(),
-        ColumnType::U64 => "VARCHAR(20)".into(),
+        ColumnType::U8 => match sql_type {
+            SqlType::Sqlite => "TINYINT".into(),
+            SqlType::MySql => "TINYINT UNSIGNED".into(),
+        },
+        ColumnType::U16 => match sql_type {
+            SqlType::Sqlite => "SMALLINT".into(),
+            SqlType::MySql => "SMALLINT UNSIGNED".into(),
+        },
+        ColumnType::U32 => match sql_type {
+            SqlType::Sqlite => "INT".into(),
+            SqlType::MySql => "INT UNSIGNED".into(),
+        },
+        ColumnType::U64 => match sql_type {
+            SqlType::Sqlite => "VARCHAR(20)".into(),
+            SqlType::MySql => "BIGINT UNSIGNED".into(),
+        },
         ColumnType::U128 => "VARCHAR(40)".into(),
-        ColumnType::USize => "VARCHAR(20)".into(),
+        ColumnType::USize => match sql_type {
+            SqlType::Sqlite => "VARCHAR(20)".into(),
+            SqlType::MySql => "BIGINT UNSIGNED".into(),
+        },
         ColumnType::F32 => "FLOAT".into(),
         ColumnType::F64 => "DOUBLE".into(),
         ColumnType::String => varchar_or_text_sql_type(&column.length_limit),

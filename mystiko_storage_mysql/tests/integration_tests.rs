@@ -3,11 +3,10 @@ use mystiko_storage::document::{DocumentColumn, DocumentData};
 use mystiko_storage::filter::{Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_macros::CollectionBuilder;
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_mysql::MySqlStorage;
 use num_bigint::{BigInt, BigUint};
-use std::path::Path;
+use sqlx::MySqlPool;
 use std::sync::Arc;
-use tempfile::tempdir;
 
 #[derive(CollectionBuilder, Debug, Clone, PartialEq)]
 pub struct TestDocument {
@@ -53,31 +52,9 @@ pub struct TestDocument {
     pub field40: Option<Vec<u8>>,
 }
 
-#[tokio::test]
-async fn test_collection_exists() {
-    let collection = create_collection().await;
-    assert!(!collection.collection_exists().await.unwrap());
-    collection.migrate().await.unwrap();
-    assert!(collection.collection_exists().await.unwrap());
-}
-
-#[tokio::test]
-async fn test_file_db() {
-    let db_dir = tempdir().unwrap();
-    let db_path = db_dir.path().join(Path::new("test.db"));
-    let storage = SqliteStorageBuilder::new()
-        .path(db_path.to_str().unwrap())
-        .build()
-        .await
-        .unwrap();
-    let collection = TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
-    collection.migrate().await.unwrap();
-    std::fs::remove_dir_all(db_dir).unwrap();
-}
-
-#[tokio::test]
-async fn test_insert() {
-    let collection = create_collection().await;
+#[sqlx::test]
+async fn test_insert(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
     let documents: Vec<_> = test_documents();
     collection.migrate().await.unwrap();
     collection.insert(&documents[0]).await.unwrap();
@@ -90,9 +67,9 @@ async fn test_insert() {
     );
 }
 
-#[tokio::test]
-async fn test_update() {
-    let collection = create_collection().await;
+#[sqlx::test]
+async fn test_update(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
     collection.migrate().await.unwrap();
     let mut documents = collection.insert_batch(&test_documents()).await.unwrap();
     documents[0].data.field1 = false;
@@ -107,9 +84,9 @@ async fn test_update() {
     assert!(documents[2].data.field39.is_empty());
 }
 
-#[tokio::test]
-async fn test_delete() {
-    let collection = create_collection().await;
+#[sqlx::test]
+async fn test_delete(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
     collection.migrate().await.unwrap();
     let documents = collection.insert_batch(&test_documents()).await.unwrap();
     collection.delete(&documents[0]).await.unwrap();
@@ -126,9 +103,9 @@ async fn test_delete() {
     assert_eq!(collection.count_all().await.unwrap(), 0);
 }
 
-#[tokio::test]
-async fn test_find() {
-    let collection = create_collection().await;
+#[sqlx::test]
+async fn test_find(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
     collection.migrate().await.unwrap();
     let mut documents = collection.insert_batch(&test_documents()).await.unwrap();
     documents.sort_by_key(|d| d.data.field3);
@@ -147,13 +124,11 @@ async fn test_find() {
             .unwrap()
             .unwrap()
     );
-    assert_eq!(
-        documents[1..],
-        collection
-            .find(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3))
-            .await
-            .unwrap()
-    );
+    let filter = QueryFilterBuilder::new()
+        .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
+        .order_by(TestDocumentColumn::Field3, Order::ASC)
+        .build();
+    assert_eq!(documents[1..], collection.find(filter).await.unwrap());
     let filter = QueryFilterBuilder::new()
         .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
         .limit(1)
@@ -163,9 +138,9 @@ async fn test_find() {
     assert_eq!(documents[2..], collection.find(filter).await.unwrap());
 }
 
-#[tokio::test]
-async fn test_count() {
-    let collection = create_collection().await;
+#[sqlx::test]
+async fn test_count(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
     collection.migrate().await.unwrap();
     let documents = collection.insert_batch(&test_documents()).await.unwrap();
     assert_eq!(collection.count_all().await.unwrap(), 3);
@@ -175,9 +150,18 @@ async fn test_count() {
     assert_eq!(collection.count(filter).await.unwrap(), 2);
 }
 
-async fn create_collection() -> TestDocumentCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
-    TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)))
+#[sqlx::test]
+async fn test_collection_exists(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
+    assert!(!collection.collection_exists().await.unwrap());
+    collection.migrate().await.unwrap();
+    assert!(collection.collection_exists().await.unwrap());
+}
+
+async fn create_collection(pool: MySqlPool) -> TestDocumentCollection<SqlStatementFormatter, MySqlStorage> {
+    let result: (String,) = sqlx::query_as("SELECT DATABASE()").fetch_one(&pool).await.unwrap();
+    let storage = MySqlStorage::builder().pool(pool).database(result.0).build();
+    TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::mysql(), storage)))
 }
 
 fn test_documents() -> Vec<TestDocument> {

@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 async fn create_deposits() -> DepositCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let deposits = DepositCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
+    let deposits = DepositCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     deposits.migrate().await.unwrap();
     assert!(deposits.collection_exists().await.unwrap());
     deposits
