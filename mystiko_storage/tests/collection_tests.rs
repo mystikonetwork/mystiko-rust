@@ -270,5 +270,5 @@ fn migrations() -> Vec<Migration> {
 
 async fn create_collection() -> Collection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
-    Collection::new(SqlStatementFormatter::default(), storage)
+    Collection::new(SqlStatementFormatter::sqlite(), storage)
 }

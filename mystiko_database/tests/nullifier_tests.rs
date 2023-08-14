@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 async fn create_nullifiers() -> NullifierCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let nullifiers = NullifierCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
+    let nullifiers = NullifierCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     nullifiers.migrate().await.unwrap();
     assert!(nullifiers.collection_exists().await.unwrap());
     nullifiers

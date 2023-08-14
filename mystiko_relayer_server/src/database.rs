@@ -38,7 +38,7 @@ impl<F: StatementFormatter, S: Storage> Database<F, S> {
 
 pub async fn init_sqlite_database(path: &str) -> Result<Database<SqlStatementFormatter, SqliteStorage>> {
     let storage = init_sqlite_storage(path).await?;
-    let database = Database::new(SqlStatementFormatter::default(), storage);
+    let database = Database::new(SqlStatementFormatter::sqlite(), storage);
     database.migrate().await?;
     Ok(database)
 }

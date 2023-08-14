@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 async fn create_contracts() -> ContractCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let contracts = ContractCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
+    let contracts = ContractCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     contracts.migrate().await.unwrap();
     assert!(contracts.collection_exists().await.unwrap());
     contracts

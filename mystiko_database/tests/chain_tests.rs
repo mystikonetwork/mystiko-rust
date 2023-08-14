@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 async fn create_chains() -> ChainCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let chains = ChainCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
+    let chains = ChainCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     chains.migrate().await.unwrap();
     assert!(chains.collection_exists().await.unwrap());
     chains

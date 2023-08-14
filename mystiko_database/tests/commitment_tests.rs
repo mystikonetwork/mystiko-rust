@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 async fn create_commitments() -> CommitmentCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let commitments = CommitmentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
+    let commitments = CommitmentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     commitments.migrate().await.unwrap();
     assert!(commitments.collection_exists().await.unwrap());
     commitments

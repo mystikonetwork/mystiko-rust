@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 async fn create_accounts() -> AccountCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().build().await.unwrap();
-    let accounts = AccountCollection::new(Arc::new(Collection::new(SqlStatementFormatter::default(), storage)));
+    let accounts = AccountCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     accounts.migrate().await.unwrap();
     assert!(accounts.collection_exists().await.unwrap());
     accounts
