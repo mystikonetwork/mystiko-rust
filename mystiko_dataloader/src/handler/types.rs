@@ -45,6 +45,13 @@ pub struct NullifierQueryOption {
     pub nullifier: Option<Vec<BigUint>>,
 }
 
+#[derive(Debug, Clone, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct QueryResult<T> {
+    pub end_block: u64,
+    pub result: T,
+}
+
 pub type HandleResult = Result<ChainResult<()>>;
 
 #[async_trait]
@@ -55,15 +62,15 @@ pub trait DataHandler<R: LoadedData>: Send + Sync {
     async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<Option<u64>>;
     async fn query_contract_loaded_block(&self, chain_id: u64, contract_address: &str) -> Result<Option<u64>>;
     async fn query_commitment(&self, option: &CommitmentQueryOption) -> Result<Option<Commitment>> {
-        Ok(self.query_commitments(option).await?.into_iter().next())
+        Ok(self.query_commitments(option).await?.result.into_iter().next())
     }
-    async fn query_commitments(&self, option: &CommitmentQueryOption) -> Result<Vec<Commitment>>;
-    async fn count_commitments(&self, option: &CommitmentQueryOption) -> Result<u64>;
+    async fn query_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<Vec<Commitment>>>;
+    async fn count_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<u64>>;
     async fn query_nullifier(&self, option: &NullifierQueryOption) -> Result<Option<Nullifier>> {
-        Ok(self.query_nullifiers(option).await?.into_iter().next())
+        Ok(self.query_nullifiers(option).await?.result.into_iter().next())
     }
-    async fn query_nullifiers(&self, option: &NullifierQueryOption) -> Result<Vec<Nullifier>>;
-    async fn count_nullifiers(&self, option: &NullifierQueryOption) -> Result<u64>;
+    async fn query_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<Vec<Nullifier>>>;
+    async fn count_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<u64>>;
     async fn handle(&self, data: &ChainData<R>, option: &HandleOption) -> HandleResult;
 }
 
@@ -90,11 +97,11 @@ where
         self.as_ref().query_commitment(option).await
     }
 
-    async fn query_commitments(&self, option: &CommitmentQueryOption) -> Result<Vec<Commitment>> {
+    async fn query_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<Vec<Commitment>>> {
         self.as_ref().query_commitments(option).await
     }
 
-    async fn count_commitments(&self, option: &CommitmentQueryOption) -> Result<u64> {
+    async fn count_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<u64>> {
         self.as_ref().count_commitments(option).await
     }
 
@@ -102,11 +109,11 @@ where
         self.as_ref().query_nullifier(option).await
     }
 
-    async fn query_nullifiers(&self, option: &NullifierQueryOption) -> Result<Vec<Nullifier>> {
+    async fn query_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<Vec<Nullifier>>> {
         self.as_ref().query_nullifiers(option).await
     }
 
-    async fn count_nullifiers(&self, option: &NullifierQueryOption) -> Result<u64> {
+    async fn count_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<u64>> {
         self.as_ref().count_nullifiers(option).await
     }
 
