@@ -5,6 +5,4 @@ use thiserror::Error;
 pub enum FetcherError {
     #[error(transparent)]
     AnyhowError(#[from] AnyhowError),
-    #[error("fetcher contract with error: {0}")]
-    FetchContractResultError(String),
 }

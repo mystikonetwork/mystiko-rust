@@ -54,6 +54,11 @@ pub fn biguint_to_bytes(b: &BigUint) -> Vec<u8> {
     b.to_bytes_le()
 }
 
+pub fn biguint_str_to_bytes(biguint_str: &str) -> Result<Vec<u8>> {
+    let number = BigUint::from_str(biguint_str)?;
+    Ok(biguint_to_bytes(&number))
+}
+
 pub fn bytes_to_biguint(b: &[u8]) -> BigUint {
     BigUint::from_bytes_le(b)
 }

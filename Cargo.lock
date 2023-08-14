@@ -3626,6 +3626,7 @@ dependencies = [
  "ethers-core",
  "ethers-providers",
  "futures",
+ "hex",
  "log",
  "mockall",
  "mockito",
