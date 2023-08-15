@@ -7,7 +7,7 @@ use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::{
     client::IndexerClient,
     types::{
-        commitment::{CommitmentFilter, CommitmentResponse, CommitmentsForContractRequest, DepositStatus},
+        commitment::{CommitmentFilter, CommitmentResponse, CommitmentStatus, CommitmentsForContractRequest},
         commitment_included::{
             CommitmentIncludedFilter, CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest,
             CommitmentIncludedResponse,
@@ -1156,7 +1156,7 @@ async fn test_find_commitments_for_contract() {
     let resp_list: Vec<CommitmentResponse> = vec![
         CommitmentResponse::builder()
             .id(1)
-            .status(DepositStatus::SrcSucceeded)
+            .status(CommitmentStatus::SrcSucceeded)
             .chain_id(5)
             .contract_address(String::from("contract_address1"))
             .contract_id(1)
@@ -1167,7 +1167,7 @@ async fn test_find_commitments_for_contract() {
             .build(),
         CommitmentResponse::builder()
             .id(2)
-            .status(DepositStatus::Queued)
+            .status(CommitmentStatus::Queued)
             .chain_id(5)
             .contract_address(String::from("contract_address1"))
             .contract_id(2)

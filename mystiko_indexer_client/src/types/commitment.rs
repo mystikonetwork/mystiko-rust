@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 #[derive(Deserialize, Serialize, PartialEq, Debug, Eq)]
-pub enum DepositStatus {
+pub enum CommitmentStatus {
     #[serde(rename = "srcSucceeded")]
     SrcSucceeded,
     #[serde(rename = "Queued")]
@@ -18,7 +18,7 @@ pub enum DepositStatus {
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentFilter {
     #[builder(setter(strip_option), default = None)]
-    pub status: Option<DepositStatus>,
+    pub status: Option<CommitmentStatus>,
     #[builder(setter(strip_option), default = None)]
     pub chain_id: Option<u64>,
     #[builder(setter(strip_option), default = None)]
@@ -75,7 +75,7 @@ pub struct CommitmentsForContractRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentResponse {
     pub id: u32,
-    pub status: DepositStatus,
+    pub status: CommitmentStatus,
     #[builder(setter(strip_option), default = None)]
     pub chain_id: Option<u64>,
     #[builder(setter(strip_option), default = None)]
@@ -129,7 +129,7 @@ pub struct ContractResultDataResponse {
 #[serde(rename_all = "camelCase")]
 pub struct CommitmentForDataLoader {
     pub commitment_hash: String,
-    pub status: DepositStatus,
+    pub status: CommitmentStatus,
     pub block_number: u64,
     #[builder(setter(strip_option), default = None)]
     pub included_block_number: Option<u64>,

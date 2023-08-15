@@ -21,6 +21,7 @@ use reqwest::{RequestBuilder, Response};
 use serde::Serialize;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct IndexerClient {
     pub base_url: String,
     pub reqwest_client: reqwest::Client,
