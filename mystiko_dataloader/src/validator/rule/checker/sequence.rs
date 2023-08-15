@@ -1,9 +1,9 @@
 use crate::data::types::LoadedData;
 use crate::handler::types::{CommitmentQueryOption, DataHandler};
-use crate::validator::data::ValidateContractData;
-use crate::validator::error::ValidatorError;
-use crate::validator::rule::ValidatorRule;
-use crate::validator::types::{Result, ValidateOption};
+use crate::validator::rule::data::ValidateContractData;
+use crate::validator::rule::error::{Result, RuleValidatorError};
+use crate::validator::rule::types::RuleChecker;
+use crate::validator::types::ValidateOption;
 use async_trait::async_trait;
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::sync::Arc;
@@ -21,7 +21,7 @@ pub struct SequenceCheckerBuilder<R, H = Box<dyn DataHandler<R>>> {
 }
 
 #[async_trait]
-impl<R, H> ValidatorRule for SequenceChecker<R, H>
+impl<R, H> RuleChecker for SequenceChecker<R, H>
 where
     R: 'static + LoadedData,
     H: 'static + DataHandler<R>,
@@ -56,7 +56,7 @@ where
     pub fn build(self) -> Result<SequenceChecker<R, H>> {
         let handler = self
             .handler
-            .ok_or_else(|| ValidatorError::ValidatorBuildError("handler cannot be None".to_string()))?;
+            .ok_or_else(|| RuleValidatorError::ValidateError("handler cannot be None".to_string()))?;
 
         Ok(SequenceChecker {
             _phantom: Default::default(),
@@ -81,7 +81,7 @@ where
             .query_commitment_count(data.chain_id, &data.contract_address, end_block, first_cm.status)
             .await?;
         if count != first_cm.leaf_index {
-            Err(ValidatorError::ValidatorValidateError(
+            Err(RuleValidatorError::ValidateError(
                 "commitment leaf index mismatch".to_string(),
             ))
         } else {
@@ -104,7 +104,7 @@ where
             .build();
         let query_result = self.handler.count_commitments(&option).await?;
         if query_result.end_block != end_block {
-            return Err(ValidatorError::ValidatorValidateError(
+            return Err(RuleValidatorError::ValidateError(
                 "commitment count query end block mismatch".to_string(),
             ));
         }

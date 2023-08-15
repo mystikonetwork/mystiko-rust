@@ -7,8 +7,8 @@ use mystiko_dataloader::handler::error::HandlerError;
 use mystiko_dataloader::handler::types::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
-use mystiko_dataloader::validator::chain::{ChainDataValidator, ChainDataValidatorBuilder};
-use mystiko_dataloader::validator::rule::{ValidatorRule, ValidatorRuleType};
+use mystiko_dataloader::validator::rule::types::{RuleChecker, RuleCheckerType};
+use mystiko_dataloader::validator::rule::validator::{RuleValidator, RuleValidatorBuilder};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
@@ -152,11 +152,11 @@ fn create_mock_provider(provider: &MockProvider) -> Provider {
     Provider::new(ProviderWrapper::new(Box::new(provider_builder.build())))
 }
 
-type FullDataValidator = ChainDataValidator<FullData, MockHandler<FullData>, Box<dyn ValidatorRule>>;
+type FullDataRuleValidator = RuleValidator<FullData, MockHandler<FullData>, Box<dyn RuleChecker>>;
 
 pub fn create_full_data_validator(
-    rules: Option<Vec<ValidatorRuleType>>,
-) -> (FullDataValidator, Arc<MockHandler<FullData>>, MockProvider) {
+    rules: Option<Vec<RuleCheckerType>>,
+) -> (FullDataRuleValidator, Arc<MockHandler<FullData>>, MockProvider) {
     let (_, mock) = EthersProvider::mocked();
     let provider = create_mock_provider(&mock);
     let provider = Arc::new(provider);
@@ -164,12 +164,12 @@ pub fn create_full_data_validator(
     let v_rules = match rules {
         Some(rules) => rules,
         None => vec![
-            ValidatorRuleType::Sequence,
-            ValidatorRuleType::Counter,
-            ValidatorRuleType::Tree,
+            RuleCheckerType::Sequence,
+            RuleCheckerType::Counter,
+            RuleCheckerType::Tree,
         ],
     };
-    let validator = ChainDataValidatorBuilder::new()
+    let validator = RuleValidatorBuilder::new()
         .shared_provider(provider)
         .shared_handle(handler.clone())
         .rule_types(v_rules)

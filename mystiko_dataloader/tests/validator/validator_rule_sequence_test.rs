@@ -3,13 +3,30 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::chain::ChainData;
 use mystiko_dataloader::data::contract::ContractData;
 use mystiko_dataloader::data::types::FullData;
-use mystiko_dataloader::validator::rule::ValidatorRuleType;
+use mystiko_dataloader::validator::rule::types::RuleCheckerType;
 use mystiko_dataloader::validator::types::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
+async fn test_empty_data() {
+    let (validator, _handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+        .await
+        .unwrap();
+    let option = ValidateOption::builder().config(core_cfg).build();
+    let chain_id = 1_u64;
+    let data = ChainData::builder().chain_id(chain_id).contracts_data(vec![]).build();
+    let result = validator.validate(&data, &option).await;
+    assert!(result
+        .err()
+        .unwrap()
+        .to_string()
+        .contains("data to be validated is empty"));
+}
+
+#[tokio::test]
 async fn test_empty_commitment() {
-    let (validator, _handler, _mock) = create_full_data_validator(Some(vec![ValidatorRuleType::Sequence]));
+    let (validator, _handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -35,7 +52,7 @@ async fn test_empty_commitment() {
 
 #[tokio::test]
 async fn test_only_queued_commitment() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![ValidatorRuleType::Sequence]));
+    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -137,7 +154,7 @@ async fn test_only_queued_commitment() {
 
 #[tokio::test]
 async fn test_only_included_commitment() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![ValidatorRuleType::Sequence]));
+    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();

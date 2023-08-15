@@ -1,9 +1,9 @@
 use crate::data::types::LoadedData;
 use crate::handler::types::{CommitmentQueryOption, DataHandler};
-use crate::validator::data::{ValidateCommitment, ValidateContractData, ValidateNullifier};
-use crate::validator::error::ValidatorError;
-use crate::validator::rule::ValidatorRule;
-use crate::validator::types::{Result, ValidateOption};
+use crate::validator::rule::data::{ValidateCommitment, ValidateContractData, ValidateNullifier};
+use crate::validator::rule::error::{Result, RuleValidatorError};
+use crate::validator::rule::types::RuleChecker;
+use crate::validator::types::ValidateOption;
 use ethers_core::types::{Address, BlockId, BlockNumber};
 use mystiko_abi::commitment_pool::CommitmentPool;
 use mystiko_ethers::provider::factory::Provider;
@@ -51,10 +51,10 @@ where
     pub fn build(self) -> Result<CounterChecker<R, H>> {
         let provider = self
             .provider
-            .ok_or_else(|| ValidatorError::ValidatorBuildError("provider cannot be None".to_string()))?;
+            .ok_or_else(|| RuleValidatorError::ValidateError("provider cannot be None".to_string()))?;
         let handler = self
             .handler
-            .ok_or_else(|| ValidatorError::ValidatorBuildError("handler cannot be None".to_string()))?;
+            .ok_or_else(|| RuleValidatorError::ValidateError("handler cannot be None".to_string()))?;
 
         Ok(CounterChecker {
             _phantom: Default::default(),
@@ -65,14 +65,14 @@ where
 }
 
 #[async_trait::async_trait]
-impl<R, H> ValidatorRule for CounterChecker<R, H>
+impl<R, H> RuleChecker for CounterChecker<R, H>
 where
     R: 'static + LoadedData,
     H: 'static + DataHandler<R>,
 {
     async fn check(&self, data: &ValidateContractData, _option: &ValidateOption) -> Result<()> {
         let address = Address::from_str(data.contract_address.as_str())
-            .map_err(|_| ValidatorError::ValidatorValidateError("invalid contract address".to_string()))?;
+            .map_err(|_| RuleValidatorError::ValidateError("invalid contract address".to_string()))?;
         let commitment_contract = CommitmentPool::new(address, self.provider.clone());
         self.check_commitment(
             data.chain_id,
@@ -132,8 +132,15 @@ where
                     .status(CommitmentStatus::Included)
                     .build();
                 let query_result = self.handler.count_commitments(&option).await?;
-                if query_result.end_block != target_block || query_result.result != included_count {
-                    return Err(ValidatorError::ValidatorValidateError(format!(
+                if query_result.end_block != target_block {
+                    return Err(RuleValidatorError::ValidateError(format!(
+                        "end block mismatch, expect: {}, query: {}",
+                        target_block, query_result.end_block
+                    )));
+                }
+
+                if query_result.result != included_count {
+                    return Err(RuleValidatorError::ValidateError(format!(
                         "commitment included count mismatch, handler: {}, provider: {}",
                         query_result.result, included_count
                     )));
@@ -145,7 +152,7 @@ where
                 if included_count == fetched_include_count {
                     Ok(())
                 } else {
-                    Err(ValidatorError::ValidatorValidateError(format!(
+                    Err(RuleValidatorError::ValidateError(format!(
                         "commitment included count mismatch, fetched: {}, expected: {}",
                         included_count, fetched_include_count
                     )))

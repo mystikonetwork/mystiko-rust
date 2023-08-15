@@ -4,14 +4,14 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::chain::ChainData;
 use mystiko_dataloader::data::contract::ContractData;
 use mystiko_dataloader::data::types::FullData;
-use mystiko_dataloader::validator::rule::ValidatorRuleType;
+use mystiko_dataloader::validator::rule::types::RuleCheckerType;
 use mystiko_dataloader::validator::types::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::str::FromStr;
 
 #[tokio::test]
 async fn test_empty_commitment() {
-    let (validator, handler, mock) = create_full_data_validator(Some(vec![ValidatorRuleType::Counter]));
+    let (validator, handler, mock) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -67,7 +67,7 @@ async fn test_empty_commitment() {
 
 #[tokio::test]
 async fn test_only_queued_commitment() {
-    let (validator, handler, mock) = create_full_data_validator(Some(vec![ValidatorRuleType::Counter]));
+    let (validator, handler, mock) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -97,7 +97,7 @@ async fn test_only_queued_commitment() {
 
 #[tokio::test]
 async fn test_only_included_commitment() {
-    let (validator, handler, mock) = create_full_data_validator(Some(vec![ValidatorRuleType::Counter]));
+    let (validator, handler, mock) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();

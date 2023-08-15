@@ -3,13 +3,12 @@ use crate::data::contract::ContractData;
 use crate::data::result::{ChainResult, ContractResult};
 use crate::data::types::{DataRef, FullData, LiteData, LoadedData};
 use crate::handler::types::{CommitmentQueryOption, DataHandler};
-use crate::validator::data::{ValidateCommitment, ValidateContractData, ValidateNullifier};
-use crate::validator::error::ValidatorError;
-use crate::validator::rule::counter::CounterCheckerBuilder;
-use crate::validator::rule::sequence::SequenceCheckerBuilder;
-use crate::validator::rule::tree::TreeCheckerBuilder;
-use crate::validator::rule::{ValidatorRule, ValidatorRuleType};
-use crate::validator::types::Result;
+use crate::validator::rule::checker::counter::CounterCheckerBuilder;
+use crate::validator::rule::checker::sequence::SequenceCheckerBuilder;
+use crate::validator::rule::checker::tree::TreeCheckerBuilder;
+use crate::validator::rule::data::{ValidateCommitment, ValidateContractData, ValidateNullifier};
+use crate::validator::rule::error::{Result, RuleValidatorError};
+use crate::validator::rule::types::{RuleChecker, RuleCheckerType};
 use crate::validator::types::{DataValidator, ValidateOption, ValidateResult};
 use async_trait::async_trait;
 use mystiko_ethers::provider::factory::Provider;
@@ -20,30 +19,30 @@ use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug)]
-pub struct ChainDataValidator<R, H = Box<dyn DataHandler<R>>, L = Box<dyn ValidatorRule>> {
+pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker>> {
     _phantom: std::marker::PhantomData<R>,
     handler: Arc<H>,
     rules: Vec<Arc<L>>,
 }
 
 #[derive(Debug, Default, TypedBuilder)]
-pub struct ChainDataValidatorBuilder<R, H = Box<dyn DataHandler<R>>> {
+pub struct RuleValidatorBuilder<R, H = Box<dyn DataHandler<R>>> {
     _phantom: std::marker::PhantomData<R>,
-    rule_types: Option<Vec<ValidatorRuleType>>,
+    rule_types: Option<Vec<RuleCheckerType>>,
     handler: Option<Arc<H>>,
     provider: Option<Arc<Provider>>,
 }
 
 #[async_trait]
-impl<R, H, L> DataValidator<R> for ChainDataValidator<R, H, L>
+impl<R, H, L> DataValidator<R> for RuleValidator<R, H, L>
 where
     R: 'static + LoadedData,
     H: 'static + DataHandler<R>,
-    L: 'static + ValidatorRule,
+    L: 'static + RuleChecker,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
         if data.contracts_data.is_empty() {
-            return Err(ValidatorError::ValidatorEmptyValidateDataError);
+            return Err(anyhow::Error::msg("data to be validated is empty").into());
         }
 
         let mut futures = Vec::new();
@@ -61,13 +60,13 @@ where
     }
 }
 
-impl<R, H> ChainDataValidatorBuilder<R, H>
+impl<R, H> RuleValidatorBuilder<R, H>
 where
     R: 'static + LoadedData,
     H: 'static + DataHandler<R>,
 {
     pub fn new() -> Self {
-        ChainDataValidatorBuilder {
+        RuleValidatorBuilder {
             _phantom: std::marker::PhantomData,
             rule_types: None,
             handler: None,
@@ -75,9 +74,9 @@ where
         }
     }
 
-    pub fn rule_types(mut self, rules: Vec<ValidatorRuleType>) -> Self {
+    pub fn rule_types(mut self, rules: Vec<RuleCheckerType>) -> Self {
         let mut seen = HashSet::new();
-        let unique_rules: Vec<ValidatorRuleType> = rules.into_iter().filter(|r| seen.insert(r.clone())).collect();
+        let unique_rules: Vec<RuleCheckerType> = rules.into_iter().filter(|r| seen.insert(r.clone())).collect();
         self.rule_types = Some(unique_rules);
         self
     }
@@ -97,42 +96,42 @@ where
         self
     }
 
-    pub fn build(self) -> Result<ChainDataValidator<R, H>> {
+    pub fn build(self) -> Result<RuleValidator<R, H>> {
         let handler = self
             .handler
-            .ok_or_else(|| ValidatorError::ValidatorBuildError("handle cannot be None".to_string()))?;
+            .ok_or_else(|| RuleValidatorError::BuildError("handle cannot be None".to_string()))?;
         let provider = self
             .provider
-            .ok_or_else(|| ValidatorError::ValidatorBuildError("provider cannot be None".to_string()))?;
+            .ok_or_else(|| RuleValidatorError::BuildError("provider cannot be None".to_string()))?;
         let rule_types = self
             .rule_types
-            .ok_or_else(|| ValidatorError::ValidatorBuildError("rule types cannot be None".to_string()))?;
+            .ok_or_else(|| RuleValidatorError::BuildError("rule types cannot be None".to_string()))?;
 
         let mut rules = vec![];
         for r in rule_types.iter() {
             match r {
-                ValidatorRuleType::Sequence => {
+                RuleCheckerType::Sequence => {
                     let sequence = SequenceCheckerBuilder::new().shared_handle(handler.clone()).build()?;
-                    rules.push(Arc::new(Box::new(sequence) as Box<dyn ValidatorRule>))
+                    rules.push(Arc::new(Box::new(sequence) as Box<dyn RuleChecker>))
                 }
-                ValidatorRuleType::Counter => {
+                RuleCheckerType::Counter => {
                     let counter = CounterCheckerBuilder::new()
                         .shared_provider(provider.clone())
                         .shared_handle(handler.clone())
                         .build()?;
-                    rules.push(Arc::new(Box::new(counter) as Box<dyn ValidatorRule>))
+                    rules.push(Arc::new(Box::new(counter) as Box<dyn RuleChecker>))
                 }
-                ValidatorRuleType::Tree => {
+                RuleCheckerType::Tree => {
                     let tree = TreeCheckerBuilder::new()
                         .shared_provider(provider.clone())
                         .shared_handle(handler.clone())
                         .build()?;
-                    rules.push(Arc::new(Box::new(tree) as Box<dyn ValidatorRule>))
+                    rules.push(Arc::new(Box::new(tree) as Box<dyn RuleChecker>))
                 }
             }
         }
 
-        Ok(ChainDataValidator {
+        Ok(RuleValidator {
             _phantom: std::marker::PhantomData,
             handler,
             rules,
@@ -140,11 +139,11 @@ where
     }
 }
 
-impl<R, H, L> ChainDataValidator<R, H, L>
+impl<R, H, L> RuleValidator<R, H, L>
 where
     R: 'static + LoadedData,
     H: 'static + DataHandler<R>,
-    L: 'static + ValidatorRule,
+    L: 'static + RuleChecker,
 {
     async fn validate_contract_data(
         &self,
@@ -175,7 +174,7 @@ where
 
     async fn merge_contract_data(&self, chain_id: u64, data: &ContractData<R>) -> Result<ValidateContractData> {
         if data.start_block < 1 {
-            return Err(ValidatorError::ValidatorValidateError("start block error".to_string()));
+            return Err(RuleValidatorError::ValidateError("start block error".to_string()));
         }
 
         let (commitments, nullifiers) = match data.data {
@@ -320,14 +319,14 @@ where
             .build();
         let query_result = self.handler.query_commitments(&query_option).await?;
         if query_result.end_block != query_end_block || query_result.result.len() != filled_cms.len() {
-            return Err(ValidatorError::ValidatorValidateError(
+            return Err(RuleValidatorError::ValidateError(
                 "query commitment data invalid".to_string(),
             ));
         }
 
         for (i, cm) in filled_cms.into_iter().enumerate() {
             if cm.commitment_hash != bytes_to_biguint(query_result.result[i].commitment_hash.as_slice()) {
-                return Err(ValidatorError::ValidatorValidateError(
+                return Err(RuleValidatorError::ValidateError(
                     "query commitment hash mismatch".to_string(),
                 ));
             }
@@ -335,7 +334,7 @@ where
             if let Some(leaf_index) = query_result.result[i].leaf_index {
                 cm.leaf_index = leaf_index;
             } else {
-                return Err(ValidatorError::ValidatorValidateError(
+                return Err(RuleValidatorError::ValidateError(
                     "query commitment leaf index is none".to_string(),
                 ));
             }
@@ -351,7 +350,7 @@ where
             .windows(2)
             .any(|window| window[0].leaf_index + 1 != window[1].leaf_index)
         {
-            return Err(ValidatorError::ValidatorValidateError(
+            return Err(RuleValidatorError::ValidateError(
                 "leaf index values not sequence".to_string(),
             ));
         }
@@ -364,7 +363,7 @@ where
         if first_status == CommitmentStatus::Queued {
             for cm in commitments {
                 if cm.status != first_status {
-                    return Err(ValidatorError::ValidatorValidateError(
+                    return Err(RuleValidatorError::ValidateError(
                         "commitment status not all queued".to_string(),
                     ));
                 }
@@ -377,7 +376,7 @@ where
                 if cm.status == CommitmentStatus::Queued {
                     queued_seen = true;
                 } else if cm.status == CommitmentStatus::Included && queued_seen {
-                    return Err(ValidatorError::ValidatorValidateError(
+                    return Err(RuleValidatorError::ValidateError(
                         "invalid sequence of commitment included after queued".to_string(),
                     ));
                 }
@@ -385,7 +384,7 @@ where
                 if cm.merged {
                     merged_seen = true;
                 } else if cm.status == CommitmentStatus::Included && !cm.merged && merged_seen {
-                    return Err(ValidatorError::ValidatorValidateError(
+                    return Err(RuleValidatorError::ValidateError(
                         "invalid sequence of commitment merged status".to_string(),
                     ));
                 }

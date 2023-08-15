@@ -1,9 +1,9 @@
 use crate::data::types::LoadedData;
 use crate::handler::types::DataHandler;
-use crate::validator::data::ValidateContractData;
-use crate::validator::error::ValidatorError;
-use crate::validator::rule::ValidatorRule;
-use crate::validator::types::{Result, ValidateOption};
+use crate::validator::rule::data::ValidateContractData;
+use crate::validator::rule::error::{Result, RuleValidatorError};
+use crate::validator::rule::types::RuleChecker;
+use crate::validator::types::ValidateOption;
 use mystiko_ethers::provider::factory::Provider;
 use std::sync::Arc;
 
@@ -47,11 +47,11 @@ where
     pub fn build(self) -> Result<TreeChecker<R, H>> {
         let provider = self
             .provider
-            .ok_or_else(|| ValidatorError::ValidatorBuildError("provider cannot be None".to_string()))?;
+            .ok_or_else(|| RuleValidatorError::ValidateError("provider cannot be None".to_string()))?;
 
         let handler = self
             .handler
-            .ok_or_else(|| ValidatorError::ValidatorBuildError("handler cannot be None".to_string()))?;
+            .ok_or_else(|| RuleValidatorError::ValidateError("handler cannot be None".to_string()))?;
 
         Ok(TreeChecker {
             _phantom: Default::default(),
@@ -62,14 +62,14 @@ where
 }
 
 #[async_trait::async_trait]
-impl<R, H> ValidatorRule for TreeChecker<R, H>
+impl<R, H> RuleChecker for TreeChecker<R, H>
 where
     R: 'static + LoadedData,
     H: 'static + DataHandler<R>,
 {
     async fn check(&self, _data: &ValidateContractData, _option: &ValidateOption) -> Result<()> {
         // todo
-        Err(ValidatorError::ValidatorValidateError(
+        Err(RuleValidatorError::ValidateError(
             "tree checker not implemented".to_string(),
         ))
     }
