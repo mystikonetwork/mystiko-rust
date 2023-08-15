@@ -16,7 +16,7 @@ use ethers_core::types::{Bytes, U256};
 use ethers_middleware::providers::Middleware;
 use log::{debug, error, info};
 use mystiko_abi::commitment_pool::{G1Point, G2Point, Proof, TransactRequest};
-use mystiko_ethers::provider::pool::ProviderPool;
+use mystiko_ethers::provider::pool::{ProviderPool, Providers};
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{RegisterOptions, TransactRequestData, TransactStatus};
 use mystiko_server_utils::token_price::price::TokenPrice;

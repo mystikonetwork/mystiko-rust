@@ -11,6 +11,12 @@ pub trait ChainProvidersOptions: Debug + Send + Sync {
     async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>>;
 }
 
+#[async_trait]
+pub trait Providers: Debug + Send + Sync {
+    fn get_provider(&self, chain_id: u64) -> Option<Arc<Provider>>;
+    async fn get_or_create_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>>;
+}
+
 #[derive(Debug, TypedBuilder)]
 pub struct ProviderPool {
     chain_providers_options: Box<dyn ChainProvidersOptions>,
@@ -21,25 +27,6 @@ pub struct ProviderPool {
 }
 
 impl ProviderPool {
-    pub fn get_provider(&self, chain_id: u64) -> Option<Arc<Provider>> {
-        self.providers.get(&chain_id).cloned()
-    }
-
-    pub async fn get_or_create_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>> {
-        if let Some(provider) = self.providers.get(&chain_id) {
-            return Ok(provider.clone());
-        }
-        if let Some(providers_options) = self.chain_providers_options.providers_options(chain_id).await? {
-            let provider: Arc<Provider> = Arc::new(self.provider_factory.create_provider(providers_options).await?);
-            self.providers.insert(chain_id, provider.clone());
-            return Ok(provider);
-        }
-        Err(Error::msg(format!(
-            "No provider configuration found for chain id {}",
-            chain_id
-        )))
-    }
-
     pub fn has_provider(&self, chain_id: u64) -> bool {
         self.get_provider(chain_id).is_some()
     }
@@ -65,6 +52,28 @@ impl ProviderPool {
 
     pub fn set_provider_factory(&mut self, provider_factory: Box<dyn ProviderFactory>) {
         self.provider_factory = provider_factory;
+    }
+}
+
+#[async_trait]
+impl Providers for ProviderPool {
+    fn get_provider(&self, chain_id: u64) -> Option<Arc<Provider>> {
+        self.providers.get(&chain_id).cloned()
+    }
+
+    async fn get_or_create_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>> {
+        if let Some(provider) = self.providers.get(&chain_id) {
+            return Ok(provider.clone());
+        }
+        if let Some(providers_options) = self.chain_providers_options.providers_options(chain_id).await? {
+            let provider: Arc<Provider> = Arc::new(self.provider_factory.create_provider(providers_options).await?);
+            self.providers.insert(chain_id, provider.clone());
+            return Ok(provider);
+        }
+        Err(Error::msg(format!(
+            "No provider configuration found for chain id {}",
+            chain_id
+        )))
     }
 }
 

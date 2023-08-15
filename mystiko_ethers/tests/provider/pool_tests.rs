@@ -3,7 +3,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use mockall::{mock, predicate};
 use mystiko_ethers::provider::factory::{Provider, ProviderFactory, ProvidersOptions};
-use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
+use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool, Providers};
 use mystiko_ethers::provider::types::ProviderOptions;
 use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
 use std::sync::Arc;

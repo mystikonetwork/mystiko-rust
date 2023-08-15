@@ -1,4 +1,4 @@
-use crate::provider::pool::ProviderPool;
+use crate::provider::pool::{ProviderPool, Providers};
 use crate::signer::common;
 use anyhow::Result;
 use async_trait::async_trait;

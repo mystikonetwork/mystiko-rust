@@ -13,7 +13,7 @@ use async_trait::async_trait;
 use mystiko_ethers::provider::factory::{
     DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions, HTTP_REGEX, WS_REGEX,
 };
-use mystiko_ethers::provider::pool::ProviderPool;
+use mystiko_ethers::provider::pool::{ProviderPool, Providers};
 use mystiko_ethers::provider::types::ProviderOptions;
 use mystiko_server_utils::token_price::price::TokenPrice;
 use mystiko_storage::formatter::sql::SqlStatementFormatter;

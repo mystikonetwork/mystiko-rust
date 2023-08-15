@@ -5,7 +5,7 @@ use ethers_core::types::{Bytes, TxHash, U256};
 use log::{debug, error, info};
 use mystiko_abi::commitment_pool::{CommitmentPool, TransactRequest};
 use mystiko_ethers::provider::factory::Provider;
-use mystiko_ethers::provider::pool::ProviderPool;
+use mystiko_ethers::provider::pool::{ProviderPool, Providers};
 use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
 use mystiko_relayer_types::{TransactRequestData, TransactStatus};
 use mystiko_server_utils::token_price::price::TokenPrice;
