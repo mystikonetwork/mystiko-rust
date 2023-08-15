@@ -1,12 +1,11 @@
 use crate::data::chain::ChainData;
 use crate::data::types::LoadedData;
-use crate::handler::types::Result;
 use crate::handler::types::{CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption};
+use crate::handler::types::{QueryResult, Result};
 use async_trait::async_trait;
 use mystiko_config::wrapper::contract::ContractConfig;
-use mystiko_protos::data::v1::{Commitment, Nullifier};
+use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
-use std::cmp::min;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -43,41 +42,40 @@ where
     async fn query_commitment(&self, option: &CommitmentQueryOption) -> Result<Option<Commitment>> {
         self.handler.query_commitment(option).await
     }
-    async fn query_commitments(&self, option: &CommitmentQueryOption) -> Result<Vec<Commitment>> {
-        if let Some(contract_loaded_block) = self
-            .query_contract_loaded_block(option.chain_id, &option.contract_address)
-            .await?
-        {
-            let identifier = commitment_cache_identifier(option);
-            let end_block = min(contract_loaded_block, option.end_block);
-            let mut handler_option = CommitmentQueryOption::builder()
-                .chain_id(option.chain_id)
-                .contract_address(option.contract_address.clone())
-                .end_block(end_block)
-                .build();
-            let mut commitments = vec![];
-            if let Some(contract_cache) = self.commitments.read().await.get(&identifier) {
-                if contract_cache.loaded_block >= end_block {
-                    return Ok(filter_commitment(option, contract_cache));
-                }
-                commitments.extend(contract_cache.data.clone());
-                handler_option.start_block = Some(contract_cache.loaded_block + 1);
+    async fn query_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<Vec<Commitment>>> {
+        let identifier = commitment_cache_identifier(option);
+        let mut handler_option = CommitmentQueryOption::builder()
+            .chain_id(option.chain_id)
+            .contract_address(option.contract_address.clone())
+            .end_block(option.end_block)
+            .build();
+        let mut commitments = vec![];
+        if let Some(contract_cache) = self.commitments.read().await.get(&identifier) {
+            if contract_cache.loaded_block >= option.end_block {
+                return Ok(QueryResult::builder()
+                    .end_block(option.end_block)
+                    .result(filter_commitment(option, contract_cache))
+                    .build());
             }
-            commitments.extend(self.handler.query_commitments(&handler_option).await?);
-            commitments.sort_by_key(|c| bytes_to_biguint(&c.commitment_hash));
-            let contract_cache = ContractCache::builder()
-                .loaded_block(end_block)
-                .data(commitments)
-                .build();
-            let result = filter_commitment(option, &contract_cache);
-            self.commitments.write().await.insert(identifier, contract_cache);
-            Ok(result)
-        } else {
-            Ok(vec![])
+            commitments.extend(contract_cache.data.clone());
+            handler_option.start_block = Some(contract_cache.loaded_block + 1);
         }
+        let query_result = self.handler.query_commitments(&handler_option).await?;
+        commitments.extend(query_result.result);
+        commitments.sort_by_key(|c| bytes_to_biguint(&c.commitment_hash));
+        let contract_cache = ContractCache::builder()
+            .loaded_block(query_result.end_block)
+            .data(commitments)
+            .build();
+        let result = filter_commitment(option, &contract_cache);
+        self.commitments.write().await.insert(identifier, contract_cache);
+        Ok(QueryResult::builder()
+            .end_block(query_result.end_block)
+            .result(result)
+            .build())
     }
 
-    async fn count_commitments(&self, option: &CommitmentQueryOption) -> Result<u64> {
+    async fn count_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<u64>> {
         self.handler.count_commitments(option).await
     }
 
@@ -85,11 +83,40 @@ where
         self.handler.query_nullifier(option).await
     }
 
-    async fn query_nullifiers(&self, option: &NullifierQueryOption) -> Result<Vec<Nullifier>> {
-        todo!()
+    async fn query_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<Vec<Nullifier>>> {
+        let identifier = nullifier_cache_identifier(option);
+        let mut handler_option = NullifierQueryOption::builder()
+            .chain_id(option.chain_id)
+            .contract_address(option.contract_address.clone())
+            .end_block(option.end_block)
+            .build();
+        let mut nullifiers = vec![];
+        if let Some(contract_cache) = self.nullifiers.read().await.get(&identifier) {
+            if contract_cache.loaded_block >= option.end_block {
+                return Ok(QueryResult::builder()
+                    .end_block(option.end_block)
+                    .result(filter_nullifier(option, contract_cache))
+                    .build());
+            }
+            nullifiers.extend(contract_cache.data.clone());
+            handler_option.start_block = Some(contract_cache.loaded_block + 1);
+        }
+        let query_result = self.handler.query_nullifiers(&handler_option).await?;
+        nullifiers.extend(query_result.result);
+        nullifiers.sort_by_key(|n| bytes_to_biguint(&n.nullifier));
+        let contract_cache = ContractCache::builder()
+            .loaded_block(query_result.end_block)
+            .data(nullifiers)
+            .build();
+        let result = filter_nullifier(option, &contract_cache);
+        self.nullifiers.write().await.insert(identifier, contract_cache);
+        Ok(QueryResult::builder()
+            .end_block(query_result.end_block)
+            .result(result)
+            .build())
     }
 
-    async fn count_nullifiers(&self, option: &NullifierQueryOption) -> Result<u64> {
+    async fn count_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<u64>> {
         self.handler.count_nullifiers(option).await
     }
 
@@ -132,16 +159,26 @@ fn nullifier_cache_identifier(options: &NullifierQueryOption) -> String {
 fn filter_commitment(options: &CommitmentQueryOption, cache: &ContractCache<Commitment>) -> Vec<Commitment> {
     let mut commitments = vec![];
     for commitment in cache.data.iter() {
-        if commitment.block_number > options.end_block {
-            break;
-        }
-        if let Some(start_block) = options.start_block {
-            if commitment.block_number < start_block {
-                continue;
-            }
-        }
+        let mut block_number = commitment.block_number;
         if let Some(status) = options.status {
             if commitment.status != status as i32 {
+                continue;
+            }
+            match status {
+                CommitmentStatus::SrcSucceeded => {
+                    block_number = commitment.src_chain_block_number.unwrap_or(block_number);
+                }
+                CommitmentStatus::Included => {
+                    block_number = commitment.included_block_number.unwrap_or(block_number);
+                }
+                _ => {}
+            }
+        }
+        if block_number > options.end_block {
+            continue;
+        }
+        if let Some(start_block) = options.start_block {
+            if block_number < start_block {
                 continue;
             }
         }
