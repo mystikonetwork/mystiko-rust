@@ -228,5 +228,3 @@ fn build_log_options(data_type: &DataType, opt: &FetcherLogOptions) -> String {
         data_type, opt.chain_id, opt.address, opt.start_block, opt.end_block
     )
 }
-
-
