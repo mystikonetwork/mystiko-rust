@@ -25,11 +25,14 @@ jobs:
           components: rustfmt, clippy, llvm-tools-preview
 
       - name: Setup MySql
-        uses: mirromutth/mysql-action@v1.1
-        with:
-          mysql version: '8.0'
-          mysql database: 'mystiko_rust_tests'
-          mysql root password: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        id: setup_mysql
+        run: |
+          docker run -d \
+            --name mystiko-rust-mysql \
+            -e MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
+            -e MYSQL_DATABASE="mystiko_rust_tests" \
+            -p 3306:3306 \
+            mysql:8
 
       - name: Setup Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -80,6 +83,10 @@ jobs:
 
       - name: Check Dirty Files
         run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
+
+      - name: Stop Mysql
+        if: ${{ steps.setup_mysql.conclusion == 'success' }}
+        run: docker rm -f mystiko-rust-mysql
 
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
