@@ -24,7 +24,7 @@ pub mod transact_channel {
     use mystiko_ethers::provider::factory::{
         DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions, HTTP_REGEX, WS_REGEX,
     };
-    use mystiko_ethers::provider::pool::ProviderPool;
+    use mystiko_ethers::provider::pool::{ProviderPool, Providers};
     use mystiko_ethers::provider::types::ProviderOptions;
     use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
     use mystiko_relayer_types::TransactRequestData;
