@@ -116,15 +116,14 @@ fn build_contract_result<R: LoadedData>(
                     .build();
                 info!(
                     "{} fetch {} commitments and {} nullifiers",
-                    build_log_options(
-                        &DataType::Full,
-                        &FetcherLogOptions::builder()
-                            .address(contract_response.contract_address.to_string())
-                            .chain_id(chain_id)
-                            .start_block(contract_response.start_block)
-                            .end_block(contract_response.actual_end_block)
-                            .build()
-                    ),
+                    FetcherLogOptions::builder()
+                        .address(contract_response.contract_address.to_string())
+                        .chain_id(chain_id)
+                        .start_block(contract_response.start_block)
+                        .end_block(contract_response.actual_end_block)
+                        .data_type(DataType::Full)
+                        .build()
+                        .to_string(),
                     fulldata.commitments.len(),
                     fulldata.nullifiers.len()
                 );
@@ -136,15 +135,14 @@ fn build_contract_result<R: LoadedData>(
                     .build();
                 info!(
                     "{} fetch {} commitments",
-                    build_log_options(
-                        &DataType::Lite,
-                        &FetcherLogOptions::builder()
-                            .address(contract_response.contract_address.to_string())
-                            .chain_id(chain_id)
-                            .start_block(contract_response.start_block)
-                            .end_block(contract_response.actual_end_block)
-                            .build()
-                    ),
+                    FetcherLogOptions::builder()
+                        .address(contract_response.contract_address.to_string())
+                        .chain_id(chain_id)
+                        .start_block(contract_response.start_block)
+                        .end_block(contract_response.actual_end_block)
+                        .data_type(DataType::Lite)
+                        .build()
+                        .to_string(),
                     litedata.commitments.len()
                 );
                 R::from_data(Data::Lite(litedata))
@@ -220,11 +218,4 @@ fn convert_status(commitment_status: &IndexerCommitmentStatus) -> CommitmentStat
         IndexerCommitmentStatus::Succeeded => CommitmentStatus::Included,
         IndexerCommitmentStatus::Failed => CommitmentStatus::Unspecified,
     }
-}
-
-fn build_log_options(data_type: &DataType, opt: &FetcherLogOptions) -> String {
-    format!(
-        "IndexerFetcher[type={:?}, chain_id={}, address={}, from_block={}, to_block={}]",
-        data_type, opt.chain_id, opt.address, opt.start_block, opt.end_block
-    )
 }
