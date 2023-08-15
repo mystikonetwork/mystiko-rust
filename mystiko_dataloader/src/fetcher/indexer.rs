@@ -15,6 +15,7 @@ use hex::FromHexError;
 use log::info;
 use mystiko_indexer_client::client::IndexerClient;
 use mystiko_indexer_client::types::commitment::CommitmentForDataLoader;
+use mystiko_indexer_client::types::commitment::CommitmentStatus as IndexerCommitmentStatus;
 use mystiko_indexer_client::types::commitment::ContractResultDataResponse;
 use mystiko_indexer_client::types::commitment_spent::{DataLoaderRequest, NullifierForDataLoader};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
@@ -22,6 +23,14 @@ use mystiko_utils::convert::biguint_str_to_bytes;
 use mystiko_utils::hex::decode_hex;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
+
+#[derive(Error, Debug)]
+pub enum IndexerFetcherError {
+    #[error("fetcher contract with error {0}")]
+    ContractResultError(String),
+    #[error(transparent)]
+    FromHexError(#[from] FromHexError),
+}
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
@@ -153,7 +162,7 @@ fn build_contract_result<R: LoadedData>(
 fn sort_commitments(commitment_resp: &[CommitmentForDataLoader]) -> Result<Vec<Commitment>> {
     let mut commitments = commitment_resp
         .iter()
-        .map(|commit| -> Result<Commitment> {
+        .map(|commit| {
             Ok(Commitment::builder()
                 .commitment_hash(biguint_str_to_bytes(&commit.commitment_hash)?)
                 .status(convert_status(&commit.status))
@@ -165,7 +174,7 @@ fn sort_commitments(commitment_resp: &[CommitmentForDataLoader]) -> Result<Vec<C
                     commit
                         .rollup_fee
                         .as_ref()
-                        .map(|rf| -> Result<Vec<u8>> { biguint_str_to_bytes(rf) })
+                        .map(|rf| biguint_str_to_bytes(rf))
                         .transpose()?,
                 )
                 .encrypted_note(decode_hex_str_opt(commit.encrypted_note.as_ref())?)
@@ -183,7 +192,7 @@ fn sort_nullifiers(nullifiers_resp_opt: Option<&Vec<NullifierForDataLoader>>) ->
     nullifiers_resp_opt.map_or(Ok(Vec::new()), |nullifiers_resp| {
         let mut nullifiers = nullifiers_resp
             .iter()
-            .map(|nullifier| -> Result<Nullifier> {
+            .map(|nullifier| {
                 Ok(Nullifier::builder()
                     .block_number(nullifier.block_number)
                     .transaction_hash(decode_hex_str(&nullifier.transaction_hash)?)
@@ -201,17 +210,15 @@ fn decode_hex_str(hex: &str) -> Result<Vec<u8>> {
 }
 
 fn decode_hex_str_opt(hex_str_opt: Option<&String>) -> Result<Option<Vec<u8>>> {
-    hex_str_opt
-        .map(|hs| -> Result<Vec<u8>> { decode_hex_str(hs) })
-        .transpose()
+    hex_str_opt.map(|hs| decode_hex_str(hs)).transpose()
 }
 
-fn convert_status(commitment_status: &mystiko_indexer_client::types::commitment::CommitmentStatus) -> CommitmentStatus {
+fn convert_status(commitment_status: &IndexerCommitmentStatus) -> CommitmentStatus {
     match commitment_status {
-        mystiko_indexer_client::types::commitment::CommitmentStatus::SrcSucceeded => CommitmentStatus::SrcSucceeded,
-        mystiko_indexer_client::types::commitment::CommitmentStatus::Queued => CommitmentStatus::Queued,
-        mystiko_indexer_client::types::commitment::CommitmentStatus::Succeeded => CommitmentStatus::Included,
-        mystiko_indexer_client::types::commitment::CommitmentStatus::Failed => CommitmentStatus::Unspecified,
+        IndexerCommitmentStatus::SrcSucceeded => CommitmentStatus::SrcSucceeded,
+        IndexerCommitmentStatus::Queued => CommitmentStatus::Queued,
+        IndexerCommitmentStatus::Succeeded => CommitmentStatus::Included,
+        IndexerCommitmentStatus::Failed => CommitmentStatus::Unspecified,
     }
 }
 
@@ -222,10 +229,4 @@ fn build_log_options(data_type: &DataType, opt: &FetcherLogOptions) -> String {
     )
 }
 
-#[derive(Error, Debug)]
-pub enum IndexerFetcherError {
-    #[error("fetcher contract with error {0}")]
-    ContractResultError(String),
-    #[error(transparent)]
-    FromHexError(#[from] FromHexError),
-}
+

@@ -351,7 +351,6 @@ async fn test_litedata_fetch() {
         .contract_options(Some(contract_fetch_option))
         .build();
     let fetch_results1 = indexer_fetcher.fetch(&fetch_options).await;
-    dbg!(&fetch_results1);
     assert!(fetch_results1.is_ok());
     let result1 = fetch_results1.unwrap();
     assert_eq!(result1.chain_id, test_chain_id);
