@@ -1,10 +1,10 @@
 use async_trait::async_trait;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
 use mystiko_config::wrapper::contract::ContractConfig;
-use mystiko_dataloader::data::chain::ChainData;
-use mystiko_dataloader::data::types::{FullData, LoadedData};
-use mystiko_dataloader::handler::error::HandlerError;
-use mystiko_dataloader::handler::types::{
+use mystiko_dataloader::data::ChainData;
+use mystiko_dataloader::data::{FullData, LoadedData};
+use mystiko_dataloader::handler::HandlerError;
+use mystiko_dataloader::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
 use mystiko_dataloader::validator::rule::counter::CounterChecker;

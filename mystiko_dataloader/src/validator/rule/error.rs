@@ -1,4 +1,4 @@
-use crate::handler::error::HandlerError;
+use crate::handler::HandlerError;
 use anyhow::Error as AnyhowError;
 use ethers_contract::ContractError;
 use mystiko_ethers::provider::factory::Provider;

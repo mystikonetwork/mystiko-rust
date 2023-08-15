@@ -3634,6 +3634,7 @@ dependencies = [
  "mystiko_config",
  "mystiko_ethers",
  "mystiko_etherscan_client",
+ "mystiko_fs",
  "mystiko_indexer_client",
  "mystiko_protos",
  "mystiko_types",

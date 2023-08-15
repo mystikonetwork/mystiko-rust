@@ -1,8 +1,8 @@
-use crate::data::chain::ChainData;
-use crate::data::contract::ContractData;
-use crate::data::result::{ChainResult, ContractResult};
-use crate::data::types::{DataRef, FullData, LiteData, LoadedData};
-use crate::handler::types::{CommitmentQueryOption, DataHandler};
+use crate::data::ChainData;
+use crate::data::ContractData;
+use crate::data::{ChainResult, ContractResult};
+use crate::data::{DataRef, FullData, LiteData, LoadedData};
+use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::data::{ValidateCommitment, ValidateContractData, ValidateNullifier};
 use crate::validator::rule::error::{Result, RuleValidatorError};

@@ -1,9 +1,9 @@
 use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
 use ethers_core::types::Bytes;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_dataloader::data::chain::ChainData;
-use mystiko_dataloader::data::contract::ContractData;
-use mystiko_dataloader::data::types::FullData;
+use mystiko_dataloader::data::ChainData;
+use mystiko_dataloader::data::ContractData;
+use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::str::FromStr;

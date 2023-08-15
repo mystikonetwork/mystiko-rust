@@ -1,5 +1,5 @@
-use crate::data::types::LoadedData;
-use crate::handler::types::{CommitmentQueryOption, DataHandler};
+use crate::data::LoadedData;
+use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::data::ValidateContractData;
 use crate::validator::rule::error::{Result, RuleValidatorError};

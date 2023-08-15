@@ -27,18 +27,9 @@ thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.26.0", features = ["sync"] }
 typed-builder = { version = "0.14.0" }
 
-mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
-mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
-mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos" }
-mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
-
 [dev-dependencies]
 env_logger = { version = "0.10.0" }
 mockall = { version = "0.11.4" }
 mockito = { version = "0.32.4" }
-futures = { version = "0.3.28" }
-serde = { version = "1.0.152" }
-serde_json = { version = "1.0.91", features = ["preserve_order"] }
 mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
 
