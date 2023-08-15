@@ -1,11 +1,11 @@
 use log::LevelFilter;
 use mockito::*;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_dataloader::data::types::FullData;
-use mystiko_dataloader::data::types::LiteData;
-use mystiko_dataloader::fetcher::types::ContractFetchOptions;
-use mystiko_dataloader::fetcher::types::FetchOptions;
-use mystiko_dataloader::fetcher::{indexer::IndexerFetcher, types::DataFetcher};
+use mystiko_dataloader::data::FullData;
+use mystiko_dataloader::data::LiteData;
+use mystiko_dataloader::fetcher::ContractFetchOptions;
+use mystiko_dataloader::fetcher::FetchOptions;
+use mystiko_dataloader::fetcher::{indexer::IndexerFetcher, DataFetcher};
 use mystiko_indexer_client::builder::IndexerClientBuilder;
 use mystiko_indexer_client::types::commitment_spent::DataLoaderRequest;
 use mystiko_utils::convert::biguint_str_to_bytes;

@@ -1,7 +1,7 @@
-use crate::data::chain::ChainData;
-use crate::data::types::LoadedData;
-use crate::handler::types::{CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption};
-use crate::handler::types::{QueryResult, Result};
+use crate::data::ChainData;
+use crate::data::LoadedData;
+use crate::handler::{CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption};
+use crate::handler::{QueryResult, Result};
 use async_trait::async_trait;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
@@ -13,7 +13,7 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug)]
 pub struct CachedDataHandler<R: LoadedData, H = Box<dyn DataHandler<R>>> {
-    handler: Arc<H>,
+    pub raw: Arc<H>,
     commitments: RwLock<HashMap<String, ContractCache<Commitment>>>,
     nullifiers: RwLock<HashMap<String, ContractCache<Nullifier>>>,
     _phantom: std::marker::PhantomData<R>,
@@ -26,21 +26,19 @@ where
     H: DataHandler<R>,
 {
     async fn query_loading_contracts(&self, chain_id: u64) -> Result<Option<Vec<ContractConfig>>> {
-        self.handler.query_loading_contracts(chain_id).await
+        self.raw.query_loading_contracts(chain_id).await
     }
 
     async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<Option<u64>> {
-        self.handler.query_chain_loaded_block(chain_id).await
+        self.raw.query_chain_loaded_block(chain_id).await
     }
 
     async fn query_contract_loaded_block(&self, chain_id: u64, contract_address: &str) -> Result<Option<u64>> {
-        self.handler
-            .query_contract_loaded_block(chain_id, contract_address)
-            .await
+        self.raw.query_contract_loaded_block(chain_id, contract_address).await
     }
 
     async fn query_commitment(&self, option: &CommitmentQueryOption) -> Result<Option<Commitment>> {
-        self.handler.query_commitment(option).await
+        self.raw.query_commitment(option).await
     }
     async fn query_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<Vec<Commitment>>> {
         let identifier = commitment_cache_identifier(option);
@@ -60,7 +58,7 @@ where
             commitments.extend(contract_cache.data.clone());
             handler_option.start_block = Some(contract_cache.loaded_block + 1);
         }
-        let query_result = self.handler.query_commitments(&handler_option).await?;
+        let query_result = self.raw.query_commitments(&handler_option).await?;
         commitments.extend(query_result.result);
         commitments.sort_by_key(|c| bytes_to_biguint(&c.commitment_hash));
         let contract_cache = ContractCache::builder()
@@ -76,11 +74,11 @@ where
     }
 
     async fn count_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<u64>> {
-        self.handler.count_commitments(option).await
+        self.raw.count_commitments(option).await
     }
 
     async fn query_nullifier(&self, option: &NullifierQueryOption) -> Result<Option<Nullifier>> {
-        self.handler.query_nullifier(option).await
+        self.raw.query_nullifier(option).await
     }
 
     async fn query_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<Vec<Nullifier>>> {
@@ -101,7 +99,7 @@ where
             nullifiers.extend(contract_cache.data.clone());
             handler_option.start_block = Some(contract_cache.loaded_block + 1);
         }
-        let query_result = self.handler.query_nullifiers(&handler_option).await?;
+        let query_result = self.raw.query_nullifiers(&handler_option).await?;
         nullifiers.extend(query_result.result);
         nullifiers.sort_by_key(|n| bytes_to_biguint(&n.nullifier));
         let contract_cache = ContractCache::builder()
@@ -117,11 +115,11 @@ where
     }
 
     async fn count_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<u64>> {
-        self.handler.count_nullifiers(option).await
+        self.raw.count_nullifiers(option).await
     }
 
     async fn handle(&self, data: &ChainData<R>, option: &HandleOption) -> HandleResult {
-        self.handler.handle(data, option).await
+        self.raw.handle(data, option).await
     }
 }
 
@@ -132,7 +130,7 @@ where
 {
     pub fn new(handler: Arc<H>) -> Self {
         Self {
-            handler,
+            raw: handler,
             commitments: RwLock::default(),
             nullifiers: RwLock::default(),
             _phantom: Default::default(),
@@ -198,7 +196,7 @@ fn filter_nullifier(options: &NullifierQueryOption, cache: &ContractCache<Nullif
     let mut nullifiers = vec![];
     for nullifier in cache.data.iter() {
         if nullifier.block_number > options.end_block {
-            break;
+            continue;
         }
         if let Some(start_block) = options.start_block {
             if nullifier.block_number < start_block {

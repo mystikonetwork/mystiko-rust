@@ -2,9 +2,9 @@ use crate::loader::loader_mock::{
     contract_data_partial_eq, create_shared_loader, events_check, loader_run, LoaderRunType,
 };
 use ethers_core::types::U64;
-use mystiko_dataloader::data::chain::ChainData;
-use mystiko_dataloader::data::contract::ContractData;
-use mystiko_dataloader::data::result::{ChainResult, ContractResult};
+use mystiko_dataloader::data::ChainData;
+use mystiko_dataloader::data::ContractData;
+use mystiko_dataloader::data::{ChainResult, ContractResult};
 use std::collections::HashSet;
 
 #[tokio::test]

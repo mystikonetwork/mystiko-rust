@@ -3,19 +3,19 @@ use ethers_core::types::U64;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_dataloader::data::chain::ChainData;
-use mystiko_dataloader::data::contract::ContractData;
-use mystiko_dataloader::data::result::{ChainResult, ContractResult};
-use mystiko_dataloader::data::types::{FullData, LoadedData};
-use mystiko_dataloader::fetcher::types::{DataFetcher, FetchOptions, FetchResult};
-use mystiko_dataloader::handler::error::HandlerError;
-use mystiko_dataloader::handler::types::{
+use mystiko_dataloader::data::ChainData;
+use mystiko_dataloader::data::ContractData;
+use mystiko_dataloader::data::{ChainResult, ContractResult};
+use mystiko_dataloader::data::{FullData, LoadedData};
+use mystiko_dataloader::fetcher::{DataFetcher, FetchOptions, FetchResult};
+use mystiko_dataloader::handler::HandlerError;
+use mystiko_dataloader::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
-use mystiko_dataloader::loader::chain::{ChainDataLoader, ChainDataLoaderBuilder};
-use mystiko_dataloader::loader::listener::{LoaderEvent, LoaderListener};
-use mystiko_dataloader::loader::types::{LoadOption, ScheduleOption};
-use mystiko_dataloader::validator::types::{DataValidator, ValidateOption, ValidateResult};
+use mystiko_dataloader::loader::{ChainDataLoader, ChainDataLoaderBuilder};
+use mystiko_dataloader::loader::{LoadOption, ScheduleOption};
+use mystiko_dataloader::loader::{LoaderEvent, LoaderListener};
+use mystiko_dataloader::validator::{DataValidator, ValidateOption, ValidateResult};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
@@ -216,17 +216,6 @@ where
             .collect::<Vec<_>>();
 
         *self.contracts.write().await = c;
-    }
-
-    pub async fn set_chain_loaded_blocks_error(&self, b_error: bool) {
-        *self.chain_loaded_blocks_error.write().await = b_error;
-    }
-
-    pub async fn set_contract_loaded_blocks_error(&self, contract_address: &str, b_error: bool) {
-        self.contract_loaded_blocks_error
-            .write()
-            .await
-            .insert(contract_address.to_string(), b_error);
     }
 
     pub async fn set_all_success(&self) {

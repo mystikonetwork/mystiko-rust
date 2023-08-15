@@ -1,1 +1,1 @@
-pub mod indexer_tests;
+mod indexer_tests;
