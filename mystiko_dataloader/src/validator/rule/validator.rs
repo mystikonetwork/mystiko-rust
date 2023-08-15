@@ -3,9 +3,6 @@ use crate::data::contract::ContractData;
 use crate::data::result::{ChainResult, ContractResult};
 use crate::data::types::{DataRef, FullData, LiteData, LoadedData};
 use crate::handler::types::{CommitmentQueryOption, DataHandler};
-use crate::validator::rule::checker::counter::CounterChecker;
-use crate::validator::rule::checker::sequence::SequenceChecker;
-use crate::validator::rule::checker::tree::TreeChecker;
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::data::{ValidateCommitment, ValidateContractData, ValidateNullifier};
 use crate::validator::rule::error::{Result, RuleValidatorError};
@@ -17,33 +14,27 @@ use mystiko_utils::convert::bytes_to_biguint;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub enum RuleCheckerType {
-    Sequence,
-    Counter,
-    Tree,
-}
-
 #[derive(Debug, TypedBuilder)]
-pub struct RuleValidatorInitParam<R, H = Box<dyn DataHandler<R>>> {
+pub struct RuleValidatorInitParam<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker>> {
     pub provider: Arc<Provider>,
     pub handler: Arc<H>,
-    pub rules: Vec<RuleCheckerType>,
+    pub rules: Vec<Arc<L>>,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
 
-pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>> {
+pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker>> {
     handler: Arc<H>,
-    rules: Vec<Box<dyn RuleChecker>>,
+    rules: Vec<Arc<L>>,
     _phantom: std::marker::PhantomData<R>,
 }
 
 #[async_trait]
-impl<R, H> DataValidator<R> for RuleValidator<R, H>
+impl<R, H, L> DataValidator<R> for RuleValidator<R, H, L>
 where
-    R: 'static + LoadedData,
-    H: 'static + DataHandler<R>,
+    R: LoadedData,
+    H: DataHandler<R>,
+    L: RuleChecker,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
         if data.contracts_data.is_empty() {
@@ -65,40 +56,16 @@ where
     }
 }
 
-impl<R, H> RuleValidator<R, H>
+impl<R, H, L> RuleValidator<R, H, L>
 where
-    R: 'static + LoadedData,
-    H: 'static + DataHandler<R>,
+    R: LoadedData,
+    H: DataHandler<R>,
+    L: RuleChecker,
 {
-    pub fn new(param: &RuleValidatorInitParam<R, H>) -> RuleValidator<R, H> {
-        let rules = param
-            .rules
-            .iter()
-            .map(|r| match r {
-                RuleCheckerType::Sequence => {
-                    let checker = SequenceChecker::builder().handler(param.handler.clone()).build();
-                    Box::new(checker) as Box<dyn RuleChecker>
-                }
-                RuleCheckerType::Counter => {
-                    let checker = CounterChecker::builder()
-                        .provider(param.provider.clone())
-                        .handler(param.handler.clone())
-                        .build();
-                    Box::new(checker) as Box<dyn RuleChecker>
-                }
-                RuleCheckerType::Tree => {
-                    let checker = TreeChecker::builder()
-                        .provider(param.provider.clone())
-                        .handler(param.handler.clone())
-                        .build();
-                    Box::new(checker) as Box<dyn RuleChecker>
-                }
-            })
-            .collect::<Vec<_>>();
-
+    pub fn new(param: &RuleValidatorInitParam<R, H, L>) -> RuleValidator<R, H, L> {
         RuleValidator {
             handler: param.handler.clone(),
-            rules,
+            rules: param.rules.clone(),
             _phantom: std::marker::PhantomData,
         }
     }

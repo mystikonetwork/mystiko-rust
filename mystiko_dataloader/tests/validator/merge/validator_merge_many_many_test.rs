@@ -1,9 +1,8 @@
-use crate::validator::validator_mock::{create_full_data_validator, load_commitments};
+use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::chain::ChainData;
 use mystiko_dataloader::data::contract::ContractData;
 use mystiko_dataloader::data::types::FullData;
-use mystiko_dataloader::validator::rule::RuleCheckerType;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 

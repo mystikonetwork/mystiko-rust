@@ -7,8 +7,10 @@ use mystiko_dataloader::handler::error::HandlerError;
 use mystiko_dataloader::handler::types::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
-use mystiko_dataloader::validator::rule::RuleCheckerType;
-use mystiko_dataloader::validator::rule::{RuleValidator, RuleValidatorInitParam};
+use mystiko_dataloader::validator::rule::counter::CounterChecker;
+use mystiko_dataloader::validator::rule::sequence::SequenceChecker;
+use mystiko_dataloader::validator::rule::tree::TreeChecker;
+use mystiko_dataloader::validator::rule::{RuleChecker, RuleValidator, RuleValidatorInitParam};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
@@ -152,6 +154,12 @@ fn create_mock_provider(provider: &MockProvider) -> Provider {
     Provider::new(ProviderWrapper::new(Box::new(provider_builder.build())))
 }
 
+pub enum RuleCheckerType {
+    Sequence,
+    Counter,
+    Tree,
+}
+
 type FullDataRuleValidator = RuleValidator<FullData, MockHandler<FullData>>;
 
 pub fn create_full_data_validator(
@@ -169,11 +177,35 @@ pub fn create_full_data_validator(
             RuleCheckerType::Tree,
         ],
     };
+
+    let rules = rule_types
+        .iter()
+        .map(|t| match t {
+            RuleCheckerType::Sequence => {
+                let checker = SequenceChecker::builder().handler(handler.clone()).build();
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+            }
+            RuleCheckerType::Counter => {
+                let checker = CounterChecker::builder()
+                    .provider(provider.clone())
+                    .handler(handler.clone())
+                    .build();
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+            }
+            RuleCheckerType::Tree => {
+                let checker = TreeChecker::builder()
+                    .provider(provider.clone())
+                    .handler(handler.clone())
+                    .build();
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+            }
+        })
+        .collect::<Vec<_>>();
     let validator = RuleValidator::new(
         &RuleValidatorInitParam::builder()
             .provider(provider.clone())
             .handler(handler.clone())
-            .rules(rule_types)
+            .rules(rules)
             .build(),
     );
 
