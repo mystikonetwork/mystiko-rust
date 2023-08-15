@@ -16,8 +16,8 @@ fn test_wrappers() {
         .included_transaction_hash(Some(decode_hex("0xbeef").unwrap()))
         .src_chain_transaction_hash(Some(decode_hex("0xfeed").unwrap()))
         .build();
-    assert_eq!(commitment.commitment_hash_as_bigint(), BigUint::from(1234_u32));
-    assert_eq!(commitment.rollup_fee_as_bigint(), Some(BigUint::from(5678_u32)));
+    assert_eq!(commitment.commitment_hash_as_biguint(), BigUint::from(1234_u32));
+    assert_eq!(commitment.rollup_fee_as_biguint(), Some(BigUint::from(5678_u32)));
     assert_eq!(commitment.queued_transaction_hash_as_hex(), Some("0xdead".to_string()));
     assert_eq!(
         commitment.included_transaction_hash_as_hex(),

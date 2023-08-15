@@ -25,31 +25,31 @@ fn test_wrappers() {
         .gas_relayer_fee_amount(Some(biguint_to_bytes(&BigUint::from(1000003_u32))))
         .random_auditing_public_key(Some(biguint_to_bytes(&BigUint::from(1000004_u32))))
         .build();
-    assert_eq!(transaction.root_hash_as_bigint(), BigUint::from(1234_u32));
+    assert_eq!(transaction.root_hash_as_biguint(), BigUint::from(1234_u32));
     assert_eq!(
-        transaction.input_commitments_as_bigint(),
+        transaction.input_commitments_as_biguint(),
         vec![BigUint::from(5678_u32), BigUint::from(7890_u32)]
     );
     assert_eq!(
-        transaction.output_commitments_as_bigint().unwrap(),
+        transaction.output_commitments_as_biguint().unwrap(),
         vec![BigUint::from(10001_u32), BigUint::from(10002_u32)]
     );
     assert_eq!(
-        transaction.nullifiers_as_bigint().unwrap(),
+        transaction.nullifiers_as_biguint().unwrap(),
         vec![BigUint::from(9999_u32), BigUint::from(9998_u32)]
     );
-    assert_eq!(transaction.amount_as_bigint(), BigUint::from(1000000_u32));
-    assert_eq!(transaction.public_amount_as_bigint(), BigUint::from(1000001_u32));
+    assert_eq!(transaction.amount_as_biguint(), BigUint::from(1000000_u32));
+    assert_eq!(transaction.public_amount_as_biguint(), BigUint::from(1000001_u32));
     assert_eq!(
-        transaction.rollup_fee_amount_as_bigint(),
+        transaction.rollup_fee_amount_as_biguint(),
         Some(BigUint::from(1000002_u32))
     );
     assert_eq!(
-        transaction.gas_relayer_fee_amount_as_bigint(),
+        transaction.gas_relayer_fee_amount_as_biguint(),
         Some(BigUint::from(1000003_u32))
     );
     assert_eq!(
-        transaction.random_auditing_public_key_as_bigint(),
+        transaction.random_auditing_public_key_as_biguint(),
         Some(BigUint::from(1000004_u32))
     );
     let transaction_bytes = transaction.encode_to_vec();

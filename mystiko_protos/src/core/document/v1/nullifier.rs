@@ -3,7 +3,7 @@ use mystiko_utils::convert::bytes_to_biguint;
 use num_bigint::BigUint;
 
 impl Nullifier {
-    pub fn nullifier_as_bigint(&self) -> BigUint {
+    pub fn nullifier_as_biguint(&self) -> BigUint {
         bytes_to_biguint(&self.nullifier)
     }
 }

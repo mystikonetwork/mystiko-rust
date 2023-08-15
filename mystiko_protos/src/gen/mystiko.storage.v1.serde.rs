@@ -1,4 +1,115 @@
 // @generated
+impl serde::Serialize for BigInt {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.is_positive {
+            len += 1;
+        }
+        if !self.value.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.storage.v1.BigInt", len)?;
+        if self.is_positive {
+            struct_ser.serialize_field("isPositive", &self.is_positive)?;
+        }
+        if !self.value.is_empty() {
+            struct_ser.serialize_field("value", pbjson::private::base64::encode(&self.value).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for BigInt {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "is_positive",
+            "isPositive",
+            "value",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            IsPositive,
+            Value,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "isPositive" | "is_positive" => Ok(GeneratedField::IsPositive),
+                            "value" => Ok(GeneratedField::Value),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = BigInt;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.storage.v1.BigInt")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<BigInt, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut is_positive__ = None;
+                let mut value__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::IsPositive => {
+                            if is_positive__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("isPositive"));
+                            }
+                            is_positive__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::Value => {
+                            if value__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("value"));
+                            }
+                            value__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(BigInt {
+                    is_positive: is_positive__.unwrap_or_default(),
+                    value: value__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.storage.v1.BigInt", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for ColumnValue {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -35,7 +146,7 @@ impl serde::Serialize for ColumnValue {
                     struct_ser.serialize_field("i128Value", pbjson::private::base64::encode(&v).as_str())?;
                 }
                 column_value::Value::IsizeValue(v) => {
-                    struct_ser.serialize_field("isizeValue", v)?;
+                    struct_ser.serialize_field("isizeValue", ToString::to_string(&v).as_str())?;
                 }
                 column_value::Value::U8Value(v) => {
                     struct_ser.serialize_field("u8Value", v)?;
@@ -53,7 +164,7 @@ impl serde::Serialize for ColumnValue {
                     struct_ser.serialize_field("u128Value", pbjson::private::base64::encode(&v).as_str())?;
                 }
                 column_value::Value::UsizeValue(v) => {
-                    struct_ser.serialize_field("usizeValue", v)?;
+                    struct_ser.serialize_field("usizeValue", ToString::to_string(&v).as_str())?;
                 }
                 column_value::Value::F32Value(v) => {
                     struct_ser.serialize_field("f32Value", v)?;
@@ -65,10 +176,10 @@ impl serde::Serialize for ColumnValue {
                     struct_ser.serialize_field("stringValue", v)?;
                 }
                 column_value::Value::BigIntValue(v) => {
-                    struct_ser.serialize_field("bigIntValue", ToString::to_string(&v).as_str())?;
+                    struct_ser.serialize_field("bigIntValue", v)?;
                 }
                 column_value::Value::BigUintValue(v) => {
-                    struct_ser.serialize_field("bigUintValue", ToString::to_string(&v).as_str())?;
+                    struct_ser.serialize_field("bigUintValue", pbjson::private::base64::encode(&v).as_str())?;
                 }
                 column_value::Value::JsonValue(v) => {
                     struct_ser.serialize_field("jsonValue", v)?;
@@ -318,13 +429,14 @@ impl<'de> serde::Deserialize<'de> for ColumnValue {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("bigIntValue"));
                             }
-                            value__ = map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| column_value::Value::BigIntValue(x.0));
+                            value__ = map.next_value::<::std::option::Option<_>>()?.map(column_value::Value::BigIntValue)
+;
                         }
                         GeneratedField::BigUintValue => {
                             if value__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("bigUintValue"));
                             }
-                            value__ = map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| column_value::Value::BigUintValue(x.0));
+                            value__ = map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| column_value::Value::BigUintValue(x.0));
                         }
                         GeneratedField::JsonValue => {
                             if value__.is_some() {

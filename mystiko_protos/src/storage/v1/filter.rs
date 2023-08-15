@@ -1,4 +1,7 @@
+use crate::storage;
 use crate::storage::v1::{ColumnValue, Condition, ConditionOperator, QueryFilter, SubFilter, SubFilterOperator};
+use num_bigint::BigInt;
+use num_traits::Signed;
 
 impl SubFilter {
     pub fn is_null<C: ToString>(column: C) -> Self {
@@ -177,6 +180,17 @@ impl From<(Vec<Condition>, ConditionOperator)> for QueryFilter {
         QueryFilter::builder()
             .conditions(conditions)
             .conditions_operator(operator)
+            .build()
+    }
+}
+
+impl From<BigInt> for storage::v1::BigInt {
+    fn from(value: BigInt) -> Self {
+        let is_positive = value.is_positive();
+        let (_, value) = value.to_bytes_le();
+        storage::v1::BigInt::builder()
+            .is_positive(is_positive)
+            .value(value)
             .build()
     }
 }

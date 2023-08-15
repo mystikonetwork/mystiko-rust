@@ -18,14 +18,14 @@ fn test_wrappers() {
         .executor_fee_amount(Some(biguint_to_bytes(&BigUint::from(10003_u32))))
         .service_fee_amount(Some(biguint_to_bytes(&BigUint::from(10004_u32))))
         .build();
-    assert_eq!(deposit.commitment_hash_as_bigint(), BigUint::from(1234_u32));
-    assert_eq!(deposit.hash_k_as_bigint(), BigUint::from(5678_u32));
-    assert_eq!(deposit.random_s_as_bigint(), BigUint::from(9999_u32));
-    assert_eq!(deposit.amount_as_bigint(), BigUint::from(1000000_u32));
-    assert_eq!(deposit.rollup_fee_amount_as_bigint(), BigUint::from(10001_u32));
-    assert_eq!(deposit.bridge_fee_amount_as_bigint(), Some(BigUint::from(10002_u32)));
-    assert_eq!(deposit.executor_fee_amount_as_bigint(), Some(BigUint::from(10003_u32)));
-    assert_eq!(deposit.service_fee_amount_as_bigint(), Some(BigUint::from(10004_u32)));
+    assert_eq!(deposit.commitment_hash_as_biguint(), BigUint::from(1234_u32));
+    assert_eq!(deposit.hash_k_as_biguint(), BigUint::from(5678_u32));
+    assert_eq!(deposit.random_s_as_biguint(), BigUint::from(9999_u32));
+    assert_eq!(deposit.amount_as_biguint(), BigUint::from(1000000_u32));
+    assert_eq!(deposit.rollup_fee_amount_as_biguint(), BigUint::from(10001_u32));
+    assert_eq!(deposit.bridge_fee_amount_as_biguint(), Some(BigUint::from(10002_u32)));
+    assert_eq!(deposit.executor_fee_amount_as_biguint(), Some(BigUint::from(10003_u32)));
+    assert_eq!(deposit.service_fee_amount_as_biguint(), Some(BigUint::from(10004_u32)));
     let deposit_bytes = deposit.encode_to_vec();
     let deposit_json = serde_json::to_string(&deposit).unwrap();
     assert_eq!(deposit, Deposit::decode(std::io::Cursor::new(&deposit_bytes)).unwrap());

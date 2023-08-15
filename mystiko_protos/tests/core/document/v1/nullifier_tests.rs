@@ -8,7 +8,7 @@ fn test_wrappers() {
     let nullifier = Nullifier::builder()
         .nullifier(biguint_to_bytes(&BigUint::from(9999_u32)))
         .build();
-    assert_eq!(nullifier.nullifier_as_bigint(), BigUint::from(9999_u32));
+    assert_eq!(nullifier.nullifier_as_biguint(), BigUint::from(9999_u32));
     let nullifier_bytes = nullifier.encode_to_vec();
     let nullifier_json = serde_json::to_string(&nullifier).unwrap();
     assert_eq!(
