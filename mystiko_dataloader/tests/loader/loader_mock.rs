@@ -15,7 +15,7 @@ use mystiko_dataloader::handler::types::{
 use mystiko_dataloader::loader::chain::{ChainDataLoader, ChainDataLoaderBuilder};
 use mystiko_dataloader::loader::listener::{LoaderEvent, LoaderListener};
 use mystiko_dataloader::loader::types::{LoadOption, ScheduleOption};
-use mystiko_dataloader::validator::types::{DataValidator, ValidateOption, ValidateResult};
+use mystiko_dataloader::validator::{DataValidator, ValidateOption, ValidateResult};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;

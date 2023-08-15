@@ -1,30 +1,26 @@
 use crate::data::types::LoadedData;
 use crate::handler::types::{CommitmentQueryOption, DataHandler};
+use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::data::ValidateContractData;
 use crate::validator::rule::error::{Result, RuleValidatorError};
-use crate::validator::rule::types::RuleChecker;
 use crate::validator::types::ValidateOption;
 use async_trait::async_trait;
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::sync::Arc;
+use typed_builder::TypedBuilder;
 
-#[derive(Debug)]
+#[derive(Debug, TypedBuilder)]
 pub struct SequenceChecker<R, H = Box<dyn DataHandler<R>>> {
-    _phantom: std::marker::PhantomData<R>,
     handler: Arc<H>,
-}
-
-#[derive(Debug, Default)]
-pub struct SequenceCheckerBuilder<R, H = Box<dyn DataHandler<R>>> {
+    #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
-    handler: Option<Arc<H>>,
 }
 
 #[async_trait]
 impl<R, H> RuleChecker for SequenceChecker<R, H>
 where
-    R: 'static + LoadedData,
-    H: 'static + DataHandler<R>,
+    R: LoadedData,
+    H: DataHandler<R>,
 {
     async fn check(&self, data: &ValidateContractData, _option: &ValidateOption) -> Result<()> {
         if data.commitments.is_empty() {
@@ -36,39 +32,10 @@ where
     }
 }
 
-impl<R, H> SequenceCheckerBuilder<R, H>
-where
-    R: 'static + LoadedData,
-    H: 'static + DataHandler<R>,
-{
-    pub fn new() -> Self {
-        SequenceCheckerBuilder {
-            _phantom: Default::default(),
-            handler: None,
-        }
-    }
-
-    pub fn shared_handle(mut self, handle: Arc<H>) -> Self {
-        self.handler = Some(handle);
-        self
-    }
-
-    pub fn build(self) -> Result<SequenceChecker<R, H>> {
-        let handler = self
-            .handler
-            .ok_or_else(|| RuleValidatorError::ValidateError("handler cannot be None".to_string()))?;
-
-        Ok(SequenceChecker {
-            _phantom: Default::default(),
-            handler,
-        })
-    }
-}
-
 impl<R, H> SequenceChecker<R, H>
 where
-    R: 'static + LoadedData,
-    H: 'static + DataHandler<R>,
+    R: LoadedData,
+    H: DataHandler<R>,
 {
     async fn check_leaf_index_sequence_with_handler(&self, data: &ValidateContractData) -> Result<()> {
         let first_cm = &data.commitments[0];
@@ -76,10 +43,7 @@ where
             return Ok(());
         }
 
-        let end_block = data.start_block - 1;
-        let count = self
-            .query_commitment_count(data.chain_id, &data.contract_address, end_block, first_cm.status)
-            .await?;
+        let count = self.query_commitment_count(data, first_cm.status).await?;
         if count != first_cm.leaf_index {
             Err(RuleValidatorError::ValidateError(
                 "commitment leaf index mismatch".to_string(),
@@ -89,21 +53,16 @@ where
         }
     }
 
-    async fn query_commitment_count(
-        &self,
-        chain_id: u64,
-        contract_address: &str,
-        end_block: u64,
-        status: CommitmentStatus,
-    ) -> Result<u64> {
+    async fn query_commitment_count(&self, data: &ValidateContractData, status: CommitmentStatus) -> Result<u64> {
+        let target_block = data.start_block - 1;
         let option = CommitmentQueryOption::builder()
-            .chain_id(chain_id)
-            .contract_address(contract_address.to_string())
+            .chain_id(data.chain_id)
+            .contract_address(data.contract_address.clone())
             .status(status)
-            .end_block(end_block)
+            .end_block(target_block)
             .build();
         let query_result = self.handler.count_commitments(&option).await?;
-        if query_result.end_block != end_block {
+        if query_result.end_block != target_block {
             return Err(RuleValidatorError::ValidateError(
                 "commitment count query end block mismatch".to_string(),
             ));

@@ -7,8 +7,8 @@ use mystiko_dataloader::handler::error::HandlerError;
 use mystiko_dataloader::handler::types::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
-use mystiko_dataloader::validator::rule::types::{RuleChecker, RuleCheckerType};
-use mystiko_dataloader::validator::rule::validator::{RuleValidator, RuleValidatorBuilder};
+use mystiko_dataloader::validator::rule::RuleCheckerType;
+use mystiko_dataloader::validator::rule::{RuleValidator, RuleValidatorInitParam};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
@@ -152,7 +152,7 @@ fn create_mock_provider(provider: &MockProvider) -> Provider {
     Provider::new(ProviderWrapper::new(Box::new(provider_builder.build())))
 }
 
-type FullDataRuleValidator = RuleValidator<FullData, MockHandler<FullData>, Box<dyn RuleChecker>>;
+type FullDataRuleValidator = RuleValidator<FullData, MockHandler<FullData>>;
 
 pub fn create_full_data_validator(
     rules: Option<Vec<RuleCheckerType>>,
@@ -161,7 +161,7 @@ pub fn create_full_data_validator(
     let provider = create_mock_provider(&mock);
     let provider = Arc::new(provider);
     let handler = Arc::new(MockHandler::new());
-    let v_rules = match rules {
+    let rule_types = match rules {
         Some(rules) => rules,
         None => vec![
             RuleCheckerType::Sequence,
@@ -169,12 +169,14 @@ pub fn create_full_data_validator(
             RuleCheckerType::Tree,
         ],
     };
-    let validator = RuleValidatorBuilder::new()
-        .shared_provider(provider)
-        .shared_handle(handler.clone())
-        .rule_types(v_rules)
-        .build()
-        .unwrap();
+    let validator = RuleValidator::new(
+        &RuleValidatorInitParam::builder()
+            .provider(provider.clone())
+            .handler(handler.clone())
+            .rules(rule_types)
+            .build(),
+    );
+
     (validator, handler, mock)
 }
 

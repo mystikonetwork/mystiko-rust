@@ -1,6 +1,7 @@
 mod checker;
 mod data;
+mod error;
+mod validator;
 
-pub mod error;
-pub mod types;
-pub mod validator;
+pub use error::*;
+pub use validator::*;

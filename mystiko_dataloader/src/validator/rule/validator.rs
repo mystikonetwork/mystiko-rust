@@ -3,42 +3,47 @@ use crate::data::contract::ContractData;
 use crate::data::result::{ChainResult, ContractResult};
 use crate::data::types::{DataRef, FullData, LiteData, LoadedData};
 use crate::handler::types::{CommitmentQueryOption, DataHandler};
-use crate::validator::rule::checker::counter::CounterCheckerBuilder;
-use crate::validator::rule::checker::sequence::SequenceCheckerBuilder;
-use crate::validator::rule::checker::tree::TreeCheckerBuilder;
+use crate::validator::rule::checker::counter::CounterChecker;
+use crate::validator::rule::checker::sequence::SequenceChecker;
+use crate::validator::rule::checker::tree::TreeChecker;
+use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::data::{ValidateCommitment, ValidateContractData, ValidateNullifier};
 use crate::validator::rule::error::{Result, RuleValidatorError};
-use crate::validator::rule::types::{RuleChecker, RuleCheckerType};
 use crate::validator::types::{DataValidator, ValidateOption, ValidateResult};
 use async_trait::async_trait;
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
-use std::collections::HashSet;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-#[derive(Debug)]
-pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker>> {
-    _phantom: std::marker::PhantomData<R>,
-    handler: Arc<H>,
-    rules: Vec<Arc<L>>,
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum RuleCheckerType {
+    Sequence,
+    Counter,
+    Tree,
 }
 
-#[derive(Debug, Default, TypedBuilder)]
-pub struct RuleValidatorBuilder<R, H = Box<dyn DataHandler<R>>> {
+#[derive(Debug, TypedBuilder)]
+pub struct RuleValidatorInitParam<R, H = Box<dyn DataHandler<R>>> {
+    pub provider: Arc<Provider>,
+    pub handler: Arc<H>,
+    pub rules: Vec<RuleCheckerType>,
+    #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
-    rule_types: Option<Vec<RuleCheckerType>>,
-    handler: Option<Arc<H>>,
-    provider: Option<Arc<Provider>>,
+}
+
+pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>> {
+    handler: Arc<H>,
+    rules: Vec<Box<dyn RuleChecker>>,
+    _phantom: std::marker::PhantomData<R>,
 }
 
 #[async_trait]
-impl<R, H, L> DataValidator<R> for RuleValidator<R, H, L>
+impl<R, H> DataValidator<R> for RuleValidator<R, H>
 where
     R: 'static + LoadedData,
     H: 'static + DataHandler<R>,
-    L: 'static + RuleChecker,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
         if data.contracts_data.is_empty() {
@@ -60,91 +65,44 @@ where
     }
 }
 
-impl<R, H> RuleValidatorBuilder<R, H>
+impl<R, H> RuleValidator<R, H>
 where
     R: 'static + LoadedData,
     H: 'static + DataHandler<R>,
 {
-    pub fn new() -> Self {
-        RuleValidatorBuilder {
-            _phantom: std::marker::PhantomData,
-            rule_types: None,
-            handler: None,
-            provider: None,
-        }
-    }
-
-    pub fn rule_types(mut self, rules: Vec<RuleCheckerType>) -> Self {
-        let mut seen = HashSet::new();
-        let unique_rules: Vec<RuleCheckerType> = rules.into_iter().filter(|r| seen.insert(r.clone())).collect();
-        self.rule_types = Some(unique_rules);
-        self
-    }
-
-    pub fn handle(mut self, handle: H) -> Self {
-        self.handler = Some(Arc::new(handle));
-        self
-    }
-
-    pub fn shared_handle(mut self, handle: Arc<H>) -> Self {
-        self.handler = Some(handle);
-        self
-    }
-
-    pub fn shared_provider(mut self, provider: Arc<Provider>) -> Self {
-        self.provider = Some(provider);
-        self
-    }
-
-    pub fn build(self) -> Result<RuleValidator<R, H>> {
-        let handler = self
-            .handler
-            .ok_or_else(|| RuleValidatorError::BuildError("handle cannot be None".to_string()))?;
-        let provider = self
-            .provider
-            .ok_or_else(|| RuleValidatorError::BuildError("provider cannot be None".to_string()))?;
-        let rule_types = self
-            .rule_types
-            .ok_or_else(|| RuleValidatorError::BuildError("rule types cannot be None".to_string()))?;
-
-        let mut rules = vec![];
-        for r in rule_types.iter() {
-            match r {
+    pub fn new(param: &RuleValidatorInitParam<R, H>) -> RuleValidator<R, H> {
+        let rules = param
+            .rules
+            .iter()
+            .map(|r| match r {
                 RuleCheckerType::Sequence => {
-                    let sequence = SequenceCheckerBuilder::new().shared_handle(handler.clone()).build()?;
-                    rules.push(Arc::new(Box::new(sequence) as Box<dyn RuleChecker>))
+                    let checker = SequenceChecker::builder().handler(param.handler.clone()).build();
+                    Box::new(checker) as Box<dyn RuleChecker>
                 }
                 RuleCheckerType::Counter => {
-                    let counter = CounterCheckerBuilder::new()
-                        .shared_provider(provider.clone())
-                        .shared_handle(handler.clone())
-                        .build()?;
-                    rules.push(Arc::new(Box::new(counter) as Box<dyn RuleChecker>))
+                    let checker = CounterChecker::builder()
+                        .provider(param.provider.clone())
+                        .handler(param.handler.clone())
+                        .build();
+                    Box::new(checker) as Box<dyn RuleChecker>
                 }
                 RuleCheckerType::Tree => {
-                    let tree = TreeCheckerBuilder::new()
-                        .shared_provider(provider.clone())
-                        .shared_handle(handler.clone())
-                        .build()?;
-                    rules.push(Arc::new(Box::new(tree) as Box<dyn RuleChecker>))
+                    let checker = TreeChecker::builder()
+                        .provider(param.provider.clone())
+                        .handler(param.handler.clone())
+                        .build();
+                    Box::new(checker) as Box<dyn RuleChecker>
                 }
-            }
-        }
+            })
+            .collect::<Vec<_>>();
 
-        Ok(RuleValidator {
-            _phantom: std::marker::PhantomData,
-            handler,
+        RuleValidator {
+            handler: param.handler.clone(),
             rules,
-        })
+            _phantom: std::marker::PhantomData,
+        }
     }
-}
 
-impl<R, H, L> RuleValidator<R, H, L>
-where
-    R: 'static + LoadedData,
-    H: 'static + DataHandler<R>,
-    L: 'static + RuleChecker,
-{
     async fn validate_contract_data(
         &self,
         chain_id: u64,
@@ -180,14 +138,8 @@ where
         let (commitments, nullifiers) = match data.data {
             None => (vec![], vec![]),
             Some(ref d) => match R::data_ref(d) {
-                DataRef::Full(full) => {
-                    self.merge_contract_full_data(chain_id, &data.address, data.start_block, data.end_block, full)
-                        .await?
-                }
-                DataRef::Lite(lite) => {
-                    self.merge_contract_lite_data(chain_id, &data.address, data.start_block, data.end_block, lite)
-                        .await?
-                }
+                DataRef::Full(full) => self.merge_contract_full_data(chain_id, data, full).await?,
+                DataRef::Lite(lite) => self.merge_contract_lite_data(chain_id, data, lite).await?,
             },
         };
 
@@ -204,68 +156,58 @@ where
     async fn merge_contract_full_data(
         &self,
         chain_id: u64,
-        contract_address: &str,
-        start_block: u64,
-        end_block: u64,
-        data: &FullData,
+        data: &ContractData<R>,
+        full_data: &FullData,
     ) -> Result<(Vec<ValidateCommitment>, Vec<ValidateNullifier>)> {
-        let cms = self
-            .merge_commitment(chain_id, contract_address, start_block, end_block, &data.commitments)
-            .await?;
-        let nullifiers = self.merge_nullifier(&data.nullifiers).await?;
+        let cms = self.merge_commitment(chain_id, data, &full_data.commitments).await?;
+        let nullifiers = self.merge_nullifier(&full_data.nullifiers).await?;
         Ok((cms, nullifiers))
     }
 
     async fn merge_contract_lite_data(
         &self,
         chain_id: u64,
-        contract_address: &str,
-        start_block: u64,
-        end_block: u64,
-        data: &LiteData,
+        data: &ContractData<R>,
+        lite_data: &LiteData,
     ) -> Result<(Vec<ValidateCommitment>, Vec<ValidateNullifier>)> {
-        let cms = self
-            .merge_commitment(chain_id, contract_address, start_block, end_block, &data.commitments)
-            .await?;
+        let cms = self.merge_commitment(chain_id, data, &lite_data.commitments).await?;
         Ok((cms, vec![]))
     }
 
-    async fn merge_nullifier(&self, data: &[Nullifier]) -> Result<Vec<ValidateNullifier>> {
-        let mut nullifiers = vec![];
-        for n in data {
-            nullifiers.push(
+    async fn merge_nullifier(&self, nullifiers: &[Nullifier]) -> Result<Vec<ValidateNullifier>> {
+        let mut validate_nullifiers = vec![];
+        for n in nullifiers {
+            validate_nullifiers.push(
                 ValidateNullifier::builder()
                     .nullifier(bytes_to_biguint(n.nullifier.as_slice()))
                     .build(),
             );
         }
-        Ok(nullifiers)
+        Ok(validate_nullifiers)
     }
 
     async fn merge_commitment(
         &self,
         chain_id: u64,
-        contract_address: &str,
-        start_block: u64,
-        end_block: u64,
-        data: &[Commitment],
+        data: &ContractData<R>,
+        commitments: &[Commitment],
     ) -> Result<Vec<ValidateCommitment>> {
-        if data.is_empty() {
+        if commitments.is_empty() {
             return Ok(vec![]);
         }
 
-        let mut commitments = self.combine_commitment(data).await?;
-        self.recovery_leaf_index(chain_id, contract_address, start_block, end_block, &mut commitments)
+        let mut validate_commitments = self.combine_commitment(commitments).await?;
+        self.recovery_leaf_index(chain_id, data, &mut validate_commitments)
             .await?;
-        self.sort_commitment_by_leaf_index(&mut commitments).await?;
-        self.check_commitment_status(&commitments)?;
+        self.sort_commitment_by_leaf_index(&mut validate_commitments).await?;
+        self.check_commitment_status(&validate_commitments)?;
 
-        Ok(commitments)
+        Ok(validate_commitments)
     }
 
-    async fn combine_commitment(&self, data: &[Commitment]) -> Result<Vec<ValidateCommitment>> {
-        let mut queued_cms = construct_validate_commitments(data, CommitmentStatus::Queued);
-        let mut included_cms = construct_validate_commitments(data, CommitmentStatus::Included);
+    async fn combine_commitment(&self, commitments: &[Commitment]) -> Result<Vec<ValidateCommitment>> {
+        let mut queued_cms = construct_validate_commitments(commitments, CommitmentStatus::Queued);
+        let mut included_cms = construct_validate_commitments(commitments, CommitmentStatus::Included);
 
         if queued_cms.is_empty() {
             return Ok(included_cms);
@@ -296,12 +238,10 @@ where
     async fn recovery_leaf_index(
         &self,
         chain_id: u64,
-        contract_address: &str,
-        start_block: u64,
-        _end_block: u64,
-        cms: &mut [ValidateCommitment],
+        data: &ContractData<R>,
+        commitments: &mut [ValidateCommitment],
     ) -> Result<()> {
-        let filled_cms: Vec<_> = cms
+        let filled_cms: Vec<_> = commitments
             .iter_mut()
             .filter(|cm| cm.status == CommitmentStatus::Included && !cm.merged)
             .collect();
@@ -310,10 +250,10 @@ where
         }
 
         let commitment_hash: Vec<_> = filled_cms.iter().map(|cm| cm.commitment_hash.clone()).collect();
-        let query_end_block = start_block - 1;
+        let query_end_block = data.start_block - 1;
         let query_option = CommitmentQueryOption::builder()
             .chain_id(chain_id)
-            .contract_address(contract_address.to_string())
+            .contract_address(data.address.clone())
             .end_block(query_end_block)
             .commitment_hash(commitment_hash)
             .build();

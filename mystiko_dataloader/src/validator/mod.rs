@@ -1,3 +1,6 @@
-pub mod error;
+mod error;
+mod types;
+
 pub mod rule;
-pub mod types;
+pub use error::*;
+pub use types::*;

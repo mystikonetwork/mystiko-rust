@@ -3,8 +3,8 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::chain::ChainData;
 use mystiko_dataloader::data::contract::ContractData;
 use mystiko_dataloader::data::types::FullData;
-use mystiko_dataloader::validator::rule::types::RuleCheckerType;
-use mystiko_dataloader::validator::types::{DataValidator, ValidateOption};
+use mystiko_dataloader::validator::rule::RuleCheckerType;
+use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 
 #[tokio::test]
 async fn test_empty_commitment() {

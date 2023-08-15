@@ -10,7 +10,7 @@ use crate::loader::listener::{
 use crate::loader::types::{
     LoadOption, LoaderState, ScheduleOption, DEFAULT_DELAY_BLOCK, DEFAULT_SCHEDULE_INTERVAL_MS,
 };
-use crate::validator::types::{DataValidator, ValidateOption};
+use crate::validator::{DataValidator, ValidateOption};
 use ethers_providers::Middleware;
 use log::{error, warn};
 use mystiko_config::wrapper::chain::ChainConfig;
