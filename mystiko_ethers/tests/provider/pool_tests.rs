@@ -72,6 +72,10 @@ async fn test_provider_pool() {
     assert!(!pool.has_provider(56));
     pool.set_provider_factory(Box::new(mock_provider_factory));
     assert!(pool.get_or_create_provider(56).await.is_ok());
+
+    let mut box_pool = Box::new(pool);
+    assert!(box_pool.get_provider(56).is_some());
+    assert!(box_pool.get_or_create_provider(56).await.is_ok());
 }
 
 pub fn create_test_provider() -> Provider {
