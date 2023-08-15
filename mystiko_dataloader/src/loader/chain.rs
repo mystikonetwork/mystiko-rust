@@ -1,15 +1,13 @@
-use crate::data::chain::ChainData;
-use crate::data::result::UnwrappedChainResult;
-use crate::data::types::LoadedData;
+use crate::data::ChainData;
+use crate::data::LoadedData;
+use crate::data::UnwrappedChainResult;
 use crate::error::DataLoaderError;
-use crate::fetcher::types::{ContractFetchOptions, DataFetcher, FetchOptions};
-use crate::handler::types::{DataHandler, HandleOption};
-use crate::loader::listener::{
+use crate::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions};
+use crate::handler::{DataHandler, HandleOption};
+use crate::loader::{
     LoadEvent, LoadFailureEvent, LoadSuccessEvent, LoaderEvent, LoaderListener, ScheduleEvent, StopScheduleEvent,
 };
-use crate::loader::types::{
-    LoadOption, LoaderState, ScheduleOption, DEFAULT_DELAY_BLOCK, DEFAULT_SCHEDULE_INTERVAL_MS,
-};
+use crate::loader::{LoadOption, LoaderState, ScheduleOption, DEFAULT_DELAY_BLOCK, DEFAULT_SCHEDULE_INTERVAL_MS};
 use crate::validator::{DataValidator, ValidateOption};
 use ethers_providers::Middleware;
 use log::{error, warn};

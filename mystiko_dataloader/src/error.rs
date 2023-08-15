@@ -1,5 +1,5 @@
-use crate::fetcher::error::FetcherError;
-use crate::handler::error::HandlerError;
+use crate::fetcher::FetcherError;
+use crate::handler::HandlerError;
 use crate::validator::ValidatorError;
 use anyhow::Error as AnyhowError;
 use ethers_providers::ProviderError;

@@ -1,7 +1,7 @@
-use crate::data::chain::ChainData;
-use crate::data::result::ChainResult;
-use crate::data::types::LoadedData;
-use crate::validator::error::ValidatorError;
+use crate::data::ChainData;
+use crate::data::ChainResult;
+use crate::data::LoadedData;
+use crate::validator::ValidatorError;
 use async_trait::async_trait;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use std::fmt::Debug;

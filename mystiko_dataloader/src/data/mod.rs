@@ -1,4 +1,9 @@
-pub mod chain;
-pub mod contract;
-pub mod result;
-pub mod types;
+mod chain;
+mod contract;
+mod result;
+mod types;
+
+pub use chain::*;
+pub use contract::*;
+pub use result::*;
+pub use types::*;

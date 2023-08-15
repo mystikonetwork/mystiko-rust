@@ -1,7 +1,8 @@
-use crate::data::contract::ContractData;
-use crate::data::result::ChainResult;
-use crate::data::types::LoadedData;
-use crate::fetcher::error::FetcherError;
+use crate::data::ChainResult;
+use crate::data::ContractData;
+use crate::data::DataType;
+use crate::data::LoadedData;
+use crate::fetcher::FetcherError;
 use async_trait::async_trait;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
@@ -43,5 +44,23 @@ where
 {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         self.as_ref().fetch(option).await
+    }
+}
+
+#[derive(Clone, Debug, TypedBuilder)]
+pub(crate) struct FetcherLogOptions {
+    pub(crate) chain_id: u64,
+    pub(crate) address: String,
+    pub(crate) start_block: u64,
+    pub(crate) end_block: u64,
+    pub(crate) data_type: DataType,
+}
+
+impl ToString for FetcherLogOptions {
+    fn to_string(&self) -> String {
+        format!(
+            "IndexerFetcher[type={:?}, chain_id={}, address={}, from_block={}, to_block={}]",
+            self.data_type, self.chain_id, self.address, self.start_block, self.end_block
+        )
     }
 }

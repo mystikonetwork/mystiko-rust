@@ -1,6 +1,6 @@
-use crate::data::chain::ChainData;
-use crate::data::contract::ContractData;
-use crate::data::types::LoadedData;
+use crate::data::ChainData;
+use crate::data::ContractData;
+use crate::data::LoadedData;
 use anyhow::Result;
 use std::fmt::{Debug, Display, Formatter};
 use thiserror::Error;

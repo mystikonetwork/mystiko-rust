@@ -1,4 +1,4 @@
-use crate::data::types::LoadedData;
+use crate::data::LoadedData;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 

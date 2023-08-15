@@ -1,8 +1,9 @@
 use ethers_core::types::U256;
-use mystiko_utils::convert::{decimal_to_number, number_to_decimal};
+use mystiko_utils::convert::{biguint_str_to_bytes, decimal_to_number, number_to_decimal};
 use num_bigint::BigUint;
 use num_traits::ToPrimitive;
 use rust_decimal::Decimal;
+use std::str::FromStr;
 
 #[test]
 fn test_decimal_to_number() {
@@ -44,5 +45,13 @@ fn test_big_int_to_u256() {
     assert_eq!(
         mystiko_utils::convert::biguint_to_u256(&BigUint::from(123456789u32)),
         U256::from_dec_str("123456789").unwrap()
+    );
+}
+
+#[test]
+fn test_biguint_str_to_bytes() {
+    assert_eq!(
+        BigUint::from_bytes_le(&biguint_str_to_bytes("123456789").unwrap()),
+        BigUint::from_str("123456789").unwrap()
     );
 }
