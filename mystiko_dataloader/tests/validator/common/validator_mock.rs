@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
 use mystiko_config::wrapper::contract::ContractConfig;
-use mystiko_dataloader::data::ChainData;
+use mystiko_dataloader::data::{ChainData, LiteData};
 use mystiko_dataloader::data::{FullData, LoadedData};
 use mystiko_dataloader::handler::HandlerError;
 use mystiko_dataloader::handler::{
@@ -13,9 +13,11 @@ use mystiko_dataloader::validator::rule::tree::TreeChecker;
 use mystiko_dataloader::validator::rule::{RuleChecker, RuleValidator, RuleValidatorInitParam};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
+use mystiko_ethers::provider::pool::Providers;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
 use mystiko_fs::read_file_bytes;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
+use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::RwLock;
@@ -154,6 +156,42 @@ fn create_mock_provider(provider: &MockProvider) -> Provider {
     Provider::new(ProviderWrapper::new(Box::new(provider_builder.build())))
 }
 
+struct MockProviders {
+    provider: Option<Arc<Provider>>,
+}
+
+impl MockProviders {
+    fn new(provider: Option<Arc<Provider>>) -> Self {
+        MockProviders { provider }
+    }
+}
+
+impl Debug for MockProviders {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl Providers for MockProviders {
+    fn get_provider(&self, _chain_id: u64) -> Option<Arc<Provider>> {
+        self.provider.as_ref().cloned()
+    }
+
+    async fn get_or_create_provider(&mut self, _chain_id: u64) -> anyhow::Result<Arc<Provider>> {
+        Err(anyhow::Error::msg("get_or_create_provider error".to_string()))
+    }
+}
+
+fn create_mock_providers(provider: Option<&MockProvider>) -> MockProviders {
+    match provider {
+        None => MockProviders::new(None),
+        Some(provider) => {
+            let provider = create_mock_provider(provider);
+            MockProviders::new(Some(Arc::new(provider)))
+        }
+    }
+}
 pub enum RuleCheckerType {
     Sequence,
     Counter,
@@ -166,8 +204,8 @@ pub fn create_full_data_validator(
     rules: Option<Vec<RuleCheckerType>>,
 ) -> (FullDataRuleValidator, Arc<MockHandler<FullData>>, MockProvider) {
     let (_, mock) = EthersProvider::mocked();
-    let provider = create_mock_provider(&mock);
-    let provider = Arc::new(provider);
+    let providers = create_mock_providers(Some(&mock));
+    let providers = Arc::new(providers);
     let handler = Arc::new(MockHandler::new());
     let rule_types = match rules {
         Some(rules) => rules,
@@ -187,14 +225,14 @@ pub fn create_full_data_validator(
             }
             RuleCheckerType::Counter => {
                 let checker = CounterChecker::builder()
-                    .provider(provider.clone())
+                    .providers(providers.clone())
                     .handler(handler.clone())
                     .build();
                 Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
             }
             RuleCheckerType::Tree => {
                 let checker = TreeChecker::builder()
-                    .provider(provider.clone())
+                    .providers(providers.clone())
                     .handler(handler.clone())
                     .build();
                 Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
@@ -203,7 +241,57 @@ pub fn create_full_data_validator(
         .collect::<Vec<_>>();
     let validator = RuleValidator::new(
         &RuleValidatorInitParam::builder()
-            .provider(provider.clone())
+            .handler(handler.clone())
+            .rules(rules)
+            .build(),
+    );
+
+    (validator, handler, mock)
+}
+
+type LiteDataRuleValidator = RuleValidator<LiteData, MockHandler<LiteData>>;
+
+pub fn create_lite_data_validator(
+    rules: Option<Vec<RuleCheckerType>>,
+) -> (LiteDataRuleValidator, Arc<MockHandler<LiteData>>, MockProvider) {
+    let (_, mock) = EthersProvider::mocked();
+    let providers = create_mock_providers(Some(&mock));
+    let providers = Arc::new(providers);
+    let handler = Arc::new(MockHandler::new());
+    let rule_types = match rules {
+        Some(rules) => rules,
+        None => vec![
+            RuleCheckerType::Sequence,
+            RuleCheckerType::Counter,
+            RuleCheckerType::Tree,
+        ],
+    };
+
+    let rules = rule_types
+        .iter()
+        .map(|t| match t {
+            RuleCheckerType::Sequence => {
+                let checker = SequenceChecker::builder().handler(handler.clone()).build();
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+            }
+            RuleCheckerType::Counter => {
+                let checker = CounterChecker::builder()
+                    .providers(providers.clone())
+                    .handler(handler.clone())
+                    .build();
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+            }
+            RuleCheckerType::Tree => {
+                let checker = TreeChecker::builder()
+                    .providers(providers.clone())
+                    .handler(handler.clone())
+                    .build();
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+            }
+        })
+        .collect::<Vec<_>>();
+    let validator = RuleValidator::new(
+        &RuleValidatorInitParam::builder()
             .handler(handler.clone())
             .rules(rules)
             .build(),
@@ -216,4 +304,10 @@ pub async fn load_commitments(file: &str) -> Vec<Commitment> {
     let bytes = read_file_bytes(file).await.unwrap();
     let commitments: Vec<Commitment> = serde_json::from_slice(bytes.as_slice()).unwrap();
     commitments
+}
+
+pub async fn load_nullifiers(file: &str) -> Vec<Nullifier> {
+    let bytes = read_file_bytes(file).await.unwrap();
+    let nullifiers: Vec<Nullifier> = serde_json::from_slice(bytes.as_slice()).unwrap();
+    nullifiers
 }

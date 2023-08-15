@@ -1,14 +1,13 @@
-use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
+use crate::validator::common::validator_mock::{create_lite_data_validator, load_commitments, RuleCheckerType};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
-use mystiko_dataloader::data::FullData;
+use mystiko_dataloader::data::{ChainData, LiteData};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
 async fn test_one_queued_many_included_same_commitment() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock) = create_lite_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -29,12 +28,7 @@ async fn test_one_queued_many_included_same_commitment() {
         .address(contract_address)
         .start_block(1_u64)
         .end_block(100_u64)
-        .data(
-            FullData::builder()
-                .commitments(included_cms.clone())
-                .nullifiers(vec![])
-                .build(),
-        )
+        .data(LiteData::builder().commitments(included_cms.clone()).build())
         .build();
     let data = ChainData::builder()
         .chain_id(chain_id)
@@ -62,12 +56,7 @@ async fn test_one_queued_many_included_same_commitment() {
         .address(contract_address)
         .start_block(1_u64)
         .end_block(100_u64)
-        .data(
-            FullData::builder()
-                .commitments(included_cms.clone())
-                .nullifiers(vec![])
-                .build(),
-        )
+        .data(LiteData::builder().commitments(included_cms.clone()).build())
         .build();
     let data = ChainData::builder()
         .chain_id(chain_id)
@@ -94,7 +83,7 @@ async fn test_one_queued_many_included_same_commitment() {
         .address(contract_address)
         .start_block(1_u64)
         .end_block(100_u64)
-        .data(FullData::builder().commitments(included_cms).nullifiers(vec![]).build())
+        .data(LiteData::builder().commitments(included_cms).build())
         .build();
     let data = ChainData::builder()
         .chain_id(chain_id)
@@ -111,7 +100,7 @@ async fn test_one_queued_many_included_same_commitment() {
 
 #[tokio::test]
 async fn test_many_queued_one_included_different_commitment() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock) = create_lite_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -128,7 +117,7 @@ async fn test_many_queued_one_included_different_commitment() {
         .address(contract_address)
         .start_block(1_u64)
         .end_block(100_u64)
-        .data(FullData::builder().commitments(cms1).nullifiers(vec![]).build())
+        .data(LiteData::builder().commitments(cms1).build())
         .build();
     let data = ChainData::builder()
         .chain_id(chain_id)
@@ -151,7 +140,7 @@ async fn test_many_queued_one_included_different_commitment() {
         .address(contract_address)
         .start_block(1_u64)
         .end_block(100_u64)
-        .data(FullData::builder().commitments(cms2).nullifiers(vec![]).build())
+        .data(LiteData::builder().commitments(cms2).build())
         .build();
     let data = ChainData::builder()
         .chain_id(chain_id)

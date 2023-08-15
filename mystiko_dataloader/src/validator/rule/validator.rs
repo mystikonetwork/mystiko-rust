@@ -8,7 +8,6 @@ use crate::validator::rule::data::{ValidateCommitment, ValidateContractData, Val
 use crate::validator::rule::error::{Result, RuleValidatorError};
 use crate::validator::types::{DataValidator, ValidateOption, ValidateResult};
 use async_trait::async_trait;
-use mystiko_ethers::provider::factory::Provider;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
 use std::sync::Arc;
@@ -16,7 +15,6 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
 pub struct RuleValidatorInitParam<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker>> {
-    pub provider: Arc<Provider>,
     pub handler: Arc<H>,
     pub rules: Vec<Arc<L>>,
     #[builder(default = Default::default())]
@@ -99,7 +97,7 @@ where
 
     async fn merge_contract_data(&self, chain_id: u64, data: &ContractData<R>) -> Result<ValidateContractData> {
         if data.start_block < 1 {
-            return Err(RuleValidatorError::ValidateError("start block error".to_string()));
+            return Err(RuleValidatorError::ValidateError("start block less than 1".to_string()));
         }
 
         let (commitments, nullifiers) = match data.data {

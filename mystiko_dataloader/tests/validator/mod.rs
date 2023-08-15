@@ -1,3 +1,4 @@
 pub mod common;
-pub mod merge;
+pub mod merge_commitment;
+pub mod merge_nullifier;
 pub mod rule;

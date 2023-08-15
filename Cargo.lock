@@ -3632,6 +3632,7 @@ dependencies = [
  "mockito",
  "mystiko_abi",
  "mystiko_config",
+ "mystiko_crypto",
  "mystiko_ethers",
  "mystiko_etherscan_client",
  "mystiko_fs",

@@ -1,6 +1,7 @@
 use crate::handler::HandlerError;
 use anyhow::Error as AnyhowError;
 use ethers_contract::ContractError;
+use mystiko_crypto::error::MerkleTreeError;
 use mystiko_ethers::provider::factory::Provider;
 use thiserror::Error;
 
@@ -16,6 +17,8 @@ pub enum RuleValidatorError {
     ContractError(#[from] ContractError<Provider>),
     #[error(transparent)]
     HandlerError(#[from] HandlerError),
+    #[error(transparent)]
+    MerkleTreeError(#[from] MerkleTreeError),
     #[error(transparent)]
     AnyhowError(#[from] AnyhowError),
 }

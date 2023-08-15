@@ -8,38 +8,44 @@ use async_trait::async_trait;
 use ethers_core::types::{Address, BlockId, BlockNumber};
 use mystiko_abi::commitment_pool::CommitmentPool;
 use mystiko_ethers::provider::factory::Provider;
+use mystiko_ethers::provider::pool::Providers;
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::str::FromStr;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
-pub struct CounterChecker<R, H = Box<dyn DataHandler<R>>> {
-    provider: Arc<Provider>,
+pub struct CounterChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {
+    providers: Arc<P>,
     handler: Arc<H>,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
 
 #[async_trait]
-impl<R, H> RuleChecker for CounterChecker<R, H>
+impl<R, H, P> RuleChecker for CounterChecker<R, H, P>
 where
     R: LoadedData,
     H: DataHandler<R>,
+    P: Providers,
 {
     async fn check(&self, data: &ValidateContractData, _option: &ValidateOption) -> Result<()> {
         let address = Address::from_str(data.contract_address.as_str())
             .map_err(|_| RuleValidatorError::ValidateError("invalid contract address".to_string()))?;
-        let commitment_contract = CommitmentPool::new(address, self.provider.clone());
+        let provider = self.providers.get_provider(data.chain_id).ok_or_else(|| {
+            RuleValidatorError::ValidateError(format!("no provider found for chain id {}", data.chain_id))
+        })?;
+        let commitment_contract = CommitmentPool::new(address, provider);
         self.check_commitment(data, &commitment_contract).await?;
         self.check_nullifier(data, &commitment_contract).await
     }
 }
 
-impl<R, H> CounterChecker<R, H>
+impl<R, H, P> CounterChecker<R, H, P>
 where
     R: LoadedData,
     H: DataHandler<R>,
+    P: Providers,
 {
     async fn check_commitment(&self, data: &ValidateContractData, contract: &CommitmentPool<Provider>) -> Result<()> {
         self.check_commitment_included_count(data, contract).await?;

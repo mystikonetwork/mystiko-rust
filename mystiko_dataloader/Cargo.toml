@@ -14,6 +14,7 @@ hex = { version = "0.4.3" }
 log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
+mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
 mystiko_etherscan_client = { version = "0.1.0", path = "../mystiko_etherscan_client" }
 mystiko_indexer_client = { version = "0.1.0", path = "../mystiko_indexer_client" }
