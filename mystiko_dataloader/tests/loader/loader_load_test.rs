@@ -1,5 +1,5 @@
 use crate::loader::loader_mock::create_shared_loader;
-use mystiko_dataloader::error::DataLoaderError;
+use mystiko_dataloader::DataLoaderError;
 
 #[tokio::test]
 async fn test_loader_load_error() {

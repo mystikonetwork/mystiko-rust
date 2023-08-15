@@ -4,10 +4,10 @@ use crate::loader::loader_mock::{
 };
 use ethers_core::types::U64;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_dataloader::data::types::FullData;
-use mystiko_dataloader::error::DataLoaderError;
-use mystiko_dataloader::loader::chain::ChainDataLoaderBuilder;
-use mystiko_dataloader::loader::types::{LoadOption, ScheduleOption};
+use mystiko_dataloader::data::FullData;
+use mystiko_dataloader::loader::ChainDataLoaderBuilder;
+use mystiko_dataloader::loader::{LoadOption, ScheduleOption};
+use mystiko_dataloader::DataLoaderError;
 use std::sync::Arc;
 
 #[tokio::test]

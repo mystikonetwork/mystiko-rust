@@ -1,8 +1,8 @@
-use crate::data::contract::ContractData;
-use crate::data::result::ChainResult;
-use crate::data::types::DataType;
-use crate::data::types::LoadedData;
-use crate::fetcher::error::FetcherError;
+use crate::data::ChainResult;
+use crate::data::ContractData;
+use crate::data::DataType;
+use crate::data::LoadedData;
+use crate::fetcher::FetcherError;
 use async_trait::async_trait;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;

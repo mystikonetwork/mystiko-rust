@@ -1,5 +1,5 @@
-use crate::data::contract::ContractData;
-use crate::data::types::LoadedData;
+use crate::data::ContractData;
+use crate::data::LoadedData;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
