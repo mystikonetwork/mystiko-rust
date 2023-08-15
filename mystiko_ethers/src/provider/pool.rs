@@ -77,6 +77,17 @@ impl Providers for ProviderPool {
     }
 }
 
+#[async_trait]
+impl Providers for Box<dyn Providers> {
+    fn get_provider(&self, chain_id: u64) -> Option<Arc<Provider>> {
+        self.as_ref().get_provider(chain_id)
+    }
+
+    async fn get_or_create_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>> {
+        self.as_mut().get_or_create_provider(chain_id).await
+    }
+}
+
 fn default_provider_factory() -> Box<dyn ProviderFactory> {
     Box::<DefaultProviderFactory>::default()
 }
