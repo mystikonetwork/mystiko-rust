@@ -1,5 +1,5 @@
 use ethers_core::types::U256;
-use mystiko_utils::convert::{biguint_str_to_bytes, decimal_to_number, number_to_decimal};
+use mystiko_utils::convert::{biguint_str_to_bytes, bytes_to_i128, bytes_to_u128, decimal_to_number, i128_to_bytes, number_to_decimal, u128_to_bytes};
 use num_bigint::BigUint;
 use num_traits::ToPrimitive;
 use rust_decimal::Decimal;
@@ -54,4 +54,20 @@ fn test_biguint_str_to_bytes() {
         BigUint::from_bytes_le(&biguint_str_to_bytes("123456789").unwrap()),
         BigUint::from_str("123456789").unwrap()
     );
+}
+
+#[test]
+fn test_i128_convert() {
+    let value1 = 12345i128;
+    let bytes = i128_to_bytes(value1);
+    let value2 = bytes_to_i128(&bytes);
+    assert_eq!(value1, value2);
+}
+
+#[test]
+fn test_u128_convert() {
+    let value1 = 12345u128;
+    let bytes = u128_to_bytes(value1);
+    let value2 = bytes_to_u128(&bytes);
+    assert_eq!(value1, value2);
 }

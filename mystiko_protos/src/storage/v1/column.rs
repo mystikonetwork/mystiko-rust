@@ -1,6 +1,6 @@
 use crate::gen::mystiko::storage;
 use crate::storage::v1::{column_value, ColumnValue};
-use mystiko_utils::convert::biguint_to_bytes;
+use mystiko_utils::convert::{biguint_to_bytes, i128_to_bytes, u128_to_bytes};
 use num_bigint::{BigInt, BigUint};
 use num_traits::Signed;
 use serde_json::Value;
@@ -56,7 +56,7 @@ impl From<i64> for ColumnValue {
 impl From<i128> for ColumnValue {
     fn from(value: i128) -> Self {
         ColumnValue::builder()
-            .value(column_value::Value::I128Value(value.to_be_bytes().to_vec()))
+            .value(column_value::Value::I128Value(i128_to_bytes(value)))
             .build()
     }
 }
@@ -104,7 +104,7 @@ impl From<u64> for ColumnValue {
 impl From<u128> for ColumnValue {
     fn from(value: u128) -> Self {
         ColumnValue::builder()
-            .value(column_value::Value::U128Value(value.to_be_bytes().to_vec()))
+            .value(column_value::Value::U128Value(u128_to_bytes(value)))
             .build()
     }
 }
