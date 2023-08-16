@@ -23,6 +23,7 @@ use mystiko_ethers::provider::pool::Providers;
 use mystiko_etherscan_client::log::{Log, LogMeta};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::u256_to_bytes;
+use rustc_hex::FromHexError;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::RwLock;
@@ -30,10 +31,12 @@ use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum ProviderFetcherError {
-    #[error("no chain config found for chain id: {0}")]
-    ChainConfigNotFoundError(u64),
+    #[error(transparent)]
+    FromHexError(#[from] FromHexError),
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
+    #[error("unsupported chain id: {0}")]
+    UnsupportedChainError(u64),
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -61,12 +64,12 @@ pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
 
 #[derive(Clone, Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct ProviderContractFetchOptions {
-    pub chain_id: u64,
-    pub contract_address: String,
-    pub start_block: u64,
-    pub actual_target_block: u64,
-    pub provider: Arc<Provider>,
+struct ProviderContractFetchOptions {
+    pub(crate) chain_id: u64,
+    pub(crate) contract_address: String,
+    pub(crate) start_block: u64,
+    pub(crate) actual_target_block: u64,
+    pub(crate) provider: Arc<Provider>,
 }
 
 #[async_trait]
@@ -113,7 +116,7 @@ fn to_options(
             let chain_config = option
                 .config
                 .find_chain(option.chain_id)
-                .ok_or_else(|| ProviderFetcherError::ChainConfigNotFoundError(option.chain_id))?;
+                .ok_or_else(|| ProviderFetcherError::UnsupportedChainError(option.chain_id))?;
             Ok(chain_config
                 .contracts_with_disabled()
                 .into_iter()
@@ -255,7 +258,12 @@ async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Resul
     let mut events: Vec<Event<E>> = vec![];
     let filter = Filter::new()
         .topic0(E::signature())
-        .address(option.contract_address.parse::<Address>().unwrap())
+        .address(
+            option
+                .contract_address
+                .parse::<Address>()
+                .map_err(ProviderFetcherError::FromHexError)?,
+        )
         .from_block(BlockNumber::Number(U64::from(option.start_block)))
         .to_block(BlockNumber::Number(U64::from(option.actual_target_block)));
     let logs = option

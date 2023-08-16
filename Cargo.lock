@@ -3626,6 +3626,7 @@ dependencies = [
  "mystiko_types",
  "mystiko_utils",
  "num-bigint 0.4.3",
+ "rustc-hex",
  "serde",
  "serde_json",
  "thiserror",
