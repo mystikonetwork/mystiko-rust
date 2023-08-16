@@ -39,19 +39,6 @@ pub enum ProviderFetcherError {
     UnsupportedChainError(u64),
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
-pub struct Event<R> {
-    pub raw: R,
-    pub metadata: LogMeta,
-}
-
-#[derive(Debug, Clone, TypedBuilder)]
-pub struct CommitmentDataEvent {
-    pub crosschain_events: Vec<Event<CommitmentCrossChainFilter>>,
-    pub queued_events: Vec<Event<CommitmentQueuedFilter>>,
-    pub included_events: Vec<Event<CommitmentIncludedFilter>>,
-}
-
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
@@ -60,6 +47,19 @@ pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
     concurrent_nums: Option<u32>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
+}
+
+#[derive(Debug, Clone, TypedBuilder)]
+struct Event<R> {
+    pub(crate) raw: R,
+    pub(crate) metadata: LogMeta,
+}
+
+#[derive(Debug, Clone, TypedBuilder)]
+struct CommitmentDataEvent {
+    pub(crate) crosschain_events: Vec<Event<CommitmentCrossChainFilter>>,
+    pub(crate) queued_events: Vec<Event<CommitmentQueuedFilter>>,
+    pub(crate) included_events: Vec<Event<CommitmentIncludedFilter>>,
 }
 
 #[derive(Clone, Debug, TypedBuilder)]
