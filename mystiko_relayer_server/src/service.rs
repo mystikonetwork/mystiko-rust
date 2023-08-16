@@ -10,7 +10,7 @@ use anyhow::{bail, Result};
 use ethers_core::types::U256;
 use ethers_middleware::providers::Middleware;
 use log::{debug, error};
-use mystiko_ethers::provider::pool::ProviderPool;
+use mystiko_ethers::provider::pool::{ProviderPool, Providers};
 use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{

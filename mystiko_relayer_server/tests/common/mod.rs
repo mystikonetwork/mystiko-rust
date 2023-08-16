@@ -10,6 +10,7 @@ use mockall::mock;
 use mockito::{Server, ServerGuard};
 use mystiko_abi::commitment_pool::TransactRequest;
 use mystiko_ethers::provider::factory::ProvidersOptions;
+use mystiko_ethers::provider::pool::Providers;
 use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
 use mystiko_relayer_server::channel::consumer::TransactionConsumer;
