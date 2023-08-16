@@ -1,6 +1,8 @@
+use crate::gen::mystiko::storage;
 use crate::storage::v1::{column_value, ColumnValue};
 use mystiko_utils::convert::biguint_to_bytes;
 use num_bigint::{BigInt, BigUint};
+use num_traits::Signed;
 use serde_json::Value;
 
 impl From<bool> for ColumnValue {
@@ -167,6 +169,17 @@ impl From<Value> for ColumnValue {
     fn from(value: Value) -> Self {
         ColumnValue::builder()
             .value(column_value::Value::JsonValue(value.to_string()))
+            .build()
+    }
+}
+
+impl From<BigInt> for storage::v1::BigInt {
+    fn from(value: BigInt) -> Self {
+        let is_positive = value.is_positive();
+        let (_, value) = value.to_bytes_le();
+        storage::v1::BigInt::builder()
+            .is_positive(is_positive)
+            .value(value)
             .build()
     }
 }
