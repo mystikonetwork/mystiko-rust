@@ -4,11 +4,11 @@ use mystiko_utils::hex::encode_hex_with_prefix;
 use num_bigint::BigUint;
 
 impl Commitment {
-    pub fn commitment_hash_as_bigint(&self) -> BigUint {
+    pub fn commitment_hash_as_biguint(&self) -> BigUint {
         bytes_to_biguint(&self.commitment_hash)
     }
 
-    pub fn rollup_fee_as_bigint(&self) -> Option<BigUint> {
+    pub fn rollup_fee_as_biguint(&self) -> Option<BigUint> {
         self.rollup_fee.as_ref().map(|fee| bytes_to_biguint(fee))
     }
 
