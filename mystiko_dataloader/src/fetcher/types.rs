@@ -59,7 +59,7 @@ pub(crate) struct FetcherLogOptions {
 impl ToString for FetcherLogOptions {
     fn to_string(&self) -> String {
         format!(
-            "IndexerFetcher[type={:?}, chain_id={}, address={}, from_block={}, to_block={}]",
+            "Fetcher[type={:?}, chain_id={}, address={}, from_block={}, to_block={}]",
             self.data_type, self.chain_id, self.address, self.start_block, self.end_block
         )
     }

@@ -6,6 +6,7 @@ use crate::data::{Data, DataType};
 use crate::data::{FullData, LiteData};
 use crate::fetcher::error::FetcherError;
 use crate::fetcher::types::{DataFetcher, FetchOptions, FetchResult};
+use crate::fetcher::FetcherLogOptions;
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_contract::EthEvent;
@@ -13,7 +14,7 @@ use ethers_core::abi::Address;
 use ethers_core::types::{BlockNumber, Filter, U64};
 use ethers_providers::Middleware;
 use ethers_providers::ProviderError;
-use log::{debug, error, info};
+use log::{error, info};
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_ethers::provider::factory::Provider;
@@ -28,8 +29,6 @@ use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum ProviderFetcherError {
-    #[error("fetcher contract with error {0}")]
-    ContractResultError(String),
     #[error("no chain config found for chain id: {0}")]
     ChainConfigNotFoundError(u64),
     #[error(transparent)]
@@ -70,16 +69,20 @@ pub struct ProviderContractFetchOptions {
 }
 
 #[async_trait]
-impl<R> DataFetcher<R> for ProviderFetcher<R>
+impl<R, P> DataFetcher<R> for ProviderFetcher<R, P>
 where
     R: LoadedData,
+    P: Providers,
 {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
-        let provider = if let Some(some_provider) = self.providers.read().await.get_provider(option.chain_id) {
-            some_provider
+        let provider = if self.providers.read().await.get_provider(option.chain_id).is_some() {
+            self.providers.read().await.get_provider(option.chain_id).unwrap()
         } else {
-            let mut providers = self.providers.write().await;
-            providers.get_or_create_provider(option.chain_id).await?
+            self.providers
+                .write()
+                .await
+                .get_or_create_provider(option.chain_id)
+                .await?
         };
         let fetch_options = to_options(
             option,
@@ -162,49 +165,78 @@ async fn fetch_contracts<R: LoadedData>(
     options: Vec<ProviderContractFetchOptions>,
     concurrent_nums: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
-    let mut contracts_results = Vec::with_capacity(options.len());
     let chunk_nums = (options.len() + concurrent_nums - 1) / concurrent_nums;
     let chunks = options.chunks(chunk_nums);
-    let mut group_handles = Vec::with_capacity(chunks.len());
+    let mut group_tasks = Vec::with_capacity(chunks.len());
     for chunk in chunks {
-        group_handles.push(tokio::spawn(async move {
-            group_fetch_contracts::<R>(chunk.to_vec()).await
-        }));
+        group_tasks.push(group_fetch_contracts::<R>(chunk.to_vec()))
     }
-    for group_handle in group_handles {
-        contracts_results.extend(group_handle.await?);
-    }
-    Ok(contracts_results)
+    let group_results = futures::future::try_join_all(group_tasks).await?;
+    Ok(group_results
+        .into_iter()
+        .flatten()
+        .collect::<Vec<ContractResult<ContractData<R>>>>())
 }
 
 async fn group_fetch_contracts<R: LoadedData>(
     options: Vec<ProviderContractFetchOptions>,
-) -> Vec<ContractResult<ContractData<R>>> {
+) -> Result<Vec<ContractResult<ContractData<R>>>> {
     let mut group_result = Vec::with_capacity(options.len());
     for option in options {
-        let contract_result = fetch_contract(option).await;
+        let contract_result = fetch_contract(option).await?;
         group_result.push(contract_result);
     }
-    group_result
+    Ok(group_result)
 }
 
-async fn fetch_contract<R: LoadedData>(option: ProviderContractFetchOptions) -> ContractResult<ContractData<R>> {
-    ContractResult::builder()
+async fn fetch_contract<R: LoadedData>(
+    option: ProviderContractFetchOptions,
+) -> Result<ContractResult<ContractData<R>>> {
+    Ok(ContractResult::builder()
         .address(option.contract_address.to_string())
         .result(fetch_contract_result(&option).await)
-        .build()
+        .build())
 }
 
 async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOptions) -> Result<ContractData<R>> {
     let commitments = fetch_commitments(option).await?;
     let data = match R::data_type() {
-        DataType::Full => R::from_data(Data::Full(
-            FullData::builder()
+        DataType::Full => {
+            let fulldata = FullData::builder()
                 .commitments(commitments)
                 .nullifiers(fetch_nullifiers(option).await?)
-                .build(),
-        )),
-        DataType::Lite => R::from_data(Data::Lite(LiteData::builder().commitments(commitments).build())),
+                .build();
+            info!(
+                "{} fetch {} commitments and {} nullifiers",
+                FetcherLogOptions::builder()
+                    .address(option.contract_address.to_string())
+                    .chain_id(option.chain_id)
+                    .start_block(option.start_block)
+                    .end_block(option.actual_target_block)
+                    .data_type(DataType::Full)
+                    .build()
+                    .to_string(),
+                fulldata.commitments.len(),
+                fulldata.nullifiers.len()
+            );
+            R::from_data(Data::Full(fulldata))
+        }
+        DataType::Lite => {
+            let litedata = LiteData::builder().commitments(commitments).build();
+            info!(
+                "{} fetch {} commitments",
+                FetcherLogOptions::builder()
+                    .address(option.contract_address.to_string())
+                    .chain_id(option.chain_id)
+                    .start_block(option.start_block)
+                    .end_block(option.actual_target_block)
+                    .data_type(DataType::Lite)
+                    .build()
+                    .to_string(),
+                litedata.commitments.len()
+            );
+            R::from_data(Data::Lite(litedata))
+        }
     };
     Ok(ContractData::builder()
         .address(option.contract_address.to_string())
@@ -216,14 +248,14 @@ async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOpti
 
 async fn fetch_commitments(option: &ProviderContractFetchOptions) -> Result<Vec<Commitment>> {
     build_commitments(CommitmentDataEvent {
-        crosschain_events: fetch_logs::<CommitmentCrossChainFilter>(&option).await?,
-        queued_events: fetch_logs::<CommitmentQueuedFilter>(&option).await?,
-        included_events: fetch_logs::<CommitmentIncludedFilter>(&option).await?,
+        crosschain_events: fetch_logs::<CommitmentCrossChainFilter>(option).await?,
+        queued_events: fetch_logs::<CommitmentQueuedFilter>(option).await?,
+        included_events: fetch_logs::<CommitmentIncludedFilter>(option).await?,
     })
 }
 
 async fn fetch_nullifiers(option: &ProviderContractFetchOptions) -> Result<Vec<Nullifier>> {
-    build_nullifiers(fetch_logs::<CommitmentSpentFilter>(&option).await?)
+    build_nullifiers(fetch_logs::<CommitmentSpentFilter>(option).await?)
 }
 
 async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Result<Vec<Event<E>>> {
