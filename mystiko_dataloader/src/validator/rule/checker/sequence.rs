@@ -23,12 +23,11 @@ where
     H: DataHandler<R>,
 {
     async fn check(&self, data: &ValidateContractData, _option: &ValidateOption) -> Result<()> {
-        if data.commitments.is_empty() {
+        if !data.commitments.is_empty() {
+            self.check_leaf_index_sequence_with_handler(data).await
+        } else {
             return Ok(());
         }
-
-        self.check_leaf_index_sequence_with_handler(data).await?;
-        Ok(())
     }
 }
 
@@ -43,7 +42,7 @@ where
             return Ok(());
         }
 
-        let count = self.query_commitment_count(data, first_cm.status).await?;
+        let count = self.query_handler_commitment_count(data, first_cm.status).await?;
         if count != first_cm.leaf_index {
             Err(RuleValidatorError::ValidateError(
                 "commitment leaf index mismatch".to_string(),
@@ -53,7 +52,11 @@ where
         }
     }
 
-    async fn query_commitment_count(&self, data: &ValidateContractData, status: CommitmentStatus) -> Result<u64> {
+    async fn query_handler_commitment_count(
+        &self,
+        data: &ValidateContractData,
+        status: CommitmentStatus,
+    ) -> Result<u64> {
         let target_block = data.start_block - 1;
         let option = CommitmentQueryOption::builder()
             .chain_id(data.chain_id)
@@ -63,9 +66,7 @@ where
             .build();
         let query_result = self.handler.count_commitments(&option).await?;
         if query_result.end_block != target_block {
-            return Err(RuleValidatorError::ValidateError(
-                "commitment count query end block mismatch".to_string(),
-            ));
+            return Err(RuleValidatorError::ValidateError("end block mismatch".to_string()));
         }
 
         Ok(query_result.result)

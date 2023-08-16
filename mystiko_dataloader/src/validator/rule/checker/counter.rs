@@ -57,7 +57,7 @@ where
         data: &ValidateContractData,
         contract: &CommitmentPool<Provider>,
     ) -> Result<()> {
-        let included = data
+        let included_cms = data
             .commitments
             .iter()
             .filter(|c| c.status == CommitmentStatus::Included)
@@ -67,7 +67,7 @@ where
             .block(BlockId::Number(BlockNumber::Number(data.end_block.into())))
             .await?
             .as_u64();
-        match included.last() {
+        match included_cms.last() {
             None => {
                 let target_block = data.start_block - 1;
                 let option = CommitmentQueryOption::builder()
@@ -78,10 +78,7 @@ where
                     .build();
                 let query_result = self.handler.count_commitments(&option).await?;
                 if query_result.end_block != target_block {
-                    return Err(RuleValidatorError::ValidateError(format!(
-                        "end block mismatch, expect: {}, query: {}",
-                        target_block, query_result.end_block
-                    )));
+                    return Err(RuleValidatorError::ValidateError("end block mismatch".to_string()));
                 }
 
                 if query_result.result != included_count {
@@ -94,13 +91,13 @@ where
             }
             Some(cm) => {
                 let fetched_include_count = cm.leaf_index + 1;
-                if included_count == fetched_include_count {
-                    Ok(())
-                } else {
+                if included_count != fetched_include_count {
                     Err(RuleValidatorError::ValidateError(format!(
-                        "commitment included count mismatch, fetched: {}, expected: {}",
-                        included_count, fetched_include_count
+                        "commitment included count mismatch, fetcher: {}, provider: {}",
+                        fetched_include_count, included_count
                     )))
+                } else {
+                    Ok(())
                 }
             }
         }

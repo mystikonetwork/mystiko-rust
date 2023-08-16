@@ -1,5 +1,5 @@
-use crate::data::ChainData;
 use crate::data::ContractData;
+use crate::data::{ChainData, DataType};
 use crate::data::{ChainResult, ContractResult};
 use crate::data::{DataRef, FullData, LiteData, LoadedData};
 use crate::handler::{CommitmentQueryOption, DataHandler};
@@ -88,7 +88,6 @@ where
 
     async fn merge_and_check(&self, chain_id: u64, data: &ContractData<R>, option: &ValidateOption) -> Result<()> {
         let merged_data = self.merge_contract_data(chain_id, data).await?;
-
         for rule in &self.rules {
             rule.check(&merged_data, option).await?;
         }
@@ -101,7 +100,10 @@ where
         }
 
         let (commitments, nullifiers) = match data.data {
-            None => (vec![], vec![]),
+            None => match R::data_type() {
+                DataType::Full => (vec![], Some(vec![])),
+                DataType::Lite => (vec![], None),
+            },
             Some(ref d) => match R::data_ref(d) {
                 DataRef::Full(full) => self.merge_contract_full_data(chain_id, data, full).await?,
                 DataRef::Lite(lite) => self.merge_contract_lite_data(chain_id, data, lite).await?,
@@ -123,10 +125,10 @@ where
         chain_id: u64,
         data: &ContractData<R>,
         full_data: &FullData,
-    ) -> Result<(Vec<ValidateCommitment>, Vec<ValidateNullifier>)> {
+    ) -> Result<(Vec<ValidateCommitment>, Option<Vec<ValidateNullifier>>)> {
         let cms = self.merge_commitment(chain_id, data, &full_data.commitments).await?;
         let nullifiers = self.merge_nullifier(&full_data.nullifiers).await?;
-        Ok((cms, nullifiers))
+        Ok((cms, Some(nullifiers)))
     }
 
     async fn merge_contract_lite_data(
@@ -134,9 +136,9 @@ where
         chain_id: u64,
         data: &ContractData<R>,
         lite_data: &LiteData,
-    ) -> Result<(Vec<ValidateCommitment>, Vec<ValidateNullifier>)> {
+    ) -> Result<(Vec<ValidateCommitment>, Option<Vec<ValidateNullifier>>)> {
         let cms = self.merge_commitment(chain_id, data, &lite_data.commitments).await?;
-        Ok((cms, vec![]))
+        Ok((cms, None))
     }
 
     async fn merge_nullifier(&self, nullifiers: &[Nullifier]) -> Result<Vec<ValidateNullifier>> {
@@ -161,13 +163,12 @@ where
             return Ok(vec![]);
         }
 
-        let mut validate_commitments = self.combine_commitment(commitments).await?;
-        self.recovery_leaf_index(chain_id, data, &mut validate_commitments)
-            .await?;
-        self.sort_commitment_by_leaf_index(&mut validate_commitments).await?;
-        self.check_commitment_status(&validate_commitments)?;
+        let mut validates = self.combine_commitment(commitments).await?;
+        self.recovery_leaf_index(chain_id, data, &mut validates).await?;
+        self.sort_validate_commitment_by_leaf_index(&mut validates).await?;
+        self.check_validate_commitment_status(&validates)?;
 
-        Ok(validate_commitments)
+        Ok(validates)
     }
 
     async fn combine_commitment(&self, commitments: &[Commitment]) -> Result<Vec<ValidateCommitment>> {
@@ -248,7 +249,7 @@ where
         Ok(())
     }
 
-    async fn sort_commitment_by_leaf_index(&self, commitments: &mut [ValidateCommitment]) -> Result<()> {
+    async fn sort_validate_commitment_by_leaf_index(&self, commitments: &mut [ValidateCommitment]) -> Result<()> {
         commitments.sort_by(|a, b| a.leaf_index.cmp(&b.leaf_index));
 
         if commitments
@@ -263,7 +264,7 @@ where
         Ok(())
     }
 
-    fn check_commitment_status(&self, commitments: &[ValidateCommitment]) -> Result<()> {
+    fn check_validate_commitment_status(&self, commitments: &[ValidateCommitment]) -> Result<()> {
         let first_status = commitments[0].status;
         if first_status == CommitmentStatus::Queued {
             for cm in commitments {

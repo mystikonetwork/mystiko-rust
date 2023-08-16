@@ -37,10 +37,10 @@ where
         let tree_root = self.build_tree(data).await?;
         match tree_root {
             Some(root) => {
-                if self.check_tree_root(data, &root).await? {
-                    Ok(())
-                } else {
+                if !self.check_tree_root(data, &root).await? {
                     Err(RuleValidatorError::ValidateError("tree root not exist".to_string()))
+                } else {
+                    Ok(())
                 }
             }
             None => return Ok(()),

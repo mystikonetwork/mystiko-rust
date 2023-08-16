@@ -9,7 +9,7 @@ pub struct ValidateContractData {
     pub start_block: u64,
     pub end_block: u64,
     pub commitments: Vec<ValidateCommitment>,
-    pub nullifiers: Vec<ValidateNullifier>,
+    pub nullifiers: Option<Vec<ValidateNullifier>>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
