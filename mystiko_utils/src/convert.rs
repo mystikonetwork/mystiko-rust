@@ -1,7 +1,7 @@
 use anyhow::Result;
 use ethers_core::types::U256;
 use num_bigint::BigUint;
-use num_traits::{zero, NumCast, Zero, FromBytes};
+use num_traits::{zero, FromBytes, NumCast, Zero};
 use rust_decimal::Decimal;
 use std::fmt::Display;
 use std::ops::Mul;

@@ -1,5 +1,8 @@
 use ethers_core::types::U256;
-use mystiko_utils::convert::{biguint_str_to_bytes, bytes_to_i128, bytes_to_u128, decimal_to_number, i128_to_bytes, number_to_decimal, u128_to_bytes};
+use mystiko_utils::convert::{
+    biguint_str_to_bytes, bytes_to_i128, bytes_to_u128, decimal_to_number, i128_to_bytes, number_to_decimal,
+    u128_to_bytes,
+};
 use num_bigint::BigUint;
 use num_traits::ToPrimitive;
 use rust_decimal::Decimal;
