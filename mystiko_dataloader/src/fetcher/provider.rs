@@ -7,6 +7,7 @@ use crate::data::{FullData, LiteData};
 use crate::fetcher::error::FetcherError;
 use crate::fetcher::types::{DataFetcher, FetchOptions, FetchResult};
 use crate::fetcher::FetcherLogOptions;
+use crate::utils::get_provider;
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_contract::EthEvent;
@@ -75,15 +76,7 @@ where
     P: Providers,
 {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
-        let provider = if self.providers.read().await.get_provider(option.chain_id).is_some() {
-            self.providers.read().await.get_provider(option.chain_id).unwrap()
-        } else {
-            self.providers
-                .write()
-                .await
-                .get_or_create_provider(option.chain_id)
-                .await?
-        };
+        let provider = get_provider(&self.providers, option.chain_id).await?;
         let fetch_options = to_options(
             option,
             get_block_num(Arc::clone(&provider))
