@@ -8,7 +8,7 @@ pub async fn get_provider<P>(providers: &RwLock<P>, chain_id: u64) -> Result<Arc
 where
     P: Providers,
 {
-    let mut optional_provider: Option<Arc<Provider>> = None;
+    let optional_provider: Option<Arc<Provider>>;
     {
         optional_provider = providers.read().await.get_provider(chain_id);
     }
