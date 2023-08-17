@@ -1,32 +1,6 @@
 use mystiko_protos::storage::v1::{ColumnType, ColumnValue};
 use num_bigint::{BigInt, BigUint};
 
-/**
-*
-pub enum ColumnType {
-    Unspecified = 0,
-    Bool = 1,
-    Char = 2,
-    I8 = 3,
-    I16 = 4,
-    I32 = 5,
-    I64 = 6,
-    I128 = 7,
-    Isize = 8,
-    U8 = 9,
-    U16 = 10,
-    U32 = 11,
-    U64 = 12,
-    U128 = 13,
-    Usize = 14,
-    F32 = 15,
-    F64 = 16,
-    String = 17,
-    BigInt = 18,
-    BigUint = 19,
-    Json = 20,
-}
-    */
 #[test]
 fn test_column_type() {
     assert_eq!(ColumnType::Bool.to_string(), "bool");
