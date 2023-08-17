@@ -98,34 +98,34 @@ async fn test_many_queued_many_included_part_same_commitment() {
         fetched_cms.push(included);
     }
 
-    for i in 0..5 {
+    for cm in cms.iter().take(5) {
         merged_cms.push(
             ValidateCommitment::builder()
-                .commitment_hash(bytes_to_biguint(&cms[i].commitment_hash))
+                .commitment_hash(bytes_to_biguint(&cm.commitment_hash))
                 .status(CommitmentStatus::Included)
-                .leaf_index(cms[i].leaf_index.unwrap())
+                .leaf_index(cm.leaf_index.unwrap())
                 .inner_merge(false)
                 .build(),
         )
     }
 
-    for i in 5..10 {
+    for cm in cms.iter().take(10).skip(5) {
         merged_cms.push(
             ValidateCommitment::builder()
-                .commitment_hash(bytes_to_biguint(&cms[i].commitment_hash))
+                .commitment_hash(bytes_to_biguint(&cm.commitment_hash))
                 .status(CommitmentStatus::Included)
-                .leaf_index(cms[i].leaf_index.unwrap())
+                .leaf_index(cm.leaf_index.unwrap())
                 .inner_merge(true)
                 .build(),
         )
     }
 
-    for i in 10..15 {
+    for cm in cms.iter().take(15).skip(10) {
         merged_cms.push(
             ValidateCommitment::builder()
-                .commitment_hash(bytes_to_biguint(&cms[i].commitment_hash))
+                .commitment_hash(bytes_to_biguint(&cm.commitment_hash))
                 .status(CommitmentStatus::Queued)
-                .leaf_index(cms[i].leaf_index.unwrap())
+                .leaf_index(cm.leaf_index.unwrap())
                 .inner_merge(false)
                 .build(),
         )
@@ -178,12 +178,12 @@ async fn test_many_queued_many_included_part_same_commitment() {
         fetched_cms.push(included);
     }
 
-    for i in 0..5 {
-        merged_cms[i].status = CommitmentStatus::Queued;
+    for cm in merged_cms.iter_mut().take(5) {
+        cm.status = CommitmentStatus::Queued;
     }
 
-    for i in 10..15 {
-        merged_cms[i].status = CommitmentStatus::Included;
+    for cm in merged_cms.iter_mut().take(15).skip(10) {
+        cm.status = CommitmentStatus::Included;
     }
 
     let contract_data = ContractData::builder()

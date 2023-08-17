@@ -2,7 +2,7 @@ use crate::data::{ContractData, DataRef, DataType, FullData, LiteData, LoadedDat
 use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::merger::error::{DataMergeError, DataMergeResult};
 use crate::validator::rule::types::{ValidateCommitment, ValidateContractData, ValidateNullifier};
-use log::{error, warn};
+use log::error;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
 use std::collections::hash_map::Entry;
@@ -191,7 +191,7 @@ fn merge_fetched_commitment(commitments: &[Commitment]) -> DataMergeResult<Vec<V
             Ok(())
         })?;
 
-    Ok(commitment_map.into_iter().map(|(_, v)| v).collect())
+    Ok(commitment_map.into_values().collect())
 }
 
 fn merge_same_commitments(src: &mut ValidateCommitment, dst: &ValidateCommitment) -> DataMergeResult<()> {
@@ -202,16 +202,11 @@ fn merge_same_commitments(src: &mut ValidateCommitment, dst: &ValidateCommitment
             }
             src.status = CommitmentStatus::Included;
             src.inner_merge = true;
-        } else {
-            warn!("commitment hash {:?} has duplicated status", src.commitment_hash);
-            if src.leaf_index != dst.leaf_index {
-                return Err(DataMergeError::LeafIndexMismatch(src.leaf_index, dst.leaf_index));
-            }
-        }
-    } else if dst.status == CommitmentStatus::Queued {
-        if src.leaf_index != dst.leaf_index {
+        } else if src.leaf_index != dst.leaf_index {
             return Err(DataMergeError::LeafIndexMismatch(src.leaf_index, dst.leaf_index));
         }
+    } else if dst.status == CommitmentStatus::Queued && src.leaf_index != dst.leaf_index {
+        return Err(DataMergeError::LeafIndexMismatch(src.leaf_index, dst.leaf_index));
     }
 
     Ok(())

@@ -248,14 +248,10 @@ where
 {
     pub async fn cmp_data(&self, data: Option<&ValidateContractData>) -> bool {
         let mut merged_data = self.merged_data.write().await;
-        let result = if data.is_none() && merged_data.is_none() {
-            true
-        } else if data.is_none() || merged_data.is_none() {
-            false
-        } else if merged_data.as_ref().unwrap() != data.unwrap() {
-            false
-        } else {
-            true
+        let result = match (&*merged_data, data) {
+            (None, None) => true,
+            (Some(_), None) | (None, Some(_)) => false,
+            (Some(a), Some(b)) => a == b,
         };
 
         *merged_data = None;

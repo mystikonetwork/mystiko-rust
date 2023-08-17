@@ -38,15 +38,31 @@ where
             return Err(anyhow::Error::msg("data to be validated is empty").into());
         }
 
+        let chain = option
+            .config
+            .find_chain(data.chain_id)
+            .ok_or_else(|| anyhow::Error::msg("chain not found"))?;
+
         let mut futures = Vec::new();
+        let mut contract_results = vec![];
         for contract_data in &data.contracts_data {
-            futures.push(self.contract_data_validate(data.chain_id, contract_data, option));
+            if chain.find_pool_contract_by_address(&contract_data.address).is_some() {
+                futures.push(self.contract_data_validate(data.chain_id, contract_data, option));
+            } else {
+                contract_results.push(
+                    ContractResult::builder()
+                        .address(contract_data.address.clone())
+                        .result(Ok(()))
+                        .build(),
+                );
+            }
         }
 
         let results = futures::future::join_all(futures).await;
+        contract_results.extend(results);
         let chain_result = ChainResult::builder()
             .chain_id(data.chain_id)
-            .contract_results(results)
+            .contract_results(contract_results)
             .build();
 
         Ok(chain_result)

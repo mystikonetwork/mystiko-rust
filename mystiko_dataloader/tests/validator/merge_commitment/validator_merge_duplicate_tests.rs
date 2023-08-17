@@ -153,8 +153,8 @@ async fn test_only_included_duplicate_commitment() {
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
     let mut fetched_cms = vec![];
     let mut merged_cms = vec![];
-    for i in 0..10 {
-        let mut included = cms[i].clone();
+    for cm in cms.iter().take(10) {
+        let mut included = cm.clone();
         included.leaf_index = None;
         included.status = CommitmentStatus::Included as i32;
         fetched_cms.push(included.clone());
@@ -162,9 +162,9 @@ async fn test_only_included_duplicate_commitment() {
 
         merged_cms.push(
             ValidateCommitment::builder()
-                .commitment_hash(bytes_to_biguint(&cms[i].commitment_hash))
+                .commitment_hash(bytes_to_biguint(&cm.commitment_hash))
                 .status(CommitmentStatus::Included)
-                .leaf_index(cms[i].leaf_index.unwrap())
+                .leaf_index(cm.leaf_index.unwrap())
                 .inner_merge(false)
                 .build(),
         );
@@ -222,8 +222,8 @@ async fn test_queued_duplicate_leaf_index_mismatch() {
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
     let mut fetched_cms = vec![];
-    for i in 0..10 {
-        let mut cm = cms[i].clone();
+    for cm in cms.iter().take(10) {
+        let mut cm = cm.clone();
         fetched_cms.push(cm.clone());
         cm.leaf_index = Some(1000_u64);
         fetched_cms.push(cm);
@@ -272,8 +272,8 @@ async fn test_queued_and_included_duplicate() {
     for j in 0..4 {
         let mut fetched_cms = vec![];
         let mut merged_cms = vec![];
-        for i in 0..10 {
-            let mut included = cms[i].clone();
+        for cm in cms.iter().take(10) {
+            let mut included = cm.clone();
             included.leaf_index = None;
             included.status = CommitmentStatus::Included as i32;
 
@@ -283,17 +283,17 @@ async fn test_queued_and_included_duplicate() {
                 if push_included {
                     fetched_cms.push(included.clone());
                 } else {
-                    fetched_cms.push(cms[i].clone());
+                    fetched_cms.push(cm.clone());
                 }
             }
-            fetched_cms.push(cms[i].clone());
+            fetched_cms.push(cm.clone());
             fetched_cms.push(included.clone());
 
             merged_cms.push(
                 ValidateCommitment::builder()
-                    .commitment_hash(bytes_to_biguint(&cms[i].commitment_hash))
+                    .commitment_hash(bytes_to_biguint(&cm.commitment_hash))
                     .status(CommitmentStatus::Included)
-                    .leaf_index(cms[i].leaf_index.unwrap())
+                    .leaf_index(cm.leaf_index.unwrap())
                     .inner_merge(true)
                     .build(),
             );
@@ -339,10 +339,10 @@ async fn test_queued_and_included_duplicate() {
     }
 
     let mut fetched_cms = vec![];
-    for i in 0..10 {
-        let mut cm = cms[i].clone();
+    for cm in cms.iter().take(10) {
+        let mut cm = cm.clone();
         fetched_cms.push(cm.clone());
-        let mut included = cms[i].clone();
+        let mut included = cm.clone();
         included.leaf_index = None;
         included.status = CommitmentStatus::Included as i32;
         fetched_cms.push(included.clone());
