@@ -3,12 +3,13 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
+use mystiko_dataloader::validator::rule::{DataMergeError, SequenceCheckerError};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
 async fn test_empty_data() {
-    let (validator, _handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -25,7 +26,7 @@ async fn test_empty_data() {
 
 #[tokio::test]
 async fn test_contract_data_none() {
-    let (validator, _handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -50,7 +51,7 @@ async fn test_contract_data_none() {
 
 #[tokio::test]
 async fn test_empty_commitment() {
-    let (validator, _handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -76,7 +77,7 @@ async fn test_empty_commitment() {
 
 #[tokio::test]
 async fn test_only_queued_commitment() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -144,13 +145,10 @@ async fn test_only_queued_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("commitment leaf index mismatch"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        SequenceCheckerError::CommitmentNotSequenceWithHandler(10, 20).to_string()
+    );
 
     handler.add_commitments(cms3.to_vec()).await;
     let contract_data = ContractData::builder()
@@ -167,18 +165,15 @@ async fn test_only_queued_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("commitment leaf index mismatch"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        SequenceCheckerError::CommitmentNotSequenceWithHandler(20, 10).to_string()
+    );
 }
 
 #[tokio::test]
 async fn test_only_included_commitment() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -186,7 +181,7 @@ async fn test_only_included_commitment() {
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
-    let included_cms = cms
+    let fetched_cms = cms
         .iter()
         .map(|cm| {
             let mut included = cm.clone();
@@ -202,7 +197,7 @@ async fn test_only_included_commitment() {
         .end_block(100_u64)
         .data(
             FullData::builder()
-                .commitments(included_cms.clone())
+                .commitments(fetched_cms.clone())
                 .nullifiers(vec![])
                 .build(),
         )
@@ -225,16 +220,13 @@ async fn test_only_included_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("query commitment data invalid"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        DataMergeError::InvalidCommitmentDataLen(100, 0).to_string()
+    );
 
     let (cms1, cms2) = cms.split_at(50);
-    let (included1, _) = included_cms.split_at(50);
+    let (included1, _) = fetched_cms.split_at(50);
     handler.add_commitments(cms1.to_vec()).await;
     let contract_data = ContractData::builder()
         .address(contract_address)
@@ -266,13 +258,10 @@ async fn test_only_included_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("query commitment hash mismatch"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        DataMergeError::CommitmentHashMismatch.to_string()
+    );
 
     let mut cms3 = cms1.to_vec();
     cms3[0].leaf_index = None;
@@ -282,11 +271,8 @@ async fn test_only_included_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("query commitment leaf index is none"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        DataMergeError::LeafIndexIsNone.to_string()
+    );
 }

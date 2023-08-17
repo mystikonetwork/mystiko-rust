@@ -4,13 +4,14 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
+use mystiko_dataloader::validator::rule::TreeCheckerError;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::str::FromStr;
 
 #[tokio::test]
 async fn test_empty_commitment() {
-    let (validator, _handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Tree]));
+    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Tree]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -36,7 +37,7 @@ async fn test_empty_commitment() {
 
 #[tokio::test]
 async fn test_some_included_commitment() {
-    let (validator, handler, mock) = create_full_data_validator(Some(vec![RuleCheckerType::Tree]));
+    let (validator, handler, mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Tree]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -44,19 +45,19 @@ async fn test_some_included_commitment() {
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
-    let mut included_cms = vec![];
+    let mut fetched_cms = vec![];
     for cm in cms.iter().take(10) {
-        included_cms.push(cm.clone());
+        fetched_cms.push(cm.clone());
         let mut included = cm.clone();
         included.leaf_index = None;
         included.status = CommitmentStatus::Included as i32;
-        included_cms.push(included);
+        fetched_cms.push(included);
     }
     let contract_data = ContractData::builder()
         .address(contract_address)
         .start_block(1_u64)
         .end_block(100_u64)
-        .data(FullData::builder().commitments(included_cms).nullifiers(vec![]).build())
+        .data(FullData::builder().commitments(fetched_cms).nullifiers(vec![]).build())
         .build();
     let data = ChainData::builder()
         .chain_id(chain_id)
@@ -67,6 +68,7 @@ async fn test_some_included_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
+    println!("{:?}", result.contract_results[0].result);
     assert!(result.contract_results[0]
         .result
         .as_ref()
@@ -82,13 +84,10 @@ async fn test_some_included_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("tree root not exist"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        TreeCheckerError::TreeRootNotKnown.to_string()
+    );
 
     handler.add_commitments(vec![]).await;
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();

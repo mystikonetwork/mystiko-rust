@@ -8,19 +8,25 @@ use mystiko_dataloader::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
 use mystiko_dataloader::validator::rule::counter::CounterChecker;
+use mystiko_dataloader::validator::rule::partial::PartialChecker;
 use mystiko_dataloader::validator::rule::sequence::SequenceChecker;
 use mystiko_dataloader::validator::rule::tree::TreeChecker;
-use mystiko_dataloader::validator::rule::{RuleChecker, RuleValidator, RuleValidatorInitParam};
+use mystiko_dataloader::validator::rule::{
+    CheckerResult, RuleCheckData, RuleChecker, RuleValidator, RuleValidatorInitParam, ValidateContractData,
+};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::pool::Providers;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
 use mystiko_fs::read_file_bytes;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
+use mystiko_utils::convert::bytes_to_biguint;
+use std::collections::HashSet;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::RwLock;
+use typed_builder::TypedBuilder;
 
 pub struct MockHandler<R> {
     pub _phantom: std::marker::PhantomData<R>,
@@ -89,7 +95,32 @@ where
     ) -> HandlerErrorResult<QueryResult<Vec<Commitment>>> {
         self.cms.write().await.pop().map_or_else(
             || Err(anyhow::Error::msg("mock query commitments error".to_string()).into()),
-            |cms| Ok(QueryResult::builder().end_block(option.end_block).result(cms).build()),
+            |cms| match &option.commitment_hash {
+                None => Ok(QueryResult::builder().end_block(option.end_block).result(cms).build()),
+                Some(query_hash) => {
+                    let hash_set: HashSet<_> = query_hash.iter().cloned().collect();
+                    let mut result = Vec::new();
+
+                    for h in query_hash {
+                        for cm in &cms {
+                            if bytes_to_biguint(&cm.commitment_hash) == *h {
+                                result.push(cm.clone());
+                            }
+                        }
+                    }
+
+                    for cm in &cms {
+                        if !hash_set.contains(&bytes_to_biguint(&cm.commitment_hash)) {
+                            result.push(cm.clone());
+                        }
+                    }
+
+                    Ok(QueryResult::builder()
+                        .end_block(option.end_block)
+                        .result(result)
+                        .build())
+                }
+            },
         )
     }
 
@@ -192,20 +223,67 @@ fn create_mock_providers(provider: Option<&MockProvider>) -> MockProviders {
         }
     }
 }
+
+#[derive(Debug, TypedBuilder)]
+pub struct MockRuleChecker<R> {
+    pub merged_data: RwLock<Option<ValidateContractData>>,
+    #[builder(default = Default::default())]
+    _phantom: std::marker::PhantomData<R>,
+}
+
+#[async_trait]
+impl<R> RuleChecker<R> for MockRuleChecker<R>
+where
+    R: LoadedData,
+{
+    async fn check(&self, data: &RuleCheckData<R>) -> CheckerResult<()> {
+        *self.merged_data.write().await = Some(data.merged_data.clone());
+        Ok(())
+    }
+}
+
+impl<R> MockRuleChecker<R>
+where
+    R: LoadedData,
+{
+    pub async fn cmp_data(&self, data: Option<&ValidateContractData>) -> bool {
+        let mut merged_data = self.merged_data.write().await;
+        let result = if data.is_none() && merged_data.is_none() {
+            true
+        } else if data.is_none() || merged_data.is_none() {
+            false
+        } else if merged_data.as_ref().unwrap() != data.unwrap() {
+            false
+        } else {
+            true
+        };
+
+        *merged_data = None;
+        result
+    }
+}
+
 pub enum RuleCheckerType {
+    Partial,
     Sequence,
     Counter,
     Tree,
 }
 
 type FullDataRuleValidator = RuleValidator<FullData, MockHandler<FullData>>;
+type FullDataMockRuleValidator = RuleValidator<FullData, MockHandler<FullData>, MockRuleChecker<FullData>>;
 
 pub fn create_full_data_validator(
     rules: Option<Vec<RuleCheckerType>>,
-) -> (FullDataRuleValidator, Arc<MockHandler<FullData>>, MockProvider) {
+) -> (
+    FullDataRuleValidator,
+    Arc<MockHandler<FullData>>,
+    MockProvider,
+    FullDataMockRuleValidator,
+    Arc<MockRuleChecker<FullData>>,
+) {
     let (_, mock) = EthersProvider::mocked();
-    let providers = create_mock_providers(Some(&mock));
-    let providers = Arc::new(providers);
+
     let handler = Arc::new(MockHandler::new());
     let rule_types = match rules {
         Some(rules) => rules,
@@ -219,26 +297,35 @@ pub fn create_full_data_validator(
     let rules = rule_types
         .iter()
         .map(|t| match t {
+            RuleCheckerType::Partial => {
+                let checker = PartialChecker::builder().build();
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker<FullData>>)
+            }
             RuleCheckerType::Sequence => {
                 let checker = SequenceChecker::builder().handler(handler.clone()).build();
-                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker<FullData>>)
             }
             RuleCheckerType::Counter => {
+                let providers = create_mock_providers(Some(&mock));
+                let providers = RwLock::new(providers);
                 let checker = CounterChecker::builder()
-                    .providers(providers.clone())
+                    .providers(providers)
                     .handler(handler.clone())
                     .build();
-                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker<FullData>>)
             }
             RuleCheckerType::Tree => {
+                let providers = create_mock_providers(Some(&mock));
+                let providers = RwLock::new(providers);
                 let checker = TreeChecker::builder()
-                    .providers(providers.clone())
+                    .providers(providers)
                     .handler(handler.clone())
                     .build();
-                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker<FullData>>)
             }
         })
         .collect::<Vec<_>>();
+
     let validator = RuleValidator::new(
         &RuleValidatorInitParam::builder()
             .handler(handler.clone())
@@ -246,7 +333,16 @@ pub fn create_full_data_validator(
             .build(),
     );
 
-    (validator, handler, mock)
+    let mock_checker = MockRuleChecker::builder().merged_data(RwLock::new(None)).build();
+    let mock_checker = Arc::new(mock_checker);
+    let validator_mock_rule = RuleValidator::new(
+        &RuleValidatorInitParam::builder()
+            .handler(handler.clone())
+            .rules(vec![mock_checker.clone()])
+            .build(),
+    );
+
+    (validator, handler, mock, validator_mock_rule, mock_checker)
 }
 
 type LiteDataRuleValidator = RuleValidator<LiteData, MockHandler<LiteData>>;
@@ -255,8 +351,6 @@ pub fn create_lite_data_validator(
     rules: Option<Vec<RuleCheckerType>>,
 ) -> (LiteDataRuleValidator, Arc<MockHandler<LiteData>>, MockProvider) {
     let (_, mock) = EthersProvider::mocked();
-    let providers = create_mock_providers(Some(&mock));
-    let providers = Arc::new(providers);
     let handler = Arc::new(MockHandler::new());
     let rule_types = match rules {
         Some(rules) => rules,
@@ -270,23 +364,31 @@ pub fn create_lite_data_validator(
     let rules = rule_types
         .iter()
         .map(|t| match t {
+            RuleCheckerType::Partial => {
+                let checker = PartialChecker::builder().build();
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker<LiteData>>)
+            }
             RuleCheckerType::Sequence => {
                 let checker = SequenceChecker::builder().handler(handler.clone()).build();
-                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker<LiteData>>)
             }
             RuleCheckerType::Counter => {
+                let providers = create_mock_providers(Some(&mock));
+                let providers = RwLock::new(providers);
                 let checker = CounterChecker::builder()
-                    .providers(providers.clone())
+                    .providers(providers)
                     .handler(handler.clone())
                     .build();
-                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker<LiteData>>)
             }
             RuleCheckerType::Tree => {
+                let providers = create_mock_providers(Some(&mock));
+                let providers = RwLock::new(providers);
                 let checker = TreeChecker::builder()
-                    .providers(providers.clone())
+                    .providers(providers)
                     .handler(handler.clone())
                     .build();
-                Arc::new(Box::new(checker) as Box<dyn RuleChecker>)
+                Arc::new(Box::new(checker) as Box<dyn RuleChecker<LiteData>>)
             }
         })
         .collect::<Vec<_>>();

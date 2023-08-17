@@ -9,7 +9,7 @@ use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 
 #[tokio::test]
 async fn test_many_commitment_many_nullifiers() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();

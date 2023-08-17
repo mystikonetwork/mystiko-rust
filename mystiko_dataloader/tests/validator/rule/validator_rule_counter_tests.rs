@@ -4,13 +4,14 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
+use mystiko_dataloader::validator::rule::CounterCheckerError;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::str::FromStr;
 
 #[tokio::test]
 async fn test_empty_commitment() {
-    let (validator, handler, mock) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
+    let (validator, handler, mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -46,13 +47,10 @@ async fn test_empty_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("commitment included count mismatch"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        CounterCheckerError::IncludedCountMismatch(0, 1).to_string()
+    );
 
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
@@ -66,7 +64,7 @@ async fn test_empty_commitment() {
 
 #[tokio::test]
 async fn test_only_queued_commitment() {
-    let (validator, handler, mock) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
+    let (validator, handler, mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -96,7 +94,7 @@ async fn test_only_queued_commitment() {
 
 #[tokio::test]
 async fn test_only_included_commitment() {
-    let (validator, handler, mock) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
+    let (validator, handler, mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Counter]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -104,16 +102,16 @@ async fn test_only_included_commitment() {
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
-    let mut included_cms = cms[0].clone();
-    included_cms.leaf_index = None;
-    included_cms.status = CommitmentStatus::Included as i32;
+    let mut fetched_cms = cms[0].clone();
+    fetched_cms.leaf_index = None;
+    fetched_cms.status = CommitmentStatus::Included as i32;
     let contract_data = ContractData::builder()
         .address(contract_address)
         .start_block(1_u64)
         .end_block(100_u64)
         .data(
             FullData::builder()
-                .commitments(vec![included_cms])
+                .commitments(vec![fetched_cms])
                 .nullifiers(vec![])
                 .build(),
         )
@@ -129,13 +127,10 @@ async fn test_only_included_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("commitment included count mismatch"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        CounterCheckerError::IncludedCountMismatch(1, 0).to_string()
+    );
 
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();

@@ -1,9 +1,9 @@
 use crate::data::LoadedData;
 use crate::handler::{CommitmentQueryOption, DataHandler};
+use crate::validator::rule::checker::error::{CheckerResult, SequenceCheckerError};
 use crate::validator::rule::checker::RuleChecker;
-use crate::validator::rule::data::ValidateContractData;
-use crate::validator::rule::error::{Result, RuleValidatorError};
-use crate::validator::types::ValidateOption;
+use crate::validator::rule::types::ValidateContractData;
+use crate::validator::rule::{RuleCheckData, ValidateCommitment};
 use async_trait::async_trait;
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::sync::Arc;
@@ -17,16 +17,19 @@ pub struct SequenceChecker<R, H = Box<dyn DataHandler<R>>> {
 }
 
 #[async_trait]
-impl<R, H> RuleChecker for SequenceChecker<R, H>
+impl<R, H> RuleChecker<R> for SequenceChecker<R, H>
 where
     R: LoadedData,
     H: DataHandler<R>,
 {
-    async fn check(&self, data: &ValidateContractData, _option: &ValidateOption) -> Result<()> {
-        if !data.commitments.is_empty() {
-            self.check_leaf_index_sequence_with_handler(data).await
-        } else {
-            return Ok(());
+    async fn check(&self, data: &RuleCheckData<R>) -> CheckerResult<()> {
+        match data.merged_data.commitments.first() {
+            Some(f) => {
+                self.check_commitment_leaf_index_sequence(data.merged_data).await?;
+                self.check_commitment_status_sequence(f, data.merged_data)?;
+                self.check_commitment_sequence_with_handler(f, data.merged_data).await
+            }
+            None => Ok(()),
         }
     }
 }
@@ -36,17 +39,62 @@ where
     R: LoadedData,
     H: DataHandler<R>,
 {
-    async fn check_leaf_index_sequence_with_handler(&self, data: &ValidateContractData) -> Result<()> {
-        let first_cm = &data.commitments[0];
-        if first_cm.status == CommitmentStatus::Included && !first_cm.merged {
+    async fn check_commitment_leaf_index_sequence(&self, data: &ValidateContractData) -> CheckerResult<()> {
+        if data
+            .commitments
+            .windows(2)
+            .any(|window| window[0].leaf_index + 1 != window[1].leaf_index)
+        {
+            return Err(SequenceCheckerError::LeafIndexNotSequenced.into());
+        }
+        Ok(())
+    }
+
+    fn check_commitment_status_sequence(
+        &self,
+        first: &ValidateCommitment,
+        data: &ValidateContractData,
+    ) -> CheckerResult<()> {
+        if first.status == CommitmentStatus::Queued {
+            for cm in &data.commitments {
+                if cm.status != first.status {
+                    return Err(SequenceCheckerError::CommitmentStatusNotSequenced.into());
+                }
+            }
+        } else if first.status == CommitmentStatus::Included {
+            let mut queued_seen = false;
+            let mut inner_merged_seen = false;
+
+            for cm in &data.commitments {
+                if cm.status == CommitmentStatus::Queued {
+                    queued_seen = true;
+                } else if cm.status == CommitmentStatus::Included && queued_seen {
+                    return Err(SequenceCheckerError::CommitmentStatusNotSequenced.into());
+                }
+
+                if cm.inner_merge {
+                    inner_merged_seen = true;
+                } else if cm.status == CommitmentStatus::Included && !cm.inner_merge && inner_merged_seen {
+                    return Err(SequenceCheckerError::CommitmentMergedNotSequenced.into());
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn check_commitment_sequence_with_handler(
+        &self,
+        first: &ValidateCommitment,
+        data: &ValidateContractData,
+    ) -> CheckerResult<()> {
+        if first.status == CommitmentStatus::Included && !first.inner_merge {
             return Ok(());
         }
 
-        let count = self.query_handler_commitment_count(data, first_cm.status).await?;
-        if count != first_cm.leaf_index {
-            Err(RuleValidatorError::ValidateError(
-                "commitment leaf index mismatch".to_string(),
-            ))
+        let count = self.query_handler_commitment_count(data, first.status).await?;
+        if count != first.leaf_index {
+            Err(SequenceCheckerError::CommitmentNotSequenceWithHandler(count, first.leaf_index).into())
         } else {
             Ok(())
         }
@@ -56,7 +104,7 @@ where
         &self,
         data: &ValidateContractData,
         status: CommitmentStatus,
-    ) -> Result<u64> {
+    ) -> CheckerResult<u64> {
         let target_block = data.start_block - 1;
         let option = CommitmentQueryOption::builder()
             .chain_id(data.chain_id)
@@ -66,7 +114,7 @@ where
             .build();
         let query_result = self.handler.count_commitments(&option).await?;
         if query_result.end_block != target_block {
-            return Err(RuleValidatorError::ValidateError("end block mismatch".to_string()));
+            return Err(SequenceCheckerError::TargetBlockError(target_block, query_result.end_block).into());
         }
 
         Ok(query_result.result)

@@ -3,12 +3,13 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
+use mystiko_dataloader::validator::rule::SequenceCheckerError;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
 async fn test_many_queued_one_included_same_commitment() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -16,12 +17,12 @@ async fn test_many_queued_one_included_same_commitment() {
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
-    let mut included_cms = cms[0].clone();
-    included_cms.leaf_index = None;
-    included_cms.status = CommitmentStatus::Included as i32;
+    let mut fetched_cms = cms[0].clone();
+    fetched_cms.leaf_index = None;
+    fetched_cms.status = CommitmentStatus::Included as i32;
     let (cms1, _cms2) = cms.split_at(10);
     let mut cms3 = cms1.to_vec();
-    cms3.push(included_cms.clone());
+    cms3.push(fetched_cms.clone());
     let contract_data = ContractData::builder()
         .address(contract_address)
         .start_block(1_u64)
@@ -39,11 +40,11 @@ async fn test_many_queued_one_included_same_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
 
-    let mut included_cms = cms1[4].clone();
-    included_cms.leaf_index = None;
-    included_cms.status = CommitmentStatus::Included as i32;
+    let mut fetched_cms = cms1[4].clone();
+    fetched_cms.leaf_index = None;
+    fetched_cms.status = CommitmentStatus::Included as i32;
     let mut cms3 = cms1.to_vec();
-    cms3.push(included_cms.clone());
+    cms3.push(fetched_cms.clone());
     let contract_data = ContractData::builder()
         .address(contract_address)
         .start_block(1_u64)
@@ -59,18 +60,15 @@ async fn test_many_queued_one_included_same_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("commitment status not all queued"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        SequenceCheckerError::CommitmentStatusNotSequenced.to_string()
+    );
 }
 
 #[tokio::test]
 async fn test_many_queued_one_included_different_commitment() {
-    let (validator, handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -78,13 +76,13 @@ async fn test_many_queued_one_included_different_commitment() {
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
-    let mut included_cms = cms[1].clone();
-    included_cms.leaf_index = None;
-    included_cms.status = CommitmentStatus::Included as i32;
+    let mut fetched_cms = cms[1].clone();
+    fetched_cms.leaf_index = None;
+    fetched_cms.status = CommitmentStatus::Included as i32;
     let (cms1, _cms2) = cms.split_at(10);
     let (cms3, cms4) = cms1.split_at(2);
     let mut cms5 = cms4.to_vec();
-    cms5.push(included_cms.clone());
+    cms5.push(fetched_cms.clone());
     let contract_data = ContractData::builder()
         .address(contract_address)
         .start_block(1_u64)
@@ -103,11 +101,11 @@ async fn test_many_queued_one_included_different_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
 
-    let mut included_cms = cms[15].clone();
-    included_cms.leaf_index = None;
-    included_cms.status = CommitmentStatus::Included as i32;
+    let mut fetched_cms = cms[15].clone();
+    fetched_cms.leaf_index = None;
+    fetched_cms.status = CommitmentStatus::Included as i32;
     let mut cms5 = cms4.to_vec();
-    cms5.push(included_cms.clone());
+    cms5.push(fetched_cms.clone());
     let contract_data = ContractData::builder()
         .address(contract_address)
         .start_block(1_u64)
@@ -124,11 +122,8 @@ async fn test_many_queued_one_included_different_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("leaf index values not sequence"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        SequenceCheckerError::LeafIndexNotSequenced.to_string()
+    );
 }

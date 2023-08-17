@@ -1,11 +1,12 @@
 use crate::validator::common::validator_mock::{create_full_data_validator, RuleCheckerType};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::{ChainData, ContractData};
+use mystiko_dataloader::validator::rule::DataMergeError;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 
 #[tokio::test]
 async fn test_empty_data() {
-    let (validator, _handler, _mock) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -25,11 +26,8 @@ async fn test_empty_data() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("start block less than 1"));
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        DataMergeError::InvalidStartBlock.to_string()
+    );
 }

@@ -1,24 +1,13 @@
-use crate::handler::HandlerError;
-use anyhow::Error as AnyhowError;
-use ethers_contract::ContractError;
-use mystiko_crypto::error::MerkleTreeError;
-use mystiko_ethers::provider::factory::Provider;
+use crate::validator::rule::checker::error::RuleCheckError;
+use crate::validator::rule::merger::error::DataMergeError;
 use thiserror::Error;
 
 pub type Result<T> = anyhow::Result<T, RuleValidatorError>;
 
 #[derive(Error, Debug)]
 pub enum RuleValidatorError {
-    #[error("init error {0}")]
-    BuildError(String),
-    #[error("validate error {0}")]
-    ValidateError(String),
     #[error(transparent)]
-    ContractError(#[from] ContractError<Provider>),
+    DataMergeError(#[from] DataMergeError),
     #[error(transparent)]
-    HandlerError(#[from] HandlerError),
-    #[error(transparent)]
-    MerkleTreeError(#[from] MerkleTreeError),
-    #[error(transparent)]
-    AnyhowError(#[from] AnyhowError),
+    RuleCheckError(#[from] RuleCheckError),
 }
