@@ -1,7 +1,7 @@
 use anyhow::Result;
 use ethers_core::types::U256;
 use num_bigint::BigUint;
-use num_traits::{zero, NumCast, Zero};
+use num_traits::{zero, FromBytes, NumCast, Zero};
 use rust_decimal::Decimal;
 use std::fmt::Display;
 use std::ops::Mul;
@@ -65,4 +65,24 @@ pub fn bytes_to_biguint(b: &[u8]) -> BigUint {
 
 pub fn bytes_to_u256(b: &[u8]) -> U256 {
     U256::from_little_endian(b)
+}
+
+pub fn i128_to_bytes(i: i128) -> Vec<u8> {
+    i.to_be_bytes().to_vec()
+}
+
+pub fn bytes_to_i128(b: &[u8]) -> i128 {
+    let mut bytes = [0; 16]; // i128 occupies 16 bytes
+    bytes.copy_from_slice(&b[..16]); // Copy the first 16 bytes from the input slice
+    FromBytes::from_be_bytes(&bytes)
+}
+
+pub fn u128_to_bytes(u: u128) -> Vec<u8> {
+    u.to_be_bytes().to_vec()
+}
+
+pub fn bytes_to_u128(b: &[u8]) -> u128 {
+    let mut bytes = [0; 16];
+    bytes.copy_from_slice(&b[..16]);
+    FromBytes::from_be_bytes(&bytes)
 }
