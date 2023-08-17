@@ -3760,6 +3760,7 @@ dependencies = [
  "prost",
  "serde",
  "serde_json",
+ "thiserror",
  "typed-builder",
 ]
 
