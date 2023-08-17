@@ -48,7 +48,7 @@ pub enum PartialCheckerError {
     InvalidCommitmentEncryptedNote,
     #[error("invalid commitment queued transaction hash")]
     InvalidCommitmentQueuedTransactionHash,
-    #[error("invalid commitment included transaction hash")]
+    #[error("invalid commitment included block number")]
     InvalidCommitmentIncludedBlockNumber,
     #[error("invalid commitment included transaction hash")]
     InvalidCommitmentIncludedTransactionHash,
