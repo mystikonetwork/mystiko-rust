@@ -26,4 +26,5 @@ pbjson = { version = "0.5" }
 pbjson-types = { version = "0.5" }
 serde = { version = "1" }
 serde_json = { version = "1.0.91" }
+thiserror = { version = "1.0", default-features = false }
 typed-builder = { version = "0.14.0" }

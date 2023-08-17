@@ -110,6 +110,136 @@ impl<'de> serde::Deserialize<'de> for BigInt {
         deserializer.deserialize_struct("mystiko.storage.v1.BigInt", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for ColumnType {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let variant = match self {
+            Self::Unspecified => "COLUMN_TYPE_UNSPECIFIED",
+            Self::Bool => "COLUMN_TYPE_BOOL",
+            Self::Char => "COLUMN_TYPE_CHAR",
+            Self::I8 => "COLUMN_TYPE_I8",
+            Self::I16 => "COLUMN_TYPE_I16",
+            Self::I32 => "COLUMN_TYPE_I32",
+            Self::I64 => "COLUMN_TYPE_I64",
+            Self::I128 => "COLUMN_TYPE_I128",
+            Self::Isize => "COLUMN_TYPE_ISIZE",
+            Self::U8 => "COLUMN_TYPE_U8",
+            Self::U16 => "COLUMN_TYPE_U16",
+            Self::U32 => "COLUMN_TYPE_U32",
+            Self::U64 => "COLUMN_TYPE_U64",
+            Self::U128 => "COLUMN_TYPE_U128",
+            Self::Usize => "COLUMN_TYPE_USIZE",
+            Self::F32 => "COLUMN_TYPE_F32",
+            Self::F64 => "COLUMN_TYPE_F64",
+            Self::String => "COLUMN_TYPE_STRING",
+            Self::BigInt => "COLUMN_TYPE_BIG_INT",
+            Self::BigUint => "COLUMN_TYPE_BIG_UINT",
+            Self::Json => "COLUMN_TYPE_JSON",
+        };
+        serializer.serialize_str(variant)
+    }
+}
+impl<'de> serde::Deserialize<'de> for ColumnType {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "COLUMN_TYPE_UNSPECIFIED",
+            "COLUMN_TYPE_BOOL",
+            "COLUMN_TYPE_CHAR",
+            "COLUMN_TYPE_I8",
+            "COLUMN_TYPE_I16",
+            "COLUMN_TYPE_I32",
+            "COLUMN_TYPE_I64",
+            "COLUMN_TYPE_I128",
+            "COLUMN_TYPE_ISIZE",
+            "COLUMN_TYPE_U8",
+            "COLUMN_TYPE_U16",
+            "COLUMN_TYPE_U32",
+            "COLUMN_TYPE_U64",
+            "COLUMN_TYPE_U128",
+            "COLUMN_TYPE_USIZE",
+            "COLUMN_TYPE_F32",
+            "COLUMN_TYPE_F64",
+            "COLUMN_TYPE_STRING",
+            "COLUMN_TYPE_BIG_INT",
+            "COLUMN_TYPE_BIG_UINT",
+            "COLUMN_TYPE_JSON",
+        ];
+
+        struct GeneratedVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ColumnType;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(formatter, "expected one of: {:?}", &FIELDS)
+            }
+
+            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(ColumnType::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
+            }
+
+            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(ColumnType::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
+            }
+
+            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                match value {
+                    "COLUMN_TYPE_UNSPECIFIED" => Ok(ColumnType::Unspecified),
+                    "COLUMN_TYPE_BOOL" => Ok(ColumnType::Bool),
+                    "COLUMN_TYPE_CHAR" => Ok(ColumnType::Char),
+                    "COLUMN_TYPE_I8" => Ok(ColumnType::I8),
+                    "COLUMN_TYPE_I16" => Ok(ColumnType::I16),
+                    "COLUMN_TYPE_I32" => Ok(ColumnType::I32),
+                    "COLUMN_TYPE_I64" => Ok(ColumnType::I64),
+                    "COLUMN_TYPE_I128" => Ok(ColumnType::I128),
+                    "COLUMN_TYPE_ISIZE" => Ok(ColumnType::Isize),
+                    "COLUMN_TYPE_U8" => Ok(ColumnType::U8),
+                    "COLUMN_TYPE_U16" => Ok(ColumnType::U16),
+                    "COLUMN_TYPE_U32" => Ok(ColumnType::U32),
+                    "COLUMN_TYPE_U64" => Ok(ColumnType::U64),
+                    "COLUMN_TYPE_U128" => Ok(ColumnType::U128),
+                    "COLUMN_TYPE_USIZE" => Ok(ColumnType::Usize),
+                    "COLUMN_TYPE_F32" => Ok(ColumnType::F32),
+                    "COLUMN_TYPE_F64" => Ok(ColumnType::F64),
+                    "COLUMN_TYPE_STRING" => Ok(ColumnType::String),
+                    "COLUMN_TYPE_BIG_INT" => Ok(ColumnType::BigInt),
+                    "COLUMN_TYPE_BIG_UINT" => Ok(ColumnType::BigUint),
+                    "COLUMN_TYPE_JSON" => Ok(ColumnType::Json),
+                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
+                }
+            }
+        }
+        deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
 impl serde::Serialize for ColumnValue {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
