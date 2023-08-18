@@ -19,7 +19,7 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
 pub struct CounterChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {
-    providers: RwLock<P>,
+    providers: Arc<RwLock<P>>,
     handler: Arc<H>,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
@@ -34,7 +34,7 @@ where
 {
     async fn check(&self, data: &RuleCheckData<R>) -> CheckerResult<()> {
         let address = Address::from_str(data.merged_data.contract_address.as_str())
-            .map_err(|_| RuleCheckError::ContractAddressInvalid(data.merged_data.contract_address.to_string()))?;
+            .map_err(|_| RuleCheckError::ContractAddressError(data.merged_data.contract_address.to_string()))?;
         let provider = get_provider(&self.providers, data.chain_id).await?;
         let commitment_contract = CommitmentPool::new(address, provider);
         self.check_commitment(data.merged_data, &commitment_contract).await?;

@@ -1,2 +1,7 @@
-pub mod data;
-pub mod error;
+mod data;
+mod error;
+
+pub use data::*;
+pub use error::*;
+
+pub type DataMergeResult<T> = anyhow::Result<T, DataMergeError>;

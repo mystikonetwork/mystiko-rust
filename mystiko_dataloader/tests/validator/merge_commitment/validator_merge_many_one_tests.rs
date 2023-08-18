@@ -1,4 +1,6 @@
-use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
+use crate::validator::common::validator_mock::{
+    create_single_rule_full_data_validator, load_commitments, RuleCheckerType,
+};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
@@ -9,7 +11,8 @@ use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
 async fn test_many_queued_one_included_same_commitment() {
-    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -68,7 +71,8 @@ async fn test_many_queued_one_included_same_commitment() {
 
 #[tokio::test]
 async fn test_many_queued_one_included_different_commitment() {
-    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();

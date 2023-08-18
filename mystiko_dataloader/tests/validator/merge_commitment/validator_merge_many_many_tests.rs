@@ -1,4 +1,6 @@
-use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
+use crate::validator::common::validator_mock::{
+    create_single_rule_full_data_validator, load_commitments, RuleCheckerType,
+};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
@@ -13,7 +15,7 @@ use mystiko_utils::convert::bytes_to_biguint;
 #[tokio::test]
 async fn test_one_queued_many_included_same_commitment() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -80,7 +82,7 @@ async fn test_one_queued_many_included_same_commitment() {
 #[tokio::test]
 async fn test_many_queued_many_included_part_same_commitment() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -227,12 +229,160 @@ async fn test_many_queued_many_included_part_same_commitment() {
             ))
             .await
     );
+
+    let mut fetched_cms = vec![];
+    for i in 0..10 {
+        fetched_cms.push(cms[i].clone());
+        let mut included = cms[i + 5].clone();
+        included.leaf_index = None;
+        included.status = CommitmentStatus::Included as i32;
+        fetched_cms.push(included);
+    }
+
+    for cm in merged_cms.iter_mut().take(5) {
+        cm.status = CommitmentStatus::Queued;
+    }
+
+    for cm in merged_cms.iter_mut().take(15).skip(10) {
+        cm.status = CommitmentStatus::Included;
+    }
+
+    let contract_data = ContractData::builder()
+        .address(contract_address)
+        .start_block(1_u64)
+        .end_block(100_u64)
+        .data(
+            FullData::builder()
+                .commitments(fetched_cms.clone())
+                .nullifiers(vec![])
+                .build(),
+        )
+        .build();
+    let data = ChainData::builder()
+        .chain_id(chain_id)
+        .contracts_data(vec![contract_data])
+        .build();
+    handler.add_commitments(cms[10..15].to_vec()).await;
+    handler.add_commitments(cms[10..15].to_vec()).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    let result2 = mock_rule_validator.validate(&data, &option).await.unwrap();
+    assert_eq!(result.chain_id, chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, contract_address);
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        SequenceCheckerError::CommitmentStatusNotSequenced.to_string()
+    );
+    assert!(result2.contract_results[0].result.is_ok());
+    assert!(
+        mock_rule
+            .cmp_data(Some(
+                &ValidateContractData::builder()
+                    .chain_id(chain_id)
+                    .contract_address(contract_address.to_string())
+                    .start_block(1_u64)
+                    .end_block(100_u64)
+                    .commitments(merged_cms.clone())
+                    .nullifiers(Some(vec![]))
+                    .build()
+            ))
+            .await
+    );
+
+    let mut fetched_cms = vec![];
+    let mut query_cms = vec![];
+    let mut merged_cms = vec![];
+    for cm in cms.iter().take(5) {
+        let mut included = cm.clone();
+        included.leaf_index = None;
+        included.status = CommitmentStatus::Included as i32;
+        fetched_cms.push(included);
+        merged_cms.push(
+            ValidateCommitment::builder()
+                .commitment_hash(bytes_to_biguint(&cm.commitment_hash))
+                .status(CommitmentStatus::Included)
+                .leaf_index(cm.leaf_index.unwrap())
+                .inner_merge(false)
+                .build(),
+        );
+        query_cms.push(cm.clone());
+    }
+
+    for cm in cms.iter().take(10).skip(5) {
+        fetched_cms.push(cm.clone());
+        merged_cms.push(
+            ValidateCommitment::builder()
+                .commitment_hash(bytes_to_biguint(&cm.commitment_hash))
+                .status(CommitmentStatus::Queued)
+                .leaf_index(cm.leaf_index.unwrap())
+                .inner_merge(false)
+                .build(),
+        )
+    }
+
+    for cm in cms.iter().take(15).skip(10) {
+        let mut included = cm.clone();
+        included.leaf_index = None;
+        included.status = CommitmentStatus::Included as i32;
+        fetched_cms.push(included);
+        merged_cms.push(
+            ValidateCommitment::builder()
+                .commitment_hash(bytes_to_biguint(&cm.commitment_hash))
+                .status(CommitmentStatus::Included)
+                .leaf_index(cm.leaf_index.unwrap())
+                .inner_merge(false)
+                .build(),
+        );
+        query_cms.push(cm.clone());
+    }
+
+    let contract_data = ContractData::builder()
+        .address(contract_address)
+        .start_block(1_u64)
+        .end_block(100_u64)
+        .data(
+            FullData::builder()
+                .commitments(fetched_cms.clone())
+                .nullifiers(vec![])
+                .build(),
+        )
+        .build();
+    let data = ChainData::builder()
+        .chain_id(chain_id)
+        .contracts_data(vec![contract_data])
+        .build();
+    handler.add_commitments(query_cms.clone()).await;
+    handler.add_commitments(query_cms).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    let result2 = mock_rule_validator.validate(&data, &option).await.unwrap();
+    assert_eq!(result.chain_id, chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, contract_address);
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        SequenceCheckerError::CommitmentStatusNotSequenced.to_string()
+    );
+    assert!(result2.contract_results[0].result.is_ok());
+    assert!(
+        mock_rule
+            .cmp_data(Some(
+                &ValidateContractData::builder()
+                    .chain_id(chain_id)
+                    .contract_address(contract_address.to_string())
+                    .start_block(1_u64)
+                    .end_block(100_u64)
+                    .commitments(merged_cms.clone())
+                    .nullifiers(Some(vec![]))
+                    .build()
+            ))
+            .await
+    );
 }
 
 #[tokio::test]
 async fn test_many_queued_many_included_different_commitment() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -338,13 +488,14 @@ async fn test_many_queued_many_included_different_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::CommitmentHashMismatch.to_string()
+        DataMergeError::CommitmentHashMismatchError.to_string()
     );
 }
 
 #[tokio::test]
 async fn test_many_queued_many_included_leaf_index_error_commitment() {
-    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -456,6 +607,6 @@ async fn test_many_queued_many_included_leaf_index_error_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::LeafIndexIsNone.to_string()
+        DataMergeError::LeafIndexIsNoneError.to_string()
     );
 }

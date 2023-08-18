@@ -1,4 +1,6 @@
-use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
+use crate::validator::common::validator_mock::{
+    create_single_rule_full_data_validator, load_commitments, RuleCheckerType,
+};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
@@ -12,7 +14,7 @@ use std::vec;
 #[tokio::test]
 async fn test_only_one_queued_no_included_commitment() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -68,7 +70,7 @@ async fn test_only_one_queued_no_included_commitment() {
 #[tokio::test]
 async fn test_only_no_queued_one_included_commitment() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -129,7 +131,7 @@ async fn test_only_no_queued_one_included_commitment() {
 #[tokio::test]
 async fn test_only_one_queued_one_included_same_commitment() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -224,7 +226,7 @@ async fn test_only_one_queued_one_included_same_commitment() {
 #[tokio::test]
 async fn test_only_one_queued_one_included_different_commitment() {
     let (validator, handler, _mock, mock_rule_validate, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();

@@ -1,4 +1,6 @@
-use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
+use crate::validator::common::validator_mock::{
+    create_single_rule_full_data_validator, load_commitments, RuleCheckerType,
+};
 use ethers_core::rand;
 use ethers_core::rand::Rng;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
@@ -13,7 +15,7 @@ use mystiko_utils::convert::bytes_to_biguint;
 #[tokio::test]
 async fn test_only_queued_duplicate_commitment() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -135,7 +137,7 @@ async fn test_only_queued_duplicate_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::LeafIndexMismatch(10, 1000).to_string()
+        DataMergeError::LeafIndexMismatchError(10, 1000).to_string()
     );
     assert!(mock_rule.cmp_data(None).await);
 }
@@ -143,7 +145,7 @@ async fn test_only_queued_duplicate_commitment() {
 #[tokio::test]
 async fn test_only_included_duplicate_commitment() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -213,7 +215,7 @@ async fn test_only_included_duplicate_commitment() {
 #[tokio::test]
 async fn test_queued_duplicate_leaf_index_mismatch() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -253,7 +255,7 @@ async fn test_queued_duplicate_leaf_index_mismatch() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::LeafIndexMismatch(0, 1000).to_string()
+        DataMergeError::LeafIndexMismatchError(0, 1000).to_string()
     );
     assert!(mock_rule.cmp_data(None).await);
 }
@@ -261,7 +263,7 @@ async fn test_queued_duplicate_leaf_index_mismatch() {
 #[tokio::test]
 async fn test_queued_and_included_duplicate() {
     let (validator, handler, _mock, mock_rule_validator, mock_rule) =
-        create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -373,7 +375,7 @@ async fn test_queued_and_included_duplicate() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::LeafIndexMismatch(0, 1000).to_string()
+        DataMergeError::LeafIndexMismatchError(0, 1000).to_string()
     );
     assert!(mock_rule.cmp_data(None).await);
 }

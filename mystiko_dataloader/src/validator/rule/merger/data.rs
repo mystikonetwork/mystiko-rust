@@ -1,6 +1,7 @@
 use crate::data::{ContractData, DataRef, DataType, FullData, LiteData, LoadedData};
 use crate::handler::{CommitmentQueryOption, DataHandler};
-use crate::validator::rule::merger::error::{DataMergeError, DataMergeResult};
+use crate::validator::rule::merger::error::DataMergeError;
+use crate::validator::rule::merger::DataMergeResult;
 use crate::validator::rule::types::{ValidateCommitment, ValidateContractData, ValidateNullifier};
 use log::error;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
@@ -28,7 +29,7 @@ where
         data: &ContractData<R>,
     ) -> DataMergeResult<ValidateContractData> {
         if data.start_block < 1 {
-            return Err(DataMergeError::InvalidStartBlock);
+            return Err(DataMergeError::StartBlockError);
         }
 
         let (commitments, nullifiers) = match data.data {
@@ -129,7 +130,7 @@ where
         }
 
         if query_result.result.len() != filled_cms.len() {
-            return Err(DataMergeError::InvalidCommitmentDataLen(
+            return Err(DataMergeError::CommitmentDataLenError(
                 filled_cms.len(),
                 query_result.result.len(),
             ));
@@ -137,13 +138,13 @@ where
 
         for (i, cm) in filled_cms.into_iter().enumerate() {
             if cm.commitment_hash != bytes_to_biguint(query_result.result[i].commitment_hash.as_slice()) {
-                return Err(DataMergeError::CommitmentHashMismatch);
+                return Err(DataMergeError::CommitmentHashMismatchError);
             }
 
             if let Some(leaf_index) = query_result.result[i].leaf_index {
                 cm.leaf_index = leaf_index;
             } else {
-                return Err(DataMergeError::LeafIndexIsNone);
+                return Err(DataMergeError::LeafIndexIsNoneError);
             }
         }
 
@@ -179,7 +180,7 @@ fn merge_fetched_commitment(commitments: &[Commitment]) -> DataMergeResult<Vec<V
                     let elem: &mut ValidateCommitment = entry.get_mut();
                     if elem.commitment_hash != validate_commitment.commitment_hash {
                         error!("commitment hash collision");
-                        return Err(DataMergeError::CommitmentHashCollision);
+                        return Err(DataMergeError::CommitmentHashCollisionError);
                     }
 
                     merge_same_commitments(elem, &validate_commitment)?;
@@ -199,14 +200,15 @@ fn merge_same_commitments(src: &mut ValidateCommitment, dst: &ValidateCommitment
         if src.status != dst.status {
             if dst.status == CommitmentStatus::Queued {
                 src.leaf_index = dst.leaf_index;
+            } else if dst.status == CommitmentStatus::Included {
+                src.status = dst.status;
             }
-            src.status = CommitmentStatus::Included;
             src.inner_merge = true;
         } else if src.leaf_index != dst.leaf_index {
-            return Err(DataMergeError::LeafIndexMismatch(src.leaf_index, dst.leaf_index));
+            return Err(DataMergeError::LeafIndexMismatchError(src.leaf_index, dst.leaf_index));
         }
     } else if dst.status == CommitmentStatus::Queued && src.leaf_index != dst.leaf_index {
-        return Err(DataMergeError::LeafIndexMismatch(src.leaf_index, dst.leaf_index));
+        return Err(DataMergeError::LeafIndexMismatchError(src.leaf_index, dst.leaf_index));
     }
 
     Ok(())

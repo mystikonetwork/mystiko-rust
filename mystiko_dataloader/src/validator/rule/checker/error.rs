@@ -4,14 +4,12 @@ use mystiko_crypto::error::MerkleTreeError;
 use mystiko_ethers::provider::factory::Provider;
 use thiserror::Error;
 
-pub type CheckerResult<T> = anyhow::Result<T, RuleCheckError>;
-
 #[derive(Error, Debug)]
 pub enum RuleCheckError {
-    #[error("contract address invalid {0}")]
-    ContractAddressInvalid(String),
-    #[error("provider not found for chain {0}")]
-    ProviderNotFound(u64),
+    #[error("contract address {0} error")]
+    ContractAddressError(String),
+    #[error("provider not found for chain {0} error")]
+    ProviderNotFoundError(u64),
     #[error(transparent)]
     ContractError(#[from] ContractError<Provider>),
     #[error(transparent)]
@@ -19,19 +17,19 @@ pub enum RuleCheckError {
     #[error(transparent)]
     MerkleTreeError(#[from] MerkleTreeError),
     #[error(transparent)]
-    PartialCheckerError(#[from] PartialCheckerError),
+    IntegrityCheckerError(#[from] IntegrityCheckerError),
     #[error(transparent)]
     SequenceCheckerError(#[from] SequenceCheckerError),
     #[error(transparent)]
     CounterCheckerError(#[from] CounterCheckerError),
     #[error(transparent)]
-    TreeCheckerError(#[from] TreeCheckerError),
+    MerkleTreeCheckerError(#[from] MerkleTreeCheckerError),
     #[error(transparent)]
     AnyhowError(#[from] anyhow::Error),
 }
 
 #[derive(Error, Debug)]
-pub enum PartialCheckerError {
+pub enum IntegrityCheckerError {
     #[error("invalid commitment status ")]
     InvalidCommitmentStatus,
     #[error("invalid commitment src chain block number")]
@@ -79,9 +77,9 @@ pub enum CounterCheckerError {
 }
 
 #[derive(Error, Debug)]
-pub enum TreeCheckerError {
+pub enum MerkleTreeCheckerError {
     #[error("target block error expected {0} actual {1}")]
     TargetBlockError(u64, u64),
-    #[error("tree root not known")]
-    TreeRootNotKnown,
+    #[error("merkle tree root not known")]
+    MerkleTreeRootNotKnown,
 }

@@ -1,10 +1,11 @@
 use crate::data::LoadedData;
 use crate::get_provider;
 use crate::handler::{CommitmentQueryOption, DataHandler};
-use crate::validator::rule::checker::error::{CheckerResult, RuleCheckError, TreeCheckerError};
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::types::ValidateContractData;
-use crate::validator::rule::RuleCheckData;
+use crate::validator::rule::MerkleTreeCheckerError;
+use crate::validator::rule::RuleCheckError;
+use crate::validator::rule::{CheckerResult, RuleCheckData};
 use async_trait::async_trait;
 use ethers_core::types::{Address, BlockId, BlockNumber};
 use mystiko_abi::commitment_pool::CommitmentPool;
@@ -19,8 +20,8 @@ use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
-pub struct TreeChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {
-    providers: RwLock<P>,
+pub struct MerkleTreeChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {
+    providers: Arc<RwLock<P>>,
     handler: Arc<H>,
     #[builder(default = 20)]
     tree_max_levels: u32,
@@ -29,7 +30,7 @@ pub struct TreeChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {
 }
 
 #[async_trait]
-impl<R, H, P> RuleChecker<R> for TreeChecker<R, H, P>
+impl<R, H, P> RuleChecker<R> for MerkleTreeChecker<R, H, P>
 where
     R: LoadedData,
     H: DataHandler<R>,
@@ -50,7 +51,7 @@ where
     }
 }
 
-impl<R, H, P> TreeChecker<R, H, P>
+impl<R, H, P> MerkleTreeChecker<R, H, P>
 where
     R: LoadedData,
     H: DataHandler<R>,
@@ -66,7 +67,7 @@ where
             .build();
         let query_result = self.handler.query_commitments(&option).await?;
         if query_result.end_block != target_block {
-            return Err(TreeCheckerError::TargetBlockError(target_block, query_result.end_block).into());
+            return Err(MerkleTreeCheckerError::TargetBlockError(target_block, query_result.end_block).into());
         }
 
         let mut elements = query_result
@@ -85,7 +86,7 @@ where
 
     async fn check_tree_root(&self, data: &ValidateContractData, tree_root: &BigUint) -> CheckerResult<()> {
         let address = Address::from_str(data.contract_address.as_str())
-            .map_err(|_| RuleCheckError::ContractAddressInvalid(data.contract_address.clone()))?;
+            .map_err(|_| RuleCheckError::ContractAddressError(data.contract_address.clone()))?;
         let provider = get_provider(&self.providers, data.chain_id).await?;
         let commitment_contract = CommitmentPool::new(address, provider);
         let known = commitment_contract
@@ -93,7 +94,7 @@ where
             .block(BlockId::Number(BlockNumber::Number(data.end_block.into())))
             .await?;
         if !known {
-            Err(TreeCheckerError::TreeRootNotKnown.into())
+            Err(MerkleTreeCheckerError::MerkleTreeRootNotKnown.into())
         } else {
             Ok(())
         }

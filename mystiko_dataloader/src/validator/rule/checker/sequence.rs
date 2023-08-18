@@ -1,9 +1,9 @@
 use crate::data::LoadedData;
 use crate::handler::{CommitmentQueryOption, DataHandler};
-use crate::validator::rule::checker::error::{CheckerResult, SequenceCheckerError};
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::types::ValidateContractData;
-use crate::validator::rule::{RuleCheckData, ValidateCommitment};
+use crate::validator::rule::SequenceCheckerError;
+use crate::validator::rule::{CheckerResult, RuleCheckData, ValidateCommitment};
 use async_trait::async_trait;
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::sync::Arc;

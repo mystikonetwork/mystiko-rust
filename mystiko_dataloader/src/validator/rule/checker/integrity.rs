@@ -1,17 +1,17 @@
 use crate::data::{DataRef, FullData, LiteData, LoadedData};
-use crate::validator::rule::{CheckerResult, PartialCheckerError, RuleCheckData, RuleChecker};
+use crate::validator::rule::{CheckerResult, IntegrityCheckerError, RuleCheckData, RuleChecker};
 use async_trait::async_trait;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus};
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
-pub struct PartialChecker<R> {
+pub struct IntegrityChecker<R> {
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
 
 #[async_trait]
-impl<R> RuleChecker<R> for PartialChecker<R>
+impl<R> RuleChecker<R> for IntegrityChecker<R>
 where
     R: LoadedData,
 {
@@ -26,7 +26,7 @@ where
     }
 }
 
-impl<R> PartialChecker<R>
+impl<R> IntegrityChecker<R>
 where
     R: LoadedData,
 {
@@ -49,52 +49,48 @@ where
     async fn check_commitment(&self, commitment: &Commitment) -> CheckerResult<()> {
         let status = match CommitmentStatus::from_i32(commitment.status) {
             Some(status) => status,
-            None => return Err(PartialCheckerError::InvalidCommitmentStatus.into()),
+            None => return Err(IntegrityCheckerError::InvalidCommitmentStatus.into()),
         };
 
         match status {
-            CommitmentStatus::Unspecified => Err(PartialCheckerError::InvalidCommitmentStatus.into()),
+            CommitmentStatus::Unspecified => return Err(IntegrityCheckerError::InvalidCommitmentStatus.into()),
             CommitmentStatus::SrcSucceeded => {
                 if commitment.src_chain_block_number.is_none() {
-                    return Err(PartialCheckerError::InvalidCommitmentSrcChainBlockNumber.into());
+                    return Err(IntegrityCheckerError::InvalidCommitmentSrcChainBlockNumber.into());
                 }
 
                 if commitment.src_chain_transaction_hash.is_none() {
-                    return Err(PartialCheckerError::InvalidCommitmentSrcChainTransactionHash.into());
+                    return Err(IntegrityCheckerError::InvalidCommitmentSrcChainTransactionHash.into());
                 }
-
-                Ok(())
             }
             CommitmentStatus::Queued => {
                 if commitment.leaf_index.is_none() {
-                    return Err(PartialCheckerError::InvalidCommitmentLeafIndex.into());
+                    return Err(IntegrityCheckerError::InvalidCommitmentLeafIndex.into());
                 }
 
                 if commitment.rollup_fee.is_none() {
-                    return Err(PartialCheckerError::InvalidCommitmentRollupFee.into());
+                    return Err(IntegrityCheckerError::InvalidCommitmentRollupFee.into());
                 }
 
                 if commitment.encrypted_note.is_none() {
-                    return Err(PartialCheckerError::InvalidCommitmentEncryptedNote.into());
+                    return Err(IntegrityCheckerError::InvalidCommitmentEncryptedNote.into());
                 }
 
                 if commitment.queued_transaction_hash.is_none() {
-                    return Err(PartialCheckerError::InvalidCommitmentQueuedTransactionHash.into());
+                    return Err(IntegrityCheckerError::InvalidCommitmentQueuedTransactionHash.into());
                 }
-
-                Ok(())
             }
             CommitmentStatus::Included => {
                 if commitment.included_block_number.is_none() {
-                    return Err(PartialCheckerError::InvalidCommitmentIncludedBlockNumber.into());
+                    return Err(IntegrityCheckerError::InvalidCommitmentIncludedBlockNumber.into());
                 }
 
                 if commitment.included_transaction_hash.is_none() {
-                    return Err(PartialCheckerError::InvalidCommitmentIncludedTransactionHash.into());
+                    return Err(IntegrityCheckerError::InvalidCommitmentIncludedTransactionHash.into());
                 }
-
-                Ok(())
             }
         }
+
+        Ok(())
     }
 }

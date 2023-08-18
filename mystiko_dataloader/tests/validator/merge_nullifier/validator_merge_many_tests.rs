@@ -1,5 +1,5 @@
 use crate::validator::common::validator_mock::{
-    create_full_data_validator, load_commitments, load_nullifiers, RuleCheckerType,
+    create_single_rule_full_data_validator, load_commitments, load_nullifiers, RuleCheckerType,
 };
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
@@ -9,7 +9,8 @@ use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 
 #[tokio::test]
 async fn test_many_commitment_many_nullifiers() {
-    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();

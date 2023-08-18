@@ -1,17 +1,16 @@
-use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
+use crate::validator::common::validator_mock::{create_full_rule_full_data_validator, load_commitments};
 use ethers_core::types::Bytes;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
-use mystiko_dataloader::validator::rule::TreeCheckerError;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::str::FromStr;
 
 #[tokio::test]
 async fn test_empty_commitment() {
-    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Tree]));
+    let (validator, _handler, _mock) = create_full_rule_full_data_validator();
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -32,21 +31,32 @@ async fn test_empty_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0].result.is_ok());
+    assert!(result.contract_results[0]
+        .result
+        .as_ref()
+        .err()
+        .unwrap()
+        .to_string()
+        .contains("empty responses array"));
 }
 
 #[tokio::test]
 async fn test_some_included_commitment() {
-    let (validator, handler, mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Tree]));
+    let (validator, handler, mock) = create_full_rule_full_data_validator();
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
     let option = ValidateOption::builder().config(core_cfg).build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
-    let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
+    let mut cms = load_commitments("./tests/files/validator/commitments_100.json").await;
     let mut fetched_cms = vec![];
-    for cm in cms.iter().take(10) {
+    for cm in cms.iter_mut().take(10) {
+        cm.rollup_fee = Some(vec![1, 2, 3]);
+        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.encrypted_note = Some(vec![1, 2, 3]);
+        cm.included_block_number = Some(1);
+        cm.included_transaction_hash = Some(vec![1, 2, 3]);
         fetched_cms.push(cm.clone());
         let mut included = cm.clone();
         included.leaf_index = None;
@@ -64,42 +74,10 @@ async fn test_some_included_commitment() {
         .contracts_data(vec![contract_data])
         .build();
     handler.add_commitments(vec![]).await;
-    let result = validator.validate(&data, &option).await.unwrap();
-    assert_eq!(result.chain_id, chain_id);
-    assert_eq!(result.contract_results.len(), 1);
-    assert_eq!(result.contract_results[0].address, contract_address);
-    println!("{:?}", result.contract_results[0].result);
-    assert!(result.contract_results[0]
-        .result
-        .as_ref()
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("empty responses array"));
-
-    handler.add_commitments(cms[0..10].to_vec()).await;
-    let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap();
-    mock.push::<Bytes, _>(include_count.clone()).unwrap();
-    let result = validator.validate(&data, &option).await.unwrap();
-    assert_eq!(result.chain_id, chain_id);
-    assert_eq!(result.contract_results.len(), 1);
-    assert_eq!(result.contract_results[0].address, contract_address);
-    assert_eq!(
-        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        TreeCheckerError::TreeRootNotKnown.to_string()
-    );
-
     handler.add_commitments(vec![]).await;
-    let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
-    mock.push::<Bytes, _>(include_count.clone()).unwrap();
-    let result = validator.validate(&data, &option).await.unwrap();
-    assert_eq!(result.chain_id, chain_id);
-    assert_eq!(result.contract_results.len(), 1);
-    assert_eq!(result.contract_results[0].address, contract_address);
-    assert!(result.contract_results[0].result.is_ok());
-
-    handler.add_commitments(cms[0..10].to_vec()).await;
-    let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
+    let tree_root = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
+    mock.push::<Bytes, _>(tree_root.clone()).unwrap();
+    let include_count = Bytes::from_str("000000000000000000000000000000000000000000000000000000000000000a").unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
     let result = validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);

@@ -5,7 +5,7 @@ use crate::data::{ChainResult, ContractResult};
 use crate::handler::DataHandler;
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::error::Result;
-use crate::validator::rule::merger::data::DataMerger;
+use crate::validator::rule::merger::DataMerger;
 use crate::validator::rule::RuleCheckData;
 use crate::validator::types::{DataValidator, ValidateOption, ValidateResult};
 use async_trait::async_trait;
@@ -13,13 +13,14 @@ use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
-pub struct RuleValidatorInitParam<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker<R>>> {
+pub struct RuleValidatorOptions<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker<R>>> {
     handler: Arc<H>,
     pub rules: Vec<Arc<L>>,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
 
+#[derive(Debug)]
 pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker<R>>> {
     merger: DataMerger<R, H>,
     rules: Vec<Arc<L>>,
@@ -75,11 +76,11 @@ where
     H: DataHandler<R>,
     L: RuleChecker<R>,
 {
-    pub fn new(param: &RuleValidatorInitParam<R, H, L>) -> RuleValidator<R, H, L> {
-        let merger = DataMerger::builder().handler(param.handler.clone()).build();
+    pub fn new(options: &RuleValidatorOptions<R, H, L>) -> RuleValidator<R, H, L> {
+        let merger = DataMerger::builder().handler(options.handler.clone()).build();
         RuleValidator {
             merger,
-            rules: param.rules.clone(),
+            rules: options.rules.clone(),
             _phantom: std::marker::PhantomData,
         }
     }

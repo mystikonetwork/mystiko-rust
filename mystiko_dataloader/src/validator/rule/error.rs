@@ -1,5 +1,5 @@
-use crate::validator::rule::checker::error::RuleCheckError;
-use crate::validator::rule::merger::error::DataMergeError;
+use crate::validator::rule::checker::RuleCheckError;
+use crate::validator::rule::merger::DataMergeError;
 use thiserror::Error;
 
 pub type Result<T> = anyhow::Result<T, RuleValidatorError>;

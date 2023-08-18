@@ -1,15 +1,22 @@
 use crate::data::{ContractData, LoadedData};
-use crate::validator::rule::checker::error::CheckerResult;
 use crate::validator::rule::types::ValidateContractData;
 use crate::validator::ValidateOption;
 use async_trait::async_trait;
 use typed_builder::TypedBuilder;
 
-pub mod counter;
-pub mod error;
-pub mod partial;
-pub mod sequence;
-pub mod tree;
+mod counter;
+mod error;
+mod integrity;
+mod sequence;
+mod tree;
+
+pub use counter::*;
+pub use error::*;
+pub use integrity::*;
+pub use sequence::*;
+pub use tree::*;
+
+pub type CheckerResult<T> = anyhow::Result<T, RuleCheckError>;
 
 #[derive(Debug, TypedBuilder)]
 pub struct RuleCheckData<'a, R: LoadedData> {

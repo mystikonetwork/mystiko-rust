@@ -1,4 +1,6 @@
-use crate::validator::common::validator_mock::{create_full_data_validator, load_commitments, RuleCheckerType};
+use crate::validator::common::validator_mock::{
+    create_single_rule_full_data_validator, load_commitments, RuleCheckerType,
+};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
@@ -9,7 +11,8 @@ use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
 async fn test_empty_data() {
-    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -26,7 +29,8 @@ async fn test_empty_data() {
 
 #[tokio::test]
 async fn test_chain_id_invalid() {
-    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -48,7 +52,8 @@ async fn test_chain_id_invalid() {
 
 #[tokio::test]
 async fn test_not_pool_contract_address() {
-    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -73,7 +78,8 @@ async fn test_not_pool_contract_address() {
 
 #[tokio::test]
 async fn test_contract_data_none() {
-    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -98,7 +104,8 @@ async fn test_contract_data_none() {
 
 #[tokio::test]
 async fn test_empty_commitment() {
-    let (validator, _handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, _handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -124,7 +131,8 @@ async fn test_empty_commitment() {
 
 #[tokio::test]
 async fn test_only_queued_commitment() {
-    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -220,7 +228,8 @@ async fn test_only_queued_commitment() {
 
 #[tokio::test]
 async fn test_only_included_commitment() {
-    let (validator, handler, _mock, _, _) = create_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let (validator, handler, _mock, _, _) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
@@ -269,7 +278,7 @@ async fn test_only_included_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::InvalidCommitmentDataLen(100, 0).to_string()
+        DataMergeError::CommitmentDataLenError(100, 0).to_string()
     );
 
     let (cms1, cms2) = cms.split_at(50);
@@ -307,7 +316,7 @@ async fn test_only_included_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::CommitmentHashMismatch.to_string()
+        DataMergeError::CommitmentHashMismatchError.to_string()
     );
 
     let mut cms3 = cms1.to_vec();
@@ -320,6 +329,6 @@ async fn test_only_included_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::LeafIndexIsNone.to_string()
+        DataMergeError::LeafIndexIsNoneError.to_string()
     );
 }
