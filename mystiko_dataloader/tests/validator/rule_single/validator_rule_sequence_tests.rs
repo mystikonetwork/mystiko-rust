@@ -5,7 +5,7 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
-use mystiko_dataloader::validator::rule::{DataMergeError, SequenceCheckerError};
+use mystiko_dataloader::validator::rule::{DataMergeError, RuleValidatorError, SequenceCheckerError};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 
@@ -20,11 +20,10 @@ async fn test_empty_data() {
     let chain_id = 1_u64;
     let data = ChainData::builder().chain_id(chain_id).contracts_data(vec![]).build();
     let result = validator.validate(&data, &option).await;
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains("data to be validated is empty"));
+    assert_eq!(
+        result.err().unwrap().to_string(),
+        RuleValidatorError::EmptyValidateDataError.to_string()
+    )
 }
 
 #[tokio::test]
@@ -47,7 +46,10 @@ async fn test_chain_id_invalid() {
         .contracts_data(vec![contract_data])
         .build();
     let result = validator.validate(&data, &option).await;
-    assert!(result.err().unwrap().to_string().contains("chain not found"));
+    assert_eq!(
+        result.err().unwrap().to_string(),
+        RuleValidatorError::ChainNotFoundError(12345678890123456789_u64).to_string()
+    );
 }
 
 #[tokio::test]

@@ -6,7 +6,7 @@ use crate::handler::DataHandler;
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::error::Result;
 use crate::validator::rule::merger::DataMerger;
-use crate::validator::rule::RuleCheckData;
+use crate::validator::rule::{RuleCheckData, RuleValidatorError};
 use crate::validator::types::{DataValidator, ValidateOption, ValidateResult};
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -36,13 +36,14 @@ where
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
         if data.contracts_data.is_empty() {
-            return Err(anyhow::Error::msg("data to be validated is empty").into());
+            return Err(
+                <RuleValidatorError as Into<anyhow::Error>>::into(RuleValidatorError::EmptyValidateDataError).into(),
+            );
         }
 
-        let chain = option
-            .config
-            .find_chain(data.chain_id)
-            .ok_or_else(|| anyhow::Error::msg("chain not found"))?;
+        let chain = option.config.find_chain(data.chain_id).ok_or_else(|| {
+            <RuleValidatorError as Into<anyhow::Error>>::into(RuleValidatorError::ChainNotFoundError(data.chain_id))
+        })?;
 
         let mut futures = Vec::new();
         let mut contract_results = vec![];

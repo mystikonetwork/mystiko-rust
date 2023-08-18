@@ -6,6 +6,10 @@ pub type Result<T> = anyhow::Result<T, RuleValidatorError>;
 
 #[derive(Error, Debug)]
 pub enum RuleValidatorError {
+    #[error("data to be validated is empty error")]
+    EmptyValidateDataError,
+    #[error("chain {0} not found error")]
+    ChainNotFoundError(u64),
     #[error(transparent)]
     DataMergeError(#[from] DataMergeError),
     #[error(transparent)]
