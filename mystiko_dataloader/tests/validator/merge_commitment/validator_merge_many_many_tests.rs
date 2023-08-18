@@ -14,7 +14,7 @@ use mystiko_utils::convert::bytes_to_biguint;
 
 #[tokio::test]
 async fn test_one_queued_many_included_same_commitment() {
-    let (validator, handler, _mock, mock_rule_validator, mock_rule) =
+    let (validator, handler, _mock, mock_checker_validator, mock_checker) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
@@ -58,13 +58,13 @@ async fn test_one_queued_many_included_same_commitment() {
         .build();
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    mock_rule_validator.validate(&data, &option).await.unwrap();
+    mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -81,7 +81,7 @@ async fn test_one_queued_many_included_same_commitment() {
 
 #[tokio::test]
 async fn test_many_queued_many_included_part_same_commitment() {
-    let (validator, handler, _mock, mock_rule_validator, mock_rule) =
+    let (validator, handler, _mock, mock_checker_validator, mock_checker) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
@@ -151,13 +151,13 @@ async fn test_many_queued_many_included_part_same_commitment() {
     handler.add_commitments(cms[0..5].to_vec()).await;
     handler.add_commitments(cms[0..5].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    mock_rule_validator.validate(&data, &option).await.unwrap();
+    mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -206,7 +206,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     handler.add_commitments(cms[10..15].to_vec()).await;
     handler.add_commitments(cms[10..15].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    let result2 = mock_rule_validator.validate(&data, &option).await.unwrap();
+    let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
@@ -216,7 +216,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     );
     assert!(result2.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -265,7 +265,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     handler.add_commitments(cms[10..15].to_vec()).await;
     handler.add_commitments(cms[10..15].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    let result2 = mock_rule_validator.validate(&data, &option).await.unwrap();
+    let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
@@ -275,7 +275,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     );
     assert!(result2.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -354,7 +354,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     handler.add_commitments(query_cms.clone()).await;
     handler.add_commitments(query_cms).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    let result2 = mock_rule_validator.validate(&data, &option).await.unwrap();
+    let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
@@ -364,7 +364,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     );
     assert!(result2.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -381,7 +381,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
 
 #[tokio::test]
 async fn test_many_queued_many_included_different_commitment() {
-    let (validator, handler, _mock, mock_rule_validator, mock_rule) =
+    let (validator, handler, _mock, mock_checker_validator, mock_checker) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
@@ -436,14 +436,14 @@ async fn test_many_queued_many_included_different_commitment() {
     handler.add_commitments(cms[0..10].to_vec()).await;
     handler.add_commitments(cms[0..10].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    let result2 = mock_rule_validator.validate(&data, &option).await.unwrap();
+    let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
     assert!(result2.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)

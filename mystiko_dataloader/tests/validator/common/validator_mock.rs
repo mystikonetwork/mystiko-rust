@@ -290,7 +290,7 @@ pub fn create_single_rule_full_data_validator(
         ],
     };
 
-    let rules = rule_types
+    let checkers = rule_types
         .iter()
         .map(|t| match t {
             RuleCheckerType::Integrity => {
@@ -321,7 +321,7 @@ pub fn create_single_rule_full_data_validator(
     let validator = RuleValidator::new(
         &RuleValidatorOptions::builder()
             .handler(handler.clone())
-            .rules(rules)
+            .checkers(checkers)
             .build(),
     );
 
@@ -330,7 +330,7 @@ pub fn create_single_rule_full_data_validator(
     let validator_mock_rule = RuleValidator::new(
         &RuleValidatorOptions::builder()
             .handler(handler.clone())
-            .rules(vec![mock_checker.clone()])
+            .checkers(vec![mock_checker.clone()])
             .build(),
     );
 
@@ -365,7 +365,7 @@ pub fn create_single_rule_lite_data_validator(
         ],
     };
 
-    let rules = rule_types
+    let checkers = rule_types
         .iter()
         .map(|t| match t {
             RuleCheckerType::Integrity => {
@@ -395,7 +395,7 @@ pub fn create_single_rule_lite_data_validator(
     let validator = RuleValidator::new(
         &RuleValidatorOptions::builder()
             .handler(handler.clone())
-            .rules(rules)
+            .checkers(checkers)
             .build(),
     );
 

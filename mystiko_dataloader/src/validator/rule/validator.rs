@@ -15,7 +15,7 @@ use typed_builder::TypedBuilder;
 #[derive(Debug, TypedBuilder)]
 pub struct RuleValidatorOptions<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker<R>>> {
     handler: Arc<H>,
-    pub rules: Vec<Arc<L>>,
+    pub checkers: Vec<Arc<L>>,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -23,7 +23,7 @@ pub struct RuleValidatorOptions<R, H = Box<dyn DataHandler<R>>, L = Box<dyn Rule
 #[derive(Debug)]
 pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker<R>>> {
     merger: DataMerger<R, H>,
-    rules: Vec<Arc<L>>,
+    checkers: Vec<Arc<L>>,
     _phantom: std::marker::PhantomData<R>,
 }
 
@@ -80,7 +80,7 @@ where
         let merger = DataMerger::builder().handler(options.handler.clone()).build();
         RuleValidator {
             merger,
-            rules: options.rules.clone(),
+            checkers: options.checkers.clone(),
             _phantom: std::marker::PhantomData,
         }
     }
@@ -111,8 +111,8 @@ where
             .merged_data(&merged_data)
             .option(option)
             .build();
-        for rule in &self.rules {
-            rule.check(&rule_check_data).await?;
+        for checker in &self.checkers {
+            checker.check(&rule_check_data).await?;
         }
         Ok(())
     }

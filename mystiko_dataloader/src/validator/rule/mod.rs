@@ -32,7 +32,7 @@ where
         .providers(providers.clone())
         .handler(handler.clone())
         .build();
-    let rules = vec![
+    let checkers = vec![
         Arc::new(Box::new(integrity_checker) as Box<dyn RuleChecker<R>>),
         Arc::new(Box::new(sequence_checker) as Box<dyn RuleChecker<R>>),
         Arc::new(Box::new(counter_checker) as Box<dyn RuleChecker<R>>),
@@ -42,7 +42,7 @@ where
     RuleValidator::<R, H>::new(
         &RuleValidatorOptions::<R, H>::builder()
             .handler(handler.clone())
-            .rules(rules)
+            .checkers(checkers)
             .build(),
     )
 }

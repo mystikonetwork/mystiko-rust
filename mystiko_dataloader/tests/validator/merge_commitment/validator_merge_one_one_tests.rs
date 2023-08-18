@@ -13,7 +13,7 @@ use std::vec;
 
 #[tokio::test]
 async fn test_only_one_queued_no_included_commitment() {
-    let (validator, handler, _mock, mock_rule_validator, mock_rule) =
+    let (validator, handler, _mock, mock_checker_validator, mock_checker) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
@@ -46,13 +46,13 @@ async fn test_only_one_queued_no_included_commitment() {
         .build();
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    mock_rule_validator.validate(&data, &option).await.unwrap();
+    mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -69,7 +69,7 @@ async fn test_only_one_queued_no_included_commitment() {
 
 #[tokio::test]
 async fn test_only_no_queued_one_included_commitment() {
-    let (validator, handler, _mock, mock_rule_validator, mock_rule) =
+    let (validator, handler, _mock, mock_checker_validator, mock_checker) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
@@ -107,13 +107,13 @@ async fn test_only_no_queued_one_included_commitment() {
     handler.add_commitments(vec![cms[0].clone()]).await;
     handler.add_commitments(vec![cms[0].clone()]).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    mock_rule_validator.validate(&data, &option).await.unwrap();
+    mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -130,7 +130,7 @@ async fn test_only_no_queued_one_included_commitment() {
 
 #[tokio::test]
 async fn test_only_one_queued_one_included_same_commitment() {
-    let (validator, handler, _mock, mock_rule_validator, mock_rule) =
+    let (validator, handler, _mock, mock_checker_validator, mock_checker) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
@@ -165,13 +165,13 @@ async fn test_only_one_queued_one_included_same_commitment() {
         .build();
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    mock_rule_validator.validate(&data, &option).await.unwrap();
+    mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -202,13 +202,13 @@ async fn test_only_one_queued_one_included_same_commitment() {
         .build();
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
-    mock_rule_validator.validate(&data, &option).await.unwrap();
+    mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -225,7 +225,7 @@ async fn test_only_one_queued_one_included_same_commitment() {
 
 #[tokio::test]
 async fn test_only_one_queued_one_included_different_commitment() {
-    let (validator, handler, _mock, mock_rule_validate, mock_rule) =
+    let (validator, handler, _mock, mock_rule_validate, mock_checker) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
@@ -277,7 +277,7 @@ async fn test_only_one_queued_one_included_different_commitment() {
     assert!(result.contract_results[0].result.is_ok());
     assert!(result2.contract_results[0].result.is_ok());
     assert!(
-        mock_rule
+        mock_checker
             .cmp_data(Some(
                 &ValidateContractData::builder()
                     .chain_id(chain_id)
@@ -320,5 +320,5 @@ async fn test_only_one_queued_one_included_different_commitment() {
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
         SequenceCheckerError::CommitmentStatusNotSequencedError.to_string()
     );
-    assert!(mock_rule.cmp_data(None).await);
+    assert!(mock_checker.cmp_data(None).await);
 }
