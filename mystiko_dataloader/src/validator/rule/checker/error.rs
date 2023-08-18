@@ -50,6 +50,10 @@ pub enum IntegrityCheckerError {
     CommitmentIncludedBlockNumberError,
     #[error("commitment included transaction hash error")]
     CommitmentIncludedTransactionHashError,
+    #[error("commitment bigger than field size error")]
+    CommitmentBiggerThanFieldSizeError,
+    #[error("nullifier bigger than field size error")]
+    NullifierBiggerThanFieldSizeError,
 }
 
 #[derive(Error, Debug)]

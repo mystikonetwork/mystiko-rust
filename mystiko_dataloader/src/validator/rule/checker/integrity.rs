@@ -1,7 +1,9 @@
 use crate::data::{DataRef, FullData, LiteData, LoadedData};
 use crate::validator::rule::{CheckerResult, IntegrityCheckerError, RuleCheckData, RuleChecker};
 use async_trait::async_trait;
-use mystiko_protos::data::v1::{Commitment, CommitmentStatus};
+use mystiko_crypto::constants::FIELD_SIZE;
+use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
+use mystiko_utils::convert::bytes_to_biguint;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
@@ -31,7 +33,8 @@ where
     R: LoadedData,
 {
     async fn check_contract_full_data(&self, data: &FullData) -> CheckerResult<()> {
-        self.check_commitments(&data.commitments).await
+        self.check_commitments(&data.commitments).await?;
+        self.check_nullifiers(&data.nullifiers).await
     }
 
     async fn check_contract_lite_data(&self, data: &LiteData) -> CheckerResult<()> {
@@ -88,6 +91,20 @@ where
                 if commitment.included_transaction_hash.is_none() {
                     return Err(IntegrityCheckerError::CommitmentIncludedTransactionHashError.into());
                 }
+            }
+        }
+
+        if bytes_to_biguint(&commitment.commitment_hash).ge(&FIELD_SIZE) {
+            return Err(IntegrityCheckerError::CommitmentBiggerThanFieldSizeError.into());
+        }
+
+        Ok(())
+    }
+
+    async fn check_nullifiers(&self, nullifiers: &[Nullifier]) -> CheckerResult<()> {
+        for n in nullifiers {
+            if bytes_to_biguint(&n.nullifier).ge(&FIELD_SIZE) {
+                return Err(IntegrityCheckerError::NullifierBiggerThanFieldSizeError.into());
             }
         }
 
