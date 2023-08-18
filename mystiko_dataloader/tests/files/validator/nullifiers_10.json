@@ -1,0 +1,42 @@
+[
+  {
+    "nullifier": "EdYwxlXGM0gseRwNeOAaFBGc++l3Dj6CSOsa0VHndLk=",
+    "blockNumber": "1000"
+  },
+  {
+    "nullifier": "Gi0wHONwqYNf7WOmwLwFnvFJRwZaRCnWWXRanhHFm8I=",
+    "blockNumber": "1001"
+  },
+  {
+    "nullifier": "L4xoY4UgpR/VsY62yrKJ0R8+f4GlWEx+HDO/NY9Fmc4=",
+    "blockNumber": "1002"
+  },
+  {
+    "nullifier": "IKFqAsbaBRFjpDxuULYd74Rkk712vJLW3nuFz+k3PfE=",
+    "blockNumber": "1003"
+  },
+  {
+    "nullifier": "JnAeVkPzhH5KQQtA9yudd7rXvKQyvcWUl466Z0eQ8Oo=",
+    "blockNumber": "1004"
+  },
+  {
+    "nullifier": "L9AdEKHa6C2u0UuSlZYhL7ncQgPbaEHW1o/iOKQBMRE=",
+    "blockNumber": "1005"
+  },
+  {
+    "nullifier": "GnzTw4INHhNXDdH229iE+vhgjQlXzBnNzt9o7if4Mcs=",
+    "blockNumber": "1006"
+  },
+  {
+    "nullifier": "C8yg+CCi+0i6Upd5T7d0AXgKUFDRF3M5or4jIn+CTP4=",
+    "blockNumber": "1007"
+  },
+  {
+    "nullifier": "CdbAgVDnzniO9ujLZjJiaNad1mcFizQcF0TQwMEySwk=",
+    "blockNumber": "1008"
+  },
+  {
+    "nullifier": "HEwG7NbqjijrpxnKuPJQp3eKZiZPSqJzT5sJ420D5xU=",
+    "blockNumber": "1009"
+  }
+]

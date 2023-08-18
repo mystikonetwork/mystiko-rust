@@ -2,6 +2,8 @@ extern crate mystiko_crypto;
 extern crate num_bigint;
 
 use num_bigint::BigUint;
+use num_traits::{One, Zero};
+use std::ops::Shr;
 
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_crypto::ecies::{
@@ -100,6 +102,21 @@ async fn test_encrypt() {
     let pk = public_key(&sk);
 
     let message = random_biguint(32, &FIELD_SIZE);
+    let encrypted = encrypt(&message, &pk, &common_sk);
+    let decrypted = decrypt(&encrypted, &sk, &common_pk);
+    assert_eq!(message, decrypted);
+
+    let message = BigUint::zero();
+    let encrypted = encrypt(&message, &pk, &common_sk);
+    let decrypted = decrypt(&encrypted, &sk, &common_pk);
+    assert_eq!(message, decrypted);
+
+    let message = FIELD_SIZE.clone() - BigUint::one();
+    let encrypted = encrypt(&message, &pk, &common_sk);
+    let decrypted = decrypt(&encrypted, &sk, &common_pk);
+    assert_eq!(message, decrypted);
+
+    let message = FIELD_SIZE.clone().shr(1u32);
     let encrypted = encrypt(&message, &pk, &common_sk);
     let decrypted = decrypt(&encrypted, &sk, &common_pk);
     assert_eq!(message, decrypted);
