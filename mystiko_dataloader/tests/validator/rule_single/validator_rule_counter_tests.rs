@@ -51,7 +51,7 @@ async fn test_empty_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        CounterCheckerError::IncludedCountMismatch(0, 1).to_string()
+        CounterCheckerError::IncludedCountMismatchError(0, 1).to_string()
     );
 
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap();
@@ -131,7 +131,7 @@ async fn test_only_included_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        CounterCheckerError::IncludedCountMismatch(1, 0).to_string()
+        CounterCheckerError::IncludedCountMismatchError(1, 0).to_string()
     );
 
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();

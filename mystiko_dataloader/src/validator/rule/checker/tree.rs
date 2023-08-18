@@ -94,7 +94,7 @@ where
             .block(BlockId::Number(BlockNumber::Number(data.end_block.into())))
             .await?;
         if !known {
-            Err(MerkleTreeCheckerError::MerkleTreeRootNotKnown.into())
+            Err(MerkleTreeCheckerError::MerkleTreeRootNotKnownError.into())
         } else {
             Ok(())
         }

@@ -202,7 +202,7 @@ async fn test_only_queued_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::CommitmentNotSequenceWithHandler(10, 20).to_string()
+        SequenceCheckerError::CommitmentNotSequenceWithHandlerError(10, 20).to_string()
     );
 
     handler.add_commitments(cms3.to_vec()).await;
@@ -222,7 +222,7 @@ async fn test_only_queued_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::CommitmentNotSequenceWithHandler(20, 10).to_string()
+        SequenceCheckerError::CommitmentNotSequenceWithHandlerError(20, 10).to_string()
     );
 }
 

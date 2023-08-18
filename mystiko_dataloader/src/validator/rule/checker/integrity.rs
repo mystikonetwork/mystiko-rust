@@ -49,44 +49,44 @@ where
     async fn check_commitment(&self, commitment: &Commitment) -> CheckerResult<()> {
         let status = match CommitmentStatus::from_i32(commitment.status) {
             Some(status) => status,
-            None => return Err(IntegrityCheckerError::InvalidCommitmentStatus.into()),
+            None => return Err(IntegrityCheckerError::CommitmentStatusError.into()),
         };
 
         match status {
-            CommitmentStatus::Unspecified => return Err(IntegrityCheckerError::InvalidCommitmentStatus.into()),
+            CommitmentStatus::Unspecified => return Err(IntegrityCheckerError::CommitmentStatusError.into()),
             CommitmentStatus::SrcSucceeded => {
                 if commitment.src_chain_block_number.is_none() {
-                    return Err(IntegrityCheckerError::InvalidCommitmentSrcChainBlockNumber.into());
+                    return Err(IntegrityCheckerError::CommitmentSrcChainBlockNumberError.into());
                 }
 
                 if commitment.src_chain_transaction_hash.is_none() {
-                    return Err(IntegrityCheckerError::InvalidCommitmentSrcChainTransactionHash.into());
+                    return Err(IntegrityCheckerError::CommitmentSrcChainTransactionHashError.into());
                 }
             }
             CommitmentStatus::Queued => {
                 if commitment.leaf_index.is_none() {
-                    return Err(IntegrityCheckerError::InvalidCommitmentLeafIndex.into());
+                    return Err(IntegrityCheckerError::CommitmentLeafIndexError.into());
                 }
 
                 if commitment.rollup_fee.is_none() {
-                    return Err(IntegrityCheckerError::InvalidCommitmentRollupFee.into());
+                    return Err(IntegrityCheckerError::CommitmentRollupFeeError.into());
                 }
 
                 if commitment.encrypted_note.is_none() {
-                    return Err(IntegrityCheckerError::InvalidCommitmentEncryptedNote.into());
+                    return Err(IntegrityCheckerError::CommitmentEncryptedNoteError.into());
                 }
 
                 if commitment.queued_transaction_hash.is_none() {
-                    return Err(IntegrityCheckerError::InvalidCommitmentQueuedTransactionHash.into());
+                    return Err(IntegrityCheckerError::CommitmentQueuedTransactionHashError.into());
                 }
             }
             CommitmentStatus::Included => {
                 if commitment.included_block_number.is_none() {
-                    return Err(IntegrityCheckerError::InvalidCommitmentIncludedBlockNumber.into());
+                    return Err(IntegrityCheckerError::CommitmentIncludedBlockNumberError.into());
                 }
 
                 if commitment.included_transaction_hash.is_none() {
-                    return Err(IntegrityCheckerError::InvalidCommitmentIncludedTransactionHash.into());
+                    return Err(IntegrityCheckerError::CommitmentIncludedTransactionHashError.into());
                 }
             }
         }

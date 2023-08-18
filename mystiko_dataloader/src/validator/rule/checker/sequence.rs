@@ -45,7 +45,7 @@ where
             .windows(2)
             .any(|window| window[0].leaf_index + 1 != window[1].leaf_index)
         {
-            return Err(SequenceCheckerError::LeafIndexNotSequenced.into());
+            return Err(SequenceCheckerError::LeafIndexNotSequencedError.into());
         }
         Ok(())
     }
@@ -58,7 +58,7 @@ where
         if first.status == CommitmentStatus::Queued {
             for cm in &data.commitments {
                 if cm.status != first.status {
-                    return Err(SequenceCheckerError::CommitmentStatusNotSequenced.into());
+                    return Err(SequenceCheckerError::CommitmentStatusNotSequencedError.into());
                 }
             }
         } else if first.status == CommitmentStatus::Included {
@@ -69,13 +69,13 @@ where
                 if cm.status == CommitmentStatus::Queued {
                     queued_seen = true;
                 } else if cm.status == CommitmentStatus::Included && queued_seen {
-                    return Err(SequenceCheckerError::CommitmentStatusNotSequenced.into());
+                    return Err(SequenceCheckerError::CommitmentStatusNotSequencedError.into());
                 }
 
                 if cm.inner_merge {
                     inner_merged_seen = true;
                 } else if cm.status == CommitmentStatus::Included && !cm.inner_merge && inner_merged_seen {
-                    return Err(SequenceCheckerError::CommitmentMergedNotSequenced.into());
+                    return Err(SequenceCheckerError::CommitmentMergedNotSequencedError.into());
                 }
             }
         }
@@ -94,7 +94,7 @@ where
 
         let count = self.query_handler_commitment_count(data, first.status).await?;
         if count != first.leaf_index {
-            Err(SequenceCheckerError::CommitmentNotSequenceWithHandler(count, first.leaf_index).into())
+            Err(SequenceCheckerError::CommitmentNotSequenceWithHandlerError(count, first.leaf_index).into())
         } else {
             Ok(())
         }

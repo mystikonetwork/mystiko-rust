@@ -318,7 +318,7 @@ async fn test_only_one_queued_one_included_different_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::CommitmentStatusNotSequenced.to_string()
+        SequenceCheckerError::CommitmentStatusNotSequencedError.to_string()
     );
     assert!(mock_rule.cmp_data(None).await);
 }

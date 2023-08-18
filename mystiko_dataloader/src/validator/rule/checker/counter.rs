@@ -87,7 +87,9 @@ where
                 }
 
                 if query_result.result != included_count {
-                    return Err(CounterCheckerError::IncludedCountMismatch(query_result.result, included_count).into());
+                    return Err(
+                        CounterCheckerError::IncludedCountMismatchError(query_result.result, included_count).into(),
+                    );
                 }
 
                 Ok(())
@@ -95,7 +97,7 @@ where
             Some(cm) => {
                 let fetched_include_count = cm.leaf_index + 1;
                 if included_count != fetched_include_count {
-                    Err(CounterCheckerError::IncludedCountMismatch(fetched_include_count, included_count).into())
+                    Err(CounterCheckerError::IncludedCountMismatchError(fetched_include_count, included_count).into())
                 } else {
                     Ok(())
                 }

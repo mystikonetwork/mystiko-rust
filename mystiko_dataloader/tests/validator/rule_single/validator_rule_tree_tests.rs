@@ -88,7 +88,7 @@ async fn test_some_included_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        MerkleTreeCheckerError::MerkleTreeRootNotKnown.to_string()
+        MerkleTreeCheckerError::MerkleTreeRootNotKnownError.to_string()
     );
 
     handler.add_commitments(vec![]).await;

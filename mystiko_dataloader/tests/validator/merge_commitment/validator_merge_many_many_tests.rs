@@ -212,7 +212,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::CommitmentStatusNotSequenced.to_string()
+        SequenceCheckerError::CommitmentStatusNotSequencedError.to_string()
     );
     assert!(result2.contract_results[0].result.is_ok());
     assert!(
@@ -271,7 +271,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::CommitmentStatusNotSequenced.to_string()
+        SequenceCheckerError::CommitmentStatusNotSequencedError.to_string()
     );
     assert!(result2.contract_results[0].result.is_ok());
     assert!(
@@ -360,7 +360,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::CommitmentStatusNotSequenced.to_string()
+        SequenceCheckerError::CommitmentStatusNotSequencedError.to_string()
     );
     assert!(result2.contract_results[0].result.is_ok());
     assert!(
@@ -535,7 +535,7 @@ async fn test_many_queued_many_included_leaf_index_error_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::LeafIndexNotSequenced.to_string()
+        SequenceCheckerError::LeafIndexNotSequencedError.to_string()
     );
 
     let mut fetched_cms = vec![];
@@ -571,7 +571,7 @@ async fn test_many_queued_many_included_leaf_index_error_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::LeafIndexNotSequenced.to_string()
+        SequenceCheckerError::LeafIndexNotSequencedError.to_string()
     );
 
     let mut fetched_cms = vec![];

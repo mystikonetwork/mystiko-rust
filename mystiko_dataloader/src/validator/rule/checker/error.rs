@@ -30,56 +30,56 @@ pub enum RuleCheckError {
 
 #[derive(Error, Debug)]
 pub enum IntegrityCheckerError {
-    #[error("invalid commitment status ")]
-    InvalidCommitmentStatus,
-    #[error("invalid commitment src chain block number")]
-    InvalidCommitmentSrcChainBlockNumber,
-    #[error("invalid commitment src chain transaction hash")]
-    InvalidCommitmentSrcChainTransactionHash,
-    #[error("invalid commitment leaf index")]
-    InvalidCommitmentLeafIndex,
-    #[error("invalid commitment nullifier")]
-    InvalidCommitmentNullifier,
-    #[error("invalid commitment rollup fee")]
-    InvalidCommitmentRollupFee,
-    #[error("invalid commitment encrypted note")]
-    InvalidCommitmentEncryptedNote,
-    #[error("invalid commitment queued transaction hash")]
-    InvalidCommitmentQueuedTransactionHash,
-    #[error("invalid commitment included block number")]
-    InvalidCommitmentIncludedBlockNumber,
-    #[error("invalid commitment included transaction hash")]
-    InvalidCommitmentIncludedTransactionHash,
+    #[error("commitment status error")]
+    CommitmentStatusError,
+    #[error("commitment src chain block number error")]
+    CommitmentSrcChainBlockNumberError,
+    #[error("commitment src chain transaction hash error")]
+    CommitmentSrcChainTransactionHashError,
+    #[error("commitment leaf index error")]
+    CommitmentLeafIndexError,
+    #[error("commitment nullifier error")]
+    CommitmentNullifierError,
+    #[error("commitment rollup fee error")]
+    CommitmentRollupFeeError,
+    #[error("commitment encrypted note error")]
+    CommitmentEncryptedNoteError,
+    #[error("commitment queued transaction hash error")]
+    CommitmentQueuedTransactionHashError,
+    #[error("commitment included block number error")]
+    CommitmentIncludedBlockNumberError,
+    #[error("commitment included transaction hash error")]
+    CommitmentIncludedTransactionHashError,
 }
 
 #[derive(Error, Debug)]
 pub enum SequenceCheckerError {
     #[error("target block error expected {0} actual {1}")]
     TargetBlockError(u64, u64),
-    #[error("commitment data empty")]
-    CommitmentDataEmpty,
-    #[error("leaf index not sequenced")]
-    LeafIndexNotSequenced,
-    #[error("commitment status not sequenced")]
-    CommitmentStatusNotSequenced,
-    #[error("commitment merged not sequenced")]
-    CommitmentMergedNotSequenced,
-    #[error("commitments not sequenced handler {0} fetcher {1} ")]
-    CommitmentNotSequenceWithHandler(u64, u64),
+    #[error("commitment data empty error")]
+    CommitmentDataEmptyError,
+    #[error("leaf index not sequenced error")]
+    LeafIndexNotSequencedError,
+    #[error("commitment status not sequenced error")]
+    CommitmentStatusNotSequencedError,
+    #[error("commitment merged not sequenced error")]
+    CommitmentMergedNotSequencedError,
+    #[error("commitments not sequenced error handler {0} fetcher {1} ")]
+    CommitmentNotSequenceWithHandlerError(u64, u64),
 }
 
 #[derive(Error, Debug)]
 pub enum CounterCheckerError {
     #[error("target block error expected {0} actual {1}")]
     TargetBlockError(u64, u64),
-    #[error("included count mismatch fetcher {0} provider {1}")]
-    IncludedCountMismatch(u64, u64),
+    #[error("included count mismatch error fetcher {0} provider {1}")]
+    IncludedCountMismatchError(u64, u64),
 }
 
 #[derive(Error, Debug)]
 pub enum MerkleTreeCheckerError {
     #[error("target block error expected {0} actual {1}")]
     TargetBlockError(u64, u64),
-    #[error("merkle tree root not known")]
-    MerkleTreeRootNotKnown,
+    #[error("merkle tree root not known error")]
+    MerkleTreeRootNotKnownError,
 }
