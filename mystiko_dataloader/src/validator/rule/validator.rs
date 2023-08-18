@@ -13,26 +13,26 @@ use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
-pub struct RuleValidatorOptions<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker<R>>> {
+pub struct RuleValidatorOptions<R, H = Box<dyn DataHandler<R>>, C = Box<dyn RuleChecker<R>>> {
     handler: Arc<H>,
-    pub checkers: Vec<Arc<L>>,
+    pub checkers: Vec<Arc<C>>,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
 
 #[derive(Debug)]
-pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>, L = Box<dyn RuleChecker<R>>> {
+pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>, C = Box<dyn RuleChecker<R>>> {
     merger: DataMerger<R, H>,
-    checkers: Vec<Arc<L>>,
+    checkers: Vec<Arc<C>>,
     _phantom: std::marker::PhantomData<R>,
 }
 
 #[async_trait]
-impl<R, H, L> DataValidator<R> for RuleValidator<R, H, L>
+impl<R, H, C> DataValidator<R> for RuleValidator<R, H, C>
 where
     R: LoadedData,
     H: DataHandler<R>,
-    L: RuleChecker<R>,
+    C: RuleChecker<R>,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
         if data.contracts_data.is_empty() {
@@ -70,13 +70,13 @@ where
     }
 }
 
-impl<R, H, L> RuleValidator<R, H, L>
+impl<R, H, C> RuleValidator<R, H, C>
 where
     R: LoadedData,
     H: DataHandler<R>,
-    L: RuleChecker<R>,
+    C: RuleChecker<R>,
 {
-    pub fn new(options: &RuleValidatorOptions<R, H, L>) -> RuleValidator<R, H, L> {
+    pub fn new(options: &RuleValidatorOptions<R, H, C>) -> RuleValidator<R, H, C> {
         let merger = DataMerger::builder().handler(options.handler.clone()).build();
         RuleValidator {
             merger,
