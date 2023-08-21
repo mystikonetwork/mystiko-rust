@@ -373,8 +373,8 @@ async fn test_ether_scan_lite_data_fetch_no_contract_request() {
     assert_eq!(data.commitments.len(), 3);
 }
 
-async fn build_mock_request(mocked_server: &mut ServerGuard, params: &Vec<Matcher>, topic: &str, resp: &str) -> Mock {
-    let mut params_with_topic = params.clone();
+async fn build_mock_request(mocked_server: &mut ServerGuard, params: &[Matcher], topic: &str, resp: &str) -> Mock {
+    let mut params_with_topic = params.to_owned();
     params_with_topic.push(Matcher::UrlEncoded("topic0".into(), topic.into()));
     mocked_server
         .mock("GET", "/api")
