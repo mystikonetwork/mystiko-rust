@@ -65,7 +65,7 @@ fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<GetLo
             let chain_config = option
                 .config
                 .find_chain(option.chain_id)
-                .ok_or_else(|| EtherScanFetcherError::ChainConfigNotFoundError(option.chain_id))?;
+                .ok_or(EtherScanFetcherError::ChainConfigNotFoundError(option.chain_id))?;
             Ok(chain_config
                 .contracts_with_disabled()
                 .into_iter()
