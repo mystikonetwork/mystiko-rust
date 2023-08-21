@@ -1,9 +1,9 @@
 extern crate mystiko_database;
 
 use mystiko_database::document::contract::{Contract, ContractCollection, ContractColumn};
+use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::ContractType;
@@ -83,7 +83,13 @@ async fn test_contracts_crud() {
     assert_eq!(found_contracts, inserted_contracts);
     // testing find
     found_contracts = contracts
-        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .find(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(2)
+                .offset(1)
+                .build(),
+        )
         .await
         .unwrap();
     assert_eq!(found_contracts, inserted_contracts[1..]);

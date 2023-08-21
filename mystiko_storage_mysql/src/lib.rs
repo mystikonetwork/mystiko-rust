@@ -1,10 +1,12 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use mystiko_storage::column::{ColumnType, ColumnValue};
+use mystiko_protos::storage::v1::column_value::Value;
+use mystiko_protos::storage::v1::{ColumnType, ColumnValue};
 use mystiko_storage::document::{Document, DocumentData};
 use mystiko_storage::error::StorageError;
 use mystiko_storage::formatter::types::{CountStatement, Statement};
 use mystiko_storage::storage::Storage;
+use mystiko_utils::convert::{biguint_to_bytes, i128_to_bytes, u128_to_bytes};
 use num_bigint::{BigInt, BigUint};
 use sqlx::{MySqlPool, Row};
 use std::str::FromStr;
@@ -140,7 +142,10 @@ fn statement_to_query(statement: &Statement) -> Result<Query<'_>, StorageError> 
 
 fn bind_mysql_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Result<Query<'a>, StorageError> {
     for value in values {
-        match value.column_type() {
+        match value.column_type()? {
+            ColumnType::Unspecified => {
+                query = query.bind(serde_json::to_string(&value.as_json()?)?);
+            }
             ColumnType::Bool => {
                 query = query.bind(value.as_bool()?);
             }
@@ -218,111 +223,186 @@ fn row_to_document<T: DocumentData>(row: &sqlx::mysql::MySqlRow) -> Result<Docum
     let mut columns_with_value: Vec<(String, ColumnValue)> = vec![];
     for column in Document::<T>::columns() {
         match column.column_type {
+            ColumnType::Unspecified => {
+                if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::JsonValue(value)).build(),
+                    ));
+                }
+            }
             ColumnType::Bool => {
                 if let Some(value) = get_column_value::<bool>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::Bool(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::BoolValue(value)).build(),
+                    ));
                 }
             }
             ColumnType::Char => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
                     if let Some(value) = value.chars().next() {
-                        columns_with_value.push((column.column_name, ColumnValue::Char(value)));
+                        columns_with_value.push((
+                            column.column_name,
+                            ColumnValue::builder()
+                                .value(Value::CharValue(value.to_string()))
+                                .build(),
+                        ));
                     }
                 }
             }
             ColumnType::I8 => {
                 if let Some(value) = get_column_value::<i8>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::I8(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::I8Value(value as i32)).build(),
+                    ));
                 }
             }
             ColumnType::I16 => {
                 if let Some(value) = get_column_value::<i16>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::I16(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::I16Value(value as i32)).build(),
+                    ));
                 }
             }
             ColumnType::I32 => {
                 if let Some(value) = get_column_value::<i32>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::I32(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::I32Value(value)).build(),
+                    ));
                 }
             }
             ColumnType::I64 => {
                 if let Some(value) = get_column_value::<i64>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::I64(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::I64Value(value)).build(),
+                    ));
                 }
             }
             ColumnType::I128 => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
                     let value: i128 = value.parse()?;
-                    columns_with_value.push((column.column_name, ColumnValue::I128(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder()
+                            .value(Value::I128Value(i128_to_bytes(value)))
+                            .build(),
+                    ));
                 }
             }
             ColumnType::ISize => {
                 if let Some(value) = get_column_value::<i64>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::ISize(value as isize)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::IsizeValue(value)).build(),
+                    ));
                 }
             }
             ColumnType::U8 => {
                 if let Some(value) = get_column_value::<u8>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::U8(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::U8Value(value as u32)).build(),
+                    ));
                 }
             }
             ColumnType::U16 => {
                 if let Some(value) = get_column_value::<u16>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::U16(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::U16Value(value as u32)).build(),
+                    ));
                 }
             }
             ColumnType::U32 => {
                 if let Some(value) = get_column_value::<u32>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::U32(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::U32Value(value)).build(),
+                    ));
                 }
             }
             ColumnType::U64 => {
                 if let Some(value) = get_column_value::<u64>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::U64(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::U64Value(value)).build(),
+                    ));
                 }
             }
             ColumnType::U128 => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
                     let value: u128 = value.parse()?;
-                    columns_with_value.push((column.column_name, ColumnValue::U128(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder()
+                            .value(Value::U128Value(u128_to_bytes(value)))
+                            .build(),
+                    ));
                 }
             }
             ColumnType::USize => {
                 if let Some(value) = get_column_value::<u64>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::USize(value as usize)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::UsizeValue(value)).build(),
+                    ));
                 }
             }
             ColumnType::F32 => {
                 if let Some(value) = get_column_value::<f32>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::F32(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::F32Value(value)).build(),
+                    ));
                 }
             }
             ColumnType::F64 => {
                 if let Some(value) = get_column_value::<f64>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::F64(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::F64Value(value)).build(),
+                    ));
                 }
             }
             ColumnType::String => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    columns_with_value.push((column.column_name, ColumnValue::String(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::StringValue(value)).build(),
+                    ));
                 }
             }
             ColumnType::BigInt => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
                     let value = BigInt::from_str(&value)?;
-                    columns_with_value.push((column.column_name, ColumnValue::BigInt(value)))
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::BigIntValue(value.into())).build(),
+                    ))
                 }
             }
             ColumnType::BigUint => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
                     let value = BigUint::from_str(&value)?;
-                    columns_with_value.push((column.column_name, ColumnValue::BigUint(value)))
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder()
+                            .value(Value::BigUintValue(biguint_to_bytes(&value)))
+                            .build(),
+                    ))
                 }
             }
             ColumnType::Json => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    let value = serde_json::from_str(&value)?;
-                    columns_with_value.push((column.column_name, ColumnValue::Json(value)));
+                    columns_with_value.push((
+                        column.column_name,
+                        ColumnValue::builder().value(Value::JsonValue(value)).build(),
+                    ));
                 }
             }
         };

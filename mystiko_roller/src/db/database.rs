@@ -1,8 +1,8 @@
 use crate::common::env::load_roller_db_path;
 use crate::db::document::commitment::{CommitmentInfo, CommitmentInfoCollection, CommitmentInfoColumn};
+use mystiko_protos::storage::v1::{Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{Condition, Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
@@ -26,12 +26,18 @@ impl<F: StatementFormatter, S: Storage> RollerDatabase<F, S> {
     }
 
     pub async fn find_all_commitment(&self, chain_id: u64, contract_address: &str) -> Vec<Document<CommitmentInfo>> {
-        let qf = QueryFilterBuilder::new()
-            .filter(Condition::and(vec![
+        let qf = QueryFilter::builder()
+            .conditions_operator(ConditionOperator::And)
+            .conditions(vec![Condition::and(vec![
                 SubFilter::equal(CommitmentInfoColumn::ContractAddress, contract_address.to_string()),
                 SubFilter::equal(CommitmentInfoColumn::ChainId, chain_id.to_string()),
-            ]))
-            .order_by(CommitmentInfoColumn::LeafIndex, Order::ASC)
+            ])])
+            .order_by(
+                OrderBy::builder()
+                    .columns(vec![CommitmentInfoColumn::LeafIndex.to_string()])
+                    .order(Order::Asc)
+                    .build(),
+            )
             .build();
         self.commitments
             .find(qf)

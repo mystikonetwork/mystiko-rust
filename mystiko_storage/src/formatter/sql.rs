@@ -1,10 +1,12 @@
-use crate::column::{Column, ColumnType, ColumnValue};
+use crate::column::Column;
 use crate::document::{Document, DocumentColumn, DocumentData};
-use crate::filter::{Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter, SubFilterOperator};
 use crate::formatter::types::{CountStatement, Statement, StatementFormatter};
 use crate::migration::types::{
     AddColumnMigration, AddIndexMigration, CreateCollectionMigration, DropColumnMigration, Migration,
     RenameColumnMigration,
+};
+use mystiko_protos::storage::v1::{
+    ColumnType, ColumnValue, Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter, SubFilterOperator,
 };
 use typed_builder::TypedBuilder;
 
@@ -252,7 +254,9 @@ impl SqlStatementFormatter {
             }
         }
         if !condition_statements.is_empty() {
-            statements.push(condition_statements.join(format_condition_operator(&filter.conditions_operator)));
+            statements.push(condition_statements.join(format_condition_operator(
+                &ConditionOperator::from_i32(filter.conditions_operator).unwrap_or(ConditionOperator::Unspecified),
+            )));
         }
         if let Some(order_by) = &filter.order_by {
             if !order_by.columns.is_empty() {
@@ -279,7 +283,9 @@ impl SqlStatementFormatter {
                 .iter()
                 .map(|statement| statement.statement.clone())
                 .collect::<Vec<String>>()
-                .join(format_condition_operator(&condition.operator)),
+                .join(format_condition_operator(
+                    &ConditionOperator::from_i32(condition.operator).unwrap_or(ConditionOperator::Unspecified),
+                )),
             sub_filter_statements
                 .into_iter()
                 .flat_map(|statement| statement.column_values)
@@ -288,7 +294,11 @@ impl SqlStatementFormatter {
     }
 
     fn format_sub_filter(&self, filter: SubFilter) -> Statement {
-        match filter.operator {
+        let operator = SubFilterOperator::from_i32(filter.operator).unwrap_or(SubFilterOperator::Unspecified);
+        match operator {
+            SubFilterOperator::Unspecified => {
+                Statement::new(format!("`{}` = {}", filter.column, self.value_mark()), filter.values)
+            }
             SubFilterOperator::Equal => {
                 Statement::new(format!("`{}` = {}", filter.column, self.value_mark()), filter.values)
             }
@@ -331,8 +341,9 @@ impl SqlStatementFormatter {
 
 fn format_condition_operator(operator: &ConditionOperator) -> &str {
     match operator {
-        ConditionOperator::AND => " AND ",
-        ConditionOperator::OR => " OR ",
+        ConditionOperator::Unspecified => "AND",
+        ConditionOperator::And => " AND ",
+        ConditionOperator::Or => " OR ",
     }
 }
 
@@ -342,9 +353,10 @@ fn format_order_by(order_by: &OrderBy) -> String {
         .iter()
         .map(|column| format!("`{}`", column))
         .collect::<Vec<String>>();
-    let order = match order_by.order {
-        Order::ASC => "ASC",
-        Order::DESC => "DESC",
+    let order = match Order::from_i32(order_by.order).unwrap_or(Order::Unspecified) {
+        Order::Unspecified => "ASC",
+        Order::Asc => "ASC",
+        Order::Desc => "DESC",
     };
     format!("ORDER BY {} {}", column_names.join(", "), order)
 }
@@ -470,6 +482,7 @@ fn format_column_sql(column: &Column, sql_type: &SqlType) -> String {
 
 fn get_column_sql_type(column: &Column, sql_type: &SqlType) -> String {
     match column.column_type {
+        ColumnType::Unspecified => "TINYINT".into(),
         ColumnType::Bool => "TINYINT".into(),
         ColumnType::Char => "VARCHAR(1)".into(),
         ColumnType::I8 => "TINYINT".into(),

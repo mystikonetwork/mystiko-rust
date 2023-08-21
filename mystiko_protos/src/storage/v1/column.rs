@@ -185,13 +185,13 @@ impl Display for ColumnType {
             ColumnType::I32 => Display::fmt("i32", f),
             ColumnType::I64 => Display::fmt("i64", f),
             ColumnType::I128 => Display::fmt("i128", f),
-            ColumnType::Isize => Display::fmt("isize", f),
+            ColumnType::ISize => Display::fmt("isize", f),
             ColumnType::U8 => Display::fmt("u8", f),
             ColumnType::U16 => Display::fmt("u16", f),
             ColumnType::U32 => Display::fmt("u32", f),
             ColumnType::U64 => Display::fmt("u64", f),
             ColumnType::U128 => Display::fmt("u128", f),
-            ColumnType::Usize => Display::fmt("usize", f),
+            ColumnType::USize => Display::fmt("usize", f),
             ColumnType::F32 => Display::fmt("f32", f),
             ColumnType::F64 => Display::fmt("f64", f),
             ColumnType::String => Display::fmt("string", f),
@@ -249,13 +249,13 @@ impl ColumnValue {
             Value::I32Value(_) => Ok(ColumnType::I32),
             Value::I64Value(_) => Ok(ColumnType::I64),
             Value::I128Value(_) => Ok(ColumnType::I128),
-            Value::IsizeValue(_) => Ok(ColumnType::Isize),
+            Value::IsizeValue(_) => Ok(ColumnType::ISize),
             Value::U8Value(_) => Ok(ColumnType::U8),
             Value::U16Value(_) => Ok(ColumnType::U16),
             Value::U32Value(_) => Ok(ColumnType::U32),
             Value::U64Value(_) => Ok(ColumnType::U64),
             Value::U128Value(_) => Ok(ColumnType::U128),
-            Value::UsizeValue(_) => Ok(ColumnType::Usize),
+            Value::UsizeValue(_) => Ok(ColumnType::USize),
             Value::F32Value(_) => Ok(ColumnType::F32),
             Value::F64Value(_) => Ok(ColumnType::F64),
             Value::StringValue(_) => Ok(ColumnType::String),
@@ -348,7 +348,7 @@ impl ColumnValue {
             Value::IsizeValue(value) => Ok(*value as isize),
             _ => Err(ProtosError::WrongColumnTypeError(
                 self.column_type()?.to_string(),
-                ColumnType::Isize.to_string(),
+                ColumnType::ISize.to_string(),
             )),
         }
     }
@@ -414,7 +414,7 @@ impl ColumnValue {
             Value::UsizeValue(value) => Ok(*value as usize),
             _ => Err(ProtosError::WrongColumnTypeError(
                 self.column_type()?.to_string(),
-                ColumnType::Usize.to_string(),
+                ColumnType::USize.to_string(),
             )),
         }
     }

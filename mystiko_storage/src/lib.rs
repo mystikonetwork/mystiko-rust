@@ -11,7 +11,6 @@ pub mod collection;
 pub mod column;
 pub mod document;
 pub mod error;
-pub mod filter;
 pub mod formatter;
 pub mod migration;
 pub mod storage;

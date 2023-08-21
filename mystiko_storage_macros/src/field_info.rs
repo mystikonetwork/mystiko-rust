@@ -88,7 +88,7 @@ impl<'a> FieldInfo<'a> {
         quote! {
             mystiko_storage::column::Column::builder()
                 .column_name(#column_enum_name::#column_enum_item_name)
-                .column_type(mystiko_storage::column::ColumnType::#column_type)
+                .column_type(mystiko_protos::storage::v1::ColumnType::#column_type)
                 .nullable(#nullable)
                 .length_limit(#length_limit)
                 .build()

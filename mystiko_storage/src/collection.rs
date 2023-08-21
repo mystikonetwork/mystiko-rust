@@ -1,9 +1,9 @@
 use crate::document::{Document, DocumentColumn, DocumentData};
 use crate::error::StorageError;
-use crate::filter::{QueryFilter, SubFilter};
 use crate::formatter::types::{Statement, StatementFormatter};
 use crate::migration::history::{MigrationHistory, MigrationHistoryColumn};
 use crate::storage::Storage;
+use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use std::time::SystemTime;
 
 #[derive(Debug)]

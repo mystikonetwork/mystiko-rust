@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0.69" }
 async-trait = { version = "0.1.64" }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-storage-v1"] }
 num-bigint = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }

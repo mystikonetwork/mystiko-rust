@@ -1,12 +1,13 @@
+use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::{DocumentColumn, DocumentData};
-use mystiko_storage::filter::{Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_storage_mysql::{MySqlStorage, MySqlStorageOptions};
 use num_bigint::{BigInt, BigUint};
 use sqlx::MySqlPool;
 use std::sync::Arc;
+use std::vec;
 
 #[derive(CollectionBuilder, Debug, Clone, PartialEq)]
 pub struct TestDocument {
@@ -124,16 +125,36 @@ async fn test_find(pool: MySqlPool) {
             .unwrap()
             .unwrap()
     );
-    let filter = QueryFilterBuilder::new()
-        .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
-        .order_by(TestDocumentColumn::Field3, Order::ASC)
+    let filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .conditions(vec![SubFilter::greater(
+            TestDocumentColumn::Field3,
+            documents[0].data.field3,
+        )
+        .into()])
+        .order_by(
+            OrderBy::builder()
+                .columns(vec![TestDocumentColumn::Field3.to_string()])
+                .order(Order::Asc as i32)
+                .build(),
+        )
         .build();
     assert_eq!(documents[1..], collection.find(filter).await.unwrap());
-    let filter = QueryFilterBuilder::new()
-        .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
+    let filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .conditions(vec![SubFilter::greater(
+            TestDocumentColumn::Field3,
+            documents[0].data.field3,
+        )
+        .into()])
+        .order_by(
+            OrderBy::builder()
+                .columns(vec![TestDocumentColumn::Field3.to_string()])
+                .order(Order::Asc as i32)
+                .build(),
+        )
         .limit(1)
         .offset(1)
-        .order_by(TestDocumentColumn::Field3, Order::ASC)
         .build();
     assert_eq!(documents[2..], collection.find(filter).await.unwrap());
 }
@@ -144,8 +165,13 @@ async fn test_count(pool: MySqlPool) {
     collection.migrate().await.unwrap();
     let documents = collection.insert_batch(&test_documents()).await.unwrap();
     assert_eq!(collection.count_all().await.unwrap(), 3);
-    let filter = QueryFilterBuilder::new()
-        .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
+    let filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .conditions(vec![SubFilter::greater(
+            TestDocumentColumn::Field3,
+            documents[0].data.field3,
+        )
+        .into()])
         .build();
     assert_eq!(collection.count(filter).await.unwrap(), 2);
 }

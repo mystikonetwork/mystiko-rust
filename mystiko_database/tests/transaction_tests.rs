@@ -1,7 +1,7 @@
 use mystiko_database::document::transaction::{Transaction, TransactionCollection, TransactionColumn};
+use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{TransactionStatus, TransactionType};
@@ -139,13 +139,24 @@ async fn test_transactions_crud() {
     let mut found_transactions = transactions.find_all().await.unwrap();
     assert_eq!(found_transactions, inserted_transactions);
     let found_first_transaction = transactions
-        .find_one(QueryFilterBuilder::new().limit(1).build())
+        .find_one(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(1)
+                .build(),
+        )
         .await
         .unwrap()
         .unwrap();
     assert_eq!(found_first_transaction.data.status, TransactionStatus::Init,);
     found_transactions = transactions
-        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .find(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(2)
+                .offset(1)
+                .build(),
+        )
         .await
         .unwrap();
     assert_eq!(found_transactions, inserted_transactions[1..]);

@@ -1,7 +1,6 @@
-use crate::column::ColumnValue;
 use crate::document::{Document, DocumentData};
-use crate::filter::QueryFilter;
 use crate::migration::types::Migration;
+use mystiko_protos::storage::v1::{ColumnValue, QueryFilter};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 

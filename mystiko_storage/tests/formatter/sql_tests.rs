@@ -1,6 +1,9 @@
-use mystiko_storage::column::{Column, ColumnType, ColumnValue, IndexColumns, UniqueColumns};
+use mystiko_protos::storage::v1::column_value::Value;
+use mystiko_protos::storage::v1::{
+    ColumnType, ColumnValue, Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter,
+};
+use mystiko_storage::column::{Column, IndexColumns, UniqueColumns};
 use mystiko_storage::document::{Document, DocumentData};
-use mystiko_storage::filter::{Condition, ConditionOperator, Order, QueryFilter, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::{SqlStatementFormatter, SqlType};
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::migration::types::{
@@ -149,11 +152,21 @@ fn test_format_delete() {
     let document1 = create_test_document("1", true);
     let statement1 = formatter.format_delete(&document1);
     assert_eq!(statement1.statement, "DELETE FROM `test_documents` WHERE `id` = ?");
-    assert_eq!(statement1.column_values, vec![ColumnValue::String("1".to_string())]);
+    assert_eq!(
+        statement1.column_values,
+        vec![ColumnValue::builder()
+            .value(Value::StringValue("1".to_string()))
+            .build()]
+    );
     let document2 = create_test_document("2", false);
     let statement2 = formatter.format_delete(&document2);
     assert_eq!(statement2.statement, "DELETE FROM `test_documents` WHERE `id` = ?");
-    assert_eq!(statement2.column_values, vec![ColumnValue::String("2".to_string())]);
+    assert_eq!(
+        statement2.column_values,
+        vec![ColumnValue::builder()
+            .value(Value::StringValue("2".to_string()))
+            .build()]
+    );
     let statements = formatter.format_delete_batch(&vec![document1, document2]);
     assert_eq!(statements, vec![statement1, statement2]);
 }
@@ -167,10 +180,19 @@ fn test_format_delete_by_filter() {
     let statement2 =
         formatter.format_delete_by_filter::<TestDocument, _>(Some(SubFilter::equal(TestDocumentColumn::Field5, 1u8)));
     assert_eq!(statement2.statement, "DELETE FROM `test_documents` WHERE `field5` = ?");
-    assert_eq!(statement2.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement2.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     let statement3 = formatter.format_delete_by_filter::<TestDocument, _>(Some(
-        QueryFilterBuilder::new()
-            .order_by(TestDocumentColumn::Field1, Order::DESC)
+        QueryFilter::builder()
+            .order_by(
+                OrderBy::builder()
+                    .order(Order::Desc)
+                    .columns(vec![TestDocumentColumn::Field1.to_string()])
+                    .build(),
+            )
+            .conditions_operator(ConditionOperator::And)
             .limit(1)
             .offset(2)
             .build(),
@@ -181,9 +203,15 @@ fn test_format_delete_by_filter() {
     );
     assert!(statement3.column_values.is_empty());
     let statement4 = formatter.format_delete_by_filter::<TestDocument, _>(Some(
-        QueryFilterBuilder::new()
-            .filter(SubFilter::equal(TestDocumentColumn::Field5, 1u8).into())
-            .order_by(TestDocumentColumn::Field1, Order::DESC)
+        QueryFilter::builder()
+            .conditions_operator(ConditionOperator::And)
+            .conditions(vec![SubFilter::equal(TestDocumentColumn::Field5, 1u8).into()])
+            .order_by(
+                OrderBy::builder()
+                    .order(Order::Desc)
+                    .columns(vec![TestDocumentColumn::Field1.to_string()])
+                    .build(),
+            )
             .limit(1)
             .offset(2)
             .build(),
@@ -192,7 +220,10 @@ fn test_format_delete_by_filter() {
         statement4.statement,
         "DELETE FROM `test_documents` WHERE `field5` = ? ORDER BY `field1` DESC LIMIT 1 OFFSET 2"
     );
-    assert_eq!(statement4.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement4.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
 }
 
 #[test]
@@ -200,7 +231,11 @@ fn test_format_count() {
     let formatter = SqlStatementFormatter::sqlite();
     let statement1 = formatter.format_count::<TestDocument, QueryFilter>(None);
     assert_eq!(statement1.statement.statement, "SELECT COUNT(*) FROM `test_documents`");
-    let statement1 = formatter.format_count::<TestDocument, _>(Some(QueryFilterBuilder::new().build()));
+    let statement1 = formatter.format_count::<TestDocument, _>(Some(
+        QueryFilter::builder()
+            .conditions_operator(ConditionOperator::And)
+            .build(),
+    ));
     assert_eq!(statement1.statement.statement, "SELECT COUNT(*) FROM `test_documents`");
     assert!(statement1.statement.column_values.is_empty());
     let statement2 = formatter.format_count::<TestDocument, _>(Some(SubFilter::equal(TestDocumentColumn::Field5, 1u8)));
@@ -208,10 +243,18 @@ fn test_format_count() {
         statement2.statement.statement,
         "SELECT COUNT(*) FROM `test_documents` WHERE `field5` = ?"
     );
-    assert_eq!(statement2.statement.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement2.statement.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     let statement3 = formatter.format_count::<TestDocument, _>(Some(
-        QueryFilterBuilder::new()
-            .order_by(TestDocumentColumn::Field1, Order::DESC)
+        QueryFilter::builder()
+            .order_by(
+                OrderBy::builder()
+                    .order(Order::Desc)
+                    .columns(vec![TestDocumentColumn::Field1.to_string()])
+                    .build(),
+            )
             .limit(1)
             .offset(2)
             .build(),
@@ -222,9 +265,15 @@ fn test_format_count() {
     );
     assert!(statement3.statement.column_values.is_empty());
     let statement4 = formatter.format_count::<TestDocument, _>(Some(
-        QueryFilterBuilder::new()
-            .filter(SubFilter::equal(TestDocumentColumn::Field5, 1u8).into())
-            .order_by(TestDocumentColumn::Field1, Order::DESC)
+        QueryFilter::builder()
+            .conditions_operator(ConditionOperator::And)
+            .conditions(vec![SubFilter::equal(TestDocumentColumn::Field5, 1u8).into()])
+            .order_by(
+                OrderBy::builder()
+                    .order(Order::Desc)
+                    .columns(vec![TestDocumentColumn::Field1.to_string()])
+                    .build(),
+            )
             .limit(1)
             .offset(2)
             .build(),
@@ -233,7 +282,10 @@ fn test_format_count() {
         statement4.statement.statement,
         "SELECT COUNT(*) FROM `test_documents` WHERE `field5` = ? ORDER BY `field1` DESC LIMIT 1 OFFSET 2"
     );
-    assert_eq!(statement4.statement.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement4.statement.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     let formatter = SqlStatementFormatter::builder()
         .count_mark(String::from("MY_COUNT(*)"))
         .sql_type(SqlType::Sqlite)
@@ -259,7 +311,11 @@ fn test_format_find() {
         `field25`, `field26`, `field27`, `field28`, `field29`, `field30`, `field31`, `field32`, \
         `field33`, `field34`, `field35`, `field36`, `field37`, `field38`, `field39`, `field40` FROM `test_documents`"
     );
-    let statement1 = formatter.format_find::<TestDocument, QueryFilter>(Some(QueryFilterBuilder::new().build()));
+    let statement1 = formatter.format_find::<TestDocument, QueryFilter>(Some(
+        QueryFilter::builder()
+            .conditions_operator(ConditionOperator::And)
+            .build(),
+    ));
     assert_eq!(
         statement1.statement,
         "SELECT `id`, `created_at`, `updated_at`, \
@@ -281,10 +337,19 @@ fn test_format_find() {
         `field33`, `field34`, `field35`, `field36`, `field37`, `field38`, `field39`, `field40` \
         FROM `test_documents` WHERE `field5` = ?"
     );
-    assert_eq!(statement2.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement2.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     let statement3 = formatter.format_find::<TestDocument, _>(Some(
-        QueryFilterBuilder::new()
-            .order_by(TestDocumentColumn::Field1, Order::DESC)
+        QueryFilter::builder()
+            .conditions_operator(ConditionOperator::And)
+            .order_by(
+                OrderBy::builder()
+                    .order(Order::Desc)
+                    .columns(vec![TestDocumentColumn::Field1.to_string()])
+                    .build(),
+            )
             .limit(1)
             .offset(2)
             .build(),
@@ -301,9 +366,15 @@ fn test_format_find() {
     );
     assert!(statement3.column_values.is_empty());
     let statement4 = formatter.format_find::<TestDocument, _>(Some(
-        QueryFilterBuilder::new()
-            .filter(SubFilter::equal(TestDocumentColumn::Field5, 1u8).into())
-            .order_by(TestDocumentColumn::Field1, Order::DESC)
+        QueryFilter::builder()
+            .conditions(vec![SubFilter::equal(TestDocumentColumn::Field5, 1u8).into()])
+            .conditions_operator(ConditionOperator::And)
+            .order_by(
+                OrderBy::builder()
+                    .order(Order::Desc)
+                    .columns(vec![TestDocumentColumn::Field1.to_string()])
+                    .build(),
+            )
             .limit(1)
             .offset(2)
             .build(),
@@ -318,7 +389,10 @@ fn test_format_find() {
         `field33`, `field34`, `field35`, `field36`, `field37`, `field38`, `field39`, `field40` \
         FROM `test_documents` WHERE `field5` = ? ORDER BY `field1` DESC LIMIT 1 OFFSET 2"
     );
-    assert_eq!(statement4.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement4.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     let formatter = SqlStatementFormatter::builder()
         .value_mark(String::from("$"))
         .sql_type(SqlType::Sqlite)
@@ -539,43 +613,72 @@ fn test_format_sub_filter() {
     let mut filter: QueryFilter = SubFilter::equal(TestDocumentColumn::Field1, true).into();
     let mut statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field1` = ?");
-    assert_eq!(statement.column_values, vec![ColumnValue::Bool(true)]);
+    assert_eq!(
+        statement.column_values,
+        vec![ColumnValue::builder().value(Value::BoolValue(true)).build()]
+    );
     filter = SubFilter::not_equal(TestDocumentColumn::Field1, true).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field1` != ?");
-    assert_eq!(statement.column_values, vec![ColumnValue::Bool(true)]);
+    assert_eq!(
+        statement.column_values,
+        vec![ColumnValue::builder().value(Value::BoolValue(true)).build()]
+    );
     filter = SubFilter::less(TestDocumentColumn::Field5, 1u8).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field5` < ?");
-    assert_eq!(statement.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     filter = SubFilter::less_equal(TestDocumentColumn::Field5, 1u8).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field5` <= ?");
-    assert_eq!(statement.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     filter = SubFilter::greater(TestDocumentColumn::Field5, 1u8).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field5` > ?");
-    assert_eq!(statement.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     filter = SubFilter::greater_equal(TestDocumentColumn::Field5, 1u8).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field5` >= ?");
-    assert_eq!(statement.column_values, vec![ColumnValue::U8(1)]);
+    assert_eq!(
+        statement.column_values,
+        vec![ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
     filter = SubFilter::between_and(TestDocumentColumn::Field7, 1u16, 10u16).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(
         statement.statement,
         "DELETE FROM `test_documents` WHERE `field7` BETWEEN ? AND ?"
     );
-    assert_eq!(statement.column_values, vec![ColumnValue::U16(1), ColumnValue::U16(10)]);
+    assert_eq!(
+        statement.column_values,
+        vec![
+            ColumnValue::builder().value(Value::U16Value(1)).build(),
+            ColumnValue::builder().value(Value::U16Value(10)).build()
+        ]
+    );
     filter = SubFilter::in_list(TestDocumentColumn::Field7, vec![1u16, 2u16, 3u16]).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(
         statement.statement,
         "DELETE FROM `test_documents` WHERE `field7` IN (?, ?, ?)"
     );
+
     assert_eq!(
         statement.column_values,
-        vec![ColumnValue::U16(1), ColumnValue::U16(2), ColumnValue::U16(3)]
+        vec![
+            ColumnValue::builder().value(Value::U16Value(1)).build(),
+            ColumnValue::builder().value(Value::U16Value(2)).build(),
+            ColumnValue::builder().value(Value::U16Value(3)).build(),
+        ]
     );
     filter = SubFilter::is_null(TestDocumentColumn::Field2).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
@@ -597,7 +700,7 @@ fn test_format_sub_filter() {
 fn test_format_condition() {
     let formatter = SqlStatementFormatter::sqlite();
     let mut condition = Condition {
-        operator: ConditionOperator::AND,
+        operator: ConditionOperator::And as i32,
         sub_filters: vec![],
     };
     let mut statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(condition));
@@ -606,7 +709,10 @@ fn test_format_condition() {
     condition = SubFilter::equal(TestDocumentColumn::Field1, true).into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(condition));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field1` = ?");
-    assert_eq!(statement.column_values, vec![ColumnValue::Bool(true)]);
+    assert_eq!(
+        statement.column_values,
+        vec![ColumnValue::builder().value(Value::BoolValue(true)).build()]
+    );
     condition = vec![
         SubFilter::equal(TestDocumentColumn::Field1, true),
         SubFilter::equal(TestDocumentColumn::Field3, 'a'),
@@ -619,14 +725,17 @@ fn test_format_condition() {
     );
     assert_eq!(
         statement.column_values,
-        vec![ColumnValue::Bool(true), ColumnValue::Char('a')]
+        vec![
+            ColumnValue::builder().value(Value::BoolValue(true)).build(),
+            ColumnValue::builder().value(Value::CharValue('a'.to_string())).build()
+        ]
     );
     condition = (
         vec![
             SubFilter::equal(TestDocumentColumn::Field1, true),
             SubFilter::equal(TestDocumentColumn::Field3, 'a'),
         ],
-        ConditionOperator::OR,
+        ConditionOperator::Or,
     )
         .into();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(condition));
@@ -636,27 +745,45 @@ fn test_format_condition() {
     );
     assert_eq!(
         statement.column_values,
-        vec![ColumnValue::Bool(true), ColumnValue::Char('a')]
+        vec![
+            ColumnValue::builder().value(Value::BoolValue(true)).build(),
+            ColumnValue::builder().value(Value::CharValue('a'.to_string())).build()
+        ]
     );
 }
 
 #[test]
 fn test_format_query_filter() {
     let formatter = SqlStatementFormatter::sqlite();
-    let mut filter = QueryFilterBuilder::new().build();
+    let mut filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .build();
     let mut statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents`");
     assert!(statement.column_values.is_empty());
-    filter = QueryFilterBuilder::new().offset(10).build();
+    filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .offset(10)
+        .build();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents`");
     assert!(statement.column_values.is_empty());
-    filter = QueryFilterBuilder::new().limit(10).offset(20).build();
+    filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .limit(10)
+        .offset(20)
+        .build();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` LIMIT 10 OFFSET 20");
     assert!(statement.column_values.is_empty());
-    filter = QueryFilterBuilder::new()
-        .order_by(TestDocumentColumn::Field1, Order::DESC)
+    filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .order_by(
+            OrderBy::builder()
+                .columns(vec![TestDocumentColumn::Field1.to_string()])
+                .order(Order::Desc)
+                .build(),
+        )
         .build();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(
@@ -664,8 +791,15 @@ fn test_format_query_filter() {
         "DELETE FROM `test_documents` ORDER BY `field1` DESC"
     );
     assert!(statement.column_values.is_empty());
-    filter = QueryFilterBuilder::new()
-        .order_by_multiple(vec![TestDocumentColumn::Field1, TestDocumentColumn::Field3], Order::ASC)
+    let columns = vec![TestDocumentColumn::Field1, TestDocumentColumn::Field3];
+    filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .order_by(
+            OrderBy::builder()
+                .columns(columns.into_iter().map(|c| c.to_string()).collect::<Vec<String>>())
+                .order(Order::Asc)
+                .build(),
+        )
         .limit(10)
         .offset(20)
         .build();
@@ -674,20 +808,22 @@ fn test_format_query_filter() {
         statement.statement,
         "DELETE FROM `test_documents` ORDER BY `field1`, `field3` ASC LIMIT 10 OFFSET 20"
     );
-    filter = QueryFilterBuilder::new()
-        .filter(SubFilter::equal(TestDocumentColumn::Field1, true).into())
+    filter = QueryFilter::builder()
+        .conditions(vec![SubFilter::equal(TestDocumentColumn::Field1, true).into()])
+        .conditions_operator(ConditionOperator::And)
         .build();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field1` = ?");
-    assert_eq!(statement.column_values, vec![ColumnValue::Bool(true)]);
-    filter = QueryFilterBuilder::new()
-        .filter(
-            vec![
-                SubFilter::equal(TestDocumentColumn::Field1, true),
-                SubFilter::equal(TestDocumentColumn::Field3, 'a'),
-            ]
-            .into(),
-        )
+    assert_eq!(
+        statement.column_values,
+        vec![ColumnValue::builder().value(Value::BoolValue(true)).build()]
+    );
+    filter = QueryFilter::builder()
+        .conditions(vec![
+            SubFilter::equal(TestDocumentColumn::Field1, true).into(),
+            SubFilter::equal(TestDocumentColumn::Field3, 'a').into(),
+        ])
+        .conditions_operator(ConditionOperator::And)
         .build();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(
@@ -696,10 +832,13 @@ fn test_format_query_filter() {
     );
     assert_eq!(
         statement.column_values,
-        vec![ColumnValue::Bool(true), ColumnValue::Char('a')]
+        vec![
+            ColumnValue::builder().value(Value::BoolValue(true)).build(),
+            ColumnValue::builder().value(Value::CharValue('a'.to_string())).build()
+        ]
     );
-    filter = QueryFilterBuilder::new()
-        .filters(vec![
+    filter = QueryFilter::builder()
+        .conditions(vec![
             SubFilter::equal(TestDocumentColumn::Field1, true).into(),
             vec![
                 SubFilter::equal(TestDocumentColumn::Field3, 'a'),
@@ -707,7 +846,7 @@ fn test_format_query_filter() {
             ]
             .into(),
         ])
-        .filter_operator(ConditionOperator::OR)
+        .conditions_operator(ConditionOperator::Or)
         .build();
     statement = formatter.format_delete_by_filter::<TestDocument, _>(Some(filter));
     assert_eq!(
@@ -716,7 +855,10 @@ fn test_format_query_filter() {
     );
     assert_eq!(
         statement.column_values,
-        vec![ColumnValue::Bool(true), ColumnValue::Char('a')]
+        vec![
+            ColumnValue::builder().value(Value::BoolValue(true)).build(),
+            ColumnValue::builder().value(Value::CharValue('a'.to_string())).build()
+        ]
     );
 }
 

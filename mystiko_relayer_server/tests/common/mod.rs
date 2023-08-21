@@ -196,6 +196,7 @@ async fn init_app_state_from_remote() {
         .create_async()
         .await;
     let app_state = init_app_state(server_config).await;
+    println!("{:?}", app_state);
     assert!(app_state.is_ok());
     mock_0.assert_async().await;
     mock_1.assert_async().await;

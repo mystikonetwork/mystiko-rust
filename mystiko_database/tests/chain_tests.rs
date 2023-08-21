@@ -1,7 +1,7 @@
 use mystiko_database::document::chain::{Chain, ChainCollection, ChainColumn, Provider};
+use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
@@ -105,7 +105,13 @@ async fn test_chains_crud() {
     assert_eq!(found_chains, inserted_chains);
     // testing find
     found_chains = chains
-        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .find(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(2)
+                .offset(1)
+                .build(),
+        )
         .await
         .unwrap();
     assert_eq!(found_chains, inserted_chains[1..]);
