@@ -1,15 +1,15 @@
+use crate::data::{ChainResult, ContractData, ContractResult, Data, DataType, FullData, LiteData, LoadedData};
+use crate::fetcher::{DataFetcher, FetchOptions, FetchResult, FetcherError};
 use anyhow::Result;
 use async_trait::async_trait;
 use log::info;
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_etherscan_client::client::{EtherScanClient, Event, GetLogsOptions};
+use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
+use mystiko_utils::convert::u256_to_bytes;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
-use crate::data::{ChainResult,ContractData,ContractResult,Data,DataType,FullData, LiteData,LoadedData};
-use crate::fetcher::{DataFetcher,FetchOptions,FetchResult,FetcherError};
-use mystiko_utils::convert::u256_to_bytes;
-use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 
 #[derive(Error, Debug)]
 pub enum EtherScanFetcherError {
