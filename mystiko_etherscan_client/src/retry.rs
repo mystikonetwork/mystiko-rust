@@ -4,7 +4,7 @@ use typed_builder::TypedBuilder;
 
 use crate::errors::EtherScanError;
 
-pub trait RetryPolicy: Debug {
+pub trait RetryPolicy: Debug + Send + Sync {
     fn is_retryable(&self, error: &EtherScanError, current_retry_time: u64) -> bool;
 }
 
