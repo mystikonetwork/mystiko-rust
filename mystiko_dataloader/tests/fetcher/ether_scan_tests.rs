@@ -85,7 +85,7 @@ async fn test_ether_scan_full_data_fetch() {
             Matcher::UrlEncoded("module".into(), "proxy".into()),
         ]))
         .with_status(200)
-        .with_body("{\"jsonrpc\": \"2.0\",\"id\": 1,\"result\": \"0x2f999f9\"}".to_string())
+        .with_body("{\"jsonrpc\": \"2.0\",\"id\": 1,\"result\": \"0x2f999f9\"}")
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -107,7 +107,7 @@ async fn test_ether_scan_full_data_fetch() {
         .mock("GET", "/api")
         .match_query(Matcher::AllOf(ccc_params))
         .with_status(200)
-        .with_body(CCC_MOCK_RESP.to_string())
+        .with_body(CCC_MOCK_RESP)
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -120,7 +120,7 @@ async fn test_ether_scan_full_data_fetch() {
         .mock("GET", "/api")
         .match_query(Matcher::AllOf(cq_params))
         .with_status(200)
-        .with_body(CQ_MOCK_RESP.to_string())
+        .with_body(CQ_MOCK_RESP)
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -133,7 +133,7 @@ async fn test_ether_scan_full_data_fetch() {
         .mock("GET", "/api")
         .match_query(Matcher::AllOf(ci_params))
         .with_status(200)
-        .with_body(CI_MOCK_RESP.to_string())
+        .with_body(CI_MOCK_RESP)
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -146,7 +146,7 @@ async fn test_ether_scan_full_data_fetch() {
         .mock("GET", "/api")
         .match_query(Matcher::AllOf(cs_params))
         .with_status(200)
-        .with_body(CS_MOCK_RESP.to_string())
+        .with_body(CS_MOCK_RESP)
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -188,7 +188,7 @@ async fn test_ether_scan_lite_data_fetch() {
             Matcher::UrlEncoded("module".into(), "proxy".into()),
         ]))
         .with_status(200)
-        .with_body("{\"jsonrpc\": \"2.0\",\"id\": 1,\"result\": \"0x2f999f9\"}".to_string())
+        .with_body("{\"jsonrpc\": \"2.0\",\"id\": 1,\"result\": \"0x2f999f9\"}")
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -210,7 +210,7 @@ async fn test_ether_scan_lite_data_fetch() {
         .mock("GET", "/api")
         .match_query(Matcher::AllOf(ccc_params))
         .with_status(200)
-        .with_body(CCC_MOCK_RESP.to_string())
+        .with_body(CCC_MOCK_RESP)
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -223,7 +223,7 @@ async fn test_ether_scan_lite_data_fetch() {
         .mock("GET", "/api")
         .match_query(Matcher::AllOf(cq_params))
         .with_status(200)
-        .with_body(CQ_MOCK_RESP.to_string())
+        .with_body(CQ_MOCK_RESP)
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -236,7 +236,7 @@ async fn test_ether_scan_lite_data_fetch() {
         .mock("GET", "/api")
         .match_query(Matcher::AllOf(ci_params))
         .with_status(200)
-        .with_body(CI_MOCK_RESP.to_string())
+        .with_body(CI_MOCK_RESP)
         .with_header("content-type", "application/json")
         .create_async()
         .await;
@@ -298,12 +298,11 @@ async fn build_fetch_options(
         .start_block(test_start_block)
         .target_block(test_end_block)
         .build()];
-    let fetch_options = FetchOptions::builder()
+    FetchOptions::builder()
         .chain_id(test_chain_id)
         .start_block(test_start_block)
         .target_block(test_end_block)
         .config(Arc::clone(&mystiko_config))
         .contract_options(Some(contract_fetch_option))
-        .build();
-    fetch_options
+        .build()
 }
