@@ -6,7 +6,7 @@ use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::data::{ChainData, LiteData};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
-use mystiko_protos::data::v1::{Commitment, CommitmentStatus};
+use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 
 #[tokio::test]
 async fn test_empty_commitment() {
@@ -47,8 +47,8 @@ async fn test_check_commitment_full_data() {
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cm = Commitment {
         commitment_hash: vec![
-            17, 214, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130,
-            72, 235, 26, 209, 81, 231, 116, 185,
+            1, 214, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130,
+            72, 235, 26, 209, 81, 231, 116, 1,
         ],
         status: CommitmentStatus::Queued as i32,
         block_number: 1,
@@ -135,6 +135,29 @@ async fn test_check_commitment_full_data() {
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].src_chain_transaction_hash = None;
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_err());
+
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].src_chain_transaction_hash = Some(vec![1, 2, 3]);
+    data.contracts_data[0].data.as_mut().unwrap().nullifiers = vec![Nullifier {
+        nullifier: vec![
+            1, 12, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130,
+            72, 235, 26, 209, 81, 231, 3, 1,
+        ],
+        block_number: 1,
+        transaction_hash: vec![1, 2, 3],
+    }];
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_ok());
+
+    data.contracts_data[0].data.as_mut().unwrap().nullifiers = vec![Nullifier {
+        nullifier: vec![
+            17, 214, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130,
+            72, 235, 26, 209, 81, 231, 116, 185,
+        ],
+        block_number: 1,
+        transaction_hash: vec![1, 2, 3],
+    }];
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_err());
 }
 
 #[tokio::test]
@@ -148,8 +171,8 @@ async fn test_check_commitment_lite_data() {
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cm = Commitment {
         commitment_hash: vec![
-            17, 214, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130,
-            72, 235, 26, 209, 81, 231, 116, 185,
+            1, 12, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130,
+            72, 235, 26, 209, 81, 231, 3, 1,
         ],
         status: CommitmentStatus::Queued as i32,
         block_number: 1,
@@ -195,4 +218,11 @@ async fn test_check_commitment_lite_data() {
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].status = CommitmentStatus::SrcSucceeded as i32;
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_ok());
+
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].commitment_hash = vec![
+        17, 214, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130, 72,
+        235, 26, 209, 81, 231, 116, 185,
+    ];
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_err());
 }
