@@ -3726,6 +3726,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_datapacker_client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "ethers-core",
+ "futures",
+ "log",
+ "mystiko_config",
+ "mystiko_datapacker_common",
+ "mystiko_protos",
+ "mystiko_types",
+ "prost",
+ "reqwest",
+ "rustc-hex",
+ "thiserror",
+ "typed-builder",
+]
+
+[[package]]
 name = "mystiko_datapacker_common"
 version = "0.1.0"
 dependencies = [
