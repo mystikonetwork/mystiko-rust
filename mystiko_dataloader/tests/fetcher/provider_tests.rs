@@ -285,7 +285,7 @@ async fn test_litedata_fetch() {
             .unwrap(),
     );
     let fetch_options = FetchOptions::builder()
-        .chain_id(111 as u64)
+        .chain_id(111_u64)
         .start_block(test_start_block)
         .target_block(test_end_block)
         .config(Arc::clone(&mystiko_config))
@@ -295,7 +295,7 @@ async fn test_litedata_fetch() {
     assert!(result.is_err());
     assert_eq!(
         result.err().unwrap().to_string(),
-        ProviderFetcherError::UnsupportedChainError(111 as u64).to_string()
+        ProviderFetcherError::UnsupportedChainError(111_u64).to_string()
     );
     let fetch_options = FetchOptions::builder()
         .chain_id(test_chain_id)
