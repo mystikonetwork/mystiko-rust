@@ -51,9 +51,9 @@ async fn test_check_commitment_full_data() {
             72, 235, 26, 209, 81, 231, 116, 1,
         ],
         status: CommitmentStatus::Queued as i32,
-        block_number: 1,
-        included_block_number: Some(1),
-        src_chain_block_number: Some(1),
+        block_number: 16690440,
+        included_block_number: Some(16690440),
+        src_chain_block_number: Some(16690440),
         leaf_index: Some(1),
         rollup_fee: Some(vec![1, 2, 3]),
         encrypted_note: Some(vec![1, 2, 3]),
@@ -109,29 +109,59 @@ async fn test_check_commitment_full_data() {
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_ok());
 
-    data.contracts_data[0].data.as_mut().unwrap().commitments[0].status = CommitmentStatus::Included as i32;
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].block_number = 1;
+    handler.add_commitments(vec![cm.clone()]).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_err());
+
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].block_number = 16690441;
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].included_block_number = None;
     handler.add_commitments(vec![cm.clone()]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_err());
 
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].included_block_number = Some(1);
+    handler.add_commitments(vec![cm.clone()]).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_err());
+
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].included_block_number = Some(16690440);
+    handler.add_commitments(vec![cm.clone()]).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_err());
+
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].included_block_number = Some(16690441);
+    handler.add_commitments(vec![cm.clone()]).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_ok());
+
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].included_transaction_hash = None;
     handler.add_commitments(vec![cm.clone()]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_err());
-    data.contracts_data[0].data.as_mut().unwrap().commitments[0].included_transaction_hash = Some(vec![1, 2, 3]);
 
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].included_transaction_hash = Some(vec![1, 2, 3]);
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].status = CommitmentStatus::SrcSucceeded as i32;
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].src_chain_block_number = Some(16690441);
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_ok());
 
-    data.contracts_data[0].data.as_mut().unwrap().commitments[0].status = CommitmentStatus::SrcSucceeded as i32;
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].src_chain_block_number = None;
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_err());
 
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].src_chain_block_number = Some(1);
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_err());
+
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].src_chain_block_number = Some(16690440);
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_err());
+
+    data.contracts_data[0].data.as_mut().unwrap().commitments[0].src_chain_block_number = Some(16690441);
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_ok());
+
     data.contracts_data[0].data.as_mut().unwrap().commitments[0].src_chain_transaction_hash = None;
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_err());
@@ -142,20 +172,20 @@ async fn test_check_commitment_full_data() {
             1, 12, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130,
             72, 235, 26, 209, 81, 231, 3, 1,
         ],
-        block_number: 1,
+        block_number: 16690440,
         transaction_hash: vec![1, 2, 3],
     }];
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_ok());
 
-    data.contracts_data[0].data.as_mut().unwrap().nullifiers = vec![Nullifier {
-        nullifier: vec![
-            17, 214, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130,
-            72, 235, 26, 209, 81, 231, 116, 185,
-        ],
-        block_number: 1,
-        transaction_hash: vec![1, 2, 3],
-    }];
+    data.contracts_data[0].data.as_mut().unwrap().nullifiers[0].nullifier = vec![
+        17, 214, 48, 198, 85, 198, 51, 72, 44, 121, 28, 13, 120, 224, 26, 20, 17, 156, 251, 233, 119, 14, 62, 130, 72,
+        235, 26, 209, 81, 231, 116, 185,
+    ];
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert!(result.contract_results[0].result.is_err());
+
+    data.contracts_data[0].data.as_mut().unwrap().nullifiers[0].block_number = 1;
     let result = validator.validate(&data, &option).await.unwrap();
     assert!(result.contract_results[0].result.is_err());
 }
@@ -175,9 +205,9 @@ async fn test_check_commitment_lite_data() {
             72, 235, 26, 209, 81, 231, 3, 1,
         ],
         status: CommitmentStatus::Queued as i32,
-        block_number: 1,
-        included_block_number: Some(1),
-        src_chain_block_number: Some(1),
+        block_number: 16690440,
+        included_block_number: Some(16690440),
+        src_chain_block_number: Some(16690440),
         leaf_index: Some(1),
         rollup_fee: Some(vec![1, 2, 3]),
         encrypted_note: Some(vec![1, 2, 3]),

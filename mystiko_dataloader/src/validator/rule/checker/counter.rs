@@ -4,8 +4,8 @@ use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::checker::error::{CounterCheckerError, RuleCheckError};
 use crate::validator::rule::checker::CheckerResult;
 use crate::validator::rule::checker::RuleChecker;
-use crate::validator::rule::types::ValidateContractData;
-use crate::validator::rule::RuleCheckData;
+use crate::validator::rule::types::ValidateMergedData;
+use crate::validator::rule::ValidateOriginalData;
 use async_trait::async_trait;
 use ethers_core::types::{Address, BlockId, BlockNumber};
 use mystiko_abi::commitment_pool::CommitmentPool;
@@ -32,13 +32,17 @@ where
     H: DataHandler<R>,
     P: Providers,
 {
-    async fn check(&self, data: &RuleCheckData<R>) -> CheckerResult<()> {
-        let address = Address::from_str(data.merged_data.contract_address.as_str())
-            .map_err(|_| RuleCheckError::ContractAddressError(data.merged_data.contract_address.to_string()))?;
-        let provider = get_provider(&self.providers, data.chain_id).await?;
+    async fn check<'a>(
+        &self,
+        _data: &ValidateOriginalData<'a, R>,
+        merged_data: &ValidateMergedData,
+    ) -> CheckerResult<()> {
+        let address = Address::from_str(merged_data.contract_address.as_str())
+            .map_err(|_| RuleCheckError::ContractAddressError(merged_data.contract_address.to_string()))?;
+        let provider = get_provider(&self.providers, merged_data.chain_id).await?;
         let commitment_contract = CommitmentPool::new(address, provider);
-        self.check_commitment(data.merged_data, &commitment_contract).await?;
-        self.check_nullifier(data.merged_data, &commitment_contract).await
+        self.check_commitment(merged_data, &commitment_contract).await?;
+        self.check_nullifier(merged_data, &commitment_contract).await
     }
 }
 
@@ -50,7 +54,7 @@ where
 {
     async fn check_commitment(
         &self,
-        data: &ValidateContractData,
+        data: &ValidateMergedData,
         contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
         self.check_commitment_included_count(data, contract).await?;
@@ -59,7 +63,7 @@ where
 
     async fn check_commitment_included_count(
         &self,
-        data: &ValidateContractData,
+        data: &ValidateMergedData,
         contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
         let included_cms = data
@@ -107,7 +111,7 @@ where
 
     async fn check_commitment_queued_count(
         &self,
-        _data: &ValidateContractData,
+        _data: &ValidateMergedData,
         _contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
         // todo check queued count
@@ -116,7 +120,7 @@ where
 
     async fn check_nullifier(
         &self,
-        _data: &ValidateContractData,
+        _data: &ValidateMergedData,
         _contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
         // todo check nullifier

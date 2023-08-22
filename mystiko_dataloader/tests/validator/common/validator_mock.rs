@@ -8,8 +8,8 @@ use mystiko_dataloader::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
 use mystiko_dataloader::validator::rule::{
-    create_full_rule_validator, CheckerResult, CounterChecker, IntegrityChecker, MerkleTreeChecker, RuleCheckData,
-    RuleChecker, RuleValidator, RuleValidatorOptions, SequenceChecker, ValidateContractData,
+    create_full_rule_validator, CheckerResult, CounterChecker, IntegrityChecker, MerkleTreeChecker, RuleChecker,
+    RuleValidator, RuleValidatorOptions, SequenceChecker, ValidateMergedData, ValidateOriginalData,
 };
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
@@ -223,7 +223,7 @@ fn create_mock_providers(provider: Option<&MockProvider>) -> MockProviders {
 
 #[derive(Debug, TypedBuilder)]
 pub struct MockRuleChecker<R> {
-    pub merged_data: RwLock<Option<ValidateContractData>>,
+    pub merged_data: RwLock<Option<ValidateMergedData>>,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -233,8 +233,12 @@ impl<R> RuleChecker<R> for MockRuleChecker<R>
 where
     R: LoadedData,
 {
-    async fn check(&self, data: &RuleCheckData<R>) -> CheckerResult<()> {
-        *self.merged_data.write().await = Some(data.merged_data.clone());
+    async fn check<'a>(
+        &self,
+        _data: &ValidateOriginalData<'a, R>,
+        merged_data: &ValidateMergedData,
+    ) -> CheckerResult<()> {
+        *self.merged_data.write().await = Some(merged_data.clone());
         Ok(())
     }
 }
@@ -243,7 +247,7 @@ impl<R> MockRuleChecker<R>
 where
     R: LoadedData,
 {
-    pub async fn cmp_data(&self, data: Option<&ValidateContractData>) -> bool {
+    pub async fn cmp_data(&self, data: Option<&ValidateMergedData>) -> bool {
         let mut merged_data = self.merged_data.write().await;
         let result = match (&*merged_data, data) {
             (None, None) => true,

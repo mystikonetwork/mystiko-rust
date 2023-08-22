@@ -1,12 +1,11 @@
 use crate::data::ChainData;
-use crate::data::ContractData;
 use crate::data::LoadedData;
 use crate::data::{ChainResult, ContractResult};
 use crate::handler::DataHandler;
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::error::Result;
 use crate::validator::rule::merger::DataMerger;
-use crate::validator::rule::{RuleCheckData, RuleValidatorError};
+use crate::validator::rule::{RuleValidatorError, ValidateOriginalData};
 use crate::validator::types::{DataValidator, ValidateOption, ValidateResult};
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -48,15 +47,27 @@ where
         let mut futures = Vec::new();
         let mut contract_results = vec![];
         for contract_data in &data.contracts_data {
-            if chain.find_pool_contract_by_address(&contract_data.address).is_some() {
-                futures.push(self.contract_data_validate(data.chain_id, contract_data, option));
-            } else {
-                contract_results.push(
-                    ContractResult::builder()
-                        .address(contract_data.address.clone())
-                        .result(Ok(()))
-                        .build(),
-                );
+            match chain.find_pool_contract_by_address(&contract_data.address) {
+                None => {
+                    contract_results.push(
+                        ContractResult::builder()
+                            .address(contract_data.address.clone())
+                            .result(Ok(()))
+                            .build(),
+                    );
+                }
+                Some(contract_cfg) => {
+                    futures.push(
+                        self.contract_data_validate(
+                            ValidateOriginalData::builder()
+                                .chain_id(data.chain_id)
+                                .contract_config(contract_cfg)
+                                .contract_data(contract_data)
+                                .option(option)
+                                .build(),
+                        ),
+                    );
+                }
             }
         }
 
@@ -86,34 +97,23 @@ where
         }
     }
 
-    async fn contract_data_validate(
-        &self,
-        chain_id: u64,
-        data: &ContractData<R>,
-        option: &ValidateOption,
-    ) -> ContractResult<()> {
-        match self.merge_and_check(chain_id, data, option).await {
+    async fn contract_data_validate(&self, data: ValidateOriginalData<'_, R>) -> ContractResult<()> {
+        match self.merge_and_check(&data).await {
             Ok(_) => ContractResult::builder()
-                .address(data.address.clone())
+                .address(data.contract_data.address.clone())
                 .result(Ok(()))
                 .build(),
             Err(e) => ContractResult::builder()
-                .address(data.address.clone())
+                .address(data.contract_data.address.clone())
                 .result(Err(e.into()))
                 .build(),
         }
     }
 
-    async fn merge_and_check(&self, chain_id: u64, data: &ContractData<R>, option: &ValidateOption) -> Result<()> {
-        let merged_data = self.merger.merge_contract_data(chain_id, data).await?;
-        let rule_check_data = RuleCheckData::builder()
-            .chain_id(chain_id)
-            .contract_data(data)
-            .merged_data(&merged_data)
-            .option(option)
-            .build();
+    async fn merge_and_check(&self, data: &ValidateOriginalData<'_, R>) -> Result<()> {
+        let merged_data = self.merger.merge_contract_data(data).await?;
         for checker in &self.checkers {
-            checker.check(&rule_check_data).await?;
+            checker.check(data, &merged_data).await?;
         }
         Ok(())
     }

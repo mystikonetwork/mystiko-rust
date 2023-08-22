@@ -30,6 +30,10 @@ pub enum RuleCheckError {
 
 #[derive(Error, Debug)]
 pub enum IntegrityCheckerError {
+    #[error("chain {0} config not found error")]
+    ChainConfigNotFoundError(u64),
+    #[error("chain {0} contract {1} config not found error")]
+    ContractConfigNotFoundError(u64, String),
     #[error("commitment status error")]
     CommitmentStatusError,
     #[error("commitment src chain block number error")]
@@ -54,6 +58,16 @@ pub enum IntegrityCheckerError {
     CommitmentBiggerThanFieldSizeError,
     #[error("nullifier bigger than field size error")]
     NullifierBiggerThanFieldSizeError,
+    #[error("commitment block number {0} less than contract start block {1} error")]
+    CommitmentBlockNumberTooSmallError(u64, u64),
+    #[error("commitment src chain block number {0} not equal with block number {1} error")]
+    CommitmentSrcChainNumberMismatchError(u64, u64),
+    #[error("commitment src chain block number {0} less than contract start block {1} error")]
+    CommitmentSrcChainNumberTooSmallError(u64, u64),
+    #[error("commitment included block number {0} less than {1} {2} error")]
+    CommitmentIncludedNumberTooSmallError(u64, String, u64),
+    #[error("nullifier block number {0} less than contract start block {1} error")]
+    NullifierBlockNumberTooSmallError(u64, u64),
 }
 
 #[derive(Error, Debug)]
