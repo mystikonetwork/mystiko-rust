@@ -112,7 +112,7 @@ impl<'a> StructInfo<'a> {
         Ok(quote! {
             impl mystiko_storage::document::DocumentData for #struct_name {
                 fn create(
-                    column_values: &[(String, mystiko_storage::column::ColumnValue)]
+                    column_values: &[(String, mystiko_protos::storage::v1::ColumnValue)]
                 ) -> anyhow::Result<Self, mystiko_storage::error::StorageError> {
                     Ok(Self { #(#column_creates_iter,)* })
                 }
@@ -123,7 +123,7 @@ impl<'a> StructInfo<'a> {
                    vec![#(#column_iter,)*]
                 }
                 fn column_values(&self) ->
-                    Vec<(mystiko_storage::column::Column, Option<mystiko_storage::column::ColumnValue>)> {
+                    Vec<(mystiko_storage::column::Column, Option<mystiko_protos::storage::v1::ColumnValue>)> {
                         Self::columns()
                             .into_iter()
                             .zip(vec![#(#column_values_iter,)*])
@@ -170,7 +170,7 @@ impl<'a> StructInfo<'a> {
                         mystiko_storage::error::StorageError> {
                     self.collection.insert_batch(documents).await
                 }
-                pub async fn find<Q: Into<mystiko_storage::filter::QueryFilter>>(
+                pub async fn find<Q: Into<mystiko_protos::storage::v1::QueryFilter>>(
                     &self, filter: Q) -> anyhow::Result<
                         Vec<mystiko_storage::document::Document<#struct_name>>,
                         mystiko_storage::error::StorageError> {
@@ -179,9 +179,9 @@ impl<'a> StructInfo<'a> {
                 pub async fn find_all(&self) -> anyhow::Result<
                         Vec<mystiko_storage::document::Document<#struct_name>>,
                         mystiko_storage::error::StorageError> {
-                    self.collection.find::<#struct_name, mystiko_storage::filter::QueryFilter>(None).await
+                    self.collection.find::<#struct_name, mystiko_protos::storage::v1::QueryFilter>(None).await
                 }
-                pub async fn find_one<Q: Into<mystiko_storage::filter::QueryFilter>>(
+                pub async fn find_one<Q: Into<mystiko_protos::storage::v1::QueryFilter>>(
                     &self, filter: Q) -> anyhow::Result<
                         Option<mystiko_storage::document::Document<#struct_name>>,
                         mystiko_storage::error::StorageError> {
@@ -192,13 +192,13 @@ impl<'a> StructInfo<'a> {
                         mystiko_storage::error::StorageError> {
                     self.collection.find_by_id(id).await
                 }
-                pub async fn count<Q: Into<mystiko_storage::filter::QueryFilter>>(
+                pub async fn count<Q: Into<mystiko_protos::storage::v1::QueryFilter>>(
                     &self, filter: Q) -> anyhow::Result<u64, mystiko_storage::error::StorageError> {
                     self.collection.count::<#struct_name, Q>(Some(filter)).await
                 }
                 pub async fn count_all(&self) -> anyhow::Result<
                         u64, mystiko_storage::error::StorageError> {
-                    self.collection.count::<#struct_name, mystiko_storage::filter::QueryFilter>(None).await
+                    self.collection.count::<#struct_name, mystiko_protos::storage::v1::QueryFilter>(None).await
                 }
                 pub async fn update(&self, document: &mystiko_storage::document::Document<#struct_name>) ->
                     anyhow::Result<
@@ -223,9 +223,9 @@ impl<'a> StructInfo<'a> {
                     self.collection.delete_batch(documents).await
                 }
                 pub async fn delete_all(&self) -> anyhow::Result<(), mystiko_storage::error::StorageError> {
-                    self.collection.delete_by_filter::<#struct_name, mystiko_storage::filter::QueryFilter>(None).await
+                    self.collection.delete_by_filter::<#struct_name, mystiko_protos::storage::v1::QueryFilter>(None).await
                 }
-                pub async fn delete_by_filter<Q: Into<mystiko_storage::filter::QueryFilter>>(&self, filter: Q) ->
+                pub async fn delete_by_filter<Q: Into<mystiko_protos::storage::v1::QueryFilter>>(&self, filter: Q) ->
                     anyhow::Result<(), mystiko_storage::error::StorageError> {
                     self.collection.delete_by_filter::<#struct_name,Q>(Some(filter)).await
                 }

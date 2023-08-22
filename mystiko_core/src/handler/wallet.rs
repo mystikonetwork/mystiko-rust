@@ -6,8 +6,8 @@ use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_crypto::hash::checksum;
 use mystiko_database::database::Database;
 use mystiko_database::document::wallet::Wallet;
+use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter};
 use mystiko_storage::document::{Document, DocumentColumn};
-use mystiko_storage::filter::{Order, QueryFilterBuilder};
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
@@ -54,8 +54,14 @@ where
     }
 
     pub async fn current(&self) -> Result<Option<Document<Wallet>>> {
-        let filter = QueryFilterBuilder::new()
-            .order_by(DocumentColumn::Id, Order::DESC)
+        let filter = QueryFilter::builder()
+            .conditions_operator(ConditionOperator::And)
+            .order_by(
+                OrderBy::builder()
+                    .columns(vec![DocumentColumn::Id.to_string()])
+                    .order(Order::Desc)
+                    .build(),
+            )
             .build();
         self.db
             .wallets

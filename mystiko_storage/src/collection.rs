@@ -1,9 +1,9 @@
 use crate::document::{Document, DocumentColumn, DocumentData};
 use crate::error::StorageError;
-use crate::filter::{QueryFilter, SubFilter};
 use crate::formatter::types::{Statement, StatementFormatter};
 use crate::migration::history::{MigrationHistory, MigrationHistoryColumn};
 use crate::storage::Storage;
+use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use std::time::SystemTime;
 
 #[derive(Debug)]
@@ -46,7 +46,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         filter: Option<Q>,
     ) -> Result<Vec<Document<D>>, StorageError> {
         self.storage
-            .query::<D>(self.formatter.format_find::<D, Q>(filter))
+            .query::<D>(self.formatter.format_find::<D, Q>(filter)?)
             .await
     }
 
@@ -116,12 +116,12 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         filter: Option<Q>,
     ) -> Result<(), StorageError> {
         self.storage
-            .execute(self.formatter.format_delete_by_filter::<D, Q>(filter))
+            .execute(self.formatter.format_delete_by_filter::<D, Q>(filter)?)
             .await
     }
 
     pub async fn count<D: DocumentData, Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<u64, StorageError> {
-        self.storage.count(self.formatter.format_count::<D, Q>(filter)).await
+        self.storage.count(self.formatter.format_count::<D, Q>(filter)?).await
     }
 
     pub async fn collection_exists(&self, collection_name: &str) -> Result<bool, StorageError> {
@@ -147,7 +147,7 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                 } else {
                     let mut migration_statements: Vec<Statement> = self
                         .formatter
-                        .format_migration_batch::<D>(&Document::<D>::migrations()[current_version..]);
+                        .format_migration_batch::<D>(&Document::<D>::migrations()[current_version..])?;
                     migration.updated_at = current_timestamp();
                     migration.data.version = Document::<D>::version();
                     migration_statements.push(self.formatter.format_update(&migration));
@@ -160,11 +160,11 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                 if !collection_exists {
                     migration_statements.extend(self.formatter.format_migration_batch::<MigrationHistory>(
                         &Document::<MigrationHistory>::initial_migrations(),
-                    ));
+                    )?);
                 }
                 migration_statements.extend(
                     self.formatter
-                        .format_migration_batch::<D>(&Document::<D>::initial_migrations()),
+                        .format_migration_batch::<D>(&Document::<D>::initial_migrations())?,
                 );
                 let now = current_timestamp();
                 let migration: Document<MigrationHistory> = Document {

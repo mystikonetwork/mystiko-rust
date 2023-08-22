@@ -1,7 +1,7 @@
 use mystiko_database::document::wallet::{Wallet, WalletCollection, WalletColumn};
+use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
@@ -62,7 +62,13 @@ async fn test_wallets_crud() {
     let mut found_wallets = wallets.find_all().await.unwrap();
     assert_eq!(found_wallets, inserted_wallets);
     found_wallets = wallets
-        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .find(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(2)
+                .offset(1)
+                .build(),
+        )
         .await
         .unwrap();
     assert_eq!(found_wallets, inserted_wallets[1..]);
