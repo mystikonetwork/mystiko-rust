@@ -107,18 +107,12 @@ impl serde::Serialize for ChainLoadedBlockResponse {
         if self.block_number != 0 {
             len += 1;
         }
-        if self.error.is_some() {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.ChainLoadedBlockResponse", len)?;
         if self.chain_id != 0 {
             struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
         }
         if self.block_number != 0 {
             struct_ser.serialize_field("blockNumber", ToString::to_string(&self.block_number).as_str())?;
-        }
-        if let Some(v) = self.error.as_ref() {
-            struct_ser.serialize_field("error", v)?;
         }
         struct_ser.end()
     }
@@ -134,14 +128,12 @@ impl<'de> serde::Deserialize<'de> for ChainLoadedBlockResponse {
             "chainId",
             "block_number",
             "blockNumber",
-            "error",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             ChainId,
             BlockNumber,
-            Error,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -165,7 +157,6 @@ impl<'de> serde::Deserialize<'de> for ChainLoadedBlockResponse {
                         match value {
                             "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
                             "blockNumber" | "block_number" => Ok(GeneratedField::BlockNumber),
-                            "error" => Ok(GeneratedField::Error),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -187,7 +178,6 @@ impl<'de> serde::Deserialize<'de> for ChainLoadedBlockResponse {
             {
                 let mut chain_id__ = None;
                 let mut block_number__ = None;
-                let mut error__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::ChainId => {
@@ -206,18 +196,11 @@ impl<'de> serde::Deserialize<'de> for ChainLoadedBlockResponse {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::Error => {
-                            if error__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("error"));
-                            }
-                            error__ = map.next_value()?;
-                        }
                     }
                 }
                 Ok(ChainLoadedBlockResponse {
                     chain_id: chain_id__.unwrap_or_default(),
                     block_number: block_number__.unwrap_or_default(),
-                    error: error__,
                 })
             }
         }
@@ -355,9 +338,6 @@ impl serde::Serialize for ContractLoadedBlockResponse {
         if self.block_number != 0 {
             len += 1;
         }
-        if self.error.is_some() {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.ContractLoadedBlockResponse", len)?;
         if self.chain_id != 0 {
             struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
@@ -367,9 +347,6 @@ impl serde::Serialize for ContractLoadedBlockResponse {
         }
         if self.block_number != 0 {
             struct_ser.serialize_field("blockNumber", ToString::to_string(&self.block_number).as_str())?;
-        }
-        if let Some(v) = self.error.as_ref() {
-            struct_ser.serialize_field("error", v)?;
         }
         struct_ser.end()
     }
@@ -387,7 +364,6 @@ impl<'de> serde::Deserialize<'de> for ContractLoadedBlockResponse {
             "contractAddress",
             "block_number",
             "blockNumber",
-            "error",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -395,7 +371,6 @@ impl<'de> serde::Deserialize<'de> for ContractLoadedBlockResponse {
             ChainId,
             ContractAddress,
             BlockNumber,
-            Error,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -420,7 +395,6 @@ impl<'de> serde::Deserialize<'de> for ContractLoadedBlockResponse {
                             "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
                             "contractAddress" | "contract_address" => Ok(GeneratedField::ContractAddress),
                             "blockNumber" | "block_number" => Ok(GeneratedField::BlockNumber),
-                            "error" => Ok(GeneratedField::Error),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -443,7 +417,6 @@ impl<'de> serde::Deserialize<'de> for ContractLoadedBlockResponse {
                 let mut chain_id__ = None;
                 let mut contract_address__ = None;
                 let mut block_number__ = None;
-                let mut error__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::ChainId => {
@@ -470,19 +443,12 @@ impl<'de> serde::Deserialize<'de> for ContractLoadedBlockResponse {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::Error => {
-                            if error__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("error"));
-                            }
-                            error__ = map.next_value()?;
-                        }
                     }
                 }
                 Ok(ContractLoadedBlockResponse {
                     chain_id: chain_id__.unwrap_or_default(),
                     contract_address: contract_address__.unwrap_or_default(),
                     block_number: block_number__.unwrap_or_default(),
-                    error: error__,
                 })
             }
         }
@@ -697,18 +663,12 @@ impl serde::Serialize for CountContractCommitmentResponse {
         if self.count != 0 {
             len += 1;
         }
-        if self.error.is_some() {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.CountContractCommitmentResponse", len)?;
         if self.end_block != 0 {
             struct_ser.serialize_field("endBlock", ToString::to_string(&self.end_block).as_str())?;
         }
         if self.count != 0 {
             struct_ser.serialize_field("count", ToString::to_string(&self.count).as_str())?;
-        }
-        if let Some(v) = self.error.as_ref() {
-            struct_ser.serialize_field("error", v)?;
         }
         struct_ser.end()
     }
@@ -723,14 +683,12 @@ impl<'de> serde::Deserialize<'de> for CountContractCommitmentResponse {
             "end_block",
             "endBlock",
             "count",
-            "error",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             EndBlock,
             Count,
-            Error,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -754,7 +712,6 @@ impl<'de> serde::Deserialize<'de> for CountContractCommitmentResponse {
                         match value {
                             "endBlock" | "end_block" => Ok(GeneratedField::EndBlock),
                             "count" => Ok(GeneratedField::Count),
-                            "error" => Ok(GeneratedField::Error),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -776,7 +733,6 @@ impl<'de> serde::Deserialize<'de> for CountContractCommitmentResponse {
             {
                 let mut end_block__ = None;
                 let mut count__ = None;
-                let mut error__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::EndBlock => {
@@ -795,18 +751,11 @@ impl<'de> serde::Deserialize<'de> for CountContractCommitmentResponse {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::Error => {
-                            if error__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("error"));
-                            }
-                            error__ = map.next_value()?;
-                        }
                     }
                 }
                 Ok(CountContractCommitmentResponse {
                     end_block: end_block__.unwrap_or_default(),
                     count: count__.unwrap_or_default(),
-                    error: error__,
                 })
             }
         }
@@ -1002,18 +951,12 @@ impl serde::Serialize for CountContractNullifierResponse {
         if self.count != 0 {
             len += 1;
         }
-        if self.error.is_some() {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.CountContractNullifierResponse", len)?;
         if self.end_block != 0 {
             struct_ser.serialize_field("endBlock", ToString::to_string(&self.end_block).as_str())?;
         }
         if self.count != 0 {
             struct_ser.serialize_field("count", ToString::to_string(&self.count).as_str())?;
-        }
-        if let Some(v) = self.error.as_ref() {
-            struct_ser.serialize_field("error", v)?;
         }
         struct_ser.end()
     }
@@ -1028,14 +971,12 @@ impl<'de> serde::Deserialize<'de> for CountContractNullifierResponse {
             "end_block",
             "endBlock",
             "count",
-            "error",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             EndBlock,
             Count,
-            Error,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1059,7 +1000,6 @@ impl<'de> serde::Deserialize<'de> for CountContractNullifierResponse {
                         match value {
                             "endBlock" | "end_block" => Ok(GeneratedField::EndBlock),
                             "count" => Ok(GeneratedField::Count),
-                            "error" => Ok(GeneratedField::Error),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1081,7 +1021,6 @@ impl<'de> serde::Deserialize<'de> for CountContractNullifierResponse {
             {
                 let mut end_block__ = None;
                 let mut count__ = None;
-                let mut error__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::EndBlock => {
@@ -1100,211 +1039,15 @@ impl<'de> serde::Deserialize<'de> for CountContractNullifierResponse {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::Error => {
-                            if error__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("error"));
-                            }
-                            error__ = map.next_value()?;
-                        }
                     }
                 }
                 Ok(CountContractNullifierResponse {
                     end_block: end_block__.unwrap_or_default(),
                     count: count__.unwrap_or_default(),
-                    error: error__,
                 })
             }
         }
         deserializer.deserialize_struct("mystiko.sequencer.v1.CountContractNullifierResponse", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for Error {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.code != 0 {
-            len += 1;
-        }
-        if !self.message.is_empty() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.Error", len)?;
-        if self.code != 0 {
-            let v = error::Code::from_i32(self.code)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.code)))?;
-            struct_ser.serialize_field("code", &v)?;
-        }
-        if !self.message.is_empty() {
-            struct_ser.serialize_field("message", &self.message)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for Error {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "code",
-            "message",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Code,
-            Message,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "code" => Ok(GeneratedField::Code),
-                            "message" => Ok(GeneratedField::Message),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = Error;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.sequencer.v1.Error")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<Error, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut code__ = None;
-                let mut message__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::Code => {
-                            if code__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("code"));
-                            }
-                            code__ = Some(map.next_value::<error::Code>()? as i32);
-                        }
-                        GeneratedField::Message => {
-                            if message__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("message"));
-                            }
-                            message__ = Some(map.next_value()?);
-                        }
-                    }
-                }
-                Ok(Error {
-                    code: code__.unwrap_or_default(),
-                    message: message__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.sequencer.v1.Error", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for error::Code {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let variant = match self {
-            Self::Unspecified => "CODE_UNSPECIFIED",
-            Self::UnsupportedChain => "CODE_UNSUPPORTED_CHAIN",
-            Self::InvalidRequest => "CODE_INVALID_REQUEST",
-            Self::InternalError => "CODE_INTERNAL_ERROR",
-        };
-        serializer.serialize_str(variant)
-    }
-}
-impl<'de> serde::Deserialize<'de> for error::Code {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "CODE_UNSPECIFIED",
-            "CODE_UNSUPPORTED_CHAIN",
-            "CODE_INVALID_REQUEST",
-            "CODE_INTERNAL_ERROR",
-        ];
-
-        struct GeneratedVisitor;
-
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = error::Code;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(formatter, "expected one of: {:?}", &FIELDS)
-            }
-
-            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                use std::convert::TryFrom;
-                i32::try_from(v)
-                    .ok()
-                    .and_then(error::Code::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
-            }
-
-            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                use std::convert::TryFrom;
-                i32::try_from(v)
-                    .ok()
-                    .and_then(error::Code::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
-            }
-
-            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                match value {
-                    "CODE_UNSPECIFIED" => Ok(error::Code::Unspecified),
-                    "CODE_UNSUPPORTED_CHAIN" => Ok(error::Code::UnsupportedChain),
-                    "CODE_INVALID_REQUEST" => Ok(error::Code::InvalidRequest),
-                    "CODE_INTERNAL_ERROR" => Ok(error::Code::InternalError),
-                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
-                }
-            }
-        }
-        deserializer.deserialize_any(GeneratedVisitor)
     }
 }
 impl serde::Serialize for FetchChainRequest {
@@ -1487,18 +1230,12 @@ impl serde::Serialize for FetchChainResponse {
         if self.chain_id != 0 {
             len += 1;
         }
-        if self.error.is_some() {
-            len += 1;
-        }
         if !self.contracts.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.FetchChainResponse", len)?;
         if self.chain_id != 0 {
             struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
-        }
-        if let Some(v) = self.error.as_ref() {
-            struct_ser.serialize_field("error", v)?;
         }
         if !self.contracts.is_empty() {
             struct_ser.serialize_field("contracts", &self.contracts)?;
@@ -1515,14 +1252,12 @@ impl<'de> serde::Deserialize<'de> for FetchChainResponse {
         const FIELDS: &[&str] = &[
             "chain_id",
             "chainId",
-            "error",
             "contracts",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             ChainId,
-            Error,
             Contracts,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -1546,7 +1281,6 @@ impl<'de> serde::Deserialize<'de> for FetchChainResponse {
                     {
                         match value {
                             "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
-                            "error" => Ok(GeneratedField::Error),
                             "contracts" => Ok(GeneratedField::Contracts),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -1568,7 +1302,6 @@ impl<'de> serde::Deserialize<'de> for FetchChainResponse {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut chain_id__ = None;
-                let mut error__ = None;
                 let mut contracts__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -1580,12 +1313,6 @@ impl<'de> serde::Deserialize<'de> for FetchChainResponse {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::Error => {
-                            if error__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("error"));
-                            }
-                            error__ = map.next_value()?;
-                        }
                         GeneratedField::Contracts => {
                             if contracts__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("contracts"));
@@ -1596,7 +1323,6 @@ impl<'de> serde::Deserialize<'de> for FetchChainResponse {
                 }
                 Ok(FetchChainResponse {
                     chain_id: chain_id__.unwrap_or_default(),
-                    error: error__,
                     contracts: contracts__.unwrap_or_default(),
                 })
             }
@@ -2253,18 +1979,12 @@ impl serde::Serialize for QueryContractCommitmentResponse {
         if self.end_block != 0 {
             len += 1;
         }
-        if self.error.is_some() {
-            len += 1;
-        }
         if !self.commitments.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.QueryContractCommitmentResponse", len)?;
         if self.end_block != 0 {
             struct_ser.serialize_field("endBlock", ToString::to_string(&self.end_block).as_str())?;
-        }
-        if let Some(v) = self.error.as_ref() {
-            struct_ser.serialize_field("error", v)?;
         }
         if !self.commitments.is_empty() {
             struct_ser.serialize_field("commitments", &self.commitments)?;
@@ -2281,14 +2001,12 @@ impl<'de> serde::Deserialize<'de> for QueryContractCommitmentResponse {
         const FIELDS: &[&str] = &[
             "end_block",
             "endBlock",
-            "error",
             "commitments",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             EndBlock,
-            Error,
             Commitments,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -2312,7 +2030,6 @@ impl<'de> serde::Deserialize<'de> for QueryContractCommitmentResponse {
                     {
                         match value {
                             "endBlock" | "end_block" => Ok(GeneratedField::EndBlock),
-                            "error" => Ok(GeneratedField::Error),
                             "commitments" => Ok(GeneratedField::Commitments),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -2334,7 +2051,6 @@ impl<'de> serde::Deserialize<'de> for QueryContractCommitmentResponse {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut end_block__ = None;
-                let mut error__ = None;
                 let mut commitments__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -2346,12 +2062,6 @@ impl<'de> serde::Deserialize<'de> for QueryContractCommitmentResponse {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::Error => {
-                            if error__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("error"));
-                            }
-                            error__ = map.next_value()?;
-                        }
                         GeneratedField::Commitments => {
                             if commitments__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("commitments"));
@@ -2362,7 +2072,6 @@ impl<'de> serde::Deserialize<'de> for QueryContractCommitmentResponse {
                 }
                 Ok(QueryContractCommitmentResponse {
                     end_block: end_block__.unwrap_or_default(),
-                    error: error__,
                     commitments: commitments__.unwrap_or_default(),
                 })
             }
@@ -2556,18 +2265,12 @@ impl serde::Serialize for QueryContractNullifierResponse {
         if self.end_block != 0 {
             len += 1;
         }
-        if self.error.is_some() {
-            len += 1;
-        }
         if !self.nullifiers.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.QueryContractNullifierResponse", len)?;
         if self.end_block != 0 {
             struct_ser.serialize_field("endBlock", ToString::to_string(&self.end_block).as_str())?;
-        }
-        if let Some(v) = self.error.as_ref() {
-            struct_ser.serialize_field("error", v)?;
         }
         if !self.nullifiers.is_empty() {
             struct_ser.serialize_field("nullifiers", &self.nullifiers)?;
@@ -2584,14 +2287,12 @@ impl<'de> serde::Deserialize<'de> for QueryContractNullifierResponse {
         const FIELDS: &[&str] = &[
             "end_block",
             "endBlock",
-            "error",
             "nullifiers",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             EndBlock,
-            Error,
             Nullifiers,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -2615,7 +2316,6 @@ impl<'de> serde::Deserialize<'de> for QueryContractNullifierResponse {
                     {
                         match value {
                             "endBlock" | "end_block" => Ok(GeneratedField::EndBlock),
-                            "error" => Ok(GeneratedField::Error),
                             "nullifiers" => Ok(GeneratedField::Nullifiers),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -2637,7 +2337,6 @@ impl<'de> serde::Deserialize<'de> for QueryContractNullifierResponse {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut end_block__ = None;
-                let mut error__ = None;
                 let mut nullifiers__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -2649,12 +2348,6 @@ impl<'de> serde::Deserialize<'de> for QueryContractNullifierResponse {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::Error => {
-                            if error__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("error"));
-                            }
-                            error__ = map.next_value()?;
-                        }
                         GeneratedField::Nullifiers => {
                             if nullifiers__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("nullifiers"));
@@ -2665,7 +2358,6 @@ impl<'de> serde::Deserialize<'de> for QueryContractNullifierResponse {
                 }
                 Ok(QueryContractNullifierResponse {
                     end_block: end_block__.unwrap_or_default(),
-                    error: error__,
                     nullifiers: nullifiers__.unwrap_or_default(),
                 })
             }
