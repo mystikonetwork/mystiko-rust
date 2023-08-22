@@ -23,4 +23,8 @@ pub enum StorageError {
     ParseBigIntError(#[from] ParseBigIntError),
     #[error(transparent)]
     ProtosError(#[from] ProtosError),
+    #[error("unsupported column type: {0:?}")]
+    UnsupportedColumnTypeError(String),
+    #[error("unsupported operator: {0:?}")]
+    UnsupportedOperator(String),
 }

@@ -1,10 +1,12 @@
 use crate::column::Column;
 use crate::document::{Document, DocumentColumn, DocumentData};
+use crate::error::StorageError;
 use crate::formatter::types::{CountStatement, Statement, StatementFormatter};
 use crate::migration::types::{
     AddColumnMigration, AddIndexMigration, CreateCollectionMigration, DropColumnMigration, Migration,
     RenameColumnMigration,
 };
+use anyhow::Result;
 use mystiko_protos::storage::v1::{
     ColumnType, ColumnValue, Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter, SubFilterOperator,
 };
@@ -93,12 +95,15 @@ impl StatementFormatter for SqlStatementFormatter {
         )
     }
 
-    fn format_delete_by_filter<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> Statement {
-        match filter_option {
+    fn format_delete_by_filter<T: DocumentData, Q: Into<QueryFilter>>(
+        &self,
+        filter_option: Option<Q>,
+    ) -> Result<Statement, StorageError> {
+        let statement = match filter_option {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
                 let no_condition = query_filter.conditions.is_empty();
-                let filter_statement = self.format_query_filter(query_filter);
+                let filter_statement = self.format_query_filter(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(format!("DELETE FROM `{}`", T::collection_name()), Vec::new())
                 } else if no_condition {
@@ -118,15 +123,19 @@ impl StatementFormatter for SqlStatementFormatter {
                 }
             }
             None => Statement::new(format!("DELETE FROM `{}`", T::collection_name()), Vec::new()),
-        }
+        };
+        Ok(statement)
     }
 
-    fn format_count<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> CountStatement {
+    fn format_count<T: DocumentData, Q: Into<QueryFilter>>(
+        &self,
+        filter_option: Option<Q>,
+    ) -> Result<CountStatement, StorageError> {
         let statement = match filter_option {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
                 let no_condition = query_filter.conditions.is_empty();
-                let filter_statement = self.format_query_filter(query_filter);
+                let filter_statement = self.format_query_filter(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(
                         format!("SELECT {} FROM `{}`", self.count_mark(), T::collection_name()),
@@ -159,19 +168,22 @@ impl StatementFormatter for SqlStatementFormatter {
                 Vec::new(),
             ),
         };
-        CountStatement::new(self.count_mark(), statement)
+        Ok(CountStatement::new(self.count_mark(), statement))
     }
 
-    fn format_find<T: DocumentData, Q: Into<QueryFilter>>(&self, filter_option: Option<Q>) -> Statement {
+    fn format_find<T: DocumentData, Q: Into<QueryFilter>>(
+        &self,
+        filter_option: Option<Q>,
+    ) -> Result<Statement, StorageError> {
         let fields = Document::<T>::columns()
             .iter()
             .map(|column| format!("`{}`", &column.column_name))
             .collect::<Vec<String>>();
-        match filter_option {
+        let statement = match filter_option {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
                 let no_condition = query_filter.conditions.is_empty();
-                let filter_statement = self.format_query_filter(query_filter);
+                let filter_statement = self.format_query_filter(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(
                         format!("SELECT {} FROM `{}`", fields.join(", "), T::collection_name()),
@@ -203,19 +215,21 @@ impl StatementFormatter for SqlStatementFormatter {
                 format!("SELECT {} FROM `{}`", fields.join(", "), T::collection_name()),
                 Vec::new(),
             ),
-        }
+        };
+        Ok(statement)
     }
 
-    fn format_migration<T: DocumentData>(&self, migration: &Migration) -> Vec<Statement> {
-        match migration {
+    fn format_migration<T: DocumentData>(&self, migration: &Migration) -> Result<Vec<Statement>, StorageError> {
+        let statements = match migration {
             Migration::CreateCollection(migration) => {
-                format_create_collection_migration::<T>(migration, &self.sql_type)
+                format_create_collection_migration::<T>(migration, &self.sql_type)?
             }
             Migration::AddIndex(migration) => vec![format_add_index_migration::<T>(migration)],
-            Migration::AddColumn(migration) => vec![format_add_column_migration::<T>(migration, &self.sql_type)],
+            Migration::AddColumn(migration) => vec![format_add_column_migration::<T>(migration, &self.sql_type)?],
             Migration::DropColumn(migration) => vec![format_drop_column_migration::<T>(migration)],
             Migration::RenameColumn(migration) => vec![format_rename_column_migration::<T>(migration)],
-        }
+        };
+        Ok(statements)
     }
 }
 
@@ -236,14 +250,14 @@ impl SqlStatementFormatter {
         self.count_mark.clone().unwrap_or(DEFAULT_COUNT_MARK.into())
     }
 
-    fn format_query_filter(&self, filter: QueryFilter) -> Statement {
+    fn format_query_filter(&self, filter: QueryFilter) -> Result<Statement, StorageError> {
         let mut statements: Vec<String> = Vec::new();
         let mut condition_statements: Vec<String> = Vec::new();
         let mut column_values: Vec<ColumnValue> = Vec::new();
         let conditions_length = filter.conditions.len();
         for condition in filter.conditions {
             let sub_filters_length = condition.sub_filters.len();
-            let condition_statement = self.format_condition(condition);
+            let condition_statement = self.format_condition(condition)?;
             if !condition_statement.statement.is_empty() {
                 if conditions_length <= 1 || sub_filters_length <= 1 {
                     condition_statements.push(condition_statement.statement);
@@ -256,11 +270,11 @@ impl SqlStatementFormatter {
         if !condition_statements.is_empty() {
             statements.push(condition_statements.join(format_condition_operator(
                 &ConditionOperator::from_i32(filter.conditions_operator).unwrap_or(ConditionOperator::Unspecified),
-            )));
+            )?));
         }
         if let Some(order_by) = &filter.order_by {
             if !order_by.columns.is_empty() {
-                statements.push(format_order_by(order_by));
+                statements.push(format_order_by(order_by)?);
             }
         }
         if let Some(limit) = filter.limit {
@@ -269,62 +283,68 @@ impl SqlStatementFormatter {
                 statements.push(format!("OFFSET {}", offset));
             }
         }
-        Statement::new(statements.join(" "), column_values)
+        Ok(Statement::new(statements.join(" "), column_values))
     }
 
-    fn format_condition(&self, condition: Condition) -> Statement {
+    fn format_condition(&self, condition: Condition) -> Result<Statement, StorageError> {
         let sub_filter_statements = condition
             .sub_filters
             .into_iter()
             .map(|sub_filter| self.format_sub_filter(sub_filter))
-            .collect::<Vec<Statement>>();
-        Statement::new(
+            .collect::<Result<Vec<Statement>, StorageError>>()?;
+        Ok(Statement::new(
             sub_filter_statements
                 .iter()
                 .map(|statement| statement.statement.clone())
                 .collect::<Vec<String>>()
                 .join(format_condition_operator(
                     &ConditionOperator::from_i32(condition.operator).unwrap_or(ConditionOperator::Unspecified),
-                )),
+                )?),
             sub_filter_statements
                 .into_iter()
                 .flat_map(|statement| statement.column_values)
                 .collect::<Vec<ColumnValue>>(),
-        )
+        ))
     }
 
-    fn format_sub_filter(&self, filter: SubFilter) -> Statement {
+    fn format_sub_filter(&self, filter: SubFilter) -> Result<Statement, StorageError> {
         let operator = SubFilterOperator::from_i32(filter.operator).unwrap_or(SubFilterOperator::Unspecified);
         match operator {
-            SubFilterOperator::Unspecified => {
-                Statement::new(format!("`{}` = {}", filter.column, self.value_mark()), filter.values)
-            }
-            SubFilterOperator::Equal => {
-                Statement::new(format!("`{}` = {}", filter.column, self.value_mark()), filter.values)
-            }
-            SubFilterOperator::NotEqual => {
-                Statement::new(format!("`{}` != {}", filter.column, self.value_mark()), filter.values)
-            }
-            SubFilterOperator::Greater => {
-                Statement::new(format!("`{}` > {}", filter.column, self.value_mark()), filter.values)
-            }
-            SubFilterOperator::GreaterEqual => {
-                Statement::new(format!("`{}` >= {}", filter.column, self.value_mark()), filter.values)
-            }
-            SubFilterOperator::Less => {
-                Statement::new(format!("`{}` < {}", filter.column, self.value_mark()), filter.values)
-            }
-            SubFilterOperator::LessEqual => {
-                Statement::new(format!("`{}` <= {}", filter.column, self.value_mark()), filter.values)
-            }
+            SubFilterOperator::Equal => Ok(Statement::new(
+                format!("`{}` = {}", filter.column, self.value_mark()),
+                filter.values,
+            )),
+            SubFilterOperator::NotEqual => Ok(Statement::new(
+                format!("`{}` != {}", filter.column, self.value_mark()),
+                filter.values,
+            )),
+            SubFilterOperator::Greater => Ok(Statement::new(
+                format!("`{}` > {}", filter.column, self.value_mark()),
+                filter.values,
+            )),
+            SubFilterOperator::GreaterEqual => Ok(Statement::new(
+                format!("`{}` >= {}", filter.column, self.value_mark()),
+                filter.values,
+            )),
+            SubFilterOperator::Less => Ok(Statement::new(
+                format!("`{}` < {}", filter.column, self.value_mark()),
+                filter.values,
+            )),
+            SubFilterOperator::LessEqual => Ok(Statement::new(
+                format!("`{}` <= {}", filter.column, self.value_mark()),
+                filter.values,
+            )),
             SubFilterOperator::In => {
                 let value_marks = std::iter::repeat(self.value_mark())
                     .take(filter.values.len())
                     .collect::<Vec<_>>()
                     .join(", ");
-                Statement::new(format!("`{}` IN ({})", filter.column, value_marks), filter.values)
+                Ok(Statement::new(
+                    format!("`{}` IN ({})", filter.column, value_marks),
+                    filter.values,
+                ))
             }
-            SubFilterOperator::BetweenAnd => Statement::new(
+            SubFilterOperator::BetweenAnd => Ok(Statement::new(
                 format!(
                     "`{}` BETWEEN {} AND {}",
                     filter.column,
@@ -332,42 +352,43 @@ impl SqlStatementFormatter {
                     self.value_mark()
                 ),
                 filter.values,
-            ),
-            SubFilterOperator::IsNull => Statement::new(format!("`{}` IS NULL", filter.column), vec![]),
-            SubFilterOperator::IsNotNull => Statement::new(format!("`{}` IS NOT NULL", filter.column), vec![]),
+            )),
+            SubFilterOperator::IsNull => Ok(Statement::new(format!("`{}` IS NULL", filter.column), vec![])),
+            SubFilterOperator::IsNotNull => Ok(Statement::new(format!("`{}` IS NOT NULL", filter.column), vec![])),
+            _ => Err(StorageError::UnsupportedOperator("unspecified".to_string()))?,
         }
     }
 }
 
-fn format_condition_operator(operator: &ConditionOperator) -> &str {
+fn format_condition_operator(operator: &ConditionOperator) -> Result<&str, StorageError> {
     match operator {
-        ConditionOperator::Unspecified => "AND",
-        ConditionOperator::And => " AND ",
-        ConditionOperator::Or => " OR ",
+        ConditionOperator::Unspecified => Err(StorageError::UnsupportedOperator("unspecified".to_string()))?,
+        ConditionOperator::And => Ok(" AND "),
+        ConditionOperator::Or => Ok(" OR "),
     }
 }
 
-fn format_order_by(order_by: &OrderBy) -> String {
+fn format_order_by(order_by: &OrderBy) -> Result<String, StorageError> {
     let column_names = order_by
         .columns
         .iter()
         .map(|column| format!("`{}`", column))
         .collect::<Vec<String>>();
     let order = match Order::from_i32(order_by.order).unwrap_or(Order::Unspecified) {
-        Order::Unspecified => "ASC",
+        Order::Unspecified => Err(StorageError::UnsupportedOperator("unspecified".to_string()))?,
         Order::Asc => "ASC",
         Order::Desc => "DESC",
     };
-    format!("ORDER BY {} {}", column_names.join(", "), order)
+    Ok(format!("ORDER BY {} {}", column_names.join(", "), order))
 }
 
 fn format_create_collection_migration<T: DocumentData>(
     migration: &CreateCollectionMigration,
     sql_type: &SqlType,
-) -> Vec<Statement> {
+) -> Result<Vec<Statement>, StorageError> {
     let mut columns_sql: Vec<String> = Vec::new();
     for column in migration.columns.iter() {
-        columns_sql.push(format_column_sql(column, sql_type));
+        columns_sql.push(format_column_sql(column, sql_type)?);
     }
     let mut unique_columns_sql: Vec<String> = Vec::new();
     for unique_columns in migration.unique_columns.iter() {
@@ -407,7 +428,7 @@ fn format_create_collection_migration<T: DocumentData>(
                 .build(),
         ));
     }
-    statements
+    Ok(statements)
 }
 
 fn format_add_index_migration<T: DocumentData>(migration: &AddIndexMigration) -> Statement {
@@ -430,15 +451,18 @@ fn format_add_index_migration<T: DocumentData>(migration: &AddIndexMigration) ->
     )
 }
 
-fn format_add_column_migration<T: DocumentData>(migration: &AddColumnMigration, sql_type: &SqlType) -> Statement {
-    Statement::new(
+fn format_add_column_migration<T: DocumentData>(
+    migration: &AddColumnMigration,
+    sql_type: &SqlType,
+) -> Result<Statement, StorageError> {
+    Ok(Statement::new(
         format!(
             "ALTER TABLE `{}` ADD COLUMN {}",
             T::collection_name(),
-            format_column_sql(&migration.column, sql_type)
+            format_column_sql(&migration.column, sql_type)?
         ),
         vec![],
-    )
+    ))
 }
 
 fn format_drop_column_migration<T: DocumentData>(migration: &DropColumnMigration) -> Statement {
@@ -464,12 +488,12 @@ fn format_rename_column_migration<T: DocumentData>(migration: &RenameColumnMigra
     )
 }
 
-fn format_column_sql(column: &Column, sql_type: &SqlType) -> String {
+fn format_column_sql(column: &Column, sql_type: &SqlType) -> Result<String, StorageError> {
     let mut column_sql = String::new();
     column_sql.push_str(&format!(
         "`{}` {}",
         column.column_name,
-        get_column_sql_type(column, sql_type)
+        get_column_sql_type(column, sql_type)?
     ));
     if !column.nullable {
         column_sql.push_str(" NOT NULL");
@@ -477,12 +501,12 @@ fn format_column_sql(column: &Column, sql_type: &SqlType) -> String {
     if column.is_primary_key {
         column_sql.push_str(" PRIMARY KEY");
     }
-    column_sql
+    Ok(column_sql)
 }
 
-fn get_column_sql_type(column: &Column, sql_type: &SqlType) -> String {
-    match column.column_type {
-        ColumnType::Unspecified => "TINYINT".into(),
+fn get_column_sql_type(column: &Column, sql_type: &SqlType) -> Result<String, StorageError> {
+    let column_type = column.column_type;
+    let sql_type = match column.column_type {
         ColumnType::Bool => "TINYINT".into(),
         ColumnType::Char => "VARCHAR(1)".into(),
         ColumnType::I8 => "TINYINT".into(),
@@ -518,7 +542,9 @@ fn get_column_sql_type(column: &Column, sql_type: &SqlType) -> String {
         ColumnType::BigInt => varchar_or_text_sql_type(&column.length_limit),
         ColumnType::BigUint => varchar_or_text_sql_type(&column.length_limit),
         ColumnType::Json => varchar_or_text_sql_type(&column.length_limit),
-    }
+        _ => Err(StorageError::UnsupportedColumnTypeError(column_type.to_string()))?,
+    };
+    Ok(sql_type)
 }
 
 fn varchar_or_text_sql_type(length_limit: &Option<u64>) -> String {

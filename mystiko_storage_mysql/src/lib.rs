@@ -142,10 +142,8 @@ fn statement_to_query(statement: &Statement) -> Result<Query<'_>, StorageError> 
 
 fn bind_mysql_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Result<Query<'a>, StorageError> {
     for value in values {
-        match value.column_type()? {
-            ColumnType::Unspecified => {
-                query = query.bind(serde_json::to_string(&value.as_json()?)?);
-            }
+        let column_type = value.column_type()?;
+        match column_type {
             ColumnType::Bool => {
                 query = query.bind(value.as_bool()?);
             }
@@ -206,6 +204,7 @@ fn bind_mysql_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Resu
             ColumnType::Json => {
                 query = query.bind(serde_json::to_string(&value.as_json()?)?);
             }
+            _ => Err(StorageError::UnsupportedColumnTypeError(column_type.to_string()))?,
         }
     }
     Ok(query)
@@ -222,15 +221,8 @@ fn rows_to_documents<T: DocumentData>(rows: &[sqlx::mysql::MySqlRow]) -> Result<
 fn row_to_document<T: DocumentData>(row: &sqlx::mysql::MySqlRow) -> Result<Document<T>, StorageError> {
     let mut columns_with_value: Vec<(String, ColumnValue)> = vec![];
     for column in Document::<T>::columns() {
-        match column.column_type {
-            ColumnType::Unspecified => {
-                if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    columns_with_value.push((
-                        column.column_name,
-                        ColumnValue::builder().value(Value::JsonValue(value)).build(),
-                    ));
-                }
-            }
+        let column_type = column.column_type;
+        match column_type {
             ColumnType::Bool => {
                 if let Some(value) = get_column_value::<bool>(row, &column.column_name)? {
                     columns_with_value.push((
@@ -405,6 +397,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::mysql::MySqlRow) -> Result<Docum
                     ));
                 }
             }
+            _ => Err(StorageError::UnsupportedColumnTypeError(column_type.to_string()))?,
         };
     }
     Document::<T>::create(&columns_with_value)

@@ -177,7 +177,7 @@ impl Display for storage::v1::BigInt {
 impl Display for ColumnType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            ColumnType::Unspecified => Display::fmt("bool", f),
+            ColumnType::Unspecified => Display::fmt("unspecified", f),
             ColumnType::Bool => Display::fmt("bool", f),
             ColumnType::Char => Display::fmt("char", f),
             ColumnType::I8 => Display::fmt("i8", f),
