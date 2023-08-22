@@ -1,9 +1,9 @@
 use crate::data::LoadedData;
 use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::checker::RuleChecker;
-use crate::validator::rule::types::ValidateContractData;
-use crate::validator::rule::SequenceCheckerError;
-use crate::validator::rule::{CheckerResult, RuleCheckData, ValidateCommitment};
+use crate::validator::rule::types::ValidateMergedData;
+use crate::validator::rule::{CheckerResult, ValidateCommitment};
+use crate::validator::rule::{SequenceCheckerError, ValidateOriginalData};
 use async_trait::async_trait;
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::sync::Arc;
@@ -22,12 +22,16 @@ where
     R: LoadedData,
     H: DataHandler<R>,
 {
-    async fn check(&self, data: &RuleCheckData<R>) -> CheckerResult<()> {
-        match data.merged_data.commitments.first() {
+    async fn check<'a>(
+        &self,
+        _data: &ValidateOriginalData<'a, R>,
+        merged_data: &ValidateMergedData,
+    ) -> CheckerResult<()> {
+        match merged_data.commitments.first() {
             Some(f) => {
-                self.check_commitment_leaf_index_sequence(data.merged_data).await?;
-                self.check_commitment_status_sequence(f, data.merged_data)?;
-                self.check_commitment_sequence_with_handler(f, data.merged_data).await
+                self.check_commitment_leaf_index_sequence(merged_data).await?;
+                self.check_commitment_status_sequence(f, merged_data)?;
+                self.check_commitment_sequence_with_handler(f, merged_data).await
             }
             None => Ok(()),
         }
@@ -39,7 +43,7 @@ where
     R: LoadedData,
     H: DataHandler<R>,
 {
-    async fn check_commitment_leaf_index_sequence(&self, data: &ValidateContractData) -> CheckerResult<()> {
+    async fn check_commitment_leaf_index_sequence(&self, data: &ValidateMergedData) -> CheckerResult<()> {
         if data
             .commitments
             .windows(2)
@@ -53,7 +57,7 @@ where
     fn check_commitment_status_sequence(
         &self,
         first: &ValidateCommitment,
-        data: &ValidateContractData,
+        data: &ValidateMergedData,
     ) -> CheckerResult<()> {
         if first.status == CommitmentStatus::Queued {
             for cm in &data.commitments {
@@ -86,7 +90,7 @@ where
     async fn check_commitment_sequence_with_handler(
         &self,
         first: &ValidateCommitment,
-        data: &ValidateContractData,
+        data: &ValidateMergedData,
     ) -> CheckerResult<()> {
         if first.status == CommitmentStatus::Included && !first.inner_merge {
             return Ok(());
@@ -102,7 +106,7 @@ where
 
     async fn query_handler_commitment_count(
         &self,
-        data: &ValidateContractData,
+        data: &ValidateMergedData,
         status: CommitmentStatus,
     ) -> CheckerResult<u64> {
         let target_block = data.start_block - 1;
