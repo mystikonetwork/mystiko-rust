@@ -1,6 +1,6 @@
+use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::{DocumentColumn, DocumentData};
-use mystiko_storage::filter::{Order, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
@@ -154,11 +154,21 @@ async fn test_find() {
             .await
             .unwrap()
     );
-    let filter = QueryFilterBuilder::new()
-        .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
+    let filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .conditions(vec![SubFilter::greater(
+            TestDocumentColumn::Field3,
+            documents[0].data.field3,
+        )
+        .into()])
         .limit(1)
         .offset(1)
-        .order_by(TestDocumentColumn::Field3, Order::ASC)
+        .order_by(
+            OrderBy::builder()
+                .order(Order::Asc)
+                .columns(vec![TestDocumentColumn::Field3.to_string()])
+                .build(),
+        )
         .build();
     assert_eq!(documents[2..], collection.find(filter).await.unwrap());
 }
@@ -169,8 +179,13 @@ async fn test_count() {
     collection.migrate().await.unwrap();
     let documents = collection.insert_batch(&test_documents()).await.unwrap();
     assert_eq!(collection.count_all().await.unwrap(), 3);
-    let filter = QueryFilterBuilder::new()
-        .filter(SubFilter::greater(TestDocumentColumn::Field3, documents[0].data.field3).into())
+    let filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .conditions(vec![SubFilter::greater(
+            TestDocumentColumn::Field3,
+            documents[0].data.field3,
+        )
+        .into()])
         .build();
     assert_eq!(collection.count(filter).await.unwrap(), 2);
 }

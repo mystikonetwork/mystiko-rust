@@ -2,9 +2,9 @@ extern crate mystiko_database;
 extern crate num_bigint;
 
 use mystiko_database::document::commitment::{Commitment, CommitmentCollection, CommitmentColumn};
+use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::CommitmentStatus;
@@ -106,7 +106,13 @@ async fn test_commitments_crud() {
     assert_eq!(found_commitments, inserted_commitments);
     //testing find
     found_commitments = commitments
-        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .find(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(2)
+                .offset(1)
+                .build(),
+        )
         .await
         .unwrap();
     assert_eq!(found_commitments, inserted_commitments[1..]);

@@ -1,7 +1,7 @@
 use mystiko_database::document::nullifier::{Nullifier, NullifierCollection, NullifierColumn};
+use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use num_bigint::BigUint;
@@ -66,7 +66,13 @@ async fn test_nullifiers_crud() {
     let mut found_nullifiers = nullifiers.find_all().await.unwrap();
     assert_eq!(found_nullifiers, inserted_nullifiers);
     found_nullifiers = nullifiers
-        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .find(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(2)
+                .offset(1)
+                .build(),
+        )
         .await
         .unwrap();
     assert_eq!(found_nullifiers, inserted_nullifiers[1..]);

@@ -9,7 +9,7 @@ use mystiko_database::document::account::AccountColumn;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::full_public_key;
 use mystiko_protocol::types::{FullPk, FullSk};
-use mystiko_storage::filter::SubFilter;
+use mystiko_protos::storage::v1::SubFilter;
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::AccountStatus;

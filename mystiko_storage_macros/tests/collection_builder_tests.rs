@@ -1,7 +1,10 @@
-use mystiko_storage::column::{Column, ColumnValue, IndexColumns, UniqueColumns};
+use mystiko_protos::storage::v1::column_value::Value;
+use mystiko_protos::storage::v1::ColumnValue;
+use mystiko_storage::column::{Column, IndexColumns, UniqueColumns};
 use mystiko_storage::document::DocumentData;
 use mystiko_storage::migration::types::{Migration, RenameColumnMigration};
 use mystiko_storage_macros::CollectionBuilder;
+use mystiko_utils::convert::{biguint_to_bytes, i128_to_bytes, u128_to_bytes};
 use num_bigint::{BigInt, BigUint};
 
 #[derive(CollectionBuilder, Clone, Debug, PartialEq)]
@@ -139,59 +142,203 @@ fn test_column_enum_impl() {
 #[test]
 fn test_document_data_impl_create() {
     let document = TestDocument::create(&vec![
-        ("field1".to_string(), ColumnValue::Bool(true)),
-        ("field2".to_string(), ColumnValue::Bool(false)),
-        ("field3".to_string(), ColumnValue::Char('f')),
-        ("field4".to_string(), ColumnValue::Char('d')),
-        ("field5".to_string(), ColumnValue::U8(1)),
-        ("field6".to_string(), ColumnValue::U8(2)),
-        ("field7".to_string(), ColumnValue::U16(3)),
-        ("field8".to_string(), ColumnValue::U16(4)),
-        ("field9".to_string(), ColumnValue::U32(5)),
-        ("field10".to_string(), ColumnValue::U32(6)),
-        ("field11".to_string(), ColumnValue::U64(7)),
-        ("field12".to_string(), ColumnValue::U64(8)),
-        ("field13".to_string(), ColumnValue::U128(9)),
-        ("field14".to_string(), ColumnValue::U128(10)),
-        ("field15".to_string(), ColumnValue::USize(11)),
-        ("field16".to_string(), ColumnValue::USize(12)),
-        ("field17".to_string(), ColumnValue::I8(13)),
-        ("field18".to_string(), ColumnValue::I8(14)),
-        ("field19".to_string(), ColumnValue::I16(15)),
-        ("field20".to_string(), ColumnValue::I16(16)),
-        ("field21".to_string(), ColumnValue::I32(17)),
-        ("field22".to_string(), ColumnValue::I32(18)),
-        ("field23".to_string(), ColumnValue::I64(19)),
-        ("field24".to_string(), ColumnValue::I64(20)),
-        ("field25".to_string(), ColumnValue::I128(21)),
-        ("field26".to_string(), ColumnValue::I128(22)),
-        ("field27".to_string(), ColumnValue::ISize(23)),
-        ("field28".to_string(), ColumnValue::ISize(24)),
-        ("field29".to_string(), ColumnValue::F32(25.0)),
-        ("field30".to_string(), ColumnValue::F32(26.0)),
-        ("field31".to_string(), ColumnValue::F64(27.0)),
-        ("field32".to_string(), ColumnValue::F64(28.0)),
-        ("field33".to_string(), ColumnValue::String("29".to_string())),
-        ("field34".to_string(), ColumnValue::String("30".to_string())),
-        ("field35".to_string(), ColumnValue::BigInt(BigInt::from(31))),
-        ("field36".to_string(), ColumnValue::BigInt(BigInt::from(32))),
-        ("field37".to_string(), ColumnValue::BigUint(BigUint::from(33u32))),
-        ("field38".to_string(), ColumnValue::BigUint(BigUint::from(34u32))),
+        (
+            "field1".to_string(),
+            ColumnValue::builder().value(Value::BoolValue(true)).build(),
+        ),
+        (
+            "field2".to_string(),
+            ColumnValue::builder().value(Value::BoolValue(false)).build(),
+        ),
+        (
+            "field3".to_string(),
+            ColumnValue::builder().value(Value::CharValue('f'.to_string())).build(),
+        ),
+        (
+            "field4".to_string(),
+            ColumnValue::builder().value(Value::CharValue('d'.to_string())).build(),
+        ),
+        (
+            "field5".to_string(),
+            ColumnValue::builder().value(Value::U8Value(1)).build(),
+        ),
+        (
+            "field6".to_string(),
+            ColumnValue::builder().value(Value::U8Value(2)).build(),
+        ),
+        (
+            "field7".to_string(),
+            ColumnValue::builder().value(Value::U16Value(3)).build(),
+        ),
+        (
+            "field8".to_string(),
+            ColumnValue::builder().value(Value::U16Value(4)).build(),
+        ),
+        (
+            "field9".to_string(),
+            ColumnValue::builder().value(Value::U32Value(5)).build(),
+        ),
+        (
+            "field10".to_string(),
+            ColumnValue::builder().value(Value::U32Value(6)).build(),
+        ),
+        (
+            "field11".to_string(),
+            ColumnValue::builder().value(Value::U64Value(7)).build(),
+        ),
+        (
+            "field12".to_string(),
+            ColumnValue::builder().value(Value::U64Value(8)).build(),
+        ),
+        (
+            "field13".to_string(),
+            ColumnValue::builder().value(Value::U128Value(u128_to_bytes(9))).build(),
+        ),
+        (
+            "field14".to_string(),
+            ColumnValue::builder()
+                .value(Value::U128Value(u128_to_bytes(10)))
+                .build(),
+        ),
+        (
+            "field15".to_string(),
+            ColumnValue::builder().value(Value::UsizeValue(11)).build(),
+        ),
+        (
+            "field16".to_string(),
+            ColumnValue::builder().value(Value::UsizeValue(12)).build(),
+        ),
+        (
+            "field17".to_string(),
+            ColumnValue::builder().value(Value::I8Value(13)).build(),
+        ),
+        (
+            "field18".to_string(),
+            ColumnValue::builder().value(Value::I8Value(14)).build(),
+        ),
+        (
+            "field19".to_string(),
+            ColumnValue::builder().value(Value::I16Value(15)).build(),
+        ),
+        (
+            "field20".to_string(),
+            ColumnValue::builder().value(Value::I16Value(16)).build(),
+        ),
+        (
+            "field21".to_string(),
+            ColumnValue::builder().value(Value::I32Value(17)).build(),
+        ),
+        (
+            "field22".to_string(),
+            ColumnValue::builder().value(Value::I32Value(18)).build(),
+        ),
+        (
+            "field23".to_string(),
+            ColumnValue::builder().value(Value::I64Value(19)).build(),
+        ),
+        (
+            "field24".to_string(),
+            ColumnValue::builder().value(Value::I64Value(20)).build(),
+        ),
+        (
+            "field25".to_string(),
+            ColumnValue::builder()
+                .value(Value::I128Value(i128_to_bytes(21)))
+                .build(),
+        ),
+        (
+            "field26".to_string(),
+            ColumnValue::builder()
+                .value(Value::I128Value(i128_to_bytes(22)))
+                .build(),
+        ),
+        (
+            "field27".to_string(),
+            ColumnValue::builder().value(Value::IsizeValue(23)).build(),
+        ),
+        (
+            "field28".to_string(),
+            ColumnValue::builder().value(Value::IsizeValue(24)).build(),
+        ),
+        (
+            "field29".to_string(),
+            ColumnValue::builder().value(Value::F32Value(25.0)).build(),
+        ),
+        (
+            "field30".to_string(),
+            ColumnValue::builder().value(Value::F32Value(26.0)).build(),
+        ),
+        (
+            "field31".to_string(),
+            ColumnValue::builder().value(Value::F64Value(27.0)).build(),
+        ),
+        (
+            "field32".to_string(),
+            ColumnValue::builder().value(Value::F64Value(28.0)).build(),
+        ),
+        (
+            "field33".to_string(),
+            ColumnValue::builder()
+                .value(Value::StringValue("29".to_string()))
+                .build(),
+        ),
+        (
+            "field34".to_string(),
+            ColumnValue::builder()
+                .value(Value::StringValue("30".to_string()))
+                .build(),
+        ),
+        (
+            "field35".to_string(),
+            ColumnValue::builder()
+                .value(Value::BigIntValue(BigInt::from(31).into()))
+                .build(),
+        ),
+        (
+            "field36".to_string(),
+            ColumnValue::builder()
+                .value(Value::BigIntValue(BigInt::from(32).into()))
+                .build(),
+        ),
+        (
+            "field37".to_string(),
+            ColumnValue::builder()
+                .value(Value::BigUintValue(biguint_to_bytes(&BigUint::from(33u32))))
+                .build(),
+        ),
+        (
+            "field38".to_string(),
+            ColumnValue::builder()
+                .value(Value::BigUintValue(biguint_to_bytes(&BigUint::from(34u32))))
+                .build(),
+        ),
         (
             "field39".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![35]).unwrap()),
+            ColumnValue::builder()
+                .value(Value::JsonValue(serde_json::to_string(&vec![35]).unwrap()))
+                .build(),
         ),
         (
             "field40".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![36]).unwrap()),
+            ColumnValue::builder()
+                .value(Value::JsonValue(serde_json::to_string(&vec![36]).unwrap()))
+                .build(),
         ),
         (
             "field41".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![vec!["37".to_string(), "38".to_string()]]).unwrap()),
+            ColumnValue::builder()
+                .value(Value::JsonValue(
+                    serde_json::to_string(&vec![vec!["37".to_string(), "38".to_string()]]).unwrap(),
+                ))
+                .build(),
         ),
         (
             "field42_with_underscore".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![vec!["39".to_string(), "40".to_string()]]).unwrap()),
+            ColumnValue::builder()
+                .value(Value::JsonValue(
+                    serde_json::to_string(&vec![vec!["39".to_string(), "40".to_string()]]).unwrap(),
+                ))
+                .build(),
         ),
     ])
     .unwrap();
@@ -245,32 +392,105 @@ fn test_document_data_impl_create() {
 #[test]
 fn test_document_data_impl_create_with_none() {
     let document = TestDocument::create(&vec![
-        ("field1".to_string(), ColumnValue::Bool(true)),
-        ("field3".to_string(), ColumnValue::Char('f')),
-        ("field5".to_string(), ColumnValue::U8(1)),
-        ("field7".to_string(), ColumnValue::U16(2)),
-        ("field9".to_string(), ColumnValue::U32(3)),
-        ("field11".to_string(), ColumnValue::U64(4)),
-        ("field13".to_string(), ColumnValue::U128(5)),
-        ("field15".to_string(), ColumnValue::USize(6)),
-        ("field17".to_string(), ColumnValue::I8(7)),
-        ("field19".to_string(), ColumnValue::I16(8)),
-        ("field21".to_string(), ColumnValue::I32(9)),
-        ("field23".to_string(), ColumnValue::I64(10)),
-        ("field25".to_string(), ColumnValue::I128(11)),
-        ("field27".to_string(), ColumnValue::ISize(12)),
-        ("field29".to_string(), ColumnValue::F32(13.0)),
-        ("field31".to_string(), ColumnValue::F64(14.0)),
-        ("field33".to_string(), ColumnValue::String("15".to_string())),
-        ("field35".to_string(), ColumnValue::BigInt(BigInt::from(16))),
-        ("field37".to_string(), ColumnValue::BigUint(BigUint::from(17u32))),
+        (
+            "field1".to_string(),
+            ColumnValue::builder().value(Value::BoolValue(true)).build(),
+        ),
+        (
+            "field3".to_string(),
+            ColumnValue::builder().value(Value::CharValue('f'.to_string())).build(),
+        ),
+        (
+            "field5".to_string(),
+            ColumnValue::builder().value(Value::U8Value(1)).build(),
+        ),
+        (
+            "field7".to_string(),
+            ColumnValue::builder().value(Value::U16Value(2)).build(),
+        ),
+        (
+            "field9".to_string(),
+            ColumnValue::builder().value(Value::U32Value(3)).build(),
+        ),
+        (
+            "field11".to_string(),
+            ColumnValue::builder().value(Value::U64Value(4)).build(),
+        ),
+        (
+            "field13".to_string(),
+            ColumnValue::builder()
+                .value(Value::U128Value(u128_to_bytes(5u128)))
+                .build(),
+        ),
+        (
+            "field15".to_string(),
+            ColumnValue::builder().value(Value::UsizeValue(6)).build(),
+        ),
+        (
+            "field17".to_string(),
+            ColumnValue::builder().value(Value::I8Value(7)).build(),
+        ),
+        (
+            "field19".to_string(),
+            ColumnValue::builder().value(Value::I16Value(8)).build(),
+        ),
+        (
+            "field21".to_string(),
+            ColumnValue::builder().value(Value::I32Value(9)).build(),
+        ),
+        (
+            "field23".to_string(),
+            ColumnValue::builder().value(Value::I64Value(10)).build(),
+        ),
+        (
+            "field25".to_string(),
+            ColumnValue::builder()
+                .value(Value::I128Value(u128_to_bytes(11u128)))
+                .build(),
+        ),
+        (
+            "field27".to_string(),
+            ColumnValue::builder().value(Value::IsizeValue(12)).build(),
+        ),
+        (
+            "field29".to_string(),
+            ColumnValue::builder().value(Value::F32Value(13.0)).build(),
+        ),
+        (
+            "field31".to_string(),
+            ColumnValue::builder().value(Value::F64Value(14.0)).build(),
+        ),
+        (
+            "field33".to_string(),
+            ColumnValue::builder()
+                .value(Value::StringValue("15".to_string()))
+                .build(),
+        ),
+        (
+            "field35".to_string(),
+            ColumnValue::builder()
+                .value(Value::BigIntValue(BigInt::from(16).into()))
+                .build(),
+        ),
+        (
+            "field37".to_string(),
+            ColumnValue::builder()
+                .value(Value::BigUintValue(biguint_to_bytes(&BigUint::from(17u32))))
+                .build(),
+        ),
         (
             "field39".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![18]).unwrap()),
+            ColumnValue::builder()
+                .value(Value::JsonValue(serde_json::to_string(&vec![18]).unwrap()))
+                .build(),
         ),
         (
             "field41".to_string(),
-            ColumnValue::Json(serde_json::to_value(vec![vec!["19".to_string(), "20".to_string()]]).unwrap()),
+            ColumnValue::builder()
+                .value(Value::JsonValue(
+                    serde_json::to_string(&vec![vec!["19".to_string(), "20".to_string()]]).unwrap(),
+                ))
+                .build(),
         ),
     ])
     .unwrap();
@@ -330,193 +550,193 @@ fn test_document_data_impl_columns() {
         vec![
             Column::builder()
                 .column_name(TestDocumentColumn::Field1.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Bool)
+                .column_type(mystiko_protos::storage::v1::ColumnType::Bool)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field2.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Bool)
+                .column_type(mystiko_protos::storage::v1::ColumnType::Bool)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field3.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Char)
+                .column_type(mystiko_protos::storage::v1::ColumnType::Char)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field4.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Char)
+                .column_type(mystiko_protos::storage::v1::ColumnType::Char)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field5.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U8)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U8)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field6.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U8)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U8)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field7.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U16)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U16)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field8.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U16)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U16)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field9.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U32)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U32)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field10.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U32)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U32)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field11.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U64)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U64)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field12.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U64)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U64)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field13.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U128)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U128)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field14.to_string())
-                .column_type(mystiko_storage::column::ColumnType::U128)
+                .column_type(mystiko_protos::storage::v1::ColumnType::U128)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field15.to_string())
-                .column_type(mystiko_storage::column::ColumnType::USize)
+                .column_type(mystiko_protos::storage::v1::ColumnType::USize)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field16.to_string())
-                .column_type(mystiko_storage::column::ColumnType::USize)
+                .column_type(mystiko_protos::storage::v1::ColumnType::USize)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field17.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I8)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I8)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field18.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I8)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I8)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field19.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I16)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I16)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field20.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I16)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I16)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field21.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I32)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I32)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field22.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I32)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I32)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field23.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I64)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I64)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field24.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I64)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I64)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field25.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I128)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I128)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field26.to_string())
-                .column_type(mystiko_storage::column::ColumnType::I128)
+                .column_type(mystiko_protos::storage::v1::ColumnType::I128)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field27.to_string())
-                .column_type(mystiko_storage::column::ColumnType::ISize)
+                .column_type(mystiko_protos::storage::v1::ColumnType::ISize)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field28.to_string())
-                .column_type(mystiko_storage::column::ColumnType::ISize)
+                .column_type(mystiko_protos::storage::v1::ColumnType::ISize)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field29.to_string())
-                .column_type(mystiko_storage::column::ColumnType::F32)
+                .column_type(mystiko_protos::storage::v1::ColumnType::F32)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field30.to_string())
-                .column_type(mystiko_storage::column::ColumnType::F32)
+                .column_type(mystiko_protos::storage::v1::ColumnType::F32)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field31.to_string())
-                .column_type(mystiko_storage::column::ColumnType::F64)
+                .column_type(mystiko_protos::storage::v1::ColumnType::F64)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field32.to_string())
-                .column_type(mystiko_storage::column::ColumnType::F64)
+                .column_type(mystiko_protos::storage::v1::ColumnType::F64)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field33.to_string())
-                .column_type(mystiko_storage::column::ColumnType::String)
+                .column_type(mystiko_protos::storage::v1::ColumnType::String)
                 .length_limit(Some(128))
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field34.to_string())
-                .column_type(mystiko_storage::column::ColumnType::String)
+                .column_type(mystiko_protos::storage::v1::ColumnType::String)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field35.to_string())
-                .column_type(mystiko_storage::column::ColumnType::BigInt)
+                .column_type(mystiko_protos::storage::v1::ColumnType::BigInt)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field36.to_string())
-                .column_type(mystiko_storage::column::ColumnType::BigInt)
+                .column_type(mystiko_protos::storage::v1::ColumnType::BigInt)
                 .length_limit(Some(256))
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field37.to_string())
-                .column_type(mystiko_storage::column::ColumnType::BigUint)
+                .column_type(mystiko_protos::storage::v1::ColumnType::BigUint)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field38.to_string())
-                .column_type(mystiko_storage::column::ColumnType::BigUint)
+                .column_type(mystiko_protos::storage::v1::ColumnType::BigUint)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field39.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Json)
+                .column_type(mystiko_protos::storage::v1::ColumnType::Json)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field40.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Json)
+                .column_type(mystiko_protos::storage::v1::ColumnType::Json)
                 .nullable(true)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field41.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Json)
+                .column_type(mystiko_protos::storage::v1::ColumnType::Json)
                 .build(),
             Column::builder()
                 .column_name(TestDocumentColumn::Field42WithUnderscore.to_string())
-                .column_type(mystiko_storage::column::ColumnType::Json)
+                .column_type(mystiko_protos::storage::v1::ColumnType::Json)
                 .nullable(true)
                 .build(),
         ]
@@ -575,52 +795,104 @@ fn test_document_data_impl_column_values() {
     assert_eq!(
         column_values,
         vec![
-            Some(ColumnValue::Bool(true)),
-            Some(ColumnValue::Bool(false)),
-            Some(ColumnValue::Char('f')),
-            Some(ColumnValue::Char('d')),
-            Some(ColumnValue::U8(1)),
-            Some(ColumnValue::U8(2)),
-            Some(ColumnValue::U16(3)),
-            Some(ColumnValue::U16(4)),
-            Some(ColumnValue::U32(5)),
-            Some(ColumnValue::U32(6)),
-            Some(ColumnValue::U64(7)),
-            Some(ColumnValue::U64(8)),
-            Some(ColumnValue::U128(9)),
-            Some(ColumnValue::U128(10)),
-            Some(ColumnValue::USize(11)),
-            Some(ColumnValue::USize(12)),
-            Some(ColumnValue::I8(13)),
-            Some(ColumnValue::I8(14)),
-            Some(ColumnValue::I16(15)),
-            Some(ColumnValue::I16(16)),
-            Some(ColumnValue::I32(17)),
-            Some(ColumnValue::I32(18)),
-            Some(ColumnValue::I64(19)),
-            Some(ColumnValue::I64(20)),
-            Some(ColumnValue::I128(21)),
-            Some(ColumnValue::I128(22)),
-            Some(ColumnValue::ISize(23)),
-            Some(ColumnValue::ISize(24)),
-            Some(ColumnValue::F32(25.0)),
-            Some(ColumnValue::F32(26.0)),
-            Some(ColumnValue::F64(27.0)),
-            Some(ColumnValue::F64(28.0)),
-            Some(ColumnValue::String("29".to_string())),
-            Some(ColumnValue::String("30".to_string())),
-            Some(ColumnValue::BigInt(BigInt::from(31))),
-            Some(ColumnValue::BigInt(BigInt::from(32))),
-            Some(ColumnValue::BigUint(BigUint::from(33u32))),
-            Some(ColumnValue::BigUint(BigUint::from(34u32))),
-            Some(ColumnValue::Json(serde_json::to_value(vec![35]).unwrap())),
-            Some(ColumnValue::Json(serde_json::to_value(vec![36]).unwrap())),
-            Some(ColumnValue::Json(
-                serde_json::to_value(vec![vec!["37".to_string(), "38".to_string()]]).unwrap()
-            )),
-            Some(ColumnValue::Json(
-                serde_json::to_value(vec![vec!["39".to_string(), "40".to_string()]]).unwrap()
-            )),
+            Some(ColumnValue::builder().value(Value::BoolValue(true)).build()),
+            Some(ColumnValue::builder().value(Value::BoolValue(false)).build()),
+            Some(ColumnValue::builder().value(Value::CharValue('f'.to_string())).build()),
+            Some(ColumnValue::builder().value(Value::CharValue('d'.to_string())).build()),
+            Some(ColumnValue::builder().value(Value::U8Value(1)).build()),
+            Some(ColumnValue::builder().value(Value::U8Value(2)).build()),
+            Some(ColumnValue::builder().value(Value::U16Value(3)).build()),
+            Some(ColumnValue::builder().value(Value::U16Value(4)).build()),
+            Some(ColumnValue::builder().value(Value::U32Value(5)).build()),
+            Some(ColumnValue::builder().value(Value::U32Value(6)).build()),
+            Some(ColumnValue::builder().value(Value::U64Value(7)).build()),
+            Some(ColumnValue::builder().value(Value::U64Value(8)).build()),
+            Some(ColumnValue::builder().value(Value::U128Value(u128_to_bytes(9))).build()),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::U128Value(u128_to_bytes(10)))
+                    .build()
+            ),
+            Some(ColumnValue::builder().value(Value::UsizeValue(11)).build()),
+            Some(ColumnValue::builder().value(Value::UsizeValue(12)).build()),
+            Some(ColumnValue::builder().value(Value::I8Value(13)).build()),
+            Some(ColumnValue::builder().value(Value::I8Value(14)).build()),
+            Some(ColumnValue::builder().value(Value::I16Value(15)).build()),
+            Some(ColumnValue::builder().value(Value::I16Value(16)).build()),
+            Some(ColumnValue::builder().value(Value::I32Value(17)).build()),
+            Some(ColumnValue::builder().value(Value::I32Value(18)).build()),
+            Some(ColumnValue::builder().value(Value::I64Value(19)).build()),
+            Some(ColumnValue::builder().value(Value::I64Value(20)).build()),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::I128Value(i128_to_bytes(21)))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::I128Value(i128_to_bytes(22)))
+                    .build()
+            ),
+            Some(ColumnValue::builder().value(Value::IsizeValue(23)).build()),
+            Some(ColumnValue::builder().value(Value::IsizeValue(24)).build()),
+            Some(ColumnValue::builder().value(Value::F32Value(25.0)).build()),
+            Some(ColumnValue::builder().value(Value::F32Value(26.0)).build()),
+            Some(ColumnValue::builder().value(Value::F64Value(27.0)).build()),
+            Some(ColumnValue::builder().value(Value::F64Value(28.0)).build()),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::StringValue("29".to_string()))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::StringValue("30".to_string()))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::BigIntValue(BigInt::from(31).into()))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::BigIntValue(BigInt::from(32).into()))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::BigUintValue(biguint_to_bytes(&BigUint::from(33u32))))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::BigUintValue(biguint_to_bytes(&BigUint::from(34u32))))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::JsonValue(serde_json::to_string(&vec![35]).unwrap()))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::JsonValue(serde_json::to_string(&vec![36]).unwrap()))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::JsonValue(
+                        serde_json::to_string(&vec![vec!["37".to_string(), "38".to_string()]]).unwrap()
+                    ))
+                    .build()
+            ),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::JsonValue(
+                        serde_json::to_string(&vec![vec!["39".to_string(), "40".to_string()]]).unwrap()
+                    ))
+                    .build()
+            ),
         ]
     );
 }
@@ -677,49 +949,73 @@ fn test_document_data_impl_column_values_with_none() {
     assert_eq!(
         column_values,
         vec![
-            Some(ColumnValue::Bool(true)),
+            Some(ColumnValue::builder().value(Value::BoolValue(true)).build()),
             None,
-            Some(ColumnValue::Char('f')),
+            Some(ColumnValue::builder().value(Value::CharValue('f'.to_string())).build()),
             None,
-            Some(ColumnValue::U8(1)),
+            Some(ColumnValue::builder().value(Value::U8Value(1)).build()),
             None,
-            Some(ColumnValue::U16(2)),
+            Some(ColumnValue::builder().value(Value::U16Value(2)).build()),
             None,
-            Some(ColumnValue::U32(3)),
+            Some(ColumnValue::builder().value(Value::U32Value(3)).build()),
             None,
-            Some(ColumnValue::U64(4)),
+            Some(ColumnValue::builder().value(Value::U64Value(4)).build()),
             None,
-            Some(ColumnValue::U128(5)),
+            Some(ColumnValue::builder().value(Value::U128Value(i128_to_bytes(5))).build()),
             None,
-            Some(ColumnValue::USize(6)),
+            Some(ColumnValue::builder().value(Value::UsizeValue(6)).build()),
             None,
-            Some(ColumnValue::I8(7)),
+            Some(ColumnValue::builder().value(Value::I8Value(7)).build()),
             None,
-            Some(ColumnValue::I16(8)),
+            Some(ColumnValue::builder().value(Value::I16Value(8)).build()),
             None,
-            Some(ColumnValue::I32(9)),
+            Some(ColumnValue::builder().value(Value::I32Value(9)).build()),
             None,
-            Some(ColumnValue::I64(10)),
+            Some(ColumnValue::builder().value(Value::I64Value(10)).build()),
             None,
-            Some(ColumnValue::I128(11)),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::I128Value(i128_to_bytes(11)))
+                    .build()
+            ),
             None,
-            Some(ColumnValue::ISize(12)),
+            Some(ColumnValue::builder().value(Value::IsizeValue(12)).build()),
             None,
-            Some(ColumnValue::F32(13.0)),
+            Some(ColumnValue::builder().value(Value::F32Value(13.0)).build()),
             None,
-            Some(ColumnValue::F64(14.0)),
+            Some(ColumnValue::builder().value(Value::F64Value(14.0)).build()),
             None,
-            Some(ColumnValue::String("15".to_string())),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::StringValue("15".to_string()))
+                    .build()
+            ),
             None,
-            Some(ColumnValue::BigInt(BigInt::from(16))),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::BigIntValue(BigInt::from(16).into()))
+                    .build()
+            ),
             None,
-            Some(ColumnValue::BigUint(BigUint::from(17u32))),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::BigUintValue(biguint_to_bytes(&BigUint::from(17u32))))
+                    .build()
+            ),
             None,
-            Some(ColumnValue::Json(serde_json::to_value(vec![18]).unwrap())),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::JsonValue(serde_json::to_string(&vec![18]).unwrap()))
+                    .build()
+            ),
             None,
-            Some(ColumnValue::Json(
-                serde_json::to_value(vec![vec!["19".to_string(), "20".to_string()]]).unwrap()
-            )),
+            Some(
+                ColumnValue::builder()
+                    .value(Value::JsonValue(
+                        serde_json::to_string(&vec![vec!["19".to_string(), "20".to_string()]]).unwrap()
+                    ))
+                    .build()
+            ),
             None,
         ]
     );
