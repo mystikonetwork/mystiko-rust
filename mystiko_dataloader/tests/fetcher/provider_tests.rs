@@ -7,6 +7,7 @@ use log::LevelFilter;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::{FullData, LiteData};
 use mystiko_dataloader::fetcher::provider::ProviderFetcher;
+use mystiko_dataloader::fetcher::provider::ProviderFetcherError;
 use mystiko_dataloader::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
@@ -26,7 +27,22 @@ impl Providers for TestProvders {
             None
         } else {
             let test_provider = MockProvider::default();
-            let mock_cross_chain_data = serde_json::json!([]);
+            let mock_cross_chain_data = serde_json::json!([
+              {
+                "address": "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+                "blockHash": "0x608ed8a9b485fa71027503bf79a52c15417659caed2432d57f64b5615cc26d6e",
+                "blockNumber": "0x799abe",
+                "data": "0x",
+                "logIndex": "0xff",
+                "removed": false,
+                "topics": [
+                  "0xd106eb38b3368b7c294e36fae5513fdefe880be5abfad529b37b044f2fdd2dbe",
+                  "0x21c43ba17de66454ef89a3aea71a046d39d3837696780502d6f017f0c16e206a"
+                  ],
+                "transactionHash": "0xacebb4356bcb0d1c2763909586c2a396c79b6dd7951d7b9fc81144353043e6d8",
+                "transactionIndex": "0x71"
+              }
+            ]);
             let mock_queued_data = serde_json::json!([
               {
                 "address": "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
@@ -92,7 +108,22 @@ impl Providers for TestProvders {
         }
         let test_provider = MockProvider::default();
         sleep(Duration::from_secs(1)).await;
-        let mock_cross_chain_data = serde_json::json!([]);
+        let mock_cross_chain_data = serde_json::json!([
+          {
+            "address": "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+            "blockHash": "0x608ed8a9b485fa71027503bf79a52c15417659caed2432d57f64b5615cc26d6e",
+            "blockNumber": "0x799abe",
+            "data": "0x",
+            "logIndex": "0xff",
+            "removed": false,
+            "topics": [
+              "0xd106eb38b3368b7c294e36fae5513fdefe880be5abfad529b37b044f2fdd2dbe",
+              "0x21c43ba17de66454ef89a3aea71a046d39d3837696780502d6f017f0c16e206a"
+              ],
+            "transactionHash": "0xacebb4356bcb0d1c2763909586c2a396c79b6dd7951d7b9fc81144353043e6d8",
+            "transactionIndex": "0x71"
+          }
+        ]);
         let mock_queued_data = serde_json::json!([
           {
             "address": "0xCB255075f38C75EAf2DE8A72897649dba9B90299",
@@ -195,8 +226,8 @@ async fn test_fulldata_fetch() {
     assert_eq!(result.end_block, 45565267);
     assert!(result.data.is_some());
     let data = result.data.as_ref().unwrap();
-    assert_eq!(data.commitments.len(), 2);
-    assert_eq!(data.commitments[0].block_number, 45564344);
+    assert_eq!(data.commitments.len(), 3);
+    assert_eq!(data.commitments[0].block_number, 7969470);
     assert_eq!(data.nullifiers.len(), 1);
     assert_eq!(data.nullifiers[0].block_number, 45565081);
 }
@@ -216,7 +247,7 @@ async fn test_litedata_fetch() {
     let test_chain_id = 56;
     let test_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let test_start_block: u64 = 45564268;
-    let test_end_block: u64 = 45565268;
+    let test_end_block: u64 = 45565260;
     let contract_config = mystiko_config
         .find_contract_by_address(test_chain_id, test_address)
         .unwrap();
@@ -241,12 +272,53 @@ async fn test_litedata_fetch() {
     assert!(result.contract_results[0].result.is_ok());
     let result = result.contract_results[0].result.as_ref().unwrap();
     assert_eq!(result.start_block, test_start_block);
-    assert_eq!(result.end_block, 45565267);
+    assert_eq!(result.end_block, 45565260);
     assert_eq!(result.address, test_address);
     assert!(result.data.is_some());
     let data = result.data.as_ref().unwrap();
-    assert_eq!(data.commitments.len(), 2);
-    assert_eq!(data.commitments[0].block_number, 45564344);
+    assert_eq!(data.commitments.len(), 3);
+    assert_eq!(data.commitments[0].block_number, 7969470);
+    // test no contract_options
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/fetcher/config.json")
+            .await
+            .unwrap(),
+    );
+    let fetch_options = FetchOptions::builder()
+        .chain_id(111 as u64)
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .config(Arc::clone(&mystiko_config))
+        .contract_options(None)
+        .build();
+    let result = provider_fetcher.fetch(&fetch_options).await;
+    assert!(result.is_err());
+    assert_eq!(
+        result.err().unwrap().to_string(),
+        ProviderFetcherError::UnsupportedChainError(111 as u64).to_string()
+    );
+    let fetch_options = FetchOptions::builder()
+        .chain_id(test_chain_id)
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .config(Arc::clone(&mystiko_config))
+        .contract_options(None)
+        .build();
+    let result = provider_fetcher.fetch(&fetch_options).await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.chain_id, test_chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, test_address);
+    assert!(result.contract_results[0].result.is_ok());
+    let result = result.contract_results[0].result.as_ref().unwrap();
+    assert_eq!(result.start_block, test_start_block);
+    assert_eq!(result.end_block, 45565260);
+    assert_eq!(result.address, test_address);
+    assert!(result.data.is_some());
+    let data = result.data.as_ref().unwrap();
+    assert_eq!(data.commitments.len(), 3);
+    assert_eq!(data.commitments[0].block_number, 7969470);
 }
 
 #[derive(Debug, Default)]
