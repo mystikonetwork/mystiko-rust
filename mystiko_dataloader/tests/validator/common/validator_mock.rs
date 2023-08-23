@@ -202,12 +202,22 @@ impl Debug for MockProviders {
 
 #[async_trait]
 impl Providers for MockProviders {
-    fn get_provider(&self, _chain_id: u64) -> Option<Arc<Provider>> {
-        self.provider.as_ref().cloned()
+    async fn get_provider(&self, _chain_id: u64) -> anyhow::Result<Arc<Provider>> {
+        self.provider
+            .clone()
+            .ok_or(anyhow::Error::msg("get_provider error".to_string()))
     }
 
-    async fn get_or_create_provider(&mut self, _chain_id: u64) -> anyhow::Result<Arc<Provider>> {
-        Err(anyhow::Error::msg("get_or_create_provider error".to_string()))
+    async fn has_provider(&self, _chain_id: u64) -> bool {
+        false
+    }
+
+    async fn set_provider(&self, _chain_id: u64, _provider: Arc<Provider>) -> Option<Arc<Provider>> {
+        None
+    }
+
+    async fn delete_provider(&self, _chain_id: u64) -> Option<Arc<Provider>> {
+        None
     }
 }
 
@@ -283,7 +293,7 @@ pub fn create_single_rule_full_data_validator(
 
     let handler = Arc::new(MockHandler::new());
     let providers = create_mock_providers(Some(&mock));
-    let providers = Arc::new(RwLock::new(providers));
+    let providers = Arc::new(providers);
 
     let rule_types = match rules {
         Some(rules) => rules,
@@ -345,7 +355,7 @@ pub fn create_full_rule_full_data_validator() -> (FullDataRuleValidator, Arc<Moc
     let (_, mock) = EthersProvider::mocked();
     let handler = Arc::new(MockHandler::new());
     let providers = create_mock_providers(Some(&mock));
-    let providers = Arc::new(RwLock::new(providers));
+    let providers = Arc::new(providers);
     let validator = create_full_rule_validator(handler.clone(), providers);
     (validator, handler, mock)
 }
@@ -358,7 +368,7 @@ pub fn create_single_rule_lite_data_validator(
     let (_, mock) = EthersProvider::mocked();
     let handler = Arc::new(MockHandler::new());
     let providers = create_mock_providers(Some(&mock));
-    let providers = Arc::new(RwLock::new(providers));
+    let providers = Arc::new(providers);
 
     let rule_types = match rules {
         Some(rules) => rules,

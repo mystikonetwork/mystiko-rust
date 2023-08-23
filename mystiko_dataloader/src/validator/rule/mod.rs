@@ -1,6 +1,5 @@
 use crate::data::LoadedData;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 
 mod checker;
 mod error;
@@ -16,7 +15,7 @@ use mystiko_ethers::provider::pool::Providers;
 pub use types::*;
 pub use validator::*;
 
-pub fn create_full_rule_validator<R, H, P>(handler: Arc<H>, providers: Arc<RwLock<P>>) -> RuleValidator<R, H>
+pub fn create_full_rule_validator<R, H, P>(handler: Arc<H>, providers: Arc<P>) -> RuleValidator<R, H>
 where
     R: LoadedData + 'static,
     H: DataHandler<R> + 'static,

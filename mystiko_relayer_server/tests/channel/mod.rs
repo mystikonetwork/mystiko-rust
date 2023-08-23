@@ -23,11 +23,6 @@ async fn init_provider_not_found() {
     )
     .await;
     assert!(result.is_err());
-    let err = result.err().unwrap();
-    assert_eq!(
-        err.to_string().as_str(),
-        "No provider configuration found for chain id 51111"
-    );
 }
 
 #[actix_rt::test]

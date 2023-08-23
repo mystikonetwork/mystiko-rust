@@ -1,5 +1,4 @@
 use crate::data::LoadedData;
-use crate::get_provider;
 use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::types::ValidateMergedData;
@@ -16,12 +15,11 @@ use mystiko_utils::convert::{biguint_to_u256, bytes_to_biguint};
 use num_bigint::BigUint;
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
 pub struct MerkleTreeChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {
-    providers: Arc<RwLock<P>>,
+    providers: Arc<P>,
     handler: Arc<H>,
     #[builder(default = 20)]
     tree_max_levels: u32,
@@ -90,7 +88,7 @@ where
     async fn check_tree_root(&self, data: &ValidateMergedData, tree_root: &BigUint) -> CheckerResult<()> {
         let address = Address::from_str(data.contract_address.as_str())
             .map_err(|_| RuleCheckError::ContractAddressError(data.contract_address.clone()))?;
-        let provider = get_provider(&self.providers, data.chain_id).await?;
+        let provider = self.providers.get_provider(data.chain_id).await?;
         let commitment_contract = CommitmentPool::new(address, provider);
         let known = commitment_contract
             .is_known_root(biguint_to_u256(tree_root))

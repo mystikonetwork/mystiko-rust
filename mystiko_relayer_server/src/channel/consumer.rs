@@ -5,7 +5,7 @@ use ethers_core::types::{Bytes, TxHash, U256};
 use log::{debug, error, info};
 use mystiko_abi::commitment_pool::{CommitmentPool, TransactRequest};
 use mystiko_ethers::provider::factory::Provider;
-use mystiko_ethers::provider::pool::{ProviderPool, Providers};
+use mystiko_ethers::provider::pool::Providers;
 use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
 use mystiko_relayer_types::{TransactRequestData, TransactStatus};
 use mystiko_server_utils::token_price::price::TokenPrice;
@@ -22,19 +22,22 @@ use tokio::time::sleep;
 
 const MAX_GAS_PRICE_MULTIPLIER: u64 = 3;
 
-pub struct TransactionConsumer {
+pub struct TransactionConsumer<P: Providers = Box<dyn Providers>> {
     pub chain_id: u64,
     pub main_asset_symbol: String,
     pub main_asset_decimals: u32,
     pub receiver: Receiver<(String, TransactRequestData)>,
-    pub providers: Arc<RwLock<ProviderPool>>,
+    pub providers: Arc<P>,
     pub signer: Arc<Provider>,
     pub handler: Arc<TransactionHandler<SqlStatementFormatter, SqliteStorage>>,
     pub token_price: Arc<RwLock<TokenPrice>>,
     pub tx_manager: TxManager<ProviderWrapper<Box<dyn JsonRpcClientWrapper>>>,
 }
 
-impl TransactionConsumer {
+impl<P> TransactionConsumer<P>
+where
+    P: Providers,
+{
     pub async fn run(mut self) {
         let chain_id = self.chain_id;
         info!("Launching a consumer for chain_id: {}", chain_id);
@@ -67,12 +70,7 @@ impl TransactionConsumer {
 
     async fn consume(&mut self, uuid: &str, data: &TransactRequestData) -> Result<String> {
         // get provider
-        let provider = self
-            .providers
-            .write()
-            .await
-            .get_or_create_provider(data.chain_id)
-            .await?;
+        let provider = self.providers.get_provider(data.chain_id).await?;
         // get signer
         let signer = self.signer.clone();
         // parse address to Address

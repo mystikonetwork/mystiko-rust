@@ -34,7 +34,7 @@ pub async fn chain_status(
     data: Data<AppState>,
     handler: Data<Arc<AccountHandler<SqlStatementFormatter, SqliteStorage>>>,
     token_price: Data<Arc<RwLock<TokenPrice>>>,
-    providers: Data<Arc<RwLock<ProviderPool>>>,
+    providers: Data<Arc<ProviderPool>>,
 ) -> actix_web::Result<impl Responder, ResponseError> {
     info!("api v1 version chain status");
 
@@ -350,10 +350,8 @@ pub fn parse_transact_request(request: TransactRequestV1, asset_decimals: u32) -
     })
 }
 
-async fn gas_price_by_chain_id(chain_id: u64, providers: Data<Arc<RwLock<ProviderPool>>>) -> Result<U256> {
-    let mut providers = providers.write().await;
-    let provider = providers.get_or_create_provider(chain_id).await?;
-    drop(providers);
+async fn gas_price_by_chain_id<P: Providers>(chain_id: u64, providers: Data<Arc<P>>) -> Result<U256> {
+    let provider = providers.get_provider(chain_id).await?;
 
     let gas_price = provider.get_gas_price().await?;
     Ok(gas_price)

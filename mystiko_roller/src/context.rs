@@ -10,6 +10,7 @@ use crate::config::roller::{create_roller_config, ChainDataSource};
 use crate::db::database::create_roller_database;
 use crate::db::database::RollerDatabase;
 use async_trait::async_trait;
+use mystiko_ethers::provider::config::ChainConfigProvidersOptions;
 use mystiko_ethers::provider::factory::{
     DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions, HTTP_REGEX, WS_REGEX,
 };
@@ -79,10 +80,8 @@ impl ContextTrait for Context {
         let api_key = load_coin_market_api_key()?;
         let token_price = TokenPrice::new(&token_price_cfg, &api_key)?;
 
-        let mut providers = ProviderPool::builder()
-            .chain_providers_options(Box::new(core_cfg_parser.clone()))
-            .build();
-        let provider = providers.get_or_create_provider(roller_cfg.chain.chain_id).await?;
+        let providers: ProviderPool<ChainConfigProvidersOptions> = core_cfg_parser.cfg.clone().into();
+        let provider = providers.get_provider(roller_cfg.chain.chain_id).await?;
         let signer_endpoint = core_cfg_parser.signer_endpoint(roller_cfg.chain.chain_id);
         let sign_provider = create_sign_provider(signer_endpoint).await?;
 

@@ -4,7 +4,7 @@ use crate::types::result::Result;
 use ethers_core::types::Address;
 use futures::future::try_join_all;
 use log::debug;
-use mystiko_ethers::provider::pool::{ProviderPool, Providers};
+use mystiko_ethers::provider::pool::Providers;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_config::wrapper::relayer::{RelayerConfig, RemoteOptions};
 use mystiko_relayer_types::response::ApiResponse;
@@ -21,7 +21,6 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::RwLock;
 use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
 use validator::Validate;
@@ -32,11 +31,11 @@ pub const INFO_URL_PATH: &str = "api/v2/info";
 pub const TRANSACT_URL_PATH: &str = "api/v2/transact";
 pub const TRANSACTION_STATUS_URL_PATH: &str = "api/v2/transaction/status";
 
-pub struct RelayerClient {
+pub struct RelayerClient<P: Providers = Box<dyn Providers>> {
     pub reqwest_client: Client,
     pub network_type: NetworkType,
     pub relayer_config: Arc<RelayerConfig>,
-    pub providers: Arc<RwLock<ProviderPool>>,
+    pub providers: Arc<P>,
 }
 
 #[derive(TypedBuilder, Debug)]
@@ -55,8 +54,11 @@ pub struct RelayerClientOptions {
     pub timeout: Duration,
 }
 
-impl RelayerClient {
-    pub async fn new(providers: Arc<RwLock<ProviderPool>>, options: Option<RelayerClientOptions>) -> Result<Self> {
+impl<P> RelayerClient<P>
+where
+    P: 'static + Providers,
+{
+    pub async fn new(providers: Arc<P>, options: Option<RelayerClientOptions>) -> Result<Self> {
         let relayer_options = options.unwrap_or(RelayerClientOptions::builder().build());
         let relayer_config = create_relayer_config(&relayer_options).await?;
         let network_type = if relayer_options.is_testnet {
@@ -82,12 +84,11 @@ impl RelayerClient {
 
         let chain_id = request.chain_id;
 
-        let mut provider_pool = self.providers.write().await;
-        let provider = provider_pool
-            .get_or_create_provider(chain_id)
+        let provider = self
+            .providers
+            .get_provider(chain_id)
             .await
             .map_err(|err| RelayerClientError::GetOrCreateProviderError(err.to_string()))?;
-        drop(provider_pool);
 
         let chain_config_option = self.relayer_config.find_chain_config(chain_id);
         if chain_config_option.is_none() {

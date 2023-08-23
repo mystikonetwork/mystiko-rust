@@ -136,7 +136,7 @@ async fn test_relayer_config_not_found() {
     let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
 
     let client = RelayerClient::new(
-        Arc::new(RwLock::new(pool)),
+        Arc::new(pool),
         Some(
             RelayerClientOptions::builder()
                 .is_testnet(true)

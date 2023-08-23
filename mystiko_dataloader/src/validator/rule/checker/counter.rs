@@ -1,5 +1,4 @@
 use crate::data::LoadedData;
-use crate::get_provider;
 use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::checker::error::{CounterCheckerError, RuleCheckError};
 use crate::validator::rule::checker::CheckerResult;
@@ -14,12 +13,11 @@ use mystiko_ethers::provider::pool::Providers;
 use mystiko_protos::data::v1::CommitmentStatus;
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
 pub struct CounterChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {
-    providers: Arc<RwLock<P>>,
+    providers: Arc<P>,
     handler: Arc<H>,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
@@ -39,7 +37,7 @@ where
     ) -> CheckerResult<()> {
         let address = Address::from_str(merged_data.contract_address.as_str())
             .map_err(|_| RuleCheckError::ContractAddressError(merged_data.contract_address.to_string()))?;
-        let provider = get_provider(&self.providers, merged_data.chain_id).await?;
+        let provider = self.providers.get_provider(merged_data.chain_id).await?;
         let commitment_contract = CommitmentPool::new(address, provider);
         self.check_commitment(merged_data, &commitment_contract).await?;
         self.check_nullifier(merged_data, &commitment_contract).await

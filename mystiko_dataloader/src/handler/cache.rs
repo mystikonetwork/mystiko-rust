@@ -5,7 +5,6 @@ use crate::handler::{QueryResult, Result};
 use async_trait::async_trait;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
-use mystiko_utils::convert::bytes_to_biguint;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -42,6 +41,7 @@ where
     }
     async fn query_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<Vec<Commitment>>> {
         let identifier = commitment_cache_identifier(option);
+        self.cache_queued_commitment(&identifier, option).await?;
         let mut handler_option = CommitmentQueryOption::builder()
             .chain_id(option.chain_id)
             .contract_address(option.contract_address.clone())
@@ -60,7 +60,7 @@ where
         }
         let query_result = self.raw.query_commitments(&handler_option).await?;
         commitments.extend(query_result.result);
-        commitments.sort_by_key(|c| bytes_to_biguint(&c.commitment_hash));
+        commitments.sort_by_key(|c| c.commitment_hash_as_biguint());
         let contract_cache = ContractCache::builder()
             .loaded_block(query_result.end_block)
             .data(commitments)
@@ -101,7 +101,7 @@ where
         }
         let query_result = self.raw.query_nullifiers(&handler_option).await?;
         nullifiers.extend(query_result.result);
-        nullifiers.sort_by_key(|n| bytes_to_biguint(&n.nullifier));
+        nullifiers.sort_by_key(Nullifier::nullifier_as_biguint);
         let contract_cache = ContractCache::builder()
             .loaded_block(query_result.end_block)
             .data(nullifiers)
@@ -135,6 +135,54 @@ where
             nullifiers: RwLock::default(),
             _phantom: Default::default(),
         }
+    }
+
+    async fn cache_queued_commitment(&self, identifier: &str, option: &CommitmentQueryOption) -> Result<()> {
+        let mut new_contract_cache: Option<ContractCache<Commitment>> = None;
+        if let Some(contract_cache) = self.commitments.read().await.get(identifier) {
+            let commitment_hashes = contract_cache
+                .data
+                .iter()
+                .filter(|c| c.status == CommitmentStatus::Queued as i32)
+                .map(|c| c.commitment_hash_as_biguint())
+                .collect::<Vec<_>>();
+            if !commitment_hashes.is_empty() {
+                let options = CommitmentQueryOption::builder()
+                    .chain_id(option.chain_id)
+                    .contract_address(option.contract_address.clone())
+                    .end_block(contract_cache.loaded_block)
+                    .commitment_hash(commitment_hashes)
+                    .build();
+                let mut commitments = self
+                    .raw
+                    .query_commitments(&options)
+                    .await?
+                    .result
+                    .into_iter()
+                    .map(|c| (c.commitment_hash_as_biguint(), c))
+                    .collect::<HashMap<_, _>>();
+                let mut contract_cache = contract_cache.clone();
+                contract_cache.data = contract_cache
+                    .data
+                    .into_iter()
+                    .map(|c| {
+                        if let Some(commitment) = commitments.remove(&c.commitment_hash_as_biguint()) {
+                            commitment
+                        } else {
+                            c
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                new_contract_cache = Some(contract_cache);
+            }
+        }
+        if let Some(new_contract_cache) = new_contract_cache {
+            self.commitments
+                .write()
+                .await
+                .insert(identifier.to_string(), new_contract_cache);
+        }
+        Ok(())
     }
 }
 
@@ -181,9 +229,7 @@ fn filter_commitment(options: &CommitmentQueryOption, cache: &ContractCache<Comm
             }
         }
         if let Some(commitment_hashes) = &options.commitment_hash {
-            if !commitment_hashes.is_empty()
-                && !commitment_hashes.contains(&bytes_to_biguint(&commitment.commitment_hash))
-            {
+            if !commitment_hashes.is_empty() && !commitment_hashes.contains(&commitment.commitment_hash_as_biguint()) {
                 continue;
             }
         }
@@ -204,7 +250,7 @@ fn filter_nullifier(options: &NullifierQueryOption, cache: &ContractCache<Nullif
             }
         }
         if let Some(nullifier_hashes) = &options.nullifier {
-            if !nullifier_hashes.is_empty() && !nullifier_hashes.contains(&bytes_to_biguint(&nullifier.nullifier)) {
+            if !nullifier_hashes.is_empty() && !nullifier_hashes.contains(&nullifier.nullifier_as_biguint()) {
                 continue;
             }
         }

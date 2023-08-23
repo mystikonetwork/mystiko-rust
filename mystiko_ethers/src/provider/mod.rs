@@ -1,3 +1,5 @@
+#[cfg(feature = "config")]
+pub mod config;
 pub mod factory;
 pub mod failover;
 pub mod pool;

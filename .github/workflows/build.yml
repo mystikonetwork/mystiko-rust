@@ -65,15 +65,15 @@ jobs:
 
       - name: Run Clippy
         timeout-minutes: 60
-        run: cargo clippy --all-targets -j 4 -- -D warnings
+        run: cargo clippy --all-targets --all-features -j 4 -- -D warnings
 
       - name: Run Test
-        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --lcov --no-report
+        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --all-features --lcov --no-report
         env:
           DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
 
       - name: Generate Coverage
-        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --lcov --no-run --output-path lcov.info
+        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --all-features --lcov --no-run --output-path lcov.info
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v2

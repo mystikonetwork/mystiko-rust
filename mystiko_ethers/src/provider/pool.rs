@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
 #[async_trait]
@@ -13,85 +14,101 @@ pub trait ChainProvidersOptions: Debug + Send + Sync {
 
 #[async_trait]
 pub trait Providers: Debug + Send + Sync {
-    fn get_provider(&self, chain_id: u64) -> Option<Arc<Provider>>;
-    async fn get_or_create_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>>;
+    async fn get_provider(&self, chain_id: u64) -> Result<Arc<Provider>>;
+
+    async fn has_provider(&self, chain_id: u64) -> bool;
+
+    async fn set_provider(&self, chain_id: u64, provider: Arc<Provider>) -> Option<Arc<Provider>>;
+
+    async fn delete_provider(&self, chain_id: u64) -> Option<Arc<Provider>>;
 }
 
 #[derive(Debug, TypedBuilder)]
-pub struct ProviderPool {
-    chain_providers_options: Box<dyn ChainProvidersOptions>,
-    #[builder(default = default_provider_factory())]
-    provider_factory: Box<dyn ProviderFactory>,
-    #[builder(default = default_providers_map(), setter(skip))]
-    providers: HashMap<u64, Arc<Provider>>,
+#[builder(field_defaults(setter(into)))]
+pub struct ProviderPool<
+    O: ChainProvidersOptions = Box<dyn ChainProvidersOptions>,
+    F: ProviderFactory = Box<dyn ProviderFactory>,
+> {
+    chain_providers_options: O,
+    #[builder(default)]
+    provider_factory: Option<F>,
+    #[builder(default, setter(skip))]
+    providers: RwLock<HashMap<u64, Arc<Provider>>>,
 }
 
-impl ProviderPool {
-    pub fn has_provider(&self, chain_id: u64) -> bool {
-        self.get_provider(chain_id).is_some()
-    }
-
-    pub fn check_provider(&self, chain_id: u64) -> Result<Arc<Provider>> {
-        match self.get_provider(chain_id) {
-            Some(provider) => Ok(provider),
-            None => Err(Error::msg(format!("No provider found for chain id {}", chain_id))),
-        }
-    }
-
-    pub fn set_provider(&mut self, chain_id: u64, provider: Arc<Provider>) {
-        self.providers.insert(chain_id, provider);
-    }
-
-    pub fn delete_provider(&mut self, chain_id: u64) -> Option<Arc<Provider>> {
-        if self.providers.contains_key(&chain_id) {
-            self.providers.remove(&chain_id)
-        } else {
-            None
-        }
-    }
-
-    pub fn set_provider_factory(&mut self, provider_factory: Box<dyn ProviderFactory>) {
-        self.provider_factory = provider_factory;
+impl<O, F> ProviderPool<O, F>
+where
+    O: ChainProvidersOptions,
+    F: ProviderFactory,
+{
+    pub fn set_provider_factory(&mut self, provider_factory: F) {
+        self.provider_factory = Some(provider_factory);
     }
 }
 
 #[async_trait]
-impl Providers for ProviderPool {
-    fn get_provider(&self, chain_id: u64) -> Option<Arc<Provider>> {
-        self.providers.get(&chain_id).cloned()
-    }
-
-    async fn get_or_create_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>> {
-        if let Some(provider) = self.providers.get(&chain_id) {
-            return Ok(provider.clone());
-        }
-        if let Some(providers_options) = self.chain_providers_options.providers_options(chain_id).await? {
-            let provider: Arc<Provider> = Arc::new(self.provider_factory.create_provider(providers_options).await?);
-            self.providers.insert(chain_id, provider.clone());
+impl<O, F> Providers for ProviderPool<O, F>
+where
+    O: ChainProvidersOptions,
+    F: ProviderFactory,
+{
+    async fn get_provider(&self, chain_id: u64) -> Result<Arc<Provider>> {
+        let provider = self.providers.read().await.get(&chain_id).cloned();
+        if let Some(provider) = provider {
             return Ok(provider);
         }
-        Err(Error::msg(format!(
-            "No provider configuration found for chain id {}",
-            chain_id
-        )))
+        let mut write_guard = self.providers.write().await;
+        if let Some(provider) = write_guard.get(&chain_id).cloned() {
+            return Ok(provider);
+        }
+        if let Some(options) = self.chain_providers_options.providers_options(chain_id).await? {
+            let provider = if let Some(factory) = &self.provider_factory {
+                Arc::new(factory.create_provider(options).await?)
+            } else {
+                Arc::new(DefaultProviderFactory.create_provider(options).await?)
+            };
+            write_guard.insert(chain_id, provider.clone());
+            Ok(provider)
+        } else {
+            Err(Error::msg(format!("No provider options for chain id {}", chain_id)))
+        }
+    }
+
+    async fn has_provider(&self, chain_id: u64) -> bool {
+        self.providers.read().await.contains_key(&chain_id)
+    }
+
+    async fn set_provider(&self, chain_id: u64, provider: Arc<Provider>) -> Option<Arc<Provider>> {
+        self.providers.write().await.insert(chain_id, provider)
+    }
+
+    async fn delete_provider(&self, chain_id: u64) -> Option<Arc<Provider>> {
+        self.providers.write().await.remove(&chain_id)
+    }
+}
+
+#[async_trait]
+impl ChainProvidersOptions for Box<dyn ChainProvidersOptions> {
+    async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>> {
+        self.as_ref().providers_options(chain_id).await
     }
 }
 
 #[async_trait]
 impl Providers for Box<dyn Providers> {
-    fn get_provider(&self, chain_id: u64) -> Option<Arc<Provider>> {
-        self.as_ref().get_provider(chain_id)
+    async fn get_provider(&self, chain_id: u64) -> Result<Arc<Provider>> {
+        self.as_ref().get_provider(chain_id).await
     }
 
-    async fn get_or_create_provider(&mut self, chain_id: u64) -> Result<Arc<Provider>> {
-        self.as_mut().get_or_create_provider(chain_id).await
+    async fn has_provider(&self, chain_id: u64) -> bool {
+        self.as_ref().has_provider(chain_id).await
     }
-}
 
-fn default_provider_factory() -> Box<dyn ProviderFactory> {
-    Box::<DefaultProviderFactory>::default()
-}
+    async fn set_provider(&self, chain_id: u64, provider: Arc<Provider>) -> Option<Arc<Provider>> {
+        self.as_ref().set_provider(chain_id, provider).await
+    }
 
-fn default_providers_map() -> HashMap<u64, Arc<Provider>> {
-    HashMap::new()
+    async fn delete_provider(&self, chain_id: u64) -> Option<Arc<Provider>> {
+        self.as_ref().delete_provider(chain_id).await
+    }
 }

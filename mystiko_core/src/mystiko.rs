@@ -11,7 +11,6 @@ use mystiko_ethers::provider::pool::ProviderPool;
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
 pub struct Mystiko<F: StatementFormatter, S: Storage> {
@@ -21,7 +20,7 @@ pub struct Mystiko<F: StatementFormatter, S: Storage> {
     pub chains: ChainHandler<F, S>,
     pub contracts: ContractHandler<F, S>,
     pub wallets: WalletHandler<F, S>,
-    pub providers: Arc<RwLock<ProviderPool>>,
+    pub providers: Arc<ProviderPool<ChainHandler<F, S>>>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -56,12 +55,12 @@ where
         let wallets = WalletHandler::new(db.clone());
         let providers = if let Some(provider_factory) = mystiko_options.provider_factory {
             ProviderPool::builder()
-                .chain_providers_options(Box::new(ChainHandler::new(db.clone(), config.clone())))
+                .chain_providers_options(ChainHandler::new(db.clone(), config.clone()))
                 .provider_factory(provider_factory)
                 .build()
         } else {
             ProviderPool::builder()
-                .chain_providers_options(Box::new(ChainHandler::new(db.clone(), config.clone())))
+                .chain_providers_options(ChainHandler::new(db.clone(), config.clone()))
                 .build()
         };
         let mystiko = Self {
@@ -71,7 +70,7 @@ where
             chains,
             contracts,
             wallets,
-            providers: Arc::new(RwLock::new(providers)),
+            providers: Arc::new(providers),
         };
         mystiko.chains.initialize().await?;
         mystiko.contracts.initialize().await?;
