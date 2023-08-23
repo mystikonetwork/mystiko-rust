@@ -1,3 +1,4 @@
+use mystiko_protos::error::ProtosError;
 use num_bigint::ParseBigIntError;
 use std::num::ParseIntError;
 use thiserror::Error;
@@ -20,4 +21,10 @@ pub enum StorageError {
     ParseIntError(#[from] ParseIntError),
     #[error(transparent)]
     ParseBigIntError(#[from] ParseBigIntError),
+    #[error(transparent)]
+    ProtosError(#[from] ProtosError),
+    #[error("unsupported column type: {0:?}")]
+    UnsupportedColumnTypeError(String),
+    #[error("unsupported operator: {0:?}")]
+    UnsupportedOperator(String),
 }

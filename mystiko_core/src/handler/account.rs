@@ -12,8 +12,8 @@ use mystiko_protocol::key::{
     combined_public_key, combined_secret_key, encryption_public_key, separate_secret_keys, verification_public_key,
 };
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
+use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::document::{Document, DocumentColumn};
-use mystiko_storage::filter::{QueryFilter, QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_types::AccountStatus;
@@ -84,7 +84,12 @@ where
     }
 
     pub async fn count_all(&self) -> Result<u64> {
-        self.count(QueryFilterBuilder::new().build()).await
+        self.count(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .build(),
+        )
+        .await
     }
 
     pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<Document<Account>>> {
@@ -93,7 +98,12 @@ where
     }
 
     pub async fn find_all(&self) -> Result<Vec<Document<Account>>> {
-        self.find(QueryFilterBuilder::new().build()).await
+        self.find(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .build(),
+        )
+        .await
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Account>>> {
@@ -179,7 +189,9 @@ where
         let wallet = self.wallets.check_current().await?;
         let mut filter: QueryFilter = match filter {
             Some(filter) => filter.into(),
-            None => QueryFilterBuilder::new().build(),
+            None => QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .build(),
         };
         filter
             .conditions

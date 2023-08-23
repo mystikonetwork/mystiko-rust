@@ -7,6 +7,8 @@ edition = "2021"
 anyhow = { version = "1.0.69" }
 async-trait = { version = "0.1.64" }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-storage-v1"] }
+mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 num-bigint = { version = "0.4", features = ["serde"] }
 serde_json = { version = "1.0.91" }
 sqlx = { version = "0.7.0", features = [ "runtime-tokio", "tls-rustls", "mysql" ] }

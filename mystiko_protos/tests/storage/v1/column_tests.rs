@@ -10,13 +10,13 @@ fn test_column_type() {
     assert_eq!(ColumnType::I32.to_string(), "i32");
     assert_eq!(ColumnType::I64.to_string(), "i64");
     assert_eq!(ColumnType::I128.to_string(), "i128");
-    assert_eq!(ColumnType::Isize.to_string(), "isize");
+    assert_eq!(ColumnType::ISize.to_string(), "isize");
     assert_eq!(ColumnType::U8.to_string(), "u8");
     assert_eq!(ColumnType::U16.to_string(), "u16");
     assert_eq!(ColumnType::U32.to_string(), "u32");
     assert_eq!(ColumnType::U64.to_string(), "u64");
     assert_eq!(ColumnType::U128.to_string(), "u128");
-    assert_eq!(ColumnType::Usize.to_string(), "usize");
+    assert_eq!(ColumnType::USize.to_string(), "usize");
     assert_eq!(ColumnType::F32.to_string(), "f32");
     assert_eq!(ColumnType::F64.to_string(), "f64");
     assert_eq!(ColumnType::String.to_string(), "string");
@@ -93,7 +93,7 @@ fn test_isize_column_value() {
     let value: ColumnValue = 1isize.into();
     assert_eq!(value.as_isize().unwrap(), 1isize);
     assert!(value.as_u8().is_err());
-    assert_eq!(value.column_type().unwrap(), ColumnType::Isize);
+    assert_eq!(value.column_type().unwrap(), ColumnType::ISize);
     assert_eq!(value.to_string(), "1");
 }
 
@@ -147,7 +147,7 @@ fn test_usize_column_value() {
     let value: ColumnValue = 1usize.into();
     assert_eq!(value.as_usize().unwrap(), 1usize);
     assert!(value.as_f32().is_err());
-    assert_eq!(value.column_type().unwrap(), ColumnType::Usize);
+    assert_eq!(value.column_type().unwrap(), ColumnType::USize);
     assert_eq!(value.to_string(), "1");
 }
 

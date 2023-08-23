@@ -1,6 +1,9 @@
 use crate::data::{DataRef, FullData, LiteData, LoadedData};
-use crate::validator::rule::{CheckerResult, IntegrityCheckerError, RuleCheckData, RuleChecker};
+use crate::validator::rule::{
+    CheckerResult, IntegrityCheckerError, RuleChecker, ValidateMergedData, ValidateOriginalData,
+};
 use async_trait::async_trait;
+use mystiko_config::wrapper::contract::pool::PoolContractConfig;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
@@ -17,12 +20,16 @@ impl<R> RuleChecker<R> for IntegrityChecker<R>
 where
     R: LoadedData,
 {
-    async fn check(&self, data: &RuleCheckData<R>) -> CheckerResult<()> {
+    async fn check<'a>(
+        &self,
+        data: &ValidateOriginalData<'a, R>,
+        _merged_data: &ValidateMergedData,
+    ) -> CheckerResult<()> {
         match data.contract_data.data {
             None => Ok(()),
             Some(ref d) => match R::data_ref(d) {
-                DataRef::Full(full) => self.check_contract_full_data(full).await,
-                DataRef::Lite(lite) => self.check_contract_lite_data(lite).await,
+                DataRef::Full(full) => self.check_contract_full_data(full, data.contract_config),
+                DataRef::Lite(lite) => self.check_contract_lite_data(lite, data.contract_config),
             },
         }
     }
@@ -32,24 +39,24 @@ impl<R> IntegrityChecker<R>
 where
     R: LoadedData,
 {
-    async fn check_contract_full_data(&self, data: &FullData) -> CheckerResult<()> {
-        self.check_commitments(&data.commitments).await?;
-        self.check_nullifiers(&data.nullifiers).await
+    fn check_contract_full_data(&self, data: &FullData, contract_cfg: &PoolContractConfig) -> CheckerResult<()> {
+        self.check_commitments(&data.commitments, contract_cfg)?;
+        self.check_nullifiers(&data.nullifiers, contract_cfg)
     }
 
-    async fn check_contract_lite_data(&self, data: &LiteData) -> CheckerResult<()> {
-        self.check_commitments(&data.commitments).await
+    fn check_contract_lite_data(&self, data: &LiteData, contract_cfg: &PoolContractConfig) -> CheckerResult<()> {
+        self.check_commitments(&data.commitments, contract_cfg)
     }
 
-    async fn check_commitments(&self, commitments: &[Commitment]) -> CheckerResult<()> {
+    fn check_commitments(&self, commitments: &[Commitment], contract_cfg: &PoolContractConfig) -> CheckerResult<()> {
         for cm in commitments {
-            self.check_commitment(cm).await?;
+            self.check_commitment(cm, contract_cfg)?;
         }
 
         Ok(())
     }
 
-    async fn check_commitment(&self, commitment: &Commitment) -> CheckerResult<()> {
+    fn check_commitment(&self, commitment: &Commitment, contract_cfg: &PoolContractConfig) -> CheckerResult<()> {
         let status = match CommitmentStatus::from_i32(commitment.status) {
             Some(status) => status,
             None => return Err(IntegrityCheckerError::CommitmentStatusError.into()),
@@ -58,8 +65,27 @@ where
         match status {
             CommitmentStatus::Unspecified => return Err(IntegrityCheckerError::CommitmentStatusError.into()),
             CommitmentStatus::SrcSucceeded => {
-                if commitment.src_chain_block_number.is_none() {
-                    return Err(IntegrityCheckerError::CommitmentSrcChainBlockNumberError.into());
+                match commitment.src_chain_block_number {
+                    None => {
+                        return Err(IntegrityCheckerError::CommitmentSrcChainBlockNumberError.into());
+                    }
+                    Some(src_chain_block_number) => {
+                        if src_chain_block_number != commitment.block_number {
+                            return Err(IntegrityCheckerError::CommitmentSrcChainNumberMismatchError(
+                                src_chain_block_number,
+                                commitment.block_number,
+                            )
+                            .into());
+                        }
+
+                        if src_chain_block_number <= contract_cfg.start_block() {
+                            return Err(IntegrityCheckerError::CommitmentSrcChainNumberTooSmallError(
+                                src_chain_block_number,
+                                contract_cfg.start_block(),
+                            )
+                            .into());
+                        }
+                    }
                 }
 
                 if commitment.src_chain_transaction_hash.is_none() {
@@ -84,8 +110,28 @@ where
                 }
             }
             CommitmentStatus::Included => {
-                if commitment.included_block_number.is_none() {
-                    return Err(IntegrityCheckerError::CommitmentIncludedBlockNumberError.into());
+                match commitment.included_block_number {
+                    None => {
+                        return Err(IntegrityCheckerError::CommitmentIncludedBlockNumberError.into());
+                    }
+                    Some(included_block_number) => {
+                        if included_block_number < commitment.block_number {
+                            return Err(IntegrityCheckerError::CommitmentIncludedNumberTooSmallError(
+                                included_block_number,
+                                "block number".to_string(),
+                                contract_cfg.start_block(),
+                            )
+                            .into());
+                        }
+                        if included_block_number < contract_cfg.start_block() {
+                            return Err(IntegrityCheckerError::CommitmentIncludedNumberTooSmallError(
+                                included_block_number,
+                                "contract start block".to_string(),
+                                contract_cfg.start_block(),
+                            )
+                            .into());
+                        }
+                    }
                 }
 
                 if commitment.included_transaction_hash.is_none() {
@@ -98,14 +144,36 @@ where
             return Err(IntegrityCheckerError::CommitmentBiggerThanFieldSizeError.into());
         }
 
+        if commitment.block_number <= contract_cfg.start_block() {
+            return Err(IntegrityCheckerError::CommitmentBlockNumberTooSmallError(
+                commitment.block_number,
+                contract_cfg.start_block(),
+            )
+            .into());
+        }
+
         Ok(())
     }
 
-    async fn check_nullifiers(&self, nullifiers: &[Nullifier]) -> CheckerResult<()> {
+    fn check_nullifiers(&self, nullifiers: &[Nullifier], contract_cfg: &PoolContractConfig) -> CheckerResult<()> {
         for n in nullifiers {
-            if bytes_to_biguint(&n.nullifier).ge(&FIELD_SIZE) {
-                return Err(IntegrityCheckerError::NullifierBiggerThanFieldSizeError.into());
-            }
+            self.check_nullifier(n, contract_cfg)?;
+        }
+
+        Ok(())
+    }
+
+    fn check_nullifier(&self, n: &Nullifier, contract_cfg: &PoolContractConfig) -> CheckerResult<()> {
+        if bytes_to_biguint(&n.nullifier).ge(&FIELD_SIZE) {
+            return Err(IntegrityCheckerError::NullifierBiggerThanFieldSizeError.into());
+        }
+
+        if n.block_number <= contract_cfg.start_block() {
+            return Err(IntegrityCheckerError::NullifierBlockNumberTooSmallError(
+                n.block_number,
+                contract_cfg.start_block(),
+            )
+            .into());
         }
 
         Ok(())

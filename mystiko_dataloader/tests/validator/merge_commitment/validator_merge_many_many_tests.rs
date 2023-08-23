@@ -6,7 +6,7 @@ use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::validator::rule::{
-    DataMergeError, SequenceCheckerError, ValidateCommitment, ValidateContractData,
+    DataMergeError, SequenceCheckerError, ValidateCommitment, ValidateMergedData,
 };
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
@@ -66,7 +66,7 @@ async fn test_one_queued_many_included_same_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -159,7 +159,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -218,7 +218,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -277,7 +277,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -366,7 +366,7 @@ async fn test_many_queued_many_included_part_same_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -445,7 +445,7 @@ async fn test_many_queued_many_included_different_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)

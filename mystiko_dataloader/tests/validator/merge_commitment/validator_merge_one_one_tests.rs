@@ -5,7 +5,7 @@ use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
-use mystiko_dataloader::validator::rule::{SequenceCheckerError, ValidateCommitment, ValidateContractData};
+use mystiko_dataloader::validator::rule::{SequenceCheckerError, ValidateCommitment, ValidateMergedData};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_utils::convert::bytes_to_biguint;
@@ -54,7 +54,7 @@ async fn test_only_one_queued_no_included_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -115,7 +115,7 @@ async fn test_only_no_queued_one_included_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -173,7 +173,7 @@ async fn test_only_one_queued_one_included_same_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -210,7 +210,7 @@ async fn test_only_one_queued_one_included_same_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)
@@ -279,7 +279,7 @@ async fn test_only_one_queued_one_included_different_commitment() {
     assert!(
         mock_checker
             .cmp_data(Some(
-                &ValidateContractData::builder()
+                &ValidateMergedData::builder()
                     .chain_id(chain_id)
                     .contract_address(contract_address.to_string())
                     .start_block(1_u64)

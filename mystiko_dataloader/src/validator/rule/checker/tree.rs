@@ -2,10 +2,10 @@ use crate::data::LoadedData;
 use crate::get_provider;
 use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::checker::RuleChecker;
-use crate::validator::rule::types::ValidateContractData;
-use crate::validator::rule::MerkleTreeCheckerError;
+use crate::validator::rule::types::ValidateMergedData;
+use crate::validator::rule::CheckerResult;
 use crate::validator::rule::RuleCheckError;
-use crate::validator::rule::{CheckerResult, RuleCheckData};
+use crate::validator::rule::{MerkleTreeCheckerError, ValidateOriginalData};
 use async_trait::async_trait;
 use ethers_core::types::{Address, BlockId, BlockNumber};
 use mystiko_abi::commitment_pool::CommitmentPool;
@@ -36,9 +36,12 @@ where
     H: DataHandler<R>,
     P: Providers,
 {
-    async fn check(&self, data: &RuleCheckData<R>) -> CheckerResult<()> {
-        if !data
-            .merged_data
+    async fn check<'a>(
+        &self,
+        _data: &ValidateOriginalData<'a, R>,
+        merged_data: &ValidateMergedData,
+    ) -> CheckerResult<()> {
+        if !merged_data
             .commitments
             .iter()
             .any(|c| c.status == CommitmentStatus::Included)
@@ -46,8 +49,8 @@ where
             return Ok(());
         }
 
-        let tree_root = self.build_tree(data.merged_data).await?;
-        self.check_tree_root(data.merged_data, &tree_root).await
+        let tree_root = self.build_tree(merged_data).await?;
+        self.check_tree_root(merged_data, &tree_root).await
     }
 }
 
@@ -57,7 +60,7 @@ where
     H: DataHandler<R>,
     P: Providers,
 {
-    async fn build_tree(&self, data: &ValidateContractData) -> CheckerResult<BigUint> {
+    async fn build_tree(&self, data: &ValidateMergedData) -> CheckerResult<BigUint> {
         let target_block = data.start_block - 1;
         let option = CommitmentQueryOption::builder()
             .chain_id(data.chain_id)
@@ -84,7 +87,7 @@ where
         Ok(tree.root())
     }
 
-    async fn check_tree_root(&self, data: &ValidateContractData, tree_root: &BigUint) -> CheckerResult<()> {
+    async fn check_tree_root(&self, data: &ValidateMergedData, tree_root: &BigUint) -> CheckerResult<()> {
         let address = Address::from_str(data.contract_address.as_str())
             .map_err(|_| RuleCheckError::ContractAddressError(data.contract_address.clone()))?;
         let provider = get_provider(&self.providers, data.chain_id).await?;

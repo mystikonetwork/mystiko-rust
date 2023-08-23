@@ -55,8 +55,9 @@ async fn test_some_included_commitment() {
         cm.rollup_fee = Some(vec![1, 2, 3]);
         cm.queued_transaction_hash = Some(vec![1, 2, 3]);
         cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_block_number = Some(1);
+        cm.included_block_number = Some(16690440);
         cm.included_transaction_hash = Some(vec![1, 2, 3]);
+        cm.block_number = 16690440;
         fetched_cms.push(cm.clone());
         let mut included = cm.clone();
         included.leaf_index = None;

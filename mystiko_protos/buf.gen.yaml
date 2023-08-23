@@ -10,6 +10,12 @@ plugins:
       - file_descriptor_set
       - message_attribute=.=#[derive(typed_builder::TypedBuilder)]
       - message_attribute=.=#[builder(field_defaults(default\, setter(into)))]
+  - plugin: buf.build/community/neoeinstein-tonic
+    opt:
+      - compile_well_known_types
+      - server_mod_attribute=.=#[cfg(feature = "grpc-server")]
+      - client_mod_attribute=.=#[cfg(feature = "grpc-client")]
+    out: src/gen
   - plugin: buf.build/community/neoeinstein-prost-serde
     out: src/gen
   - plugin: prost-crate

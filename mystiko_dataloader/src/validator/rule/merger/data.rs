@@ -1,8 +1,9 @@
-use crate::data::{ContractData, DataRef, DataType, FullData, LiteData, LoadedData};
+use crate::data::{DataRef, DataType, FullData, LiteData, LoadedData};
 use crate::handler::{CommitmentQueryOption, DataHandler};
 use crate::validator::rule::merger::error::DataMergeError;
 use crate::validator::rule::merger::DataMergeResult;
-use crate::validator::rule::types::{ValidateCommitment, ValidateContractData, ValidateNullifier};
+use crate::validator::rule::types::{ValidateCommitment, ValidateMergedData, ValidateNullifier};
+use crate::validator::rule::ValidateOriginalData;
 use log::error;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
@@ -23,31 +24,27 @@ where
     R: LoadedData,
     H: DataHandler<R>,
 {
-    pub async fn merge_contract_data(
-        &self,
-        chain_id: u64,
-        data: &ContractData<R>,
-    ) -> DataMergeResult<ValidateContractData> {
-        if data.start_block < 1 {
+    pub async fn merge_contract_data(&self, data: &ValidateOriginalData<'_, R>) -> DataMergeResult<ValidateMergedData> {
+        if data.contract_data.start_block < 1 {
             return Err(DataMergeError::StartBlockError);
         }
 
-        let (commitments, nullifiers) = match data.data {
+        let (commitments, nullifiers) = match data.contract_data.data {
             None => match R::data_type() {
                 DataType::Full => (vec![], Some(vec![])),
                 DataType::Lite => (vec![], None),
             },
             Some(ref d) => match R::data_ref(d) {
-                DataRef::Full(full) => self.merge_contract_full_data(chain_id, data, full).await?,
-                DataRef::Lite(lite) => self.merge_contract_lite_data(chain_id, data, lite).await?,
+                DataRef::Full(full) => self.merge_contract_full_data(data, full).await?,
+                DataRef::Lite(lite) => self.merge_contract_lite_data(data, lite).await?,
             },
         };
 
-        Ok(ValidateContractData::builder()
-            .chain_id(chain_id)
-            .contract_address(data.address.clone())
-            .start_block(data.start_block)
-            .end_block(data.end_block)
+        Ok(ValidateMergedData::builder()
+            .chain_id(data.chain_id)
+            .contract_address(data.contract_data.address.clone())
+            .start_block(data.contract_data.start_block)
+            .end_block(data.contract_data.end_block)
             .commitments(commitments)
             .nullifiers(nullifiers)
             .build())
@@ -55,22 +52,20 @@ where
 
     async fn merge_contract_full_data(
         &self,
-        chain_id: u64,
-        data: &ContractData<R>,
+        data: &ValidateOriginalData<'_, R>,
         full_data: &FullData,
     ) -> DataMergeResult<(Vec<ValidateCommitment>, Option<Vec<ValidateNullifier>>)> {
-        let cms = self.merge_commitment(chain_id, data, &full_data.commitments).await?;
+        let cms = self.merge_commitment(data, &full_data.commitments).await?;
         let nullifiers = self.merge_nullifier(&full_data.nullifiers).await?;
         Ok((cms, Some(nullifiers)))
     }
 
     async fn merge_contract_lite_data(
         &self,
-        chain_id: u64,
-        data: &ContractData<R>,
+        data: &ValidateOriginalData<'_, R>,
         lite_data: &LiteData,
     ) -> DataMergeResult<(Vec<ValidateCommitment>, Option<Vec<ValidateNullifier>>)> {
-        let cms = self.merge_commitment(chain_id, data, &lite_data.commitments).await?;
+        let cms = self.merge_commitment(data, &lite_data.commitments).await?;
         Ok((cms, None))
     }
 
@@ -88,8 +83,7 @@ where
 
     async fn merge_commitment(
         &self,
-        chain_id: u64,
-        data: &ContractData<R>,
+        data: &ValidateOriginalData<'_, R>,
         commitments: &[Commitment],
     ) -> DataMergeResult<Vec<ValidateCommitment>> {
         if commitments.is_empty() {
@@ -97,15 +91,14 @@ where
         }
 
         let mut validates = merge_fetched_commitment(commitments)?;
-        self.recovery_leaf_index(chain_id, data, &mut validates).await?;
+        self.recovery_leaf_index(data, &mut validates).await?;
         self.sort_by_leaf_index(&mut validates);
         Ok(validates)
     }
 
     async fn recovery_leaf_index(
         &self,
-        chain_id: u64,
-        data: &ContractData<R>,
+        data: &ValidateOriginalData<'_, R>,
         commitments: &mut [ValidateCommitment],
     ) -> DataMergeResult<()> {
         let filled_cms: Vec<_> = commitments
@@ -117,10 +110,10 @@ where
         }
 
         let commitment_hash: Vec<_> = filled_cms.iter().map(|cm| cm.commitment_hash.clone()).collect();
-        let target_block = data.start_block - 1;
+        let target_block = data.contract_data.start_block - 1;
         let query_option = CommitmentQueryOption::builder()
-            .chain_id(chain_id)
-            .contract_address(data.address.clone())
+            .chain_id(data.chain_id)
+            .contract_address(data.contract_data.address.clone())
             .end_block(target_block)
             .commitment_hash(commitment_hash)
             .build();

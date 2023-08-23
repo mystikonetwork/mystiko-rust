@@ -1,6 +1,7 @@
-use crate::column::{Column, ColumnType, ColumnValue};
+use crate::column::Column;
 use crate::document::{find_required_column_value, DocumentData};
 use crate::error::StorageError;
+use mystiko_protos::storage::v1::{ColumnType, ColumnValue};
 use serde::{Deserialize, Serialize};
 
 type Result<T> = anyhow::Result<T, StorageError>;

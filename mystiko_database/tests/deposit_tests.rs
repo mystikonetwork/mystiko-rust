@@ -1,9 +1,9 @@
 extern crate mystiko_database;
 
 use mystiko_database::document::deposit::{Deposit, DepositCollection, DepositColumn};
+use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
-use mystiko_storage::filter::{QueryFilterBuilder, SubFilter};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{BridgeType, DepositStatus};
@@ -144,13 +144,24 @@ async fn test_deposits_crud() {
     let mut found_deposits = deposits.find_all().await.unwrap();
     assert_eq!(found_deposits, inserted_deposits);
     let found_first_deposit = deposits
-        .find_one(QueryFilterBuilder::new().limit(1).build())
+        .find_one(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(1)
+                .build(),
+        )
         .await
         .unwrap()
         .unwrap();
     assert_eq!(found_first_deposit.data.status, DepositStatus::Init,);
     found_deposits = deposits
-        .find(QueryFilterBuilder::new().limit(2).offset(1).build())
+        .find(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .limit(2)
+                .offset(1)
+                .build(),
+        )
         .await
         .unwrap();
     assert_eq!(found_deposits, inserted_deposits[1..]);
