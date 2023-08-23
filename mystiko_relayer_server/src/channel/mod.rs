@@ -24,7 +24,7 @@ pub mod transact_channel {
     use mystiko_ethers::provider::factory::{
         DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions, HTTP_REGEX, WS_REGEX,
     };
-    use mystiko_ethers::provider::pool::{ProviderPool, Providers};
+    use mystiko_ethers::provider::pool::Providers;
     use mystiko_ethers::provider::types::ProviderOptions;
     use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
     use mystiko_relayer_types::TransactRequestData;
@@ -41,15 +41,15 @@ pub mod transact_channel {
     use tokio::sync::mpsc::channel;
     use tokio::sync::RwLock;
 
-    pub async fn init(
+    pub async fn init<P: Providers>(
         server_config: &ServerConfig,
         relayer_config: &RelayerConfig,
         mystiko_config: &MystikoConfig,
-        providers: Arc<RwLock<ProviderPool>>,
+        providers: Arc<P>,
         handler: Arc<TransactionHandler<SqlStatementFormatter, SqliteStorage>>,
         token_price: Arc<RwLock<TokenPrice>>,
         queue_capacity: usize,
-    ) -> Result<(TransactSendersMap, Vec<TransactionConsumer>)> {
+    ) -> Result<(TransactSendersMap, Vec<TransactionConsumer<P>>)> {
         let mut transact_senders_map = HashMap::new();
         let mut consumers = Vec::new();
         for account in server_config.accounts.iter() {
@@ -78,9 +78,7 @@ pub mod transact_channel {
                 .wallet(wallet)
                 .build();
             // get or create provider
-            let mut pool = providers.write().await;
-            let provider = pool.get_or_create_provider(chain_id).await?;
-            drop(pool);
+            let provider = providers.get_provider(chain_id).await?;
             // build tx manager
             let tx_manager = tx_builder.build_tx(&provider).await;
 

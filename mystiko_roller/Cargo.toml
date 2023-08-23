@@ -29,7 +29,7 @@ tokio = { version = "1.26.0", features = ["time","full"] }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
 mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
-mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
+mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers", features = ["config"] }
 mystiko_downloader = { version = "0.1.0", path = "../mystiko_downloader" }
 mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
 mystiko_server_utils = { version = "0.1.0", path = "../mystiko_server_utils" }

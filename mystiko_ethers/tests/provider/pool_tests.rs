@@ -46,36 +46,36 @@ async fn test_provider_pool() {
         .expect_providers_options()
         .with(predicate::ne(56))
         .returning(|_| Ok(None));
-    let mut pool = ProviderPool::builder()
-        .chain_providers_options(Box::new(mock_chain_config))
+    let mut pool = ProviderPool::<MockChainConfig>::builder()
+        .chain_providers_options(mock_chain_config)
         .build();
-    assert!(pool.get_provider(56).is_none());
-    assert!(!pool.has_provider(56));
-    assert!(pool.check_provider(56).is_err());
-    assert!(pool.get_or_create_provider(1).await.is_err());
-    assert!(pool.get_or_create_provider(56).await.is_ok());
-    assert!(pool.get_provider(56).is_some());
-    assert!(pool.has_provider(56));
-    assert!(pool.check_provider(56).is_ok());
-    assert!(pool.get_or_create_provider(56).await.is_ok());
-    assert!(pool.delete_provider(1).is_none());
-    assert!(pool.delete_provider(56).is_some());
-    pool.set_provider(1, Arc::new(create_test_provider()));
-    assert!(pool.get_provider(1).is_some());
-    assert!(pool.has_provider(1));
-    assert!(pool.get_or_create_provider(1).await.is_ok());
+    assert!(!pool.has_provider(56).await);
+    assert!(pool.get_provider(1).await.is_err());
+    assert!(pool.get_provider(56).await.is_ok());
+    assert!(pool.has_provider(56).await);
+    assert!(pool.get_provider(56).await.is_ok());
+    assert!(pool.delete_provider(1).await.is_none());
+    assert!(pool.delete_provider(56).await.is_some());
+    assert!(pool.set_provider(1, Arc::new(create_test_provider())).await.is_none());
+    assert!(pool.get_provider(1).await.is_ok());
+    assert!(pool.has_provider(1).await);
 
     let mut mock_provider_factory = MockTestProviderFactory::new();
     mock_provider_factory
         .expect_create_provider()
         .returning(|_| Ok(create_test_provider()));
-    assert!(!pool.has_provider(56));
+    assert!(!pool.has_provider(56).await);
     pool.set_provider_factory(Box::new(mock_provider_factory));
-    assert!(pool.get_or_create_provider(56).await.is_ok());
+    assert!(pool.get_provider(56).await.is_ok());
 
-    let mut box_pool = Box::new(pool);
-    assert!(box_pool.get_provider(56).is_some());
-    assert!(box_pool.get_or_create_provider(56).await.is_ok());
+    let box_pool = Box::new(pool);
+    assert!(box_pool.get_provider(56).await.is_ok());
+    assert!(box_pool.has_provider(56).await);
+    assert!(box_pool
+        .set_provider(1, Arc::new(create_test_provider()))
+        .await
+        .is_some());
+    assert!(box_pool.delete_provider(56).await.is_some());
 }
 
 pub fn create_test_provider() -> Provider {

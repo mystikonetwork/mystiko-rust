@@ -11,7 +11,6 @@ use mystiko_ethers::provider::types::ProviderOptions;
 use mystiko_ethers::signer::common::Signer;
 use mystiko_ethers::signer::private_key::PrivateKeySigner;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 
 mock! {
     #[derive(Debug)]
@@ -48,7 +47,7 @@ fn generate_private_key() -> (String, Address) {
     (hex::encode(wallet.signer().to_bytes()), wallet.address())
 }
 
-fn create_provider_pool() -> Arc<RwLock<ProviderPool>> {
+fn create_provider_pool() -> Arc<ProviderPool<MockChainConfig>> {
     let mut mock_chain_config = MockChainConfig::new();
     mock_chain_config
         .expect_providers_options()
@@ -64,10 +63,10 @@ fn create_provider_pool() -> Arc<RwLock<ProviderPool>> {
         .expect_providers_options()
         .with(predicate::ne(56))
         .returning(|_| Ok(None));
-    let pool = ProviderPool::builder()
-        .chain_providers_options(Box::new(mock_chain_config))
+    let pool = ProviderPool::<MockChainConfig>::builder()
+        .chain_providers_options(mock_chain_config)
         .build();
-    Arc::new(RwLock::new(pool))
+    Arc::new(pool)
 }
 
 async fn mock_provider_server() -> (Server, Mock) {

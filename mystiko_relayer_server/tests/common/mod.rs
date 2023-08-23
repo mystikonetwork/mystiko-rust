@@ -9,6 +9,7 @@ use log::LevelFilter;
 use mockall::mock;
 use mockito::{Server, ServerGuard};
 use mystiko_abi::commitment_pool::TransactRequest;
+use mystiko_ethers::provider::config::ChainConfigProvidersOptions;
 use mystiko_ethers::provider::factory::ProvidersOptions;
 use mystiko_ethers::provider::pool::Providers;
 use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
@@ -32,7 +33,7 @@ use tokio::sync::{Mutex, RwLock};
 
 mock! {
     #[derive(Debug)]
-    ChainConfig {}
+    pub ChainConfig {}
 
     #[async_trait]
     impl ChainProvidersOptions for ChainConfig {
@@ -61,11 +62,11 @@ pub const ARRAY_QUEUE_CAPACITY: usize = 10;
 pub struct TestServer {
     pub app_state: AppState,
     pub senders: TransactSendersMap,
-    pub consumers: Vec<TransactionConsumer>,
+    pub consumers: Vec<TransactionConsumer<ProviderPool<MockChainConfig>>>,
     pub account_handler: Arc<AccountHandler<SqlStatementFormatter, SqliteStorage>>,
     pub transaction_handler: Arc<TransactionHandler<SqlStatementFormatter, SqliteStorage>>,
     pub token_price: Arc<RwLock<TokenPrice>>,
-    pub providers: Arc<RwLock<ProviderPool>>,
+    pub providers: Arc<ProviderPool<MockChainConfig>>,
     pub mock_server: ServerGuard,
 }
 
@@ -110,12 +111,12 @@ impl TestServer {
             Arc::new(Provider::new(ProviderWrapper::new(Box::new(mock))));
         let mut mock_chain_config = MockChainConfig::new();
         mock_chain_config.expect_providers_options().returning(|_| Ok(None));
-        let mut pool = ProviderPool::builder()
-            .chain_providers_options(Box::new(mock_chain_config))
+        let pool = ProviderPool::builder()
+            .chain_providers_options(mock_chain_config)
             .build();
-        pool.set_provider(5, provider.clone());
-        pool.set_provider(97, provider.clone());
-        let providers = Arc::new(RwLock::new(pool));
+        pool.set_provider(5, provider.clone()).await;
+        pool.set_provider(97, provider.clone()).await;
+        let providers = Arc::new(pool);
 
         // senders and consumers
         let (senders, mut consumers) = transact_channel::init(
@@ -163,15 +164,9 @@ lazy_static! {
 async fn create_providers_chain_id_not_found() {
     let server = TestServer::new(None).await.unwrap();
     let app_state = server.app_state;
-    let mut providers = ProviderPool::builder()
-        .chain_providers_options(Box::new(app_state))
-        .build();
-    let provider = providers.get_or_create_provider(999).await;
+    let providers: ProviderPool<ChainConfigProvidersOptions> = app_state.mystiko_config.clone().into();
+    let provider = providers.get_provider(999).await;
     assert!(provider.is_err());
-    assert_eq!(
-        provider.unwrap_err().to_string(),
-        "No provider configuration found for chain id 999"
-    );
 }
 
 #[actix_rt::test]

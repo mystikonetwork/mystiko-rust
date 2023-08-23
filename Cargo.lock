@@ -3757,6 +3757,8 @@ dependencies = [
  "lazy_static",
  "mockall",
  "mockito",
+ "mystiko_config",
+ "mystiko_types",
  "regex 1.9.3",
  "reqwest",
  "serde",

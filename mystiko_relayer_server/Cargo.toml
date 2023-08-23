@@ -22,7 +22,7 @@ hex = { version = "0.4.3" }
 log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
-mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
+mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers", features = ["config"] }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-storage-v1"] }
 mystiko_validator = { version = "0.1.0", path = "../mystiko_validator" }
 mystiko_relayer_config = { version = "0.1.0", path = "../mystiko_relayer_config" }

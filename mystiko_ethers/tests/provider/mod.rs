@@ -1,3 +1,6 @@
+#[cfg(feature = "config")]
+mod config;
+
 mod common;
 mod factory_tests;
 mod failover_tests;

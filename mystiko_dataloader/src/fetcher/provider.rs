@@ -7,7 +7,6 @@ use crate::data::{FullData, LiteData};
 use crate::fetcher::error::FetcherError;
 use crate::fetcher::types::{DataFetcher, FetchOptions, FetchResult};
 use crate::fetcher::FetcherLogOptions;
-use crate::utils::get_provider;
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_contract::EthEvent;
@@ -26,7 +25,6 @@ use mystiko_utils::convert::u256_to_bytes;
 use rustc_hex::FromHexError;
 use std::sync::Arc;
 use thiserror::Error;
-use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
@@ -42,9 +40,9 @@ pub enum ProviderFetcherError {
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
-    providers: RwLock<P>,
+    providers: Arc<P>,
     #[builder(default = Some(1), setter(strip_option))]
-    concurrent_nums: Option<u32>,
+    concurrency: Option<u32>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -79,7 +77,7 @@ where
     P: Providers,
 {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
-        let provider = get_provider(&self.providers, option.chain_id).await?;
+        let provider = self.providers.get_provider(option.chain_id).await?;
         let fetch_options = to_options(
             option,
             get_block_num(Arc::clone(&provider))
@@ -91,7 +89,7 @@ where
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
             .contract_results(
-                fetch_contracts::<R>(fetch_options, self.concurrent_nums.unwrap_or(1) as usize)
+                fetch_contracts::<R>(fetch_options, self.concurrency.unwrap_or(1) as usize)
                     .await
                     .map_err(FetcherError::AnyhowError)?,
             )
@@ -159,9 +157,9 @@ fn to_options(
 
 async fn fetch_contracts<R: LoadedData>(
     options: Vec<ProviderContractFetchOptions>,
-    concurrent_nums: usize,
+    concurrency: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
-    let chunk_nums = (options.len() + concurrent_nums - 1) / concurrent_nums;
+    let chunk_nums = (options.len() + concurrency - 1) / concurrency;
     let chunks = options.chunks(chunk_nums);
     let mut group_tasks = Vec::with_capacity(chunks.len());
     for chunk in chunks {

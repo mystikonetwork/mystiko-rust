@@ -1,4 +1,4 @@
-use crate::provider::pool::{ProviderPool, Providers};
+use crate::provider::pool::Providers;
 use crate::signer::common;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -8,16 +8,18 @@ use ethers_middleware::MiddlewareBuilder;
 use ethers_providers::Middleware;
 use ethers_signers::{LocalWallet, Signer};
 use std::sync::Arc;
-use tokio::sync::RwLock;
 
 #[derive(Debug, Clone)]
-pub struct PrivateKeySigner {
+pub struct PrivateKeySigner<P: Providers = Box<dyn Providers>> {
     wallet: LocalWallet,
-    providers: Arc<RwLock<ProviderPool>>,
+    providers: Arc<P>,
 }
 
-impl PrivateKeySigner {
-    pub fn new(private_key: &str, providers: Arc<RwLock<ProviderPool>>) -> Result<Self> {
+impl<P> PrivateKeySigner<P>
+where
+    P: Providers,
+{
+    pub fn new(private_key: &str, providers: Arc<P>) -> Result<Self> {
         Ok(Self {
             wallet: private_key.parse::<LocalWallet>()?,
             providers,
@@ -26,7 +28,10 @@ impl PrivateKeySigner {
 }
 
 #[async_trait]
-impl common::Signer for PrivateKeySigner {
+impl<P> common::Signer for PrivateKeySigner<P>
+where
+    P: Providers,
+{
     async fn switch_chain(&mut self, chain_id: u64) -> Result<u64> {
         self.wallet = self.wallet.clone().with_chain_id(chain_id);
         Ok(chain_id)
@@ -41,12 +46,7 @@ impl common::Signer for PrivateKeySigner {
     }
 
     async fn send_transaction<T: Into<TypedTransaction> + Send + Sync>(&self, tx: T) -> Result<TxHash> {
-        let provider = self
-            .providers
-            .write()
-            .await
-            .get_or_create_provider(self.wallet.chain_id())
-            .await?;
+        let provider = self.providers.get_provider(self.wallet.chain_id()).await?;
         let client = provider.with_signer(self.wallet.clone());
         let resp = client.send_transaction(tx, None).await?;
         Ok(resp.tx_hash())

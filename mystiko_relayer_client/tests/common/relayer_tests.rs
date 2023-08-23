@@ -30,10 +30,10 @@ async fn test_create_with_config_file() {
         .relayer_config_file_path(String::from("tests/files/relayer/config.json"))
         .build();
     let mock_chain_config = MockChainConfig::new();
-    let pool = ProviderPool::builder()
-        .chain_providers_options(Box::new(mock_chain_config))
+    let pool = ProviderPool::<MockChainConfig>::builder()
+        .chain_providers_options(mock_chain_config)
         .build();
-    let relayer_client = RelayerClient::new(Arc::new(RwLock::new(pool)), Some(relayer_options)).await;
+    let relayer_client = RelayerClient::new(Arc::new(pool), Some(relayer_options)).await;
     assert!(relayer_client.is_ok());
     assert_eq!(relayer_client.unwrap().relayer_config.version(), "0.1.0");
 }

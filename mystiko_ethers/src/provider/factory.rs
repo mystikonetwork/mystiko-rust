@@ -34,6 +34,13 @@ pub trait ProviderFactory: Debug + Send + Sync {
 #[derive(Debug, Default)]
 pub struct DefaultProviderFactory;
 
+#[async_trait]
+impl ProviderFactory for Box<dyn ProviderFactory> {
+    async fn create_provider(&self, providers_options: ProvidersOptions) -> Result<Provider> {
+        self.as_ref().create_provider(providers_options).await
+    }
+}
+
 impl DefaultProviderFactory {
     pub fn new() -> Self {
         Default::default()

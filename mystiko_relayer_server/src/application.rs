@@ -12,6 +12,7 @@ use actix_web::web::{scope, Data};
 use actix_web::{http, App, HttpServer};
 use anyhow::Result;
 use log::{info, LevelFilter};
+use mystiko_ethers::provider::config::ChainConfigProvidersOptions;
 use mystiko_ethers::provider::pool::ProviderPool;
 use mystiko_server_utils::token_price::config::TokenPriceConfig;
 use mystiko_server_utils::token_price::price::TokenPrice;
@@ -67,11 +68,8 @@ pub async fn run_application<'a>(options: ApplicationOptions<'a>) -> Result<()> 
     )?));
 
     // init transact channel
-    let providers = Arc::new(RwLock::new(
-        ProviderPool::builder()
-            .chain_providers_options(Box::new(app_state.clone()))
-            .build(),
-    ));
+    let providers: ProviderPool<ChainConfigProvidersOptions> = app_state.mystiko_config.clone().into();
+    let providers = Arc::new(providers);
 
     let (senders, consumers) = transact_channel::init(
         &app_state.server_config,

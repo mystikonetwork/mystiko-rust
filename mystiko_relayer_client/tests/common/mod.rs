@@ -10,7 +10,7 @@ use log::LevelFilter;
 use mockall::mock;
 use mockito::{Mock, Server, ServerGuard};
 use mystiko_ethers::provider::factory::{DefaultProviderFactory, ProviderFactory, ProvidersOptions};
-use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
+use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool, Providers};
 use mystiko_ethers::provider::types::ProviderOptions;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_client::client::{
@@ -30,7 +30,7 @@ use tokio::sync::RwLock;
 
 mock! {
     #[derive(Debug)]
-    ChainConfig {}
+    pub ChainConfig {}
 
     #[async_trait]
     impl ChainProvidersOptions for ChainConfig {
@@ -41,10 +41,10 @@ mock! {
 const MOCK_CONTRACT_ADDRESS: &str = "0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc";
 
 pub async fn create_client(
-    provider_pool: ProviderPool,
+    provider_pool: ProviderPool<MockChainConfig>,
     chain_id: Option<u64>,
     contract_address: Option<Address>,
-) -> RelayerClient {
+) -> RelayerClient<ProviderPool<MockChainConfig>> {
     let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
 
     let mut server = Server::new_async().await;
@@ -55,7 +55,7 @@ pub async fn create_client(
         .await;
 
     let mut client = RelayerClient::new(
-        Arc::new(RwLock::new(provider_pool)),
+        Arc::new(provider_pool),
         Some(
             RelayerClientOptions::builder()
                 .is_testnet(true)
@@ -76,10 +76,10 @@ pub async fn create_client(
     client
 }
 
-pub async fn create_provider_pool(chain_id: u64, provider_url: Option<String>) -> ProviderPool {
+pub async fn create_provider_pool(chain_id: u64, provider_url: Option<String>) -> ProviderPool<MockChainConfig> {
     let mock_chain_config = MockChainConfig::new();
-    let mut pool = ProviderPool::builder()
-        .chain_providers_options(Box::new(mock_chain_config))
+    let pool = ProviderPool::builder()
+        .chain_providers_options(mock_chain_config)
         .build();
 
     if provider_url.is_some() {
@@ -87,7 +87,7 @@ pub async fn create_provider_pool(chain_id: u64, provider_url: Option<String>) -
         let factory = DefaultProviderFactory::new();
         let providers_options = ProvidersOptions::Http(provider_options);
         let provider = factory.create_provider(providers_options).await.unwrap();
-        pool.set_provider(chain_id, Arc::new(provider));
+        pool.set_provider(chain_id, Arc::new(provider)).await;
     }
 
     pool
