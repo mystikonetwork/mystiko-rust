@@ -18,3 +18,10 @@ reqwest = { version = "0.11.14", features = ["stream", "rustls-tls"], default-fe
 rustc-hex = { version = "2.1.0" }
 thiserror = { version = "1.0", default-features = false }
 typed-builder = { version = "0.14.0" }
+
+[dev-dependencies]
+env_logger = { version = "0.10.0" }
+mockito = { version = "1.1.0" }
+mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
+num-bigint = { version = "0.4.3" }
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }

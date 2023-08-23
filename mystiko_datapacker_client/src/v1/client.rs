@@ -1,4 +1,5 @@
 use crate::{ChainQuery, ChainResponse};
+use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
@@ -7,9 +8,9 @@ use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSu
 use mystiko_protos::data::v1::{ChainData, ContractData};
 use mystiko_types::{PackerChecksum, PackerCompression};
 use prost::Message;
-use std::collections::{HashMap, HashSet};
+use std::cmp::{max, min};
+use std::collections::HashMap;
 use std::io::Cursor;
-use std::str::FromStr;
 use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
@@ -65,8 +66,6 @@ pub enum DataPackerClientError {
     MissingDataError(u64, u64),
 }
 
-type Result<T> = anyhow::Result<T, DataPackerClientError>;
-
 impl DataPackerClient {
     pub fn new<O>(options: O) -> Self
     where
@@ -116,24 +115,22 @@ where
     X: Compression,
     C: CheckSum,
 {
-    type Err = DataPackerClientError;
-
-    async fn query_chain(&self, query: &ChainQuery) -> anyhow::Result<ChainResponse<ChainData>, Self::Err> {
+    async fn query_chain(&self, query: &ChainQuery) -> anyhow::Result<ChainResponse<ChainData>> {
         if let Some(chain_config) = self.config.find_chain(query.chain_id) {
             let initial_block = chain_config.start_block();
-            let start_block = calc_start_block(query, initial_block);
+            let start_block = query.start_block.unwrap_or(initial_block + 1);
             if start_block <= initial_block {
-                return Err(DataPackerClientError::BadQueryError(format!(
+                return Err(anyhow::anyhow!(DataPackerClientError::BadQueryError(format!(
                     "start_block {} must be greater than initial_block {}",
                     start_block, initial_block
-                )));
+                ))));
             }
-            let target_block = calc_target_block(query);
+            let target_block = query.target_block;
             if target_block < start_block {
-                return Err(DataPackerClientError::BadQueryError(format!(
+                return Err(anyhow::anyhow!(DataPackerClientError::BadQueryError(format!(
                     "target_block {} must be greater than start_block {}",
                     target_block, start_block
-                )));
+                ))));
             }
             let mut plans = create_plan(
                 start_block,
@@ -148,13 +145,13 @@ where
                 chain_data_list.extend(self.query_granularity(query, plan, &mut next_plan).await?);
                 current_plan = next_plan;
             }
-            let chain_data = merge_chain_data(query, chain_data_list)?;
+            let chain_data = merge_chain_data(query, initial_block, chain_data_list)?;
             if let Some(chain_data) = &chain_data {
                 if chain_data.start_block > start_block {
-                    return Err(DataPackerClientError::MissingDataError(
+                    return Err(anyhow::anyhow!(DataPackerClientError::MissingDataError(
                         start_block,
                         chain_data.start_block - 1,
-                    ));
+                    )));
                 }
             }
             Ok(ChainResponse::builder()
@@ -162,7 +159,9 @@ where
                 .chain_data(chain_data)
                 .build())
         } else {
-            Err(DataPackerClientError::UnsupportedChainError(query.chain_id))
+            Err(anyhow::anyhow!(DataPackerClientError::UnsupportedChainError(
+                query.chain_id
+            )))
         }
     }
 }
@@ -189,12 +188,6 @@ where
             if let Some(chain_data) = chain_data {
                 chain_data_list.push(chain_data);
             } else if let Some(next_plan) = next_plan.as_mut() {
-                log::debug!(
-                    "datapacker missing data from chain {}, start_block {} for granularity {}",
-                    query.chain_id,
-                    start_block,
-                    plan.granularity
-                );
                 let factor = plan.granularity / next_plan.granularity;
                 for i in 0..factor {
                     next_plan.start_blocks.push(start_block + i * next_plan.granularity);
@@ -234,7 +227,8 @@ where
                     .to_string_lossy()
             );
             if let Some(data_bytes) = self.http_get(&data_url).await? {
-                if checksum == self.checksum.checksum(&data_bytes) {
+                let calculated_checksum = self.checksum.checksum(&data_bytes);
+                if checksum == calculated_checksum {
                     let decompressed_data = self
                         .compression
                         .decompress(&data_bytes)
@@ -242,8 +236,32 @@ where
                         .map_err(DataPackerClientError::DecompressionError)?;
                     let chain_data = ChainData::decode(&mut Cursor::new(&decompressed_data))?;
                     return Ok((start_block, Some(chain_data)));
+                } else {
+                    log::debug!(
+                        "datapacker client checksum mismatch \
+                        from chain {}, granularity {}, start_block {}: expected {} vs actual {} ",
+                        query.chain_id,
+                        granularity,
+                        start_block,
+                        checksum,
+                        calculated_checksum,
+                    );
                 }
+            } else {
+                log::debug!(
+                    "datapacker client missing data from chain {}, granularity {}, start_block {}",
+                    query.chain_id,
+                    granularity,
+                    start_block
+                );
             }
+        } else {
+            log::debug!(
+                "datapacker client missing checksum from chain {}, granularity {}, start_block {}",
+                query.chain_id,
+                granularity,
+                start_block
+            );
         }
         Ok((start_block, None))
     }
@@ -253,12 +271,13 @@ where
         let response = self.http_client.get(url).send().await?;
         log::debug!("datapacker client http GET response status: {}", response.status());
         if response.status().is_client_error() {
-            return Ok(None);
+            Ok(None)
         } else if response.status().is_success() {
-            return Err(DataPackerClientError::HttpError(response.status()));
+            let bytes = response.bytes().await?;
+            Ok(Some(bytes.to_vec()))
+        } else {
+            Err(anyhow::anyhow!(DataPackerClientError::HttpError(response.status())))
         }
-        let bytes = response.bytes().await?;
-        Ok(Some(bytes.to_vec()))
     }
 }
 
@@ -325,30 +344,11 @@ fn create_plan(
         .collect()
 }
 
-fn calc_start_block(query: &ChainQuery, initial_block: u64) -> u64 {
-    let chain_start_block = query.start_block.unwrap_or(initial_block + 1);
-    if let Some(contracts) = &query.contracts {
-        if let Some(contract_start_block) = contracts
-            .iter()
-            .map(|c| c.start_block.unwrap_or(chain_start_block))
-            .min()
-        {
-            return contract_start_block;
-        }
-    }
-    chain_start_block
-}
-
-fn calc_target_block(query: &ChainQuery) -> u64 {
-    if let Some(contracts) = &query.contracts {
-        if let Some(contract_target_block) = contracts.iter().map(|c| c.target_block).max() {
-            return contract_target_block;
-        }
-    }
-    query.target_block
-}
-
-fn merge_chain_data(query: &ChainQuery, mut chain_data_list: Vec<ChainData>) -> Result<Option<ChainData>> {
+fn merge_chain_data(
+    query: &ChainQuery,
+    initial_block: u64,
+    mut chain_data_list: Vec<ChainData>,
+) -> Result<Option<ChainData>> {
     chain_data_list.sort_by_key(|d| d.start_block);
     let mut merged_chain_data: Option<ChainData> = None;
     for next_chain_data in chain_data_list.into_iter() {
@@ -363,32 +363,30 @@ fn merge_chain_data(query: &ChainQuery, mut chain_data_list: Vec<ChainData>) -> 
             merged_chain_data = Some(next_chain_data);
         }
     }
-    merge_contracts_data(query, merged_chain_data)
+    merge_contracts_data(query, initial_block, merged_chain_data)
 }
 
-fn merge_contracts_data(query: &ChainQuery, chain_data: Option<ChainData>) -> Result<Option<ChainData>> {
+fn merge_contracts_data(
+    query: &ChainQuery,
+    initial_block: u64,
+    chain_data: Option<ChainData>,
+) -> Result<Option<ChainData>> {
+    let start_block = query.start_block.unwrap_or(initial_block + 1);
+    let target_block = query.target_block;
     let mut contracts_data: HashMap<Address, ContractData> = HashMap::new();
-    let mut contracts_filter: Option<HashSet<Address>> = None;
-    if let Some(contracts) = &query.contracts {
-        for contract in contracts.iter() {
-            let address = Address::from_str(&contract.contract_address)?;
-            if let Some(filter) = contracts_filter.as_mut() {
-                filter.insert(address);
-            } else {
-                let mut filter = HashSet::new();
-                filter.insert(address);
-                contracts_filter = Some(filter);
-            }
-        }
-    }
     if let Some(chain_data) = chain_data {
-        for contract_data in chain_data.contract_data.into_iter() {
+        for mut contract_data in chain_data.contract_data.into_iter() {
             let contract_address = Address::from_slice(&contract_data.contract_address);
-            if let Some(contracts_filter) = &contracts_filter {
-                if !contracts_filter.is_empty() && !contracts_filter.contains(&contract_address) {
-                    continue;
-                }
-            }
+            contract_data.commitments = contract_data
+                .commitments
+                .into_iter()
+                .filter(|c| c.block_number <= target_block && c.block_number >= start_block)
+                .collect::<Vec<_>>();
+            contract_data.nullifiers = contract_data
+                .nullifiers
+                .into_iter()
+                .filter(|n| n.block_number <= target_block && n.block_number >= start_block)
+                .collect::<Vec<_>>();
             if let Some(existing_contract_data) = contracts_data.get_mut(&contract_address) {
                 existing_contract_data.commitments.extend(contract_data.commitments);
                 existing_contract_data.nullifiers.extend(contract_data.nullifiers);
@@ -399,8 +397,8 @@ fn merge_contracts_data(query: &ChainQuery, chain_data: Option<ChainData>) -> Re
             }
         }
         Ok(Some(ChainData {
-            start_block: chain_data.start_block,
-            end_block: chain_data.end_block,
+            start_block: max(chain_data.start_block, start_block),
+            end_block: min(chain_data.end_block, target_block),
             contract_data: contracts_data.into_values().collect(),
         }))
     } else {

@@ -7,5 +7,5 @@ async fn test_compression() {
     let compressed = compression.compress(bytes).await.unwrap();
     let decompressed = compression.decompress(&compressed).await.unwrap();
     assert_eq!(bytes, decompressed.as_slice());
-    assert_eq!(ZstdCompression::content_type(), "application/zstd");
+    assert_eq!(compression.content_type(), "application/zstd");
 }
