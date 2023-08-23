@@ -1,7 +1,12 @@
 mod error;
 mod types;
 
-pub mod indexer;
-pub mod provider;
+mod etherscan;
+mod indexer;
+mod provider;
+
 pub use error::*;
+pub use etherscan::*;
+pub use indexer::*;
+pub use provider::*;
 pub use types::*;

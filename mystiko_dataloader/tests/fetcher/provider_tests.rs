@@ -6,9 +6,9 @@ use ethers_providers::{MockError, MockProvider, RetryClientBuilder, RetryPolicy}
 use log::LevelFilter;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::{FullData, LiteData};
-use mystiko_dataloader::fetcher::provider::ProviderFetcher;
-use mystiko_dataloader::fetcher::provider::ProviderFetcherError;
-use mystiko_dataloader::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions};
+use mystiko_dataloader::fetcher::{
+    ContractFetchOptions, DataFetcher, FetchOptions, ProviderFetcher, ProviderFetcherError,
+};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::pool::Providers;
