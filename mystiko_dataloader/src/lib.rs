@@ -1,6 +1,3 @@
-extern crate futures;
-extern crate mystiko_protos;
-
 mod error;
 mod types;
 mod utils;

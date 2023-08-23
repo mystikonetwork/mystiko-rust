@@ -23,7 +23,7 @@ pub enum EtherscanFetcherError {
 pub struct EtherscanFetcher<R> {
     etherscan_client: Arc<EtherScanClient>,
     #[builder(default = Some(1), setter(strip_option))]
-    concurrent_nums: Option<u32>,
+    concurrency: Option<u32>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -48,13 +48,9 @@ where
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
             .contract_results(
-                group_fetch::<R>(
-                    &self.etherscan_client,
-                    options,
-                    self.concurrent_nums.unwrap_or(1) as usize,
-                )
-                .await
-                .map_err(FetcherError::AnyhowError)?,
+                group_fetch::<R>(&self.etherscan_client, options, self.concurrency.unwrap_or(1) as usize)
+                    .await
+                    .map_err(FetcherError::AnyhowError)?,
             )
             .build())
     }
@@ -106,9 +102,9 @@ fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<GetLo
 async fn group_fetch<R: LoadedData>(
     client: &Arc<EtherScanClient>,
     options: Vec<GetLogsOptions>,
-    concurrent_nums: usize,
+    concurrency: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
-    let chunk_nums = (options.len() + concurrent_nums - 1) / concurrent_nums;
+    let chunk_nums = (options.len() + concurrency - 1) / concurrency;
     let chunks = options.chunks(chunk_nums);
     let mut group_tasks = Vec::with_capacity(chunks.len());
     for chunk in chunks {

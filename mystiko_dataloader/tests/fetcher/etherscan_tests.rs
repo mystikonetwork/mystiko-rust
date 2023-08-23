@@ -1,7 +1,7 @@
 use mockito::{Matcher, Mock, ServerGuard};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::{FullData, LiteData, LoadedData};
-use mystiko_dataloader::fetcher::etherscan::EtherscanFetcher;
+use mystiko_dataloader::fetcher::EtherscanFetcher;
 use mystiko_dataloader::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions};
 use mystiko_etherscan_client::client::{EtherScanClient, EtherScanClientOptions};
 use std::sync::Arc;
