@@ -62,11 +62,11 @@ pub const ARRAY_QUEUE_CAPACITY: usize = 10;
 pub struct TestServer {
     pub app_state: AppState,
     pub senders: TransactSendersMap,
-    pub consumers: Vec<TransactionConsumer<ProviderPool<MockChainConfig>>>,
+    pub consumers: Vec<TransactionConsumer<ProviderPool>>,
     pub account_handler: Arc<AccountHandler<SqlStatementFormatter, SqliteStorage>>,
     pub transaction_handler: Arc<TransactionHandler<SqlStatementFormatter, SqliteStorage>>,
     pub token_price: Arc<RwLock<TokenPrice>>,
-    pub providers: Arc<ProviderPool<MockChainConfig>>,
+    pub providers: Arc<ProviderPool>,
     pub mock_server: ServerGuard,
 }
 
@@ -111,8 +111,8 @@ impl TestServer {
             Arc::new(Provider::new(ProviderWrapper::new(Box::new(mock))));
         let mut mock_chain_config = MockChainConfig::new();
         mock_chain_config.expect_providers_options().returning(|_| Ok(None));
-        let pool = ProviderPool::builder()
-            .chain_providers_options(mock_chain_config)
+        let pool: ProviderPool = ProviderPool::builder()
+            .chain_providers_options(Box::new(mock_chain_config) as Box<dyn ChainProvidersOptions>)
             .build();
         pool.set_provider(5, provider.clone()).await;
         pool.set_provider(97, provider.clone()).await;

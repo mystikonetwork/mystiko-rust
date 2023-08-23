@@ -16,7 +16,6 @@ use ethers_core::types::{Bytes, U256};
 use ethers_middleware::providers::Middleware;
 use log::{debug, error, info};
 use mystiko_abi::commitment_pool::{G1Point, G2Point, Proof, TransactRequest};
-use mystiko_ethers::provider::config::ChainConfigProvidersOptions;
 use mystiko_ethers::provider::pool::{ProviderPool, Providers};
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{RegisterOptions, TransactRequestData, TransactStatus};
@@ -35,7 +34,7 @@ pub async fn chain_status(
     data: Data<AppState>,
     handler: Data<Arc<AccountHandler<SqlStatementFormatter, SqliteStorage>>>,
     token_price: Data<Arc<RwLock<TokenPrice>>>,
-    providers: Data<Arc<ProviderPool<ChainConfigProvidersOptions>>>,
+    providers: Data<Arc<ProviderPool>>,
 ) -> actix_web::Result<impl Responder, ResponseError> {
     info!("api v1 version chain status");
 
