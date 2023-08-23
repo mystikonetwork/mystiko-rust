@@ -1,7 +1,7 @@
 mod error;
 mod types;
 
-pub mod ether_scan;
+pub mod etherscan;
 pub mod indexer;
 pub mod provider;
 pub use error::*;
