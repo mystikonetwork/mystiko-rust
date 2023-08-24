@@ -935,6 +935,20 @@ fn test_format_query_filter() {
     );
 }
 
+#[test]
+fn test_format_non_existing_column() {
+    let formatter = SqlStatementFormatter::sqlite();
+    let sub_filter = SubFilter::equal("wrong column name", 1);
+    assert!(formatter.format_find::<TestDocument, _>(Some(sub_filter)).is_err());
+}
+
+#[test]
+fn test_format_wrong_column_value_type() {
+    let formatter = SqlStatementFormatter::sqlite();
+    let sub_filter = SubFilter::equal(TestDocumentColumn::Field11, 1u32);
+    assert!(formatter.format_find::<TestDocument, _>(Some(sub_filter)).is_err());
+}
+
 fn create_test_document(id: &str, has_null: bool) -> Document<TestDocument> {
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)

@@ -10,6 +10,7 @@ use anyhow::Result;
 use mystiko_protos::storage::v1::{
     ColumnType, ColumnValue, Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter, SubFilterOperator,
 };
+use std::collections::HashMap;
 use typed_builder::TypedBuilder;
 
 const DEFAULT_VALUE_MARK: &str = "?";
@@ -103,7 +104,7 @@ impl StatementFormatter for SqlStatementFormatter {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
                 let no_condition = query_filter.conditions.is_empty();
-                let filter_statement = self.format_query_filter(query_filter)?;
+                let filter_statement = self.format_query_filter::<T>(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(format!("DELETE FROM `{}`", T::collection_name()), Vec::new())
                 } else if no_condition {
@@ -135,7 +136,7 @@ impl StatementFormatter for SqlStatementFormatter {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
                 let no_condition = query_filter.conditions.is_empty();
-                let filter_statement = self.format_query_filter(query_filter)?;
+                let filter_statement = self.format_query_filter::<T>(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(
                         format!("SELECT {} FROM `{}`", self.count_mark(), T::collection_name()),
@@ -183,7 +184,7 @@ impl StatementFormatter for SqlStatementFormatter {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
                 let no_condition = query_filter.conditions.is_empty();
-                let filter_statement = self.format_query_filter(query_filter)?;
+                let filter_statement = self.format_query_filter::<T>(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(
                         format!("SELECT {} FROM `{}`", fields.join(", "), T::collection_name()),
@@ -250,14 +251,14 @@ impl SqlStatementFormatter {
         self.count_mark.clone().unwrap_or(DEFAULT_COUNT_MARK.into())
     }
 
-    fn format_query_filter(&self, filter: QueryFilter) -> Result<Statement, StorageError> {
+    fn format_query_filter<T: DocumentData>(&self, filter: QueryFilter) -> Result<Statement, StorageError> {
         let mut statements: Vec<String> = Vec::new();
         let mut condition_statements: Vec<String> = Vec::new();
         let mut column_values: Vec<ColumnValue> = Vec::new();
         let conditions_length = filter.conditions.len();
         for condition in filter.conditions {
             let sub_filters_length = condition.sub_filters.len();
-            let condition_statement = self.format_condition(condition)?;
+            let condition_statement = self.format_condition::<T>(condition)?;
             if !condition_statement.statement.is_empty() {
                 if conditions_length <= 1 || sub_filters_length <= 1 {
                     condition_statements.push(condition_statement.statement);
@@ -286,11 +287,11 @@ impl SqlStatementFormatter {
         Ok(Statement::new(statements.join(" "), column_values))
     }
 
-    fn format_condition(&self, condition: Condition) -> Result<Statement, StorageError> {
+    fn format_condition<T: DocumentData>(&self, condition: Condition) -> Result<Statement, StorageError> {
         let sub_filter_statements = condition
             .sub_filters
             .into_iter()
-            .map(|sub_filter| self.format_sub_filter(sub_filter))
+            .map(|sub_filter| self.format_sub_filter::<T>(sub_filter))
             .collect::<Result<Vec<Statement>, StorageError>>()?;
         Ok(Statement::new(
             sub_filter_statements
@@ -307,7 +308,8 @@ impl SqlStatementFormatter {
         ))
     }
 
-    fn format_sub_filter(&self, filter: SubFilter) -> Result<Statement, StorageError> {
+    fn format_sub_filter<T: DocumentData>(&self, filter: SubFilter) -> Result<Statement, StorageError> {
+        check_filter_column_value::<T>(&filter)?;
         let operator = SubFilterOperator::from_i32(filter.operator).unwrap_or(SubFilterOperator::Unspecified);
         match operator {
             SubFilterOperator::Equal => Ok(Statement::new(
@@ -561,4 +563,26 @@ fn default_unique_name(collection_name: &str, column_names: &[String]) -> String
 
 fn default_index_name(collection_name: &str, column_names: &[String]) -> String {
     format!("{}_index_{}", collection_name, column_names.join("_"))
+}
+
+fn check_filter_column_value<T: DocumentData>(filter: &SubFilter) -> Result<(), StorageError> {
+    let columns = Document::<T>::columns()
+        .into_iter()
+        .map(|c| (c.column_name.clone(), c))
+        .collect::<HashMap<String, Column>>();
+    if let Some(column) = columns.get(&filter.column) {
+        for value in filter.values.iter() {
+            let column_type = value.column_type()?;
+            if column_type != column.column_type {
+                return Err(StorageError::WrongColumnValueTypeError(
+                    filter.column.clone(),
+                    format!("{:?}", column.column_type),
+                    format!("{:?}", column_type),
+                ));
+            }
+        }
+    } else {
+        return Err(StorageError::NoSuchColumnError(filter.column.clone()));
+    }
+    Ok(())
 }

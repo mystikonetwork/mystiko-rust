@@ -72,7 +72,7 @@ async fn test_contracts_crud() {
     // testing count
     assert_eq!(
         contracts
-            .count(SubFilter::equal(ContractColumn::Disabled, 1))
+            .count(SubFilter::equal(ContractColumn::Disabled, true))
             .await
             .unwrap(),
         1

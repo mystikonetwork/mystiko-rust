@@ -7,6 +7,10 @@ use thiserror::Error;
 pub enum StorageError {
     #[error("wrong column type: actual {0:?} vs expected {1:?}")]
     WrongColumnTypeError(String, String),
+    #[error("column {0:?} has wrong value type, expected: {1:?} vs actual: {2:?}")]
+    WrongColumnValueTypeError(String, String, String),
+    #[error("no such column {0:?}")]
+    NoSuchColumnError(String),
     #[error(transparent)]
     SerdeJsonError(#[from] serde_json::Error),
     #[error("missing required column: {0:?})")]

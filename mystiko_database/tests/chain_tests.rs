@@ -94,7 +94,7 @@ async fn test_chains_crud() {
     // testing count
     assert_eq!(
         chains
-            .count(SubFilter::equal(ChainColumn::NameOverride, 1))
+            .count(SubFilter::equal(ChainColumn::NameOverride, true))
             .await
             .unwrap(),
         1

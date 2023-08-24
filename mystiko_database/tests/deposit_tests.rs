@@ -134,7 +134,7 @@ async fn test_deposits_crud() {
     assert_eq!(deposits.count_all().await.unwrap(), 3);
     assert_eq!(
         deposits
-            .count(SubFilter::equal(DepositColumn::HashK, 22))
+            .count(SubFilter::equal(DepositColumn::HashK, num_bigint::BigUint::from(22u32)))
             .await
             .unwrap(),
         1
@@ -166,7 +166,10 @@ async fn test_deposits_crud() {
         .unwrap();
     assert_eq!(found_deposits, inserted_deposits[1..]);
     let mut found_deposit = deposits
-        .find_one(SubFilter::equal(DepositColumn::RandomS, 222))
+        .find_one(SubFilter::equal(
+            DepositColumn::RandomS,
+            num_bigint::BigUint::from(222u32),
+        ))
         .await
         .unwrap()
         .unwrap();
