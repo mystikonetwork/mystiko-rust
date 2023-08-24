@@ -1,8 +1,10 @@
 use anyhow::Result;
 use ethers_core::types::Address;
+use mystiko_config::raw::create_raw_from_file;
+use mystiko_config::raw::mystiko::RawMystikoConfig;
+use mystiko_config::raw::packer::RawPackerConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_datapacker_client::v1::DataPackerClient as DataPackerClientV1;
-use mystiko_datapacker_client::v1::DataPackerClientOptions;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
 use mystiko_datapacker_common::v1::PathSchema as PathSchemaV1;
 use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSum, ZstdCompression};
@@ -163,7 +165,7 @@ async fn test_fetch_from_beginning() {
             .chain_id(1u64)
             .granularity(8000u64)
             .start_block(10376000u64)
-            .data_not_found(true)
+            .end_block_too_small(true)
             .contracts(vec![MockContractOptions::builder()
                 .contract_address("0xDede369C8444324cFd75038F1F2A39C4E44F6035")
                 .build()])
@@ -406,6 +408,40 @@ async fn test_fetch_non_retryable_error() {
     }
 }
 
+#[tokio::test]
+async fn test_fetch_missing_data_error() {
+    let (mut server, client) = setup().await.unwrap();
+    let mocks = MockChainOptions::builder()
+        .chain_id(1u64)
+        .granularity(4000u64)
+        .start_block(10012000u64)
+        .contracts(vec![MockContractOptions::builder()
+            .contract_address("0xDede369C8444324cFd75038F1F2A39C4E44F6035")
+            .src_succeeded_commitments_count(2048u64)
+            .queued_commitments_count(2048u64)
+            .included_commitments_count(2048u64)
+            .nullifiers_count(2048u64)
+            .build()])
+        .wrong_start_block(true)
+        .build()
+        .into_mock(&mut server)
+        .await
+        .unwrap();
+    assert!(client
+        .query_chain(
+            &ChainQuery::builder()
+                .chain_id(1u64)
+                .start_block(10012000u64)
+                .target_block(10015999u64)
+                .build(),
+        )
+        .await
+        .is_err());
+    for mock in mocks.into_iter() {
+        mock.assert_async().await;
+    }
+}
+
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 struct MockContractOptions {
@@ -423,6 +459,10 @@ struct MockChainOptions {
     start_block: u64,
     granularity: u64,
     contracts: Vec<MockContractOptions>,
+    #[builder(default = false)]
+    end_block_too_small: bool,
+    #[builder(default = false)]
+    wrong_start_block: bool,
     #[builder(default = false)]
     data_not_found: bool,
     #[builder(default = false)]
@@ -466,8 +506,16 @@ impl MockChainOptions {
             .map(|c| c.into_data(self.start_block))
             .collect::<Vec<_>>();
         ChainData::builder()
-            .start_block(self.start_block)
-            .end_block(self.start_block + self.granularity - 1)
+            .start_block(if self.wrong_start_block {
+                self.start_block + 1
+            } else {
+                self.start_block
+            })
+            .end_block(if self.end_block_too_small {
+                self.start_block - 1
+            } else {
+                self.start_block + self.granularity - 1
+            })
             .contract_data(contracts)
             .build()
     }
@@ -595,12 +643,10 @@ async fn setup() -> Result<(mockito::ServerGuard, DataPackerClientV1)> {
     let _ = env_logger::builder()
         .filter_module("mystiko_datapacker_client", log::LevelFilter::Debug)
         .try_init();
-    let config = Arc::new(MystikoConfig::from_json_file("tests/files/v1/client/config.json").await?);
     let server = mockito::Server::new_async().await;
-    let options = DataPackerClientOptions::builder()
-        .url(server.url())
-        .config(config)
-        .build();
-    let client = DataPackerClientV1::new(options);
+    let mut raw_config = create_raw_from_file::<RawMystikoConfig>("tests/files/v1/client/config.json").await?;
+    raw_config.packer = Some(Arc::new(RawPackerConfig::builder().url(server.url()).build()));
+    let config = Arc::new(MystikoConfig::from_raw(raw_config)?);
+    let client = DataPackerClientV1::new(config);
     Ok((server, client))
 }

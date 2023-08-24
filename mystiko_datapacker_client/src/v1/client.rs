@@ -235,11 +235,23 @@ where
                         .await
                         .map_err(DataPackerClientError::DecompressionError)?;
                     let chain_data = ChainData::decode(&mut Cursor::new(&decompressed_data))?;
-                    return Ok((start_block, Some(chain_data)));
+                    if chain_data.start_block == start_block && chain_data.end_block == start_block + granularity - 1 {
+                        return Ok((start_block, Some(chain_data)));
+                    }
+                    log::debug!(
+                        "datapacker client corrupted data from chain {}, granularity {}, \
+                        expected block range [{}, {}] vs actual block range [{}, {}]",
+                        query.chain_id,
+                        granularity,
+                        start_block,
+                        start_block + granularity - 1,
+                        chain_data.start_block,
+                        chain_data.end_block,
+                    )
                 } else {
                     log::debug!(
-                        "datapacker client checksum mismatch \
-                        from chain {}, granularity {}, start_block {}: expected {} vs actual {} ",
+                        "datapacker client checksum mismatch from chain {}, granularity {}, start_block {}: \
+                        expected {} vs actual {} ",
                         query.chain_id,
                         granularity,
                         start_block,
@@ -356,52 +368,44 @@ fn merge_chain_data(
             if next_chain_data.start_block == chain_data.end_block + 1 {
                 chain_data.end_block = next_chain_data.end_block;
                 chain_data.contract_data.extend(next_chain_data.contract_data);
-            } else {
-                break;
             }
         } else {
             merged_chain_data = Some(next_chain_data);
         }
     }
-    merge_contracts_data(query, initial_block, merged_chain_data)
+    merged_chain_data
+        .map(|chain_data| merge_contracts_data(query, initial_block, chain_data))
+        .transpose()
 }
 
-fn merge_contracts_data(
-    query: &ChainQuery,
-    initial_block: u64,
-    chain_data: Option<ChainData>,
-) -> Result<Option<ChainData>> {
+fn merge_contracts_data(query: &ChainQuery, initial_block: u64, chain_data: ChainData) -> Result<ChainData> {
     let start_block = query.start_block.unwrap_or(initial_block + 1);
     let target_block = query.target_block;
     let mut contracts_data: HashMap<Address, ContractData> = HashMap::new();
-    if let Some(chain_data) = chain_data {
-        for mut contract_data in chain_data.contract_data.into_iter() {
-            let contract_address = Address::from_slice(&contract_data.contract_address);
-            contract_data.commitments = contract_data
-                .commitments
-                .into_iter()
-                .filter(|c| c.block_number <= target_block && c.block_number >= start_block)
-                .collect::<Vec<_>>();
-            contract_data.nullifiers = contract_data
-                .nullifiers
-                .into_iter()
-                .filter(|n| n.block_number <= target_block && n.block_number >= start_block)
-                .collect::<Vec<_>>();
-            if let Some(existing_contract_data) = contracts_data.get_mut(&contract_address) {
-                existing_contract_data.commitments.extend(contract_data.commitments);
-                existing_contract_data.nullifiers.extend(contract_data.nullifiers);
-                existing_contract_data.commitments.sort_by_key(|c| c.block_number);
-                existing_contract_data.nullifiers.sort_by_key(|n| n.block_number);
-            } else {
-                contracts_data.insert(contract_address, contract_data);
-            }
+    for mut contract_data in chain_data.contract_data.into_iter() {
+        let contract_address = Address::from_slice(&contract_data.contract_address);
+        contract_data.commitments = contract_data
+            .commitments
+            .into_iter()
+            .filter(|c| c.block_number <= target_block && c.block_number >= start_block)
+            .collect::<Vec<_>>();
+        contract_data.nullifiers = contract_data
+            .nullifiers
+            .into_iter()
+            .filter(|n| n.block_number <= target_block && n.block_number >= start_block)
+            .collect::<Vec<_>>();
+        if let Some(existing_contract_data) = contracts_data.get_mut(&contract_address) {
+            existing_contract_data.commitments.extend(contract_data.commitments);
+            existing_contract_data.nullifiers.extend(contract_data.nullifiers);
+            existing_contract_data.commitments.sort_by_key(|c| c.block_number);
+            existing_contract_data.nullifiers.sort_by_key(|n| n.block_number);
+        } else {
+            contracts_data.insert(contract_address, contract_data);
         }
-        Ok(Some(ChainData {
-            start_block: max(chain_data.start_block, start_block),
-            end_block: min(chain_data.end_block, target_block),
-            contract_data: contracts_data.into_values().collect(),
-        }))
-    } else {
-        Ok(None)
     }
+    Ok(ChainData {
+        start_block: max(chain_data.start_block, start_block),
+        end_block: min(chain_data.end_block, target_block),
+        contract_data: contracts_data.into_values().collect(),
+    })
 }
