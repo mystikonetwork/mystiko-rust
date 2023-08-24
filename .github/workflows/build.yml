@@ -27,6 +27,7 @@ jobs:
       - name: Setup MySql
         id: setup_mysql
         run: |
+          docker rm -f mystiko-rust-mysql \
           docker run -d \
             --name mystiko-rust-mysql \
             -e MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
@@ -83,10 +84,6 @@ jobs:
 
       - name: Check Dirty Files
         run: git diff --quiet || (echo "some generated files are not included in repo" && exit 1)
-
-      - name: Stop Mysql
-        if: ${{ steps.setup_mysql.conclusion == 'success' }}
-        run: docker rm -f mystiko-rust-mysql
 
       - name: Telegram Failure Notification
         uses: appleboy/telegram-action@master
