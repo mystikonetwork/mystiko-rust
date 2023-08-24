@@ -62,8 +62,6 @@ pub enum DataPackerClientError {
     BadQueryError(String),
     #[error("Unsupported chain id: {0}")]
     UnsupportedChainError(u64),
-    #[error("Missing data from block {0} to {1}")]
-    MissingDataError(u64, u64),
 }
 
 impl DataPackerClient {
@@ -146,14 +144,6 @@ where
                 current_plan = next_plan;
             }
             let chain_data = merge_chain_data(query, initial_block, chain_data_list)?;
-            if let Some(chain_data) = &chain_data {
-                if chain_data.start_block > start_block {
-                    return Err(anyhow::anyhow!(DataPackerClientError::MissingDataError(
-                        start_block,
-                        chain_data.start_block - 1,
-                    )));
-                }
-            }
             Ok(ChainResponse::builder()
                 .chain_id(query.chain_id)
                 .chain_data(chain_data)

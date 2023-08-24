@@ -163,7 +163,7 @@ fn bind_mysql_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Resu
                 query = query.bind(value.as_i64()?);
             }
             ColumnType::I128 => {
-                query = query.bind(value.as_i128()?.to_string());
+                query = query.bind(format!("{:040}", value.as_i128()?));
             }
             ColumnType::ISize => {
                 query = query.bind(value.as_isize()? as i64);
@@ -181,7 +181,7 @@ fn bind_mysql_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Resu
                 query = query.bind(value.as_u64()?);
             }
             ColumnType::U128 => {
-                query = query.bind(value.as_u128()?.to_string());
+                query = query.bind(format!("{:040}", value.as_u128()?));
             }
             ColumnType::USize => {
                 query = query.bind(value.as_usize()? as u64);

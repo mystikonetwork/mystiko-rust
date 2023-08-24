@@ -67,7 +67,7 @@ fn test_different_settings() {
 
 #[test]
 fn test_box() {
-    let path_schema = Box::<PathSchemaV1>::default();
+    let path_schema: Box<dyn PathSchema> = Box::<PathSchemaV1>::default();
     assert_eq!(path_schema.chain_path(1).to_str().unwrap(), "/chains/1");
     assert_eq!(
         path_schema.granularities_path(1).to_str().unwrap(),
