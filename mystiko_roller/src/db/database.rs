@@ -30,7 +30,7 @@ impl<F: StatementFormatter, S: Storage> RollerDatabase<F, S> {
             .conditions_operator(ConditionOperator::And)
             .conditions(vec![Condition::and(vec![
                 SubFilter::equal(CommitmentInfoColumn::ContractAddress, contract_address.to_string()),
-                SubFilter::equal(CommitmentInfoColumn::ChainId, chain_id.to_string()),
+                SubFilter::equal(CommitmentInfoColumn::ChainId, chain_id),
             ])])
             .order_by(
                 OrderBy::builder()
