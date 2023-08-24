@@ -459,12 +459,12 @@ fn test_format_create_collection_migration() {
     `field8` SMALLINT, \
     `field9` INT NOT NULL, \
     `field10` INT, \
-    `field11` VARCHAR(20) NOT NULL, \
-    `field12` VARCHAR(20), \
-    `field13` VARCHAR(40) NOT NULL, \
-    `field14` VARCHAR(40), \
-    `field15` VARCHAR(20) NOT NULL, \
-    `field16` VARCHAR(20), \
+    `field11` VARCHAR(16) NOT NULL, \
+    `field12` VARCHAR(16), \
+    `field13` VARCHAR(32) NOT NULL, \
+    `field14` VARCHAR(32), \
+    `field15` VARCHAR(16) NOT NULL, \
+    `field16` VARCHAR(16), \
     `field17` TINYINT NOT NULL, \
     `field18` TINYINT, \
     `field19` SMALLINT NOT NULL, \
@@ -473,8 +473,8 @@ fn test_format_create_collection_migration() {
     `field22` INT, \
     `field23` BIGINT NOT NULL, \
     `field24` BIGINT, \
-    `field25` VARCHAR(40) NOT NULL, \
-    `field26` VARCHAR(40), \
+    `field25` VARCHAR(32) NOT NULL, \
+    `field26` VARCHAR(32), \
     `field27` BIGINT NOT NULL, \
     `field28` BIGINT, \
     `field29` FLOAT NOT NULL, \
@@ -528,8 +528,8 @@ fn test_format_create_collection_migration() {
     `field10` INT UNSIGNED, \
     `field11` BIGINT UNSIGNED NOT NULL, \
     `field12` BIGINT UNSIGNED, \
-    `field13` VARCHAR(40) NOT NULL, \
-    `field14` VARCHAR(40), \
+    `field13` VARCHAR(32) NOT NULL, \
+    `field14` VARCHAR(32), \
     `field15` BIGINT UNSIGNED NOT NULL, \
     `field16` BIGINT UNSIGNED, \
     `field17` TINYINT NOT NULL, \
@@ -540,8 +540,8 @@ fn test_format_create_collection_migration() {
     `field22` INT, \
     `field23` BIGINT NOT NULL, \
     `field24` BIGINT, \
-    `field25` VARCHAR(40) NOT NULL, \
-    `field26` VARCHAR(40), \
+    `field25` VARCHAR(32) NOT NULL, \
+    `field26` VARCHAR(32), \
     `field27` BIGINT NOT NULL, \
     `field28` BIGINT, \
     `field29` FLOAT NOT NULL, \

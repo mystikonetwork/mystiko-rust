@@ -56,7 +56,7 @@ async fn test_nullifiers_crud() {
     assert_eq!(nullifiers.count_all().await.unwrap(), 3);
     assert_eq!(
         nullifiers
-            .count(SubFilter::equal(NullifierColumn::ChainId, 2))
+            .count(SubFilter::equal(NullifierColumn::ChainId, 2u64))
             .await
             .unwrap(),
         1

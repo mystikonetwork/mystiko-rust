@@ -6,6 +6,9 @@ use mystiko_storage::document::{Document, DocumentData};
 use mystiko_storage::error::StorageError;
 use mystiko_storage::formatter::types::{CountStatement, Statement};
 use mystiko_storage::storage::Storage;
+use mystiko_storage::utils::{
+    comparable_string_to_i128, comparable_string_to_u128, i128_to_comparable_string, u128_to_comparable_string,
+};
 use mystiko_utils::convert::{biguint_to_bytes, i128_to_bytes, u128_to_bytes};
 use num_bigint::{BigInt, BigUint};
 use sqlx::{MySqlPool, Row};
@@ -163,7 +166,7 @@ fn bind_mysql_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Resu
                 query = query.bind(value.as_i64()?);
             }
             ColumnType::I128 => {
-                query = query.bind(format!("{:040}", value.as_i128()?));
+                query = query.bind(i128_to_comparable_string(value.as_i128()?));
             }
             ColumnType::ISize => {
                 query = query.bind(value.as_isize()? as i64);
@@ -181,7 +184,7 @@ fn bind_mysql_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Resu
                 query = query.bind(value.as_u64()?);
             }
             ColumnType::U128 => {
-                query = query.bind(format!("{:040}", value.as_u128()?));
+                query = query.bind(u128_to_comparable_string(value.as_u128()?));
             }
             ColumnType::USize => {
                 query = query.bind(value.as_usize()? as u64);
@@ -277,7 +280,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::mysql::MySqlRow) -> Result<Docum
             }
             ColumnType::I128 => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    let value: i128 = value.parse()?;
+                    let value: i128 = comparable_string_to_i128(&value)?;
                     columns_with_value.push((
                         column.column_name,
                         ColumnValue::builder()
@@ -328,7 +331,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::mysql::MySqlRow) -> Result<Docum
             }
             ColumnType::U128 => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    let value: u128 = value.parse()?;
+                    let value: u128 = comparable_string_to_u128(&value)?;
                     columns_with_value.push((
                         column.column_name,
                         ColumnValue::builder()

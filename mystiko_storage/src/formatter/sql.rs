@@ -513,7 +513,7 @@ fn get_column_sql_type(column: &Column, sql_type: &SqlType) -> Result<String, St
         ColumnType::I16 => "SMALLINT".into(),
         ColumnType::I32 => "INT".into(),
         ColumnType::I64 => "BIGINT".into(),
-        ColumnType::I128 => "VARCHAR(40)".into(),
+        ColumnType::I128 => "VARCHAR(32)".into(),
         ColumnType::ISize => "BIGINT".into(),
         ColumnType::U8 => match sql_type {
             SqlType::Sqlite => "TINYINT".into(),
@@ -528,12 +528,12 @@ fn get_column_sql_type(column: &Column, sql_type: &SqlType) -> Result<String, St
             SqlType::MySql => "INT UNSIGNED".into(),
         },
         ColumnType::U64 => match sql_type {
-            SqlType::Sqlite => "VARCHAR(20)".into(),
+            SqlType::Sqlite => "VARCHAR(16)".into(),
             SqlType::MySql => "BIGINT UNSIGNED".into(),
         },
-        ColumnType::U128 => "VARCHAR(40)".into(),
+        ColumnType::U128 => "VARCHAR(32)".into(),
         ColumnType::USize => match sql_type {
-            SqlType::Sqlite => "VARCHAR(20)".into(),
+            SqlType::Sqlite => "VARCHAR(16)".into(),
             SqlType::MySql => "BIGINT UNSIGNED".into(),
         },
         ColumnType::F32 => "FLOAT".into(),

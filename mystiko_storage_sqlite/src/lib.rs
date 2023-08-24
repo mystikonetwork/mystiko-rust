@@ -22,6 +22,10 @@ use tokio::sync::Mutex;
 use mystiko_storage::error::StorageError;
 use mystiko_storage::formatter::types::{CountStatement, Statement};
 use mystiko_storage::storage::Storage;
+use mystiko_storage::utils::{
+    comparable_string_to_i128, comparable_string_to_u128, comparable_string_to_u64, comparable_string_to_usize,
+    i128_to_comparable_string, u128_to_comparable_string, u64_to_comparable_string, usize_to_comparable_string,
+};
 use mystiko_utils::convert::{biguint_to_bytes, i128_to_bytes, u128_to_bytes};
 
 static SQLITE_MEMORY_PATH: &str = ":memory:";
@@ -195,7 +199,7 @@ fn bind_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Result<Que
                 query = query.bind(value.as_i64()?);
             }
             ColumnType::I128 => {
-                query = query.bind(format!("{:040}", value.as_i128()?));
+                query = query.bind(i128_to_comparable_string(value.as_i128()?));
             }
             ColumnType::ISize => {
                 query = query.bind(value.as_isize()? as i64);
@@ -210,13 +214,13 @@ fn bind_query<'a>(mut query: Query<'a>, values: Vec<&ColumnValue>) -> Result<Que
                 query = query.bind(value.as_u32()?);
             }
             ColumnType::U64 => {
-                query = query.bind(format!("{:020}", value.as_u64()?));
+                query = query.bind(u64_to_comparable_string(value.as_u64()?));
             }
             ColumnType::U128 => {
-                query = query.bind(format!("{:040}", value.as_u128()?));
+                query = query.bind(u128_to_comparable_string(value.as_u128()?));
             }
             ColumnType::USize => {
-                query = query.bind(format!("{:020}", value.as_usize()? as u64));
+                query = query.bind(usize_to_comparable_string(value.as_usize()?));
             }
             ColumnType::F32 => {
                 query = query.bind(value.as_f32()?);
@@ -309,7 +313,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::sqlite::SqliteRow) -> Result<Doc
             }
             ColumnType::I128 => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    let value: i128 = value.parse()?;
+                    let value: i128 = comparable_string_to_i128(&value)?;
                     columns_with_value.push((
                         column.column_name,
                         ColumnValue::builder()
@@ -352,7 +356,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::sqlite::SqliteRow) -> Result<Doc
             }
             ColumnType::U64 => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    let value: u64 = value.parse()?;
+                    let value: u64 = comparable_string_to_u64(&value)?;
                     columns_with_value.push((
                         column.column_name,
                         ColumnValue::builder().value(Value::U64Value(value)).build(),
@@ -361,7 +365,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::sqlite::SqliteRow) -> Result<Doc
             }
             ColumnType::U128 => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    let value: u128 = value.parse()?;
+                    let value: u128 = comparable_string_to_u128(&value)?;
                     columns_with_value.push((
                         column.column_name,
                         ColumnValue::builder()
@@ -372,7 +376,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::sqlite::SqliteRow) -> Result<Doc
             }
             ColumnType::USize => {
                 if let Some(value) = get_column_value::<String>(row, &column.column_name)? {
-                    let value: usize = value.parse()?;
+                    let value: usize = comparable_string_to_usize(&value)?;
                     columns_with_value.push((
                         column.column_name,
                         ColumnValue::builder().value(Value::UsizeValue(value as u64)).build(),
