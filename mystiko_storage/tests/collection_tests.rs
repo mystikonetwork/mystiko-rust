@@ -196,7 +196,7 @@ async fn test_find() {
     found_documents.sort_by_key(|d| d.data.field1);
     assert_eq!(found_documents, documents);
     found_documents = collection
-        .find::<TestDocument, _>(Some(SubFilter::greater(TestDocumentColumn::Field1, 1)))
+        .find::<TestDocument, _>(Some(SubFilter::greater(TestDocumentColumn::Field1, 1i16)))
         .await
         .unwrap();
     found_documents.sort_by_key(|d| d.data.field1);

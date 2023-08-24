@@ -202,6 +202,44 @@ async fn test_builder(_pool: MySqlPool) {
     let _ = MySqlStorage::connect(options).await.unwrap();
 }
 
+#[sqlx::test]
+async fn test_unsupported_primitive_integers(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
+    collection.migrate().await.unwrap();
+    let mut documents = test_documents();
+    documents[0].field13 = 100u128;
+    documents[0].field25 = -100i128;
+    documents[1].field13 = 20u128;
+    documents[1].field25 = 20i128;
+    documents[2].field13 = 3u128;
+    documents[2].field25 = -3i128;
+    let documents = collection.insert_batch(&documents).await.unwrap();
+    let mut found_documents = collection
+        .find(SubFilter::greater(TestDocumentColumn::Field13, 3u128))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[..2], found_documents);
+    found_documents = collection
+        .find(SubFilter::less(TestDocumentColumn::Field13, 100u128))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[1..], found_documents);
+    found_documents = collection
+        .find(SubFilter::greater(TestDocumentColumn::Field25, 0i128))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[1..2], found_documents);
+    found_documents = collection
+        .find(SubFilter::less(TestDocumentColumn::Field25, -3i128))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[0..1], found_documents);
+}
+
 async fn create_collection(pool: MySqlPool) -> TestDocumentCollection<SqlStatementFormatter, MySqlStorage> {
     let result: (String,) = sqlx::query_as("SELECT DATABASE()").fetch_one(&pool).await.unwrap();
     let storage = MySqlStorage::builder().pool(pool).database(result.0).build();

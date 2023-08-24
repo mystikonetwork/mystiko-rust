@@ -56,7 +56,7 @@ async fn test_nullifiers_crud() {
     assert_eq!(nullifiers.count_all().await.unwrap(), 3);
     assert_eq!(
         nullifiers
-            .count(SubFilter::equal(NullifierColumn::ChainId, 2))
+            .count(SubFilter::equal(NullifierColumn::ChainId, 2u64))
             .await
             .unwrap(),
         1
@@ -112,7 +112,10 @@ async fn test_nullifiers_crud() {
     nullifiers.insert(&inserted_nullifiers[0].data).await.unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 2);
     nullifiers
-        .delete_by_filter(SubFilter::equal(NullifierColumn::Nullifier, 1))
+        .delete_by_filter(SubFilter::equal(
+            NullifierColumn::Nullifier,
+            num_bigint::BigUint::from(1u32),
+        ))
         .await
         .unwrap();
     assert_eq!(nullifiers.count_all().await.unwrap(), 1);

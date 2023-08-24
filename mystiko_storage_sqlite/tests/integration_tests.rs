@@ -190,6 +190,74 @@ async fn test_count() {
     assert_eq!(collection.count(filter).await.unwrap(), 2);
 }
 
+#[tokio::test]
+async fn test_unsupported_primitive_integers() {
+    let collection = create_collection().await;
+    collection.migrate().await.unwrap();
+    let mut documents = test_documents();
+    documents[0].field11 = 100u64;
+    documents[0].field13 = 100u128;
+    documents[0].field15 = 100usize;
+    documents[0].field25 = -100i128;
+    documents[1].field11 = 20u64;
+    documents[1].field13 = 20u128;
+    documents[1].field15 = 20usize;
+    documents[1].field25 = 20i128;
+    documents[2].field11 = 3u64;
+    documents[2].field13 = 3u128;
+    documents[2].field15 = 3usize;
+    documents[2].field25 = -3i128;
+    let documents = collection.insert_batch(&documents).await.unwrap();
+    let mut found_documents = collection
+        .find(SubFilter::greater(TestDocumentColumn::Field11, 3u64))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[..2], found_documents);
+    found_documents = collection
+        .find(SubFilter::less(TestDocumentColumn::Field11, 100u64))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[1..], found_documents);
+    found_documents = collection
+        .find(SubFilter::greater(TestDocumentColumn::Field13, 3u128))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[..2], found_documents);
+    found_documents = collection
+        .find(SubFilter::less(TestDocumentColumn::Field13, 100u128))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[1..], found_documents);
+    found_documents = collection
+        .find(SubFilter::greater(TestDocumentColumn::Field15, 3usize))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[..2], found_documents);
+    found_documents = collection
+        .find(SubFilter::less(TestDocumentColumn::Field15, 100usize))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[1..], found_documents);
+    found_documents = collection
+        .find(SubFilter::greater(TestDocumentColumn::Field25, 0i128))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[1..2], found_documents);
+    found_documents = collection
+        .find(SubFilter::less(TestDocumentColumn::Field25, -3i128))
+        .await
+        .unwrap();
+    found_documents.sort_by_key(|d| d.data.field3);
+    assert_eq!(documents[..1], found_documents);
+}
+
 async fn create_collection() -> TestDocumentCollection<SqlStatementFormatter, SqliteStorage> {
     let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
     TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)))

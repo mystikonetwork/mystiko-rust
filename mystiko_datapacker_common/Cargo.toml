@@ -1,0 +1,18 @@
+[package]
+name = "mystiko_datapacker_common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { version = "1.0.69" }
+async-compression = { version = "0.3.15", features = ["zstd", "tokio"] }
+async-trait = { version = "0.1.64" }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-data-v1"] }
+mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
+sha2 = { version = "0.10.7" }
+thiserror = { version = "1.0", default-features = false }
+tokio = { version = "1.26.0", features = ["io-util"] }
+typed-builder = { version = "0.14.0" }
+
+[dev-dependencies]
+tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }

@@ -637,6 +637,8 @@ dependencies = [
  "memchr",
  "pin-project-lite",
  "tokio",
+ "zstd 0.11.2+zstd.1.5.2",
+ "zstd-safe 5.0.2+zstd.1.5.2",
 ]
 
 [[package]]
@@ -3554,6 +3556,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "mockito"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09c762b6267c4593555bb38f1df19e9318985bc4de60b5e8462890856a9a5b4c"
+dependencies = [
+ "assert-json-diff",
+ "colored",
+ "futures",
+ "hyper",
+ "lazy_static",
+ "log",
+ "rand 0.8.5",
+ "regex 1.9.3",
+ "serde_json",
+ "serde_urlencoded",
+ "similar",
+ "tokio",
+]
+
+[[package]]
 name = "multimap"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3584,7 +3606,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "lazy_static",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_types",
  "mystiko_utils",
  "mystiko_validator",
@@ -3612,7 +3634,7 @@ dependencies = [
  "hex",
  "lazy_static",
  "log",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_abi",
  "mystiko_config",
  "mystiko_crypto",
@@ -3703,7 +3725,7 @@ dependencies = [
  "hex",
  "log",
  "mockall",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_abi",
  "mystiko_config",
  "mystiko_crypto",
@@ -3724,6 +3746,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_datapacker_client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "env_logger",
+ "ethers-core",
+ "futures",
+ "log",
+ "mockito 1.1.0",
+ "mystiko_config",
+ "mystiko_datapacker_common",
+ "mystiko_protos",
+ "mystiko_types",
+ "mystiko_utils",
+ "num-bigint 0.4.3",
+ "prost",
+ "reqwest",
+ "rustc-hex",
+ "thiserror",
+ "tokio",
+ "typed-builder",
+]
+
+[[package]]
+name = "mystiko_datapacker_common"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-compression",
+ "async-trait",
+ "mystiko_protos",
+ "mystiko_utils",
+ "sha2 0.10.7",
+ "thiserror",
+ "tokio",
+ "typed-builder",
+]
+
+[[package]]
 name = "mystiko_downloader"
 version = "0.1.0"
 dependencies = [
@@ -3733,7 +3795,7 @@ dependencies = [
  "digest 0.10.7",
  "flate2",
  "hex",
- "mockito",
+ "mockito 0.32.5",
  "reqwest",
  "tempfile",
  "tokio",
@@ -3756,7 +3818,7 @@ dependencies = [
  "hex",
  "lazy_static",
  "mockall",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_config",
  "mystiko_types",
  "regex 1.9.3",
@@ -3778,7 +3840,7 @@ dependencies = [
  "ethers-contract",
  "ethers-core",
  "ethers-providers",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_abi",
  "reqwest",
  "serde",
@@ -3805,7 +3867,7 @@ dependencies = [
  "async-trait",
  "base64 0.21.2",
  "futures",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_database",
  "reqwest",
  "serde",
@@ -3879,7 +3941,7 @@ dependencies = [
  "futures",
  "log",
  "mockall",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_abi",
  "mystiko_ethers",
  "mystiko_relayer_abi",
@@ -3902,7 +3964,7 @@ name = "mystiko_relayer_config"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_relayer_abi",
  "mystiko_types",
  "mystiko_validator",
@@ -3937,7 +3999,7 @@ dependencies = [
  "lazy_static",
  "log",
  "mockall",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_abi",
  "mystiko_config",
  "mystiko_ethers",
@@ -3998,7 +4060,7 @@ dependencies = [
  "ethers-signers",
  "futures",
  "lazy_static",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_abi",
  "mystiko_config",
  "mystiko_crypto",
@@ -4038,7 +4100,7 @@ dependencies = [
  "ethers-signers",
  "generic-array 0.14.7",
  "lazy_static",
- "mockito",
+ "mockito 0.32.5",
  "mystiko_fs",
  "rand 0.8.5",
  "regex 1.9.3",

@@ -120,7 +120,10 @@ async fn test_commitments_crud() {
     let mut found_commitment = commitments
         .find_one(SubFilter::equal(
             CommitmentColumn::CommitmentHash,
-            "9709495941671889428395361755215352896616366060066411186055604144562505250548",
+            num_bigint::BigUint::from_str(
+                "9709495941671889428395361755215352896616366060066411186055604144562505250548",
+            )
+            .unwrap(),
         ))
         .await
         .unwrap()
@@ -162,7 +165,10 @@ async fn test_commitments_crud() {
     commitments
         .delete_by_filter(SubFilter::equal(
             CommitmentColumn::CommitmentHash,
-            "9709505941671889428395361755215352896616366060066411186055604144562505250548",
+            num_bigint::BigUint::from_str(
+                "9709505941671889428395361755215352896616366060066411186055604144562505250548",
+            )
+            .unwrap(),
         ))
         .await
         .unwrap();

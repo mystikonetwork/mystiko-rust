@@ -65,7 +65,7 @@ async fn test_accounts_crud() {
     assert_eq!(accounts.count_all().await.unwrap(), 3);
     assert_eq!(
         accounts
-            .count(SubFilter::equal(AccountColumn::ScanSize, 2))
+            .count(SubFilter::equal(AccountColumn::ScanSize, 2u32))
             .await
             .unwrap(),
         1

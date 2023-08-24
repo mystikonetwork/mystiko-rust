@@ -52,7 +52,7 @@ async fn test_wallets_crud() {
     assert_eq!(wallets.count_all().await.unwrap(), 3);
     assert_eq!(
         wallets
-            .count(SubFilter::equal(WalletColumn::AccountNonce, 2))
+            .count(SubFilter::equal(WalletColumn::AccountNonce, 2u32))
             .await
             .unwrap(),
         1
