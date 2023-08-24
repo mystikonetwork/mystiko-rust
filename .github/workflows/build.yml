@@ -27,7 +27,7 @@ jobs:
       - name: Setup MySql
         id: setup_mysql
         run: |
-          docker rm -f mystiko-rust-mysql \
+          docker rm -f mystiko-rust-mysql
           docker run -d \
             --name mystiko-rust-mysql \
             -e MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
