@@ -16,7 +16,7 @@ pub fn u64_to_comparable_string(number: u64) -> String {
 }
 
 pub fn comparable_string_to_u64(string: &str) -> Result<u64> {
-    Ok(u64::from_str_radix(string, 16)?)
+    u64::from_str_radix(string, 16)
 }
 
 pub fn isize_to_comparable_string(number: isize) -> String {
@@ -34,7 +34,7 @@ pub fn usize_to_comparable_string(number: usize) -> String {
 }
 
 pub fn comparable_string_to_usize(string: &str) -> Result<usize> {
-    Ok(usize::from_str_radix(string, 16)?)
+    usize::from_str_radix(string, 16)
 }
 
 pub fn i128_to_comparable_string(number: i128) -> String {
@@ -52,5 +52,5 @@ pub fn u128_to_comparable_string(number: u128) -> String {
 }
 
 pub fn comparable_string_to_u128(string: &str) -> Result<u128> {
-    Ok(u128::from_str_radix(string, 16)?)
+    u128::from_str_radix(string, 16)
 }
