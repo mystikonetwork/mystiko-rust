@@ -2,9 +2,14 @@ use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
 use mockall::mock;
+use mystiko_config::raw::create_raw_from_file;
+use mystiko_config::raw::mystiko::RawMystikoConfig;
+use mystiko_config::raw::packer::RawPackerConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_dataloader::data::{FullData, LiteData, LoadedData};
-use mystiko_dataloader::fetcher::{ContractFetchOptions, DataFetcher, DataPackerFetcher, FetchOptions};
+use mystiko_dataloader::fetcher::{
+    ContractFetchOptions, DataFetcher, DataPackerFetcher, DataPackerFetcherV1, FetchOptions,
+};
 use mystiko_datapacker_client::{ChainQuery, ChainResponse};
 use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, Nullifier};
 use mystiko_utils::convert::biguint_to_bytes;
@@ -239,6 +244,39 @@ async fn test_fetch_missing_contract() {
 }
 
 #[tokio::test]
+async fn test_packer_wrong_start_block() {
+    let chain_data = generate_data(
+        &TestOptions::builder()
+            .chain_id(1u64)
+            .start_block(10000010u64)
+            .end_block(10000400u64)
+            .commitments_count(300u64)
+            .nullifiers_count(300u64)
+            .build(),
+        vec!["0x32a026860E7a5957a3d98960239af12d92F76441"],
+    );
+    let mut client = MockDataPackerClient::new();
+    client.expect_query_chain().return_once(move |_| Ok(chain_data));
+    let (config, fetcher) = setup::<FullData>(client).await;
+    let options = FetchOptions::builder()
+        .chain_id(1u64)
+        .start_block(10000000u64)
+        .target_block(10000199u64)
+        .config(config)
+        .build();
+    let result = fetcher.fetch(&options).await.unwrap();
+    assert_eq!(result.chain_id, 1);
+    let mut contracts_results = result.contract_results;
+    assert_eq!(contracts_results.len(), 1);
+    let contract_result = contracts_results.pop().unwrap().result;
+    assert!(contract_result.is_err());
+    assert_eq!(
+        contract_result.unwrap_err().to_string(),
+        "start block 10000010 is bigger than end block 10000000"
+    );
+}
+
+#[tokio::test]
 async fn test_packer_raised_error() {
     let mut client = MockDataPackerClient::new();
     client
@@ -254,6 +292,53 @@ async fn test_packer_raised_error() {
     let result = fetcher.fetch(&options).await;
     assert!(result.is_err());
     assert_eq!("query chain returned error", result.unwrap_err().to_string());
+}
+
+#[tokio::test]
+async fn test_packer_returned_none() {
+    let mut client = MockDataPackerClient::new();
+    client
+        .expect_query_chain()
+        .return_once(move |_| Ok(ChainResponse::builder().chain_id(1u64).build()));
+    let (config, fetcher) = setup::<FullData>(client).await;
+    let options = FetchOptions::builder()
+        .chain_id(1u64)
+        .start_block(10000000u64)
+        .target_block(20000000u64)
+        .config(config)
+        .build();
+    let result = fetcher.fetch(&options).await;
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("no chain data found"));
+}
+
+#[tokio::test]
+async fn test_packer_with_v1_client() {
+    let mut server = mockito::Server::new_async().await;
+    let mock = server
+        .mock(
+            "GET",
+            "/chains/1/granularities/2000/blocks/10000000/data_checksum.sha512",
+        )
+        .with_status(500)
+        .create_async()
+        .await;
+    let mut raw_config = create_raw_from_file::<RawMystikoConfig>("tests/files/fetcher/packer/config.json")
+        .await
+        .unwrap();
+    raw_config.packer = Some(Arc::new(RawPackerConfig::builder().url(server.url()).build()));
+    let config = Arc::new(MystikoConfig::from_raw(raw_config).unwrap());
+    let fetcher = DataPackerFetcherV1::<FullData>::from(config.clone());
+    let options = FetchOptions::builder()
+        .chain_id(1u64)
+        .start_block(10000000u64)
+        .target_block(10001999u64)
+        .config(config)
+        .build();
+    let result = fetcher.fetch(&options).await;
+    mock.assert_async().await;
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("500 Internal Server Error"));
 }
 
 #[derive(Debug, TypedBuilder)]
