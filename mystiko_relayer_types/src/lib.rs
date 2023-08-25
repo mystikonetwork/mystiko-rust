@@ -130,7 +130,7 @@ pub struct ContractInfo {
 }
 
 fn is_valid_circuit_type(value: &CircuitType) -> Result<(), ValidationError> {
-    let allowed = vec![
+    let allowed = [
         CircuitType::Transaction1x0,
         CircuitType::Transaction1x1,
         CircuitType::Transaction1x2,
