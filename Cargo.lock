@@ -3729,6 +3729,7 @@ dependencies = [
  "mystiko_abi",
  "mystiko_config",
  "mystiko_crypto",
+ "mystiko_datapacker_client",
  "mystiko_ethers",
  "mystiko_etherscan_client",
  "mystiko_fs",

@@ -57,6 +57,7 @@ where
         cms.push(commitments);
     }
 
+    #[allow(dead_code)]
     pub async fn add_nullifiers(&self, nullifiers: Vec<Nullifier>) {
         let mut ns = self.nullifiers.write().await;
         ns.push(nullifiers);

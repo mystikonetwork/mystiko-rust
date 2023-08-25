@@ -31,5 +31,6 @@ members = [
     "mystiko_utils",
     "mystiko_validator"
 ]
+resolver = "2"
 
 exclude = []

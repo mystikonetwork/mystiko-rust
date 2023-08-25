@@ -12,7 +12,9 @@ use std::sync::Arc;
 
 #[tokio::test]
 async fn test_fulldata_fetch() {
-    let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
+    let _ = env_logger::builder()
+        .filter_module("mystiko_dataloader", LevelFilter::Debug)
+        .try_init();
     let mut mocked_server = Server::new_async().await;
     let mocked_server_url = mocked_server.url();
     let indexer_client = IndexerClientBuilder::new(&mocked_server_url).build().unwrap();

@@ -1,1 +1,1 @@
-pub mod validator_rule_full_tests;
+mod validator_rule_full_tests;

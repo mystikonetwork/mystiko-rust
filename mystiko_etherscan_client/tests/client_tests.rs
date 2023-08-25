@@ -50,14 +50,14 @@ async fn test_eth_call() {
     });
     let test_to = "test_to";
     let test_function_encoded_data = "test_function_encoded_data";
-    let test_block_tag = Some("test_block_tag");
+    let test_block_tag = "test_block_tag";
     let params = Matcher::AllOf(vec![
         Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
         Matcher::UrlEncoded("module".into(), "proxy".into()),
         Matcher::UrlEncoded("action".into(), "eth_call".into()),
         Matcher::UrlEncoded("to".into(), test_to.into()),
         Matcher::UrlEncoded("data".into(), test_function_encoded_data.into()),
-        Matcher::UrlEncoded("tag".into(), test_block_tag.unwrap().to_string()),
+        Matcher::UrlEncoded("tag".into(), test_block_tag.to_string()),
     ]);
     let m = mocked_server
         .mock("GET", "/api")
@@ -68,7 +68,7 @@ async fn test_eth_call() {
         .create_async()
         .await;
     let result = ether_scan_client
-        .eth_call(test_to, test_function_encoded_data, test_block_tag)
+        .eth_call(test_to, test_function_encoded_data, Some(test_block_tag))
         .await;
     assert!(result.is_ok());
     let result = result.unwrap();
@@ -89,7 +89,7 @@ async fn test_eth_call() {
         .create_async()
         .await;
     let result = ether_scan_client
-        .eth_call(test_to, test_function_encoded_data, test_block_tag)
+        .eth_call(test_to, test_function_encoded_data, Some(test_block_tag))
         .await;
     assert!(result.is_err());
     let error = result.unwrap_err();
