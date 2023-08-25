@@ -402,13 +402,7 @@ where
             Some(
                 contracts
                     .iter()
-                    .map(|c| {
-                        ContractFetchOptions::builder()
-                            .contract_config(c.clone())
-                            .start_block(None)
-                            .target_block(None)
-                            .build()
-                    })
+                    .map(|c| ContractFetchOptions::builder().contract_config(c.clone()).build())
                     .collect(),
             )
         } else {

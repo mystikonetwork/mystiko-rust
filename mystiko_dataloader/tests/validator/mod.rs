@@ -1,5 +1,5 @@
-pub mod common;
-pub mod merge_commitment;
-pub mod merge_nullifier;
-pub mod rule_full;
-pub mod rule_single;
+pub(crate) mod common;
+mod merge_commitment;
+mod merge_nullifier;
+mod rule_full;
+mod rule_single;

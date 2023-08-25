@@ -442,7 +442,6 @@ async fn build_fetch_options(
             .start_block(test_start_block)
             .target_block(test_end_block)
             .config(Arc::clone(&mystiko_config))
-            .contract_options(None)
             .build()
     } else {
         let contract_config = mystiko_config

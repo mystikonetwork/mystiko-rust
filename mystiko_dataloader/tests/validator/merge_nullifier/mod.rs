@@ -1,1 +1,1 @@
-pub mod validator_merge_many_tests;
+mod validator_merge_many_tests;
