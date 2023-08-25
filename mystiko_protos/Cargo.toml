@@ -31,4 +31,4 @@ serde = { version = "1" }
 serde_json = { version = "1.0.91" }
 tonic = { version = "0.9.2", optional = true, features = ["tls"] }
 thiserror = { version = "1.0", default-features = false }
-typed-builder = { version = "0.14.0" }
+typed-builder = { version = "0.15.2" }

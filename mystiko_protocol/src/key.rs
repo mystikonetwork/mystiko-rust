@@ -24,7 +24,7 @@ pub fn encryption_secret_key(raw_secret_key: &EncSk) -> EncSk {
 }
 
 pub fn encryption_public_key(raw_secret_key: &EncSk) -> EncPk {
-    let secret_key = SecretKey::from_be_bytes(raw_secret_key).unwrap();
+    let secret_key = SecretKey::from_slice(raw_secret_key).unwrap();
     let public_key = secret_key.public_key();
 
     let public_key_vec = public_key_to_vec(&public_key, true);

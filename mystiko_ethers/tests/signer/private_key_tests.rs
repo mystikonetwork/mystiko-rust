@@ -25,8 +25,8 @@ mock! {
 #[tokio::test]
 async fn test_private_key_signer() {
     let (private_key, address) = generate_private_key();
-    let (_, mock_path) = mock_provider_server().await;
-    let mut pk_signer = PrivateKeySigner::new(&private_key, create_provider_pool()).unwrap();
+    let (server, mock_path) = mock_provider_server().await;
+    let mut pk_signer = PrivateKeySigner::new(&private_key, create_provider_pool(server.url())).unwrap();
     assert_eq!(pk_signer.chain_id().await.unwrap(), 1);
     assert_eq!(pk_signer.accounts().await.unwrap(), vec![address]);
     pk_signer.switch_chain(56).await.unwrap();
@@ -47,16 +47,14 @@ fn generate_private_key() -> (String, Address) {
     (hex::encode(wallet.signer().to_bytes()), wallet.address())
 }
 
-fn create_provider_pool() -> Arc<ProviderPool<MockChainConfig>> {
+fn create_provider_pool(url: String) -> Arc<ProviderPool<MockChainConfig>> {
     let mut mock_chain_config = MockChainConfig::new();
     mock_chain_config
         .expect_providers_options()
         .with(predicate::eq(56))
         .returning(move |_| {
             Ok(Some(ProvidersOptions::Http(
-                ProviderOptions::builder()
-                    .url(String::from("http://localhost:13121"))
-                    .build(),
+                ProviderOptions::builder().url(url.clone()).build(),
             )))
         });
     mock_chain_config
@@ -69,8 +67,8 @@ fn create_provider_pool() -> Arc<ProviderPool<MockChainConfig>> {
     Arc::new(pool)
 }
 
-async fn mock_provider_server() -> (Server, Mock) {
-    let mut server = Server::new_with_port_async(13121).await;
+async fn mock_provider_server() -> (mockito::ServerGuard, Mock) {
+    let mut server = Server::new_async().await;
     let path = server
         .mock("POST", "/")
         .expect_at_least(1)
