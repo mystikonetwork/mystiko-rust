@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+use mystiko_protos::core::document::v1::Provider as ProtoProvider;
 use mystiko_storage::column::{IndexColumns, UniqueColumns};
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
@@ -32,4 +33,15 @@ fn uniques() -> Vec<UniqueColumns> {
 
 fn indexes() -> Vec<IndexColumns> {
     vec![vec![ChainColumn::ChainId].into()]
+}
+
+impl From<Provider> for ProtoProvider {
+    fn from(value: Provider) -> Self {
+        ProtoProvider::builder()
+            .url(value.url)
+            .timeout_ms(value.timeout_ms)
+            .max_try_count(value.max_try_count)
+            .quorum_weight(value.quorum_weight)
+            .build()
+    }
 }

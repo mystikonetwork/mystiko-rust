@@ -6,6 +6,8 @@ use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_crypto::hash::checksum;
 use mystiko_database::database::Database;
 use mystiko_database::document::wallet::Wallet;
+use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
+use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter};
 use mystiko_storage::document::{Document, DocumentColumn};
 use mystiko_storage::formatter::types::StatementFormatter;
@@ -13,9 +15,7 @@ use mystiko_storage::storage::Storage;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use rand_core::OsRng;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use typed_builder::TypedBuilder;
 
 lazy_static! {
     static ref PASSWORD_LOWER_REGEX: Regex = Regex::new(r"[a-z]").unwrap();
@@ -37,13 +37,6 @@ pub struct WalletHandler<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
 }
 
-#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
-pub struct CreateWalletOptions {
-    pub password: String,
-    #[builder(default, setter(strip_option))]
-    pub mnemonic_phrase: Option<String>,
-}
-
 impl<F, S> WalletHandler<F, S>
 where
     F: StatementFormatter,
@@ -53,7 +46,7 @@ where
         Self { db }
     }
 
-    pub async fn current(&self) -> Result<Option<Document<Wallet>>> {
+    pub async fn current(&self) -> Result<Option<ProtoWallet>> {
         let filter = QueryFilter::builder()
             .conditions_operator(ConditionOperator::And)
             .order_by(
@@ -63,14 +56,16 @@ where
                     .build(),
             )
             .build();
-        self.db
+        Ok(self
+            .db
             .wallets
             .find_one(filter)
             .await
-            .map_err(MystikoError::StorageError)
+            .map_err(MystikoError::StorageError)?
+            .map(to_proto_wallet))
     }
 
-    pub async fn create(&self, options: &CreateWalletOptions) -> Result<Document<Wallet>> {
+    pub async fn create(&self, options: &CreateWalletOptions) -> Result<ProtoWallet> {
         validate_password(&options.password)?;
         let mnemonic = if let Some(mnemonic_words) = &options.mnemonic_phrase {
             Mnemonic::new(mnemonic_words, Language::English)?
@@ -91,10 +86,10 @@ where
             .await
             .map_err(MystikoError::StorageError)?;
         log::info!("successfully created a wallet(id = \"{}\")", wallet.id);
-        Ok(wallet)
+        Ok(to_proto_wallet(wallet))
     }
 
-    pub async fn check_current(&self) -> Result<Document<Wallet>> {
+    pub async fn check_current(&self) -> Result<ProtoWallet> {
         if let Some(wallet) = self.current().await? {
             Ok(wallet)
         } else {
@@ -102,18 +97,18 @@ where
         }
     }
 
-    pub async fn check_password(&self, password: &str) -> Result<Document<Wallet>> {
+    pub async fn check_password(&self, password: &str) -> Result<ProtoWallet> {
         let wallet = self.check_current().await?;
         let hashed_password = checksum(password, None);
-        if wallet.data.hashed_password == hashed_password {
+        if wallet.hashed_password == hashed_password {
             Ok(wallet)
         } else {
             Err(MystikoError::MismatchedPasswordError)
         }
     }
 
-    pub async fn update_password(&self, old_password: &str, new_password: &str) -> Result<Document<Wallet>> {
-        let mut wallet = self.check_password(old_password).await?;
+    pub async fn update_password(&self, old_password: &str, new_password: &str) -> Result<ProtoWallet> {
+        let mut wallet = to_document_wallet(self.check_password(old_password).await?);
         validate_password(new_password)?;
         let entropy_string = decrypt_symmetric(old_password, &wallet.data.encrypted_entropy)?;
         wallet.data.encrypted_entropy = encrypt_symmetric(new_password, &entropy_string)?;
@@ -128,12 +123,12 @@ where
             "successfully updated the password of the wallet(id = \"{}\")",
             wallet.id
         );
-        Ok(wallet)
+        Ok(to_proto_wallet(wallet))
     }
 
     pub async fn export_mnemonic(&self, password: &str) -> Result<Mnemonic> {
         let wallet = self.check_password(password).await?;
-        let entropy_string = decrypt_symmetric(password, &wallet.data.encrypted_entropy)?;
+        let entropy_string = decrypt_symmetric(password, &wallet.encrypted_entropy)?;
         let entropy: [u8; KEY_SIZE] = decode_hex_with_length(&entropy_string)?;
         Ok(Mnemonic::from_entropy(entropy, Language::English))
     }
@@ -154,4 +149,28 @@ fn validate_password(password: &str) -> Result<()> {
     } else {
         Err(MystikoError::InvalidPasswordError(PASSWORD_HINT.to_string()))
     }
+}
+
+pub fn to_document_wallet(wallet: ProtoWallet) -> Document<Wallet> {
+    Document::new(
+        wallet.id,
+        wallet.created_at,
+        wallet.updated_at,
+        Wallet {
+            encrypted_entropy: wallet.encrypted_entropy,
+            hashed_password: wallet.hashed_password,
+            account_nonce: wallet.account_nonce,
+        },
+    )
+}
+
+fn to_proto_wallet(document: Document<Wallet>) -> ProtoWallet {
+    ProtoWallet::builder()
+        .id(document.id)
+        .created_at(document.created_at)
+        .updated_at(document.updated_at)
+        .encrypted_entropy(document.data.encrypted_entropy)
+        .hashed_password(document.data.hashed_password)
+        .account_nonce(document.data.account_nonce)
+        .build()
 }

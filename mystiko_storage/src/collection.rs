@@ -192,9 +192,9 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
     }
 }
 
-fn current_timestamp() -> i64 {
+fn current_timestamp() -> u64 {
     SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
-        .as_millis() as i64
+        .as_millis() as u64
 }

@@ -20,7 +20,7 @@ mystiko_crypto = { version = "0.1.0", path = "../mystiko_crypto" }
 mystiko_database = { version = "0.1.0", path = "../mystiko_database" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
 mystiko_protocol = { version = "0.1.0", path = "../mystiko_protocol" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-storage-v1"] }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-core-v1","mystiko-storage-v1","mystiko-core-handler-v1","mystiko-core-document-v1"] }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
