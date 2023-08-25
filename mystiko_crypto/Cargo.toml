@@ -28,9 +28,9 @@ aes = { version = "0.8.2" }
 babyjubjub-rs = { version = "0.0.10" }
 base64 = { version = "0.21.0" }
 cbc = { version = "0.1.2",features = ["std"]  }
-elliptic-curve = { version = "0.12.3", features = [ "ecdh" ]}
+elliptic-curve = { version = "0.13.5", features = [ "ecdh" ]}
 generic-array = { version = "0.14.6" }
-k256 = { version = "0.12.0" }
+k256 = { version = "0.13.1" }
 
 #hash
 poseidon-rs = { version = "0.0.8" }

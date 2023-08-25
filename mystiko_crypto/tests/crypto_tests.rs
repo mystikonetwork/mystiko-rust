@@ -39,12 +39,13 @@ async fn test_random_encrypt_symmetric() {
 
 #[tokio::test]
 async fn test_random_encrypt_asymmetric() {
-    let sk = SecretKey::random(OsRng);
+    let mut rng = OsRng;
+    let sk = SecretKey::random(&mut rng);
     let pk = sk.public_key();
     let pk = public_key_to_vec(&pk, true);
 
     let text = random_bytes(80);
     let data = encrypt_asymmetric(pk.as_slice(), text.as_slice()).unwrap();
-    let dec_text = decrypt_asymmetric(sk.to_be_bytes().to_vec().as_slice(), &data).unwrap();
+    let dec_text = decrypt_asymmetric(sk.to_bytes().to_vec().as_slice(), &data).unwrap();
     assert_eq!(text, dec_text);
 }
