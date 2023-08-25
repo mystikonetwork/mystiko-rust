@@ -447,8 +447,8 @@ fn test_format_create_collection_migration() {
         statement1.statement,
         "CREATE TABLE IF NOT EXISTS `test_documents` (\
     `id` VARCHAR(64) NOT NULL PRIMARY KEY, \
-    `created_at` VARCHAR(20) NOT NULL, \
-    `updated_at` VARCHAR(20) NOT NULL, \
+    `created_at` VARCHAR(16) NOT NULL, \
+    `updated_at` VARCHAR(16) NOT NULL, \
     `field1` TINYINT NOT NULL, \
     `field2` TINYINT, \
     `field3` VARCHAR(1) NOT NULL, \
