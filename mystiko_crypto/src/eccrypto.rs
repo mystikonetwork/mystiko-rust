@@ -58,7 +58,8 @@ fn uncompressed_public_key_to_compressed(pk: &[u8]) -> Vec<u8> {
 }
 
 fn encrypt_derive_shared_secret(public_key_bytes: &[u8]) -> (Vec<u8>, Vec<u8>) {
-    let sk_a = SecretKey::random(OsRng);
+    let mut rng = OsRng;
+    let sk_a = SecretKey::random(&mut rng);
     let pk_a = sk_a.public_key();
     let pk_a = public_key_to_vec(&pk_a, false);
 
@@ -73,7 +74,7 @@ fn encrypt_derive_shared_secret(public_key_bytes: &[u8]) -> (Vec<u8>, Vec<u8>) {
 fn decrypt_derive_shared_secret(pk_a: &[u8], sk_b: &[u8]) -> Vec<u8> {
     // todo check if failed
     let public_key_a = PublicKey::from_sec1_bytes(pk_a).unwrap();
-    let secret_key_b = SecretKey::from_be_bytes(sk_b).unwrap();
+    let secret_key_b = SecretKey::from_slice(sk_b).unwrap();
 
     let shared = elliptic_curve::ecdh::diffie_hellman(secret_key_b.to_nonzero_scalar(), public_key_a.as_affine());
 

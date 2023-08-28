@@ -1,0 +1,252 @@
+{
+  "version": "0.1.0",
+  "chains": [
+    {
+      "name": "Ethereum",
+      "assetSymbol": "ETH",
+      "chainId": 1,
+      "explorerUrl": "https://etherscan.io",
+      "explorerApiUrl": "https://api.etherscan.io",
+      "signerEndpoint": "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      "providers": [
+        {
+          "url": "https://infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+        }
+      ],
+      "depositContracts": [
+        {
+          "version": 2,
+          "name": "MystikoV2WithTBridgeERC20",
+          "address": "0x32a026860E7a5957a3d98960239af12d92F76441",
+          "startBlock": 10000000,
+          "bridgeType": "loop",
+          "poolAddress": "0xDede369C8444324cFd75038F1F2A39C4E44F6035",
+          "type": "deposit",
+          "minAmount": "100000000000000000",
+          "maxAmount": "100000000000000000000"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 2,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20220610",
+          "bridgeType": "loop",
+          "address": "0xDede369C8444324cFd75038F1F2A39C4E44F6035",
+          "startBlock": 9999999,
+          "type": "pool",
+          "assetAddress": "0x2f1306362422e341e08e656d656719d5e8facdc7",
+          "minRollupFee": "10000000000000000"
+        }
+      ],
+      "assets": [
+        {
+          "assetType": "erc20",
+          "assetSymbol": "mBNB",
+          "assetDecimals": 18,
+          "recommendedAmounts": [
+            "100000000000000000",
+            "1000000000000000000",
+            "10000000000000000000",
+            "100000000000000000000"
+          ],
+          "assetAddress": "0x2f1306362422e341e08e656d656719d5e8facdc7"
+        }
+      ],
+      "packerGranularities": [2000, 4000, 8000, 16000, 32000, 64000, 256000]
+    }
+  ],
+  "circuits": [
+    {
+      "name": "zokrates-1.0-transaction1x0",
+      "type": "transaction1x0",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Transaction1x0.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Transaction1x0.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction1x0.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction1x0.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-transaction1x1",
+      "type": "transaction1x1",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Transaction1x1.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Transaction1x1.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction1x1.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction1x1.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-transaction1x2",
+      "type": "transaction1x2",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Transaction1x2.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Transaction1x2.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction1x2.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction1x2.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-transaction2x0",
+      "type": "transaction2x0",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Transaction2x0.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Transaction2x0.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction2x0.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction2x0.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-transaction2x1",
+      "type": "transaction2x1",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Transaction2x1.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Transaction2x1.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction2x1.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction2x1.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-transaction2x2",
+      "type": "transaction2x2",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Transaction2x2.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Transaction2x2.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction2x2.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Transaction2x2.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup1",
+      "type": "rollup1",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Rollup1.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Rollup1.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup1.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup1.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup2",
+      "type": "rollup2",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Rollup2.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Rollup2.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup2.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup2.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup4",
+      "type": "rollup4",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Rollup4.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Rollup4.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup4.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup4.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup8",
+      "type": "rollup8",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Rollup8.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Rollup8.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup8.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup8.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup16",
+      "type": "rollup16",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Rollup16.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Rollup16.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup16.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup16.vkey.gz"
+      ]
+    }
+  ],
+  "packer": {
+    "url": "https://example.com"
+  },
+  "countryBlacklist": ["CN", "US"]
+}

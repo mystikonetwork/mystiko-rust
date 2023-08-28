@@ -44,7 +44,9 @@ impl Providers for TestProvders {
 
 #[tokio::test]
 async fn test_fulldata_fetch() {
-    let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
+    let _ = env_logger::builder()
+        .filter_module("mystiko_dataloader", LevelFilter::Debug)
+        .try_init();
     let provider_fetcher: ProviderFetcher<FullData, TestProvders> =
         ProviderFetcher::<FullData, TestProvders>::builder()
             .providers(TestProvders {})
@@ -93,7 +95,9 @@ async fn test_fulldata_fetch() {
 
 #[tokio::test]
 async fn test_litedata_fetch() {
-    let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
+    let _ = env_logger::builder()
+        .filter_module("mystiko_dataloader", LevelFilter::Debug)
+        .try_init();
     let provider_fetcher: ProviderFetcher<LiteData, TestProvders> =
         ProviderFetcher::<LiteData, TestProvders>::builder()
             .providers(TestProvders {})
@@ -148,7 +152,6 @@ async fn test_litedata_fetch() {
         .start_block(test_start_block)
         .target_block(test_end_block)
         .config(Arc::clone(&mystiko_config))
-        .contract_options(None)
         .build();
     let result = provider_fetcher.fetch(&fetch_options).await;
     assert!(result.is_err());
@@ -161,7 +164,6 @@ async fn test_litedata_fetch() {
         .start_block(test_start_block)
         .target_block(test_end_block)
         .config(Arc::clone(&mystiko_config))
-        .contract_options(None)
         .build();
     let result = provider_fetcher.fetch(&fetch_options).await;
     assert!(result.is_ok());

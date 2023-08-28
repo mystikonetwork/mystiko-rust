@@ -19,6 +19,7 @@ pub struct FetchOptions {
     pub chain_id: u64,
     pub start_block: u64,
     pub target_block: u64,
+    #[builder(default)]
     pub contract_options: Option<Vec<ContractFetchOptions>>,
 }
 
@@ -26,7 +27,9 @@ pub struct FetchOptions {
 #[builder(field_defaults(setter(into)))]
 pub struct ContractFetchOptions {
     pub contract_config: ContractConfig,
+    #[builder(default)]
     pub start_block: Option<u64>,
+    #[builder(default)]
     pub target_block: Option<u64>,
 }
 

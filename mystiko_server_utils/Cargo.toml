@@ -18,7 +18,7 @@ serde_json = { version = "1.0.91", features = ["preserve_order"] }
 tracing = { version = "0.1.37" }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"]}
 thiserror = { version = "1.0", default-features = false }
-typed-builder = { version = "0.14.0" }
+typed-builder = { version = "0.15.2" }
 generic-array = { version = "0.14.6" }
 dotenv = { version = "0.15.0" }
 tokio = { version = "1.26.0", features = ["time"] }
@@ -27,4 +27,4 @@ tokio = { version = "1.26.0", features = ["time"] }
 tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
 rand = { version = "0.8.5" }
 mystiko_fs = { version = "0.1.0", path = "../mystiko_fs" }
-mockito = { version = "0.32.4" }
+mockito = { version = "1.1.0" }

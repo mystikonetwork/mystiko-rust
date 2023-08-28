@@ -18,7 +18,7 @@ async fn test_equal_const_time() {
 
 #[tokio::test]
 async fn test_decrypt_compatible_with_js() {
-    let sk = SecretKey::from_be_bytes(b"98765432101234567890123456789012").unwrap();
+    let sk = SecretKey::from_slice(b"98765432101234567890123456789012").unwrap();
     let text = b"mystiko is awesome";
 
     let js_dec_data: &[u8] = &[
@@ -32,19 +32,20 @@ async fn test_decrypt_compatible_with_js() {
         0x68, 0x6A, 0x1C, 0xC4, 0x41, 0x3E, 0xCA, 0x2C, 0x0E, 0xDD, 0x34, 0x18, 0xAB, 0xE7, 0x97, 0x67, 0x1B, 0x6A,
         0x97,
     ];
-    let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), js_dec_data).unwrap();
+    let dec_text = decrypt(sk.to_bytes().to_vec().as_slice(), js_dec_data).unwrap();
     assert_eq!(text, dec_text.as_slice());
 }
 
 #[tokio::test]
 async fn test_random_data() {
-    let sk = SecretKey::random(OsRng);
+    let mut rng = OsRng;
+    let sk = SecretKey::random(&mut rng);
     let pk = sk.public_key();
     let pk = public_key_to_vec(&pk, true);
 
     let text = random_bytes(80);
     let data = encrypt(pk.as_slice(), text.as_slice()).unwrap();
-    let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &data).unwrap();
+    let dec_text = decrypt(sk.to_bytes().to_vec().as_slice(), &data).unwrap();
     assert_eq!(text, dec_text);
 
     let ec_data = ECCryptoData::from_bytes(data.as_slice()).unwrap();
@@ -56,6 +57,6 @@ async fn test_random_data() {
     assert!(matches!(data.err().unwrap(), CryptoError::KeyLengthError));
 
     let data = vec![1, 2, 3];
-    let dec_text = decrypt(sk.to_be_bytes().to_vec().as_slice(), &data);
+    let dec_text = decrypt(sk.to_bytes().to_vec().as_slice(), &data);
     assert!(matches!(dec_text.err().unwrap(), CryptoError::DataLengthError));
 }

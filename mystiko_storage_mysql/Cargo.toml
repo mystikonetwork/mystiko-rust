@@ -13,7 +13,7 @@ num-bigint = { version = "0.4", features = ["serde"] }
 serde_json = { version = "1.0.91" }
 sqlx = { version = "0.7.0", features = [ "runtime-tokio", "tls-rustls", "mysql" ] }
 tokio = { version = "1.26.0", features = ["sync"] }
-typed-builder = { version = "0.14.0" }
+typed-builder = { version = "0.15.2" }
 
 [dev-dependencies]
 mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }

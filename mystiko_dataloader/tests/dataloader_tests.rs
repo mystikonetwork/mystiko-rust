@@ -1,2 +1,2 @@
-pub mod loader;
-pub mod validator;
+mod loader;
+mod validator;

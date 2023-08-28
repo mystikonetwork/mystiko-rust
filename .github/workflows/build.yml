@@ -77,7 +77,7 @@ jobs:
         run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --all-features --lcov --no-run --output-path lcov.info
 
       - name: Upload Coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
