@@ -1,4 +1,5 @@
 use mystiko_database::document::wallet::{Wallet, WalletCollection, WalletColumn};
+use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
@@ -131,4 +132,44 @@ async fn test_wallet_serde() {
         wallet,
         serde_json::from_str(&serde_json::to_string(&wallet).unwrap()).unwrap()
     )
+}
+
+#[test]
+fn test_from_proto() {
+    let proto = ProtoWallet::builder()
+        .id(String::from("123456"))
+        .created_at(1234567890u64)
+        .updated_at(1234567891u64)
+        .encrypted_entropy(String::from("encrypted entropy 01"))
+        .hashed_password(String::from("hashed password 01"))
+        .account_nonce(1u32)
+        .build();
+    let wallet = Wallet::from_proto(proto);
+    assert_eq!(wallet.id, String::from("123456"));
+    assert_eq!(wallet.created_at, 1234567890u64);
+    assert_eq!(wallet.updated_at, 1234567891u64);
+    assert_eq!(wallet.data.encrypted_entropy, String::from("encrypted entropy 01"));
+    assert_eq!(wallet.data.hashed_password, String::from("hashed password 01"));
+    assert_eq!(wallet.data.account_nonce, 1u32);
+}
+
+#[test]
+fn test_into_proto() {
+    let wallet = Document::new(
+        String::from("123456"),
+        1234567890u64,
+        1234567891u64,
+        Wallet {
+            encrypted_entropy: String::from("encrypted entropy 01"),
+            hashed_password: String::from("hashed password 01"),
+            account_nonce: 1u32,
+        },
+    );
+    let proto = Wallet::into_proto(wallet);
+    assert_eq!(proto.id, String::from("123456"));
+    assert_eq!(proto.created_at, 1234567890u64);
+    assert_eq!(proto.updated_at, 1234567891u64);
+    assert_eq!(proto.encrypted_entropy, String::from("encrypted entropy 01"));
+    assert_eq!(proto.hashed_password, String::from("hashed password 01"));
+    assert_eq!(proto.account_nonce, 1u32);
 }

@@ -1,4 +1,6 @@
 use mystiko_database::document::chain::{Chain, ChainCollection, ChainColumn, Provider};
+use mystiko_protos::core::document::v1::Chain as ProtoChain;
+use mystiko_protos::core::document::v1::Provider as ProtoProvider;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
@@ -190,4 +192,128 @@ async fn test_chain_serde() {
         chain,
         serde_json::from_str(&serde_json::to_string(&chain).unwrap()).unwrap()
     );
+}
+
+#[test]
+fn test_provider_from_proto() {
+    let proto = ProtoProvider::builder()
+        .url(String::from("http://localhost:8545"))
+        .timeout_ms(10000u32)
+        .max_try_count(3u32)
+        .quorum_weight(2u32)
+        .build();
+    let provider: Provider = proto.into();
+    assert_eq!(provider.url, String::from("http://localhost:8545"));
+    assert_eq!(provider.timeout_ms, 10000u32);
+    assert_eq!(provider.max_try_count, 3u32);
+    assert_eq!(provider.quorum_weight, 2u32);
+}
+
+#[test]
+fn test_provider_into_proto() {
+    let provider = Provider {
+        url: String::from("http://localhost:8545"),
+        timeout_ms: 10000u32,
+        max_try_count: 3u32,
+        quorum_weight: 2u32,
+    };
+    let proto: ProtoProvider = provider.into();
+    assert_eq!(proto.url, String::from("http://localhost:8545"));
+    assert_eq!(proto.timeout_ms, 10000u32);
+    assert_eq!(proto.max_try_count, 3u32);
+    assert_eq!(proto.quorum_weight, 2u32);
+}
+
+#[test]
+fn test_chain_from_proto() {
+    let proto = ProtoChain::builder()
+        .id(String::from("123456"))
+        .created_at(1234567890u64)
+        .updated_at(1234567891u64)
+        .chain_id(5u64)
+        .name(String::from("Ethereum Goerli"))
+        .name_override(false)
+        .providers(vec![
+            ProtoProvider::builder()
+                .url(String::from("http://localhost:8545"))
+                .timeout_ms(10000u32)
+                .max_try_count(3u32)
+                .quorum_weight(2u32)
+                .build(),
+            ProtoProvider::builder()
+                .url(String::from("http://localhost:8546"))
+                .timeout_ms(20000u32)
+                .max_try_count(4u32)
+                .quorum_weight(3u32)
+                .build(),
+        ])
+        .provider_override(true)
+        .synced_block_number(8497095u64)
+        .build();
+    let chain = Chain::from_proto(proto);
+    assert_eq!(chain.id, String::from("123456"));
+    assert_eq!(chain.created_at, 1234567890u64);
+    assert_eq!(chain.updated_at, 1234567891u64);
+    assert_eq!(chain.data.chain_id, 5u64);
+    assert_eq!(chain.data.name, String::from("Ethereum Goerli"));
+    assert!(!chain.data.name_override);
+    assert_eq!(chain.data.providers.len(), 2);
+    assert_eq!(chain.data.providers[0].url, String::from("http://localhost:8545"));
+    assert_eq!(chain.data.providers[0].timeout_ms, 10000u32);
+    assert_eq!(chain.data.providers[0].max_try_count, 3u32);
+    assert_eq!(chain.data.providers[0].quorum_weight, 2u32);
+    assert_eq!(chain.data.providers[1].url, String::from("http://localhost:8546"));
+    assert_eq!(chain.data.providers[1].timeout_ms, 20000u32);
+    assert_eq!(chain.data.providers[1].max_try_count, 4u32);
+    assert_eq!(chain.data.providers[1].quorum_weight, 3u32);
+    assert!(chain.data.provider_override);
+    assert_eq!(chain.data.synced_block_number, 8497095u64);
+}
+
+#[test]
+fn test_chain_into_proto() {
+    let chain = Document::new(
+        String::from("123456"),
+        1234567890u64,
+        1234567891u64,
+        Chain {
+            chain_id: 5u64,
+            name: String::from("Ethereum Goerli"),
+            name_override: false,
+            providers: vec![
+                Provider {
+                    url: String::from("http://localhost:8545"),
+                    timeout_ms: 10000u32,
+                    max_try_count: 3u32,
+                    quorum_weight: 2u32,
+                },
+                Provider {
+                    url: String::from("http://localhost:8546"),
+                    timeout_ms: 20000u32,
+                    max_try_count: 4u32,
+                    quorum_weight: 3u32,
+                },
+            ],
+            provider_override: true,
+            synced_block_number: 8497095u64,
+        },
+    );
+    let proto = Chain::into_proto(chain);
+    assert_eq!(proto.id, String::from("123456"));
+    assert_eq!(proto.created_at, 1234567890u64);
+    assert_eq!(proto.updated_at, 1234567891u64);
+    assert_eq!(proto.chain_id, 5u64);
+    assert_eq!(proto.name, String::from("Ethereum Goerli"));
+    assert!(!proto.name_override);
+    assert_eq!(proto.providers.len(), 2);
+    assert_eq!(proto.providers[0].url, String::from("http://localhost:8545"));
+    assert_eq!(proto.providers[0].timeout_ms, 10000u32);
+    assert_eq!(proto.providers[0].max_try_count, 3u32);
+    assert_eq!(proto.providers[0].quorum_weight, 2u32);
+    assert_eq!(proto.providers[1].url, String::from("http://localhost:8546"));
+    assert_eq!(proto.providers[1].timeout_ms, 20000u32);
+    assert_eq!(proto.providers[1].max_try_count, 4u32);
+    assert_eq!(proto.providers[1].quorum_weight, 3u32);
+    assert!(proto.provider_override);
+    assert_eq!(proto.synced_block_number, 8497095u64);
 }

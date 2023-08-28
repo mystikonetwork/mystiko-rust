@@ -79,8 +79,8 @@ where
             .find(filter)
             .await
             .map_err(MystikoError::StorageError)?
-            .iter()
-            .map(|document| Account::into_proto(document.clone()))
+            .into_iter()
+            .map(Account::into_proto)
             .collect())
     }
 
@@ -141,8 +141,8 @@ where
             .accounts
             .update_batch(
                 &accounts
-                    .iter()
-                    .map(|account| Account::from_proto(account.clone()))
+                    .into_iter()
+                    .map(Account::from_proto)
                     .collect::<Vec<Document<Account>>>(),
             )
             .await
@@ -151,10 +151,7 @@ where
             "successfully updated the encryption of all accounts from wallet(id = \"{}\")",
             &wallet.id
         );
-        Ok(accounts
-            .iter()
-            .map(|account| Account::into_proto(account.clone()))
-            .collect())
+        Ok(accounts.into_iter().map(Account::into_proto).collect())
     }
 
     pub async fn export_secret_key_by_id(&self, wallet_password: &str, id: &str) -> Result<String> {

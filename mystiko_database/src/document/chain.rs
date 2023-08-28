@@ -16,26 +16,6 @@ pub struct Provider {
     pub quorum_weight: u32,
 }
 
-impl Provider {
-    pub fn from_proto(proto: ProtoProvider) -> Self {
-        Provider {
-            url: proto.url,
-            timeout_ms: proto.timeout_ms,
-            max_try_count: proto.max_try_count,
-            quorum_weight: proto.quorum_weight,
-        }
-    }
-
-    pub fn into_proto(provider: Provider) -> ProtoProvider {
-        ProtoProvider::builder()
-            .url(provider.url)
-            .timeout_ms(provider.timeout_ms)
-            .max_try_count(provider.max_try_count)
-            .quorum_weight(provider.quorum_weight)
-            .build()
-    }
-}
-
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
 #[collection(uniques = uniques(), indexes = indexes())]
 pub struct Chain {
@@ -54,6 +34,17 @@ fn uniques() -> Vec<UniqueColumns> {
 
 fn indexes() -> Vec<IndexColumns> {
     vec![vec![ChainColumn::ChainId].into()]
+}
+
+impl From<ProtoProvider> for Provider {
+    fn from(value: ProtoProvider) -> Self {
+        Provider {
+            url: value.url,
+            timeout_ms: value.timeout_ms,
+            max_try_count: value.max_try_count,
+            quorum_weight: value.quorum_weight,
+        }
+    }
 }
 
 impl From<Provider> for ProtoProvider {
@@ -79,8 +70,8 @@ impl Chain {
                 name_override: proto.name_override,
                 providers: proto
                     .providers
-                    .iter()
-                    .map(|provider| Provider::from_proto(provider.clone()))
+                    .into_iter()
+                    .map(|provider| provider.into())
                     .collect::<Vec<Provider>>(),
                 provider_override: proto.provider_override,
                 synced_block_number: proto.synced_block_number,
@@ -100,8 +91,8 @@ impl Chain {
                 chain
                     .data
                     .providers
-                    .iter()
-                    .map(|provider| Provider::into_proto(provider.clone()))
+                    .into_iter()
+                    .map(|provider| provider.into())
                     .collect::<Vec<ProtoProvider>>(),
             )
             .provider_override(chain.data.provider_override)
