@@ -1,7 +1,8 @@
 #![forbid(unsafe_code)]
 
+use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_storage::column::{IndexColumns, UniqueColumns};
-use mystiko_storage::document::DocumentData;
+use mystiko_storage::document::{Document, DocumentData};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::AccountStatus;
 use serde::{Deserialize, Serialize};
@@ -35,4 +36,38 @@ fn indexes() -> Vec<IndexColumns> {
         vec![AccountColumn::ShieldedAddress].into(),
         vec![AccountColumn::PublicKey].into(),
     ]
+}
+
+impl Account {
+    pub fn from_proto(proto: ProtoAccount) -> Document<Account> {
+        Document::new(
+            proto.id,
+            proto.created_at,
+            proto.updated_at,
+            Account {
+                name: proto.name,
+                shielded_address: proto.shielded_address,
+                public_key: proto.public_key,
+                encrypted_secret_key: proto.encrypted_secret_key,
+                status: proto.status.into(),
+                scan_size: proto.scan_size,
+                wallet_id: proto.wallet_id,
+            },
+        )
+    }
+
+    pub fn into_proto(account: Document<Self>) -> ProtoAccount {
+        ProtoAccount::builder()
+            .id(account.id)
+            .created_at(account.created_at)
+            .updated_at(account.updated_at)
+            .name(account.data.name)
+            .shielded_address(account.data.shielded_address)
+            .public_key(account.data.public_key)
+            .encrypted_secret_key(account.data.encrypted_secret_key)
+            .scan_size(account.data.scan_size)
+            .wallet_id(account.data.wallet_id)
+            .status(Into::<i32>::into(account.data.status))
+            .build()
+    }
 }

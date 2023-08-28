@@ -1,8 +1,9 @@
 #![forbid(unsafe_code)]
 
+use mystiko_protos::core::document::v1::Chain as ProtoChain;
 use mystiko_protos::core::document::v1::Provider as ProtoProvider;
 use mystiko_storage::column::{IndexColumns, UniqueColumns};
-use mystiko_storage::document::DocumentData;
+use mystiko_storage::document::{Document, DocumentData};
 use mystiko_storage_macros::CollectionBuilder;
 use serde::{Deserialize, Serialize};
 
@@ -13,6 +14,26 @@ pub struct Provider {
     pub timeout_ms: u32,
     pub max_try_count: u32,
     pub quorum_weight: u32,
+}
+
+impl Provider {
+    pub fn from_proto(proto: ProtoProvider) -> Self {
+        Provider {
+            url: proto.url,
+            timeout_ms: proto.timeout_ms,
+            max_try_count: proto.max_try_count,
+            quorum_weight: proto.quorum_weight,
+        }
+    }
+
+    pub fn into_proto(provider: Provider) -> ProtoProvider {
+        ProtoProvider::builder()
+            .url(provider.url)
+            .timeout_ms(provider.timeout_ms)
+            .max_try_count(provider.max_try_count)
+            .quorum_weight(provider.quorum_weight)
+            .build()
+    }
 }
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -42,6 +63,49 @@ impl From<Provider> for ProtoProvider {
             .timeout_ms(value.timeout_ms)
             .max_try_count(value.max_try_count)
             .quorum_weight(value.quorum_weight)
+            .build()
+    }
+}
+
+impl Chain {
+    pub fn from_proto(proto: ProtoChain) -> Document<Self> {
+        Document::new(
+            proto.id,
+            proto.created_at,
+            proto.updated_at,
+            Chain {
+                chain_id: proto.chain_id,
+                name: proto.name,
+                name_override: proto.name_override,
+                providers: proto
+                    .providers
+                    .iter()
+                    .map(|provider| Provider::from_proto(provider.clone()))
+                    .collect::<Vec<Provider>>(),
+                provider_override: proto.provider_override,
+                synced_block_number: proto.synced_block_number,
+            },
+        )
+    }
+
+    pub fn into_proto(chain: Document<Self>) -> ProtoChain {
+        ProtoChain::builder()
+            .id(chain.id)
+            .created_at(chain.created_at)
+            .updated_at(chain.updated_at)
+            .chain_id(chain.data.chain_id)
+            .name(chain.data.name)
+            .name_override(chain.data.name_override)
+            .providers(
+                chain
+                    .data
+                    .providers
+                    .iter()
+                    .map(|provider| Provider::into_proto(provider.clone()))
+                    .collect::<Vec<ProtoProvider>>(),
+            )
+            .provider_override(chain.data.provider_override)
+            .synced_block_number(chain.data.synced_block_number)
             .build()
     }
 }

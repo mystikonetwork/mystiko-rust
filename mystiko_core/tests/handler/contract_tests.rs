@@ -2,7 +2,7 @@ use crate::common::create_database;
 use mystiko_config::raw::create_raw_from_file;
 use mystiko_config::raw::mystiko::RawMystikoConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_core::handler::contract::{to_document_contract, ContractHandler};
+use mystiko_core::handler::contract::ContractHandler;
 use mystiko_database::database::Database;
 use mystiko_database::document::contract::Contract;
 use mystiko_protos::storage::v1::SubFilter;
@@ -143,7 +143,7 @@ async fn test_contract_reset_synced_block() {
         .await
         .unwrap()
         .iter()
-        .map(|contract| to_document_contract(contract.clone()))
+        .map(|contract| Contract::from_proto(contract.clone()))
         .collect();
     contracts[0].data.synced_block_number *= 2;
     db.contracts.update(&contracts[0]).await.unwrap();

@@ -5,10 +5,9 @@ use mystiko_config::raw::mystiko::RawMystikoConfig;
 use mystiko_config::raw::provider::RawProviderConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_core::handler::chain::{
-    to_document_chain, ChainHandler, DEFAULT_PROVIDER_MAX_TRY_COUNT, DEFAULT_PROVIDER_QUORUM_WEIGHT,
-    DEFAULT_PROVIDER_TIMEOUT_MS,
+    ChainHandler, DEFAULT_PROVIDER_MAX_TRY_COUNT, DEFAULT_PROVIDER_QUORUM_WEIGHT, DEFAULT_PROVIDER_TIMEOUT_MS,
 };
-use mystiko_core::handler::contract::{to_document_contract, ContractHandler};
+use mystiko_core::handler::contract::ContractHandler;
 use mystiko_database::database::Database;
 use mystiko_database::document::chain::{Chain, Provider};
 use mystiko_database::document::contract::Contract;
@@ -86,7 +85,7 @@ async fn test_chain_initialize_upsert() {
         .update_batch(
             &chains
                 .iter()
-                .map(|chain| to_document_chain(chain.clone()))
+                .map(|chain| Chain::from_proto(chain.clone()))
                 .collect::<Vec<Document<Chain>>>(),
         )
         .await
@@ -157,7 +156,7 @@ async fn test_chains_count() {
 async fn test_chains_reset_name_and_providers() {
     let (handler, db, config) = setup().await;
     let chains = handler.initialize().await.unwrap();
-    let mut chains: Vec<Document<Chain>> = chains.iter().map(|chain| to_document_chain(chain.clone())).collect();
+    let mut chains: Vec<Document<Chain>> = chains.iter().map(|chain| Chain::from_proto(chain.clone())).collect();
     chains[0].data.name = String::from("Chain #1");
     chains[0].data.name_override = true;
     chains[0].data.providers = vec![Provider {
@@ -250,10 +249,10 @@ async fn test_chains_update_providers() {
         .await
         .unwrap()
         .iter()
-        .map(|chain| to_document_chain(chain.clone()))
+        .map(|chain| Chain::from_proto(chain.clone()))
         .collect();
     let previous_providers = chains[0].data.providers.clone();
-    let chain = to_document_chain(
+    let chain = Chain::from_proto(
         handler
             .update_by_id(&chains[0].id, &UpdateChainOptions::builder().build())
             .await
@@ -262,7 +261,7 @@ async fn test_chains_update_providers() {
     );
     assert_eq!(chain.data.providers, previous_providers);
     assert!(!chain.data.provider_override);
-    let chain = to_document_chain(
+    let chain = Chain::from_proto(
         handler
             .update_by_chain_id(
                 chains[0].data.chain_id,
@@ -278,7 +277,7 @@ async fn test_chains_update_providers() {
         .iter()
         .map(|p| UpdateProviderOptions::builder().url(p.url.clone()).build())
         .collect();
-    let chain = to_document_chain(
+    let chain = Chain::from_proto(
         handler
             .update_by_chain_id(
                 chains[0].data.chain_id,
@@ -303,7 +302,7 @@ async fn test_chains_update_providers() {
                 .build()
         })
         .collect();
-    let chain = to_document_chain(
+    let chain = Chain::from_proto(
         handler
             .update_by_chain_id(
                 chains[0].data.chain_id,
@@ -319,7 +318,7 @@ async fn test_chains_update_providers() {
     assert!(!chain.data.provider_override);
     chains[0].data.providers = vec![];
     db.chains.update(&chains[0]).await.unwrap();
-    let chain = to_document_chain(
+    let chain = Chain::from_proto(
         handler
             .update_by_chain_id(
                 chains[0].data.chain_id,
@@ -333,7 +332,7 @@ async fn test_chains_update_providers() {
     );
     assert_eq!(chain.data.providers, previous_providers);
     assert!(chain.data.provider_override);
-    let chain = to_document_chain(
+    let chain = Chain::from_proto(
         handler
             .update_by_chain_id(
                 chains[0].data.chain_id,
@@ -393,10 +392,10 @@ async fn test_chains_reset_synced_block() {
     let contracts = contract_handler.initialize().await.unwrap();
     let mut contracts: Vec<Document<Contract>> = contracts
         .iter()
-        .map(|contract| to_document_contract(contract.clone()))
+        .map(|contract| Contract::from_proto(contract.clone()))
         .collect();
     let chains = handler.initialize().await.unwrap();
-    let mut chains: Vec<Document<Chain>> = chains.iter().map(|chain| to_document_chain(chain.clone())).collect();
+    let mut chains: Vec<Document<Chain>> = chains.iter().map(|chain| Chain::from_proto(chain.clone())).collect();
     for contract in contracts.iter_mut() {
         if contract.data.chain_id == chains[0].data.chain_id {
             contract.data.synced_block_number = 10;
@@ -453,7 +452,7 @@ async fn test_chains_providers_options() {
         .await
         .unwrap()
         .iter()
-        .map(|chain| to_document_chain(chain.clone()))
+        .map(|chain| Chain::from_proto(chain.clone()))
         .collect();
     let providers_options = handler.providers_options(11155111).await.unwrap().unwrap();
     let chain = handler.find_by_chain_id(11155111).await.unwrap().unwrap();

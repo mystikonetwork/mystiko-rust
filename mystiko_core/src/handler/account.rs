@@ -1,5 +1,5 @@
 use crate::error::MystikoError;
-use crate::handler::wallet::{to_document_wallet, WalletHandler};
+use crate::handler::wallet::WalletHandler;
 use crate::types::Result;
 use bip32::XPrv;
 use futures::TryFutureExt;
@@ -46,7 +46,7 @@ where
     }
 
     pub async fn create(&self, options: &CreateAccountOptions) -> Result<ProtoAccount> {
-        let mut wallet = to_document_wallet(self.wallets.check_password(&options.wallet_password).await?);
+        let mut wallet = Wallet::from_proto(self.wallets.check_password(&options.wallet_password).await?);
         let (raw_account, account_nonce) = self.create_raw_account(&wallet, options).await?;
         let account = self.insert_raw_account(&mut wallet, raw_account, account_nonce).await?;
         log::info!(
@@ -80,7 +80,7 @@ where
             .await
             .map_err(MystikoError::StorageError)?
             .iter()
-            .map(|document| to_proto_account(document.clone()))
+            .map(|document| Account::into_proto(document.clone()))
             .collect())
     }
 
@@ -142,7 +142,7 @@ where
             .update_batch(
                 &accounts
                     .iter()
-                    .map(|account| to_document_account(account.clone()))
+                    .map(|account| Account::from_proto(account.clone()))
                     .collect::<Vec<Document<Account>>>(),
             )
             .await
@@ -153,7 +153,7 @@ where
         );
         Ok(accounts
             .iter()
-            .map(|account| to_proto_account(account.clone()))
+            .map(|account| Account::into_proto(account.clone()))
             .collect())
     }
 
@@ -204,7 +204,7 @@ where
             .find_one(wrapped_filter)
             .await
             .map_err(MystikoError::StorageError)?
-            .map(to_proto_account))
+            .map(Account::into_proto))
     }
 
     async fn update_by_identifier<T: ToString>(
@@ -216,7 +216,7 @@ where
         self.wallets.check_password(&options.wallet_password).await?;
         let field_name_str = field_name.to_string();
         if let Some(account) = self.find_one_by_identifier(identifier, field_name).await? {
-            let mut account = to_document_account(account);
+            let mut account = Account::from_proto(account);
             let mut has_update = false;
             if let Some(new_name) = &options.name {
                 if !new_name.is_empty() && new_name != &account.data.name {
@@ -249,9 +249,9 @@ where
                     &updated_account.id,
                     options
                 );
-                Ok(to_proto_account(updated_account))
+                Ok(Account::into_proto(updated_account))
             } else {
-                Ok(to_proto_account(account))
+                Ok(Account::into_proto(account))
             }
         } else {
             Err(MystikoError::NoSuchAccountError(field_name_str, identifier.to_string()))
@@ -358,7 +358,7 @@ where
                     .await
                     .map_err(MystikoError::StorageError)?;
             }
-            Ok(to_proto_account(
+            Ok(Account::into_proto(
                 self.db
                     .accounts
                     .insert(&account)
@@ -367,36 +367,4 @@ where
             ))
         }
     }
-}
-
-fn to_proto_account(document: Document<Account>) -> ProtoAccount {
-    ProtoAccount::builder()
-        .id(document.id)
-        .created_at(document.created_at)
-        .updated_at(document.updated_at)
-        .name(document.data.name)
-        .shielded_address(document.data.shielded_address)
-        .public_key(document.data.public_key)
-        .encrypted_secret_key(document.data.encrypted_secret_key)
-        .scan_size(document.data.scan_size)
-        .wallet_id(document.data.wallet_id)
-        .status(Into::<i32>::into(document.data.status))
-        .build()
-}
-
-fn to_document_account(proto: ProtoAccount) -> Document<Account> {
-    Document::new(
-        proto.id,
-        proto.created_at,
-        proto.updated_at,
-        Account {
-            name: proto.name,
-            shielded_address: proto.shielded_address,
-            public_key: proto.public_key,
-            encrypted_secret_key: proto.encrypted_secret_key,
-            status: proto.status.into(),
-            scan_size: proto.scan_size,
-            wallet_id: proto.wallet_id,
-        },
-    )
 }

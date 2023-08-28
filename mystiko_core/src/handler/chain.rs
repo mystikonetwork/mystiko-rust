@@ -1,5 +1,5 @@
 use crate::error::MystikoError;
-use crate::handler::contract::{to_document_contract, ContractHandler};
+use crate::handler::contract::ContractHandler;
 use crate::types::Result;
 use async_trait::async_trait;
 use ethers_providers::Quorum;
@@ -12,7 +12,6 @@ use mystiko_ethers::provider::factory::{ProvidersOptions, HTTP_REGEX, WS_REGEX};
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
 use mystiko_protos::core::document::v1::Chain as ProtoChain;
-use mystiko_protos::core::document::v1::Provider as ProtoProvider;
 use mystiko_protos::core::handler::v1::{UpdateChainOptions, UpdateProviderOptions};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use mystiko_storage::document::Document;
@@ -52,12 +51,12 @@ where
             .find(query_filter)
             .await
             .map_err(MystikoError::StorageError)?;
-        Ok(documents.into_iter().map(to_proto_chain).collect())
+        Ok(documents.into_iter().map(Chain::into_proto).collect())
     }
 
     pub async fn find_all(&self) -> Result<Vec<ProtoChain>> {
         let documents = self.db.chains.find_all().await.map_err(MystikoError::StorageError)?;
-        Ok(documents.into_iter().map(to_proto_chain).collect())
+        Ok(documents.into_iter().map(Chain::into_proto).collect())
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<ProtoChain>> {
@@ -67,7 +66,7 @@ where
             .find_by_id(id)
             .await
             .map_err(MystikoError::StorageError)?
-            .map(to_proto_chain))
+            .map(Chain::into_proto))
     }
 
     pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Option<ProtoChain>> {
@@ -77,7 +76,7 @@ where
             .find_one(SubFilter::equal(ChainColumn::ChainId, chain_id))
             .await
             .map_err(MystikoError::StorageError)?
-            .map(to_proto_chain))
+            .map(Chain::into_proto))
     }
 
     pub async fn count<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<u64> {
@@ -107,7 +106,7 @@ where
                         .map(|provider| provider.clone().into())
                         .collect();
                 }
-                update_chains.push(to_document_chain(existing_chain));
+                update_chains.push(Chain::from_proto(existing_chain));
             } else {
                 insert_chains.push(Chain {
                     chain_id: chain_config.chain_id(),
@@ -133,19 +132,19 @@ where
                 .await
                 .map_err(MystikoError::StorageError)?,
         );
-        Ok(chains.iter().map(|chain| to_proto_chain(chain.clone())).collect())
+        Ok(chains.iter().map(|chain| Chain::into_proto(chain.clone())).collect())
     }
 
     pub async fn reset_name_and_providers(&self, chain_id: u64) -> Result<Option<ProtoChain>> {
         if let (Some(chain_config), Some(existing_chain)) =
             (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
         {
-            let mut existing_chain = to_document_chain(existing_chain);
+            let mut existing_chain = Chain::from_proto(existing_chain);
             existing_chain.data.name = chain_config.name().to_string();
             existing_chain.data.name_override = false;
             existing_chain.data.providers = convert_providers(&chain_config.providers());
             existing_chain.data.provider_override = false;
-            Ok(Some(to_proto_chain(
+            Ok(Some(Chain::into_proto(
                 self.db
                     .chains
                     .update(&existing_chain)
@@ -158,18 +157,18 @@ where
     }
 
     pub async fn update_by_id(&self, id: &str, options: &UpdateChainOptions) -> Result<Option<ProtoChain>> {
-        let existing_chain = self.find_by_id(id).await?.map(to_document_chain);
+        let existing_chain = self.find_by_id(id).await?.map(Chain::from_proto);
         match self.update(existing_chain, options).await? {
             None => Ok(None),
-            Some(chain) => Ok(Some(to_proto_chain(chain))),
+            Some(chain) => Ok(Some(Chain::into_proto(chain))),
         }
     }
 
     pub async fn update_by_chain_id(&self, chain_id: u64, options: &UpdateChainOptions) -> Result<Option<ProtoChain>> {
-        let existing_chain = self.find_by_chain_id(chain_id).await?.map(to_document_chain);
+        let existing_chain = self.find_by_chain_id(chain_id).await?.map(Chain::from_proto);
         match self.update(existing_chain, options).await? {
             None => Ok(None),
-            Some(chain) => Ok(Some(to_proto_chain(chain))),
+            Some(chain) => Ok(Some(Chain::into_proto(chain))),
         }
     }
 
@@ -236,7 +235,7 @@ where
         if let (Some(chain_config), Some(chain)) =
             (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
         {
-            let mut chain = to_document_chain(chain);
+            let mut chain = Chain::from_proto(chain);
             chain.data.synced_block_number = to_block.unwrap_or(0);
             let updated_chain = self
                 .db
@@ -251,7 +250,7 @@ where
                     .find_by_address(chain_id, contract_config.address())
                     .await?
                 {
-                    let mut contract = to_document_contract(contract);
+                    let mut contract = Contract::from_proto(contract);
                     contract.data.synced_block_number = to_block.unwrap_or(contract_config.start_block());
                     contracts.push(contract);
                 }
@@ -261,7 +260,7 @@ where
                 .update_batch(&contracts)
                 .await
                 .map_err(MystikoError::StorageError)?;
-            Ok(Some(to_proto_chain(updated_chain)))
+            Ok(Some(Chain::into_proto(updated_chain)))
         } else {
             Ok(None)
         }
@@ -277,7 +276,7 @@ where
         if let (Some(chain_config), Some(chain)) =
             (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
         {
-            let chain = to_document_chain(chain);
+            let chain = Chain::from_proto(chain);
             let mut providers_options: Vec<ProviderOptions> = vec![];
             for provider_config in chain.data.providers {
                 let provider_options = ProviderOptions::builder()
@@ -371,50 +370,4 @@ fn convert_providers(providers_config: &[&ProviderConfig]) -> Vec<Provider> {
             quorum_weight: provider_config.quorum_weight(),
         })
         .collect()
-}
-
-fn to_proto_chain(document: Document<Chain>) -> ProtoChain {
-    let providers = document
-        .data
-        .providers
-        .iter()
-        .map(|provider| provider.clone().into())
-        .collect::<Vec<ProtoProvider>>();
-    ProtoChain::builder()
-        .id(document.id)
-        .created_at(document.created_at)
-        .updated_at(document.updated_at)
-        .chain_id(document.data.chain_id)
-        .name(document.data.name)
-        .name_override(document.data.name_override)
-        .providers(providers)
-        .provider_override(document.data.provider_override)
-        .synced_block_number(document.data.synced_block_number)
-        .build()
-}
-
-pub fn to_document_chain(chain: ProtoChain) -> Document<Chain> {
-    let providers = chain
-        .providers
-        .iter()
-        .map(|provider| Provider {
-            url: provider.url.clone(),
-            timeout_ms: provider.timeout_ms,
-            max_try_count: provider.max_try_count,
-            quorum_weight: provider.quorum_weight,
-        })
-        .collect::<Vec<Provider>>();
-    Document::new(
-        chain.id,
-        chain.created_at,
-        chain.updated_at,
-        Chain {
-            chain_id: chain.chain_id,
-            name: chain.name,
-            name_override: chain.name_override,
-            providers,
-            provider_override: chain.provider_override,
-            synced_block_number: chain.synced_block_number,
-        },
-    )
 }
