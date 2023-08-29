@@ -8,16 +8,19 @@ pub enum DataType {
     Lite = 1,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, TypedBuilder)]
+#[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct FullData {
+    #[builder(default)]
     pub commitments: Vec<Commitment>,
+    #[builder(default)]
     pub nullifiers: Vec<Nullifier>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, TypedBuilder)]
+#[derive(Debug, Clone, PartialEq, Default, Deserialize, Serialize, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct LiteData {
+    #[builder(default)]
     pub commitments: Vec<Commitment>,
 }
 

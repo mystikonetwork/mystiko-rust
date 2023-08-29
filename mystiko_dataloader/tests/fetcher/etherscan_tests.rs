@@ -413,16 +413,12 @@ fn build_etherscan_fetcher<R: LoadedData + std::fmt::Debug>(
         EtherScanClientOptions::builder()
             .chain_id(test_chain_id)
             .offset(test_offset)
-            .base_url(mocked_server_url)
+            .base_url(mocked_server_url.to_string())
             .api_key(test_api_key.to_string())
             .build(),
     )
     .unwrap();
-
-    let etherscan_fetcher: EtherscanFetcher<R> = EtherscanFetcher::<R>::builder()
-        .etherscan_client(etherscan_client)
-        .build();
-    etherscan_fetcher
+    Arc::new(etherscan_client).into()
 }
 
 async fn build_fetch_options(

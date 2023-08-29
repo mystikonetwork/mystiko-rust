@@ -24,6 +24,7 @@ pub struct ContractResult<T> {
 #[builder(field_defaults(setter(into)))]
 pub struct ChainResult<T> {
     pub chain_id: u64,
+    #[builder(default)]
     pub contract_results: Vec<ContractResult<T>>,
 }
 
@@ -31,6 +32,7 @@ pub struct ChainResult<T> {
 #[builder(field_defaults(setter(into)))]
 pub struct UnwrappedChainResult<T> {
     pub result: T,
+    #[builder(default)]
     pub contract_errors: Vec<ContractError>,
 }
 

@@ -8,6 +8,6 @@ pub struct ContractData<R: LoadedData> {
     pub address: String,
     pub start_block: u64,
     pub end_block: u64,
-    #[builder(default, setter(strip_option))]
+    #[builder(default)]
     pub data: Option<R>,
 }
