@@ -5,16 +5,17 @@ use mystiko_config::raw::mystiko::RawMystikoConfig;
 use mystiko_config::raw::provider::RawProviderConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_core::handler::chain::{
-    ChainHandler, UpdateChainOptions, UpdateProviderOptions, DEFAULT_PROVIDER_MAX_TRY_COUNT,
-    DEFAULT_PROVIDER_QUORUM_WEIGHT, DEFAULT_PROVIDER_TIMEOUT_MS,
+    ChainHandler, DEFAULT_PROVIDER_MAX_TRY_COUNT, DEFAULT_PROVIDER_QUORUM_WEIGHT, DEFAULT_PROVIDER_TIMEOUT_MS,
 };
 use mystiko_core::handler::contract::ContractHandler;
 use mystiko_database::database::Database;
-use mystiko_database::document::chain::Provider;
+use mystiko_database::document::chain::{Chain, Provider};
+use mystiko_database::document::contract::Contract;
 use mystiko_ethers::provider::factory::ProvidersOptions;
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
+use mystiko_protos::core::handler::v1::{UpdateChainOptions, UpdateProviderOptions};
 use mystiko_protos::storage::v1::SubFilter;
-use mystiko_storage::document::DocumentColumn;
+use mystiko_storage::document::{Document, DocumentColumn};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 use std::sync::Arc;
@@ -41,28 +42,25 @@ async fn test_chain_initialize() {
     let (handler, _, config) = setup().await;
     let chains = handler.initialize().await.unwrap();
     for chain in chains.iter() {
-        if let Some(chain_config) = config.find_chain(chain.data.chain_id) {
+        if let Some(chain_config) = config.find_chain(chain.chain_id) {
             let provider_configs = chain_config.providers();
-            assert_eq!(&chain.data.name, chain_config.name());
-            assert!(!chain.data.name_override);
-            assert_eq!(chain.data.providers.len(), provider_configs.len());
-            for (index, _) in chain.data.providers.iter().enumerate() {
-                assert_eq!(&chain.data.providers[index].url, provider_configs[index].url());
+            assert_eq!(&chain.name, chain_config.name());
+            assert!(!chain.name_override);
+            assert_eq!(chain.providers.len(), provider_configs.len());
+            for (index, _) in chain.providers.iter().enumerate() {
+                assert_eq!(&chain.providers[index].url, provider_configs[index].url());
+                assert_eq!(chain.providers[index].timeout_ms, provider_configs[index].timeout_ms());
                 assert_eq!(
-                    chain.data.providers[index].timeout_ms,
-                    provider_configs[index].timeout_ms()
-                );
-                assert_eq!(
-                    chain.data.providers[index].max_try_count,
+                    chain.providers[index].max_try_count,
                     provider_configs[index].max_try_count()
                 );
                 assert_eq!(
-                    chain.data.providers[index].quorum_weight,
+                    chain.providers[index].quorum_weight,
                     provider_configs[index].quorum_weight()
                 );
             }
-            assert!(!chain.data.provider_override);
-            assert_eq!(chain.data.synced_block_number, 0);
+            assert!(!chain.provider_override);
+            assert_eq!(chain.synced_block_number, 0);
         } else {
             panic!("Chain config not found");
         }
@@ -73,16 +71,25 @@ async fn test_chain_initialize() {
 async fn test_chain_initialize_upsert() {
     let (handler, db, _) = setup().await;
     let mut chains = handler.initialize().await.unwrap();
-    chains[0].data.name = String::from("Chain #1");
-    chains[0].data.name_override = true;
-    chains[1].data.providers = vec![Provider {
+    chains[0].name = String::from("Chain #1");
+    chains[0].name_override = true;
+    chains[1].providers = vec![Provider {
         url: String::from("http://localhost:8545"),
         timeout_ms: 40000,
         max_try_count: 5,
         quorum_weight: 4,
-    }];
-    chains[1].data.provider_override = true;
-    db.chains.update_batch(&chains).await.unwrap();
+    }
+    .into()];
+    chains[1].provider_override = true;
+    db.chains
+        .update_batch(
+            &chains
+                .iter()
+                .map(|chain| Chain::from_proto(chain.clone()))
+                .collect::<Vec<Document<Chain>>>(),
+        )
+        .await
+        .unwrap();
     let mut raw_config = create_raw_from_file::<RawMystikoConfig>("tests/files/handler/contract/config.json")
         .await
         .unwrap();
@@ -109,12 +116,12 @@ async fn test_chain_initialize_upsert() {
     let config = MystikoConfig::from_raw(raw_config).unwrap();
     let handler = TypedChainHandler::new(db, Arc::new(config));
     let chains = handler.initialize().await.unwrap();
-    assert_eq!(&chains[0].data.name, "Chain #1");
-    assert_eq!(chains[1].data.providers.len(), 1);
-    assert_eq!(&chains[1].data.providers[0].url, "http://localhost:8545");
-    assert_eq!(&chains[2].data.name, "Chain #2");
-    assert_eq!(chains[2].data.providers.len(), 1);
-    assert_eq!(&chains[2].data.providers[0].url, "http://localhost:8547");
+    assert_eq!(&chains[0].name, "Chain #1");
+    assert_eq!(chains[1].providers.len(), 1);
+    assert_eq!(&chains[1].providers[0].url, "http://localhost:8545");
+    assert_eq!(&chains[2].name, "Chain #2");
+    assert_eq!(chains[2].providers.len(), 1);
+    assert_eq!(&chains[2].providers[0].url, "http://localhost:8547");
 }
 
 #[tokio::test]
@@ -125,19 +132,15 @@ async fn test_chains_find() {
         handler.find_all().await.unwrap().len() as u64,
         handler.count_all().await.unwrap()
     );
-    chains.sort_by_key(|c| c.data.chain_id);
+    chains.sort_by_key(|c| c.chain_id);
     let filter = SubFilter::in_list(DocumentColumn::Id, vec![chains[0].id.clone(), chains[1].id.clone()]);
     let mut found_chains = handler.find(filter).await.unwrap();
-    found_chains.sort_by_key(|c| c.data.chain_id);
+    found_chains.sort_by_key(|c| c.chain_id);
     assert_eq!(found_chains[0], chains[0]);
     assert_eq!(found_chains[1], chains[1]);
     let found_chain = handler.find_by_id(&chains[0].id).await.unwrap().unwrap();
     assert_eq!(found_chain, chains[0]);
-    let found_chain = handler
-        .find_by_chain_id(chains[0].data.chain_id)
-        .await
-        .unwrap()
-        .unwrap();
+    let found_chain = handler.find_by_chain_id(chains[0].chain_id).await.unwrap().unwrap();
     assert_eq!(found_chain, chains[0]);
 }
 
@@ -152,7 +155,8 @@ async fn test_chains_count() {
 #[tokio::test]
 async fn test_chains_reset_name_and_providers() {
     let (handler, db, config) = setup().await;
-    let mut chains = handler.initialize().await.unwrap();
+    let chains = handler.initialize().await.unwrap();
+    let mut chains: Vec<Document<Chain>> = chains.iter().map(|chain| Chain::from_proto(chain.clone())).collect();
     chains[0].data.name = String::from("Chain #1");
     chains[0].data.name_override = true;
     chains[0].data.providers = vec![Provider {
@@ -170,15 +174,15 @@ async fn test_chains_reset_name_and_providers() {
         .unwrap()
         .unwrap();
     assert_eq!(
-        &found_chain.data.name,
-        config.find_chain(found_chain.data.chain_id).unwrap().name()
+        &found_chain.name,
+        config.find_chain(found_chain.chain_id).unwrap().name()
     );
-    assert!(!found_chain.data.name_override);
+    assert!(!found_chain.name_override);
     assert_eq!(
-        found_chain.data.providers.len(),
-        config.find_chain(found_chain.data.chain_id).unwrap().providers().len()
+        found_chain.providers.len(),
+        config.find_chain(found_chain.chain_id).unwrap().providers().len()
     );
-    assert!(!found_chain.data.provider_override);
+    assert!(!found_chain.provider_override);
     assert!(handler.reset_name_and_providers(1242342345).await.unwrap().is_none());
     db.chains.delete(&chains[0]).await.unwrap();
     assert!(handler
@@ -192,44 +196,44 @@ async fn test_chains_reset_name_and_providers() {
 async fn test_chains_update_name() {
     let (handler, _, _) = setup().await;
     let chains = handler.initialize().await.unwrap();
-    let previous_name = chains[0].data.name.clone();
+    let previous_name = chains[0].name.clone();
     let chain = handler
         .update_by_id(&chains[0].id, &UpdateChainOptions::builder().build())
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(&chain.data.name, &previous_name);
-    assert!(!chain.data.name_override);
+    assert_eq!(&chain.name, &previous_name);
+    assert!(!chain.name_override);
     let chain = handler
         .update_by_chain_id(
-            chains[0].data.chain_id,
+            chains[0].chain_id,
             &UpdateChainOptions::builder().name(String::from("")).build(),
         )
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(&chain.data.name, &previous_name);
-    assert!(!chain.data.name_override);
+    assert_eq!(&chain.name, &previous_name);
+    assert!(!chain.name_override);
     let chain = handler
         .update_by_chain_id(
-            chains[0].data.chain_id,
+            chains[0].chain_id,
             &UpdateChainOptions::builder().name(previous_name.clone()).build(),
         )
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(&chain.data.name, &previous_name);
-    assert!(!chain.data.name_override);
+    assert_eq!(&chain.name, &previous_name);
+    assert!(!chain.name_override);
     let chain = handler
         .update_by_chain_id(
-            chains[0].data.chain_id,
+            chains[0].chain_id,
             &UpdateChainOptions::builder().name(String::from("Chain #1")).build(),
         )
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(&chain.data.name, "Chain #1");
-    assert!(chain.data.name_override);
+    assert_eq!(&chain.name, "Chain #1");
+    assert!(chain.name_override);
     assert!(handler
         .update_by_chain_id(23234234, &UpdateChainOptions::builder().build())
         .await
@@ -240,39 +244,51 @@ async fn test_chains_update_name() {
 #[tokio::test]
 async fn test_chains_update_providers() {
     let (handler, db, _) = setup().await;
-    let mut chains = handler.initialize().await.unwrap();
-    let previous_providers = chains[0].data.providers.clone();
-    let chain = handler
-        .update_by_id(&chains[0].id, &UpdateChainOptions::builder().build())
+    let mut chains: Vec<Document<Chain>> = handler
+        .initialize()
         .await
         .unwrap()
-        .unwrap();
+        .iter()
+        .map(|chain| Chain::from_proto(chain.clone()))
+        .collect();
+    let previous_providers = chains[0].data.providers.clone();
+    let chain = Chain::from_proto(
+        handler
+            .update_by_id(&chains[0].id, &UpdateChainOptions::builder().build())
+            .await
+            .unwrap()
+            .unwrap(),
+    );
     assert_eq!(chain.data.providers, previous_providers);
     assert!(!chain.data.provider_override);
-    let chain = handler
-        .update_by_chain_id(
-            chains[0].data.chain_id,
-            &UpdateChainOptions::builder().providers(vec![]).build(),
-        )
-        .await
-        .unwrap()
-        .unwrap();
+    let chain = Chain::from_proto(
+        handler
+            .update_by_chain_id(
+                chains[0].data.chain_id,
+                &UpdateChainOptions::builder().providers(vec![]).build(),
+            )
+            .await
+            .unwrap()
+            .unwrap(),
+    );
     assert_eq!(chain.data.providers, previous_providers);
     assert!(!chain.data.provider_override);
     let update_providers_options: Vec<UpdateProviderOptions> = previous_providers
         .iter()
         .map(|p| UpdateProviderOptions::builder().url(p.url.clone()).build())
         .collect();
-    let chain = handler
-        .update_by_chain_id(
-            chains[0].data.chain_id,
-            &UpdateChainOptions::builder()
-                .providers(update_providers_options)
-                .build(),
-        )
-        .await
-        .unwrap()
-        .unwrap();
+    let chain = Chain::from_proto(
+        handler
+            .update_by_chain_id(
+                chains[0].data.chain_id,
+                &UpdateChainOptions::builder()
+                    .providers(update_providers_options)
+                    .build(),
+            )
+            .await
+            .unwrap()
+            .unwrap(),
+    );
     assert_eq!(chain.data.providers, previous_providers);
     assert!(!chain.data.provider_override);
     let update_providers_options: Vec<UpdateProviderOptions> = previous_providers
@@ -286,52 +302,58 @@ async fn test_chains_update_providers() {
                 .build()
         })
         .collect();
-    let chain = handler
-        .update_by_chain_id(
-            chains[0].data.chain_id,
-            &UpdateChainOptions::builder()
-                .providers(update_providers_options.clone())
-                .build(),
-        )
-        .await
-        .unwrap()
-        .unwrap();
+    let chain = Chain::from_proto(
+        handler
+            .update_by_chain_id(
+                chains[0].data.chain_id,
+                &UpdateChainOptions::builder()
+                    .providers(update_providers_options.clone())
+                    .build(),
+            )
+            .await
+            .unwrap()
+            .unwrap(),
+    );
     assert_eq!(chain.data.providers, previous_providers);
     assert!(!chain.data.provider_override);
     chains[0].data.providers = vec![];
     db.chains.update(&chains[0]).await.unwrap();
-    let chain = handler
-        .update_by_chain_id(
-            chains[0].data.chain_id,
-            &UpdateChainOptions::builder()
-                .providers(update_providers_options)
-                .build(),
-        )
-        .await
-        .unwrap()
-        .unwrap();
+    let chain = Chain::from_proto(
+        handler
+            .update_by_chain_id(
+                chains[0].data.chain_id,
+                &UpdateChainOptions::builder()
+                    .providers(update_providers_options)
+                    .build(),
+            )
+            .await
+            .unwrap()
+            .unwrap(),
+    );
     assert_eq!(chain.data.providers, previous_providers);
     assert!(chain.data.provider_override);
-    let chain = handler
-        .update_by_chain_id(
-            chains[0].data.chain_id,
-            &UpdateChainOptions::builder()
-                .providers(vec![
-                    UpdateProviderOptions::builder()
-                        .url(String::from("http://localhost:8545"))
-                        .timeout_ms(100_000)
-                        .max_try_count(10)
-                        .quorum_weight(10)
-                        .build(),
-                    UpdateProviderOptions::builder()
-                        .url(String::from("http://localhost:8546"))
-                        .build(),
-                ])
-                .build(),
-        )
-        .await
-        .unwrap()
-        .unwrap();
+    let chain = Chain::from_proto(
+        handler
+            .update_by_chain_id(
+                chains[0].data.chain_id,
+                &UpdateChainOptions::builder()
+                    .providers(vec![
+                        UpdateProviderOptions::builder()
+                            .url(String::from("http://localhost:8545"))
+                            .timeout_ms(100_000)
+                            .max_try_count(10)
+                            .quorum_weight(10)
+                            .build(),
+                        UpdateProviderOptions::builder()
+                            .url(String::from("http://localhost:8546"))
+                            .build(),
+                    ])
+                    .build(),
+            )
+            .await
+            .unwrap()
+            .unwrap(),
+    );
     assert_eq!(
         chain.data.providers,
         vec![
@@ -367,8 +389,13 @@ async fn test_chains_update_providers() {
 async fn test_chains_reset_synced_block() {
     let (handler, db, config) = setup().await;
     let contract_handler = TypedContractHandler::new(db.clone(), config);
-    let mut contracts = contract_handler.initialize().await.unwrap();
-    let mut chains = handler.initialize().await.unwrap();
+    let contracts = contract_handler.initialize().await.unwrap();
+    let mut contracts: Vec<Document<Contract>> = contracts
+        .iter()
+        .map(|contract| Contract::from_proto(contract.clone()))
+        .collect();
+    let chains = handler.initialize().await.unwrap();
+    let mut chains: Vec<Document<Chain>> = chains.iter().map(|chain| Chain::from_proto(chain.clone())).collect();
     for contract in contracts.iter_mut() {
         if contract.data.chain_id == chains[0].data.chain_id {
             contract.data.synced_block_number = 10;
@@ -383,13 +410,13 @@ async fn test_chains_reset_synced_block() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(chain.data.synced_block_number, 0);
+    assert_eq!(chain.synced_block_number, 0);
     let contracts = contract_handler
         .find_by_chain_id(chains[0].data.chain_id)
         .await
         .unwrap();
     for contract in contracts.iter() {
-        assert_eq!(contract.data.synced_block_number, contract.data.sync_start);
+        assert_eq!(contract.synced_block_number, contract.sync_start);
     }
     handler
         .reset_synced_block_to(chains[0].data.chain_id, 20)
@@ -400,13 +427,13 @@ async fn test_chains_reset_synced_block() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(chain.data.synced_block_number, 20);
+    assert_eq!(chain.synced_block_number, 20);
     let contracts = contract_handler
         .find_by_chain_id(chains[0].data.chain_id)
         .await
         .unwrap();
     for contract in contracts.iter() {
-        assert_eq!(contract.data.synced_block_number, 20);
+        assert_eq!(contract.synced_block_number, 20);
     }
     assert!(handler.reset_synced_block(23423432).await.unwrap().is_none());
     db.chains.delete(&chains[0]).await.unwrap();
@@ -420,29 +447,35 @@ async fn test_chains_reset_synced_block() {
 #[tokio::test]
 async fn test_chains_providers_options() {
     let (handler, db, _) = setup().await;
-    let chains = handler.initialize().await.unwrap();
+    let chains: Vec<Document<Chain>> = handler
+        .initialize()
+        .await
+        .unwrap()
+        .iter()
+        .map(|chain| Chain::from_proto(chain.clone()))
+        .collect();
     let providers_options = handler.providers_options(11155111).await.unwrap().unwrap();
     let chain = handler.find_by_chain_id(11155111).await.unwrap().unwrap();
     match providers_options {
         ProvidersOptions::Failover(options) => {
-            assert_eq!(options.len(), chain.data.providers.len());
+            assert_eq!(options.len(), chain.providers.len());
             for (index, _) in options.iter().enumerate() {
-                assert_eq!(options[index].url, chain.data.providers[index].url);
+                assert_eq!(options[index].url, chain.providers[index].url);
                 assert_eq!(
                     options[index].quorum_weight.unwrap(),
-                    chain.data.providers[index].quorum_weight as u64
+                    chain.providers[index].quorum_weight as u64
                 );
                 assert_eq!(
                     options[index].timeout_retries.unwrap(),
-                    chain.data.providers[index].max_try_count - 1
+                    chain.providers[index].max_try_count - 1
                 );
                 assert_eq!(
                     options[index].rate_limit_retries.unwrap(),
-                    chain.data.providers[index].max_try_count - 1
+                    chain.providers[index].max_try_count - 1
                 );
                 assert_eq!(
                     options[index].request_timeout.unwrap(),
-                    Duration::from_millis(chain.data.providers[index].timeout_ms as u64)
+                    Duration::from_millis(chain.providers[index].timeout_ms as u64)
                 );
             }
         }
@@ -452,24 +485,24 @@ async fn test_chains_providers_options() {
     let chain = handler.find_by_chain_id(97).await.unwrap().unwrap();
     match providers_options {
         ProvidersOptions::Quorum(options, quorum_options) => {
-            assert_eq!(options.len(), chain.data.providers.len());
+            assert_eq!(options.len(), chain.providers.len());
             for (index, _) in options.iter().enumerate() {
-                assert_eq!(options[index].url, chain.data.providers[index].url);
+                assert_eq!(options[index].url, chain.providers[index].url);
                 assert_eq!(
                     options[index].quorum_weight.unwrap(),
-                    chain.data.providers[index].quorum_weight as u64
+                    chain.providers[index].quorum_weight as u64
                 );
                 assert_eq!(
                     options[index].timeout_retries.unwrap(),
-                    chain.data.providers[index].max_try_count - 1
+                    chain.providers[index].max_try_count - 1
                 );
                 assert_eq!(
                     options[index].rate_limit_retries.unwrap(),
-                    chain.data.providers[index].max_try_count - 1
+                    chain.providers[index].max_try_count - 1
                 );
                 assert_eq!(
                     options[index].request_timeout.unwrap(),
-                    Duration::from_millis(chain.data.providers[index].timeout_ms as u64)
+                    Duration::from_millis(chain.providers[index].timeout_ms as u64)
                 );
             }
             match quorum_options.quorum.unwrap() {

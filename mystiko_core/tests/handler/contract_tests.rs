@@ -4,8 +4,9 @@ use mystiko_config::raw::mystiko::RawMystikoConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_core::handler::contract::ContractHandler;
 use mystiko_database::database::Database;
+use mystiko_database::document::contract::Contract;
 use mystiko_protos::storage::v1::SubFilter;
-use mystiko_storage::document::DocumentColumn;
+use mystiko_storage::document::{Document, DocumentColumn};
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::ContractType;
@@ -31,31 +32,31 @@ async fn test_contract_initialize() {
     let (handler, _, config) = setup().await;
     let contracts = handler.initialize().await.unwrap();
     for contract in contracts.iter() {
-        let chain_config = config.find_chain(contract.data.chain_id).unwrap();
+        let chain_config = config.find_chain(contract.chain_id).unwrap();
         if let Some(deposit_contract_config) =
-            config.find_deposit_contract_by_address(contract.data.chain_id, &contract.data.contract_address)
+            config.find_deposit_contract_by_address(contract.chain_id, &contract.contract_address)
         {
-            assert_eq!(contract.data.contract_type, ContractType::Deposit);
-            assert_eq!(contract.data.disabled, deposit_contract_config.disabled());
+            assert_eq!(contract.contract_type, Into::<i32>::into(ContractType::Deposit));
+            assert_eq!(contract.disabled, deposit_contract_config.disabled());
             assert_eq!(
-                contract.data.sync_size,
-                chain_config.contract_event_filter_size(&contract.data.contract_address)
+                contract.sync_size,
+                chain_config.contract_event_filter_size(&contract.contract_address)
             );
-            assert_eq!(contract.data.sync_start, deposit_contract_config.start_block());
-            assert_eq!(contract.data.synced_block_number, deposit_contract_config.start_block());
-            assert_eq!(contract.data.checked_leaf_index, None);
+            assert_eq!(contract.sync_start, deposit_contract_config.start_block());
+            assert_eq!(contract.synced_block_number, deposit_contract_config.start_block());
+            assert_eq!(contract.checked_leaf_index, None);
         } else if let Some(pool_contract_config) =
-            config.find_pool_contract_by_address(contract.data.chain_id, &contract.data.contract_address)
+            config.find_pool_contract_by_address(contract.chain_id, &contract.contract_address)
         {
-            assert_eq!(contract.data.contract_type, ContractType::Pool);
-            assert!(!contract.data.disabled);
+            assert_eq!(contract.contract_type, Into::<i32>::into(ContractType::Pool));
+            assert!(!contract.disabled);
             assert_eq!(
-                contract.data.sync_size,
-                chain_config.contract_event_filter_size(&contract.data.contract_address)
+                contract.sync_size,
+                chain_config.contract_event_filter_size(&contract.contract_address)
             );
-            assert_eq!(contract.data.sync_start, pool_contract_config.start_block());
-            assert_eq!(contract.data.synced_block_number, pool_contract_config.start_block());
-            assert_eq!(contract.data.checked_leaf_index, None);
+            assert_eq!(contract.sync_start, pool_contract_config.start_block());
+            assert_eq!(contract.synced_block_number, pool_contract_config.start_block());
+            assert_eq!(contract.checked_leaf_index, None);
         } else {
             panic!("Contract not found in config");
         }
@@ -87,8 +88,8 @@ async fn test_contract_initialize_upsert() {
         .await
         .unwrap()
         .unwrap();
-    assert!(contract.data.disabled);
-    assert_eq!(contract.data.sync_size, 1024);
+    assert!(contract.disabled);
+    assert_eq!(contract.sync_size, 1024);
     assert_eq!(count, new_handler.count_all().await.unwrap());
 }
 
@@ -113,7 +114,7 @@ async fn test_contract_find() {
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
     assert_eq!(found_contract, contracts[0]);
     let found_contract = handler
-        .find_by_address(contracts[0].data.chain_id, &contracts[0].data.contract_address)
+        .find_by_address(contracts[0].chain_id, &contracts[0].contract_address)
         .await
         .unwrap()
         .unwrap();
@@ -137,23 +138,29 @@ async fn test_contract_count() {
 #[tokio::test]
 async fn test_contract_reset_synced_block() {
     let (handler, db, _) = setup().await;
-    let mut contracts = handler.initialize().await.unwrap();
+    let mut contracts: Vec<Document<Contract>> = handler
+        .initialize()
+        .await
+        .unwrap()
+        .iter()
+        .map(|contract| Contract::from_proto(contract.clone()))
+        .collect();
     contracts[0].data.synced_block_number *= 2;
     db.contracts.update(&contracts[0]).await.unwrap();
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
-    assert_ne!(found_contract.data.synced_block_number, contracts[0].data.sync_start);
+    assert_ne!(found_contract.synced_block_number, contracts[0].data.sync_start);
     handler
         .reset_synced_block(contracts[0].data.chain_id, &contracts[0].data.contract_address)
         .await
         .unwrap();
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
-    assert_eq!(found_contract.data.synced_block_number, contracts[0].data.sync_start);
+    assert_eq!(found_contract.synced_block_number, contracts[0].data.sync_start);
     handler
         .reset_synced_block_to(contracts[0].data.chain_id, &contracts[0].data.contract_address, 100)
         .await
         .unwrap();
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
-    assert_eq!(found_contract.data.synced_block_number, 100);
+    assert_eq!(found_contract.synced_block_number, 100);
     assert!(handler.find_by_id("wrong_id").await.unwrap().is_none());
     assert!(handler
         .reset_synced_block(11155111, "wrong_address")

@@ -1,4 +1,5 @@
 use mystiko_database::document::account::{Account, AccountCollection, AccountColumn};
+use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
@@ -142,4 +143,63 @@ async fn test_account_serde() {
         account,
         serde_json::from_str(&serde_json::to_string(&account).unwrap()).unwrap()
     );
+}
+
+#[test]
+fn test_from_proto() {
+    let proto = ProtoAccount::builder()
+        .id(String::from("123456"))
+        .created_at(1234567890u64)
+        .updated_at(1234567891u64)
+        .name(String::from("account 1"))
+        .shielded_address(String::from("shielded address 1"))
+        .public_key(String::from("public key 1"))
+        .encrypted_secret_key(String::from("encrypted secret key 1"))
+        .scan_size(1u32)
+        .wallet_id(String::from("1"))
+        .status(1)
+        .build();
+    let account = Account::from_proto(proto);
+    assert_eq!(account.id, String::from("123456"));
+    assert_eq!(account.created_at, 1234567890u64);
+    assert_eq!(account.updated_at, 1234567891u64);
+    assert_eq!(account.data.name, String::from("account 1"));
+    assert_eq!(account.data.shielded_address, String::from("shielded address 1"));
+    assert_eq!(account.data.public_key, String::from("public key 1"));
+    assert_eq!(
+        account.data.encrypted_secret_key,
+        String::from("encrypted secret key 1")
+    );
+    assert_eq!(account.data.scan_size, 1u32);
+    assert_eq!(account.data.wallet_id, String::from("1"));
+    assert_eq!(account.data.status, AccountStatus::Created);
+}
+
+#[test]
+fn test_into_proto() {
+    let account = Document::new(
+        String::from("123456"),
+        1234567890u64,
+        1234567891u64,
+        Account {
+            name: String::from("account 1"),
+            shielded_address: String::from("shielded address 1"),
+            public_key: String::from("public key 1"),
+            encrypted_secret_key: String::from("encrypted secret key 1"),
+            status: AccountStatus::Created,
+            scan_size: 1,
+            wallet_id: String::from("1"),
+        },
+    );
+    let proto = Account::into_proto(account);
+    assert_eq!(proto.id, String::from("123456"));
+    assert_eq!(proto.created_at, 1234567890u64);
+    assert_eq!(proto.updated_at, 1234567891u64);
+    assert_eq!(proto.name, String::from("account 1"));
+    assert_eq!(proto.shielded_address, String::from("shielded address 1"));
+    assert_eq!(proto.public_key, String::from("public key 1"));
+    assert_eq!(proto.encrypted_secret_key, String::from("encrypted secret key 1"));
+    assert_eq!(proto.scan_size, 1u32);
+    assert_eq!(proto.wallet_id, String::from("1"));
+    assert_eq!(proto.status, 1);
 }

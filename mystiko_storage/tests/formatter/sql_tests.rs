@@ -447,8 +447,8 @@ fn test_format_create_collection_migration() {
         statement1.statement,
         "CREATE TABLE IF NOT EXISTS `test_documents` (\
     `id` VARCHAR(64) NOT NULL PRIMARY KEY, \
-    `created_at` BIGINT NOT NULL, \
-    `updated_at` BIGINT NOT NULL, \
+    `created_at` VARCHAR(16) NOT NULL, \
+    `updated_at` VARCHAR(16) NOT NULL, \
     `field1` TINYINT NOT NULL, \
     `field2` TINYINT, \
     `field3` VARCHAR(1) NOT NULL, \
@@ -514,8 +514,8 @@ fn test_format_create_collection_migration() {
         statements[0].statement,
         "CREATE TABLE IF NOT EXISTS `test_documents` (\
     `id` VARCHAR(64) NOT NULL PRIMARY KEY, \
-    `created_at` BIGINT NOT NULL, \
-    `updated_at` BIGINT NOT NULL, \
+    `created_at` BIGINT UNSIGNED NOT NULL, \
+    `updated_at` BIGINT UNSIGNED NOT NULL, \
     `field1` TINYINT NOT NULL, \
     `field2` TINYINT, \
     `field3` VARCHAR(1) NOT NULL, \
@@ -953,7 +953,7 @@ fn create_test_document(id: &str, has_null: bool) -> Document<TestDocument> {
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap()
-        .as_millis() as i64;
+        .as_millis() as u64;
     Document {
         id: id.to_string(),
         created_at: now,

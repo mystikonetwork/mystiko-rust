@@ -1,6 +1,7 @@
 use crate::common::create_database;
 use bip32::{Language, Mnemonic};
-use mystiko_core::handler::wallet::{CreateWalletOptions, WalletHandler};
+use mystiko_core::handler::wallet::WalletHandler;
+use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 use rand_core::OsRng;

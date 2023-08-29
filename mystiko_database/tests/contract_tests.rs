@@ -1,6 +1,7 @@
 extern crate mystiko_database;
 
 use mystiko_database::document::contract::{Contract, ContractCollection, ContractColumn};
+use mystiko_protos::core::document::v1::Contract as ProtoContract;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::collection::Collection;
 use mystiko_storage::document::Document;
@@ -160,4 +161,71 @@ async fn test_contract_serde() {
         contract,
         serde_json::from_str(&serde_json::to_string(&contract).unwrap()).unwrap()
     );
+}
+
+#[test]
+fn test_from_proto() {
+    let proto = ProtoContract::builder()
+        .id(String::from("123456"))
+        .created_at(1234567890u64)
+        .updated_at(1234567891u64)
+        .chain_id(5u64)
+        .contract_address(String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"))
+        .disabled(false)
+        .sync_start(1000000u64)
+        .sync_size(10000u64)
+        .synced_block_number(1100000u64)
+        .checked_leaf_index(10)
+        .contract_type(1)
+        .build();
+    let contract = Contract::from_proto(proto);
+    assert_eq!(contract.id, String::from("123456"));
+    assert_eq!(contract.created_at, 1234567890u64);
+    assert_eq!(contract.updated_at, 1234567891u64);
+    assert_eq!(contract.data.chain_id, 5u64);
+    assert_eq!(
+        contract.data.contract_address,
+        String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d")
+    );
+    assert!(!contract.data.disabled);
+    assert_eq!(contract.data.sync_start, 1000000u64);
+    assert_eq!(contract.data.sync_size, 10000u64);
+    assert_eq!(contract.data.synced_block_number, 1100000u64);
+    assert_eq!(contract.data.checked_leaf_index, Some(10));
+    assert_eq!(contract.data.contract_type, ContractType::Deposit);
+}
+
+#[test]
+fn test_into_proto() {
+    let contract = Document::new(
+        String::from("123456"),
+        1234567890u64,
+        1234567891u64,
+        Contract {
+            contract_type: ContractType::Deposit,
+            chain_id: 5,
+            contract_address: String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
+            disabled: false,
+            sync_start: 1000000,
+            sync_size: 10000,
+            synced_block_number: 1100000,
+            checked_leaf_index: Some(10),
+        },
+    );
+    let proto = Contract::into_proto(contract);
+    assert_eq!(proto.id, String::from("123456"));
+    assert_eq!(proto.created_at, 1234567890u64);
+    assert_eq!(proto.updated_at, 1234567891u64);
+    assert_eq!(proto.chain_id, 5u64);
+    assert_eq!(
+        proto.contract_address,
+        String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d")
+    );
+    assert!(!proto.disabled);
+    assert_eq!(proto.sync_start, 1000000u64);
+    assert_eq!(proto.sync_size, 10000u64);
+    assert_eq!(proto.synced_block_number, 1100000u64);
+    assert!(proto.checked_leaf_index.is_some());
+    assert_eq!(proto.checked_leaf_index.unwrap(), 10);
+    assert_eq!(proto.contract_type, 1);
 }

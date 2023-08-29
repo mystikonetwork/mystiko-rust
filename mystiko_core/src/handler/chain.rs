@@ -11,38 +11,19 @@ use mystiko_database::document::contract::Contract;
 use mystiko_ethers::provider::factory::{ProvidersOptions, HTTP_REGEX, WS_REGEX};
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
+use mystiko_protos::core::document::v1::Chain as ProtoChain;
+use mystiko_protos::core::handler::v1::{UpdateChainOptions, UpdateProviderOptions};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use mystiko_storage::document::Document;
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_types::ProviderType;
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Duration;
-use typed_builder::TypedBuilder;
 
 pub const DEFAULT_PROVIDER_TIMEOUT_MS: u32 = 5000;
 pub const DEFAULT_PROVIDER_MAX_TRY_COUNT: u32 = 2;
 pub const DEFAULT_PROVIDER_QUORUM_WEIGHT: u32 = 1;
-
-#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
-pub struct UpdateProviderOptions {
-    url: String,
-    #[builder(default, setter(strip_option))]
-    timeout_ms: Option<u32>,
-    #[builder(default, setter(strip_option))]
-    max_try_count: Option<u32>,
-    #[builder(default, setter(strip_option))]
-    quorum_weight: Option<u32>,
-}
-
-#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
-pub struct UpdateChainOptions {
-    #[builder(default, setter(strip_option))]
-    pub name: Option<String>,
-    #[builder(default, setter(strip_option))]
-    pub providers: Option<Vec<UpdateProviderOptions>>,
-}
 
 #[derive(Debug)]
 pub struct ChainHandler<F: StatementFormatter, S: Storage> {
@@ -63,29 +44,27 @@ where
         }
     }
 
-    pub async fn find<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<Vec<Document<Chain>>> {
-        self.db
+    pub async fn find<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<Vec<ProtoChain>> {
+        let documents = self
+            .db
             .chains
             .find(query_filter)
             .await
-            .map_err(MystikoError::StorageError)
+            .map_err(MystikoError::StorageError)?;
+        Ok(documents.into_iter().map(Chain::into_proto).collect())
     }
 
-    pub async fn find_all(&self) -> Result<Vec<Document<Chain>>> {
-        self.db.chains.find_all().await.map_err(MystikoError::StorageError)
+    pub async fn find_all(&self) -> Result<Vec<ProtoChain>> {
+        let documents = self.db.chains.find_all().await.map_err(MystikoError::StorageError)?;
+        Ok(documents.into_iter().map(Chain::into_proto).collect())
     }
 
-    pub async fn find_by_id(&self, id: &str) -> Result<Option<Document<Chain>>> {
-        self.db.chains.find_by_id(id).await.map_err(MystikoError::StorageError)
+    pub async fn find_by_id(&self, id: &str) -> Result<Option<ProtoChain>> {
+        Ok(self.find_document_by_id(id).await?.map(Chain::into_proto))
     }
 
-    pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
-        let query_filter = SubFilter::equal(ChainColumn::ChainId, chain_id);
-        self.db
-            .chains
-            .find_one(query_filter)
-            .await
-            .map_err(MystikoError::StorageError)
+    pub async fn find_by_chain_id(&self, chain_id: u64) -> Result<Option<ProtoChain>> {
+        Ok(self.find_document_by_chain_id(chain_id).await?.map(Chain::into_proto))
     }
 
     pub async fn count<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<u64> {
@@ -100,19 +79,22 @@ where
         self.db.chains.count_all().await.map_err(MystikoError::StorageError)
     }
 
-    pub async fn initialize(&self) -> Result<Vec<Document<Chain>>> {
+    pub async fn initialize(&self) -> Result<Vec<ProtoChain>> {
         let mut insert_chains: Vec<Chain> = vec![];
         let mut update_chains: Vec<Document<Chain>> = vec![];
         let mut chains: Vec<Document<Chain>> = vec![];
         for chain_config in self.config.chains() {
             if let Some(mut existing_chain) = self.find_by_chain_id(chain_config.chain_id()).await? {
-                if !existing_chain.data.name_override {
-                    existing_chain.data.name = chain_config.name().to_string();
+                if !existing_chain.name_override {
+                    existing_chain.name = chain_config.name().to_string();
                 }
-                if !existing_chain.data.provider_override {
-                    existing_chain.data.providers = convert_providers(&chain_config.providers());
+                if !existing_chain.provider_override {
+                    existing_chain.providers = convert_providers(&chain_config.providers())
+                        .into_iter()
+                        .map(|provider| provider.into())
+                        .collect();
                 }
-                update_chains.push(existing_chain);
+                update_chains.push(Chain::from_proto(existing_chain));
             } else {
                 insert_chains.push(Chain {
                     chain_id: chain_config.chain_id(),
@@ -138,46 +120,48 @@ where
                 .await
                 .map_err(MystikoError::StorageError)?,
         );
-        Ok(chains)
+        Ok(chains.into_iter().map(Chain::into_proto).collect())
     }
 
-    pub async fn reset_name_and_providers(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
-        if let (Some(chain_config), Some(mut existing_chain)) =
-            (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
-        {
+    pub async fn reset_name_and_providers(&self, chain_id: u64) -> Result<Option<ProtoChain>> {
+        if let (Some(chain_config), Some(mut existing_chain)) = (
+            self.config.find_chain(chain_id),
+            self.find_document_by_chain_id(chain_id).await?,
+        ) {
             existing_chain.data.name = chain_config.name().to_string();
             existing_chain.data.name_override = false;
             existing_chain.data.providers = convert_providers(&chain_config.providers());
             existing_chain.data.provider_override = false;
-            Ok(Some(
+            Ok(Some(Chain::into_proto(
                 self.db
                     .chains
                     .update(&existing_chain)
                     .await
                     .map_err(MystikoError::StorageError)?,
-            ))
+            )))
         } else {
             Ok(None)
         }
     }
 
-    pub async fn update_by_id(&self, id: &str, options: &UpdateChainOptions) -> Result<Option<Document<Chain>>> {
-        self.update(self.find_by_id(id).await?, options).await
+    pub async fn update_by_id(&self, id: &str, options: &UpdateChainOptions) -> Result<Option<ProtoChain>> {
+        let existing_chain = self.find_document_by_id(id).await?;
+        match self.update(existing_chain, options).await? {
+            None => Ok(None),
+            Some(chain) => Ok(Some(Chain::into_proto(chain))),
+        }
     }
 
-    pub async fn update_by_chain_id(
-        &self,
-        chain_id: u64,
-        options: &UpdateChainOptions,
-    ) -> Result<Option<Document<Chain>>> {
-        self.update(self.find_by_chain_id(chain_id).await?, options).await
+    pub async fn update_by_chain_id(&self, chain_id: u64, options: &UpdateChainOptions) -> Result<Option<ProtoChain>> {
+        let existing_chain = self.find_document_by_chain_id(chain_id).await?;
+        Ok(self.update(existing_chain, options).await?.map(Chain::into_proto))
     }
 
-    pub async fn reset_synced_block(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
+    pub async fn reset_synced_block(&self, chain_id: u64) -> Result<Option<ProtoChain>> {
         self.rs_synced_block(chain_id, None).await
     }
 
-    pub async fn reset_synced_block_to(&self, chain_id: u64, to_block: u64) -> Result<Option<Document<Chain>>> {
+    pub async fn reset_synced_block_to(&self, chain_id: u64, to_block: u64) -> Result<Option<ProtoChain>> {
         self.rs_synced_block(chain_id, Some(to_block)).await
     }
 
@@ -188,7 +172,8 @@ where
     ) -> Result<Option<Document<Chain>>> {
         if let Some(mut existing_chain) = existing_chain {
             if let Some(chain_config) = self.config.find_chain(existing_chain.data.chain_id) {
-                if let Some(new_providers) = &options.providers {
+                let new_providers = &options.providers;
+                if !new_providers.is_empty() {
                     for new_provider in new_providers {
                         if !HTTP_REGEX.is_match(&new_provider.url) && !WS_REGEX.is_match(&new_provider.url) {
                             return Err(MystikoError::InvalidProviderUrlError(new_provider.url.clone()));
@@ -203,18 +188,17 @@ where
                         has_update = true;
                     }
                 }
-                if let Some(update_provider_options) = &options.providers {
-                    if !update_provider_options.is_empty()
-                        && !compare_providers(update_provider_options, &existing_chain.data.providers)
-                    {
-                        existing_chain.data.providers = wrap_providers(
-                            update_provider_options,
-                            &chain_config.providers(),
-                            &existing_chain.data.providers,
-                        );
-                        existing_chain.data.provider_override = true;
-                        has_update = true;
-                    }
+                let update_provider_options = &options.providers;
+                if !update_provider_options.is_empty()
+                    && !compare_providers(update_provider_options, &existing_chain.data.providers)
+                {
+                    existing_chain.data.providers = wrap_providers(
+                        update_provider_options,
+                        &chain_config.providers(),
+                        &existing_chain.data.providers,
+                    );
+                    existing_chain.data.provider_override = true;
+                    has_update = true;
                 }
                 return if has_update {
                     Ok(Some(
@@ -232,10 +216,11 @@ where
         Ok(None)
     }
 
-    async fn rs_synced_block(&self, chain_id: u64, to_block: Option<u64>) -> Result<Option<Document<Chain>>> {
-        if let (Some(chain_config), Some(mut chain)) =
-            (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
-        {
+    async fn rs_synced_block(&self, chain_id: u64, to_block: Option<u64>) -> Result<Option<ProtoChain>> {
+        if let (Some(chain_config), Some(mut chain)) = (
+            self.config.find_chain(chain_id),
+            self.find_document_by_chain_id(chain_id).await?,
+        ) {
             chain.data.synced_block_number = to_block.unwrap_or(0);
             let updated_chain = self
                 .db
@@ -245,11 +230,12 @@ where
                 .map_err(MystikoError::StorageError)?;
             let mut contracts: Vec<Document<Contract>> = Vec::new();
             for contract_config in chain_config.contracts_with_disabled().iter() {
-                if let Some(mut contract) = self
+                if let Some(contract) = self
                     .contracts
                     .find_by_address(chain_id, contract_config.address())
                     .await?
                 {
+                    let mut contract = Contract::from_proto(contract);
                     contract.data.synced_block_number = to_block.unwrap_or(contract_config.start_block());
                     contracts.push(contract);
                 }
@@ -259,10 +245,22 @@ where
                 .update_batch(&contracts)
                 .await
                 .map_err(MystikoError::StorageError)?;
-            Ok(Some(updated_chain))
+            Ok(Some(Chain::into_proto(updated_chain)))
         } else {
             Ok(None)
         }
+    }
+
+    async fn find_document_by_id(&self, id: &str) -> Result<Option<Document<Chain>>> {
+        self.db.chains.find_by_id(id).await.map_err(MystikoError::StorageError)
+    }
+
+    async fn find_document_by_chain_id(&self, chain_id: u64) -> Result<Option<Document<Chain>>> {
+        self.db
+            .chains
+            .find_one(SubFilter::equal(ChainColumn::ChainId, chain_id))
+            .await
+            .map_err(MystikoError::StorageError)
     }
 }
 #[async_trait]
@@ -272,9 +270,10 @@ where
     S: Storage,
 {
     async fn providers_options(&self, chain_id: u64) -> anyhow::Result<Option<ProvidersOptions>> {
-        if let (Some(chain_config), Some(chain)) =
-            (self.config.find_chain(chain_id), self.find_by_chain_id(chain_id).await?)
-        {
+        if let (Some(chain_config), Some(chain)) = (
+            self.config.find_chain(chain_id),
+            self.find_document_by_chain_id(chain_id).await?,
+        ) {
             let mut providers_options: Vec<ProviderOptions> = vec![];
             for provider_config in chain.data.providers {
                 let provider_options = ProviderOptions::builder()
