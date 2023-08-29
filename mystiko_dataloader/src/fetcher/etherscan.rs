@@ -22,7 +22,7 @@ pub enum EtherscanFetcherError {
 #[builder(field_defaults(setter(into)))]
 pub struct EtherscanFetcher<R> {
     etherscan_client: Arc<EtherScanClient>,
-    #[builder(default = Some(1), setter(strip_option))]
+    #[builder(default = Some(1))]
     concurrency: Option<u32>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
@@ -53,6 +53,12 @@ where
                     .map_err(FetcherError::AnyhowError)?,
             )
             .build())
+    }
+}
+
+impl<R> From<Arc<EtherScanClient>> for EtherscanFetcher<R> {
+    fn from(client: Arc<EtherScanClient>) -> Self {
+        Self::builder().etherscan_client(client).build()
     }
 }
 

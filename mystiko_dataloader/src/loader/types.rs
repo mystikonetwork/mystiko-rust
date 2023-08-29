@@ -7,16 +7,13 @@ pub const DEFAULT_DELAY_BLOCK: u64 = 10_u64;
 #[derive(Debug, Clone, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct ScheduleOption {
-    #[builder(setter(strip_option))]
     pub schedule_interval_ms: Option<u64>,
-    #[builder(setter(strip_option))]
     pub load_option: Option<LoadOption>,
 }
 
 #[derive(Debug, Clone, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadOption {
-    #[builder(setter(strip_option))]
     pub delay_block: Option<u64>,
 }
 

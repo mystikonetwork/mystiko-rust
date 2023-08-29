@@ -54,18 +54,18 @@ pub struct Event<R> {
 pub struct EtherScanClientOptions {
     pub chain_id: u64,
     pub api_key: String,
-    #[builder(setter(strip_option), default = None)]
-    base_url: Option<String>,
-    #[builder(setter(strip_option), default = None)]
-    client: Option<Client>,
-    #[builder(setter(strip_option), default = None)]
-    max_requests_per_second: Option<u128>,
-    #[builder(setter(strip_option), default = None)]
-    offset: Option<u64>,
-    #[builder(setter(strip_option), default = None)]
-    retry_policy: Option<Box<dyn RetryPolicy>>,
-    #[builder(setter(strip_option), default = None)]
-    url_prefix: Option<String>,
+    #[builder(default = None)]
+    pub base_url: Option<String>,
+    #[builder(default = None)]
+    pub client: Option<Client>,
+    #[builder(default = None)]
+    pub max_requests_per_second: Option<u128>,
+    #[builder(default = None)]
+    pub offset: Option<u64>,
+    #[builder(default = None)]
+    pub retry_policy: Option<Box<dyn RetryPolicy>>,
+    #[builder(default = None)]
+    pub url_prefix: Option<String>,
 }
 
 #[derive(Debug, TypedBuilder)]

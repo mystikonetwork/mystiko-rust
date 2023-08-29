@@ -67,6 +67,12 @@ where
     }
 }
 
+impl<R> From<IndexerClient> for IndexerFetcher<R> {
+    fn from(client: IndexerClient) -> Self {
+        Self::builder().indexer_client(client).build()
+    }
+}
+
 fn handle_contracts_response<R: LoadedData>(
     chain_id: u64,
     contracts_response: Vec<ContractResultDataResponse>,

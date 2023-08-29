@@ -25,11 +25,11 @@ pub struct CommitmentQueryOption {
     pub chain_id: u64,
     pub contract_address: String,
     pub end_block: u64,
-    #[builder(default, setter(strip_option))]
+    #[builder(default)]
     pub start_block: Option<u64>,
-    #[builder(default, setter(strip_option))]
+    #[builder(default)]
     pub commitment_hash: Option<Vec<BigUint>>,
-    #[builder(default, setter(strip_option))]
+    #[builder(default)]
     pub status: Option<CommitmentStatus>,
 }
 
@@ -39,9 +39,9 @@ pub struct NullifierQueryOption {
     pub chain_id: u64,
     pub contract_address: String,
     pub end_block: u64,
-    #[builder(default, setter(strip_option))]
+    #[builder(default)]
     pub start_block: Option<u64>,
-    #[builder(default, setter(strip_option))]
+    #[builder(default)]
     pub nullifier: Option<Vec<BigUint>>,
 }
 

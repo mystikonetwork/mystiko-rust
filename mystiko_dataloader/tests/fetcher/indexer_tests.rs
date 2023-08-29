@@ -78,9 +78,7 @@ async fn test_fulldata_fetch() {
         .with_header("content-type", "application/json")
         .create_async()
         .await;
-    let indexer_fetcher: IndexerFetcher<FullData> = IndexerFetcher::<FullData>::builder()
-        .indexer_client(indexer_client)
-        .build();
+    let indexer_fetcher: IndexerFetcher<FullData> = indexer_client.into();
     let mystiko_config = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
             .await
@@ -317,9 +315,7 @@ async fn test_litedata_fetch() {
         .with_header("content-type", "application/json")
         .create_async()
         .await;
-    let indexer_fetcher: IndexerFetcher<LiteData> = IndexerFetcher::<LiteData>::builder()
-        .indexer_client(indexer_client)
-        .build();
+    let indexer_fetcher: IndexerFetcher<LiteData> = indexer_client.into();
     let mystiko_config = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
             .await

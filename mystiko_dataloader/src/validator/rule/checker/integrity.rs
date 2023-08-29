@@ -9,7 +9,7 @@ use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, TypedBuilder)]
+#[derive(Debug, Default, TypedBuilder)]
 pub struct IntegrityChecker<R> {
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,

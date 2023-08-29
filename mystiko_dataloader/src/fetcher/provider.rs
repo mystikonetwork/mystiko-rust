@@ -41,7 +41,7 @@ pub enum ProviderFetcherError {
 #[builder(field_defaults(setter(into)))]
 pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
     providers: Arc<P>,
-    #[builder(default = Some(1), setter(strip_option))]
+    #[builder(default = Some(1))]
     concurrency: Option<u32>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
@@ -94,6 +94,16 @@ where
                     .map_err(FetcherError::AnyhowError)?,
             )
             .build())
+    }
+}
+
+impl<R, P> From<Arc<P>> for ProviderFetcher<R, P>
+where
+    R: LoadedData,
+    P: Providers,
+{
+    fn from(providers: Arc<P>) -> Self {
+        Self::builder().providers(providers).build()
     }
 }
 
