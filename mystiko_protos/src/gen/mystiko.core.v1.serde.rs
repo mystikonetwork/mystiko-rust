@@ -44,9 +44,7 @@ impl<'de> serde::Deserialize<'de> for AccountStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(AccountStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -57,9 +55,7 @@ impl<'de> serde::Deserialize<'de> for AccountStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(AccountStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -98,11 +94,7 @@ impl<'de> serde::Deserialize<'de> for AssetType {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "ASSET_TYPE_UNSPECIFIED",
-            "ASSET_TYPE_ERC20",
-            "ASSET_TYPE_MAIN",
-        ];
+        const FIELDS: &[&str] = &["ASSET_TYPE_UNSPECIFIED", "ASSET_TYPE_ERC20", "ASSET_TYPE_MAIN"];
 
         struct GeneratedVisitor;
 
@@ -121,9 +113,7 @@ impl<'de> serde::Deserialize<'de> for AssetType {
                 i32::try_from(v)
                     .ok()
                     .and_then(AssetType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -134,9 +124,7 @@ impl<'de> serde::Deserialize<'de> for AssetType {
                 i32::try_from(v)
                     .ok()
                     .and_then(AssetType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -205,9 +193,7 @@ impl<'de> serde::Deserialize<'de> for BridgeType {
                 i32::try_from(v)
                     .ok()
                     .and_then(BridgeType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -218,9 +204,7 @@ impl<'de> serde::Deserialize<'de> for BridgeType {
                 i32::try_from(v)
                     .ok()
                     .and_then(BridgeType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -303,9 +287,7 @@ impl<'de> serde::Deserialize<'de> for CircuitType {
                 i32::try_from(v)
                     .ok()
                     .and_then(CircuitType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -316,9 +298,7 @@ impl<'de> serde::Deserialize<'de> for CircuitType {
                 i32::try_from(v)
                     .ok()
                     .and_then(CircuitType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -396,9 +376,7 @@ impl<'de> serde::Deserialize<'de> for CommitmentStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(CommitmentStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -409,9 +387,7 @@ impl<'de> serde::Deserialize<'de> for CommitmentStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(CommitmentStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -476,9 +452,7 @@ impl<'de> serde::Deserialize<'de> for ContractType {
                 i32::try_from(v)
                     .ok()
                     .and_then(ContractType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -489,9 +463,7 @@ impl<'de> serde::Deserialize<'de> for ContractType {
                 i32::try_from(v)
                     .ok()
                     .and_then(ContractType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -564,9 +536,7 @@ impl<'de> serde::Deserialize<'de> for DepositStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(DepositStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -577,9 +547,7 @@ impl<'de> serde::Deserialize<'de> for DepositStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(DepositStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -601,6 +569,188 @@ impl<'de> serde::Deserialize<'de> for DepositStatus {
             }
         }
         deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
+impl serde::Serialize for MystikoOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.is_testnet {
+            len += 1;
+        }
+        if self.is_staging {
+            len += 1;
+        }
+        if self.db_path.is_some() {
+            len += 1;
+        }
+        if self.config_file_path.is_some() {
+            len += 1;
+        }
+        if self.config_remote_base_url.is_some() {
+            len += 1;
+        }
+        if self.config_git_revision.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.MystikoOptions", len)?;
+        if self.is_testnet {
+            struct_ser.serialize_field("isTestnet", &self.is_testnet)?;
+        }
+        if self.is_staging {
+            struct_ser.serialize_field("isStaging", &self.is_staging)?;
+        }
+        if let Some(v) = self.db_path.as_ref() {
+            struct_ser.serialize_field("dbPath", v)?;
+        }
+        if let Some(v) = self.config_file_path.as_ref() {
+            struct_ser.serialize_field("configFilePath", v)?;
+        }
+        if let Some(v) = self.config_remote_base_url.as_ref() {
+            struct_ser.serialize_field("configRemoteBaseUrl", v)?;
+        }
+        if let Some(v) = self.config_git_revision.as_ref() {
+            struct_ser.serialize_field("configGitRevision", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for MystikoOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "is_testnet",
+            "isTestnet",
+            "is_staging",
+            "isStaging",
+            "db_path",
+            "dbPath",
+            "config_file_path",
+            "configFilePath",
+            "config_remote_base_url",
+            "configRemoteBaseUrl",
+            "config_git_revision",
+            "configGitRevision",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            IsTestnet,
+            IsStaging,
+            DbPath,
+            ConfigFilePath,
+            ConfigRemoteBaseUrl,
+            ConfigGitRevision,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "isTestnet" | "is_testnet" => Ok(GeneratedField::IsTestnet),
+                            "isStaging" | "is_staging" => Ok(GeneratedField::IsStaging),
+                            "dbPath" | "db_path" => Ok(GeneratedField::DbPath),
+                            "configFilePath" | "config_file_path" => Ok(GeneratedField::ConfigFilePath),
+                            "configRemoteBaseUrl" | "config_remote_base_url" => Ok(GeneratedField::ConfigRemoteBaseUrl),
+                            "configGitRevision" | "config_git_revision" => Ok(GeneratedField::ConfigGitRevision),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = MystikoOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.v1.MystikoOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<MystikoOptions, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut is_testnet__ = None;
+                let mut is_staging__ = None;
+                let mut db_path__ = None;
+                let mut config_file_path__ = None;
+                let mut config_remote_base_url__ = None;
+                let mut config_git_revision__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::IsTestnet => {
+                            if is_testnet__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("isTestnet"));
+                            }
+                            is_testnet__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::IsStaging => {
+                            if is_staging__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("isStaging"));
+                            }
+                            is_staging__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::DbPath => {
+                            if db_path__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("dbPath"));
+                            }
+                            db_path__ = map.next_value()?;
+                        }
+                        GeneratedField::ConfigFilePath => {
+                            if config_file_path__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("configFilePath"));
+                            }
+                            config_file_path__ = map.next_value()?;
+                        }
+                        GeneratedField::ConfigRemoteBaseUrl => {
+                            if config_remote_base_url__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("configRemoteBaseUrl"));
+                            }
+                            config_remote_base_url__ = map.next_value()?;
+                        }
+                        GeneratedField::ConfigGitRevision => {
+                            if config_git_revision__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("configGitRevision"));
+                            }
+                            config_git_revision__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(MystikoOptions {
+                    is_testnet: is_testnet__.unwrap_or_default(),
+                    is_staging: is_staging__.unwrap_or_default(),
+                    db_path: db_path__,
+                    config_file_path: config_file_path__,
+                    config_remote_base_url: config_remote_base_url__,
+                    config_git_revision: config_git_revision__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.v1.MystikoOptions", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for NetworkType {
@@ -646,9 +796,7 @@ impl<'de> serde::Deserialize<'de> for NetworkType {
                 i32::try_from(v)
                     .ok()
                     .and_then(NetworkType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -659,9 +807,7 @@ impl<'de> serde::Deserialize<'de> for NetworkType {
                 i32::try_from(v)
                     .ok()
                     .and_then(NetworkType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -698,10 +844,7 @@ impl<'de> serde::Deserialize<'de> for PackerChecksum {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "PACKER_CHECKSUM_UNSPECIFIED",
-            "PACKER_CHECKSUM_SHA512",
-        ];
+        const FIELDS: &[&str] = &["PACKER_CHECKSUM_UNSPECIFIED", "PACKER_CHECKSUM_SHA512"];
 
         struct GeneratedVisitor;
 
@@ -720,9 +863,7 @@ impl<'de> serde::Deserialize<'de> for PackerChecksum {
                 i32::try_from(v)
                     .ok()
                     .and_then(PackerChecksum::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -733,9 +874,7 @@ impl<'de> serde::Deserialize<'de> for PackerChecksum {
                 i32::try_from(v)
                     .ok()
                     .and_then(PackerChecksum::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -771,10 +910,7 @@ impl<'de> serde::Deserialize<'de> for PackerCompression {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &[
-            "PACKER_COMPRESSION_UNSPECIFIED",
-            "PACKER_COMPRESSION_ZSTD",
-        ];
+        const FIELDS: &[&str] = &["PACKER_COMPRESSION_UNSPECIFIED", "PACKER_COMPRESSION_ZSTD"];
 
         struct GeneratedVisitor;
 
@@ -793,9 +929,7 @@ impl<'de> serde::Deserialize<'de> for PackerCompression {
                 i32::try_from(v)
                     .ok()
                     .and_then(PackerCompression::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -806,9 +940,7 @@ impl<'de> serde::Deserialize<'de> for PackerCompression {
                 i32::try_from(v)
                     .ok()
                     .and_then(PackerCompression::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -868,9 +1000,7 @@ impl<'de> serde::Deserialize<'de> for ProviderType {
                 i32::try_from(v)
                     .ok()
                     .and_then(ProviderType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -881,9 +1011,7 @@ impl<'de> serde::Deserialize<'de> for ProviderType {
                 i32::try_from(v)
                     .ok()
                     .and_then(ProviderType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -952,9 +1080,7 @@ impl<'de> serde::Deserialize<'de> for TransactionStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(TransactionStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -965,9 +1091,7 @@ impl<'de> serde::Deserialize<'de> for TransactionStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(TransactionStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -1032,9 +1156,7 @@ impl<'de> serde::Deserialize<'de> for TransactionType {
                 i32::try_from(v)
                     .ok()
                     .and_then(TransactionType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -1045,9 +1167,7 @@ impl<'de> serde::Deserialize<'de> for TransactionType {
                 i32::try_from(v)
                     .ok()
                     .and_then(TransactionType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
+                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
