@@ -45,18 +45,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Cargo Install
-        run: cargo install cargo-tarpaulin protoc-gen-prost-crate --force
+        run: cargo install cargo-llvm-cov protoc-gen-prost-crate --force
 
       - name: Build
         run: RUSTFLAGS="-D warnings" ./scripts/build.sh
@@ -68,10 +58,13 @@ jobs:
         timeout-minutes: 60
         run: cargo clippy --all-targets --all-features -j 4 -- -D warnings
 
-      - name: Run Coverage
-        run: cargo tarpaulin --all-features --workspace --out Xml
+      - name: Run Test
+        run: cargo llvm-cov --workspace --all-features --lcov --no-report
         env:
           DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
+
+      - name: Generate Coverage
+        run: cargo llvm-cov --workspace --all-features --lcov --no-run --output-path=lcov.info --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)"
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v3
