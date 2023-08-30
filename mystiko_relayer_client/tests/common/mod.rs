@@ -45,7 +45,9 @@ pub async fn create_client(
     chain_id: Option<u64>,
     contract_address: Option<Address>,
 ) -> RelayerClient<ProviderPool<MockChainConfig>> {
-    let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
+    let _ = env_logger::builder()
+        .filter_module("mystiko_relayer_client", LevelFilter::Debug)
+        .try_init();
 
     let mut server = Server::new_async().await;
     let mock = server

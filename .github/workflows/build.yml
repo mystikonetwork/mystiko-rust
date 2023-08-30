@@ -38,25 +38,18 @@ jobs:
       - name: Setup Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-ca67d15f4abd46394b324c50e21e66f306a1162d
 
       - name: Setup Buf
         uses: bufbuild/buf-setup-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Cargo Install
-        run: cargo install cargo-llvm-cov protoc-gen-prost-crate --force
+        run: cargo install protoc-gen-prost-crate --force
 
       - name: Build
         run: RUSTFLAGS="-D warnings" ./scripts/build.sh
@@ -69,12 +62,12 @@ jobs:
         run: cargo clippy --all-targets --all-features -j 4 -- -D warnings
 
       - name: Run Test
-        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --all-features --lcov --no-report
+        run: cargo llvm-cov --workspace --all-features --lcov --no-report
         env:
           DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
 
       - name: Generate Coverage
-        run: cargo llvm-cov --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)" --all-features --lcov --no-run --output-path lcov.info
+        run: cargo llvm-cov --workspace --all-features --lcov --no-run --output-path=lcov.info --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)"
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v3

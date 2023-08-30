@@ -469,9 +469,8 @@ async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Opti
 
 async fn loader_schedule(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
     INIT.call_once(|| {
-        std::env::set_var("RUST_LOG", "trace");
         let _ = env_logger::builder()
-            .filter_module("mystiko_dataloader", log::LevelFilter::Trace)
+            .filter_module("mystiko_dataloader", log::LevelFilter::Debug)
             .try_init();
     });
 

@@ -133,7 +133,9 @@ async fn test_relayer_config_not_found() {
         .create_async()
         .await;
 
-    let _ = env_logger::builder().filter_module("", LevelFilter::Debug).try_init();
+    let _ = env_logger::builder()
+        .filter_module("mystiko_relayer_client", LevelFilter::Debug)
+        .try_init();
 
     let client = RelayerClient::new(
         Arc::new(pool),
