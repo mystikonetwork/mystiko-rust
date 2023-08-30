@@ -1,7 +1,9 @@
 use crate::data::{FullData, LoadedData};
+use anyhow::Result;
 use ethers_core::types::Address;
 use mystiko_protos::data::v1::ContractData as ProtoContractData;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
@@ -30,5 +32,21 @@ where
             .end_block(end_block)
             .data(R::from_data(data.into_data()))
             .build()
+    }
+
+    pub fn into_proto(self) -> Result<ProtoContractData> {
+        let address = Address::from_str(&self.address)?;
+        if let Some(data) = self.data {
+            let data = FullData::from_data(data.into_data());
+            Ok(ProtoContractData::builder()
+                .contract_address(address.as_bytes().to_vec())
+                .commitments(data.commitments)
+                .nullifiers(data.nullifiers)
+                .build())
+        } else {
+            Ok(ProtoContractData::builder()
+                .contract_address(address.as_bytes().to_vec())
+                .build())
+        }
     }
 }
