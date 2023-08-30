@@ -70,6 +70,8 @@ jobs:
 
       - name: Run Coverage
         run: cargo tarpaulin --all-features --workspace --out Xml
+        env:
+          DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v3
