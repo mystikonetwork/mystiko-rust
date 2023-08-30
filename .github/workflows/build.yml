@@ -38,7 +38,7 @@ jobs:
       - name: Setup Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-ca67d15f4abd46394b324c50e21e66f306a1162d
 
       - name: Setup Buf
         uses: bufbuild/buf-setup-action@v1
