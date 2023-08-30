@@ -45,8 +45,11 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
       - name: Cargo Install
-        run: cargo install cargo-llvm-cov protoc-gen-prost-crate --force
+        run: cargo install protoc-gen-prost-crate --force
 
       - name: Build
         run: RUSTFLAGS="-D warnings" ./scripts/build.sh
