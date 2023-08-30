@@ -55,11 +55,8 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
-
       - name: Cargo Install
-        run: cargo install protoc-gen-prost-crate --force
+        run: cargo install cargo-tarpaulin protoc-gen-prost-crate --force
 
       - name: Build
         run: RUSTFLAGS="-D warnings" ./scripts/build.sh
@@ -71,13 +68,8 @@ jobs:
         timeout-minutes: 60
         run: cargo clippy --all-targets --all-features -j 4 -- -D warnings
 
-      - name: Run Test
-        run: cargo llvm-cov --all-features --workspace --lcov --no-report
-        env:
-          DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
-
-      - name: Generate Coverage
-        run: cargo llvm-cov --all-features --workspace --lcov --no-run --output-path=lcov.info --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)"
+      - name: Run Coverage
+        run: cargo tarpaulin --all-features --workspace --out Xml
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v3
