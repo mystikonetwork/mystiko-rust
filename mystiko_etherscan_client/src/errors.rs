@@ -14,6 +14,9 @@ pub enum EtherScanError {
     #[error("etherscan request failed: {0:?}")]
     ResponseError(String),
 
+    #[error("Param check error: {0:?}")]
+    ParamCheckError(String),
+
     #[error("unsupported chain id: {0:?}")]
     UnsupportedChainIdError(u64),
 

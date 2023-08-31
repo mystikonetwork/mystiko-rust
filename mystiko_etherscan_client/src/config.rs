@@ -3,6 +3,7 @@ use crate::response::Result;
 
 pub const DEFAULT_MAX_REQUESTS_PER_SECOND: u128 = 5;
 pub const DEFAULT_PAGE_OFFSET: u64 = 1000;
+pub const MAX_OFFSET: u64 = 10000;
 pub const DEFAULT_URL_PREFIX: &str = "/api";
 
 const DEFAULT_MAINNET_ETHER_API_BASE_URL: &str = "https://api.etherscan.io";

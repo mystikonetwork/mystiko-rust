@@ -373,6 +373,28 @@ async fn test_etherscan_lite_data_fetch_no_contract_request() {
     assert_eq!(data.commitments.len(), 3);
 }
 
+#[tokio::test]
+async fn test_get_etherscan_client_err() {
+    let mocked_server = mockito::Server::new_async().await;
+    let test_chain_id = 1u64;
+    let test_address = "0xCB255075f38C75EAf2DE8A72897649dba9B90299";
+    let test_start_block: u64 = 46013154;
+    let test_end_block: u64 = 46276776;
+    let test_offset = 1000u64;
+    let test_api_key = "test_api_key";
+    let etherscan_fetcher =
+        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key);
+    let fetch_options = build_fetch_options(test_address, 137u64, test_start_block, test_end_block).await;
+    let result = etherscan_fetcher.fetch(&fetch_options).await;
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let err_msg = error.to_string();
+    assert_eq!(
+        err_msg,
+        mystiko_dataloader::fetcher::EtherscanFetcherError::UnsupportedChainError(137u64).to_string()
+    );
+}
+
 async fn build_mock_request(mocked_server: &mut ServerGuard, params: &[Matcher], topic: &str, resp: &str) -> Mock {
     let mut params_with_topic = params.to_owned();
     params_with_topic.push(Matcher::UrlEncoded("topic0".into(), topic.into()));
@@ -418,7 +440,7 @@ fn build_etherscan_fetcher<R: LoadedData + std::fmt::Debug>(
             .build(),
     )
     .unwrap();
-    Arc::new(etherscan_client).into()
+    vec![Arc::new(etherscan_client)].into()
 }
 
 async fn build_fetch_options(

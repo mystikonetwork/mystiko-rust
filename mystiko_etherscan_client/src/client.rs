@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::time::Duration;
 
 use reqwest::{
@@ -15,7 +16,9 @@ use tokio::sync::Mutex;
 use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
 
-use crate::config::{get_default_base_url, DEFAULT_MAX_REQUESTS_PER_SECOND, DEFAULT_PAGE_OFFSET, DEFAULT_URL_PREFIX};
+use crate::config::{
+    get_default_base_url, DEFAULT_MAX_REQUESTS_PER_SECOND, DEFAULT_PAGE_OFFSET, DEFAULT_URL_PREFIX, MAX_OFFSET,
+};
 use crate::errors::EtherScanError;
 use crate::log::{Log, LogMeta};
 use crate::response::{EtherScanResponse, JsonRpcResponse, Result};
@@ -85,6 +88,12 @@ impl EtherScanClient {
     pub fn new(options: EtherScanClientOptions) -> Result<Self> {
         let chain_id = options.chain_id;
         let offset = options.offset.unwrap_or(DEFAULT_PAGE_OFFSET);
+        if offset > MAX_OFFSET {
+            return Err(EtherScanError::ParamCheckError(format!(
+                "offset must be less than or equal to {}. offset = {}",
+                MAX_OFFSET, offset
+            )));
+        }
         let api_key = options.api_key;
         let base_url = options.base_url.unwrap_or(get_default_base_url(chain_id)?);
         let client = options.client.unwrap_or(Client::new());
@@ -190,19 +199,26 @@ impl EtherScanClient {
     where
         R: EthEvent + std::fmt::Debug,
     {
+        if self.offset > MAX_OFFSET {
+            return Err(EtherScanError::ParamCheckError(format!(
+                "offset must be less than or equal to {}. offset={}",
+                MAX_OFFSET, self.offset
+            )));
+        }
         let mut params: Vec<String> = vec![];
         params.push("action=getLogs".to_string());
         params.push("module=logs".to_string());
-        params.push(format!("fromBlock={}", options.from_block));
+        params.push("page=1".to_string());
         params.push(format!("toBlock={}", options.to_block));
         params.push(format!("offset={}", &self.offset));
         params.push(format!("address={}", options.address));
         params.push(format!("topic0=0x{:x}", R::signature()));
         params.push(format!("apikey={}", &self.api_key));
+        let mut raw_logs = HashSet::new();
         let mut events: Vec<Event<R>> = Vec::new();
-        let mut page = 1;
+        let mut from_block = options.from_block;
         loop {
-            let url = format!("{}&page={}", self.format_url(&params), page);
+            let url = format!("{}&fromBlock={}", self.format_url(&params), from_block);
             let options = GetOptions::<String>::builder()
                 .module(EtherScanModule::Normal)
                 .url(url)
@@ -213,11 +229,15 @@ impl EtherScanClient {
                 }
                 let len = logs.len();
                 for log in logs.into_iter() {
-                    let metadata: LogMeta = (&log).into();
-                    let event = R::decode_log(&log.into_raw())?;
-                    events.push(Event { raw: event, metadata });
+                    if raw_logs.insert(log.clone()) {
+                        let metadata: LogMeta = (&log).into();
+                        let event = R::decode_log(&log.into_raw())?;
+                        events.push(Event { raw: event, metadata });
+                    }
                 }
-                page += 1;
+                if let Some(max_block_number) = events.iter().map(|e| e.metadata.block_number.as_u64()).max() {
+                    from_block = max_block_number;
+                }
                 if len < self.offset as usize {
                     break;
                 }
