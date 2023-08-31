@@ -21,7 +21,7 @@ pub enum EtherscanFetcherError {
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct EtherscanFetcher<R> {
-    etherscan_client: Vec<Arc<EtherScanClient>>,
+    etherscan_clients: Vec<Arc<EtherScanClient>>,
     #[builder(default = Some(1))]
     concurrency: Option<u32>,
     #[builder(default, setter(skip))]
@@ -39,7 +39,7 @@ where
             option.chain_id, option.start_block, option.target_block
         );
         let client =
-            get_etherscan_client(option.chain_id, &self.etherscan_client).map_err(FetcherError::AnyhowError)?;
+            get_etherscan_client(option.chain_id, &self.etherscan_clients).map_err(FetcherError::AnyhowError)?;
         let current_block_num: u64 = client
             .get_block_number()
             .await
@@ -57,9 +57,15 @@ where
     }
 }
 
+impl<R> From<Arc<EtherScanClient>> for EtherscanFetcher<R> {
+    fn from(client: Arc<EtherScanClient>) -> Self {
+        vec![client].into()
+    }
+}
+
 impl<R> From<Vec<Arc<EtherScanClient>>> for EtherscanFetcher<R> {
-    fn from(client: Vec<Arc<EtherScanClient>>) -> Self {
-        Self::builder().etherscan_client(client).build()
+    fn from(clients: Vec<Arc<EtherScanClient>>) -> Self {
+        Self::builder().etherscan_clients(clients).build()
     }
 }
 

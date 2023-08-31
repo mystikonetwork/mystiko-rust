@@ -214,6 +214,7 @@ impl EtherScanClient {
         params.push(format!("address={}", options.address));
         params.push(format!("topic0=0x{:x}", R::signature()));
         params.push(format!("apikey={}", &self.api_key));
+        #[allow(clippy::mutable_key_type)]
         let mut raw_logs = HashSet::new();
         let mut events: Vec<Event<R>> = Vec::new();
         let mut from_block = options.from_block;
