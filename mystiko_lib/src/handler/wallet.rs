@@ -9,10 +9,8 @@ pub fn create(options: &[u8]) -> Result<Vec<u8>> {
 }
 
 mod internal {
+    use super::*;
     use crate::instance;
-    use anyhow::Result;
-    use mystiko_protos::core::handler::v1::CreateWalletOptions;
-    use prost::Message;
 
     pub(crate) async fn create(options: CreateWalletOptions) -> Result<Vec<u8>> {
         let mystiko_guard = instance().read().await;

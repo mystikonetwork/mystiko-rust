@@ -6,8 +6,8 @@ pub fn version() -> Result<String> {
 }
 
 mod internal {
+    use super::*;
     use crate::instance;
-    use anyhow::Result;
 
     pub(crate) async fn version() -> Result<String> {
         let mystiko_guard = instance().read().await;

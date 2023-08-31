@@ -10,7 +10,7 @@ pub mod handler;
 use anyhow::{Error, Result};
 use lazy_static::lazy_static;
 use mystiko_core::mystiko::Mystiko;
-use mystiko_protos::core::v1::MystikoOptions;
+use mystiko_protos::core::v1::MystikoOptions as ProtoMystikoOptions;
 use mystiko_storage::formatter::sql::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 use prost::Message;
@@ -26,7 +26,7 @@ lazy_static! {
 }
 
 pub fn initialize(options: &[u8]) -> Result<()> {
-    runtime().block_on(internal::initialize(MystikoOptions::decode(options)?))
+    runtime().block_on(internal::initialize(ProtoMystikoOptions::decode(options)?))
 }
 
 pub fn is_initialized() -> bool {
@@ -74,12 +74,9 @@ impl MystikoStatic {
 }
 
 mod internal {
-    use crate::MYSTIKO;
-    use anyhow::Result;
-    use mystiko_core::mystiko::{Mystiko, MystikoOptions};
+    use super::*;
+    use mystiko_core::mystiko::MystikoOptions;
     use mystiko_database::database::Database;
-    use mystiko_protos::core::v1::MystikoOptions as ProtoMystikoOptions;
-    use mystiko_storage::formatter::sql::SqlStatementFormatter;
     use mystiko_storage_sqlite::SqliteStorageBuilder;
 
     pub(crate) async fn initialize(options: ProtoMystikoOptions) -> Result<()> {
