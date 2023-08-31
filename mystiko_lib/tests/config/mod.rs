@@ -1,1 +1,1 @@
-mod mystiko;
+mod mystiko_tests;

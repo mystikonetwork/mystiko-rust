@@ -1,1 +1,1 @@
-mod wallet;
+mod wallet_tests;
