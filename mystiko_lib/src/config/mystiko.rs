@@ -1,12 +1,12 @@
-use crate::core::{MYSTIKO, MYSTIKO_RUNTIME};
+use crate::core::{instance, runtime};
 use anyhow::Result;
 
-pub fn config_version<'a>() -> Result<String> {
-    MYSTIKO_RUNTIME.block_on(version())
+pub fn config_version() -> Result<String> {
+    runtime().block_on(version())
 }
 
-async fn version<'a>() -> Result<String> {
-    let mystiko_guard = MYSTIKO.read().await;
+async fn version() -> Result<String> {
+    let mystiko_guard = instance().read().await;
     let version: &str = mystiko_guard.get()?.config.version();
     Ok(version.to_string())
 }

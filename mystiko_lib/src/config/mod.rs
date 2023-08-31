@@ -1,1 +1,1 @@
-mod mystiko;
+pub mod mystiko;

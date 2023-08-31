@@ -44,7 +44,9 @@ impl<'de> serde::Deserialize<'de> for AccountStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(AccountStatus::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -55,7 +57,9 @@ impl<'de> serde::Deserialize<'de> for AccountStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(AccountStatus::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -94,7 +98,11 @@ impl<'de> serde::Deserialize<'de> for AssetType {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["ASSET_TYPE_UNSPECIFIED", "ASSET_TYPE_ERC20", "ASSET_TYPE_MAIN"];
+        const FIELDS: &[&str] = &[
+            "ASSET_TYPE_UNSPECIFIED",
+            "ASSET_TYPE_ERC20",
+            "ASSET_TYPE_MAIN",
+        ];
 
         struct GeneratedVisitor;
 
@@ -113,7 +121,9 @@ impl<'de> serde::Deserialize<'de> for AssetType {
                 i32::try_from(v)
                     .ok()
                     .and_then(AssetType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -124,7 +134,9 @@ impl<'de> serde::Deserialize<'de> for AssetType {
                 i32::try_from(v)
                     .ok()
                     .and_then(AssetType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -193,7 +205,9 @@ impl<'de> serde::Deserialize<'de> for BridgeType {
                 i32::try_from(v)
                     .ok()
                     .and_then(BridgeType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -204,7 +218,9 @@ impl<'de> serde::Deserialize<'de> for BridgeType {
                 i32::try_from(v)
                     .ok()
                     .and_then(BridgeType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -287,7 +303,9 @@ impl<'de> serde::Deserialize<'de> for CircuitType {
                 i32::try_from(v)
                     .ok()
                     .and_then(CircuitType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -298,7 +316,9 @@ impl<'de> serde::Deserialize<'de> for CircuitType {
                 i32::try_from(v)
                     .ok()
                     .and_then(CircuitType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -376,7 +396,9 @@ impl<'de> serde::Deserialize<'de> for CommitmentStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(CommitmentStatus::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -387,7 +409,9 @@ impl<'de> serde::Deserialize<'de> for CommitmentStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(CommitmentStatus::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -452,7 +476,9 @@ impl<'de> serde::Deserialize<'de> for ContractType {
                 i32::try_from(v)
                     .ok()
                     .and_then(ContractType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -463,7 +489,9 @@ impl<'de> serde::Deserialize<'de> for ContractType {
                 i32::try_from(v)
                     .ok()
                     .and_then(ContractType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -536,7 +564,9 @@ impl<'de> serde::Deserialize<'de> for DepositStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(DepositStatus::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -547,7 +577,9 @@ impl<'de> serde::Deserialize<'de> for DepositStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(DepositStatus::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -691,8 +723,8 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
             }
 
             fn visit_map<V>(self, mut map: V) -> std::result::Result<MystikoOptions, V::Error>
-            where
-                V: serde::de::MapAccess<'de>,
+                where
+                    V: serde::de::MapAccess<'de>,
             {
                 let mut is_testnet__ = None;
                 let mut is_staging__ = None;
@@ -796,7 +828,9 @@ impl<'de> serde::Deserialize<'de> for NetworkType {
                 i32::try_from(v)
                     .ok()
                     .and_then(NetworkType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -807,7 +841,9 @@ impl<'de> serde::Deserialize<'de> for NetworkType {
                 i32::try_from(v)
                     .ok()
                     .and_then(NetworkType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -844,7 +880,10 @@ impl<'de> serde::Deserialize<'de> for PackerChecksum {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["PACKER_CHECKSUM_UNSPECIFIED", "PACKER_CHECKSUM_SHA512"];
+        const FIELDS: &[&str] = &[
+            "PACKER_CHECKSUM_UNSPECIFIED",
+            "PACKER_CHECKSUM_SHA512",
+        ];
 
         struct GeneratedVisitor;
 
@@ -863,7 +902,9 @@ impl<'de> serde::Deserialize<'de> for PackerChecksum {
                 i32::try_from(v)
                     .ok()
                     .and_then(PackerChecksum::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -874,7 +915,9 @@ impl<'de> serde::Deserialize<'de> for PackerChecksum {
                 i32::try_from(v)
                     .ok()
                     .and_then(PackerChecksum::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -910,7 +953,10 @@ impl<'de> serde::Deserialize<'de> for PackerCompression {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["PACKER_COMPRESSION_UNSPECIFIED", "PACKER_COMPRESSION_ZSTD"];
+        const FIELDS: &[&str] = &[
+            "PACKER_COMPRESSION_UNSPECIFIED",
+            "PACKER_COMPRESSION_ZSTD",
+        ];
 
         struct GeneratedVisitor;
 
@@ -929,7 +975,9 @@ impl<'de> serde::Deserialize<'de> for PackerCompression {
                 i32::try_from(v)
                     .ok()
                     .and_then(PackerCompression::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -940,7 +988,9 @@ impl<'de> serde::Deserialize<'de> for PackerCompression {
                 i32::try_from(v)
                     .ok()
                     .and_then(PackerCompression::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -1000,7 +1050,9 @@ impl<'de> serde::Deserialize<'de> for ProviderType {
                 i32::try_from(v)
                     .ok()
                     .and_then(ProviderType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -1011,7 +1063,9 @@ impl<'de> serde::Deserialize<'de> for ProviderType {
                 i32::try_from(v)
                     .ok()
                     .and_then(ProviderType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -1080,7 +1134,9 @@ impl<'de> serde::Deserialize<'de> for TransactionStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(TransactionStatus::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -1091,7 +1147,9 @@ impl<'de> serde::Deserialize<'de> for TransactionStatus {
                 i32::try_from(v)
                     .ok()
                     .and_then(TransactionStatus::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
@@ -1156,7 +1214,9 @@ impl<'de> serde::Deserialize<'de> for TransactionType {
                 i32::try_from(v)
                     .ok()
                     .and_then(TransactionType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
             }
 
             fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
@@ -1167,7 +1227,9 @@ impl<'de> serde::Deserialize<'de> for TransactionType {
                 i32::try_from(v)
                     .ok()
                     .and_then(TransactionType::from_i32)
-                    .ok_or_else(|| serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self))
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
             }
 
             fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>

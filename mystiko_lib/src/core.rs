@@ -13,17 +13,17 @@ type MystikoType = Mystiko<SqlStatementFormatter, SqliteStorage>;
 type OptionalMystiko = Option<MystikoType>;
 
 lazy_static! {
-    pub(crate) static ref MYSTIKO: RwLock<MystikoLib> = RwLock::new(MystikoLib::new());
-    pub(crate) static ref MYSTIKO_RUNTIME: Runtime = Runtime::new().unwrap();
+    static ref MYSTIKO: RwLock<MystikoStatic> = RwLock::new(MystikoStatic::new());
+    static ref MYSTIKO_RUNTIME: Runtime = Runtime::new().unwrap();
 }
 
-pub(crate) struct MystikoLib {
+pub(crate) struct MystikoStatic {
     mystiko: OptionalMystiko,
 }
 
-impl MystikoLib {
+impl MystikoStatic {
     pub(crate) fn new() -> Self {
-        MystikoLib { mystiko: None }
+        MystikoStatic { mystiko: None }
     }
 
     pub(crate) fn initialize(&mut self, mystiko: MystikoType) {
@@ -45,8 +45,27 @@ impl MystikoLib {
     }
 }
 
-async fn initialize(options: &[u8]) -> Result<()> {
-    let options = ProtoMystikoOptions::decode(options)?;
+pub fn mystiko_initialize(options: &[u8]) -> Result<()> {
+    runtime().block_on(initialize(ProtoMystikoOptions::decode(options)?))
+}
+
+pub fn mystiko_is_initialized() -> bool {
+    runtime().block_on(is_initialized())
+}
+
+pub fn mystiko_destroy() {
+    runtime().block_on(destroy())
+}
+
+pub(crate) fn instance() -> &'static RwLock<MystikoStatic> {
+    &MYSTIKO
+}
+
+pub(crate) fn runtime() -> &'static Runtime {
+    &MYSTIKO_RUNTIME
+}
+
+async fn initialize(options: ProtoMystikoOptions) -> Result<()> {
     if !is_initialized().await {
         let mut mystiko_guard = MYSTIKO.write().await;
         if !mystiko_guard.is_initialized() {
