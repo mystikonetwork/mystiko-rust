@@ -1,4 +1,4 @@
-use mystiko_lib::handler::wallet::create;
+use mystiko_lib::wallet::create;
 use mystiko_lib::{initialize, is_initialized};
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use mystiko_protos::core::v1::MystikoOptions;

@@ -5,7 +5,9 @@ extern crate env_logger;
 extern crate log;
 
 pub mod config;
-pub mod handler;
+mod handler;
+
+pub use handler::*;
 
 use anyhow::{Error, Result};
 use lazy_static::lazy_static;
