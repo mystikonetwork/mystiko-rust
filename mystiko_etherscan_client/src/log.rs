@@ -1,7 +1,7 @@
 use ethers_core::types::{Address, Bytes, TxHash, H256, U64};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Log {
     pub address: Address,
 

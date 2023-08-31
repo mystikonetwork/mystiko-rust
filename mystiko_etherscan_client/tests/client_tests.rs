@@ -37,6 +37,28 @@ fn create_ether_scan_client(url: &str) -> EtherScanClient {
 }
 
 #[tokio::test]
+async fn test_create_ether_scan_client_error() {
+    let offset = 10001u64;
+    let options = EtherScanClientOptions::builder()
+        .chain_id(56u64)
+        .api_key("test_api_key".to_owned())
+        .offset(offset)
+        .build();
+    let result = EtherScanClient::new(options);
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let err_msg = error.to_string();
+    assert_eq!(
+        err_msg,
+        EtherScanError::ParamCheckError(format!(
+            "offset must be less than or equal to 10000. offset = {}",
+            offset
+        ))
+        .to_string()
+    );
+}
+
+#[tokio::test]
 async fn test_eth_call() {
     let TestClientSetupData {
         mut mocked_server,
@@ -452,6 +474,140 @@ async fn test_fetch_event_logs() {
     let result = result.unwrap();
     assert_eq!(result.len(), 0);
     m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_fetch_event_logs_pages() {
+    let offset: u64 = 2;
+    let mut mocked_server = mockito::Server::new_async().await;
+    let options = EtherScanClientOptions::builder()
+        .chain_id(56u64)
+        .offset(offset)
+        .api_key("test_api_key".to_owned())
+        .base_url(mocked_server.url().to_string())
+        .build();
+    let mut ether_scan_client = EtherScanClient::new(options).unwrap();
+
+    let start_block = 12878000u64;
+    let end_block = 12879200u64;
+    let address = "0xbd3531da5cf5857e7cfaa92426877b022e612cf8";
+
+    let tx_hash = "0x4ffd22d986913d33927a392fe4319bcd2b62f3afe1c15a2c59f77fc2cc4c20a9";
+    let mock_resp = serde_json::json!({
+        "status":"1",
+        "message":"OK",
+        "result": [
+            {
+                "address": address,
+                "topics": [
+                    "0xf533f9705aac5020e21695ea3553ac7b6881070d2b6900ab2b1e3050304b5bf9",
+                    "0x1b47c6719dfe20ead0230eb1b0ad3dc00b2de7d1fe6738749e1d1916d73ee00b"
+                ],
+                "data": "0x000000000000000000000000000000000000000000000000002386f26fc100000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d15c6a50d7f116ae1dc4b1f865e6e7b194048c7cf2151da8a2a910e7ad6d9ba8c31b9e153d49aead0343c10e9ec025af17b6470e648704e54227e88593fe08a9dbd6f5b2c3d655114c44b53bf4c404bbae532456dce2de0b9574122f9984e2b36fe9f3de867aa2d2ecbe11d95338eeb8d674654d09df41be2f5b06b2fd462352542e9c8ac56e5907cc325cb75a24164523899629c2c1a45a655152bd73f91b8b20a91a4b484283efc3cf02a780f1d4e48d125e6b6303e7bbdb253eaf59a8ec6499a4e3898f525b0f842cffd3dad592bb7d71000000000000000000000000000000",
+                "blockNumber": "0xc48174",
+                "blockHash": "0x837e109ab8b1b40ec7d1032bff82397325d85e719b97d900fa0d9aa9745b2c27",
+                "timeStamp": "0x60f9ce56",
+                "gasPrice": "0x2e90edd000",
+                "gasUsed": "0x247205",
+                "logIndex": "0xfe",
+                "transactionHash": tx_hash,
+                "transactionIndex": "0x69"
+            },
+            {
+                "address": address,
+                "topics": [
+                    "0xf533f9705aac5020e21695ea3553ac7b6881070d2b6900ab2b1e3050304b5bf9",
+                    "0x1f58c8a20224935226d4adc3ee1e8feeb29339b17a172c1a7751cbe68939ef3a"
+                ],
+                "data": "0x000000000000000000000000000000000000000000000000002386f26fc100000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d15c6a50d7f116ae1dc4b1f865e6e7b194048c7cf2151da8a2a910e7ad6d9ba8c31b9e153d49aead0343c10e9ec025af17b6470e648704e54227e88593fe08a9dbd6f5b2c3d655114c44b53bf4c404bbae532456dce2de0b9574122f9984e2b36fe9f3de867aa2d2ecbe11d95338eeb8d674654d09df41be2f5b06b2fd462352542e9c8ac56e5907cc325cb75a24164523899629c2c1a45a655152bd73f91b8b20a91a4b484283efc3cf02a780f1d4e48d125e6b6303e7bbdb253eaf59a8ec6499a4e3898f525b0f842cffd3dad592bb7d71000000000000000000000000000000",
+                "blockNumber": "0xc48174",
+                "blockHash": "0x837e109ab8b1b40ec7d1032bff82397325d85e719b97d900fa0d9aa9745b2c27",
+                "timeStamp": "0x60f9ce56",
+                "gasPrice": "0x2e90edd000",
+                "gasUsed": "0x247205",
+                "logIndex": "0x13f",
+                "transactionHash": tx_hash,
+                "transactionIndex": "0x7c"
+            }
+        ]
+    });
+    let options = GetLogsOptions {
+        address: address.to_string(),
+        from_block: start_block,
+        to_block: end_block,
+    };
+    let params = vec![
+        Matcher::UrlEncoded("action".into(), "getLogs".into()),
+        Matcher::UrlEncoded("module".into(), "logs".into()),
+        Matcher::UrlEncoded("toBlock".into(), end_block.to_string()),
+        Matcher::UrlEncoded("offset".into(), offset.to_string()),
+        Matcher::UrlEncoded("address".into(), address.to_string()),
+        Matcher::UrlEncoded("apikey".into(), "test_api_key".into()),
+    ];
+    let mut params_with_topic = params.to_owned();
+    params_with_topic.push(Matcher::UrlEncoded("fromBlock".into(), start_block.to_string()));
+    let _m = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(params_with_topic))
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+
+    let mock_resp = serde_json::json!({
+        "status":"1",
+        "message":"OK",
+        "result": [
+            {
+                "address": address,
+                "topics": [
+                    "0xf533f9705aac5020e21695ea3553ac7b6881070d2b6900ab2b1e3050304b5bf9",
+                    "0x1f58c8a20224935226d4adc3ee1e8feeb29339b17a172c1a7751cbe68939ef3a"
+                ],
+                "data": "0x000000000000000000000000000000000000000000000000002386f26fc100000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d15c6a50d7f116ae1dc4b1f865e6e7b194048c7cf2151da8a2a910e7ad6d9ba8c31b9e153d49aead0343c10e9ec025af17b6470e648704e54227e88593fe08a9dbd6f5b2c3d655114c44b53bf4c404bbae532456dce2de0b9574122f9984e2b36fe9f3de867aa2d2ecbe11d95338eeb8d674654d09df41be2f5b06b2fd462352542e9c8ac56e5907cc325cb75a24164523899629c2c1a45a655152bd73f91b8b20a91a4b484283efc3cf02a780f1d4e48d125e6b6303e7bbdb253eaf59a8ec6499a4e3898f525b0f842cffd3dad592bb7d71000000000000000000000000000000",
+                "blockNumber": "0xc4855c",
+                "blockHash": "0x847e109ab8b1b40ec7d1032bff82397325d85e719b97d900fa0d9aa9745b2c27",
+                "timeStamp": "0x60f9ce59",
+                "gasPrice": "0x2e90edd000",
+                "gasUsed": "0x247205",
+                "logIndex": "0x140",
+                "transactionHash": tx_hash,
+                "transactionIndex": "0x7d"
+            }
+        ]
+    });
+    let start_block = 12878196u64;
+    let mut params_with_topic = params.to_owned();
+    params_with_topic.push(Matcher::UrlEncoded("fromBlock".into(), start_block.to_string()));
+    let _m1 = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(params_with_topic))
+        .with_status(200)
+        .with_body(serde_json::to_string(&mock_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let result = ether_scan_client
+        .fetch_event_logs::<CommitmentQueuedFilter>(options.clone())
+        .await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.len(), 3);
+
+    let offset = 10001u64;
+    ether_scan_client.offset = offset;
+    let result = ether_scan_client
+        .fetch_event_logs::<CommitmentQueuedFilter>(options.clone())
+        .await;
+    assert!(result.is_err());
+    let error = result.unwrap_err();
+    let err_msg = error.to_string();
+    assert_eq!(
+        err_msg,
+        EtherScanError::ParamCheckError(format!("offset must be less than or equal to 10000. offset={}", offset))
+            .to_string()
+    );
 }
 
 #[tokio::test]

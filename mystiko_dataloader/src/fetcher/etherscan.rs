@@ -21,7 +21,7 @@ pub enum EtherscanFetcherError {
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct EtherscanFetcher<R> {
-    etherscan_client: Arc<EtherScanClient>,
+    etherscan_clients: Vec<Arc<EtherScanClient>>,
     #[builder(default = Some(1))]
     concurrency: Option<u32>,
     #[builder(default, setter(skip))]
@@ -38,8 +38,9 @@ where
             "chain={} start fetch data, start_block={}, target_block={}",
             option.chain_id, option.start_block, option.target_block
         );
-        let current_block_num: u64 = self
-            .etherscan_client
+        let client =
+            get_etherscan_client(option.chain_id, &self.etherscan_clients).map_err(FetcherError::AnyhowError)?;
+        let current_block_num: u64 = client
             .get_block_number()
             .await
             .map_err(|err| FetcherError::AnyhowError(err.into()))?
@@ -48,7 +49,7 @@ where
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
             .contract_results(
-                group_fetch::<R>(&self.etherscan_client, options, self.concurrency.unwrap_or(1) as usize)
+                group_fetch::<R>(&client, options, self.concurrency.unwrap_or(1) as usize)
                     .await
                     .map_err(FetcherError::AnyhowError)?,
             )
@@ -58,8 +59,23 @@ where
 
 impl<R> From<Arc<EtherScanClient>> for EtherscanFetcher<R> {
     fn from(client: Arc<EtherScanClient>) -> Self {
-        Self::builder().etherscan_client(client).build()
+        vec![client].into()
     }
+}
+
+impl<R> From<Vec<Arc<EtherScanClient>>> for EtherscanFetcher<R> {
+    fn from(clients: Vec<Arc<EtherScanClient>>) -> Self {
+        Self::builder().etherscan_clients(clients).build()
+    }
+}
+
+fn get_etherscan_client(chain_id: u64, etherscan_clients: &[Arc<EtherScanClient>]) -> Result<Arc<EtherScanClient>> {
+    for client in etherscan_clients {
+        if client.chain_id == chain_id {
+            return Ok(client.clone());
+        }
+    }
+    Err(EtherscanFetcherError::UnsupportedChainError(chain_id).into())
 }
 
 fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<GetLogsOptions>> {
