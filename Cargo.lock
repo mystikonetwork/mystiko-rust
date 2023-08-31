@@ -304,6 +304,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
 
 [[package]]
+name = "android_log-sys"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ecc8056bf6ab9892dcd53216c83d1597487d7dacac16c8df6b877d127df9937"
+
+[[package]]
+name = "android_logger"
+version = "0.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c494134f746c14dc653a35a4ea5aca24ac368529da5370ecf41fe0341c35772f"
+dependencies = [
+ "android_log-sys",
+ "env_logger",
+ "log",
+ "once_cell",
+]
+
+[[package]]
 name = "anes"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3503,7 +3521,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
  "validator",
 ]
 
@@ -3537,7 +3555,7 @@ dependencies = [
  "serde",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3629,7 +3647,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3654,7 +3672,7 @@ dependencies = [
  "rustc-hex",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3669,7 +3687,7 @@ dependencies = [
  "sha2 0.10.7",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3715,7 +3733,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-tungstenite 0.20.0",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3734,7 +3752,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3761,8 +3779,29 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
  "url",
+]
+
+[[package]]
+name = "mystiko_lib"
+version = "0.1.0"
+dependencies = [
+ "android_logger",
+ "anyhow",
+ "env_logger",
+ "lazy_static",
+ "log",
+ "mystiko_core",
+ "mystiko_database",
+ "mystiko_protos",
+ "mystiko_storage",
+ "mystiko_storage_sqlite",
+ "prost",
+ "serde",
+ "serde_json",
+ "tokio",
+ "typed-builder 0.14.0",
 ]
 
 [[package]]
@@ -3784,7 +3823,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3802,7 +3841,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tonic",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3842,7 +3881,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
  "validator",
 ]
 
@@ -3860,7 +3899,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
  "validator",
 ]
 
@@ -3913,7 +3952,7 @@ dependencies = [
  "sqlx",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
  "validator",
 ]
 
@@ -3929,7 +3968,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
  "validator",
 ]
 
@@ -3971,7 +4010,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -3998,7 +4037,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
- "typed-builder",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]
@@ -4015,7 +4054,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
  "ulid",
 ]
 
@@ -4053,7 +4092,7 @@ dependencies = [
  "sqlx",
  "tempfile",
  "tokio",
- "typed-builder",
+ "typed-builder 0.15.2",
  "url",
 ]
 
@@ -6758,6 +6797,17 @@ dependencies = [
  "thiserror",
  "url",
  "utf-8",
+]
+
+[[package]]
+name = "typed-builder"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64cba322cb9b7bc6ca048de49e83918223f35e7a86311267013afff257004870"
+dependencies = [
+ "proc-macro2 1.0.66",
+ "quote 1.0.32",
+ "syn 1.0.109",
 ]
 
 [[package]]
