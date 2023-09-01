@@ -11,6 +11,7 @@ fn test_get_default_base_url() {
     assert!(get_default_base_url(250u64).is_ok());
     assert!(get_default_base_url(1284u64).is_ok());
     assert!(get_default_base_url(8453u64).is_ok());
+    assert!(get_default_base_url(10u64).is_ok());
     assert!(get_default_base_url(42161u64).is_ok());
     assert!(get_default_base_url(5u64).is_ok());
     assert!(get_default_base_url(97u64).is_ok());
@@ -20,6 +21,7 @@ fn test_get_default_base_url() {
     assert!(get_default_base_url(1287u64).is_ok());
     assert!(get_default_base_url(84531u64).is_ok());
     assert!(get_default_base_url(421613u64).is_ok());
+    assert!(get_default_base_url(420u64).is_ok());
     let result = get_default_base_url(0);
     assert!(result.is_err());
     let error = result.unwrap_err();
