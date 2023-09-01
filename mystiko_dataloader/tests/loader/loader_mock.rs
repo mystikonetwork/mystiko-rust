@@ -445,7 +445,7 @@ impl LoaderListener for MockListener {
 type ChainDataLoaderFullDataType =
     ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LoaderRunType {
     Schedule,
     Load,
@@ -687,6 +687,10 @@ pub fn contract_data_partial_eq(a: &HashMap<String, ContractData<FullData>>, b: 
 }
 
 pub async fn events_check(run_type: LoaderRunType, listeners: &[Arc<MockListener>], events: Vec<String>) {
+    if run_type == LoaderRunType::Load {
+        return;
+    }
+
     let mut total_event = vec![];
     match run_type {
         LoaderRunType::Schedule => {

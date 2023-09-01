@@ -100,7 +100,7 @@ where
 
     pub async fn load(&self, options: Option<LoadOption>) -> Result<()> {
         let chain_cfg = self.executor.build_chain_config().await?;
-        self.executor.try_load(&chain_cfg, &options).await
+        self.executor.try_load(&chain_cfg, &options, false).await
     }
 
     pub async fn stop_schedule(&self) {
@@ -287,7 +287,7 @@ where
                 break;
             }
 
-            self.try_load(&chain_cfg, &options.load_option)
+            self.try_load(&chain_cfg, &options.load_option, true)
                 .await
                 .unwrap_or_else(|e| {
                     warn!("try_load raised error {:?}", e);
@@ -336,9 +336,17 @@ where
         last_state
     }
 
-    async fn try_load(&self, chain_cfg: &ChainConfig, options: &Option<LoadOption>) -> Result<()> {
+    async fn try_load(&self, chain_cfg: &ChainConfig, options: &Option<LoadOption>, emit_events: bool) -> Result<()> {
+        let chain_start_block = self.build_chain_start_block(chain_cfg).await?;
+        let chain_target_block = self.build_chain_target_block(chain_start_block, options).await?;
+
         if !self.set_is_loading(true).await {
-            let result = self.load(chain_cfg, options).await;
+            let result = if emit_events {
+                self.load_and_emits(chain_cfg, chain_start_block, chain_target_block)
+                    .await
+            } else {
+                self.load(chain_cfg, chain_start_block, chain_target_block).await
+            };
             self.set_is_loading(false).await;
             result
         } else {
@@ -348,9 +356,12 @@ where
         }
     }
 
-    async fn load(&self, chain_cfg: &ChainConfig, options: &Option<LoadOption>) -> Result<()> {
-        let chain_start_block = self.build_chain_start_block(chain_cfg).await?;
-        let chain_target_block = self.build_chain_target_block(chain_start_block, options).await?;
+    async fn load_and_emits(
+        &self,
+        chain_cfg: &ChainConfig,
+        chain_start_block: u64,
+        chain_target_block: u64,
+    ) -> Result<()> {
         self.emit_event(LoaderEvent::LoadEvent(
             LoadEvent::builder()
                 .start_block(chain_start_block)
@@ -359,9 +370,7 @@ where
         ))
         .await;
 
-        let result = self
-            .execute_load(chain_cfg, chain_start_block, chain_target_block)
-            .await;
+        let result = self.load(chain_cfg, chain_start_block, chain_target_block).await;
         let chain_loaded_block = self.build_chain_loaded_block(chain_cfg).await.unwrap_or_else(|e| {
             warn!("build chain loaded block raised error {:?}", e);
             0_u64
@@ -391,12 +400,7 @@ where
         Ok(())
     }
 
-    async fn execute_load(
-        &self,
-        chain_cfg: &ChainConfig,
-        chain_start_block: u64,
-        chain_target_block: u64,
-    ) -> Result<()> {
+    async fn load(&self, chain_cfg: &ChainConfig, chain_start_block: u64, chain_target_block: u64) -> Result<()> {
         let (chain_filter, contracts) = self.build_loading_contracts(chain_cfg).await?;
         let contract_options = if chain_filter {
             Some(
