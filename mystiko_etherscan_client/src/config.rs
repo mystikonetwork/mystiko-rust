@@ -12,12 +12,18 @@ const DEFAULT_MAINNET_POLYGON_API_BASE_URL: &str = "https://api.polygonscan.com"
 const DEFAULT_MAINNET_AVALANCHE_API_BASE_URL: &str = "https://api.snowtrace.io";
 const DEFAULT_MAINNET_FANTOM_API_BASE_URL: &str = "https://api.ftmscan.com";
 const DEFAULT_MAINNET_MOONBEAM_API_BASE_URL: &str = "https://api-moonbeam.moonscan.io";
+const DEFAULT_MAINNET_BASE_API_BASE_URL: &str = "https://api.basescan.org";
+const DEFAULT_MAINNET_ARBITRUM_ONE_API_BASE_URL: &str = "https://api.arbiscan.io";
+const DEFAULT_MAINNET_OPTIMISM_API_BASE_URL: &str = "https://api-optimistic.etherscan.io";
 const DEFAULT_TESTNET_GOERLI_API_BASE_URL: &str = "https://api-goerli.etherscan.io";
 const DEFAULT_TESTNET_BSC_API_BASE_URL: &str = "https://api-testnet.bscscan.com";
 const DEFAULT_TESTNET_POLYGAN_MUMBAI_API_BASE_URL: &str = "https://api-testnet.polygonscan.com";
 const DEFAULT_TESTNET_AVALANCHE_FUJI_API_BASE_URL: &str = "https://api-testnet.snowtrace.io";
 const DEFAULT_TESTNET_FANTOM_API_BASE_URL: &str = "https://api-testnet.ftmscan.com";
 const DEFAULT_TESTNET_MOONBASE_ALPHA_API_BASE_URL: &str = "https://api-moonbase.moonscan.io";
+const DEFAULT_TESTNET_BASE_GOERLI_API_BASE_URL: &str = "https://api-goerli.basescan.org";
+const DEFAULT_TESTNET_ARBITRUM_GOERLI_API_BASE_URL: &str = "https://api-goerli.arbiscan.io";
+const DEFAULT_TESTNET_OPTIMISM_GOERLI_API_BASE_URL: &str = "https://api-goerli-optimistic.etherscan.io";
 
 pub fn get_default_base_url(chain_id: u64) -> Result<String> {
     match chain_id {
@@ -27,12 +33,18 @@ pub fn get_default_base_url(chain_id: u64) -> Result<String> {
         43114 => Ok(String::from(DEFAULT_MAINNET_AVALANCHE_API_BASE_URL)),
         250 => Ok(String::from(DEFAULT_MAINNET_FANTOM_API_BASE_URL)),
         1284 => Ok(String::from(DEFAULT_MAINNET_MOONBEAM_API_BASE_URL)),
+        8453 => Ok(String::from(DEFAULT_MAINNET_BASE_API_BASE_URL)),
+        42161 => Ok(String::from(DEFAULT_MAINNET_ARBITRUM_ONE_API_BASE_URL)),
+        10 => Ok(String::from(DEFAULT_MAINNET_OPTIMISM_API_BASE_URL)),
         5 => Ok(String::from(DEFAULT_TESTNET_GOERLI_API_BASE_URL)),
         97 => Ok(String::from(DEFAULT_TESTNET_BSC_API_BASE_URL)),
         80001 => Ok(String::from(DEFAULT_TESTNET_POLYGAN_MUMBAI_API_BASE_URL)),
         43113 => Ok(String::from(DEFAULT_TESTNET_AVALANCHE_FUJI_API_BASE_URL)),
         4002 => Ok(String::from(DEFAULT_TESTNET_FANTOM_API_BASE_URL)),
         1287 => Ok(String::from(DEFAULT_TESTNET_MOONBASE_ALPHA_API_BASE_URL)),
+        84531 => Ok(String::from(DEFAULT_TESTNET_BASE_GOERLI_API_BASE_URL)),
+        421613 => Ok(String::from(DEFAULT_TESTNET_ARBITRUM_GOERLI_API_BASE_URL)),
+        420 => Ok(String::from(DEFAULT_TESTNET_OPTIMISM_GOERLI_API_BASE_URL)),
         _ => Err(EtherScanError::UnsupportedChainIdError(chain_id)),
     }
 }
