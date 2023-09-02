@@ -52,34 +52,34 @@ where
 {
     async fn check_commitment(
         &self,
-        data: &ValidateMergedData,
+        merged_data: &ValidateMergedData,
         contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
-        self.check_commitment_included_count(data, contract).await?;
-        self.check_commitment_queued_count(data, contract).await
+        self.check_commitment_included_count(merged_data, contract).await?;
+        self.check_commitment_queued_count(merged_data, contract).await
     }
 
     async fn check_commitment_included_count(
         &self,
-        data: &ValidateMergedData,
+        merged_data: &ValidateMergedData,
         contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
-        let included_cms = data
+        let included_cms = merged_data
             .commitments
             .iter()
             .filter(|c| c.status == CommitmentStatus::Included)
             .collect::<Vec<_>>();
         let included_count = contract
             .get_commitment_included_count()
-            .block(BlockId::Number(BlockNumber::Number(data.end_block.into())))
+            .block(BlockId::Number(BlockNumber::Number(merged_data.end_block.into())))
             .await?
             .as_u64();
         match included_cms.last() {
             None => {
-                let target_block = data.start_block - 1;
+                let target_block = merged_data.start_block - 1;
                 let option = CommitmentQueryOption::builder()
-                    .chain_id(data.chain_id)
-                    .contract_address(contract.address().to_string())
+                    .chain_id(merged_data.chain_id)
+                    .contract_address(merged_data.contract_address.clone())
                     .end_block(target_block)
                     .status(CommitmentStatus::Included)
                     .build();
@@ -109,7 +109,7 @@ where
 
     async fn check_commitment_queued_count(
         &self,
-        _data: &ValidateMergedData,
+        _merged_data: &ValidateMergedData,
         _contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
         // todo check queued count
