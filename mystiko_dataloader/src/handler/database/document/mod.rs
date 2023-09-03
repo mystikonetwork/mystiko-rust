@@ -86,7 +86,7 @@ pub trait DatabaseCommitment: DocumentData {
 
     fn get_src_transaction_hash(&self) -> Option<&String>;
 
-    fn update_by_proto(&mut self, proto: &ProtoCommitment);
+    fn update_by_proto(&mut self, config: Arc<MystikoConfig>, proto: &ProtoCommitment) -> Result<()>;
 
     fn into_proto(self) -> Result<ProtoCommitment>;
 }
@@ -114,7 +114,7 @@ pub trait DatabaseNullifier: DocumentData {
 
     fn get_transaction_hash(&self) -> &String;
 
-    fn update_by_proto(&mut self, proto: &ProtoNullifier);
+    fn update_by_proto(&mut self, config: Arc<MystikoConfig>, proto: &ProtoNullifier) -> Result<()>;
 
     fn into_proto(self) -> Result<ProtoNullifier>;
 }

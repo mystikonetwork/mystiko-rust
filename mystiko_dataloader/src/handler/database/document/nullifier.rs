@@ -96,8 +96,10 @@ impl DatabaseNullifier for Nullifier {
         &self.transaction_hash
     }
 
-    fn update_by_proto(&mut self, _proto: &ProtoNullifier) {
-        todo!()
+    fn update_by_proto(&mut self, _config: Arc<MystikoConfig>, proto: &ProtoNullifier) -> Result<()> {
+        self.block_number = proto.block_number;
+        self.transaction_hash = encode_hex_with_prefix(&proto.transaction_hash);
+        Ok(())
     }
 
     fn into_proto(self) -> Result<ProtoNullifier> {

@@ -3641,6 +3641,7 @@ dependencies = [
  "mystiko_protos",
  "mystiko_storage",
  "mystiko_storage_macros",
+ "mystiko_storage_sqlite",
  "mystiko_types",
  "mystiko_utils",
  "num-bigint 0.4.3",

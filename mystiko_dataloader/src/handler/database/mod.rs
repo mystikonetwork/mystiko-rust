@@ -1,4 +1,5 @@
 pub mod document;
+
 mod utils;
 pub use utils::*;
 
@@ -426,7 +427,9 @@ where
             if let Some(mut existing_commitment) =
                 existing_commitments_map.remove(&commitment_proto.commitment_hash_as_biguint())
             {
-                existing_commitment.data.update_by_proto(&commitment_proto);
+                existing_commitment
+                    .data
+                    .update_by_proto(self.config.clone(), &commitment_proto)?;
                 existing_commitment.updated_at = current_timestamp();
                 update_commitments.push(existing_commitment);
             } else {
@@ -468,7 +471,9 @@ where
             if let Some(mut existing_nullifier) =
                 existing_nullifiers_map.remove(&nullifier_proto.nullifier_as_biguint())
             {
-                existing_nullifier.data.update_by_proto(&nullifier_proto);
+                existing_nullifier
+                    .data
+                    .update_by_proto(self.config.clone(), &nullifier_proto)?;
                 existing_nullifier.updated_at = current_timestamp();
                 update_nullifiers.push(existing_nullifier);
             } else {

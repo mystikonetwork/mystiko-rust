@@ -1,4 +1,5 @@
 use crate::handler::document::DatabaseCommitment;
+use crate::handler::merge_commitments;
 use anyhow::Result;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
 use mystiko_protos::data::v1::Commitment as ProtoCommitment;
@@ -198,8 +199,24 @@ impl DatabaseCommitment for Commitment {
         self.src_chain_transaction_hash.as_ref()
     }
 
-    fn update_by_proto(&mut self, _proto: &ProtoCommitment) {
-        todo!()
+    fn update_by_proto(&mut self, config: Arc<MystikoConfig>, proto: &ProtoCommitment) -> Result<()> {
+        let data = Commitment::from_proto(
+            config,
+            self.chain_id,
+            self.get_contract_address(),
+            merge_commitments(self.clone().into_proto()?, proto.clone()),
+        )?;
+        self.status = data.status;
+        self.block_number = data.block_number;
+        self.src_chain_block_number = data.src_chain_block_number;
+        self.included_block_number = data.included_block_number;
+        self.leaf_index = data.leaf_index;
+        self.rollup_fee = data.rollup_fee;
+        self.encrypted_notes = data.encrypted_notes;
+        self.queued_transaction_hash = data.queued_transaction_hash;
+        self.included_transaction_hash = data.included_transaction_hash;
+        self.src_chain_transaction_hash = data.src_chain_transaction_hash;
+        Ok(())
     }
 
     fn into_proto(self) -> Result<ProtoCommitment> {
