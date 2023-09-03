@@ -509,10 +509,10 @@ where
         if R::data_type() == DataType::Full {
             log::info!(
                 "data of contract[chain_id={}, address={}] were handled successfully: \
-            inserted {} new commitments, \
-            updated {} existing commitments, \
-            inserted {} new nullifiers, \
-            updated {} existing nullifiers",
+                inserted {} new commitments, \
+                updated {} existing commitments, \
+                inserted {} new nullifiers, \
+                updated {} existing nullifiers",
                 contract.data.get_chain_id(),
                 contract.data.get_contract_address(),
                 insert_commitments.len(),
