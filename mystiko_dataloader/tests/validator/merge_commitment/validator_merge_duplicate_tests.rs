@@ -14,12 +14,20 @@ use mystiko_utils::convert::bytes_to_biguint;
 
 #[tokio::test]
 async fn test_only_queued_duplicate_commitment() {
+    for concurrency in 1_usize..3_usize {
+        only_queued_duplicate_commitment(concurrency).await;
+    }
+}
+async fn only_queued_duplicate_commitment(concurrency: usize) {
     let (validator, handler, _mock, mock_checker_validator, mock_checker) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(concurrency)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms1 = load_commitments("./tests/files/validator/commitments_100.json").await;
@@ -149,7 +157,10 @@ async fn test_only_included_duplicate_commitment() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
@@ -219,7 +230,10 @@ async fn test_queued_duplicate_leaf_index_mismatch() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
@@ -267,7 +281,10 @@ async fn test_queued_and_included_duplicate() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;

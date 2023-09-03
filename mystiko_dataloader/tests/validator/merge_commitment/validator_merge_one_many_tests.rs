@@ -10,11 +10,20 @@ use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
 async fn test_one_queued_many_included_same_commitment() {
+    for concurrency in 1_usize..3_usize {
+        one_queued_many_included_same_commitment(concurrency).await;
+    }
+}
+
+async fn one_queued_many_included_same_commitment(concurrency: usize) {
     let (validator, handler, _mock) = create_single_rule_lite_data_validator(Some(vec![RuleCheckerType::Sequence]));
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(concurrency)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
@@ -101,7 +110,10 @@ async fn test_many_queued_one_included_different_commitment() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;

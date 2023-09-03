@@ -34,6 +34,13 @@ where
     C: RuleChecker<R>,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
+        if option.validate_concurrency < 1 {
+            return Err(<RuleValidatorError as Into<anyhow::Error>>::into(
+                RuleValidatorError::InvalidValidateConcurrencyError,
+            )
+            .into());
+        }
+
         if data.contracts_data.is_empty() {
             return Err(
                 <RuleValidatorError as Into<anyhow::Error>>::into(RuleValidatorError::EmptyValidateDataError).into(),
@@ -44,8 +51,8 @@ where
             <RuleValidatorError as Into<anyhow::Error>>::into(RuleValidatorError::ChainNotFoundError(data.chain_id))
         })?;
 
-        let mut futures = Vec::new();
         let mut contract_results = vec![];
+        let mut validate_data = vec![];
         for contract_data in &data.contracts_data {
             match chain.find_pool_contract_by_address(&contract_data.address) {
                 None => {
@@ -57,22 +64,31 @@ where
                     );
                 }
                 Some(contract_cfg) => {
-                    futures.push(
-                        self.contract_data_validate(
-                            ValidateOriginalData::builder()
-                                .chain_id(data.chain_id)
-                                .contract_config(contract_cfg)
-                                .contract_data(contract_data)
-                                .option(option)
-                                .build(),
-                        ),
+                    validate_data.push(
+                        ValidateOriginalData::builder()
+                            .chain_id(data.chain_id)
+                            .contract_config(contract_cfg)
+                            .contract_data(contract_data)
+                            .option(option)
+                            .build(),
                     );
                 }
             }
         }
 
-        let results = futures::future::join_all(futures).await;
-        contract_results.extend(results);
+        if !validate_data.is_empty() {
+            let chunk_nums = (validate_data.len() + option.validate_concurrency - 1) / option.validate_concurrency;
+            let chunks = validate_data.chunks(chunk_nums);
+            let mut group_task = Vec::with_capacity(chunks.len());
+            for chunk in chunks {
+                group_task.push(self.group_contract_data_validate(chunk));
+            }
+            let results = futures::future::join_all(group_task).await;
+            for results in results {
+                contract_results.extend(results);
+            }
+        }
+
         let chain_result = ChainResult::builder()
             .chain_id(data.chain_id)
             .contract_results(contract_results)
@@ -97,8 +113,19 @@ where
         }
     }
 
-    async fn contract_data_validate(&self, data: ValidateOriginalData<'_, R>) -> ContractResult<()> {
-        match self.merge_and_check(&data).await {
+    async fn group_contract_data_validate(
+        &self,
+        group_data: &[ValidateOriginalData<'_, R>],
+    ) -> Vec<ContractResult<()>> {
+        let mut results = vec![];
+        for data in group_data {
+            results.push(self.contract_data_validate(data).await);
+        }
+        results
+    }
+
+    async fn contract_data_validate(&self, data: &ValidateOriginalData<'_, R>) -> ContractResult<()> {
+        match self.merge_and_check(data).await {
             Ok(_) => ContractResult::builder()
                 .address(data.contract_data.address.clone())
                 .result(Ok(()))

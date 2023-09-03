@@ -11,24 +11,29 @@ async fn test_empty_data() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
-    let chain_id = 1_u64;
-    let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
-    let contract_data = ContractData::builder()
-        .address(contract_address.to_string())
-        .start_block(0_u64)
-        .end_block(100_u64)
-        .build();
-    let data = ChainData::builder()
-        .chain_id(chain_id)
-        .contracts_data(vec![contract_data])
-        .build();
-    let result = validator.validate(&data, &option).await.unwrap();
-    assert_eq!(result.chain_id, chain_id);
-    assert_eq!(result.contract_results.len(), 1);
-    assert_eq!(result.contract_results[0].address, contract_address);
-    assert_eq!(
-        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        DataMergeError::StartBlockError.to_string()
-    );
+    for concurrency in 1_usize..3_usize {
+        let option = ValidateOption::builder()
+            .config(core_cfg.clone())
+            .validate_concurrency(concurrency)
+            .build();
+        let chain_id = 1_u64;
+        let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
+        let contract_data = ContractData::builder()
+            .address(contract_address.to_string())
+            .start_block(0_u64)
+            .end_block(100_u64)
+            .build();
+        let data = ChainData::builder()
+            .chain_id(chain_id)
+            .contracts_data(vec![contract_data])
+            .build();
+        let result = validator.validate(&data, &option).await.unwrap();
+        assert_eq!(result.chain_id, chain_id);
+        assert_eq!(result.contract_results.len(), 1);
+        assert_eq!(result.contract_results[0].address, contract_address);
+        assert_eq!(
+            result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+            DataMergeError::StartBlockError.to_string()
+        );
+    }
 }

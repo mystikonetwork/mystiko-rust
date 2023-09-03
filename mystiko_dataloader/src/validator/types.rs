@@ -14,6 +14,7 @@ pub type Result<T> = anyhow::Result<T, ValidatorError>;
 #[builder(field_defaults(setter(into)))]
 pub struct ValidateOption {
     pub config: Arc<MystikoConfig>,
+    pub validate_concurrency: usize,
 }
 
 pub type ValidateResult = Result<ChainResult<()>>;

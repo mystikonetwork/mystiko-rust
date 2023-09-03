@@ -16,7 +16,10 @@ async fn test_empty_data() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let data = ChainData::builder().chain_id(chain_id).contracts_data(vec![]).build();
     let result = validator.validate(&data, &option).await;
@@ -33,7 +36,10 @@ async fn test_chain_id_invalid() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 12345678890123456789_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let contract_data = ContractData::builder()
@@ -59,7 +65,10 @@ async fn test_not_pool_contract_address() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x1234565b6C0F5fe1aEc31Cb38B7a57d01496411";
     let contract_data = ContractData::builder()
@@ -85,7 +94,10 @@ async fn test_contract_data_none() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let contract_data = ContractData::builder()
@@ -111,7 +123,10 @@ async fn test_empty_commitment() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let contract_data = ContractData::builder()
@@ -138,7 +153,10 @@ async fn test_only_queued_commitment() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
@@ -235,7 +253,10 @@ async fn test_only_included_commitment() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
