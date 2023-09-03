@@ -3639,6 +3639,8 @@ dependencies = [
  "mystiko_fs",
  "mystiko_indexer_client",
  "mystiko_protos",
+ "mystiko_storage",
+ "mystiko_storage_macros",
  "mystiko_types",
  "mystiko_utils",
  "num-bigint 0.4.3",
