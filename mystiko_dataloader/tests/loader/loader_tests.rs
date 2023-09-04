@@ -1,6 +1,7 @@
-use crate::loader::loader_mock::{create_loader, loader_load, MockFetcher, MockHandler, MockValidator};
+use crate::loader::loader_mock::{
+    create_loader, loader_load, ChainDataLoaderBuilderFullDataType, MockFetcher, MockHandler, MockValidator,
+};
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::loader::ChainDataLoaderBuilder;
 use mystiko_dataloader::DataLoaderError;
 use std::sync::Arc;
@@ -8,8 +9,7 @@ use std::sync::Arc;
 #[tokio::test]
 async fn test_builder_error() {
     let chain_id = 1_u64;
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>> =
-        ChainDataLoaderBuilder::new();
+    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
     let loader = builder
         .chain_id(chain_id)
         .add_shared_validator(Arc::new(MockValidator::new()))
@@ -22,8 +22,8 @@ async fn test_builder_error() {
         .unwrap();
     let core_cfg = Arc::new(core_cfg);
 
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>> =
-        ChainDataLoaderBuilder::new();
+    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
+
     let loader = builder
         .chain_id(chain_id)
         .config(core_cfg.clone())
@@ -32,8 +32,8 @@ async fn test_builder_error() {
         .build();
     assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderBuildError(_)));
 
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>> =
-        ChainDataLoaderBuilder::new();
+    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
+
     let loader = builder
         .chain_id(chain_id)
         .config(core_cfg.clone())
@@ -41,8 +41,8 @@ async fn test_builder_error() {
         .build();
     assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderBuildError(_)));
 
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>> =
-        ChainDataLoaderBuilder::new();
+    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
+
     let loader = builder
         .chain_id(chain_id)
         .config(core_cfg.clone())
@@ -52,8 +52,8 @@ async fn test_builder_error() {
         .build();
     assert!(matches!(loader.err().unwrap(), DataLoaderError::LoaderBuildError(_)));
 
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>> =
-        ChainDataLoaderBuilder::new();
+    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
+
     let loader = builder
         .chain_id(chain_id)
         .config(core_cfg.clone())

@@ -15,5 +15,9 @@ async fn test_loader_load_error() {
     let chain_id = 1_u64;
     let (_cfg, loader, _fetchers, _, _, _mock_provider) = create_shared_loader(chain_id, 1, 1).await;
     let result = loader.load(None).await;
-    assert!(matches!(result.err().unwrap(), DataLoaderError::ProviderError(_)));
+    assert!(result
+        .err()
+        .unwrap()
+        .to_string()
+        .contains("failed to get latest block number"));
 }

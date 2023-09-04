@@ -12,35 +12,29 @@ use log::{error, warn};
 use mystiko_config::wrapper::chain::ChainConfig;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_ethers::provider::factory::Provider;
 use std::any::type_name;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, Default)]
-pub struct ChainDataLoaderBuilder<
-    R,
-    F = Box<dyn DataFetcher<R>>,
-    V = Box<dyn DataValidator<R>>,
-    H = Box<dyn DataHandler<R>>,
-> {
+pub struct ChainDataLoaderBuilder<R, M, F, V, H> {
     config: Option<Arc<MystikoConfig>>,
     chain_id: u64,
+    provider: Option<Arc<M>>,
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
     handler: Option<Arc<H>>,
-    provider: Option<Arc<Provider>>,
     _phantom: std::marker::PhantomData<R>,
 }
 
 #[derive(Debug)]
-pub struct ChainDataLoader<R, F = Box<dyn DataFetcher<R>>, V = Box<dyn DataValidator<R>>, H = Box<dyn DataHandler<R>>> {
+pub struct ChainDataLoader<R, M, F, V, H> {
     config: Arc<MystikoConfig>,
     chain_id: u64,
+    provider: Arc<M>,
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
-    provider: Arc<Provider>,
     _phantom: std::marker::PhantomData<R>,
 }
 
@@ -53,12 +47,13 @@ struct ChainLoadParams<'a> {
 }
 
 #[async_trait]
-impl<R, F, V, H> DataLoader for ChainDataLoader<R, F, V, H>
+impl<R, M, F, V, H> DataLoader for ChainDataLoader<R, M, F, V, H>
 where
-    R: 'static + LoadedData,
-    F: 'static + DataFetcher<R>,
-    V: 'static + DataValidator<R>,
-    H: 'static + DataHandler<R>,
+    R: LoadedData,
+    M: Middleware,
+    F: DataFetcher<R>,
+    V: DataValidator<R>,
+    H: DataHandler<R>,
 {
     async fn load(&self, options: Option<LoadOption>) -> DataLoaderResult<()> {
         let chain_cfg = self.build_chain_config().await?;
@@ -75,21 +70,22 @@ where
     }
 }
 
-impl<R, F, V, H> ChainDataLoaderBuilder<R, F, V, H>
+impl<R, M, F, V, H> ChainDataLoaderBuilder<R, M, F, V, H>
 where
-    R: 'static + LoadedData,
-    F: 'static + DataFetcher<R>,
-    V: 'static + DataValidator<R>,
-    H: 'static + DataHandler<R>,
+    R: LoadedData,
+    M: Middleware,
+    F: DataFetcher<R>,
+    V: DataValidator<R>,
+    H: DataHandler<R>,
 {
     pub fn new() -> Self {
         Self {
             config: None,
             chain_id: 0,
+            provider: None,
             fetchers: Vec::new(),
             validators: Vec::new(),
             handler: None,
-            provider: None,
             _phantom: std::marker::PhantomData,
         }
     }
@@ -149,12 +145,12 @@ where
         self
     }
 
-    pub fn shared_provider(mut self, provider: Arc<Provider>) -> Self {
+    pub fn shared_provider(mut self, provider: Arc<M>) -> Self {
         self.provider = Some(provider);
         self
     }
 
-    pub fn build(self) -> DataLoaderResult<ChainDataLoader<R, F, V, H>> {
+    pub fn build(self) -> DataLoaderResult<ChainDataLoader<R, M, F, V, H>> {
         let config = self
             .config
             .ok_or_else(|| DataLoaderError::LoaderBuildError("config cannot be None".to_string()))?;
@@ -176,21 +172,22 @@ where
         Ok(ChainDataLoader {
             config,
             chain_id: self.chain_id,
+            provider,
             fetchers: self.fetchers,
             validators: self.validators,
             handler,
-            provider,
             _phantom: Default::default(),
         })
     }
 }
 
-impl<R, F, V, H> ChainDataLoader<R, F, V, H>
+impl<R, M, F, V, H> ChainDataLoader<R, M, F, V, H>
 where
-    R: 'static + LoadedData,
-    F: 'static + DataFetcher<R>,
-    V: 'static + DataValidator<R>,
-    H: 'static + DataHandler<R>,
+    R: LoadedData,
+    M: Middleware,
+    F: DataFetcher<R>,
+    V: DataValidator<R>,
+    H: DataHandler<R>,
 {
     async fn try_load(&self, params: &ChainLoadParams<'_>) -> DataLoaderResult<()> {
         let (chain_filter, contracts) = self.build_loading_contracts(params.cfg).await?;
@@ -366,7 +363,12 @@ where
             Some(o) => o.delay_block.unwrap_or(DEFAULT_DELAY_BLOCK),
         };
 
-        let latest = self.provider.get_block_number().await?.as_u64();
+        let latest = self
+            .provider
+            .get_block_number()
+            .await
+            .map_err(|e| DataLoaderError::LoaderLoadError(format!("failed to get latest block number {:?}", e)))?
+            .as_u64();
         if latest > delay_block && latest - delay_block >= start_block {
             Ok(latest - delay_block)
         } else {

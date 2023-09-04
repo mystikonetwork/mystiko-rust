@@ -382,8 +382,11 @@ where
     }
 }
 
-type ChainDataLoaderFullDataType =
-    ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>>;
+pub type ChainDataLoaderBuilderFullDataType =
+    ChainDataLoaderBuilder<FullData, Provider, MockFetcher<FullData>, MockValidator, MockHandler<FullData>>;
+
+pub type ChainDataLoaderFullDataType =
+    ChainDataLoader<FullData, Provider, MockFetcher<FullData>, MockValidator, MockHandler<FullData>>;
 
 pub async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) -> DataLoaderResult<()> {
     let load_option = delay_block.map(|d| LoadOption::builder().delay_block(d).build());
@@ -395,11 +398,10 @@ pub async fn create_loader(
     fetch_result: bool,
     contract_address: &str,
     end_block: u64,
-) -> ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>> {
+) -> ChainDataLoaderFullDataType {
     let chain_id = 1_u64;
 
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>> =
-        ChainDataLoaderBuilder::new();
+    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
 
     let fetcher = MockFetcher::new(chain_id);
     if fetch_result {
@@ -435,10 +437,10 @@ pub async fn create_loader(
         builder
             .chain_id(1)
             .config(Arc::new(core_cfg))
+            .shared_provider(provider)
             .add_fetchers(vec![fetcher])
             .add_validators(vec![validator])
             .handler(handler)
-            .shared_provider(provider)
             .build()
             .unwrap()
     } else {
@@ -460,14 +462,13 @@ pub async fn create_shared_loader(
     validator_count: usize,
 ) -> (
     Arc<MystikoConfig>,
-    Arc<ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>>>,
+    Arc<ChainDataLoaderFullDataType>,
     Vec<Arc<MockFetcher<FullData>>>,
     Vec<Arc<MockValidator>>,
     Arc<MockHandler<FullData>>,
     Arc<MockProvider>,
 ) {
-    let builder: ChainDataLoaderBuilder<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>> =
-        ChainDataLoaderBuilder::new();
+    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
     let core_cfg = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
             .await
