@@ -62,12 +62,12 @@ jobs:
         run: cargo clippy --all-targets --all-features -j 4 -- -D warnings
 
       - name: Run Test
-        run: cargo llvm-cov --workspace --all-features --lcov --no-report
+        run: cargo llvm-cov test --all-features --no-report
         env:
           DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
 
       - name: Generate Coverage
-        run: cargo llvm-cov --workspace --all-features --lcov --no-run --output-path=lcov.info --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)"
+        run: cargo llvm-cov report --lcov --output-path=lcov.info --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)"
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v3

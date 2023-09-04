@@ -25,7 +25,6 @@ pub struct Chain {
     pub name_override: bool,
     pub providers: Vec<Provider>,
     pub provider_override: bool,
-    pub synced_block_number: u64,
 }
 
 fn uniques() -> Vec<UniqueColumns> {
@@ -74,7 +73,6 @@ impl Chain {
                     .map(|provider| provider.into())
                     .collect::<Vec<Provider>>(),
                 provider_override: proto.provider_override,
-                synced_block_number: proto.synced_block_number,
             },
         )
     }
@@ -96,7 +94,6 @@ impl Chain {
                     .collect::<Vec<ProtoProvider>>(),
             )
             .provider_override(chain.data.provider_override)
-            .synced_block_number(chain.data.synced_block_number)
             .build()
     }
 }

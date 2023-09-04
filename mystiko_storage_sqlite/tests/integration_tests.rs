@@ -67,6 +67,7 @@ async fn test_file_db() {
     let db_path = db_dir.path().join(Path::new("test.db"));
     let storage = SqliteStorageBuilder::new()
         .path(db_path.to_str().unwrap())
+        .max_connection(2u32)
         .build()
         .await
         .unwrap();
@@ -259,7 +260,12 @@ async fn test_unsupported_primitive_integers() {
 }
 
 async fn create_collection() -> TestDocumentCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
+    let storage = SqliteStorageBuilder::new()
+        .in_memory()
+        .execute_batch_size(2)
+        .build()
+        .await
+        .unwrap();
     TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)))
 }
 

@@ -8,7 +8,7 @@ anyhow = { version = "1.0.69" }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-storage-v1","mystiko-core-document-v1"] }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-data-v1", "mystiko-storage-v1","mystiko-core-document-v1"] }
 num-bigint = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }

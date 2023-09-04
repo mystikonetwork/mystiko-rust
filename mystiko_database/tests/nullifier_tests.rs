@@ -26,6 +26,7 @@ async fn test_nullifiers_crud() {
             .insert(&Nullifier {
                 chain_id: 1,
                 contract_address: String::from("contract_address 1"),
+                block_number: 10000000u64,
                 nullifier: BigUint::from(1u32),
                 transaction_hash: String::from("transaction_hash 1"),
             })
@@ -38,12 +39,14 @@ async fn test_nullifiers_crud() {
                 Nullifier {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
+                    block_number: 10000000u64,
                     nullifier: BigUint::from(2u32),
                     transaction_hash: String::from("transaction_hash 2"),
                 },
                 Nullifier {
                     chain_id: 3,
                     contract_address: String::from("contract_address 3"),
+                    block_number: 10000001u64,
                     nullifier: BigUint::from(3u32),
                     transaction_hash: String::from("transaction_hash 3"),
                 },
@@ -130,6 +133,7 @@ async fn test_nullifier_serde() {
         .insert(&Nullifier {
             chain_id: 1,
             contract_address: String::from("contract_address 1"),
+            block_number: 10000000u64,
             nullifier: BigUint::from(1u32),
             transaction_hash: String::from("transaction_hash 1"),
         })

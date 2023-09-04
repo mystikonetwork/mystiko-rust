@@ -10,7 +10,7 @@ use mystiko_core::handler::chain::{
 use mystiko_core::handler::contract::ContractHandler;
 use mystiko_database::database::Database;
 use mystiko_database::document::chain::{Chain, Provider};
-use mystiko_database::document::contract::Contract;
+use mystiko_database::document::contract::{Contract, ContractColumn};
 use mystiko_ethers::provider::factory::ProvidersOptions;
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_protos::core::handler::v1::{UpdateChainOptions, UpdateProviderOptions};
@@ -60,7 +60,6 @@ async fn test_chain_initialize() {
                 );
             }
             assert!(!chain.provider_override);
-            assert_eq!(chain.synced_block_number, 0);
         } else {
             panic!("Chain config not found");
         }
@@ -388,60 +387,51 @@ async fn test_chains_update_providers() {
 #[tokio::test]
 async fn test_chains_reset_synced_block() {
     let (handler, db, config) = setup().await;
-    let contract_handler = TypedContractHandler::new(db.clone(), config);
+    let contract_handler = TypedContractHandler::new(db.clone(), config.clone());
     let contracts = contract_handler.initialize().await.unwrap();
     let mut contracts: Vec<Document<Contract>> = contracts
         .iter()
         .map(|contract| Contract::from_proto(contract.clone()))
         .collect();
     let chains = handler.initialize().await.unwrap();
-    let mut chains: Vec<Document<Chain>> = chains.iter().map(|chain| Chain::from_proto(chain.clone())).collect();
+    let chains: Vec<Document<Chain>> = chains.iter().map(|chain| Chain::from_proto(chain.clone())).collect();
     for contract in contracts.iter_mut() {
         if contract.data.chain_id == chains[0].data.chain_id {
-            contract.data.synced_block_number = 10;
+            contract.data.loaded_block_number = 10;
         }
     }
     db.contracts.update_batch(&contracts).await.unwrap();
-    chains[0].data.synced_block_number = 10;
-    db.chains.update(&chains[0]).await.unwrap();
     handler.reset_synced_block(chains[0].data.chain_id).await.unwrap();
-    let chain = handler
-        .find_by_chain_id(chains[0].data.chain_id)
-        .await
-        .unwrap()
-        .unwrap();
-    assert_eq!(chain.synced_block_number, 0);
+    let chain_start_block = config.find_chain(chains[0].data.chain_id).unwrap().start_block();
     let contracts = contract_handler
         .find_by_chain_id(chains[0].data.chain_id)
         .await
         .unwrap();
     for contract in contracts.iter() {
-        assert_eq!(contract.synced_block_number, contract.sync_start);
+        assert_eq!(contract.loaded_block_number, chain_start_block);
     }
     handler
         .reset_synced_block_to(chains[0].data.chain_id, 20)
         .await
         .unwrap();
-    let chain = handler
-        .find_by_chain_id(chains[0].data.chain_id)
-        .await
-        .unwrap()
-        .unwrap();
-    assert_eq!(chain.synced_block_number, 20);
     let contracts = contract_handler
         .find_by_chain_id(chains[0].data.chain_id)
         .await
         .unwrap();
     for contract in contracts.iter() {
-        assert_eq!(contract.synced_block_number, 20);
+        assert_eq!(contract.loaded_block_number, 20);
     }
-    assert!(handler.reset_synced_block(23423432).await.unwrap().is_none());
+    assert!(handler.reset_synced_block(23423432).await.unwrap().is_empty());
     db.chains.delete(&chains[0]).await.unwrap();
+    db.contracts
+        .delete_by_filter(SubFilter::equal(ContractColumn::ChainId, chains[0].data.chain_id))
+        .await
+        .unwrap();
     assert!(handler
         .reset_synced_block(chains[0].data.chain_id)
         .await
         .unwrap()
-        .is_none());
+        .is_empty());
 }
 
 #[tokio::test]

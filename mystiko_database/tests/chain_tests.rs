@@ -43,7 +43,6 @@ async fn test_chains_crud() {
                     },
                 ],
                 provider_override: true,
-                synced_block_number: 8497095,
             })
             .await
             .unwrap(),
@@ -72,7 +71,6 @@ async fn test_chains_crud() {
                         },
                     ],
                     provider_override: false,
-                    synced_block_number: 27265360,
                 },
                 Chain {
                     chain_id: 80001,
@@ -85,7 +83,6 @@ async fn test_chains_crud() {
                         quorum_weight: 6,
                     }],
                     provider_override: true,
-                    synced_block_number: 32076637,
                 },
             ])
             .await
@@ -134,9 +131,9 @@ async fn test_chains_crud() {
     let updated_chain = chains.update(&found_chain).await.unwrap();
     assert_eq!(updated_chain.data, found_chain.data);
     // testing update_batch
-    inserted_chains[0].data.synced_block_number = 10000;
-    inserted_chains[1].data.synced_block_number = 20000;
-    inserted_chains[2].data.synced_block_number = 30000;
+    inserted_chains[0].data.provider_override = true;
+    inserted_chains[1].data.provider_override = true;
+    inserted_chains[2].data.provider_override = true;
     found_chains = chains.update_batch(&inserted_chains).await.unwrap();
     assert_eq!(found_chains[0].data, inserted_chains[0].data);
     assert_eq!(found_chains[1].data, inserted_chains[1].data);
@@ -184,7 +181,6 @@ async fn test_chain_serde() {
                 },
             ],
             provider_override: true,
-            synced_block_number: 8497095,
         })
         .await
         .unwrap();
@@ -248,7 +244,6 @@ fn test_chain_from_proto() {
                 .build(),
         ])
         .provider_override(true)
-        .synced_block_number(8497095u64)
         .build();
     let chain = Chain::from_proto(proto);
     assert_eq!(chain.id, String::from("123456"));
@@ -267,7 +262,6 @@ fn test_chain_from_proto() {
     assert_eq!(chain.data.providers[1].max_try_count, 4u32);
     assert_eq!(chain.data.providers[1].quorum_weight, 3u32);
     assert!(chain.data.provider_override);
-    assert_eq!(chain.data.synced_block_number, 8497095u64);
 }
 
 #[test]
@@ -295,7 +289,6 @@ fn test_chain_into_proto() {
                 },
             ],
             provider_override: true,
-            synced_block_number: 8497095u64,
         },
     );
     let proto = Chain::into_proto(chain);
@@ -315,5 +308,4 @@ fn test_chain_into_proto() {
     assert_eq!(proto.providers[1].max_try_count, 4u32);
     assert_eq!(proto.providers[1].quorum_weight, 3u32);
     assert!(proto.provider_override);
-    assert_eq!(proto.synced_block_number, 8497095u64);
 }

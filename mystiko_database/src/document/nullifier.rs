@@ -14,6 +14,7 @@ pub struct Nullifier {
     pub contract_address: String,
     #[column(length_limit = 128)]
     pub nullifier: BigUint,
+    pub block_number: u64,
     #[column(length_limit = 128)]
     pub transaction_hash: String,
 }
@@ -31,6 +32,7 @@ fn indexes() -> Vec<IndexColumns> {
     vec![
         vec![NullifierColumn::ChainId].into(),
         vec![NullifierColumn::ContractAddress].into(),
+        vec![NullifierColumn::BlockNumber].into(),
         vec![NullifierColumn::Nullifier].into(),
         vec![NullifierColumn::TransactionHash].into(),
     ]

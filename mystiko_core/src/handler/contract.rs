@@ -58,17 +58,9 @@ where
     }
 
     pub async fn find_by_address(&self, chain_id: u64, address: &str) -> Result<Option<ProtoContract>> {
-        let filters: Vec<Condition> = vec![
-            SubFilter::equal(ContractColumn::ChainId, chain_id).into(),
-            SubFilter::equal(ContractColumn::ContractAddress, address).into(),
-        ];
-        Ok(self
-            .db
-            .contracts
-            .find_one(filters)
+        self.find_document_by_address(chain_id, address)
             .await
-            .map_err(MystikoError::StorageError)?
-            .map(Contract::into_proto))
+            .map(|doc| doc.map(Contract::into_proto))
     }
 
     pub async fn count<Q: Into<QueryFilter>>(&self, query_filter: Q) -> Result<u64> {
@@ -89,13 +81,10 @@ where
         let mut contracts: Vec<Document<Contract>> = vec![];
         for chain_config in self.config.chains() {
             for contract_config in chain_config.contracts_with_disabled().iter() {
-                let event_filter_size = chain_config.contract_event_filter_size(contract_config.address());
-                if let Some(existing_contract) = self
-                    .find_by_address(chain_config.chain_id(), contract_config.address())
+                if let Some(mut existing_contract) = self
+                    .find_document_by_address(chain_config.chain_id(), contract_config.address())
                     .await?
                 {
-                    let mut existing_contract = Contract::from_proto(existing_contract);
-                    existing_contract.data.sync_size = event_filter_size;
                     existing_contract.data.disabled = contract_config.disabled();
                     update_contracts.push(existing_contract);
                 } else {
@@ -103,11 +92,8 @@ where
                         chain_id: chain_config.chain_id(),
                         contract_address: contract_config.address().to_string(),
                         contract_type: contract_config.contract_type().clone(),
-                        sync_size: event_filter_size,
-                        sync_start: contract_config.start_block(),
-                        synced_block_number: contract_config.start_block(),
+                        loaded_block_number: chain_config.start_block(),
                         disabled: contract_config.disabled(),
-                        checked_leaf_index: None,
                     });
                 }
             }
@@ -145,22 +131,39 @@ where
         self.rs_synced_block(chain_id, address, Some(to_block)).await
     }
 
+    pub(crate) async fn find_document_by_address(
+        &self,
+        chain_id: u64,
+        address: &str,
+    ) -> Result<Option<Document<Contract>>> {
+        let filters: Vec<Condition> = vec![
+            SubFilter::equal(ContractColumn::ChainId, chain_id).into(),
+            SubFilter::equal(ContractColumn::ContractAddress, address).into(),
+        ];
+        self.db
+            .contracts
+            .find_one(filters)
+            .await
+            .map_err(MystikoError::StorageError)
+    }
+
     async fn rs_synced_block(
         &self,
         chain_id: u64,
         address: &str,
         to_block: Option<u64>,
     ) -> Result<Option<ProtoContract>> {
-        if let Some(existing_contract) = self.find_by_address(chain_id, address).await? {
-            let mut existing_contract = Contract::from_proto(existing_contract);
-            existing_contract.data.synced_block_number = to_block.unwrap_or(existing_contract.data.sync_start);
-            return Ok(Some(Contract::into_proto(
-                self.db
-                    .contracts
-                    .update(&existing_contract)
-                    .await
-                    .map_err(MystikoError::StorageError)?,
-            )));
+        if let Some(chain_config) = self.config.find_chain(chain_id) {
+            if let Some(mut existing_contract) = self.find_document_by_address(chain_id, address).await? {
+                existing_contract.data.loaded_block_number = to_block.unwrap_or(chain_config.start_block());
+                return Ok(Some(Contract::into_proto(
+                    self.db
+                        .contracts
+                        .update(&existing_contract)
+                        .await
+                        .map_err(MystikoError::StorageError)?,
+                )));
+            }
         }
         Ok(None)
     }

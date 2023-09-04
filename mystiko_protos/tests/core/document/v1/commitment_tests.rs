@@ -1,5 +1,5 @@
 use mystiko_protos::core::document::v1::Commitment;
-use mystiko_protos::core::v1::CommitmentStatus;
+use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_utils::convert::biguint_to_bytes;
 use num_bigint::BigUint;
 use prost::Message;

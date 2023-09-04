@@ -31,10 +31,7 @@ async fn test_contracts_crud() {
                 chain_id: 5,
                 contract_address: String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
                 disabled: false,
-                sync_start: 1000000,
-                sync_size: 10000,
-                synced_block_number: 1100000,
-                checked_leaf_index: Some(10),
+                loaded_block_number: 1100000,
             })
             .await
             .unwrap(),
@@ -49,20 +46,14 @@ async fn test_contracts_crud() {
                     chain_id: 5,
                     contract_address: String::from("0x91fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
                     disabled: true,
-                    sync_start: 2000000,
-                    sync_size: 20000,
-                    synced_block_number: 2200000,
-                    checked_leaf_index: Some(20),
+                    loaded_block_number: 2200000,
                 },
                 Contract {
                     contract_type: ContractType::Pool,
                     chain_id: 5,
                     contract_address: String::from("0xEd95f2F493687dFaeefD33C00C6Bc4dF0fbB3404"),
                     disabled: false,
-                    sync_start: 3000000,
-                    sync_size: 30000,
-                    synced_block_number: 3300000,
-                    checked_leaf_index: Some(30),
+                    loaded_block_number: 3300000,
                 },
             ])
             .await
@@ -109,12 +100,12 @@ async fn test_contracts_crud() {
     assert_eq!(found_contract, inserted_contracts[1]);
 
     // testing update
-    found_contract.data.synced_block_number = 2220000;
+    found_contract.data.loaded_block_number = 2220000;
     let updated_contract = contracts.update(&found_contract).await.unwrap();
     assert_eq!(updated_contract.data, found_contract.data);
     // testing update_batch
-    inserted_contracts[0].data.synced_block_number = 1110000;
-    inserted_contracts[2].data.synced_block_number = 3330000;
+    inserted_contracts[0].data.loaded_block_number = 1110000;
+    inserted_contracts[2].data.loaded_block_number = 3330000;
     found_contracts = contracts.update_batch(&inserted_contracts).await.unwrap();
     assert_eq!(found_contracts[0].data, inserted_contracts[0].data);
     assert_eq!(found_contracts[2].data, inserted_contracts[2].data);
@@ -150,10 +141,7 @@ async fn test_contract_serde() {
             chain_id: 5,
             contract_address: String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
             disabled: false,
-            sync_start: 1000000,
-            sync_size: 10000,
-            synced_block_number: 1100000,
-            checked_leaf_index: Some(10),
+            loaded_block_number: 1100000,
         })
         .await
         .unwrap();
@@ -172,10 +160,7 @@ fn test_from_proto() {
         .chain_id(5u64)
         .contract_address(String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"))
         .disabled(false)
-        .sync_start(1000000u64)
-        .sync_size(10000u64)
-        .synced_block_number(1100000u64)
-        .checked_leaf_index(10)
+        .loaded_block_number(1100000u64)
         .contract_type(1)
         .build();
     let contract = Contract::from_proto(proto);
@@ -188,10 +173,7 @@ fn test_from_proto() {
         String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d")
     );
     assert!(!contract.data.disabled);
-    assert_eq!(contract.data.sync_start, 1000000u64);
-    assert_eq!(contract.data.sync_size, 10000u64);
-    assert_eq!(contract.data.synced_block_number, 1100000u64);
-    assert_eq!(contract.data.checked_leaf_index, Some(10));
+    assert_eq!(contract.data.loaded_block_number, 1100000u64);
     assert_eq!(contract.data.contract_type, ContractType::Deposit);
 }
 
@@ -206,10 +188,7 @@ fn test_into_proto() {
             chain_id: 5,
             contract_address: String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
             disabled: false,
-            sync_start: 1000000,
-            sync_size: 10000,
-            synced_block_number: 1100000,
-            checked_leaf_index: Some(10),
+            loaded_block_number: 1100000,
         },
     );
     let proto = Contract::into_proto(contract);
@@ -222,10 +201,6 @@ fn test_into_proto() {
         String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d")
     );
     assert!(!proto.disabled);
-    assert_eq!(proto.sync_start, 1000000u64);
-    assert_eq!(proto.sync_size, 10000u64);
-    assert_eq!(proto.synced_block_number, 1100000u64);
-    assert!(proto.checked_leaf_index.is_some());
-    assert_eq!(proto.checked_leaf_index.unwrap(), 10);
+    assert_eq!(proto.loaded_block_number, 1100000u64);
     assert_eq!(proto.contract_type, 1);
 }

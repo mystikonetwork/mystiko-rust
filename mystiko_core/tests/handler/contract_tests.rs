@@ -38,25 +38,14 @@ async fn test_contract_initialize() {
         {
             assert_eq!(contract.contract_type, Into::<i32>::into(ContractType::Deposit));
             assert_eq!(contract.disabled, deposit_contract_config.disabled());
-            assert_eq!(
-                contract.sync_size,
-                chain_config.contract_event_filter_size(&contract.contract_address)
-            );
-            assert_eq!(contract.sync_start, deposit_contract_config.start_block());
-            assert_eq!(contract.synced_block_number, deposit_contract_config.start_block());
-            assert_eq!(contract.checked_leaf_index, None);
-        } else if let Some(pool_contract_config) =
-            config.find_pool_contract_by_address(contract.chain_id, &contract.contract_address)
+            assert_eq!(contract.loaded_block_number, chain_config.start_block());
+        } else if config
+            .find_pool_contract_by_address(contract.chain_id, &contract.contract_address)
+            .is_some()
         {
             assert_eq!(contract.contract_type, Into::<i32>::into(ContractType::Pool));
             assert!(!contract.disabled);
-            assert_eq!(
-                contract.sync_size,
-                chain_config.contract_event_filter_size(&contract.contract_address)
-            );
-            assert_eq!(contract.sync_start, pool_contract_config.start_block());
-            assert_eq!(contract.synced_block_number, pool_contract_config.start_block());
-            assert_eq!(contract.checked_leaf_index, None);
+            assert_eq!(contract.loaded_block_number, chain_config.start_block());
         } else {
             panic!("Contract not found in config");
         }
@@ -89,7 +78,6 @@ async fn test_contract_initialize_upsert() {
         .unwrap()
         .unwrap();
     assert!(contract.disabled);
-    assert_eq!(contract.sync_size, 1024);
     assert_eq!(count, new_handler.count_all().await.unwrap());
 }
 
@@ -137,7 +125,7 @@ async fn test_contract_count() {
 
 #[tokio::test]
 async fn test_contract_reset_synced_block() {
-    let (handler, db, _) = setup().await;
+    let (handler, db, config) = setup().await;
     let mut contracts: Vec<Document<Contract>> = handler
         .initialize()
         .await
@@ -145,22 +133,23 @@ async fn test_contract_reset_synced_block() {
         .iter()
         .map(|contract| Contract::from_proto(contract.clone()))
         .collect();
-    contracts[0].data.synced_block_number *= 2;
+    contracts[0].data.loaded_block_number *= 2;
     db.contracts.update(&contracts[0]).await.unwrap();
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
-    assert_ne!(found_contract.synced_block_number, contracts[0].data.sync_start);
+    let chain_config = config.find_chain(found_contract.chain_id).unwrap();
+    assert_ne!(found_contract.loaded_block_number, chain_config.start_block());
     handler
         .reset_synced_block(contracts[0].data.chain_id, &contracts[0].data.contract_address)
         .await
         .unwrap();
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
-    assert_eq!(found_contract.synced_block_number, contracts[0].data.sync_start);
+    assert_eq!(found_contract.loaded_block_number, chain_config.start_block());
     handler
         .reset_synced_block_to(contracts[0].data.chain_id, &contracts[0].data.contract_address, 100)
         .await
         .unwrap();
     let found_contract = handler.find_by_id(&contracts[0].id).await.unwrap().unwrap();
-    assert_eq!(found_contract.synced_block_number, 100);
+    assert_eq!(found_contract.loaded_block_number, 100);
     assert!(handler.find_by_id("wrong_id").await.unwrap().is_none());
     assert!(handler
         .reset_synced_block(11155111, "wrong_address")
