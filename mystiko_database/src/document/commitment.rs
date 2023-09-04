@@ -3,7 +3,6 @@
 use mystiko_storage::column::{IndexColumns, UniqueColumns};
 use mystiko_storage::document::DocumentData;
 use mystiko_storage_macros::CollectionBuilder;
-use mystiko_types::CommitmentStatus;
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 
@@ -20,8 +19,10 @@ pub struct Commitment {
     pub asset_decimals: u32,
     #[column(length_limit = 64)]
     pub asset_address: Option<String>,
-    #[column(length_limit = 32)]
-    pub status: CommitmentStatus,
+    pub status: i32,
+    pub block_number: u64,
+    pub src_chain_block_number: Option<u64>,
+    pub included_block_number: Option<u64>,
     #[column(length_limit = 128)]
     pub rollup_fee_amount: Option<BigUint>,
     pub encrypted_note: Option<String>,
@@ -34,11 +35,11 @@ pub struct Commitment {
     #[column(length_limit = 128)]
     pub shielded_address: Option<String>,
     #[column(length_limit = 128)]
-    pub creation_transaction_hash: Option<String>,
+    pub queued_transaction_hash: Option<String>,
     #[column(length_limit = 128)]
-    pub spending_transaction_hash: Option<String>,
+    pub included_transaction_hash: Option<String>,
     #[column(length_limit = 128)]
-    pub rollup_transaction_hash: Option<String>,
+    pub src_chain_transaction_hash: Option<String>,
 }
 
 fn uniques() -> Vec<UniqueColumns> {
@@ -65,12 +66,15 @@ fn indexes() -> Vec<IndexColumns> {
         vec![CommitmentColumn::CommitmentHash].into(),
         vec![CommitmentColumn::LeafIndex].into(),
         vec![CommitmentColumn::Status].into(),
+        vec![CommitmentColumn::BlockNumber].into(),
+        vec![CommitmentColumn::SrcChainBlockNumber].into(),
+        vec![CommitmentColumn::IncludedBlockNumber].into(),
         vec![CommitmentColumn::AssetSymbol].into(),
         vec![CommitmentColumn::AssetAddress].into(),
         vec![CommitmentColumn::Nullifier].into(),
         vec![CommitmentColumn::ShieldedAddress].into(),
-        vec![CommitmentColumn::CreationTransactionHash].into(),
-        vec![CommitmentColumn::SpendingTransactionHash].into(),
-        vec![CommitmentColumn::RollupTransactionHash].into(),
+        vec![CommitmentColumn::QueuedTransactionHash].into(),
+        vec![CommitmentColumn::IncludedTransactionHash].into(),
+        vec![CommitmentColumn::SrcChainTransactionHash].into(),
     ]
 }

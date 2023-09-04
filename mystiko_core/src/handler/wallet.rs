@@ -9,7 +9,7 @@ use mystiko_database::document::wallet::Wallet;
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter};
-use mystiko_storage::document::DocumentColumn;
+use mystiko_storage::document::{Document, DocumentColumn};
 use mystiko_storage::formatter::types::StatementFormatter;
 use mystiko_storage::storage::Storage;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
@@ -47,22 +47,7 @@ where
     }
 
     pub async fn current(&self) -> Result<Option<ProtoWallet>> {
-        let filter = QueryFilter::builder()
-            .conditions_operator(ConditionOperator::And)
-            .order_by(
-                OrderBy::builder()
-                    .columns(vec![DocumentColumn::Id.to_string()])
-                    .order(Order::Desc)
-                    .build(),
-            )
-            .build();
-        Ok(self
-            .db
-            .wallets
-            .find_one(filter)
-            .await
-            .map_err(MystikoError::StorageError)?
-            .map(Wallet::into_proto))
+        self.current_document().await.map(|doc| doc.map(Wallet::into_proto))
     }
 
     pub async fn create(&self, options: &CreateWalletOptions) -> Result<ProtoWallet> {
@@ -90,25 +75,15 @@ where
     }
 
     pub async fn check_current(&self) -> Result<ProtoWallet> {
-        if let Some(wallet) = self.current().await? {
-            Ok(wallet)
-        } else {
-            Err(MystikoError::NoExistingWalletError)
-        }
+        self.check_document_current().await.map(Wallet::into_proto)
     }
 
     pub async fn check_password(&self, password: &str) -> Result<ProtoWallet> {
-        let wallet = self.check_current().await?;
-        let hashed_password = checksum(password, None);
-        if wallet.hashed_password == hashed_password {
-            Ok(wallet)
-        } else {
-            Err(MystikoError::MismatchedPasswordError)
-        }
+        self.check_document_password(password).await.map(Wallet::into_proto)
     }
 
     pub async fn update_password(&self, old_password: &str, new_password: &str) -> Result<ProtoWallet> {
-        let mut wallet = Wallet::from_proto(self.check_password(old_password).await?);
+        let mut wallet = self.check_document_password(old_password).await?;
         validate_password(new_password)?;
         let entropy_string = decrypt_symmetric(old_password, &wallet.data.encrypted_entropy)?;
         wallet.data.encrypted_entropy = encrypt_symmetric(new_password, &entropy_string)?;
@@ -135,6 +110,41 @@ where
 
     pub async fn export_mnemonic_phrase(&self, password: &str) -> Result<String> {
         Ok(self.export_mnemonic(password).await?.phrase().to_string())
+    }
+
+    pub(crate) async fn current_document(&self) -> Result<Option<Document<Wallet>>> {
+        let filter = QueryFilter::builder()
+            .conditions_operator(ConditionOperator::And)
+            .order_by(
+                OrderBy::builder()
+                    .columns(vec![DocumentColumn::Id.to_string()])
+                    .order(Order::Desc)
+                    .build(),
+            )
+            .build();
+        self.db
+            .wallets
+            .find_one(filter)
+            .await
+            .map_err(MystikoError::StorageError)
+    }
+
+    pub(crate) async fn check_document_current(&self) -> Result<Document<Wallet>> {
+        if let Some(wallet) = self.current_document().await? {
+            Ok(wallet)
+        } else {
+            Err(MystikoError::NoExistingWalletError)
+        }
+    }
+
+    pub(crate) async fn check_document_password(&self, password: &str) -> Result<Document<Wallet>> {
+        let wallet = self.check_document_current().await?;
+        let hashed_password = checksum(password, None);
+        if wallet.data.hashed_password == hashed_password {
+            Ok(wallet)
+        } else {
+            Err(MystikoError::MismatchedPasswordError)
+        }
     }
 }
 

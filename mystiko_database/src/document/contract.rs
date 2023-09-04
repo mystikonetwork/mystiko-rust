@@ -16,10 +16,7 @@ pub struct Contract {
     #[column(length_limit = 64)]
     pub contract_address: String,
     pub disabled: bool,
-    pub sync_start: u64,
-    pub sync_size: u64,
-    pub synced_block_number: u64,
-    pub checked_leaf_index: Option<u64>,
+    pub loaded_block_number: u64,
 }
 
 fn uniques() -> Vec<UniqueColumns> {
@@ -44,10 +41,7 @@ impl Contract {
                 chain_id: proto.chain_id,
                 contract_address: proto.contract_address,
                 disabled: proto.disabled,
-                sync_start: proto.sync_start,
-                sync_size: proto.sync_size,
-                synced_block_number: proto.synced_block_number,
-                checked_leaf_index: proto.checked_leaf_index,
+                loaded_block_number: proto.loaded_block_number,
             },
         )
     }
@@ -60,10 +54,7 @@ impl Contract {
             .chain_id(contract.data.chain_id)
             .contract_address(contract.data.contract_address)
             .disabled(contract.data.disabled)
-            .sync_start(contract.data.sync_start)
-            .sync_size(contract.data.sync_size)
-            .synced_block_number(contract.data.synced_block_number)
-            .checked_leaf_index(contract.data.checked_leaf_index)
+            .loaded_block_number(contract.data.loaded_block_number)
             .contract_type(Into::<i32>::into(contract.data.contract_type))
             .build()
     }

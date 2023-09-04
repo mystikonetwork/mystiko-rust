@@ -46,7 +46,7 @@ where
     }
 
     pub async fn create(&self, options: &CreateAccountOptions) -> Result<ProtoAccount> {
-        let mut wallet = Wallet::from_proto(self.wallets.check_password(&options.wallet_password).await?);
+        let mut wallet = self.wallets.check_document_password(&options.wallet_password).await?;
         let (raw_account, account_nonce) = self.create_raw_account(&wallet, options).await?;
         let account = self.insert_raw_account(&mut wallet, raw_account, account_nonce).await?;
         log::info!(
@@ -72,25 +72,21 @@ where
     }
 
     pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<ProtoAccount>> {
-        let filter = self.wrap_filter(Some(filter)).await?;
         Ok(self
-            .db
-            .accounts
-            .find(filter)
-            .await
-            .map_err(MystikoError::StorageError)?
+            .find_documents(filter)
+            .await?
             .into_iter()
             .map(Account::into_proto)
             .collect())
     }
 
     pub async fn find_all(&self) -> Result<Vec<ProtoAccount>> {
-        self.find(
-            QueryFilter::builder()
-                .conditions_operator(ConditionOperator::And)
-                .build(),
-        )
-        .await
+        Ok(self
+            .find_all_documents()
+            .await?
+            .into_iter()
+            .map(Account::into_proto)
+            .collect())
     }
 
     pub async fn find_by_id(&self, id: &str) -> Result<Option<ProtoAccount>> {
@@ -131,20 +127,15 @@ where
         new_wallet_password: &str,
     ) -> Result<Vec<ProtoAccount>> {
         let wallet = self.wallets.check_password(old_wallet_password).await?;
-        let mut accounts = self.find_all().await?;
+        let mut accounts = self.find_all_documents().await?;
         for account in accounts.iter_mut() {
-            let secret_key = decrypt_symmetric(old_wallet_password, &account.encrypted_secret_key)?;
-            account.encrypted_secret_key = encrypt_symmetric(new_wallet_password, &secret_key)?;
+            let secret_key = decrypt_symmetric(old_wallet_password, &account.data.encrypted_secret_key)?;
+            account.data.encrypted_secret_key = encrypt_symmetric(new_wallet_password, &secret_key)?;
         }
         let accounts = self
             .db
             .accounts
-            .update_batch(
-                &accounts
-                    .into_iter()
-                    .map(Account::from_proto)
-                    .collect::<Vec<Document<Account>>>(),
-            )
+            .update_batch(&accounts)
             .await
             .map_err(MystikoError::StorageError)?;
         log::info!(
@@ -187,21 +178,49 @@ where
         Ok(filter)
     }
 
+    async fn find_documents<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<Document<Account>>> {
+        let filter = self.wrap_filter(Some(filter)).await?;
+        Ok(self
+            .db
+            .accounts
+            .find(filter)
+            .await
+            .map_err(MystikoError::StorageError)?
+            .into_iter()
+            .collect())
+    }
+
+    pub async fn find_all_documents(&self) -> Result<Vec<Document<Account>>> {
+        self.find_documents(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .build(),
+        )
+        .await
+    }
+
     async fn find_one_by_identifier<T: ToString>(
         &self,
         identifier: &str,
         field_name: T,
     ) -> Result<Option<ProtoAccount>> {
+        self.find_one_document_by_identifier(identifier, field_name)
+            .await
+            .map(|doc| doc.map(Account::into_proto))
+    }
+
+    async fn find_one_document_by_identifier<T: ToString>(
+        &self,
+        identifier: &str,
+        field_name: T,
+    ) -> Result<Option<Document<Account>>> {
         let filter = SubFilter::equal(field_name, identifier);
         let wrapped_filter = self.wrap_filter(Some(filter)).await?;
-
-        Ok(self
-            .db
+        self.db
             .accounts
             .find_one(wrapped_filter)
             .await
-            .map_err(MystikoError::StorageError)?
-            .map(Account::into_proto))
+            .map_err(MystikoError::StorageError)
     }
 
     async fn update_by_identifier<T: ToString>(
@@ -212,8 +231,7 @@ where
     ) -> Result<ProtoAccount> {
         self.wallets.check_password(&options.wallet_password).await?;
         let field_name_str = field_name.to_string();
-        if let Some(account) = self.find_one_by_identifier(identifier, field_name).await? {
-            let mut account = Account::from_proto(account);
+        if let Some(mut account) = self.find_one_document_by_identifier(identifier, field_name).await? {
             let mut has_update = false;
             if let Some(new_name) = &options.name {
                 if !new_name.is_empty() && new_name != &account.data.name {

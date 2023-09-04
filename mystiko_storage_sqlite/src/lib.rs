@@ -30,6 +30,7 @@ use mystiko_utils::convert::{biguint_to_bytes, i128_to_bytes, u128_to_bytes};
 
 static SQLITE_MEMORY_PATH: &str = ":memory:";
 static DEFAULT_MAX_CONNECTION: u32 = 4;
+static DEFAULT_EXECUTE_BATCH_SIZE: usize = 1000;
 
 type Query<'a> = sqlx::query::Query<'a, Sqlite, <Sqlite as sqlx::database::HasArguments<'a>>::Arguments>;
 
@@ -42,12 +43,14 @@ enum SqliteConnection {
 #[derive(Debug)]
 pub struct SqliteStorage {
     connection: SqliteConnection,
+    execute_batch_size: usize,
 }
 
 #[derive(Default)]
 pub struct SqliteStorageBuilder {
     path: String,
     max_connection: Option<u32>,
+    execute_batch_size: Option<usize>,
 }
 
 #[async_trait]
@@ -57,15 +60,21 @@ impl Storage for SqliteStorage {
     }
 
     async fn execute_batch(&self, statements: Vec<Statement>) -> Result<(), StorageError> {
-        let statement = Statement {
-            statement: statements
-                .iter()
-                .map(|s| s.statement.clone())
-                .collect::<Vec<String>>()
-                .join(";"),
-            column_values: statements.into_iter().flat_map(|s| s.column_values).collect::<Vec<_>>(),
-        };
-        self.execute_query(statement_to_query(&statement)?).await
+        for statements_chunk in statements.chunks(self.execute_batch_size) {
+            let statement = Statement {
+                statement: statements_chunk
+                    .iter()
+                    .map(|s| s.statement.clone())
+                    .collect::<Vec<String>>()
+                    .join(";"),
+                column_values: statements_chunk
+                    .iter()
+                    .flat_map(|s| s.column_values.clone())
+                    .collect::<Vec<_>>(),
+            };
+            self.execute_query(statement_to_query(&statement)?).await?;
+        }
+        Ok(())
     }
 
     async fn query<T: DocumentData>(&self, statement: Statement) -> Result<Vec<Document<T>>, StorageError> {
@@ -131,6 +140,7 @@ impl SqliteStorageBuilder {
         SqliteStorageBuilder {
             path: String::from(SQLITE_MEMORY_PATH),
             max_connection: None,
+            execute_batch_size: None,
         }
     }
 
@@ -141,6 +151,16 @@ impl SqliteStorageBuilder {
 
     pub fn path(mut self, path: &str) -> Self {
         self.path = path.to_string();
+        self
+    }
+
+    pub fn max_connection(mut self, max_connection: u32) -> Self {
+        self.max_connection = Some(max_connection);
+        self
+    }
+
+    pub fn execute_batch_size(mut self, execute_batch_size: usize) -> Self {
+        self.execute_batch_size = Some(execute_batch_size);
         self
     }
 
@@ -166,7 +186,10 @@ impl SqliteStorageBuilder {
                     .map_err(|e| StorageError::DatabaseError(e.into()))?,
             )
         };
-        Ok(SqliteStorage { connection })
+        Ok(SqliteStorage {
+            connection,
+            execute_batch_size: self.execute_batch_size.unwrap_or(DEFAULT_EXECUTE_BATCH_SIZE),
+        })
     }
 }
 

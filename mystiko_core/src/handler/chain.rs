@@ -12,6 +12,7 @@ use mystiko_ethers::provider::factory::{ProvidersOptions, HTTP_REGEX, WS_REGEX};
 use mystiko_ethers::provider::pool::ChainProvidersOptions;
 use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
 use mystiko_protos::core::document::v1::Chain as ProtoChain;
+use mystiko_protos::core::document::v1::Contract as ProtoContract;
 use mystiko_protos::core::handler::v1::{UpdateChainOptions, UpdateProviderOptions};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use mystiko_storage::document::Document;
@@ -84,17 +85,14 @@ where
         let mut update_chains: Vec<Document<Chain>> = vec![];
         let mut chains: Vec<Document<Chain>> = vec![];
         for chain_config in self.config.chains() {
-            if let Some(mut existing_chain) = self.find_by_chain_id(chain_config.chain_id()).await? {
-                if !existing_chain.name_override {
-                    existing_chain.name = chain_config.name().to_string();
+            if let Some(mut existing_chain) = self.find_document_by_chain_id(chain_config.chain_id()).await? {
+                if !existing_chain.data.name_override {
+                    existing_chain.data.name = chain_config.name().to_string();
                 }
-                if !existing_chain.provider_override {
-                    existing_chain.providers = convert_providers(&chain_config.providers())
-                        .into_iter()
-                        .map(|provider| provider.into())
-                        .collect();
+                if !existing_chain.data.provider_override {
+                    existing_chain.data.providers = convert_providers(&chain_config.providers());
                 }
-                update_chains.push(Chain::from_proto(existing_chain));
+                update_chains.push(existing_chain);
             } else {
                 insert_chains.push(Chain {
                     chain_id: chain_config.chain_id(),
@@ -102,7 +100,6 @@ where
                     name_override: false,
                     providers: convert_providers(&chain_config.providers()),
                     provider_override: false,
-                    synced_block_number: 0,
                 });
             }
         }
@@ -157,11 +154,11 @@ where
         Ok(self.update(existing_chain, options).await?.map(Chain::into_proto))
     }
 
-    pub async fn reset_synced_block(&self, chain_id: u64) -> Result<Option<ProtoChain>> {
+    pub async fn reset_synced_block(&self, chain_id: u64) -> Result<Vec<ProtoContract>> {
         self.rs_synced_block(chain_id, None).await
     }
 
-    pub async fn reset_synced_block_to(&self, chain_id: u64, to_block: u64) -> Result<Option<ProtoChain>> {
+    pub async fn reset_synced_block_to(&self, chain_id: u64, to_block: u64) -> Result<Vec<ProtoContract>> {
         self.rs_synced_block(chain_id, Some(to_block)).await
     }
 
@@ -216,27 +213,16 @@ where
         Ok(None)
     }
 
-    async fn rs_synced_block(&self, chain_id: u64, to_block: Option<u64>) -> Result<Option<ProtoChain>> {
-        if let (Some(chain_config), Some(mut chain)) = (
-            self.config.find_chain(chain_id),
-            self.find_document_by_chain_id(chain_id).await?,
-        ) {
-            chain.data.synced_block_number = to_block.unwrap_or(0);
-            let updated_chain = self
-                .db
-                .chains
-                .update(&chain)
-                .await
-                .map_err(MystikoError::StorageError)?;
-            let mut contracts: Vec<Document<Contract>> = Vec::new();
+    async fn rs_synced_block(&self, chain_id: u64, to_block: Option<u64>) -> Result<Vec<ProtoContract>> {
+        let mut contracts: Vec<Document<Contract>> = Vec::new();
+        if let Some(chain_config) = self.config.find_chain(chain_id) {
             for contract_config in chain_config.contracts_with_disabled().iter() {
-                if let Some(contract) = self
+                if let Some(mut contract) = self
                     .contracts
-                    .find_by_address(chain_id, contract_config.address())
+                    .find_document_by_address(chain_id, contract_config.address())
                     .await?
                 {
-                    let mut contract = Contract::from_proto(contract);
-                    contract.data.synced_block_number = to_block.unwrap_or(contract_config.start_block());
+                    contract.data.loaded_block_number = to_block.unwrap_or(chain_config.start_block());
                     contracts.push(contract);
                 }
             }
@@ -245,10 +231,8 @@ where
                 .update_batch(&contracts)
                 .await
                 .map_err(MystikoError::StorageError)?;
-            Ok(Some(Chain::into_proto(updated_chain)))
-        } else {
-            Ok(None)
         }
+        Ok(contracts.into_iter().map(Contract::into_proto).collect())
     }
 
     async fn find_document_by_id(&self, id: &str) -> Result<Option<Document<Chain>>> {
