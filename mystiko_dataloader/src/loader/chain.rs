@@ -6,6 +6,7 @@ use crate::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions};
 use crate::handler::{DataHandler, HandleOption};
 use crate::loader::{
     LoadEvent, LoadFailureEvent, LoadSuccessEvent, LoaderEvent, LoaderListener, ScheduleEvent, StopScheduleEvent,
+    DEFAULT_VALIDATOR_CONCURRENCY,
 };
 use crate::loader::{LoadOption, LoaderState, ScheduleOption, DEFAULT_DELAY_BLOCK, DEFAULT_SCHEDULE_INTERVAL_MS};
 use crate::validator::{DataValidator, ValidateOption};
@@ -22,8 +23,17 @@ use tokio::spawn;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
+use typed_builder::TypedBuilder;
 
 type Result<T> = anyhow::Result<T, DataLoaderError>;
+
+#[derive(Debug, Clone, TypedBuilder)]
+struct ChainLoadParams<'a> {
+    pub cfg: &'a ChainConfig,
+    pub start_block: u64,
+    pub target_block: u64,
+    pub option: &'a Option<LoadOption>,
+}
 
 #[derive(Debug)]
 pub struct ChainDataLoader<
@@ -339,13 +349,18 @@ where
     async fn try_load(&self, chain_cfg: &ChainConfig, options: &Option<LoadOption>, emit_events: bool) -> Result<()> {
         let chain_start_block = self.build_chain_start_block(chain_cfg).await?;
         let chain_target_block = self.build_chain_target_block(chain_start_block, options).await?;
+        let params = ChainLoadParams::builder()
+            .cfg(chain_cfg)
+            .start_block(chain_start_block)
+            .target_block(chain_target_block)
+            .option(options)
+            .build();
 
         if !self.set_is_loading(true).await {
             let result = if emit_events {
-                self.load_and_emits(chain_cfg, chain_start_block, chain_target_block)
-                    .await
+                self.load_and_emits(&params).await
             } else {
-                self.load(chain_cfg, chain_start_block, chain_target_block).await
+                self.load(&params).await
             };
             self.set_is_loading(false).await;
             result
@@ -356,22 +371,17 @@ where
         }
     }
 
-    async fn load_and_emits(
-        &self,
-        chain_cfg: &ChainConfig,
-        chain_start_block: u64,
-        chain_target_block: u64,
-    ) -> Result<()> {
+    async fn load_and_emits(&self, params: &ChainLoadParams<'_>) -> Result<()> {
         self.emit_event(LoaderEvent::LoadEvent(
             LoadEvent::builder()
-                .start_block(chain_start_block)
-                .target_block(chain_target_block)
+                .start_block(params.start_block)
+                .target_block(params.target_block)
                 .build(),
         ))
         .await;
 
-        let result = self.load(chain_cfg, chain_start_block, chain_target_block).await;
-        let chain_loaded_block = self.build_chain_loaded_block(chain_cfg).await.unwrap_or_else(|e| {
+        let result = self.load(params).await;
+        let chain_loaded_block = self.build_chain_loaded_block(params.cfg).await.unwrap_or_else(|e| {
             warn!("build chain loaded block raised error {:?}", e);
             0_u64
         });
@@ -380,7 +390,7 @@ where
             Ok(_) => {
                 self.emit_event(LoaderEvent::LoadSuccessEvent(
                     LoadSuccessEvent::builder()
-                        .start_block(chain_start_block)
+                        .start_block(params.start_block)
                         .loaded_block(chain_loaded_block)
                         .build(),
                 ))
@@ -389,7 +399,7 @@ where
             Err(e) => {
                 self.emit_event(LoaderEvent::LoadFailureEvent(
                     LoadFailureEvent::builder()
-                        .start_block(chain_start_block)
+                        .start_block(params.start_block)
                         .loaded_block(chain_loaded_block)
                         .load_error(e)
                         .build(),
@@ -400,8 +410,8 @@ where
         Ok(())
     }
 
-    async fn load(&self, chain_cfg: &ChainConfig, chain_start_block: u64, chain_target_block: u64) -> Result<()> {
-        let (chain_filter, contracts) = self.build_loading_contracts(chain_cfg).await?;
+    async fn load(&self, params: &ChainLoadParams<'_>) -> Result<()> {
+        let (chain_filter, contracts) = self.build_loading_contracts(params.cfg).await?;
         let contract_options = if chain_filter {
             Some(
                 contracts
@@ -416,8 +426,8 @@ where
         let mut fetch_option = FetchOptions::builder()
             .config(self.config.clone())
             .chain_id(self.chain_id)
-            .start_block(chain_start_block)
-            .target_block(chain_target_block)
+            .start_block(params.start_block)
+            .target_block(params.target_block)
             .contract_options(contract_options)
             .build();
 
@@ -435,7 +445,7 @@ where
                 Ok(d) => d,
             };
 
-            if let Err(e) = self.validate(&mut chain_data).await {
+            if let Err(e) = self.validate(&mut chain_data, params.option).await {
                 warn!(
                     "validate fetcher(index={:?}, name={:?}) data raised error {:?}, try next fetcher",
                     index,
@@ -457,7 +467,7 @@ where
             };
 
             let retry_fetch_options = self
-                .build_retry_fetch_options(&contracts, chain_start_block, chain_target_block)
+                .build_retry_fetch_options(&contracts, params.start_block, params.target_block)
                 .await;
             match retry_fetch_options {
                 Some(o) => fetch_option = o,
@@ -481,9 +491,17 @@ where
         Ok(unwrapped.result)
     }
 
-    async fn validate(&self, data: &mut ChainData<R>) -> Result<()> {
+    async fn validate(&self, data: &mut ChainData<R>, options: &Option<LoadOption>) -> Result<()> {
         if !data.contracts_data.is_empty() {
-            let validator_option = ValidateOption::builder().config(self.config.clone()).build();
+            let validator_option = ValidateOption::builder()
+                .config(self.config.clone())
+                .validate_concurrency(
+                    options
+                        .as_ref()
+                        .map(|o| o.validator_concurrency)
+                        .unwrap_or(DEFAULT_VALIDATOR_CONCURRENCY),
+                )
+                .build();
             for (index, validator) in self.validators.iter().enumerate() {
                 let validate_result = validator.validate(data, &validator_option).await?;
                 let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
@@ -560,8 +578,8 @@ where
         Ok(start_block)
     }
 
-    async fn build_chain_target_block(&self, start_block: u64, option: &Option<LoadOption>) -> Result<u64> {
-        let delay_block = match option {
+    async fn build_chain_target_block(&self, start_block: u64, options: &Option<LoadOption>) -> Result<u64> {
+        let delay_block = match options {
             None => DEFAULT_DELAY_BLOCK,
             Some(o) => o.delay_block.unwrap_or(DEFAULT_DELAY_BLOCK),
         };

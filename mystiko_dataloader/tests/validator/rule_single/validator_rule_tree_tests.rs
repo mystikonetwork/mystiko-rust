@@ -17,7 +17,10 @@ async fn test_empty_commitment() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let contract_data = ContractData::builder()
@@ -43,7 +46,10 @@ async fn test_some_included_commitment() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
         .await
         .unwrap();
-    let option = ValidateOption::builder().config(core_cfg).build();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
     let chain_id = 1_u64;
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
