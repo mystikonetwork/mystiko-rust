@@ -12,15 +12,22 @@ use log::{error, warn};
 use mystiko_config::wrapper::chain::ChainConfig;
 use mystiko_config::wrapper::contract::ContractConfig;
 use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_ethers::provider::factory::Provider;
 use std::any::type_name;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, Default)]
-pub struct ChainDataLoaderBuilder<R, M, F, V, H> {
+pub struct ChainDataLoaderBuilder<
+    R,
+    P = Provider,
+    F = Box<dyn DataFetcher<R>>,
+    V = Box<dyn DataValidator<R>>,
+    H = Box<dyn DataHandler<R>>,
+> {
     config: Option<Arc<MystikoConfig>>,
     chain_id: u64,
-    provider: Option<Arc<M>>,
+    provider: Option<Arc<P>>,
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
     handler: Option<Arc<H>>,
@@ -28,10 +35,16 @@ pub struct ChainDataLoaderBuilder<R, M, F, V, H> {
 }
 
 #[derive(Debug)]
-pub struct ChainDataLoader<R, M, F, V, H> {
+pub struct ChainDataLoader<
+    R,
+    P = Provider,
+    F = Box<dyn DataFetcher<R>>,
+    V = Box<dyn DataValidator<R>>,
+    H = Box<dyn DataHandler<R>>,
+> {
     config: Arc<MystikoConfig>,
     chain_id: u64,
-    provider: Arc<M>,
+    provider: Arc<P>,
     fetchers: Vec<Arc<F>>,
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
@@ -47,10 +60,10 @@ struct ChainLoadParams<'a> {
 }
 
 #[async_trait]
-impl<R, M, F, V, H> DataLoader for ChainDataLoader<R, M, F, V, H>
+impl<R, P, F, V, H> DataLoader for ChainDataLoader<R, P, F, V, H>
 where
     R: LoadedData,
-    M: Middleware,
+    P: Middleware,
     F: DataFetcher<R>,
     V: DataValidator<R>,
     H: DataHandler<R>,
@@ -70,10 +83,10 @@ where
     }
 }
 
-impl<R, M, F, V, H> ChainDataLoaderBuilder<R, M, F, V, H>
+impl<R, P, F, V, H> ChainDataLoaderBuilder<R, P, F, V, H>
 where
     R: LoadedData,
-    M: Middleware,
+    P: Middleware,
     F: DataFetcher<R>,
     V: DataValidator<R>,
     H: DataHandler<R>,
@@ -145,12 +158,12 @@ where
         self
     }
 
-    pub fn shared_provider(mut self, provider: Arc<M>) -> Self {
+    pub fn shared_provider(mut self, provider: Arc<P>) -> Self {
         self.provider = Some(provider);
         self
     }
 
-    pub fn build(self) -> DataLoaderResult<ChainDataLoader<R, M, F, V, H>> {
+    pub fn build(self) -> DataLoaderResult<ChainDataLoader<R, P, F, V, H>> {
         let config = self
             .config
             .ok_or_else(|| DataLoaderError::LoaderBuildError("config cannot be None".to_string()))?;
