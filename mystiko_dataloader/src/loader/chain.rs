@@ -17,24 +17,8 @@ use std::any::type_name;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Default)]
-pub struct ChainDataLoaderBuilder<
-    R,
-    P = Provider,
-    F = Box<dyn DataFetcher<R>>,
-    V = Box<dyn DataValidator<R>>,
-    H = Box<dyn DataHandler<R>>,
-> {
-    config: Option<Arc<MystikoConfig>>,
-    chain_id: u64,
-    provider: Option<Arc<P>>,
-    fetchers: Vec<Arc<F>>,
-    validators: Vec<Arc<V>>,
-    handler: Option<Arc<H>>,
-    _phantom: std::marker::PhantomData<R>,
-}
-
-#[derive(Debug)]
+#[derive(Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct ChainDataLoader<
     R,
     P = Provider,
@@ -45,9 +29,12 @@ pub struct ChainDataLoader<
     config: Arc<MystikoConfig>,
     chain_id: u64,
     provider: Arc<P>,
+    #[builder(default = vec![])]
     fetchers: Vec<Arc<F>>,
+    #[builder(default = vec![])]
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
+    #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
 
@@ -80,117 +67,6 @@ where
             .build();
 
         self.try_load(&params).await
-    }
-}
-
-impl<R, P, F, V, H> ChainDataLoaderBuilder<R, P, F, V, H>
-where
-    R: LoadedData,
-    P: Middleware,
-    F: DataFetcher<R>,
-    V: DataValidator<R>,
-    H: DataHandler<R>,
-{
-    pub fn new() -> Self {
-        Self {
-            config: None,
-            chain_id: 0,
-            provider: None,
-            fetchers: Vec::new(),
-            validators: Vec::new(),
-            handler: None,
-            _phantom: std::marker::PhantomData,
-        }
-    }
-
-    pub fn config(mut self, config: Arc<MystikoConfig>) -> Self {
-        self.config = Some(config);
-        self
-    }
-
-    pub fn chain_id(mut self, chain_id: u64) -> Self {
-        self.chain_id = chain_id;
-        self
-    }
-
-    pub fn add_fetcher(self, fetcher: F) -> Self {
-        self.add_shared_fetcher(Arc::new(fetcher))
-    }
-
-    pub fn add_fetchers(self, fetchers: Vec<F>) -> Self {
-        self.add_shared_fetchers(fetchers.into_iter().map(Arc::new).collect())
-    }
-
-    pub fn add_shared_fetcher(mut self, fetcher: Arc<F>) -> Self {
-        self.fetchers.push(fetcher);
-        self
-    }
-
-    pub fn add_shared_fetchers(mut self, fetchers: Vec<Arc<F>>) -> Self {
-        self.fetchers.extend(fetchers);
-        self
-    }
-
-    pub fn add_validator(self, validator: V) -> Self {
-        self.add_shared_validator(Arc::new(validator))
-    }
-
-    pub fn add_validators(self, validators: Vec<V>) -> Self {
-        self.add_shared_validators(validators.into_iter().map(Arc::new).collect())
-    }
-
-    pub fn add_shared_validator(mut self, validator: Arc<V>) -> Self {
-        self.validators.push(validator);
-        self
-    }
-
-    pub fn add_shared_validators(mut self, validators: Vec<Arc<V>>) -> Self {
-        self.validators.extend(validators);
-        self
-    }
-
-    pub fn handler(self, handler: H) -> Self {
-        self.shared_handler(Arc::new(handler))
-    }
-
-    pub fn shared_handler(mut self, handler: Arc<H>) -> Self {
-        self.handler = Some(handler);
-        self
-    }
-
-    pub fn shared_provider(mut self, provider: Arc<P>) -> Self {
-        self.provider = Some(provider);
-        self
-    }
-
-    pub fn build(self) -> DataLoaderResult<ChainDataLoader<R, P, F, V, H>> {
-        let config = self
-            .config
-            .ok_or_else(|| DataLoaderError::LoaderBuildError("config cannot be None".to_string()))?;
-
-        if self.fetchers.is_empty() {
-            return Err(DataLoaderError::LoaderBuildError(
-                "fetchers cannot be empty".to_string(),
-            ));
-        }
-
-        let handler = self
-            .handler
-            .ok_or_else(|| DataLoaderError::LoaderBuildError("handler cannot be None".to_string()))?;
-
-        let provider = self
-            .provider
-            .ok_or_else(|| DataLoaderError::LoaderBuildError("provider cannot be None".to_string()))?;
-
-        Ok(ChainDataLoader {
-            config,
-            chain_id: self.chain_id,
-            provider,
-            fetchers: self.fetchers,
-            validators: self.validators,
-            handler,
-            _phantom: Default::default(),
-        })
     }
 }
 

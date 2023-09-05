@@ -12,7 +12,7 @@ use mystiko_dataloader::handler::HandlerError;
 use mystiko_dataloader::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
-use mystiko_dataloader::loader::{ChainDataLoader, ChainDataLoaderBuilder, DataLoaderResult};
+use mystiko_dataloader::loader::{ChainDataLoader, DataLoaderResult};
 use mystiko_dataloader::loader::{DataLoader, LoadOption};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption, ValidateResult};
 use mystiko_ethers::provider::factory::Provider;
@@ -382,9 +382,6 @@ where
     }
 }
 
-pub type ChainDataLoaderBuilderFullDataType =
-    ChainDataLoaderBuilder<FullData, Provider, MockFetcher<FullData>, MockValidator, MockHandler<FullData>>;
-
 pub type ChainDataLoaderFullDataType =
     ChainDataLoader<FullData, Provider, MockFetcher<FullData>, MockValidator, MockHandler<FullData>>;
 
@@ -393,16 +390,8 @@ pub async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>, delay_block: 
     loader.load(load_option).await
 }
 
-pub async fn create_loader(
-    batch: bool,
-    fetch_result: bool,
-    contract_address: &str,
-    end_block: u64,
-) -> ChainDataLoaderFullDataType {
+pub async fn create_loader(fetch_result: bool, contract_address: &str, end_block: u64) -> ChainDataLoaderFullDataType {
     let chain_id = 1_u64;
-
-    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
-
     let fetcher = MockFetcher::new(chain_id);
     if fetch_result {
         fetcher
@@ -433,27 +422,14 @@ pub async fn create_loader(
         .await
         .unwrap();
 
-    if batch {
-        builder
-            .chain_id(1)
-            .config(Arc::new(core_cfg))
-            .shared_provider(provider)
-            .add_fetchers(vec![fetcher])
-            .add_validators(vec![validator])
-            .handler(handler)
-            .build()
-            .unwrap()
-    } else {
-        builder
-            .chain_id(1)
-            .config(Arc::new(core_cfg))
-            .add_fetcher(fetcher)
-            .add_validator(validator)
-            .handler(handler)
-            .shared_provider(provider)
-            .build()
-            .unwrap()
-    }
+    ChainDataLoaderFullDataType::builder()
+        .chain_id(1_u64)
+        .config(Arc::new(core_cfg))
+        .provider(provider)
+        .fetchers(vec![Arc::new(fetcher)])
+        .validators(vec![Arc::new(validator)])
+        .handler(handler)
+        .build()
 }
 
 pub async fn create_shared_loader(
@@ -468,7 +444,6 @@ pub async fn create_shared_loader(
     Arc<MockHandler<FullData>>,
     Arc<MockProvider>,
 ) {
-    let builder: ChainDataLoaderBuilderFullDataType = ChainDataLoaderBuilder::new();
     let core_cfg = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
             .await
@@ -487,16 +462,14 @@ pub async fn create_shared_loader(
     let provider = create_mock_provider(&mock);
     let provider = Arc::new(provider);
 
-    let loader = builder
+    let loader = ChainDataLoaderFullDataType::builder()
         .chain_id(chain_id)
         .config(core_cfg.clone())
-        .add_shared_fetchers(fetchers.clone())
-        .add_shared_validators(validators.clone())
-        .shared_handler(handler.clone())
-        .shared_provider(provider)
-        .build()
-        .unwrap();
-
+        .provider(provider.clone())
+        .fetchers(fetchers.clone())
+        .validators(validators.clone())
+        .handler(handler.clone())
+        .build();
     (
         core_cfg.clone(),
         Arc::new(loader),

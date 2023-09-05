@@ -37,6 +37,26 @@ async fn test_loader_start_shared_fetcher_error() {
 }
 
 #[tokio::test]
+async fn test_loader_start_without_fetcher() {
+    let chain_id = 1_u64;
+    let (cfg, loader, _, _, handler, mock_provider) = create_shared_loader(chain_id, 0, 1).await;
+
+    let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
+    let target_block = start_block + 1000;
+    let delay_block = 2;
+
+    // fetch return error
+    mock_provider.push(U64::from(target_block)).unwrap();
+    let result = loader_load(loader.clone(), Some(delay_block)).await;
+    assert!(handler.drain_data().await.is_empty());
+    assert!(result
+        .err()
+        .unwrap()
+        .to_string()
+        .contains("failed to fetch data from all fetchers"));
+}
+
+#[tokio::test]
 async fn test_loader_start_one_shared_fetcher_one_contract() {
     let chain_id = 1_u64;
     let (cfg, loader, fetchers, _, handler, mock_provider) = create_shared_loader(chain_id, 1, 1).await;

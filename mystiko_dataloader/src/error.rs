@@ -7,8 +7,6 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum DataLoaderError {
-    #[error("loader init error {0}")]
-    LoaderBuildError(String),
     #[error("loader load error {0}")]
     LoaderLoadError(String),
     #[error("no contracts to be loaded")]
