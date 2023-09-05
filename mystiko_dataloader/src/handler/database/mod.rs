@@ -293,8 +293,8 @@ where
             None => C::column_block_number(),
         };
         sub_filters.push(SubFilter::between_and(block_num_column, start_block, actual_end_block));
-        if let Some(commitment_hashs) = option.commitment_hash.clone() {
-            sub_filters.push(SubFilter::in_list(C::column_commitment_hash(), commitment_hashs));
+        if let Some(commitment_hashes) = option.commitment_hash.clone() {
+            sub_filters.push(SubFilter::in_list(C::column_commitment_hash(), commitment_hashes));
         }
         Ok((QueryFilter::from(sub_filters), actual_end_block))
     }

@@ -232,18 +232,18 @@ async fn test_query_commitments() {
         .start_block(500_u64)
         .end_block(2000_u64)
         .build();
-    let commitmens = database_handler.query_commitments(&option).await.unwrap();
-    assert_eq!(commitmens.end_block, 2000_u64);
-    assert_eq!(commitmens.result.len(), 2);
+    let commitments = database_handler.query_commitments(&option).await.unwrap();
+    assert_eq!(commitments.end_block, 2000_u64);
+    assert_eq!(commitments.result.len(), 2);
     assert_eq!(
-        commitmens.result[0].commitment_hash,
+        commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(1111_u32))
     );
     assert_eq!(
-        commitmens.result[1].commitment_hash,
+        commitments.result[1].commitment_hash,
         biguint_to_bytes(&BigUint::from(2222_u32))
     );
-    assert_eq!(commitmens.result[1].block_number, 2000_u64);
+    assert_eq!(commitments.result[1].block_number, 2000_u64);
     // commitment status is Unspecified
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
@@ -252,15 +252,15 @@ async fn test_query_commitments() {
         .status(CommitmentStatus::Unspecified)
         .start_block(1500_u64)
         .build();
-    let commitmens = database_handler.query_commitments(&option).await.unwrap();
-    assert_eq!(commitmens.end_block, 3000_u64);
-    assert_eq!(commitmens.result.len(), 1);
+    let commitments = database_handler.query_commitments(&option).await.unwrap();
+    assert_eq!(commitments.end_block, 3000_u64);
+    assert_eq!(commitments.result.len(), 1);
     assert_eq!(
-        commitmens.result[0].commitment_hash,
+        commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(4444_u32))
     );
-    assert_eq!(commitmens.result[0].block_number, 3000_u64);
-    // commitement status is Included
+    assert_eq!(commitments.result[0].block_number, 3000_u64);
+    // commitment status is Included
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
         .contract_address("address1".to_string())
@@ -268,15 +268,15 @@ async fn test_query_commitments() {
         .status(CommitmentStatus::Included)
         .start_block(100_u64)
         .build();
-    let commitmens = database_handler.query_commitments(&option).await.unwrap();
-    assert_eq!(commitmens.end_block, 900_u64);
-    assert_eq!(commitmens.result.len(), 1);
+    let commitments = database_handler.query_commitments(&option).await.unwrap();
+    assert_eq!(commitments.end_block, 900_u64);
+    assert_eq!(commitments.result.len(), 1);
     assert_eq!(
-        commitmens.result[0].commitment_hash,
+        commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(1111_u32))
     );
-    assert_eq!(commitmens.result[0].included_block_number, Some(900_u64));
-    // commitement status is Queued
+    assert_eq!(commitments.result[0].included_block_number, Some(900_u64));
+    // commitment status is Queued
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
         .contract_address("address1".to_string())
@@ -284,15 +284,15 @@ async fn test_query_commitments() {
         .status(CommitmentStatus::Queued)
         .start_block(1000_u64)
         .build();
-    let commitmens = database_handler.query_commitments(&option).await.unwrap();
-    assert_eq!(commitmens.end_block, 3000_u64);
-    assert_eq!(commitmens.result.len(), 1);
+    let commitments = database_handler.query_commitments(&option).await.unwrap();
+    assert_eq!(commitments.end_block, 3000_u64);
+    assert_eq!(commitments.result.len(), 1);
     assert_eq!(
-        commitmens.result[0].commitment_hash,
+        commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(2222_u32))
     );
-    assert_eq!(commitmens.result[0].block_number, 2000_u64);
-    // commitement status is SrcSucceeded
+    assert_eq!(commitments.result[0].block_number, 2000_u64);
+    // commitment status is SrcSucceeded
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
         .contract_address("address1".to_string())
@@ -301,14 +301,14 @@ async fn test_query_commitments() {
         .start_block(1000_u64)
         .commitment_hash(vec![BigUint::from(3333_u32), BigUint::from(3456_u32)])
         .build();
-    let commitmens = database_handler.query_commitments(&option).await.unwrap();
-    assert_eq!(commitmens.end_block, 2900_u64);
-    assert_eq!(commitmens.result.len(), 1);
+    let commitments = database_handler.query_commitments(&option).await.unwrap();
+    assert_eq!(commitments.end_block, 2900_u64);
+    assert_eq!(commitments.result.len(), 1);
     assert_eq!(
-        commitmens.result[0].commitment_hash,
+        commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(3333_u32))
     );
-    assert_eq!(commitmens.result[0].src_chain_block_number, Some(2900_u64));
+    assert_eq!(commitments.result[0].src_chain_block_number, Some(2900_u64));
 }
 
 #[tokio::test]
@@ -592,7 +592,7 @@ async fn test_count_nullifiers() {
 }
 
 #[tokio::test]
-async fn test_fulldata_handle() {
+async fn test_full_data_handle() {
     let (database_handler, collection, _config) = setup::<FullData>().await.unwrap();
     let mock_contracts = [
         Contract {
@@ -918,15 +918,15 @@ async fn test_fulldata_handle() {
     assert!(result.contract_results[2].result.is_ok());
     assert_eq!(result.contract_results[3].address, "address4");
     assert!(result.contract_results[3].result.is_err());
-    let address1_commtments: Vec<Document<Commitment>> = collection
+    let address1_commitments: Vec<Document<Commitment>> = collection
         .find(Some(QueryFilter::from(vec![
             SubFilter::equal(Commitment::column_chain_id(), 1_u64),
             SubFilter::equal(Commitment::column_contract_address(), "address1"),
         ])))
         .await
         .unwrap();
-    assert_eq!(address1_commtments.len(), 3);
-    let commitment_1222 = address1_commtments
+    assert_eq!(address1_commitments.len(), 3);
+    let commitment_1222 = address1_commitments
         .into_iter()
         .filter(|c| c.data.commitment_hash == BigUint::from(1222_u32))
         .collect::<Vec<Document<Commitment>>>();
@@ -963,23 +963,23 @@ async fn test_fulldata_handle() {
         .await
         .unwrap();
     assert_eq!(address2_nullifiers.len(), 2);
-    let address3_commtments: Vec<Document<Commitment>> = collection
+    let address3_commitments: Vec<Document<Commitment>> = collection
         .find(Some(QueryFilter::from(vec![
             SubFilter::equal(Commitment::column_chain_id(), 1_u64),
             SubFilter::equal(Commitment::column_contract_address(), "address3"),
         ])))
         .await
         .unwrap();
-    assert_eq!(address3_commtments.len(), 1);
-    assert_eq!(address3_commtments[0].data.src_chain_block_number, Some(5222_u64));
+    assert_eq!(address3_commitments.len(), 1);
+    assert_eq!(address3_commitments[0].data.src_chain_block_number, Some(5222_u64));
     assert_eq!(
-        address3_commtments[0].data.src_chain_transaction_hash,
+        address3_commitments[0].data.src_chain_transaction_hash,
         Some("0x2111".to_string())
     );
 }
 
 #[tokio::test]
-async fn test_litedata_handle() {
+async fn test_lite_data_handle() {
     let (database_handler, collection, _config) = setup::<LiteData>().await.unwrap();
     let mock_contracts = [
         Contract {
@@ -1194,15 +1194,15 @@ async fn test_litedata_handle() {
     assert!(result.contract_results[0].result.is_ok());
     assert_eq!(result.contract_results[1].address, "address2");
     assert!(result.contract_results[1].result.is_ok());
-    let address1_commtments: Vec<Document<Commitment>> = collection
+    let address1_commitments: Vec<Document<Commitment>> = collection
         .find(Some(QueryFilter::from(vec![
             SubFilter::equal(Commitment::column_chain_id(), 1_u64),
             SubFilter::equal(Commitment::column_contract_address(), "address1"),
         ])))
         .await
         .unwrap();
-    assert_eq!(address1_commtments.len(), 3);
-    let commitment_1222 = address1_commtments
+    assert_eq!(address1_commitments.len(), 3);
+    let commitment_1222 = address1_commitments
         .into_iter()
         .filter(|c| c.data.commitment_hash == BigUint::from(1222_u32))
         .collect::<Vec<Document<Commitment>>>();
@@ -1246,7 +1246,7 @@ async fn test_initialize() {
         },
         Contract {
             chain_id: 137_u64,
-            contract_address: "testaddress1".to_string(),
+            contract_address: "test_address1".to_string(),
             loaded_block: 2000_u64,
         },
     ];
