@@ -1,4 +1,4 @@
-use crate::column::{Column, IndexColumns, UniqueColumns};
+use crate::{Column, IndexColumns, UniqueColumns};
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 

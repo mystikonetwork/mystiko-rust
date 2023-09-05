@@ -1,7 +1,7 @@
 use crate::common::create_database;
 use mockito::Server;
-use mystiko_core::mystiko::{Mystiko, MystikoOptions};
-use mystiko_ethers::provider::factory::DefaultProviderFactory;
+use mystiko_core::{Mystiko, MystikoOptions};
+use mystiko_ethers::DefaultProviderFactory;
 
 mod common;
 

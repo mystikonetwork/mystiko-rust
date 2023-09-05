@@ -1,10 +1,8 @@
 extern crate mystiko_database;
 
-use mystiko_database::document::deposit::{Deposit, DepositCollection, DepositColumn};
+use mystiko_database::document::{Deposit, DepositCollection, DepositColumn};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
-use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigUint;

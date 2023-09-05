@@ -2,7 +2,7 @@ use crate::validator::common::validator_mock::{
     create_single_rule_full_data_validator, load_commitments, RuleCheckerType,
 };
 use ethers_core::types::Bytes;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;

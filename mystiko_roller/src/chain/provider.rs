@@ -8,7 +8,7 @@ use ethers_core::abi::Address;
 use ethers_core::types::{BlockNumber, U64};
 use ethers_providers::Middleware;
 use mystiko_abi::commitment_pool::CommitmentPool;
-use mystiko_ethers::provider::factory::Provider;
+use mystiko_ethers::Provider;
 use std::str::FromStr;
 use std::sync::Arc;
 

@@ -1,13 +1,11 @@
-use crate::error::MystikoError;
-use crate::types::Result;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_database::database::Database;
-use mystiko_database::document::contract::{Contract, ContractColumn};
+use crate::MystikoError;
+use crate::Result;
+use mystiko_config::MystikoConfig;
+use mystiko_database::document::{Contract, ContractColumn};
+use mystiko_database::Database;
 use mystiko_protos::core::document::v1::Contract as ProtoContract;
 use mystiko_protos::storage::v1::{Condition, QueryFilter, SubFilter};
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::types::StatementFormatter;
-use mystiko_storage::storage::Storage;
+use mystiko_storage::{Document, StatementFormatter, Storage};
 use std::sync::Arc;
 
 #[derive(Debug)]

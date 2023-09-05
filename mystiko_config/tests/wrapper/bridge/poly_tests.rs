@@ -1,6 +1,4 @@
-use mystiko_config::raw::bridge::poly::RawPolyBridgeConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::bridge::poly::PolyBridgeConfig;
+use mystiko_config::{create_raw_from_file, PolyBridgeConfig, RawPolyBridgeConfig};
 use mystiko_types::BridgeType;
 use std::sync::Arc;
 

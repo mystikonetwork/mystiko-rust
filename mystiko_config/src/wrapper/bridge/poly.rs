@@ -1,4 +1,4 @@
-use crate::raw::bridge::poly::RawPolyBridgeConfig;
+use crate::RawPolyBridgeConfig;
 use anyhow::Result;
 use mystiko_types::BridgeType;
 use std::sync::Arc;

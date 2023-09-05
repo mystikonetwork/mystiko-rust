@@ -3,7 +3,7 @@ use crate::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions, FetchResul
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
 use mystiko_protos::data::v1::ChainData;
 use std::cmp::min;

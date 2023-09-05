@@ -1,19 +1,15 @@
 #![forbid(unsafe_code)]
 
-use crate::document::account::AccountCollection;
-use crate::document::chain::ChainCollection;
-use crate::document::commitment::CommitmentCollection;
-use crate::document::contract::ContractCollection;
-use crate::document::deposit::DepositCollection;
-use crate::document::nullifier::NullifierCollection;
-use crate::document::transaction::TransactionCollection;
-use crate::document::wallet::WalletCollection;
+use crate::document::AccountCollection;
+use crate::document::ChainCollection;
+use crate::document::CommitmentCollection;
+use crate::document::ContractCollection;
+use crate::document::DepositCollection;
+use crate::document::NullifierCollection;
+use crate::document::TransactionCollection;
+use crate::document::WalletCollection;
 use anyhow::Result;
-use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::types::StatementFormatter;
-use mystiko_storage::migration::history::MigrationHistory;
-use mystiko_storage::storage::Storage;
+use mystiko_storage::{Collection, Document, MigrationHistory, StatementFormatter, Storage};
 use std::sync::Arc;
 
 #[derive(Debug)]

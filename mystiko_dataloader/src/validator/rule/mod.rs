@@ -11,7 +11,7 @@ use crate::handler::DataHandler;
 pub use checker::*;
 pub use error::*;
 pub use merger::*;
-use mystiko_ethers::provider::pool::Providers;
+use mystiko_ethers::Providers;
 pub use types::*;
 pub use validator::*;
 

@@ -11,7 +11,7 @@ use mystiko_relayer_server::v1::response::JobStatusResponse;
 use mystiko_relayer_server::v1::service::job_status;
 use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
 use mystiko_relayer_types::{TransactRequestData, TransactStatus};
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorageBuilder;
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use std::sync::Arc;

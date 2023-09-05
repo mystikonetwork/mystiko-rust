@@ -1,5 +1,5 @@
 use anyhow::Result;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::{ChainData, ContractData, FullData, LiteData, LoadedData};
 use mystiko_dataloader::handler::document::{
     Commitment, Contract, DatabaseCommitment, DatabaseContract, DatabaseNullifier, Nullifier,
@@ -8,9 +8,7 @@ use mystiko_dataloader::handler::DatabaseHandler;
 use mystiko_dataloader::handler::{CommitmentQueryOption, DataHandler, HandleOption, NullifierQueryOption};
 use mystiko_protos::data::v1::{Commitment as CommitmentProto, CommitmentStatus, Nullifier as NullifierProto};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
-use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_utils::convert::biguint_to_bytes;
 use mystiko_utils::hex::decode_hex;

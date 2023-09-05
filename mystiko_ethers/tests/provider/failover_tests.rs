@@ -1,7 +1,6 @@
 use crate::provider::common::TestProvider;
 use ethers_providers::{HttpClientError, JsonRpcError, Middleware, Provider, ProviderError};
-use mystiko_ethers::provider::failover::{FailoverPolicy, FailoverProvider};
-use mystiko_ethers::provider::wrapper::JsonRpcClientWrapper;
+use mystiko_ethers::{FailoverPolicy, FailoverProvider, JsonRpcClientWrapper};
 
 #[derive(Debug, Default)]
 struct DoNotFailoverPolicy {}

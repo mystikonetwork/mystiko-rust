@@ -1,5 +1,4 @@
-use mystiko_config::raw::asset::RawAssetConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file};
+use mystiko_config::{create_raw, create_raw_from_file, RawAssetConfig};
 use mystiko_types::AssetType;
 use validator::Validate;
 

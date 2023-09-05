@@ -1,6 +1,5 @@
 use async_trait::async_trait;
-use mystiko_config::wrapper::contract::ContractConfig;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::{ContractConfig, MystikoConfig};
 use mystiko_dataloader::data::{ChainData, ChainResult, FullData, LoadedData};
 use mystiko_dataloader::handler::{
     CachedDataHandler, CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption,

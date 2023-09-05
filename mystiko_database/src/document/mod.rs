@@ -1,8 +1,17 @@
-pub mod account;
-pub mod chain;
-pub mod commitment;
-pub mod contract;
-pub mod deposit;
-pub mod nullifier;
-pub mod transaction;
-pub mod wallet;
+mod account;
+mod chain;
+mod commitment;
+mod contract;
+mod deposit;
+mod nullifier;
+mod transaction;
+mod wallet;
+
+pub use account::*;
+pub use chain::*;
+pub use commitment::*;
+pub use contract::*;
+pub use deposit::*;
+pub use nullifier::*;
+pub use transaction::*;
+pub use wallet::*;

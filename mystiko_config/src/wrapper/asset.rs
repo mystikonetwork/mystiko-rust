@@ -1,4 +1,4 @@
-use crate::raw::asset::RawAssetConfig;
+use crate::RawAssetConfig;
 use anyhow::Result;
 use mystiko_types::AssetType;
 use mystiko_utils::convert::decimal_to_number;

@@ -3,7 +3,7 @@ use crate::data::ChainResult;
 use crate::data::LoadedData;
 use crate::validator::ValidatorError;
 use async_trait::async_trait;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use std::fmt::Debug;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;

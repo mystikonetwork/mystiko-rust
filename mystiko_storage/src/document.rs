@@ -1,6 +1,4 @@
-use crate::column::{Column, IndexColumns, UniqueColumns};
-use crate::error::StorageError;
-use crate::migration::types::{CreateCollectionMigration, Migration};
+use crate::{Column, CreateCollectionMigration, IndexColumns, Migration, StorageError, UniqueColumns};
 use mystiko_protos::storage::v1::{ColumnType, ColumnValue};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;

@@ -1,6 +1,6 @@
 use crate::provider::common::TestProvider;
 use ethers_providers::{Middleware, Provider, ProviderError};
-use mystiko_ethers::provider::wrapper::ProviderWrapper;
+use mystiko_ethers::ProviderWrapper;
 
 #[tokio::test]
 async fn test_provider_wrapper() {

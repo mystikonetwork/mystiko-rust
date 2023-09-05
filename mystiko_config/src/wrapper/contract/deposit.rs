@@ -1,7 +1,4 @@
-use crate::raw::contract::deposit::RawDepositContractConfig;
-use crate::wrapper::asset::AssetConfig;
-use crate::wrapper::circuit::CircuitConfig;
-use crate::wrapper::contract::pool::PoolContractConfig;
+use crate::{AssetConfig, CircuitConfig, PoolContractConfig, RawDepositContractConfig};
 use anyhow::{Error, Result};
 use mystiko_types::{AssetType, BridgeType, ContractType};
 use mystiko_utils::convert::decimal_to_number;

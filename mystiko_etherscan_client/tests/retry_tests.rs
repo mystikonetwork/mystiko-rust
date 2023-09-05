@@ -1,7 +1,6 @@
 extern crate mystiko_etherscan_client;
 
-use mystiko_etherscan_client::retry::RetryPolicy;
-use mystiko_etherscan_client::{errors::EtherScanError, retry::DefaultRetryPolicy};
+use mystiko_etherscan_client::{DefaultRetryPolicy, EtherScanError, RetryPolicy};
 
 #[test]
 fn test_is_retryable() {

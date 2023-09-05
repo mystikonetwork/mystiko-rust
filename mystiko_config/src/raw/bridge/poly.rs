@@ -1,4 +1,4 @@
-use crate::raw::chain::EXPLORER_DEFAULT_PREFIX;
+use crate::EXPLORER_DEFAULT_PREFIX;
 use mystiko_types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::Hash;

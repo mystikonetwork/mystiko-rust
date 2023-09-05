@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use log::info;
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
-use mystiko_etherscan_client::client::{EtherScanClient, Event, GetLogsOptions};
+use mystiko_etherscan_client::{EtherScanClient, Event, GetLogsOptions};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::u256_to_bytes;
 use std::sync::Arc;

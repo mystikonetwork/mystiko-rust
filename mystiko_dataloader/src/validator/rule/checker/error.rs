@@ -1,7 +1,7 @@
 use crate::handler::HandlerError;
 use ethers_contract::ContractError;
 use mystiko_crypto::error::MerkleTreeError;
-use mystiko_ethers::provider::factory::Provider;
+use mystiko_ethers::Provider;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

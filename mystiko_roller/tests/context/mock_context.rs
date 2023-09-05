@@ -4,12 +4,8 @@ use crate::common::{
 };
 use async_trait::async_trait;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
-use mystiko_config::raw::indexer::RawIndexerConfig;
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
-use mystiko_config::wrapper::indexer::IndexerConfig;
-use mystiko_ethers::provider::factory::Provider;
-use mystiko_ethers::provider::failover::FailoverProvider;
-use mystiko_ethers::provider::wrapper::ProviderWrapper;
+use mystiko_config::{IndexerConfig, PoolContractConfig, RawIndexerConfig};
+use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper};
 use mystiko_roller::chain::explorer::ExplorerStub;
 use mystiko_roller::chain::indexer::IndexerStub;
 use mystiko_roller::common::env::load_coin_market_api_key;
@@ -19,7 +15,7 @@ use mystiko_roller::config::roller::{create_roller_config, create_token_price_co
 use mystiko_roller::context::ContextTrait;
 use mystiko_roller::db::database::RollerDatabase;
 use mystiko_server_utils::token_price::price::TokenPrice;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
 use std::time::Duration;

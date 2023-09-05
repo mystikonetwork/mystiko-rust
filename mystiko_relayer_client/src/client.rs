@@ -4,7 +4,7 @@ use crate::types::result::Result;
 use ethers_core::types::Address;
 use futures::future::try_join_all;
 use log::debug;
-use mystiko_ethers::provider::pool::Providers;
+use mystiko_ethers::Providers;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_config::wrapper::relayer::{RelayerConfig, RemoteOptions};
 use mystiko_relayer_types::response::ApiResponse;

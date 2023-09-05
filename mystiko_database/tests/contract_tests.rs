@@ -1,11 +1,9 @@
 extern crate mystiko_database;
 
-use mystiko_database::document::contract::{Contract, ContractCollection, ContractColumn};
+use mystiko_database::document::{Contract, ContractCollection, ContractColumn};
 use mystiko_protos::core::document::v1::Contract as ProtoContract;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
-use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::ContractType;
 use std::sync::Arc;

@@ -1,8 +1,17 @@
 #[cfg(feature = "config")]
-pub mod config;
-pub mod factory;
-pub mod failover;
-pub mod pool;
-pub mod types;
-pub mod wrapper;
-pub mod ws;
+mod config;
+mod factory;
+mod failover;
+mod pool;
+mod types;
+mod wrapper;
+mod ws;
+
+#[cfg(feature = "config")]
+pub use config::*;
+pub use factory::*;
+pub use failover::*;
+pub use pool::*;
+pub use types::*;
+pub use wrapper::*;
+pub use ws::*;

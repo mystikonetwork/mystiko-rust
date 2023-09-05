@@ -1,4 +1,4 @@
-use crate::raw::packer::RawPackerConfig;
+use crate::RawPackerConfig;
 use anyhow::Result;
 use mystiko_types::{PackerChecksum, PackerCompression};
 use std::sync::Arc;

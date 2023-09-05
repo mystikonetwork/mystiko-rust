@@ -1,6 +1,4 @@
-use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::bridge::tbridge::TBridgeConfig;
+use mystiko_config::{create_raw_from_file, RawTBridgeConfig, TBridgeConfig};
 use mystiko_types::BridgeType;
 use std::sync::Arc;
 

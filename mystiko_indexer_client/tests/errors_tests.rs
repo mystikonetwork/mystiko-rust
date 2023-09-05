@@ -1,7 +1,5 @@
 use mockito::*;
-use mystiko_indexer_client::client::IndexerClient;
-use mystiko_indexer_client::errors::ClientError;
-use mystiko_indexer_client::response::ApiResponse;
+use mystiko_indexer_client::{ApiResponse, ClientError, IndexerClient};
 
 struct TestErrorSetupData {
     mocked_server: mockito::ServerGuard,

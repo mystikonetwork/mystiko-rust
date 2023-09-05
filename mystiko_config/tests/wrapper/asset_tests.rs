@@ -1,6 +1,4 @@
-use mystiko_config::raw::asset::RawAssetConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::asset::AssetConfig;
+use mystiko_config::{create_raw_from_file, AssetConfig, RawAssetConfig};
 use mystiko_types::AssetType;
 use num_bigint::BigUint;
 use std::str::FromStr;

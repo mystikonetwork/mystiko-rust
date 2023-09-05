@@ -1,4 +1,4 @@
-use crate::client::IndexerClient;
+use crate::IndexerClient;
 use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
 use reqwest::{header, Client};

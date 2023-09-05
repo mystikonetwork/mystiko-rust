@@ -1,6 +1,5 @@
 use mystiko_relayer_types::TransactStatus;
-use mystiko_storage::column::IndexColumns;
-use mystiko_storage::document::DocumentData;
+use mystiko_storage::{DocumentData, IndexColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use num_bigint::BigUint;

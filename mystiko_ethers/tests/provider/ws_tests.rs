@@ -1,6 +1,6 @@
 use crate::provider::common::{MockWebSocketResponse, MockWebSocketServer};
 use ethers_providers::{Middleware, Provider};
-use mystiko_ethers::provider::ws::WsWithTimeout;
+use mystiko_ethers::WsWithTimeout;
 use std::time::Duration;
 
 #[tokio::test]

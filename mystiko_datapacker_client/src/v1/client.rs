@@ -2,7 +2,7 @@ use crate::{ChainQuery, ChainResponse};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_datapacker_common::v1::PathSchema as PathSchemaV1;
 use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSum, ZstdCompression};
 use mystiko_protos::data::v1::{ChainData, ContractData};

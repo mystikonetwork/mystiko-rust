@@ -1,4 +1,4 @@
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_dataloader::handler::document::{Contract, DatabaseContract};
 use std::sync::Arc;
 

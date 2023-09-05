@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
-use mystiko_config::wrapper::contract::ContractConfig;
+use mystiko_config::ContractConfig;
 use mystiko_dataloader::data::{ChainData, LiteData};
 use mystiko_dataloader::data::{FullData, LoadedData};
 use mystiko_dataloader::handler::HandlerError;
@@ -11,10 +11,7 @@ use mystiko_dataloader::validator::rule::{
     create_full_rule_validator, CheckerResult, CounterChecker, IntegrityChecker, MerkleTreeChecker, RuleChecker,
     RuleValidator, RuleValidatorOptions, SequenceChecker, ValidateMergedData, ValidateOriginalData,
 };
-use mystiko_ethers::provider::factory::Provider;
-use mystiko_ethers::provider::failover::FailoverProvider;
-use mystiko_ethers::provider::pool::Providers;
-use mystiko_ethers::provider::wrapper::ProviderWrapper;
+use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
 use mystiko_fs::read_file_bytes;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;

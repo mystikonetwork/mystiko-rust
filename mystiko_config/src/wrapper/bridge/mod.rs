@@ -1,18 +1,19 @@
-use crate::raw::bridge::RawBridgeConfig;
-use crate::wrapper::bridge::axelar::AxelarBridgeConfig;
-use crate::wrapper::bridge::celer::CelerBridgeConfig;
-use crate::wrapper::bridge::layer_zero::LayerZeroBridgeConfig;
-use crate::wrapper::bridge::poly::PolyBridgeConfig;
-use crate::wrapper::bridge::tbridge::TBridgeConfig;
+mod axelar;
+mod celer;
+mod layer_zero;
+mod poly;
+mod tbridge;
+
+pub use axelar::*;
+pub use celer::*;
+pub use layer_zero::*;
+pub use poly::*;
+pub use tbridge::*;
+
+use crate::RawBridgeConfig;
 use anyhow::Result;
 use mystiko_types::BridgeType;
 use std::sync::Arc;
-
-pub mod axelar;
-pub mod celer;
-pub mod layer_zero;
-pub mod poly;
-pub mod tbridge;
 
 #[derive(Clone, Debug)]
 pub enum BridgeConfig {

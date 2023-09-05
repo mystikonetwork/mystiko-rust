@@ -1,14 +1,7 @@
-use crate::raw::chain::RawChainConfig;
-use crate::raw::mystiko::RawMystikoConfig;
-use crate::raw::{create_raw_from_file, create_raw_from_json};
-use crate::wrapper::bridge::BridgeConfig;
-use crate::wrapper::chain::ChainConfig;
-use crate::wrapper::circuit::CircuitConfig;
-use crate::wrapper::contract::deposit::DepositContractConfig;
-use crate::wrapper::contract::pool::PoolContractConfig;
-use crate::wrapper::contract::ContractConfig;
-use crate::wrapper::indexer::IndexerConfig;
-use crate::wrapper::packer::PackerConfig;
+use crate::{
+    create_raw_from_file, create_raw_from_json, BridgeConfig, ChainConfig, CircuitConfig, ContractConfig,
+    DepositContractConfig, IndexerConfig, PackerConfig, PoolContractConfig, RawChainConfig, RawMystikoConfig,
+};
 use anyhow::{Error, Result};
 use mystiko_types::{BridgeType, CircuitType};
 use std::collections::HashMap;

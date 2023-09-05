@@ -11,9 +11,9 @@ pub use handler::*;
 
 use anyhow::{Error, Result};
 use lazy_static::lazy_static;
-use mystiko_core::mystiko::Mystiko;
+use mystiko_core::Mystiko;
 use mystiko_protos::core::v1::MystikoOptions as ProtoMystikoOptions;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 use prost::Message;
 use tokio::runtime::Runtime;
@@ -77,8 +77,8 @@ impl MystikoStatic {
 
 mod internal {
     use super::*;
-    use mystiko_core::mystiko::MystikoOptions;
-    use mystiko_database::database::Database;
+    use mystiko_core::MystikoOptions;
+    use mystiko_database::Database;
     use mystiko_storage_sqlite::SqliteStorageBuilder;
 
     pub(crate) async fn initialize(options: ProtoMystikoOptions) -> Result<()> {

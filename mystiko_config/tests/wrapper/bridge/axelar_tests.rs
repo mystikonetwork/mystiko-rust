@@ -1,6 +1,4 @@
-use mystiko_config::raw::bridge::axelar::RawAxelarBridgeConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::bridge::axelar::AxelarBridgeConfig;
+use mystiko_config::{create_raw_from_file, AxelarBridgeConfig, RawAxelarBridgeConfig};
 use mystiko_types::BridgeType;
 use std::sync::Arc;
 

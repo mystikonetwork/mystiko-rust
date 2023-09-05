@@ -1,14 +1,15 @@
-use crate::wrapper::asset::AssetConfig;
-use crate::wrapper::contract::deposit::DepositContractConfig;
-use crate::wrapper::contract::pool::PoolContractConfig;
+mod deposit;
+mod pool;
+
+pub use deposit::*;
+pub use pool::*;
+
+use crate::AssetConfig;
 use anyhow::Result;
 use mystiko_types::{AssetType, BridgeType, ContractType};
 use num_bigint::BigUint;
 use num_traits::{NumCast, Zero};
 use std::sync::Arc;
-
-pub mod deposit;
-pub mod pool;
 
 #[derive(Clone, Debug)]
 pub enum ContractConfig {

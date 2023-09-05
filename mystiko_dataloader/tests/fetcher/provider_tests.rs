@@ -4,15 +4,12 @@ use ethers_core::types::U64;
 use ethers_providers::MockResponse;
 use ethers_providers::{MockError, MockProvider, RetryClientBuilder, RetryPolicy};
 use log::LevelFilter;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::{FullData, LiteData};
 use mystiko_dataloader::fetcher::{
     ContractFetchOptions, DataFetcher, FetchOptions, ProviderFetcher, ProviderFetcherError,
 };
-use mystiko_ethers::provider::factory::Provider;
-use mystiko_ethers::provider::failover::FailoverProvider;
-use mystiko_ethers::provider::pool::Providers;
-use mystiko_ethers::provider::wrapper::ProviderWrapper;
+use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
 use std::sync::Arc;
 use tokio::time::Duration;
 

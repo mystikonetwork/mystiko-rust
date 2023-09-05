@@ -1,7 +1,6 @@
-use crate::provider::failover::FailoverProvider;
-use crate::provider::types::{ProviderOptions, QuorumProviderOptions};
-use crate::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
-use crate::provider::ws::WsWithTimeout;
+use crate::{
+    FailoverProvider, JsonRpcClientWrapper, ProviderOptions, ProviderWrapper, QuorumProviderOptions, WsWithTimeout,
+};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_providers::{

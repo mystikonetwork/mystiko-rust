@@ -1,4 +1,4 @@
-use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
+use crate::RawAxelarBridgeConfig;
 use anyhow::Result;
 use mystiko_types::BridgeType;
 use std::sync::Arc;

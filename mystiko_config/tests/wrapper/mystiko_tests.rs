@@ -1,7 +1,5 @@
 use mockito::Server;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::raw::mystiko::RawMystikoConfig;
-use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
+use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RemoteOptions};
 use mystiko_types::{BridgeType, CircuitType};
 use std::sync::Arc;
 

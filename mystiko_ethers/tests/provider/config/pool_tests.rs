@@ -2,11 +2,11 @@ use crate::provider::common::TestProvider;
 use anyhow::Result;
 use async_trait::async_trait;
 use mockall::mock;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_ethers::provider::config::ChainConfigProvidersOptions;
-use mystiko_ethers::provider::factory::{Provider, ProviderFactory, ProvidersOptions};
-use mystiko_ethers::provider::pool::{ProviderPool, Providers};
-use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
+use mystiko_config::MystikoConfig;
+use mystiko_ethers::{
+    ChainConfigProvidersOptions, JsonRpcClientWrapper, Provider, ProviderFactory, ProviderPool, ProviderWrapper,
+    Providers, ProvidersOptions,
+};
 use std::sync::Arc;
 
 mock! {

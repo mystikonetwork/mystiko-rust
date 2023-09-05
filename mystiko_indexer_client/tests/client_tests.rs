@@ -2,26 +2,13 @@ extern crate mystiko_indexer_client;
 
 use base64::{engine::general_purpose, Engine as _};
 use mockito::*;
-use mystiko_indexer_client::errors::ClientError;
-use mystiko_indexer_client::response::ApiResponse;
 use mystiko_indexer_client::{
-    client::IndexerClient,
-    types::{
-        commitment::{CommitmentFilter, CommitmentResponse, CommitmentStatus, CommitmentsForContractRequest},
-        commitment_included::{
-            CommitmentIncludedFilter, CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest,
-            CommitmentIncludedResponse,
-        },
-        commitment_queued::{
-            CommitmentQueuedFilter, CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest,
-            CommitmentQueuedResponse,
-        },
-        commitment_spent::{
-            CommitmentSpentFilter, CommitmentSpentForChainRequest, CommitmentSpentForContractRequest,
-            CommitmentSpentResponse, DataLoaderRequest,
-        },
-        sync_response::{ChainSyncRepsonse, ContractSyncResponse},
-    },
+    ApiResponse, ChainSyncRepsonse, ClientError, CommitmentFilter, CommitmentIncludedFilter,
+    CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest, CommitmentIncludedResponse,
+    CommitmentQueuedFilter, CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest,
+    CommitmentQueuedResponse, CommitmentResponse, CommitmentSpentFilter, CommitmentSpentForChainRequest,
+    CommitmentSpentForContractRequest, CommitmentSpentResponse, CommitmentStatus, CommitmentsForContractRequest,
+    ContractSyncResponse, DataLoaderRequest, IndexerClient,
 };
 
 static AUTH_USERNAME: &str = "test_username";

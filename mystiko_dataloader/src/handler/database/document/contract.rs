@@ -1,8 +1,7 @@
 use crate::handler::document::DatabaseContract;
 use anyhow::Result;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_storage::column::{IndexColumns, UniqueColumns};
-use mystiko_storage::document::DocumentData;
+use mystiko_config::MystikoConfig;
+use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;

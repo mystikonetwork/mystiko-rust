@@ -1,7 +1,8 @@
 use crate::provider::common::{MockWebSocketResponse, MockWebSocketServer};
 use ethers_providers::{Authorization, HttpRateLimitRetryPolicy, Middleware, Quorum};
-use mystiko_ethers::provider::factory::{DefaultProviderFactory, ProviderFactory, ProvidersOptions};
-use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
+use mystiko_ethers::{
+    DefaultProviderFactory, ProviderFactory, ProviderOptions, ProvidersOptions, QuorumProviderOptions,
+};
 use std::time::Duration;
 
 #[tokio::test]

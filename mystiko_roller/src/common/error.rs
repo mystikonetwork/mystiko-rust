@@ -6,7 +6,7 @@ use mystiko_crypto::error::MerkleTreeError;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_server_utils::token_price::error::TokenPriceError;
 use mystiko_server_utils::tx_manager::error::TxManagerError;
-use mystiko_storage::error::StorageError;
+use mystiko_storage::StorageError;
 use reqwest::Error as ReqwestError;
 use serde_json::Error as SerdeJsonError;
 use thiserror::Error;

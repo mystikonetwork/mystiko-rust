@@ -7,9 +7,7 @@ use ethers_core::types::H256;
 use mockito::*;
 use mystiko_abi::commitment_pool::CommitmentQueuedFilter;
 use mystiko_etherscan_client::{
-    client::{EtherScanClient, EtherScanClientOptions, EtherScanModule, GetLogsOptions, GetOptions},
-    errors::EtherScanError,
-    log::Log,
+    EtherScanClient, EtherScanClientOptions, EtherScanError, EtherScanModule, GetLogsOptions, GetOptions, Log,
 };
 
 struct TestClientSetupData {

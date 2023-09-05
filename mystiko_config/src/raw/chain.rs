@@ -1,7 +1,7 @@
-use crate::raw::asset::RawAssetConfig;
-use crate::raw::contract::deposit::RawDepositContractConfig;
-use crate::raw::contract::pool::RawPoolContractConfig;
-use crate::raw::provider::RawProviderConfig;
+use crate::RawAssetConfig;
+use crate::RawDepositContractConfig;
+use crate::RawPoolContractConfig;
+use crate::RawProviderConfig;
 use mystiko_types::ProviderType;
 use mystiko_validator::validate::{array_unique, is_number_string_vec, validate_nested_vec};
 use serde::{Deserialize, Serialize};

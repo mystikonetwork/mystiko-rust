@@ -1,10 +1,6 @@
-use crate::column::Column;
-use crate::document::{Document, DocumentColumn, DocumentData};
-use crate::error::StorageError;
-use crate::formatter::types::{CountStatement, Statement, StatementFormatter};
-use crate::migration::types::{
-    AddColumnMigration, AddIndexMigration, CreateCollectionMigration, DropColumnMigration, Migration,
-    RenameColumnMigration,
+use crate::{
+    AddColumnMigration, AddIndexMigration, Column, CountStatement, CreateCollectionMigration, Document, DocumentColumn,
+    DocumentData, DropColumnMigration, Migration, RenameColumnMigration, Statement, StatementFormatter, StorageError,
 };
 use anyhow::Result;
 use mystiko_protos::storage::v1::{

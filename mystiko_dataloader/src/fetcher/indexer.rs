@@ -13,11 +13,10 @@ use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use hex::FromHexError;
 use log::info;
-use mystiko_indexer_client::client::IndexerClient;
-use mystiko_indexer_client::types::commitment::CommitmentForDataLoader;
-use mystiko_indexer_client::types::commitment::CommitmentStatus as IndexerCommitmentStatus;
-use mystiko_indexer_client::types::commitment::ContractResultDataResponse;
-use mystiko_indexer_client::types::commitment_spent::{DataLoaderRequest, NullifierForDataLoader};
+use mystiko_indexer_client::{
+    CommitmentForDataLoader, CommitmentStatus as IndexerCommitmentStatus, ContractResultDataResponse,
+    DataLoaderRequest, IndexerClient, NullifierForDataLoader,
+};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::biguint_str_to_bytes;
 use mystiko_utils::hex::decode_hex;

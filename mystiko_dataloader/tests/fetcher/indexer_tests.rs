@@ -1,11 +1,10 @@
 use log::LevelFilter;
 use mockito::*;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::data::LiteData;
 use mystiko_dataloader::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions, IndexerFetcher};
-use mystiko_indexer_client::builder::IndexerClientBuilder;
-use mystiko_indexer_client::types::commitment_spent::DataLoaderRequest;
+use mystiko_indexer_client::{DataLoaderRequest, IndexerClientBuilder};
 use mystiko_utils::convert::biguint_str_to_bytes;
 use mystiko_utils::hex::decode_hex;
 use std::sync::Arc;

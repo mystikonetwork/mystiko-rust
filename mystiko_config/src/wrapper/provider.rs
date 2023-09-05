@@ -1,4 +1,4 @@
-use crate::raw::provider::RawProviderConfig;
+use crate::RawProviderConfig;
 use anyhow::Result;
 use std::sync::Arc;
 use validator::Validate;

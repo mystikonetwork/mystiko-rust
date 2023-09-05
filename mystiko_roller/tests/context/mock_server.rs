@@ -1,8 +1,6 @@
 use mockito::{Matcher, Mock, Server, ServerGuard};
 use mystiko_fs::read_file_bytes;
-use mystiko_indexer_client::response::ApiResponse;
-use mystiko_indexer_client::types::commitment_queued::CommitmentQueuedResponse;
-use mystiko_indexer_client::types::sync_response::ContractSyncResponse;
+use mystiko_indexer_client::{ApiResponse, CommitmentQueuedResponse, ContractSyncResponse};
 use mystiko_server_utils::token_price::query::CurrencyQuoteResponse;
 
 pub async fn create_mock_indexer_server() -> (ServerGuard, u16) {

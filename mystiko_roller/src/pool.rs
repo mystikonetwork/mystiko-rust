@@ -4,7 +4,7 @@ use crate::context::ContextTrait;
 use crate::data::handler::DataHandler;
 use crate::pull::handler::PullHandle;
 use crate::rollup::handler::RollupHandle;
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
+use mystiko_config::PoolContractConfig;
 use mystiko_server_utils::tx_manager::error::TxManagerError::GasPriceError;
 
 use crate::chain::provider::ProviderStub;

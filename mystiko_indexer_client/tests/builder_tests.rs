@@ -1,4 +1,4 @@
-use mystiko_indexer_client::builder::IndexerClientBuilder;
+use mystiko_indexer_client::IndexerClientBuilder;
 use std::time::Duration;
 use url::ParseError;
 
