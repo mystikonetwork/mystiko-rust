@@ -12,21 +12,17 @@ use mystiko_dataloader::handler::HandlerError;
 use mystiko_dataloader::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
 };
-use mystiko_dataloader::loader::{ChainDataLoader, ChainDataLoaderBuilder};
-use mystiko_dataloader::loader::{LoadOption, ScheduleOption};
-use mystiko_dataloader::loader::{LoaderEvent, LoaderListener};
+use mystiko_dataloader::loader::{ChainDataLoader, DataLoaderResult};
+use mystiko_dataloader::loader::{DataLoader, LoadOption};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption, ValidateResult};
 use mystiko_ethers::provider::factory::Provider;
 use mystiko_ethers::provider::failover::FailoverProvider;
 use mystiko_ethers::provider::wrapper::ProviderWrapper;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, Once};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::RwLock;
-use tokio::time::sleep;
-
-static INIT: Once = Once::new();
 
 pub struct MockFetcher<R>
 where
@@ -386,133 +382,16 @@ where
     }
 }
 
-pub struct MockListener {
-    pub event: RwLock<Vec<String>>,
-}
+pub type ChainDataLoaderFullDataType =
+    ChainDataLoader<FullData, Provider, MockFetcher<FullData>, MockValidator, MockHandler<FullData>>;
 
-impl MockListener {
-    fn new() -> Self {
-        MockListener {
-            event: RwLock::new(vec![]),
-        }
-    }
-
-    fn convert_event(&self, event: Arc<LoaderEvent>) -> String {
-        match &*event {
-            LoaderEvent::ScheduleEvent(_) => "ScheduleEvent".to_string(),
-            LoaderEvent::LoadEvent(e) => format!("LoadEvent-{}-{}", e.start_block, e.target_block),
-            LoaderEvent::LoadSuccessEvent(e) => format!("LoadSuccessEvent-{}-{}", e.start_block, e.loaded_block),
-            LoaderEvent::LoadFailureEvent(e) => {
-                format!("LoadFailureEvent-{}-{}-{}", e.start_block, e.loaded_block, e.load_error)
-            }
-            LoaderEvent::StopScheduleEvent(_) => "StopScheduleEvent".to_string(),
-        }
-    }
-
-    pub async fn is_event_empty(&self) -> bool {
-        tokio::time::sleep(std::time::Duration::from_millis(5_u64)).await;
-        let events_guard = self.event.write().await;
-        events_guard.is_empty()
-    }
-
-    pub async fn drain_events(&self) -> Vec<String> {
-        loop {
-            let mut events_guard = self.event.write().await;
-            if !events_guard.is_empty() {
-                return events_guard.drain(..).collect();
-            }
-            drop(events_guard);
-            tokio::time::sleep(std::time::Duration::from_millis(2_u64)).await;
-        }
-    }
-}
-
-impl Default for MockListener {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[async_trait]
-impl LoaderListener for MockListener {
-    async fn callback(&self, _chain_id: u64, event: Arc<LoaderEvent>) -> anyhow::Result<()> {
-        let event_str = self.convert_event(event);
-        self.event.write().await.push(event_str);
-        Ok(())
-    }
-}
-
-type ChainDataLoaderFullDataType =
-    ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>;
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum LoaderRunType {
-    Schedule,
-    Load,
-}
-
-pub async fn loader_run(run_type: LoaderRunType, loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
-    match run_type {
-        LoaderRunType::Schedule => {
-            loader_schedule(loader.clone(), delay_block).await;
-        }
-        LoaderRunType::Load => {
-            loader_load(loader.clone(), delay_block).await;
-        }
-    }
-}
-
-async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
+pub async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) -> DataLoaderResult<()> {
     let load_option = delay_block.map(|d| LoadOption::builder().delay_block(d).build());
-    let _ = loader.load(load_option).await;
+    loader.load(load_option).await
 }
 
-async fn loader_schedule(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) {
-    INIT.call_once(|| {
-        let _ = env_logger::builder()
-            .filter_module("mystiko_dataloader", log::LevelFilter::Debug)
-            .try_init();
-    });
-
-    let load_option = match delay_block {
-        None => LoadOption::builder().build(),
-        Some(d) => LoadOption::builder().delay_block(d).build(),
-    };
-    let option = ScheduleOption::builder()
-        .schedule_interval_ms(5_u64)
-        .load_option(load_option)
-        .build();
-    let handle = loader.schedule(option).await.unwrap().unwrap();
-    let mut running = false;
-    for _ in 0..100 {
-        let _ = sleep(std::time::Duration::from_millis(1_u64)).await;
-        if loader.is_running().await {
-            running = true;
-            break;
-        }
-    }
-    assert!(running);
-    loader.stop_schedule().await;
-    let result = futures::try_join!(handle);
-    assert!(result.is_ok());
-}
-
-pub async fn create_loader(
-    batch: bool,
-    fetch_result: bool,
-    contract_address: &str,
-    end_block: u64,
-) -> ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener> {
+pub async fn create_loader(fetch_result: bool, contract_address: &str, end_block: u64) -> ChainDataLoaderFullDataType {
     let chain_id = 1_u64;
-
-    let builder: ChainDataLoaderBuilder<
-        FullData,
-        MockFetcher<FullData>,
-        MockValidator,
-        MockHandler<FullData>,
-        MockListener,
-    > = ChainDataLoaderBuilder::new();
-
     let fetcher = MockFetcher::new(chain_id);
     if fetch_result {
         fetcher
@@ -531,7 +410,6 @@ pub async fn create_loader(
 
     let validator = MockValidator::new();
     let handler = MockHandler::new();
-    let listener = MockListener::default();
 
     let (_, mock) = EthersProvider::mocked();
     let provider = create_mock_provider(&mock);
@@ -544,52 +422,28 @@ pub async fn create_loader(
         .await
         .unwrap();
 
-    if batch {
-        builder
-            .chain_id(1)
-            .config(Arc::new(core_cfg))
-            .add_fetchers(vec![fetcher])
-            .add_validators(vec![validator])
-            .handler(handler)
-            .add_listeners(vec![listener])
-            .shared_provider(provider)
-            .build()
-            .unwrap()
-    } else {
-        builder
-            .chain_id(1)
-            .config(Arc::new(core_cfg))
-            .add_fetcher(fetcher)
-            .add_validator(validator)
-            .handler(handler)
-            .add_listener(listener)
-            .shared_provider(provider)
-            .build()
-            .unwrap()
-    }
+    ChainDataLoaderFullDataType::builder()
+        .chain_id(1_u64)
+        .config(Arc::new(core_cfg))
+        .provider(provider)
+        .fetchers(vec![Arc::new(fetcher)])
+        .validators(vec![Arc::new(validator)])
+        .handler(handler)
+        .build()
 }
 
 pub async fn create_shared_loader(
     chain_id: u64,
     feature_count: usize,
     validator_count: usize,
-    listener_count: usize,
 ) -> (
     Arc<MystikoConfig>,
-    Arc<ChainDataLoader<FullData, MockFetcher<FullData>, MockValidator, MockHandler<FullData>, MockListener>>,
+    Arc<ChainDataLoaderFullDataType>,
     Vec<Arc<MockFetcher<FullData>>>,
     Vec<Arc<MockValidator>>,
     Arc<MockHandler<FullData>>,
-    Vec<Arc<MockListener>>,
     Arc<MockProvider>,
 ) {
-    let builder: ChainDataLoaderBuilder<
-        FullData,
-        MockFetcher<FullData>,
-        MockValidator,
-        MockHandler<FullData>,
-        MockListener,
-    > = ChainDataLoaderBuilder::new();
     let core_cfg = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
             .await
@@ -603,32 +457,25 @@ pub async fn create_shared_loader(
         .map(|_| Arc::new(MockValidator::new()))
         .collect::<Vec<_>>();
     let handler = Arc::new(MockHandler::new());
-    let listeners = (0..listener_count)
-        .map(|_| Arc::new(MockListener::default()))
-        .collect::<Vec<_>>();
 
     let (_, mock) = EthersProvider::mocked();
     let provider = create_mock_provider(&mock);
     let provider = Arc::new(provider);
 
-    let loader = builder
+    let loader = ChainDataLoaderFullDataType::builder()
         .chain_id(chain_id)
         .config(core_cfg.clone())
-        .add_shared_fetchers(fetchers.clone())
-        .add_shared_validators(validators.clone())
-        .shared_handler(handler.clone())
-        .add_shared_listeners(listeners.clone())
-        .shared_provider(provider)
-        .build()
-        .unwrap();
-
+        .provider(provider.clone())
+        .fetchers(fetchers.clone())
+        .validators(validators.clone())
+        .handler(handler.clone())
+        .build();
     (
         core_cfg.clone(),
         Arc::new(loader),
         fetchers,
         validators,
         handler,
-        listeners,
         Arc::new(mock),
     )
 }
@@ -684,26 +531,4 @@ pub fn contract_data_partial_eq(a: &HashMap<String, ContractData<FullData>>, b: 
     }
 
     true
-}
-
-pub async fn events_check(run_type: LoaderRunType, listeners: &[Arc<MockListener>], events: Vec<String>) {
-    if run_type == LoaderRunType::Load {
-        return;
-    }
-
-    let mut total_event = vec![];
-    match run_type {
-        LoaderRunType::Schedule => {
-            total_event.push("ScheduleEvent".to_string());
-            total_event.extend(events);
-            total_event.push("StopScheduleEvent".to_string());
-        }
-        LoaderRunType::Load => {
-            total_event.extend(events);
-        }
-    }
-
-    for listener in listeners.iter() {
-        assert_eq!(listener.drain_events().await, total_event.clone());
-    }
 }
