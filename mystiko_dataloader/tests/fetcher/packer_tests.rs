@@ -2,10 +2,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
 use mockall::mock;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::raw::mystiko::RawMystikoConfig;
-use mystiko_config::raw::packer::RawPackerConfig;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
 use mystiko_dataloader::data::{FullData, LiteData, LoadedData};
 use mystiko_dataloader::fetcher::{
     ContractFetchOptions, DataFetcher, DataPackerFetcher, DataPackerFetcherV1, FetchOptions,

@@ -1,4 +1,4 @@
-use crate::raw::circuit::RawCircuitConfig;
+use crate::RawCircuitConfig;
 use anyhow::Result;
 use mystiko_types::CircuitType;
 use std::sync::Arc;

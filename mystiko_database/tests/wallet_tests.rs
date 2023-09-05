@@ -1,9 +1,7 @@
-use mystiko_database::document::wallet::{Wallet, WalletCollection, WalletColumn};
+use mystiko_database::document::{Wallet, WalletCollection, WalletColumn};
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
-use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use std::sync::Arc;
 

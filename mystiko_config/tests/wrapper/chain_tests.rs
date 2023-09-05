@@ -1,8 +1,6 @@
-use mystiko_config::raw::chain::RawChainConfig;
-use mystiko_config::raw::circuit::RawCircuitConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::chain::{ChainConfig, MAIN_ASSET_ADDRESS};
-use mystiko_config::wrapper::circuit::CircuitConfig;
+use mystiko_config::{
+    create_raw_from_file, ChainConfig, CircuitConfig, RawChainConfig, RawCircuitConfig, MAIN_ASSET_ADDRESS,
+};
 use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
 use num_bigint::BigUint;
 use std::collections::HashMap;

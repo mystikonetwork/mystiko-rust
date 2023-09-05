@@ -1,9 +1,6 @@
 use anyhow::Result;
 use ethers_core::types::Address;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::raw::mystiko::RawMystikoConfig;
-use mystiko_config::raw::packer::RawPackerConfig;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
 use mystiko_datapacker_client::v1::DataPackerClient as DataPackerClientV1;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
 use mystiko_datapacker_common::v1::PathSchema as PathSchemaV1;

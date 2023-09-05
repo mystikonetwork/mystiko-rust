@@ -1,5 +1,5 @@
-use mystiko_database::database::Database;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_database::Database;
+use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorageBuilder;
 
 #[tokio::test]

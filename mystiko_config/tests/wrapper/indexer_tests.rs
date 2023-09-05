@@ -1,6 +1,4 @@
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::raw::indexer::RawIndexerConfig;
-use mystiko_config::wrapper::indexer::IndexerConfig;
+use mystiko_config::{create_raw_from_file, IndexerConfig, RawIndexerConfig};
 use std::sync::Arc;
 
 const VALID_CONFIG_FILE: &str = "tests/files/indexer/valid.json";

@@ -1,6 +1,6 @@
 use crate::data::{ContractData, LoadedData};
 use crate::validator::ValidateOption;
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
+use mystiko_config::PoolContractConfig;
 use mystiko_protos::data::v1::CommitmentStatus;
 use num_bigint::BigUint;
 use typed_builder::TypedBuilder;

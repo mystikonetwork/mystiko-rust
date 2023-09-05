@@ -1,6 +1,4 @@
-use mystiko_config::raw::circuit::RawCircuitConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::circuit::CircuitConfig;
+use mystiko_config::{create_raw_from_file, CircuitConfig, RawCircuitConfig};
 use mystiko_types::CircuitType;
 use std::sync::Arc;
 

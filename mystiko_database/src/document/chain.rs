@@ -2,8 +2,7 @@
 
 use mystiko_protos::core::document::v1::Chain as ProtoChain;
 use mystiko_protos::core::document::v1::Provider as ProtoProvider;
-use mystiko_storage::column::{IndexColumns, UniqueColumns};
-use mystiko_storage::document::{Document, DocumentData};
+use mystiko_storage::{Document, DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use serde::{Deserialize, Serialize};
 

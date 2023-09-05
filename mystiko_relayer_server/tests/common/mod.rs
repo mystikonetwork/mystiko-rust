@@ -9,11 +9,9 @@ use log::LevelFilter;
 use mockall::mock;
 use mockito::{Server, ServerGuard};
 use mystiko_abi::commitment_pool::TransactRequest;
-use mystiko_ethers::provider::config::ChainConfigProvidersOptions;
-use mystiko_ethers::provider::factory::ProvidersOptions;
-use mystiko_ethers::provider::pool::Providers;
-use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
-use mystiko_ethers::provider::wrapper::ProviderWrapper;
+use mystiko_ethers::{
+    ChainConfigProvidersOptions, ChainProvidersOptions, ProviderPool, ProviderWrapper, Providers, ProvidersOptions,
+};
 use mystiko_relayer_server::channel::consumer::TransactionConsumer;
 use mystiko_relayer_server::channel::{transact_channel, TransactSendersMap};
 use mystiko_relayer_server::common::{init_app_state, AppState};
@@ -24,7 +22,7 @@ use mystiko_relayer_server::handler::transaction::TransactionHandler;
 use mystiko_relayer_types::TransactRequestData;
 use mystiko_server_utils::token_price::config::TokenPriceConfig;
 use mystiko_server_utils::token_price::price::TokenPrice;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use std::str::FromStr;
@@ -107,8 +105,7 @@ impl TestServer {
 
         // mock provider
         let mock = mock.unwrap_or(MockProvider::new());
-        let provider: Arc<mystiko_ethers::provider::factory::Provider> =
-            Arc::new(Provider::new(ProviderWrapper::new(Box::new(mock))));
+        let provider: Arc<mystiko_ethers::Provider> = Arc::new(Provider::new(ProviderWrapper::new(Box::new(mock))));
         let mut mock_chain_config = MockChainConfig::new();
         mock_chain_config.expect_providers_options().returning(|_| Ok(None));
         let pool: ProviderPool = ProviderPool::builder()

@@ -1,8 +1,7 @@
 use async_trait::async_trait;
 use ethers_core::types::U64;
 use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
-use mystiko_config::wrapper::contract::ContractConfig;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::{ContractConfig, MystikoConfig};
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::{ChainResult, ContractResult};
@@ -15,9 +14,7 @@ use mystiko_dataloader::handler::{
 use mystiko_dataloader::loader::{ChainDataLoader, DataLoaderResult};
 use mystiko_dataloader::loader::{DataLoader, LoadOption};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption, ValidateResult};
-use mystiko_ethers::provider::factory::Provider;
-use mystiko_ethers::provider::failover::FailoverProvider;
-use mystiko_ethers::provider::wrapper::ProviderWrapper;
+use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper};
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;

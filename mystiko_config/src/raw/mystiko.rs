@@ -1,8 +1,8 @@
-use crate::raw::bridge::RawBridgeConfig;
-use crate::raw::chain::RawChainConfig;
-use crate::raw::circuit::RawCircuitConfig;
-use crate::raw::indexer::RawIndexerConfig;
-use crate::raw::packer::RawPackerConfig;
+use crate::RawBridgeConfig;
+use crate::RawChainConfig;
+use crate::RawCircuitConfig;
+use crate::RawIndexerConfig;
+use crate::RawPackerConfig;
 use mystiko_validator::validate::{
     array_unique, is_git_revision, is_sem_ver, string_vec_each_not_empty, validate_nested_vec,
 };

@@ -1,8 +1,6 @@
-use mystiko_database::document::transaction::{Transaction, TransactionCollection, TransactionColumn};
+use mystiko_database::document::{Transaction, TransactionCollection, TransactionColumn};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
-use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigUint;

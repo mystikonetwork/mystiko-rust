@@ -1,10 +1,9 @@
 use crate::handler::document::DatabaseCommitment;
 use crate::handler::merge_commitments;
 use anyhow::Result;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_protos::data::v1::Commitment as ProtoCommitment;
-use mystiko_storage::column::{IndexColumns, UniqueColumns};
-use mystiko_storage::document::DocumentData;
+use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_utils::convert::{biguint_to_bytes, bytes_to_biguint};
 use mystiko_utils::hex::{decode_hex, encode_hex_with_prefix};

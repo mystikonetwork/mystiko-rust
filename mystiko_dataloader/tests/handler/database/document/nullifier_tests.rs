@@ -1,4 +1,4 @@
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_dataloader::handler::document::{DatabaseNullifier, Nullifier};
 use mystiko_protos::data::v1::Nullifier as ProtoNullifier;
 use mystiko_utils::convert::biguint_to_bytes;

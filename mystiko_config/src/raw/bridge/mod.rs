@@ -1,19 +1,20 @@
-use crate::raw::bridge::axelar::RawAxelarBridgeConfig;
-use crate::raw::bridge::celer::RawCelerBridgeConfig;
-use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
-use crate::raw::bridge::poly::RawPolyBridgeConfig;
-use crate::raw::bridge::tbridge::RawTBridgeConfig;
+mod axelar;
+mod celer;
+mod layer_zero;
+mod poly;
+mod tbridge;
+
+pub use axelar::*;
+pub use celer::*;
+pub use layer_zero::*;
+pub use poly::*;
+pub use tbridge::*;
+
 use mystiko_types::BridgeType;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 use validator::{Validate, ValidationErrors};
-
-pub mod axelar;
-pub mod celer;
-pub mod layer_zero;
-pub mod poly;
-pub mod tbridge;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(tag = "type")]

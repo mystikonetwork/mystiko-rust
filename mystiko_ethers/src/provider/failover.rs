@@ -1,4 +1,4 @@
-use crate::provider::wrapper::{JsonRpcClientWrapper, JsonRpcParams};
+use crate::{JsonRpcClientWrapper, JsonRpcParams};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_providers::{JsonRpcClient, ProviderError};

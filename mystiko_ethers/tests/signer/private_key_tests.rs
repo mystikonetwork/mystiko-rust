@@ -5,11 +5,9 @@ use ethers_core::types::{Address, TransactionRequest};
 use ethers_signers::{LocalWallet, Signer as EthersSigner};
 use mockall::{mock, predicate};
 use mockito::{Mock, Server};
-use mystiko_ethers::provider::factory::ProvidersOptions;
-use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool};
-use mystiko_ethers::provider::types::ProviderOptions;
-use mystiko_ethers::signer::common::Signer;
-use mystiko_ethers::signer::private_key::PrivateKeySigner;
+use mystiko_ethers::{
+    ChainProvidersOptions, PrivateKeySigner, ProviderOptions, ProviderPool, ProvidersOptions, Signer,
+};
 use std::sync::Arc;
 
 mock! {

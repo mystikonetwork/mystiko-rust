@@ -1,6 +1,4 @@
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::raw::packer::RawPackerConfig;
-use mystiko_config::wrapper::packer::PackerConfig;
+use mystiko_config::{create_raw_from_file, PackerConfig, RawPackerConfig};
 use mystiko_types::{PackerChecksum, PackerCompression};
 use std::sync::Arc;
 

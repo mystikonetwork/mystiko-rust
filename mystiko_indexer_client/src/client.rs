@@ -1,19 +1,12 @@
 use crate::builder::IndexerClientBuilder;
 use crate::errors::ClientError;
 use crate::response::ApiResponse;
-use crate::types::commitment::ContractResultDataResponse;
-use crate::types::{
-    commitment::{CommitmentResponse, CommitmentsForContractRequest},
-    commitment_included::{
-        CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest, CommitmentIncludedResponse,
-    },
-    commitment_queued::{
-        CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest, CommitmentQueuedResponse,
-    },
-    commitment_spent::{
-        CommitmentSpentForChainRequest, CommitmentSpentForContractRequest, CommitmentSpentResponse, DataLoaderRequest,
-    },
-    sync_response::{ChainSyncRepsonse, ContractSyncResponse},
+use crate::{
+    ChainSyncRepsonse, CommitmentIncludedForChainRequest, CommitmentIncludedForContractRequest,
+    CommitmentIncludedResponse, CommitmentQueuedForChainRequest, CommitmentQueuedForContractRequest,
+    CommitmentQueuedResponse, CommitmentResponse, CommitmentSpentForChainRequest, CommitmentSpentForContractRequest,
+    CommitmentSpentResponse, CommitmentsForContractRequest, ContractResultDataResponse, ContractSyncResponse,
+    DataLoaderRequest,
 };
 use anyhow::{anyhow, Result};
 use reqwest::header::{HeaderValue, ACCEPT};

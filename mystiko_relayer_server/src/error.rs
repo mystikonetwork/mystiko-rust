@@ -4,7 +4,7 @@ use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
 use derive_more::Display;
 use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
-use mystiko_storage::error::StorageError;
+use mystiko_storage::StorageError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

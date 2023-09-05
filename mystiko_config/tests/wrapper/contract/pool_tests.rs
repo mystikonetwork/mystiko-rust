@@ -1,11 +1,7 @@
-use mystiko_config::raw::asset::RawAssetConfig;
-use mystiko_config::raw::circuit::RawCircuitConfig;
-use mystiko_config::raw::contract::pool::RawPoolContractConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::asset::{AssetConfig, MAIN_ASSET_ADDRESS};
-use mystiko_config::wrapper::circuit::CircuitConfig;
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
-use mystiko_config::wrapper::contract::ContractConfig;
+use mystiko_config::{
+    create_raw_from_file, AssetConfig, CircuitConfig, ContractConfig, PoolContractConfig, RawAssetConfig,
+    RawCircuitConfig, RawPoolContractConfig, MAIN_ASSET_ADDRESS,
+};
 use mystiko_types::{AssetType, BridgeType, CircuitType, ContractType};
 use num_bigint::BigUint;
 use std::path::PathBuf;

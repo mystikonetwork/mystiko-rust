@@ -1,4 +1,3 @@
-use reqwest;
 use thiserror::Error;
 use url::ParseError;
 

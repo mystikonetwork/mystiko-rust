@@ -1,6 +1,6 @@
 use ethers_core::types::Log;
 use mystiko_fs::read_file_bytes;
-use mystiko_indexer_client::types::commitment_queued::CommitmentQueuedResponse;
+use mystiko_indexer_client::CommitmentQueuedResponse;
 use mystiko_roller::db::document::commitment::CommitmentInfo;
 use serde_json::from_reader;
 

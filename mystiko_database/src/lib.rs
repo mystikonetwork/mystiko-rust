@@ -1,10 +1,4 @@
-extern crate anyhow;
-extern crate mystiko_storage;
-extern crate mystiko_storage_macros;
-extern crate mystiko_types;
-extern crate num_bigint;
-extern crate serde;
-extern crate serde_json;
+mod database;
 
-pub mod database;
+pub use database::*;
 pub mod document;

@@ -1,5 +1,4 @@
-use mystiko_config::raw::provider::RawProviderConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file};
+use mystiko_config::{create_raw, create_raw_from_file, RawProviderConfig};
 use validator::Validate;
 
 fn default_config() -> RawProviderConfig {

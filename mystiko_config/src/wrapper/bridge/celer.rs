@@ -1,4 +1,4 @@
-use crate::raw::bridge::celer::RawCelerBridgeConfig;
+use crate::RawCelerBridgeConfig;
 use anyhow::Result;
 use mystiko_types::BridgeType;
 use std::sync::Arc;

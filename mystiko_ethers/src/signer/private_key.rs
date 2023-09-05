@@ -1,5 +1,5 @@
-use crate::provider::pool::Providers;
 use crate::signer::common;
+use crate::Providers;
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;

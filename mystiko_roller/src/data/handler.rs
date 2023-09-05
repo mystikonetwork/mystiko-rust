@@ -5,7 +5,7 @@ use crate::context::ContextTrait;
 use crate::data::calc::{calc_rollup_size_array, circuit_type_from_rollup_size};
 use crate::db::document::commitment::CommitmentInfo;
 use ethers_core::types::U256;
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
+use mystiko_config::PoolContractConfig;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_downloader::DownloaderBuilder;
 use mystiko_protocol::rollup::{Rollup, RollupProof};

@@ -1,10 +1,8 @@
-use crate::provider::factory::ProvidersOptions;
-use crate::provider::pool::{ChainProvidersOptions, ProviderPool};
-use crate::provider::types::{ProviderOptions, QuorumProviderOptions};
+use crate::{ChainProvidersOptions, ProviderOptions, ProviderPool, ProvidersOptions, QuorumProviderOptions};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_providers::Quorum;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_types::ProviderType;
 use std::sync::Arc;
 use std::time::Duration;

@@ -1,13 +1,13 @@
-use crate::error::MystikoError;
-use crate::handler::wallet::WalletHandler;
-use crate::types::Result;
+use crate::MystikoError;
+use crate::Result;
+use crate::WalletHandler;
 use bip32::XPrv;
 use futures::TryFutureExt;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
-use mystiko_database::database::Database;
-use mystiko_database::document::account::Account;
-use mystiko_database::document::account::AccountColumn;
-use mystiko_database::document::wallet::Wallet;
+use mystiko_database::document::Account;
+use mystiko_database::document::AccountColumn;
+use mystiko_database::document::Wallet;
+use mystiko_database::Database;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::{
     combined_public_key, combined_secret_key, encryption_public_key, separate_secret_keys, verification_public_key,
@@ -16,9 +16,7 @@ use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, UpdateAccountOptions};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
-use mystiko_storage::document::{Document, DocumentColumn};
-use mystiko_storage::formatter::types::StatementFormatter;
-use mystiko_storage::storage::Storage;
+use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage};
 use mystiko_types::AccountStatus;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;

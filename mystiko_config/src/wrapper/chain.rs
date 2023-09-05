@@ -1,13 +1,8 @@
-use crate::raw::asset::RawAssetConfig;
-use crate::raw::chain::{RawChainConfig, EXPLORER_TX_PLACEHOLDER};
-use crate::raw::contract::deposit::RawDepositContractConfig;
-use crate::raw::contract::pool::RawPoolContractConfig;
-use crate::wrapper::asset::AssetConfig;
-use crate::wrapper::circuit::CircuitConfig;
-use crate::wrapper::contract::deposit::DepositContractConfig;
-use crate::wrapper::contract::pool::PoolContractConfig;
-use crate::wrapper::contract::ContractConfig;
-use crate::wrapper::provider::ProviderConfig;
+use crate::{
+    AssetConfig, CircuitConfig, ContractConfig, DepositContractConfig, PoolContractConfig, ProviderConfig,
+    RawAssetConfig, RawChainConfig, RawDepositContractConfig, RawPoolContractConfig, EXPLORER_TX_PLACEHOLDER,
+    MAIN_ASSET_ADDRESS,
+};
 use anyhow::{Error, Result};
 use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
 use num_bigint::BigUint;
@@ -15,8 +10,6 @@ use num_traits::{NumCast, Zero};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use validator::Validate;
-
-pub const MAIN_ASSET_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
 
 #[derive(Clone, Debug)]
 pub struct ChainConfig {

@@ -1,5 +1,4 @@
-use mystiko_config::raw::packer::RawPackerConfig;
-use mystiko_config::raw::{create_raw, create_raw_from_file};
+use mystiko_config::{create_raw, create_raw_from_file, RawPackerConfig};
 use mystiko_types::{PackerChecksum, PackerCompression};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};

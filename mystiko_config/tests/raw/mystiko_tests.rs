@@ -1,9 +1,6 @@
-use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
-use mystiko_config::raw::bridge::RawBridgeConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::raw::indexer::RawIndexerConfig;
-use mystiko_config::raw::mystiko::RawMystikoConfig;
-use mystiko_config::raw::packer::RawPackerConfig;
+use mystiko_config::{
+    create_raw_from_file, RawBridgeConfig, RawIndexerConfig, RawMystikoConfig, RawPackerConfig, RawTBridgeConfig,
+};
 use std::sync::Arc;
 use validator::Validate;
 

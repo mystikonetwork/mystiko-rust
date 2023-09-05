@@ -3,7 +3,7 @@ use crate::validator::common::validator_mock::{
 };
 use ethers_core::rand;
 use ethers_core::rand::Rng;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;

@@ -7,9 +7,9 @@ pub use contract::*;
 pub use nullifier::*;
 
 use anyhow::Result;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::MystikoConfig;
 use mystiko_protos::data::v1::{Commitment as ProtoCommitment, Nullifier as ProtoNullifier};
-use mystiko_storage::document::DocumentData;
+use mystiko_storage::DocumentData;
 use num_bigint::BigUint;
 use std::sync::Arc;
 

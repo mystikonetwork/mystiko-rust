@@ -1,11 +1,7 @@
-use mystiko_config::raw::bridge::axelar::RawAxelarBridgeConfig;
-use mystiko_config::raw::bridge::celer::RawCelerBridgeConfig;
-use mystiko_config::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
-use mystiko_config::raw::bridge::poly::RawPolyBridgeConfig;
-use mystiko_config::raw::bridge::tbridge::RawTBridgeConfig;
-use mystiko_config::raw::bridge::RawBridgeConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::bridge::BridgeConfig;
+use mystiko_config::{
+    create_raw_from_file, BridgeConfig, RawAxelarBridgeConfig, RawBridgeConfig, RawCelerBridgeConfig,
+    RawLayerZeroBridgeConfig, RawPolyBridgeConfig, RawTBridgeConfig,
+};
 use mystiko_types::BridgeType;
 use std::sync::Arc;
 

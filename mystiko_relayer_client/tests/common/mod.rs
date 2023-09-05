@@ -9,9 +9,10 @@ use ethers_core::types::Address;
 use log::LevelFilter;
 use mockall::mock;
 use mockito::{Mock, Server, ServerGuard};
-use mystiko_ethers::provider::factory::{DefaultProviderFactory, ProviderFactory, ProvidersOptions};
-use mystiko_ethers::provider::pool::{ChainProvidersOptions, ProviderPool, Providers};
-use mystiko_ethers::provider::types::ProviderOptions;
+use mystiko_ethers::{
+    ChainProvidersOptions, DefaultProviderFactory, ProviderFactory, ProviderOptions, ProviderPool, Providers,
+    ProvidersOptions,
+};
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_client::client::{
     RelayerClient, RelayerClientOptions, HANDSHAKE_URL_PATH, INFO_URL_PATH, SUPPORTED_API_VERSION,

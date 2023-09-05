@@ -1,5 +1,4 @@
-use crate::errors::EtherScanError;
-use crate::response::Result;
+use crate::{EtherScanError, Result};
 
 pub const DEFAULT_MAX_REQUESTS_PER_SECOND: u128 = 5;
 pub const DEFAULT_PAGE_OFFSET: u64 = 1000;

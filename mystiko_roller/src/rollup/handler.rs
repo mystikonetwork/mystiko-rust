@@ -8,9 +8,8 @@ use crate::rollup::static_data::{STATIC_ERROR_INVALID_LEAF_HASH, STATIC_ERROR_IN
 use ethers_core::types::{Address, Bytes, H256, U256};
 use ethers_signers::{LocalWallet, Signer};
 use mystiko_abi::commitment_pool::{CommitmentPool, RollupRequest};
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
-use mystiko_ethers::provider::factory::Provider;
-use mystiko_ethers::provider::wrapper::{JsonRpcClientWrapper, ProviderWrapper};
+use mystiko_config::PoolContractConfig;
+use mystiko_ethers::{JsonRpcClientWrapper, Provider, ProviderWrapper};
 use mystiko_server_utils::tx_manager::config::TxManagerConfig;
 use mystiko_server_utils::tx_manager::error::TxManagerError;
 use mystiko_server_utils::tx_manager::transaction::{TxBuilder, TxManager};

@@ -8,7 +8,7 @@ use mystiko_relayer_server::handler::transaction::TransactionHandler;
 use mystiko_relayer_server::service::transaction_status;
 use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
 use mystiko_relayer_types::{RelayTransactStatusResponse, TransactRequestData, TransactStatus};
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorageBuilder;
 use mystiko_types::{BridgeType, CircuitType, TransactionType};
 use serial_test::file_serial;

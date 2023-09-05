@@ -1,9 +1,7 @@
-use mystiko_database::document::account::{Account, AccountCollection, AccountColumn};
+use mystiko_database::document::{Account, AccountCollection, AccountColumn};
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
-use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_types::AccountStatus;
 use std::sync::Arc;

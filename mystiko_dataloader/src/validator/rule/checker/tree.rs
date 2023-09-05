@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use ethers_core::types::{Address, BlockId, BlockNumber};
 use mystiko_abi::commitment_pool::CommitmentPool;
 use mystiko_crypto::merkle_tree::MerkleTree;
-use mystiko_ethers::provider::pool::Providers;
+use mystiko_ethers::Providers;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_utils::convert::{biguint_to_u256, bytes_to_biguint};
 use num_bigint::BigUint;

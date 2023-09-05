@@ -1,12 +1,10 @@
 extern crate mystiko_database;
 extern crate num_bigint;
 
-use mystiko_database::document::commitment::{Commitment, CommitmentCollection, CommitmentColumn};
+use mystiko_database::document::{Commitment, CommitmentCollection, CommitmentColumn};
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
-use mystiko_storage::collection::Collection;
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use num_bigint::BigUint;
 use std::str::FromStr;

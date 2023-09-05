@@ -110,32 +110,32 @@ impl<'a> StructInfo<'a> {
             quote! { vec![] }
         };
         Ok(quote! {
-            impl mystiko_storage::document::DocumentData for #struct_name {
+            impl mystiko_storage::DocumentData for #struct_name {
                 fn create(
                     column_values: &[(String, mystiko_protos::storage::v1::ColumnValue)]
-                ) -> anyhow::Result<Self, mystiko_storage::error::StorageError> {
+                ) -> anyhow::Result<Self, mystiko_storage::StorageError> {
                     Ok(Self { #(#column_creates_iter,)* })
                 }
                 fn collection_name() -> &'static str {
                     #collection_name
                 }
-                fn columns() -> Vec<mystiko_storage::column::Column> {
+                fn columns() -> Vec<mystiko_storage::Column> {
                    vec![#(#column_iter,)*]
                 }
                 fn column_values(&self) ->
-                    Vec<(mystiko_storage::column::Column, Option<mystiko_protos::storage::v1::ColumnValue>)> {
+                    Vec<(mystiko_storage::Column, Option<mystiko_protos::storage::v1::ColumnValue>)> {
                         Self::columns()
                             .into_iter()
                             .zip(vec![#(#column_values_iter,)*])
                             .collect()
                 }
-                fn unique_columns() -> Vec<mystiko_storage::column::UniqueColumns> {
+                fn unique_columns() -> Vec<mystiko_storage::UniqueColumns> {
                     #unique_columns
                 }
-                fn index_columns() -> Vec<mystiko_storage::column::IndexColumns> {
+                fn index_columns() -> Vec<mystiko_storage::IndexColumns> {
                     #index_columns
                 }
-                fn migrations() -> Vec<mystiko_storage::migration::types::Migration> {
+                fn migrations() -> Vec<mystiko_storage::Migration> {
                     #migrations
                 }
             }
@@ -148,94 +148,94 @@ impl<'a> StructInfo<'a> {
         Ok(quote! {
             #[derive(Debug)]
             pub struct #collection_struct_name<
-                F: mystiko_storage::formatter::types::StatementFormatter, S: mystiko_storage::storage::Storage> {
-                collection: std::sync::Arc<mystiko_storage::collection::Collection<F, S>>,
+                F: mystiko_storage::StatementFormatter, S: mystiko_storage::Storage> {
+                collection: std::sync::Arc<mystiko_storage::Collection<F, S>>,
             }
             impl <F, S> #collection_struct_name<F, S>
             where
-                F: mystiko_storage::formatter::types::StatementFormatter,
-                S: mystiko_storage::storage::Storage,
+                F: mystiko_storage::StatementFormatter,
+                S: mystiko_storage::Storage,
             {
-                pub fn new(collection: std::sync::Arc<mystiko_storage::collection::Collection<F, S>>) -> Self {
+                pub fn new(collection: std::sync::Arc<mystiko_storage::Collection<F, S>>) -> Self {
                     #collection_struct_name { collection }
                 }
 
                 pub async fn insert(&self, document: &#struct_name) -> anyhow::Result<
-                        mystiko_storage::document::Document<#struct_name>,
-                        mystiko_storage::error::StorageError> {
+                        mystiko_storage::Document<#struct_name>,
+                        mystiko_storage::StorageError> {
                     self.collection.insert(document).await
                 }
                 pub async fn insert_batch(&self, documents: &[#struct_name]) -> anyhow::Result<
-                        Vec<mystiko_storage::document::Document<#struct_name>>,
-                        mystiko_storage::error::StorageError> {
+                        Vec<mystiko_storage::Document<#struct_name>>,
+                        mystiko_storage::StorageError> {
                     self.collection.insert_batch(documents).await
                 }
                 pub async fn find<Q: Into<mystiko_protos::storage::v1::QueryFilter>>(
                     &self, filter: Q) -> anyhow::Result<
-                        Vec<mystiko_storage::document::Document<#struct_name>>,
-                        mystiko_storage::error::StorageError> {
+                        Vec<mystiko_storage::Document<#struct_name>>,
+                        mystiko_storage::StorageError> {
                     self.collection.find(Some(filter)).await
                 }
                 pub async fn find_all(&self) -> anyhow::Result<
-                        Vec<mystiko_storage::document::Document<#struct_name>>,
-                        mystiko_storage::error::StorageError> {
+                        Vec<mystiko_storage::Document<#struct_name>>,
+                        mystiko_storage::StorageError> {
                     self.collection.find::<#struct_name, mystiko_protos::storage::v1::QueryFilter>(None).await
                 }
                 pub async fn find_one<Q: Into<mystiko_protos::storage::v1::QueryFilter>>(
                     &self, filter: Q) -> anyhow::Result<
-                        Option<mystiko_storage::document::Document<#struct_name>>,
-                        mystiko_storage::error::StorageError> {
+                        Option<mystiko_storage::Document<#struct_name>>,
+                        mystiko_storage::StorageError> {
                     self.collection.find_one(Some(filter)).await
                 }
                 pub async fn find_by_id(&self, id: &str) -> anyhow::Result<
-                        Option<mystiko_storage::document::Document<#struct_name>>,
-                        mystiko_storage::error::StorageError> {
+                        Option<mystiko_storage::Document<#struct_name>>,
+                        mystiko_storage::StorageError> {
                     self.collection.find_by_id(id).await
                 }
                 pub async fn count<Q: Into<mystiko_protos::storage::v1::QueryFilter>>(
-                    &self, filter: Q) -> anyhow::Result<u64, mystiko_storage::error::StorageError> {
+                    &self, filter: Q) -> anyhow::Result<u64, mystiko_storage::StorageError> {
                     self.collection.count::<#struct_name, Q>(Some(filter)).await
                 }
                 pub async fn count_all(&self) -> anyhow::Result<
-                        u64, mystiko_storage::error::StorageError> {
+                        u64, mystiko_storage::StorageError> {
                     self.collection.count::<#struct_name, mystiko_protos::storage::v1::QueryFilter>(None).await
                 }
-                pub async fn update(&self, document: &mystiko_storage::document::Document<#struct_name>) ->
+                pub async fn update(&self, document: &mystiko_storage::Document<#struct_name>) ->
                     anyhow::Result<
-                        mystiko_storage::document::Document<#struct_name>,
-                        mystiko_storage::error::StorageError> {
+                        mystiko_storage::Document<#struct_name>,
+                        mystiko_storage::StorageError> {
                     self.collection.update(document).await
                 }
                 pub async fn update_batch(&self,
-                    documents: &[mystiko_storage::document::Document<#struct_name>]) ->
+                    documents: &[mystiko_storage::Document<#struct_name>]) ->
                         anyhow::Result<
-                            Vec<mystiko_storage::document::Document<#struct_name>>,
-                            mystiko_storage::error::StorageError> {
+                            Vec<mystiko_storage::Document<#struct_name>>,
+                            mystiko_storage::StorageError> {
                     self.collection.update_batch(documents).await
                 }
-                pub async fn delete(&self, document: &mystiko_storage::document::Document<#struct_name>) ->
-                    anyhow::Result<(), mystiko_storage::error::StorageError> {
+                pub async fn delete(&self, document: &mystiko_storage::Document<#struct_name>) ->
+                    anyhow::Result<(), mystiko_storage::StorageError> {
                     self.collection.delete(document).await
                 }
                 pub async fn delete_batch(&self,
-                    documents: &[mystiko_storage::document::Document<#struct_name>]) ->
-                        anyhow::Result<(), mystiko_storage::error::StorageError> {
+                    documents: &[mystiko_storage::Document<#struct_name>]) ->
+                        anyhow::Result<(), mystiko_storage::StorageError> {
                     self.collection.delete_batch(documents).await
                 }
-                pub async fn delete_all(&self) -> anyhow::Result<(), mystiko_storage::error::StorageError> {
+                pub async fn delete_all(&self) -> anyhow::Result<(), mystiko_storage::StorageError> {
                     self.collection.delete_by_filter::<#struct_name, mystiko_protos::storage::v1::QueryFilter>(None).await
                 }
                 pub async fn delete_by_filter<Q: Into<mystiko_protos::storage::v1::QueryFilter>>(&self, filter: Q) ->
-                    anyhow::Result<(), mystiko_storage::error::StorageError> {
+                    anyhow::Result<(), mystiko_storage::StorageError> {
                     self.collection.delete_by_filter::<#struct_name,Q>(Some(filter)).await
                 }
                 pub async fn collection_exists(&self) ->
-                    anyhow::Result<bool, mystiko_storage::error::StorageError> {
+                    anyhow::Result<bool, mystiko_storage::StorageError> {
                     self.collection.collection_exists(&#struct_name::collection_name()).await
                 }
                 pub async fn migrate(&self) -> Result<
-                        mystiko_storage::document::Document<mystiko_storage::migration::history::MigrationHistory>,
-                        mystiko_storage::error::StorageError> {
+                        mystiko_storage::Document<mystiko_storage::MigrationHistory>,
+                        mystiko_storage::StorageError> {
                     self.collection.migrate::<#struct_name>().await
                 }
                 pub fn formatter(&self) -> &F {

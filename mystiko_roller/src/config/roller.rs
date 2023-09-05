@@ -1,7 +1,7 @@
 use crate::common::env::load_roller_run_mod;
 use crate::common::error::Result;
 use mehcode_config::{Config, Environment, File};
-use mystiko_config::wrapper::mystiko::{MystikoConfig, RemoteOptions};
+use mystiko_config::{MystikoConfig, RemoteOptions};
 use mystiko_server_utils::token_price::config::TokenPriceConfig;
 use mystiko_server_utils::tx_manager::config::TxManagerConfig;
 use serde::{Deserialize, Serialize};

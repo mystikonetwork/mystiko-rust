@@ -1,6 +1,4 @@
-use crate::document::{Document, DocumentData};
-use crate::error::StorageError;
-use crate::migration::types::Migration;
+use crate::{Document, DocumentData, Migration, StorageError};
 use anyhow::Result;
 use mystiko_protos::storage::v1::{ColumnValue, QueryFilter};
 use serde::{Deserialize, Serialize};

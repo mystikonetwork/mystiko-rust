@@ -1,4 +1,4 @@
-use crate::provider::factory::{DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions};
+use crate::{DefaultProviderFactory, Provider, ProviderFactory, ProvidersOptions};
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use std::collections::HashMap;

@@ -3,7 +3,7 @@ use crate::validator::rule::{
     CheckerResult, IntegrityCheckerError, RuleChecker, ValidateMergedData, ValidateOriginalData,
 };
 use async_trait::async_trait;
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
+use mystiko_config::PoolContractConfig;
 use mystiko_crypto::constants::FIELD_SIZE;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;

@@ -1,4 +1,4 @@
-use crate::raw::indexer::RawIndexerConfig;
+use crate::RawIndexerConfig;
 use anyhow::Result;
 use std::sync::Arc;
 use validator::Validate;

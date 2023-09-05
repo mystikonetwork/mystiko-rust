@@ -1,4 +1,4 @@
-use crate::types::commitment_spent::NullifierForDataLoader;
+use crate::NullifierForDataLoader;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 

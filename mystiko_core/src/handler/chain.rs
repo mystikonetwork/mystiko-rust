@@ -1,23 +1,20 @@
-use crate::error::MystikoError;
-use crate::handler::contract::ContractHandler;
-use crate::types::Result;
+use crate::ContractHandler;
+use crate::MystikoError;
+use crate::Result;
 use async_trait::async_trait;
 use ethers_providers::Quorum;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_config::wrapper::provider::ProviderConfig;
-use mystiko_database::database::Database;
-use mystiko_database::document::chain::{Chain, ChainColumn, Provider};
-use mystiko_database::document::contract::Contract;
-use mystiko_ethers::provider::factory::{ProvidersOptions, HTTP_REGEX, WS_REGEX};
-use mystiko_ethers::provider::pool::ChainProvidersOptions;
-use mystiko_ethers::provider::types::{ProviderOptions, QuorumProviderOptions};
+use mystiko_config::{MystikoConfig, ProviderConfig};
+use mystiko_database::document::Contract;
+use mystiko_database::document::{Chain, ChainColumn, Provider};
+use mystiko_database::Database;
+use mystiko_ethers::{
+    ChainProvidersOptions, ProviderOptions, ProvidersOptions, QuorumProviderOptions, HTTP_REGEX, WS_REGEX,
+};
 use mystiko_protos::core::document::v1::Chain as ProtoChain;
 use mystiko_protos::core::document::v1::Contract as ProtoContract;
 use mystiko_protos::core::handler::v1::{UpdateChainOptions, UpdateProviderOptions};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
-use mystiko_storage::document::Document;
-use mystiko_storage::formatter::types::StatementFormatter;
-use mystiko_storage::storage::Storage;
+use mystiko_storage::{Document, StatementFormatter, Storage};
 use mystiko_types::ProviderType;
 use std::sync::Arc;
 use std::time::Duration;

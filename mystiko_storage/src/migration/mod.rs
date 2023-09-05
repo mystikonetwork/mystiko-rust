@@ -1,2 +1,5 @@
-pub mod history;
-pub mod types;
+mod history;
+mod types;
+
+pub use history::*;
+pub use types::*;

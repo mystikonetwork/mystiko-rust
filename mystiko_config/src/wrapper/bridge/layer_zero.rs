@@ -1,4 +1,4 @@
-use crate::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
+use crate::RawLayerZeroBridgeConfig;
 use anyhow::Result;
 use mystiko_types::BridgeType;
 use std::sync::Arc;

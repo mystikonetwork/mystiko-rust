@@ -1,5 +1,4 @@
-use mystiko_storage::column::UniqueColumns;
-use mystiko_storage::document::DocumentData;
+use mystiko_storage::{DocumentData, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 
 #[derive(CollectionBuilder, Clone, Debug, PartialEq)]

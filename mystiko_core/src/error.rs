@@ -1,6 +1,6 @@
 use hex::FromHexError;
 use mystiko_crypto::error::CryptoError;
-use mystiko_storage::error::StorageError;
+use mystiko_storage::StorageError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

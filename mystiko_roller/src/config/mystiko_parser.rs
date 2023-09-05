@@ -1,9 +1,6 @@
 use crate::config::roller::{create_mystiko_config, CoreConfig};
 use anyhow::Result;
-use mystiko_config::wrapper::chain::ChainConfig;
-use mystiko_config::wrapper::contract::pool::PoolContractConfig;
-use mystiko_config::wrapper::indexer::IndexerConfig;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
+use mystiko_config::{ChainConfig, IndexerConfig, MystikoConfig, PoolContractConfig};
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]

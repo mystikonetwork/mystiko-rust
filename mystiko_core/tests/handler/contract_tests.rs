@@ -1,13 +1,10 @@
 use crate::common::create_database;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::raw::mystiko::RawMystikoConfig;
-use mystiko_config::wrapper::mystiko::MystikoConfig;
-use mystiko_core::handler::contract::ContractHandler;
-use mystiko_database::database::Database;
-use mystiko_database::document::contract::Contract;
+use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig};
+use mystiko_core::ContractHandler;
+use mystiko_database::document::Contract;
+use mystiko_database::Database;
 use mystiko_protos::storage::v1::SubFilter;
-use mystiko_storage::document::{Document, DocumentColumn};
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::{Document, DocumentColumn, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::ContractType;
 use std::sync::Arc;

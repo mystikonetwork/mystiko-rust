@@ -1,6 +1,6 @@
 extern crate mystiko_etherscan_client;
 
-use mystiko_etherscan_client::{config::get_default_base_url, errors::EtherScanError};
+use mystiko_etherscan_client::{get_default_base_url, EtherScanError};
 
 #[test]
 fn test_get_default_base_url() {

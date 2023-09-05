@@ -10,7 +10,7 @@ use mystiko_relayer_server::database::Database;
 use mystiko_relayer_server::handler::transaction::TransactionHandler;
 use mystiko_relayer_types::TransactStatus;
 use mystiko_server_utils::token_price::query::CurrencyQuoteResponse;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorageBuilder;
 use mystiko_types::AssetType;
 use serial_test::file_serial;

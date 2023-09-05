@@ -13,7 +13,7 @@ use mystiko_relayer_server::service::{info, minimum_gas_fee};
 use mystiko_relayer_types::response::{ApiResponse, ResponseCode};
 use mystiko_relayer_types::{RegisterInfoRequest, RegisterInfoResponse, RegisterOptions};
 use mystiko_server_utils::token_price::query::CurrencyQuoteResponse;
-use mystiko_storage::formatter::sql::SqlStatementFormatter;
+use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorageBuilder;
 use mystiko_types::CircuitType;
 use std::sync::Arc;

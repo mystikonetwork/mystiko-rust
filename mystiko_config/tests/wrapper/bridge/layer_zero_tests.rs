@@ -1,6 +1,4 @@
-use mystiko_config::raw::bridge::layer_zero::RawLayerZeroBridgeConfig;
-use mystiko_config::raw::create_raw_from_file;
-use mystiko_config::wrapper::bridge::layer_zero::LayerZeroBridgeConfig;
+use mystiko_config::{create_raw_from_file, LayerZeroBridgeConfig, RawLayerZeroBridgeConfig};
 use mystiko_types::BridgeType;
 use std::sync::Arc;
 

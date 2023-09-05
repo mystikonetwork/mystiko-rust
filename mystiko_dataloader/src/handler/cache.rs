@@ -3,7 +3,7 @@ use crate::data::LoadedData;
 use crate::handler::{CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption};
 use crate::handler::{QueryResult, Result};
 use async_trait::async_trait;
-use mystiko_config::wrapper::contract::ContractConfig;
+use mystiko_config::ContractConfig;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use std::collections::HashMap;
 use std::sync::Arc;

@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
 
-use mystiko_storage::column::{IndexColumns, UniqueColumns};
-use mystiko_storage::document::DocumentData;
+use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigUint;
