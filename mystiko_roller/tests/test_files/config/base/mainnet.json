@@ -1,8 +1,0 @@
-{
-  "chain": {
-    "chain_id": 1
-  },
-  "rollup": {
-    "max_gas_price": 100000000000
-  }
-}

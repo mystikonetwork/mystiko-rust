@@ -12,7 +12,6 @@ use mystiko_dataloader::validator::rule::{
     RuleValidator, RuleValidatorOptions, SequenceChecker, ValidateMergedData, ValidateOriginalData,
 };
 use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
-use mystiko_fs::read_file_bytes;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
 use std::collections::HashSet;
@@ -415,13 +414,13 @@ pub fn create_single_rule_lite_data_validator(
 }
 
 pub async fn load_commitments(file: &str) -> Vec<Commitment> {
-    let bytes = read_file_bytes(file).await.unwrap();
+    let bytes = tokio::fs::read(file).await.unwrap();
     let commitments: Vec<Commitment> = serde_json::from_slice(bytes.as_slice()).unwrap();
     commitments
 }
 
 pub async fn load_nullifiers(file: &str) -> Vec<Nullifier> {
-    let bytes = read_file_bytes(file).await.unwrap();
+    let bytes = tokio::fs::read(file).await.unwrap();
     let nullifiers: Vec<Nullifier> = serde_json::from_slice(bytes.as_slice()).unwrap();
     nullifiers
 }

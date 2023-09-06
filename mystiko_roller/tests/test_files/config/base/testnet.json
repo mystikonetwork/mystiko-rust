@@ -1,9 +1,0 @@
-{
-  "chain": {
-    "chain_id": 5
-  },
-  "rollup": {
-    "max_gas_price": 200000000000,
-    "force_rollup_block_count": 20
-  }
-}
