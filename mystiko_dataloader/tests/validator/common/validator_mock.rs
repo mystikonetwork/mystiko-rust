@@ -12,6 +12,10 @@ use mystiko_dataloader::validator::rule::{
     RuleValidator, RuleValidatorOptions, SequenceChecker, ValidateMergedData, ValidateOriginalData,
 };
 use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
+<<<<<<< HEAD
+=======
+use mystiko_fs::read_file_bytes;
+>>>>>>> origin/master
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
 use std::collections::HashSet;
