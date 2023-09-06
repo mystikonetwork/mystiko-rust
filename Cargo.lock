@@ -3211,6 +3211,7 @@ checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
 name = "mystiko_abi"
 version = "0.1.0"
 dependencies = [
+ "ethers",
  "ethers-contract",
  "ethers-core",
  "ethers-providers",
@@ -3531,6 +3532,7 @@ dependencies = [
 name = "mystiko_relayer_abi"
 version = "0.1.0"
 dependencies = [
+ "ethers",
  "ethers-contract",
  "ethers-core",
  "ethers-providers",
