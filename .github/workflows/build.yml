@@ -18,6 +18,12 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
+      - name: SSH Agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY_MYSTIKO_PROTOCOL }}
+
       - name: Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:

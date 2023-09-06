@@ -1,6 +1,3 @@
-[submodule "mystiko_circuits"]
-	path = mystiko_circuits
-	url = git@github.com:mystikonetwork/mystiko-circuits.git
 [submodule "mystiko_protos/schema"]
 	path = mystiko_protos/schema
 	url = git@github.com:mystikonetwork/mystiko-protos.git
