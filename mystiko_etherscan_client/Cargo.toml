@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = { version = "1.0.69" }
-ethers = { version = "2.0.2" }
+ethers = { version = "2.0.4" }
 ethers-contract = { version = "2.0.4" }
 ethers-core = { version = "2.0.4" }
 ethers-providers = { version = "2.0.4"}
