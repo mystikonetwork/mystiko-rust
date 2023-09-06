@@ -94,14 +94,7 @@ mod internal {
                 let database = Database::new(SqlStatementFormatter::sqlite(), storage);
                 let mystiko = Mystiko::new(
                     database,
-                    Some(MystikoOptions {
-                        config_file_path: options.config_file_path.clone(),
-                        config_remote_base_url: options.config_remote_base_url.clone(),
-                        config_git_revision: options.config_git_revision.clone(),
-                        is_testnet: options.is_testnet,
-                        is_staging: options.is_staging,
-                        provider_factory: None,
-                    }),
+                    Some(MystikoOptions::builder().config_options(options.config_options).build()),
                 )
                 .await?;
                 mystiko_guard.initialize(mystiko);

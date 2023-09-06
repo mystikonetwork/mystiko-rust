@@ -12,7 +12,7 @@ log = { version = "0.4.19" }
 prost = { version = "0.11.9" }
 mystiko_core = { version = "0.1.0", path = "../mystiko_core" }
 mystiko_database = { version = "0.1.0", path = "../mystiko_database" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-core-document-v1","mystiko-core-v1"] }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-config-v1","mystiko-core-document-v1","mystiko-core-v1"] }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
 serde = { version = "1.0.152", features = ["derive", "rc"] }

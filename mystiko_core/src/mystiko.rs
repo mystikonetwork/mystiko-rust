@@ -4,9 +4,10 @@ use crate::ChainHandler;
 use crate::ContractHandler;
 use crate::WalletHandler;
 use anyhow::Result;
-use mystiko_config::{MystikoConfig, RemoteOptions};
+use mystiko_config::MystikoConfig;
 use mystiko_database::Database;
 use mystiko_ethers::{ProviderFactory, ProviderPool};
+use mystiko_protos::config::v1::{ConfigOptions, ConfigOptionsOption};
 use mystiko_storage::{StatementFormatter, Storage};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
@@ -22,18 +23,11 @@ pub struct Mystiko<F: StatementFormatter, S: Storage> {
 }
 
 #[derive(Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct MystikoOptions {
-    #[builder(default, setter(strip_option))]
-    pub config_file_path: Option<String>,
-    #[builder(default, setter(strip_option))]
-    pub config_remote_base_url: Option<String>,
-    #[builder(default, setter(strip_option))]
-    pub config_git_revision: Option<String>,
-    #[builder(default = false)]
-    pub is_testnet: bool,
-    #[builder(default = false)]
-    pub is_staging: bool,
-    #[builder(default, setter(strip_option))]
+    #[builder(default)]
+    pub config_options: Option<ConfigOptions>,
+    #[builder(default)]
     pub provider_factory: Option<Box<dyn ProviderFactory>>,
 }
 
@@ -74,32 +68,19 @@ where
         mystiko.contracts.initialize().await?;
         log::info!(
             "mystiko on {} has been initialized, config git revision {}",
-            if mystiko_options.is_testnet {
-                "testnet"
-            } else {
-                "mainnet"
-            },
-            config.git_revision().unwrap_or("unknown")
+            mystiko_options.config_options.get_network(),
+            mystiko_options
+                .config_options
+                .get_git_revision()
+                .unwrap_or("unknown".into())
         );
         Ok(mystiko)
     }
 }
 
 async fn create_mystiko_config(mystiko_options: &MystikoOptions) -> Result<Arc<MystikoConfig>, MystikoError> {
-    let config = if let Some(config_file_path) = &mystiko_options.config_file_path {
-        MystikoConfig::from_json_file(config_file_path)
-            .await
-            .map_err(MystikoError::ConfigError)?
-    } else {
-        let mut remote_options = RemoteOptions::builder()
-            .is_testnet(mystiko_options.is_testnet)
-            .is_staging(mystiko_options.is_staging)
-            .build();
-        remote_options.base_url = mystiko_options.config_remote_base_url.clone();
-        remote_options.git_revision = mystiko_options.config_git_revision.clone();
-        MystikoConfig::from_remote(&remote_options)
-            .await
-            .map_err(MystikoError::ConfigError)?
-    };
+    let config = MystikoConfig::from_options(mystiko_options.config_options.clone())
+        .await
+        .map_err(MystikoError::ConfigError)?;
     Ok(Arc::new(config))
 }

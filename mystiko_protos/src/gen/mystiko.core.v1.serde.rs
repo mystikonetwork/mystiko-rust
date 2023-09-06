@@ -523,42 +523,18 @@ impl serde::Serialize for MystikoOptions {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.is_testnet {
-            len += 1;
-        }
-        if self.is_staging {
+        if self.config_options.is_some() {
             len += 1;
         }
         if self.db_path.is_some() {
             len += 1;
         }
-        if self.config_file_path.is_some() {
-            len += 1;
-        }
-        if self.config_remote_base_url.is_some() {
-            len += 1;
-        }
-        if self.config_git_revision.is_some() {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.MystikoOptions", len)?;
-        if self.is_testnet {
-            struct_ser.serialize_field("isTestnet", &self.is_testnet)?;
-        }
-        if self.is_staging {
-            struct_ser.serialize_field("isStaging", &self.is_staging)?;
+        if let Some(v) = self.config_options.as_ref() {
+            struct_ser.serialize_field("configOptions", v)?;
         }
         if let Some(v) = self.db_path.as_ref() {
             struct_ser.serialize_field("dbPath", v)?;
-        }
-        if let Some(v) = self.config_file_path.as_ref() {
-            struct_ser.serialize_field("configFilePath", v)?;
-        }
-        if let Some(v) = self.config_remote_base_url.as_ref() {
-            struct_ser.serialize_field("configRemoteBaseUrl", v)?;
-        }
-        if let Some(v) = self.config_git_revision.as_ref() {
-            struct_ser.serialize_field("configGitRevision", v)?;
         }
         struct_ser.end()
     }
@@ -570,28 +546,16 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "is_testnet",
-            "isTestnet",
-            "is_staging",
-            "isStaging",
+            "config_options",
+            "configOptions",
             "db_path",
             "dbPath",
-            "config_file_path",
-            "configFilePath",
-            "config_remote_base_url",
-            "configRemoteBaseUrl",
-            "config_git_revision",
-            "configGitRevision",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            IsTestnet,
-            IsStaging,
+            ConfigOptions,
             DbPath,
-            ConfigFilePath,
-            ConfigRemoteBaseUrl,
-            ConfigGitRevision,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -613,12 +577,8 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                         E: serde::de::Error,
                     {
                         match value {
-                            "isTestnet" | "is_testnet" => Ok(GeneratedField::IsTestnet),
-                            "isStaging" | "is_staging" => Ok(GeneratedField::IsStaging),
+                            "configOptions" | "config_options" => Ok(GeneratedField::ConfigOptions),
                             "dbPath" | "db_path" => Ok(GeneratedField::DbPath),
-                            "configFilePath" | "config_file_path" => Ok(GeneratedField::ConfigFilePath),
-                            "configRemoteBaseUrl" | "config_remote_base_url" => Ok(GeneratedField::ConfigRemoteBaseUrl),
-                            "configGitRevision" | "config_git_revision" => Ok(GeneratedField::ConfigGitRevision),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -638,25 +598,15 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut is_testnet__ = None;
-                let mut is_staging__ = None;
+                let mut config_options__ = None;
                 let mut db_path__ = None;
-                let mut config_file_path__ = None;
-                let mut config_remote_base_url__ = None;
-                let mut config_git_revision__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
-                        GeneratedField::IsTestnet => {
-                            if is_testnet__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("isTestnet"));
+                        GeneratedField::ConfigOptions => {
+                            if config_options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("configOptions"));
                             }
-                            is_testnet__ = Some(map.next_value()?);
-                        }
-                        GeneratedField::IsStaging => {
-                            if is_staging__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("isStaging"));
-                            }
-                            is_staging__ = Some(map.next_value()?);
+                            config_options__ = map.next_value()?;
                         }
                         GeneratedField::DbPath => {
                             if db_path__.is_some() {
@@ -664,33 +614,11 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                             }
                             db_path__ = map.next_value()?;
                         }
-                        GeneratedField::ConfigFilePath => {
-                            if config_file_path__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("configFilePath"));
-                            }
-                            config_file_path__ = map.next_value()?;
-                        }
-                        GeneratedField::ConfigRemoteBaseUrl => {
-                            if config_remote_base_url__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("configRemoteBaseUrl"));
-                            }
-                            config_remote_base_url__ = map.next_value()?;
-                        }
-                        GeneratedField::ConfigGitRevision => {
-                            if config_git_revision__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("configGitRevision"));
-                            }
-                            config_git_revision__ = map.next_value()?;
-                        }
                     }
                 }
                 Ok(MystikoOptions {
-                    is_testnet: is_testnet__.unwrap_or_default(),
-                    is_staging: is_staging__.unwrap_or_default(),
+                    config_options: config_options__,
                     db_path: db_path__,
-                    config_file_path: config_file_path__,
-                    config_remote_base_url: config_remote_base_url__,
-                    config_git_revision: config_git_revision__,
                 })
             }
         }

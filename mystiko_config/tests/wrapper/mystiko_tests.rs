@@ -1,5 +1,6 @@
 use mockito::Server;
-use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RemoteOptions};
+use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig};
+use mystiko_protos::config::v1::ConfigOptions;
 use mystiko_types::{BridgeType, CircuitType};
 use std::sync::Arc;
 
@@ -318,36 +319,36 @@ async fn test_create_from_remote() {
         .create_async()
         .await;
     let base_url = format!("{}/config", server.url());
-    let options1 = RemoteOptions::builder().base_url(base_url.clone()).build();
-    let options2 = RemoteOptions::builder()
-        .base_url(base_url.clone())
+    let options1 = ConfigOptions::builder().remote_base_url(base_url.clone()).build();
+    let options2 = ConfigOptions::builder()
+        .remote_base_url(base_url.clone())
         .git_revision(String::from("b5214a4"))
         .build();
-    let options3 = RemoteOptions::builder()
-        .base_url(base_url.clone())
+    let options3 = ConfigOptions::builder()
+        .remote_base_url(base_url.clone())
         .is_testnet(true)
         .build();
-    let options4 = RemoteOptions::builder()
-        .base_url(base_url.clone())
+    let options4 = ConfigOptions::builder()
+        .remote_base_url(base_url.clone())
         .git_revision(String::from("b5214a4"))
         .is_testnet(true)
         .build();
-    let options5 = RemoteOptions::builder()
-        .base_url(base_url.clone())
+    let options5 = ConfigOptions::builder()
+        .remote_base_url(base_url.clone())
         .is_staging(true)
         .build();
-    let options6 = RemoteOptions::builder()
-        .base_url(base_url.clone())
+    let options6 = ConfigOptions::builder()
+        .remote_base_url(base_url.clone())
         .is_staging(true)
         .git_revision(String::from("b5214a4"))
         .build();
-    let options7 = RemoteOptions::builder()
-        .base_url(base_url.clone())
+    let options7 = ConfigOptions::builder()
+        .remote_base_url(base_url.clone())
         .is_staging(true)
         .is_testnet(true)
         .build();
-    let options8 = RemoteOptions::builder()
-        .base_url(base_url.clone())
+    let options8 = ConfigOptions::builder()
+        .remote_base_url(base_url.clone())
         .is_staging(true)
         .git_revision(String::from("b5214a4"))
         .is_testnet(true)
@@ -381,8 +382,8 @@ async fn test_create_from_remote() {
 #[tokio::test]
 async fn test_create_from_remote_error() {
     let server = Server::new_async().await;
-    let options = RemoteOptions::builder()
-        .base_url(format!("{}/config", server.url()))
+    let options = ConfigOptions::builder()
+        .remote_base_url(format!("{}/config", server.url()))
         .build();
     assert!(MystikoConfig::from_remote(&options).await.is_err());
 }
