@@ -1,5 +1,13 @@
 // @generated
 pub mod mystiko {
+    pub mod config {
+        #[cfg(feature = "mystiko-config-v1")]
+        // @@protoc_insertion_point(attribute:mystiko.config.v1)
+        pub mod v1 {
+            include!("mystiko.config.v1.rs");
+            // @@protoc_insertion_point(mystiko.config.v1)
+        }
+    }
     pub mod core {
         pub mod document {
             #[cfg(feature = "mystiko-core-document-v1")]
@@ -30,6 +38,14 @@ pub mod mystiko {
         pub mod v1 {
             include!("mystiko.data.v1.rs");
             // @@protoc_insertion_point(mystiko.data.v1)
+        }
+    }
+    pub mod loader {
+        #[cfg(feature = "mystiko-loader-v1")]
+        // @@protoc_insertion_point(attribute:mystiko.loader.v1)
+        pub mod v1 {
+            include!("mystiko.loader.v1.rs");
+            // @@protoc_insertion_point(mystiko.loader.v1)
         }
     }
     pub mod sequencer {

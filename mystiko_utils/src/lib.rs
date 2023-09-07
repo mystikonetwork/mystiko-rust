@@ -7,3 +7,6 @@ extern crate rust_decimal;
 pub mod convert;
 pub mod hex;
 pub mod time;
+
+#[cfg(feature = "config")]
+pub mod config;

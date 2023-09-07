@@ -1,0 +1,9 @@
+timeout_ms = 2000
+
+[chains.1]
+url = "http://localhost.toml:8545"
+api_key = ""
+
+[chains.2]
+url = "http://localhost.toml:8546"
+api_key = ""

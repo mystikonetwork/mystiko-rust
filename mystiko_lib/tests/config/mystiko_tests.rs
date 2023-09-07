@@ -1,13 +1,18 @@
 use mystiko_lib::config::version;
 use mystiko_lib::{initialize, is_initialized};
+use mystiko_protos::config::v1::ConfigOptions;
 use mystiko_protos::core::v1::MystikoOptions;
 use prost::Message;
 
 #[test]
 fn test_version() {
     let options = MystikoOptions::builder()
-        .is_testnet(true)
-        .config_file_path(String::from("tests/files/config.json"))
+        .config_options(
+            ConfigOptions::builder()
+                .file_path(String::from("tests/files/config.json"))
+                .is_testnet(true)
+                .build(),
+        )
         .build();
     let result = initialize(&options.encode_to_vec());
     assert!(result.is_ok());

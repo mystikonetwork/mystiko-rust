@@ -3,10 +3,10 @@ use crate::{
     DepositContractConfig, IndexerConfig, PackerConfig, PoolContractConfig, RawChainConfig, RawMystikoConfig,
 };
 use anyhow::{Error, Result};
+use mystiko_protos::config::v1::ConfigOptions;
 use mystiko_types::{BridgeType, CircuitType};
 use std::collections::HashMap;
 use std::sync::Arc;
-use typed_builder::TypedBuilder;
 use validator::Validate;
 
 #[derive(Clone, Debug)]
@@ -19,18 +19,6 @@ pub struct MystikoConfig {
     packer_config: Option<PackerConfig>,
     default_circuit_configs: HashMap<CircuitType, Arc<CircuitConfig>>,
     circuit_configs_by_name: HashMap<String, Arc<CircuitConfig>>,
-}
-
-#[derive(Clone, Debug, TypedBuilder)]
-pub struct RemoteOptions {
-    #[builder(default, setter(strip_option))]
-    pub base_url: Option<String>,
-    #[builder(default, setter(strip_option))]
-    pub git_revision: Option<String>,
-    #[builder(default = false)]
-    pub is_testnet: bool,
-    #[builder(default = false)]
-    pub is_staging: bool,
 }
 
 const DEFAULT_REMOTE_BASE_URL: &str = "https://static.mystiko.network/config";
@@ -78,10 +66,18 @@ impl MystikoConfig {
         MystikoConfig::from_raw(create_raw_from_file::<RawMystikoConfig>(json_file).await?)
     }
 
-    pub async fn from_remote(options: &RemoteOptions) -> Result<Self> {
-        let base_url = options.base_url.as_deref().unwrap_or(DEFAULT_REMOTE_BASE_URL);
-        let environment = if options.is_staging { "staging" } else { "production" };
-        let network = if options.is_testnet { "testnet" } else { "mainnet" };
+    pub async fn from_remote(options: &ConfigOptions) -> Result<Self> {
+        let base_url = options
+            .remote_base_url
+            .clone()
+            .unwrap_or_else(|| DEFAULT_REMOTE_BASE_URL.to_string());
+        let environment = options
+            .is_staging
+            .map_or("production", |s| if s { "staging" } else { "production" });
+        let network = options
+            .is_testnet
+            .map_or("mainnet", |s| if s { "testnet" } else { "mainnet" });
+
         let url = if let Some(git_revision) = &options.git_revision {
             format!("{}/{}/{}/{}/config.json", base_url, environment, network, git_revision)
         } else {
@@ -101,11 +97,22 @@ impl MystikoConfig {
     }
 
     pub async fn from_remote_default_mainnet() -> Result<Self> {
-        MystikoConfig::from_remote(&RemoteOptions::builder().build()).await
+        MystikoConfig::from_remote(&ConfigOptions::default()).await
     }
 
     pub async fn from_remote_default_testnet() -> Result<Self> {
-        MystikoConfig::from_remote(&RemoteOptions::builder().is_testnet(true).build()).await
+        MystikoConfig::from_remote(&ConfigOptions::builder().is_testnet(true).build()).await
+    }
+
+    pub async fn from_options<O>(options: O) -> Result<Self>
+    where
+        O: Into<ConfigOptions>,
+    {
+        let options: ConfigOptions = options.into();
+        match &options.file_path {
+            Some(path) => MystikoConfig::from_json_file(path).await,
+            None => MystikoConfig::from_remote(&options).await,
+        }
     }
 
     pub fn version(&self) -> &str {
