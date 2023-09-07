@@ -380,6 +380,29 @@ async fn test_create_from_remote() {
 }
 
 #[tokio::test]
+async fn test_create_from_options() {
+    let mut server = Server::new_async().await;
+    let path1 = server
+        .mock("GET", "/config/production/mainnet/latest.json")
+        .with_body("{\"version\": \"0.2.0\"}")
+        .create_async()
+        .await;
+    let base_url = format!("{}/config", server.url());
+    let options1 = ConfigOptions::builder().remote_base_url(base_url.clone()).build();
+    let config1 = MystikoConfig::from_options(options1).await.unwrap();
+    path1.assert_async().await;
+    assert_eq!(config1.version(), "0.2.0");
+
+    let options2 = ConfigOptions::builder()
+        .file_path(VALID_CONFIG_FILE.to_string())
+        .build();
+    let config2 = MystikoConfig::from_options(options2).await.unwrap();
+    config2.validate().unwrap();
+    assert_eq!(config2.version(), "0.1.0");
+    assert_eq!(config2.git_revision().unwrap(), "b6b5b5b");
+}
+
+#[tokio::test]
 async fn test_create_from_remote_error() {
     let server = Server::new_async().await;
     let options = ConfigOptions::builder()
