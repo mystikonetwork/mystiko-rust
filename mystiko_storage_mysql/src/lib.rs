@@ -14,6 +14,7 @@ use std::str::FromStr;
 use std::time::Duration;
 use typed_builder::TypedBuilder;
 
+pub const DEFAULT_DATABASE_NAME: &str = "mystiko_database";
 pub const DEFAULT_HOST: &str = "localhost";
 pub const DEFAULT_PORT: u16 = 3306;
 pub const DEFAULT_USERNAME: &str = "root";
@@ -30,6 +31,8 @@ pub struct MySqlStorage {
 #[derive(Debug, Clone, TypedBuilder, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]
 pub struct MySqlStorageOptions {
+    #[serde(default = "default_database_name")]
+    #[builder(default = default_database_name())]
     pub database: String,
     #[serde(default = "default_host")]
     #[builder(default = default_host())]
@@ -57,6 +60,26 @@ pub struct MySqlStorageOptions {
     pub max_lifetime: Option<Duration>,
 }
 
+impl Default for MySqlStorageOptions {
+    fn default() -> Self {
+        Self {
+            database: default_database_name(),
+            host: default_host(),
+            port: default_port(),
+            username: default_username(),
+            password: Default::default(),
+            max_connections: default_max_connections(),
+            min_connections: default_min_connections(),
+            idle_timeout: Default::default(),
+            max_lifetime: Default::default(),
+        }
+    }
+}
+
+fn default_database_name() -> String {
+    DEFAULT_DATABASE_NAME.to_string()
+}
+
 fn default_host() -> String {
     DEFAULT_HOST.to_string()
 }
@@ -75,22 +98,6 @@ fn default_max_connections() -> u32 {
 
 fn default_min_connections() -> u32 {
     DEFAULT_MIN_CONNECTIONS
-}
-
-impl Default for MySqlStorageOptions {
-    fn default() -> Self {
-        Self {
-            database: "mystiko_database".to_string(),
-            host: default_host(),
-            port: default_port(),
-            username: default_username(),
-            password: Default::default(),
-            max_connections: default_max_connections(),
-            min_connections: default_min_connections(),
-            idle_timeout: Default::default(),
-            max_lifetime: Default::default(),
-        }
-    }
 }
 
 impl MySqlStorage {
