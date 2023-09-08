@@ -256,8 +256,7 @@ fn test_create_default_stroage() {
     assert_eq!(option1.min_connections, default_min_connections);
     assert_eq!(option1.idle_timeout, None);
     assert_eq!(option1.max_lifetime, None);
-    let option2 = MySqlStorageOptions::builder()
-        .build();
+    let option2 = MySqlStorageOptions::builder().build();
     assert_eq!(option2.database, default_database_name.to_string());
     assert_eq!(option2.host, default_host.to_string());
     assert_eq!(option2.port, default_port);
