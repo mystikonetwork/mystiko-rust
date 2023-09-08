@@ -22,8 +22,10 @@ impl Providers for TestProvders {
         let test_provider = MockProvider::default();
         if chain_id == 137 {
             Ok(Arc::new(mock_chain_137(test_provider)))
-        } else {
+        } else if chain_id == 56 {
             Ok(Arc::new(mock_chain_56(test_provider)))
+        } else {
+            Ok(Arc::new(mock_chain_1(test_provider)))
         }
     }
     async fn has_provider(&self, _chain_id: u64) -> bool {
@@ -171,6 +173,54 @@ async fn test_litedata_fetch() {
     let data = result.data.as_ref().unwrap();
     assert_eq!(data.commitments.len(), 3);
     assert_eq!(data.commitments[0].block_number, 7969470);
+}
+
+#[tokio::test]
+async fn test_loop_fetch() {
+    let _ = env_logger::builder()
+        .filter_module("mystiko_dataloader", LevelFilter::Debug)
+        .try_init();
+    let provider_fetcher: ProviderFetcher<FullData, TestProvders> = Arc::new(TestProvders).into();
+
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let test_chain_id = 1;
+    let test_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
+    let test_start_block: u64 = 17121417;
+    let test_end_block: u64 = 17341420;
+    let contract_config = mystiko_config
+        .find_contract_by_address(test_chain_id, test_address)
+        .unwrap();
+    let contract_fetch_option = vec![ContractFetchOptions::builder()
+        .contract_config(contract_config.clone())
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .build()];
+    let fetch_options = FetchOptions::builder()
+        .chain_id(test_chain_id)
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .config(Arc::clone(&mystiko_config))
+        .contract_options(Some(contract_fetch_option))
+        .build();
+    let result = provider_fetcher.fetch(&fetch_options).await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.chain_id, test_chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, test_address);
+    assert!(result.contract_results[0].result.is_ok());
+    let contract_results = result.contract_results[0].result.as_ref().unwrap();
+    assert_eq!(contract_results.start_block, test_start_block);
+    assert_eq!(contract_results.end_block, 17341417);
+    assert_eq!(contract_results.address, test_address);
+    assert!(contract_results.data.is_some());
+    let data = contract_results.data.as_ref().unwrap();
+    assert_eq!(data.commitments.len(), 2);
+    assert_eq!(data.commitments[0].block_number, 17241416);
 }
 
 #[derive(Debug, Default)]
@@ -331,6 +381,69 @@ fn mock_chain_56(test_provider: MockProvider) -> Provider {
     test_provider.push_response(MockResponse::Value(mock_queued_data.clone()));
     test_provider.push_response(MockResponse::Value(mock_cross_chain_data.clone()));
     test_provider.push(U64::from(45565267)).unwrap();
+    create_mock_provider(&test_provider)
+}
+
+fn mock_chain_1(test_provider: MockProvider) -> Provider {
+    // spent data
+    test_provider.push_response(MockResponse::Value(serde_json::json!([
+      {
+        "address": "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+        "blockHash": "0xadb133a483e8898cc1164200c857089826bddfafddc789370eddd80195eb4f47",
+        "blockNumber": "0x1089ba9",
+        "data": "0x",
+        "logIndex": "0xe9",
+        "removed": false,
+        "topics": [
+          "0x3c2372ab6130817bd6b8fc6dbaecae947e84201b49535d358debaa6c34c23ecf",
+          "0x08ed20ef822fd552e5b9615f3f63cb367295173dfdb91eed7c8f323ef119a2b5",
+          "0x025f4e23a4774e4858a7f272c9a2b96ab4d901aa9bcbdc947c441c4fc9299ee4"
+          ],
+        "transactionHash": "0x7e49489ef2cdeed41f538dae9468f5b8926586ae1803398452fac50d235823ea",
+        "transactionIndex": "0x25"
+      },
+    ])));
+    test_provider.push_response(MockResponse::Value(serde_json::json!([])));
+    // included data
+    test_provider.push_response(MockResponse::Value(serde_json::json!([
+      {
+        "address": "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+        "blockHash": "0xb78ce396b7308d07c79b31d1a9b26b82f474c3e9619af4b35881fadfa5b0178a",
+        "blockNumber": "0x1089be9",
+        "data": "0x",
+        "logIndex": "0xff",
+        "removed": false,
+        "topics": [
+          "0xfe6b097b46a78e08506a3143b6337c2505ba77df76fe05c3663a987395d63413",
+          "0x23ebf431a5c6a79e85b8ce20e707761139298ae9a991e1a5ac52441f4ad4596c"
+          ],
+        "transactionHash": "0xb595eaad5454ca2b761667424959fc77abdd79b8d10292c3b9d83560def1da24",
+        "transactionIndex": "0x25"
+      },
+    ])));
+    test_provider.push_response(MockResponse::Value(serde_json::json!([])));
+    // queued data
+    test_provider.push_response(MockResponse::Value(serde_json::json!([])));
+    test_provider.push_response(MockResponse::Value(serde_json::json!([])));
+    // cross-chain data
+    test_provider.push_response(MockResponse::Value(serde_json::json!([])));
+    test_provider.push_response(MockResponse::Value(serde_json::json!([{
+      "address": "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+      "blockHash": "0x618ed8a9b485fa71027503bf79a52c15417659caed2432d57f64b5615cc26d6e",
+      "blockNumber": "0x1071548",
+      "data": "0x",
+      "logIndex": "0xff",
+      "removed": false,
+      "topics": [
+        "0xd106eb38b3368b7c294e36fae5513fdefe880be5abfad529b37b044f2fdd2dbe",
+        "0x21c43ba17de66454ef89a3aea71a046d39d3837696780502d6f017f0c16e206a"
+        ],
+      "transactionHash": "0xabebb4356bcb0d1c2763909586c2a396c79b6dd7951d7b9fc81144353043e6d8",
+      "transactionIndex": "0x72"
+    }])));
+    // current_block_num
+    test_provider.push(U64::from(17341417)).unwrap();
+
     create_mock_provider(&test_provider)
 }
 

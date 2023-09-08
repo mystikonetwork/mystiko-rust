@@ -66,6 +66,7 @@ struct ProviderContractFetchOptions {
     pub(crate) contract_address: String,
     pub(crate) start_block: u64,
     pub(crate) actual_target_block: u64,
+    pub(crate) event_filter_size: u64,
     pub(crate) provider: Arc<Provider>,
 }
 
@@ -118,12 +119,12 @@ fn to_options(
     current_block_num: u64,
     provider: Arc<Provider>,
 ) -> Result<Vec<ProviderContractFetchOptions>> {
+    let chain_config = option
+        .config
+        .find_chain(option.chain_id)
+        .ok_or_else(|| ProviderFetcherError::UnsupportedChainError(option.chain_id))?;
     option.contract_options.as_ref().map_or_else(
         || {
-            let chain_config = option
-                .config
-                .find_chain(option.chain_id)
-                .ok_or_else(|| ProviderFetcherError::UnsupportedChainError(option.chain_id))?;
             Ok(chain_config
                 .contracts_with_disabled()
                 .into_iter()
@@ -137,6 +138,7 @@ fn to_options(
                         } else {
                             option.target_block
                         })
+                        .event_filter_size(chain_config.event_filter_size())
                         .provider(Arc::clone(&provider))
                         .build()
                 })
@@ -156,6 +158,7 @@ fn to_options(
                         } else {
                             target_block
                         })
+                        .event_filter_size(chain_config.event_filter_size())
                         .provider(Arc::clone(&provider))
                         .build()
                 })
@@ -262,34 +265,47 @@ async fn fetch_nullifiers(option: &ProviderContractFetchOptions) -> Result<Vec<N
 }
 
 async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Result<Vec<Event<E>>> {
+    let address = option
+        .contract_address
+        .parse::<Address>()
+        .map_err(ProviderFetcherError::FromHexError)?;
     let mut events: Vec<Event<E>> = vec![];
-    let filter = Filter::new()
-        .topic0(E::signature())
-        .address(
-            option
-                .contract_address
-                .parse::<Address>()
-                .map_err(ProviderFetcherError::FromHexError)?,
-        )
-        .from_block(BlockNumber::Number(U64::from(option.start_block)))
-        .to_block(BlockNumber::Number(U64::from(option.actual_target_block)));
-    let logs = option
-        .provider
-        .get_logs(&filter)
-        .await
-        .map_err(ProviderFetcherError::ProviderError)?;
-    for log in logs {
-        let my_log = Log {
-            address: log.address,
-            topics: log.topics,
-            data: log.data,
-            block_hash: log.block_hash,
-            block_number: log.block_number,
-            transaction_hash: log.transaction_hash,
-        };
-        let metadata: LogMeta = (&my_log).into();
-        let event = E::decode_log(&my_log.into_raw())?;
-        events.push(Event { raw: event, metadata });
+    let mut disposable_start_block = option.start_block;
+    loop {
+        let effective_to_block = disposable_start_block + option.event_filter_size - 1;
+        let to_block = option.actual_target_block.min(effective_to_block);
+        if disposable_start_block > to_block {
+            break;
+        }
+        let filter = Filter::new()
+            .topic0(E::signature())
+            .address(address)
+            .from_block(BlockNumber::Number(U64::from(disposable_start_block)))
+            .to_block(BlockNumber::Number(U64::from(to_block)));
+        let logs = option
+            .provider
+            .get_logs(&filter)
+            .await
+            .map_err(ProviderFetcherError::ProviderError)?;
+        for log in logs {
+            let my_log = Log {
+                address: log.address,
+                topics: log.topics,
+                data: log.data,
+                block_hash: log.block_hash,
+                block_number: log.block_number,
+                transaction_hash: log.transaction_hash,
+            };
+            let metadata: LogMeta = (&my_log).into();
+            let event = E::decode_log(&my_log.into_raw())?;
+            events.push(Event { raw: event, metadata });
+        }
+        if option.actual_target_block <= effective_to_block {
+            break;
+        }
+        if to_block > disposable_start_block {
+            disposable_start_block = to_block + 1;
+        }
     }
     Ok(events)
 }
