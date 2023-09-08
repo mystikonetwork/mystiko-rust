@@ -7,6 +7,7 @@ use crate::validator::rule::ValidateOriginalData;
 use log::error;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
+use num_bigint::BigUint;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -129,16 +130,18 @@ where
             ));
         }
 
-        for (i, cm) in filled_cms.into_iter().enumerate() {
-            if cm.commitment_hash != bytes_to_biguint(query_result.result[i].commitment_hash.as_slice()) {
-                return Err(DataMergeError::CommitmentHashMismatchError);
-            }
+        let mut query_result_map: HashMap<BigUint, u64> = HashMap::new();
+        for cm in query_result.result.iter() {
+            let hash = bytes_to_biguint(&cm.commitment_hash);
+            let leaf_index = cm.leaf_index.ok_or(DataMergeError::LeafIndexIsNoneError)?;
+            query_result_map.insert(hash, leaf_index);
+        }
 
-            if let Some(leaf_index) = query_result.result[i].leaf_index {
-                cm.leaf_index = leaf_index;
-            } else {
-                return Err(DataMergeError::LeafIndexIsNoneError);
-            }
+        for cm in filled_cms.into_iter() {
+            let leaf_index = query_result_map
+                .get(&cm.commitment_hash)
+                .ok_or(DataMergeError::CommitmentHashMismatchError)?;
+            cm.leaf_index = *leaf_index;
         }
 
         Ok(())

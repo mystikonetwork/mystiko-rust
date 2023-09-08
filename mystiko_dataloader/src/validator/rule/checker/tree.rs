@@ -66,11 +66,11 @@ where
             .end_block(target_block)
             .status(CommitmentStatus::Included)
             .build();
-        let query_result = self.handler.query_commitments(&option).await?;
+        let mut query_result = self.handler.query_commitments(&option).await?;
         if query_result.end_block != target_block {
             return Err(MerkleTreeCheckerError::TargetBlockError(target_block, query_result.end_block).into());
         }
-
+        query_result.result.sort_by(|a, b| a.leaf_index.cmp(&b.leaf_index));
         let mut elements = query_result
             .result
             .iter()
