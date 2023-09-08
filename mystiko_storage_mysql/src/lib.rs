@@ -8,11 +8,13 @@ use mystiko_storage::{
 };
 use mystiko_utils::convert::{biguint_to_bytes, i128_to_bytes, u128_to_bytes};
 use num_bigint::{BigInt, BigUint};
+use serde::{Deserialize, Serialize};
 use sqlx::{MySqlPool, Row};
 use std::str::FromStr;
 use std::time::Duration;
 use typed_builder::TypedBuilder;
 
+pub const DEFAULT_DATABASE_NAME: &str = "mystiko_database";
 pub const DEFAULT_HOST: &str = "localhost";
 pub const DEFAULT_PORT: u16 = 3306;
 pub const DEFAULT_USERNAME: &str = "root";
@@ -26,41 +28,91 @@ pub struct MySqlStorage {
     database: String,
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]
 pub struct MySqlStorageOptions {
+    #[serde(default = "default_database_name")]
+    #[builder(default = default_database_name())]
     pub database: String,
-    #[builder(default, setter(strip_option))]
-    pub host: Option<String>,
-    #[builder(default, setter(strip_option))]
-    pub port: Option<u16>,
-    #[builder(default, setter(strip_option))]
-    pub username: Option<String>,
-    #[builder(default, setter(strip_option))]
+    #[serde(default = "default_host")]
+    #[builder(default = default_host())]
+    pub host: String,
+    #[serde(default = "default_port")]
+    #[builder(default = default_port())]
+    pub port: u16,
+    #[serde(default = "default_username")]
+    #[builder(default = default_username())]
+    pub username: String,
+    #[serde(default)]
+    #[builder(default)]
     pub password: Option<String>,
-    #[builder(default, setter(strip_option))]
-    pub max_connections: Option<u32>,
-    #[builder(default, setter(strip_option))]
-    pub min_connections: Option<u32>,
-    #[builder(default, setter(strip_option))]
+    #[serde(default = "default_max_connections")]
+    #[builder(default = default_max_connections())]
+    pub max_connections: u32,
+    #[serde(default = "default_min_connections")]
+    #[builder(default = default_min_connections())]
+    pub min_connections: u32,
+    #[serde(default)]
+    #[builder(default)]
     pub idle_timeout: Option<Duration>,
-    #[builder(default, setter(strip_option))]
+    #[serde(default)]
+    #[builder(default)]
     pub max_lifetime: Option<Duration>,
+}
+
+impl Default for MySqlStorageOptions {
+    fn default() -> Self {
+        Self {
+            database: default_database_name(),
+            host: default_host(),
+            port: default_port(),
+            username: default_username(),
+            password: Default::default(),
+            max_connections: default_max_connections(),
+            min_connections: default_min_connections(),
+            idle_timeout: Default::default(),
+            max_lifetime: Default::default(),
+        }
+    }
+}
+
+fn default_database_name() -> String {
+    DEFAULT_DATABASE_NAME.to_string()
+}
+
+fn default_host() -> String {
+    DEFAULT_HOST.to_string()
+}
+
+fn default_port() -> u16 {
+    DEFAULT_PORT
+}
+
+fn default_username() -> String {
+    DEFAULT_USERNAME.to_string()
+}
+
+fn default_max_connections() -> u32 {
+    DEFAULT_MAX_CONNECTIONS
+}
+
+fn default_min_connections() -> u32 {
+    DEFAULT_MIN_CONNECTIONS
 }
 
 impl MySqlStorage {
     pub async fn connect(options: MySqlStorageOptions) -> Result<Self> {
         let url = format!(
             "mysql://{}:{}@{}:{}/{}",
-            options.username.unwrap_or(DEFAULT_USERNAME.to_string()),
+            options.username,
             options.password.unwrap_or_default(),
-            options.host.unwrap_or(DEFAULT_HOST.to_string()),
-            options.port.unwrap_or(DEFAULT_PORT),
+            options.host,
+            options.port,
             options.database
         );
         let pool = sqlx::mysql::MySqlPoolOptions::new()
-            .max_connections(options.max_connections.unwrap_or(DEFAULT_MAX_CONNECTIONS))
-            .min_connections(options.min_connections.unwrap_or(DEFAULT_MIN_CONNECTIONS))
+            .max_connections(options.max_connections)
+            .min_connections(options.min_connections)
             .idle_timeout(options.idle_timeout)
             .max_lifetime(options.max_lifetime)
             .connect(&url)
