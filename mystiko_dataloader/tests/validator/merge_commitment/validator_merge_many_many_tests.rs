@@ -508,6 +508,117 @@ async fn test_many_queued_many_included_different_commitment() {
 }
 
 #[tokio::test]
+async fn test_many_queued_many_included_handler_disorder_commitment() {
+    let (validator, handler, _mock, mock_checker_validator, mock_checker) =
+        create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
+    let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+        .await
+        .unwrap();
+    let option = ValidateOption::builder()
+        .config(core_cfg)
+        .validate_concurrency(1_usize)
+        .build();
+    let chain_id = 1_u64;
+    let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
+    let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
+    let mut fetched_cms = vec![];
+    let mut merged_cms = vec![];
+    for i in 0..10 {
+        fetched_cms.push(cms[i + 10].clone());
+        let mut included = cms[i].clone();
+        included.leaf_index = None;
+        included.status = CommitmentStatus::Included as i32;
+        fetched_cms.push(included);
+
+        merged_cms.push(
+            ValidateCommitment::builder()
+                .commitment_hash(bytes_to_biguint(&cms[i].commitment_hash))
+                .status(CommitmentStatus::Included)
+                .leaf_index(cms[i].leaf_index.unwrap())
+                .inner_merge(false)
+                .build(),
+        );
+        merged_cms.push(
+            ValidateCommitment::builder()
+                .commitment_hash(bytes_to_biguint(&cms[i + 10].commitment_hash))
+                .status(CommitmentStatus::Queued)
+                .leaf_index(cms[i + 10].leaf_index.unwrap())
+                .inner_merge(false)
+                .build(),
+        );
+    }
+    merged_cms.sort_by(|a, b| a.leaf_index.cmp(&b.leaf_index));
+
+    let contract_data = ContractData::builder()
+        .address(contract_address)
+        .start_block(1_u64)
+        .end_block(100_u64)
+        .data(
+            FullData::builder()
+                .commitments(fetched_cms.clone())
+                .nullifiers(vec![])
+                .build(),
+        )
+        .build();
+    let data = ChainData::builder()
+        .chain_id(chain_id)
+        .contracts_data(vec![contract_data])
+        .build();
+
+    let mut handler_cms = cms[0..10].to_vec();
+    handler_cms.sort_by(|a, b| a.commitment_hash.cmp(&b.commitment_hash));
+    handler.add_commitments(handler_cms.clone()).await;
+    handler.add_commitments(handler_cms).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
+    assert_eq!(result.chain_id, chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, contract_address);
+    assert!(result.contract_results[0].result.is_ok());
+    assert!(result2.contract_results[0].result.is_ok());
+    assert!(
+        mock_checker
+            .cmp_data(Some(
+                &ValidateMergedData::builder()
+                    .chain_id(chain_id)
+                    .contract_address(contract_address.to_string())
+                    .start_block(1_u64)
+                    .end_block(100_u64)
+                    .commitments(merged_cms.clone())
+                    .nullifiers(Some(vec![]))
+                    .build()
+            ))
+            .await
+    );
+
+    let mut handler_cms = cms[0..10].to_vec();
+    handler_cms.reverse();
+    handler.add_commitments(handler_cms.clone()).await;
+    handler.add_commitments(handler_cms).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
+    assert_eq!(result.chain_id, chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, contract_address);
+    assert!(result.contract_results[0].result.is_ok());
+    assert!(result2.contract_results[0].result.is_ok());
+    assert!(
+        mock_checker
+            .cmp_data(Some(
+                &ValidateMergedData::builder()
+                    .chain_id(chain_id)
+                    .contract_address(contract_address.to_string())
+                    .start_block(1_u64)
+                    .end_block(100_u64)
+                    .commitments(merged_cms.clone())
+                    .nullifiers(Some(vec![]))
+                    .build()
+            ))
+            .await
+    );
+}
+
+#[tokio::test]
 async fn test_many_queued_many_included_leaf_index_error_commitment() {
     let (validator, handler, _mock, _, _) =
         create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Sequence]));
