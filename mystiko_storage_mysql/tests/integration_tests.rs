@@ -238,6 +238,37 @@ async fn test_unsupported_primitive_integers(pool: MySqlPool) {
     assert_eq!(documents[0..1], found_documents);
 }
 
+#[test]
+fn test_create_default_stroage() {
+    let option1 = MySqlStorageOptions::default();
+    assert_eq!(option1.database, "mystiko_database".to_string());
+    let default_host = "localhost";
+    let default_port = 3306u16;
+    let default_username = "root";
+    let default_max_connections = 10u32;
+    let default_min_connections = 1u32;
+    assert_eq!(option1.host, default_host.to_string());
+    assert_eq!(option1.port, default_port);
+    assert_eq!(option1.username, default_username.to_string());
+    assert_eq!(option1.password, None);
+    assert_eq!(option1.max_connections, default_max_connections);
+    assert_eq!(option1.min_connections, default_min_connections);
+    assert_eq!(option1.idle_timeout, None);
+    assert_eq!(option1.max_lifetime, None);
+    let option2 = MySqlStorageOptions::builder()
+        .database("mystiko_database".to_string())
+        .build();
+    assert_eq!(option2.database, "mystiko_database".to_string());
+    assert_eq!(option2.host, default_host.to_string());
+    assert_eq!(option2.port, default_port);
+    assert_eq!(option2.username, default_username.to_string());
+    assert_eq!(option2.password, None);
+    assert_eq!(option2.max_connections, default_max_connections);
+    assert_eq!(option2.min_connections, default_min_connections);
+    assert_eq!(option2.idle_timeout, None);
+    assert_eq!(option2.max_lifetime, None);
+}
+
 async fn create_collection(pool: MySqlPool) -> TestDocumentCollection<SqlStatementFormatter, MySqlStorage> {
     let result: (String,) = sqlx::query_as("SELECT DATABASE()").fetch_one(&pool).await.unwrap();
     let storage = MySqlStorage::builder().pool(pool).database(result.0).build();
