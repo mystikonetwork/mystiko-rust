@@ -794,3 +794,30 @@ async fn test_litedata_fetch() {
     m1.assert_async().await;
     m2.assert_async().await;
 }
+
+#[tokio::test]
+async fn test_unsupported_chain_error() {
+    let test_chain_id: u64 = 1000;
+    let test_start_block: u64 = 1000000;
+    let test_end_block: u64 = 2000000;
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let fetch_options = FetchOptions::builder()
+        .chain_id(test_chain_id)
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .config(Arc::clone(&mystiko_config))
+        .contract_options(None)
+        .build();
+    let indexer_client = IndexerClientBuilder::new("http://server_url").build().unwrap();
+    let indexer_fetcher: IndexerFetcher<FullData> = indexer_client.into();
+    let result = indexer_fetcher.fetch(&fetch_options).await;
+    assert!(result.is_err());
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        format!("unsupported chain id: {}", test_chain_id)
+    );
+}

@@ -30,6 +30,8 @@ pub enum IndexerFetcherError {
     ContractResultError(String),
     #[error(transparent)]
     FromHexError(#[from] FromHexError),
+    #[error("unsupported chain id: {0}")]
+    UnsupportedChainError(u64),
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -56,14 +58,18 @@ where
     R: LoadedData,
 {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
-        let contract_requests = to_requests(option);
+        let chain_config = option.config.find_chain(option.chain_id).ok_or_else(|| {
+            FetcherError::AnyhowError(anyhow!(IndexerFetcherError::UnsupportedChainError(option.chain_id)))
+        })?;
+        let indexer_filter_size = chain_config.indexer_filter_size();
+        let contract_options = to_options(indexer_filter_size, option);
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
-            .contract_results(match contract_requests {
-                Some(requests) => fetch_contracts::<R>(requests, &self.indexer_client)
+            .contract_results(match contract_options {
+                Some(options) => fetch_contracts::<R>(options, &self.indexer_client)
                     .await
                     .map_err(FetcherError::AnyhowError)?,
-                None => fetch_all::<R>(option, &self.indexer_client)
+                None => fetch_all::<R>(indexer_filter_size, option, &self.indexer_client)
                     .await
                     .map_err(FetcherError::AnyhowError)?,
             })
@@ -95,10 +101,11 @@ async fn fetch_contract_result<R: LoadedData>(
 ) -> Result<ContractResult<ContractData<R>>> {
     Ok(ContractResult::builder()
         .address(option.contract_address.to_string())
-        .result(fetch_datas(option, client).await)
+        .result(fetch_data(option, client).await)
         .build())
 }
-async fn fetch_datas<R: LoadedData>(
+
+async fn fetch_data<R: LoadedData>(
     option: &ContractDataLoaderOptions,
     client: &IndexerClient,
 ) -> Result<ContractData<R>> {
@@ -131,7 +138,7 @@ async fn fetch_contract<R: LoadedData>(
             .start_block(Some(start_block))
             .end_block(Some(to_block))
             .build();
-        let result = fetch_data::<R>(option.chain_id, start_block, to_block, client, Some(vec![r])).await?;
+        let result = send_requests::<R>(option.chain_id, start_block, to_block, client, Some(vec![r])).await?;
         contract_results.extend(result);
         if end_block <= effective_to_block {
             break;
@@ -144,11 +151,10 @@ async fn fetch_contract<R: LoadedData>(
 }
 
 async fn fetch_all<R: LoadedData>(
+    indexer_filter_size: u64,
     option: &FetchOptions,
     client: &IndexerClient,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
-    let chain_config = option.config.find_chain(option.chain_id).unwrap();
-    let indexer_filter_size = chain_config.indexer_filter_size();
     let mut start_block = option.start_block;
     let end_block = option.target_block;
     let mut effective_to_block;
@@ -160,7 +166,7 @@ async fn fetch_all<R: LoadedData>(
         if start_block > to_block {
             break;
         }
-        let result = fetch_data::<R>(option.chain_id, start_block, to_block, client, None).await?;
+        let result = send_requests::<R>(option.chain_id, start_block, to_block, client, None).await?;
         contracts_results.extend(result);
         if end_block <= effective_to_block {
             break;
@@ -199,7 +205,7 @@ async fn fetch_all<R: LoadedData>(
     Ok(contract_results)
 }
 
-async fn fetch_data<R: LoadedData>(
+async fn send_requests<R: LoadedData>(
     chain_id: u64,
     start_block: u64,
     end_block: u64,
@@ -212,8 +218,7 @@ async fn fetch_data<R: LoadedData>(
     }
 }
 
-fn to_requests(option: &FetchOptions) -> Option<Vec<ContractDataLoaderOptions>> {
-    let chain_config = option.config.find_chain(option.chain_id).unwrap();
+fn to_options(indexer_filter_size: u64, option: &FetchOptions) -> Option<Vec<ContractDataLoaderOptions>> {
     option.contract_options.as_ref().map(|contract_options| {
         contract_options
             .iter()
@@ -223,7 +228,7 @@ fn to_requests(option: &FetchOptions) -> Option<Vec<ContractDataLoaderOptions>> 
                     .contract_address(contract_option.contract_config.address().to_string())
                     .start_block(contract_option.start_block.unwrap_or(option.start_block))
                     .end_block(contract_option.target_block.unwrap_or(option.target_block))
-                    .indexer_filter_size(chain_config.indexer_filter_size())
+                    .indexer_filter_size(indexer_filter_size)
                     .build()
             })
             .collect::<Vec<ContractDataLoaderOptions>>()
