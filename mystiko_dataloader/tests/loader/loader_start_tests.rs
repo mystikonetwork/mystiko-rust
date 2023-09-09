@@ -1,4 +1,4 @@
-use crate::loader::loader_mock::{create_loader, loader_load};
+use crate::loader::{create_loader, loader_load};
 use std::sync::Arc;
 
 #[tokio::test]

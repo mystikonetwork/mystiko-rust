@@ -62,7 +62,7 @@ pub struct EtherScanClientOptions {
     #[builder(default = None)]
     pub client: Option<Client>,
     #[builder(default = None)]
-    pub max_requests_per_second: Option<u128>,
+    pub max_requests_per_second: Option<u64>,
     #[builder(default = None)]
     pub offset: Option<u64>,
     #[builder(default = None)]
@@ -79,7 +79,7 @@ pub struct EtherScanClient {
     api_key: String,
     client: reqwest::Client,
     last_request_time: Mutex<Option<Instant>>,
-    max_requests_per_second: u128,
+    max_requests_per_second: u64,
     retry_policy: Box<dyn RetryPolicy>,
     url_prefix: String,
 }
@@ -358,8 +358,8 @@ impl EtherScanClient {
         if let Some(last_instant) = last_request_time.as_ref() {
             let elapsed = now.duration_since(*last_instant).as_millis();
             let wait_ms = 1000 / self.max_requests_per_second;
-            if elapsed < wait_ms {
-                sleep(Duration::from_millis((wait_ms - elapsed) as u64)).await;
+            if elapsed < wait_ms as u128 {
+                sleep(Duration::from_millis((wait_ms as u128 - elapsed) as u64)).await;
             }
         }
         *last_request_time = Some(now);

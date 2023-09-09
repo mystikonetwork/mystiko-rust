@@ -5,8 +5,10 @@ use async_trait::async_trait;
 use log::info;
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
-use mystiko_etherscan_client::{EtherScanClient, Event, GetLogsOptions};
+use mystiko_config::MystikoConfig;
+use mystiko_etherscan_client::{EtherScanClient, EtherScanClientOptions, Event, GetLogsOptions};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
+use mystiko_protos::loader::v1::EtherscanFetcherConfig;
 use mystiko_utils::convert::u256_to_bytes;
 use std::sync::Arc;
 use thiserror::Error;
@@ -14,6 +16,10 @@ use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum EtherscanFetcherError {
+    #[error("no fetcher chain config found for chain id: {0}")]
+    MissFetcherChainConfigError(u64),
+    #[error("no fetcher chain config api key found for chain id: {0}")]
+    MissFetcherChainConfigApiKeyError(u64),
     #[error("no chain config found for chain id: {0}")]
     UnsupportedChainError(u64),
 }
@@ -54,6 +60,47 @@ where
                     .map_err(FetcherError::AnyhowError)?,
             )
             .build())
+    }
+}
+
+impl<R> EtherscanFetcher<R> {
+    pub fn from_config<C: Into<EtherscanFetcherConfig>>(
+        chain_id: u64,
+        mystiko_config: Arc<MystikoConfig>,
+        config: C,
+    ) -> Result<Self> {
+        let config = config.into();
+        let mut clients = Vec::new();
+        if config.chains.get(&chain_id).is_none() {
+            return Err(EtherscanFetcherError::MissFetcherChainConfigError(chain_id).into());
+        }
+
+        for (chain_id, fetcher_chain_cfg) in config.chains.iter() {
+            let api_key = fetcher_chain_cfg
+                .api_key
+                .as_ref()
+                .ok_or(EtherscanFetcherError::MissFetcherChainConfigApiKeyError(*chain_id))?;
+            let chain_config = mystiko_config
+                .find_chain(*chain_id)
+                .ok_or(EtherscanFetcherError::UnsupportedChainError(*chain_id))?;
+            let url = fetcher_chain_cfg
+                .url
+                .clone()
+                .unwrap_or(chain_config.explorer_api_url().to_string());
+            let option = EtherScanClientOptions::builder()
+                .chain_id(*chain_id)
+                .base_url(url)
+                .url_prefix(fetcher_chain_cfg.url_prefix.clone())
+                .api_key(api_key.clone())
+                .max_requests_per_second(fetcher_chain_cfg.max_requests_per_second)
+                .offset(fetcher_chain_cfg.page_size)
+                .build();
+
+            let client = EtherScanClient::new(option)?;
+            clients.push(Arc::new(client));
+        }
+
+        Ok(EtherscanFetcher::from(clients))
     }
 }
 
