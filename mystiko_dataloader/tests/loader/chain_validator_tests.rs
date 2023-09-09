@@ -1,4 +1,4 @@
-use crate::loader::loader_mock::{contract_data_partial_eq, create_shared_loader, loader_load};
+use crate::loader::{contract_data_partial_eq, create_shared_loader, loader_load};
 use ethers_core::types::U64;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;

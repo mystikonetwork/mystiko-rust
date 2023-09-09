@@ -1,6 +1,6 @@
 use crate::{EtherScanError, Result};
 
-pub const DEFAULT_MAX_REQUESTS_PER_SECOND: u128 = 5;
+pub const DEFAULT_MAX_REQUESTS_PER_SECOND: u64 = 5;
 pub const DEFAULT_PAGE_OFFSET: u64 = 1000;
 pub const MAX_OFFSET: u64 = 10000;
 pub const DEFAULT_URL_PREFIX: &str = "/api";

@@ -14,15 +14,22 @@ use ethers_core::abi::Address;
 use ethers_core::types::{BlockNumber, Filter, U64};
 use ethers_providers::Middleware;
 use ethers_providers::ProviderError;
+use ethers_providers::Quorum;
 use log::{error, info};
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
-use mystiko_ethers::{Provider, Providers};
+use mystiko_config::MystikoConfig;
+use mystiko_ethers::{
+    ChainProvidersOptions, Provider, ProviderOptions, ProviderPool, Providers, ProvidersOptions, QuorumProviderOptions,
+};
 use mystiko_etherscan_client::{Log, LogMeta};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
+use mystiko_protos::loader::v1::ProviderFetcherConfig;
+use mystiko_types::ProviderType;
 use mystiko_utils::convert::u256_to_bytes;
 use rustc_hex::FromHexError;
 use std::sync::Arc;
+use std::time::Duration;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
@@ -44,6 +51,13 @@ pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
     concurrency: Option<u32>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
+}
+
+#[derive(Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct FetcherChainProvidersOptions {
+    fetcher_config: ProviderFetcherConfig,
+    mystiko_config: Arc<MystikoConfig>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -103,6 +117,88 @@ where
 {
     fn from(providers: Arc<P>) -> Self {
         Self::builder().providers(providers).build()
+    }
+}
+
+impl<R, P> ProviderFetcher<R, P>
+where
+    R: LoadedData,
+    P: Providers,
+{
+    pub fn from_config<C: Into<ProviderFetcherConfig>>(config: C, providers: Arc<P>) -> Self {
+        let config = config.into();
+        ProviderFetcher::builder()
+            .providers(providers)
+            .concurrency(config.concurrency)
+            .build()
+    }
+}
+
+pub fn create_provider_pool_from_config<C>(
+    cfg: C,
+    mystiko_config: Arc<MystikoConfig>,
+) -> ProviderPool<FetcherChainProvidersOptions>
+where
+    C: Into<ProviderFetcherConfig>,
+{
+    let cfg = cfg.into();
+    let cfg_option = FetcherChainProvidersOptions::builder()
+        .fetcher_config(cfg)
+        .mystiko_config(mystiko_config.clone())
+        .build();
+    let providers: ProviderPool<FetcherChainProvidersOptions> =
+        ProviderPool::builder().chain_providers_options(cfg_option).build();
+    providers
+}
+
+#[async_trait]
+impl ChainProvidersOptions for FetcherChainProvidersOptions {
+    async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>> {
+        if let Some(chain_cfg) = self.mystiko_config.find_chain(chain_id) {
+            let mut providers_options: Vec<ProviderOptions> = vec![];
+
+            if let Some(fetcher_cfg) = self.fetcher_config.chains.get(&chain_id) {
+                for url in &fetcher_cfg.urls {
+                    let provider_options = match self.fetcher_config.timeout_ms {
+                        None => ProviderOptions::builder().url(url.clone()).build(),
+                        Some(t) => ProviderOptions::builder()
+                            .url(url.clone())
+                            .request_timeout(Duration::from_millis(t))
+                            .build(),
+                    };
+                    providers_options.push(provider_options);
+                }
+            }
+
+            if providers_options.is_empty() {
+                for provider_config in chain_cfg.providers() {
+                    let timeout_ms = match self.fetcher_config.timeout_ms {
+                        None => provider_config.timeout_ms() as u64,
+                        Some(t) => t,
+                    };
+                    let provider_options = ProviderOptions::builder()
+                        .url(provider_config.url().to_string())
+                        .quorum_weight(provider_config.quorum_weight() as u64)
+                        .timeout_retries(provider_config.max_try_count() - 1)
+                        .rate_limit_retries(provider_config.max_try_count() - 1)
+                        .request_timeout(Duration::from_millis(timeout_ms))
+                        .build();
+                    providers_options.push(provider_options);
+                }
+            }
+
+            match chain_cfg.provider_type() {
+                ProviderType::Failover => Ok(Some(ProvidersOptions::Failover(providers_options))),
+                ProviderType::Quorum => {
+                    let quorum_options = QuorumProviderOptions::builder()
+                        .quorum(Quorum::Percentage(chain_cfg.provider_quorum_percentage()))
+                        .build();
+                    Ok(Some(ProvidersOptions::Quorum(providers_options, quorum_options)))
+                }
+            }
+        } else {
+            Ok(None)
+        }
     }
 }
 

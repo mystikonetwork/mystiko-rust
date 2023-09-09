@@ -1,4 +1,4 @@
-use crate::loader::loader_mock::create_shared_loader;
+use crate::loader::create_shared_loader;
 use mystiko_dataloader::loader::DataLoader;
 use mystiko_dataloader::DataLoaderError;
 

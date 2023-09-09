@@ -4,13 +4,15 @@ use crate::data::UnwrappedChainResult;
 use crate::error::DataLoaderError;
 use crate::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions};
 use crate::handler::{DataHandler, HandleOption};
-use crate::loader::{DataLoader, DataLoaderResult, LoadOption, DEFAULT_DELAY_BLOCK, DEFAULT_VALIDATOR_CONCURRENCY};
+use crate::loader::{
+    DataLoader, DataLoaderResult, LoadOption, LoaderConfigOptions, DEFAULT_DELAY_BLOCK, DEFAULT_VALIDATOR_CONCURRENCY,
+};
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
 use ethers_providers::Middleware;
 use log::{error, warn};
 use mystiko_config::{ChainConfig, ContractConfig, MystikoConfig};
-use mystiko_ethers::Provider;
+use mystiko_ethers::{Provider, Providers};
 use std::any::type_name;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
@@ -65,6 +67,41 @@ where
             .build();
 
         self.try_load(&params).await
+    }
+}
+
+#[async_trait]
+pub trait AsyncFrom<'a, T>: Sized {
+    async fn from_config(item: &'a T) -> DataLoaderResult<Self>;
+}
+
+#[async_trait]
+impl<'a, R> AsyncFrom<'a, LoaderConfigOptions<R>> for ChainDataLoader<R>
+where
+    R: LoadedData + 'static,
+{
+    async fn from_config(options: &'a LoaderConfigOptions<R>) -> DataLoaderResult<Self> {
+        let mystiko_config = options.build_mystiko_config().await?;
+        let providers = match &options.providers {
+            None => options.build_providers(mystiko_config.clone())?,
+            Some(p) => p.clone(),
+        };
+
+        let mut fetchers = options.build_fetchers(options.chain_id, mystiko_config.clone(), providers.clone())?;
+        fetchers.extend_from_slice(&options.fetchers);
+        let mut validators = options.build_validators(providers.clone(), options.handler.clone())?;
+        validators.extend_from_slice(&options.validators);
+
+        let provider = providers.get_provider(options.chain_id).await?;
+        let loader = ChainDataLoader::builder()
+            .config(mystiko_config)
+            .chain_id(options.chain_id)
+            .provider(provider)
+            .fetchers(fetchers)
+            .validators(validators)
+            .handler(options.handler.clone())
+            .build();
+        Ok(loader)
     }
 }
 

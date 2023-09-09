@@ -4,27 +4,32 @@ use crate::data::ContractResult;
 use crate::data::LoadedData;
 use crate::data::{Data, DataType};
 use crate::data::{FullData, LiteData};
-use crate::fetcher::DataFetcher;
 use crate::fetcher::FetchOptions;
 use crate::fetcher::FetchResult;
-use crate::fetcher::FetcherError;
 use crate::fetcher::FetcherLogOptions;
+use crate::fetcher::{DataFetcher, FetcherError};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use hex::FromHexError;
 use log::info;
+use mystiko_config::MystikoConfig;
 use mystiko_indexer_client::{
     CommitmentForDataLoader, CommitmentStatus as IndexerCommitmentStatus, ContractResultDataResponse,
     DataLoaderRequest, IndexerClient, NullifierForDataLoader,
 };
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
+use mystiko_protos::loader::v1::IndexerFetcherConfig;
 use mystiko_utils::convert::biguint_str_to_bytes;
 use mystiko_utils::hex::decode_hex;
+use std::sync::Arc;
+use std::time::Duration;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum IndexerFetcherError {
+    #[error("indexer config not exist error")]
+    IndexerConfigNotExistError,
     #[error("fetcher contract with error {0}")]
     ContractResultError(String),
     #[error(transparent)]
@@ -63,6 +68,33 @@ where
             .chain_id(option.chain_id)
             .contract_results(handle_contracts_response::<R>(option.chain_id, contracts_response))
             .build())
+    }
+}
+
+impl<R> IndexerFetcher<R>
+where
+    R: LoadedData,
+{
+    pub fn from_config<C: Into<IndexerFetcherConfig>>(mystiko_config: Arc<MystikoConfig>, config: C) -> Result<Self> {
+        let config = config.into();
+        let base_url = config.url.unwrap_or(
+            mystiko_config
+                .indexer()
+                .ok_or(IndexerFetcherError::IndexerConfigNotExistError)?
+                .url()
+                .to_string(),
+        );
+        let timeout_ms = config.timeout_ms.unwrap_or(
+            mystiko_config
+                .indexer()
+                .ok_or(IndexerFetcherError::IndexerConfigNotExistError)?
+                .timeout_ms(),
+        );
+        // todo add filter size to indexer client
+        let indexer_client = IndexerClient::builder(&base_url)
+            .timeout(Duration::from_millis(timeout_ms))
+            .build()?;
+        Ok(indexer_client.into())
     }
 }
 
