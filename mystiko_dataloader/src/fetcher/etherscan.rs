@@ -124,7 +124,17 @@ impl<R> EtherscanFetcher<R> {
             clients.push(Arc::new(client));
         }
 
-        Ok(EtherscanFetcher::from(clients))
+        let delay_blocks: HashMap<_, _> = config
+            .chains
+            .iter()
+            .filter_map(|(k, v)| v.delay_num_blocks.map(|delay| (*k, delay)))
+            .collect();
+
+        Ok(EtherscanFetcher::builder()
+            .concurrency(config.concurrency)
+            .chain_delay_num_blocks(delay_blocks)
+            .etherscan_clients(clients)
+            .build())
     }
 }
 

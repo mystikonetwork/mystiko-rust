@@ -19,8 +19,7 @@ use thiserror::Error;
 use typed_builder::TypedBuilder;
 
 pub type DataLoaderConfigResult<T> = anyhow::Result<T, DataLoaderConfigError>;
-type ChainDataFetcherFromConfig<R> = Box<dyn DataFetcher<R>>;
-
+type FetcherBuildData<R> = (Vec<Arc<Box<dyn DataFetcher<R>>>>, HashMap<usize, FetcherOptions>);
 #[derive(Error, Debug)]
 pub enum DataLoaderConfigError {
     #[error("not supported fetcher type {0}")]
@@ -154,8 +153,8 @@ where
         &self,
         mystiko_config: Arc<MystikoConfig>,
         providers: Arc<P>,
-    ) -> DataLoaderConfigResult<(Vec<Arc<ChainDataFetcherFromConfig<R>>>, HashMap<usize, FetcherOptions>)> {
-        let mut fetchers: Vec<Arc<ChainDataFetcherFromConfig<R>>> = vec![];
+    ) -> DataLoaderConfigResult<FetcherBuildData<R>> {
+        let mut fetchers: Vec<Arc<Box<dyn DataFetcher<R>>>> = vec![];
         let mut fetcher_options = HashMap::new();
         let fetcher_config: FetcherConfig = self.config.fetcher_config.clone().into();
         for (index, fetcher_type) in self.fetcher_types()?.iter().enumerate() {

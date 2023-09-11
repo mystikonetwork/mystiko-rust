@@ -171,8 +171,14 @@ where
 {
     pub fn from_config<C: Into<ProviderFetcherConfig>>(config: C, providers: Arc<P>) -> Self {
         let config = config.into();
+        let delay_blocks: HashMap<_, _> = config
+            .chains
+            .iter()
+            .filter_map(|(k, v)| v.delay_num_blocks.map(|delay| (*k, delay)))
+            .collect();
         ProviderFetcher::builder()
             .providers(providers)
+            .chain_delay_num_blocks(delay_blocks)
             .concurrency(config.concurrency)
             .build()
     }

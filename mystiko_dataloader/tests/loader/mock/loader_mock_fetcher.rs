@@ -3,7 +3,7 @@ use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::LoadedData;
 use mystiko_dataloader::data::{ChainResult, ContractResult};
-use mystiko_dataloader::fetcher::{DataFetcher, FetchOptions, FetchResult};
+use mystiko_dataloader::fetcher::{ChainLoadedBlockOptions, DataFetcher, FetchOptions, FetchResult, FetcherError};
 use tokio::sync::RwLock;
 
 pub struct MockFetcher<R>
@@ -64,5 +64,9 @@ where
         } else {
             Err(anyhow::Error::msg("error".to_string()).into())
         }
+    }
+
+    async fn chain_loaded_block(&self, _options: &ChainLoadedBlockOptions) -> Result<u64, FetcherError> {
+        Err(FetcherError::AnyhowError(anyhow::anyhow!("not implemented")))
     }
 }

@@ -48,6 +48,8 @@ async fn test_create_chain_data_loader_fetcher_indexer() {
                     IndexerFetcherConfig::builder()
                         .url("http://localhost:38545".to_string())
                         .timeout_ms(2000)
+                        .filter_size(100)
+                        .skip_validation(false)
                         .build(),
                 )
                 .build(),

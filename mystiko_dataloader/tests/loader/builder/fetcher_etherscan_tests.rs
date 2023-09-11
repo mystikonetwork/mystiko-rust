@@ -100,6 +100,10 @@ async fn test_create_chain_data_loader_fetcher_etherscan() {
                                 EtherscanFetcherChainConfig::builder()
                                     .url("http://localhost:38545".to_string())
                                     .api_key("error key".to_string())
+                                    .max_requests_per_second(10)
+                                    .page_size(100)
+                                    .url_prefix("prefix".to_string())
+                                    .delay_num_blocks(100)
                                     .build(),
                             );
                             chains

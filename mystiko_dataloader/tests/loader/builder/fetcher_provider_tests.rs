@@ -7,6 +7,7 @@ use mystiko_dataloader::handler::DataHandler;
 use mystiko_dataloader::loader::LoadOption;
 use mystiko_dataloader::loader::{ChainDataLoader, DataLoader, FromConfig, LoaderConfigOptions};
 use mystiko_ethers::Providers;
+use mystiko_protos::common::v1::ProviderType;
 use mystiko_protos::config::v1::ConfigOptions;
 use mystiko_protos::loader::v1::{FetcherConfig, LoaderConfig, ProviderFetcherChainConfig, ProviderFetcherConfig};
 use std::collections::{HashMap, HashSet};
@@ -63,7 +64,13 @@ async fn test_create_chain_data_loader_default_provider_fetcher_skip_validation(
         .mystiko_config_options(cfg_option)
         .fetcher_config(
             FetcherConfig::builder()
-                .provider(ProviderFetcherConfig::builder().skip_validation(true).build())
+                .provider(
+                    ProviderFetcherConfig::builder()
+                        .concurrency(2)
+                        .timeout_ms(10)
+                        .skip_validation(true)
+                        .build(),
+                )
                 .build(),
         )
         .build();
@@ -172,6 +179,8 @@ async fn test_create_chain_data_loader_providers_merge() {
                             let mut chains = HashMap::new();
                             let cfg = ProviderFetcherChainConfig::builder()
                                 .urls(vec!["http://localhost:38545".to_string()])
+                                .delay_num_blocks(100)
+                                .provider_type(ProviderType::Failover as i32)
                                 .build();
                             chains.insert(chain_id, cfg);
                             chains
