@@ -45,7 +45,11 @@ async fn test_fulldata_fetch() {
     let _ = env_logger::builder()
         .filter_module("mystiko_dataloader", LevelFilter::Debug)
         .try_init();
-    let provider_fetcher: ProviderFetcher<FullData, TestProvders> = Arc::new(TestProvders).into();
+    let provider_fetcher: ProviderFetcher<FullData, TestProvders> =
+        ProviderFetcher::<FullData, TestProvders>::builder()
+            .providers(Arc::new(TestProvders))
+            .concurrency(2u32)
+            .build();
     let mystiko_config = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
             .await
@@ -93,7 +97,11 @@ async fn test_litedata_fetch() {
     let _ = env_logger::builder()
         .filter_module("mystiko_dataloader", LevelFilter::Debug)
         .try_init();
-    let provider_fetcher: ProviderFetcher<LiteData, TestProvders> = Arc::new(TestProvders).into();
+    let provider_fetcher: ProviderFetcher<LiteData, TestProvders> =
+        ProviderFetcher::<LiteData, TestProvders>::builder()
+            .providers(Arc::new(TestProvders))
+            .concurrency(0u32)
+            .build();
     let mystiko_config = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
             .await

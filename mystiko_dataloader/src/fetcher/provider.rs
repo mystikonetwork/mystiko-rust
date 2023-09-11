@@ -117,15 +117,14 @@ where
             .get_provider(chain_id)
             .await
             .map_err(FetcherError::AnyhowError)?;
-        let config_delay_blocks = config
-            .find_chain(chain_id)
-            .map(|c| c.event_delay_blocks())
-            .unwrap_or_default();
-        let delay_num_blocks = self
-            .chain_delay_num_blocks
-            .get(&chain_id)
-            .cloned()
-            .unwrap_or(config_delay_blocks);
+        let delay_num_blocks = if let Some(delay_blocks) = self.chain_delay_num_blocks.get(&chain_id) {
+            *delay_blocks
+        } else {
+            config
+                .find_chain(chain_id)
+                .map(|c| c.event_delay_blocks())
+                .unwrap_or_default()
+        };
         let current_block = get_block_num(provider.clone())
             .await
             .map_err(FetcherError::AnyhowError)?
@@ -211,6 +210,7 @@ async fn fetch_contracts<R: LoadedData>(
     options: Vec<ProviderContractFetchOptions>,
     concurrency: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
+    let concurrency = if concurrency == 0 { 1 } else { concurrency };
     let chunk_nums = (options.len() + concurrency - 1) / concurrency;
     let chunks = options.chunks(chunk_nums);
     let mut group_tasks = Vec::with_capacity(chunks.len());

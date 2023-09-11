@@ -122,7 +122,7 @@ async fn test_etherscan_full_data_fetch() {
     )
     .await;
     let etherscan_fetchers =
-        build_etherscan_fetcher::<FullData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key);
+        build_etherscan_fetcher::<FullData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 0u32);
     let fetch_options = build_fetch_options(test_address, test_chain_id, test_start_block, test_end_block).await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
 
@@ -195,7 +195,7 @@ async fn test_etherscan_full_data_fetch_no_contract_request() {
     )
     .await;
     let etherscan_fetchers =
-        build_etherscan_fetcher::<FullData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key);
+        build_etherscan_fetcher::<FullData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 1u32);
     let fetch_options = build_fetch_options(test_address, test_chain_id, test_start_block, test_end_block).await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
     assert!(result.is_ok());
@@ -265,7 +265,7 @@ async fn test_etherscan_lite_data_fetch() {
     )
     .await;
     let etherscan_fetchers =
-        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key);
+        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 2u32);
     let fetch_options = build_fetch_options(test_address, test_chain_id, test_start_block, test_end_block).await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
     assert!(result.is_ok());
@@ -358,7 +358,7 @@ async fn test_etherscan_lite_data_fetch_no_contract_request() {
     )
     .await;
     let etherscan_fetchers =
-        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key);
+        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 1u32);
     let fetch_options = build_fetch_options(test_address, test_chain_id, test_start_block, test_end_block).await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
     assert!(result.is_ok());
@@ -384,7 +384,7 @@ async fn test_get_etherscan_client_err() {
     let test_offset = 1000u64;
     let test_api_key = "test_api_key";
     let etherscan_fetchers =
-        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key);
+        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 1u32);
     let fetch_options = build_fetch_options(test_address, 137u64, test_start_block, test_end_block).await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
     assert!(result.is_err());
@@ -414,7 +414,7 @@ async fn test_chain_loaded_block() {
         .create_async()
         .await;
     let etherscan_fetcher =
-        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, 1000u64, test_api_key);
+        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, 1000u64, test_api_key, 1u32);
     let config = Arc::new(
         MystikoConfig::from_json_file("tests/files/config/mystiko.json")
             .await
@@ -594,6 +594,7 @@ fn build_etherscan_fetcher<R: LoadedData + std::fmt::Debug>(
     test_chain_id: u64,
     test_offset: u64,
     test_api_key: &str,
+    concurrency: u32,
 ) -> EtherscanFetcher<R> {
     let etherscan_client = EtherScanClient::new(
         EtherScanClientOptions::builder()
@@ -604,7 +605,10 @@ fn build_etherscan_fetcher<R: LoadedData + std::fmt::Debug>(
             .build(),
     )
     .unwrap();
-    Arc::new(etherscan_client).into()
+    EtherscanFetcher::<R>::builder()
+        .etherscan_clients(vec![Arc::new(etherscan_client)])
+        .concurrency(concurrency)
+        .build()
 }
 
 async fn build_fetch_options(
