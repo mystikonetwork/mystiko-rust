@@ -180,12 +180,8 @@ fn to_options(
                         .contract_type(contract_config.contract_type().clone())
                         .bridge_type(contract_config.bridge_type().clone())
                         .start_block(option.start_block)
-                        .actual_target_block(if option.target_block > current_block_num {
-                            current_block_num
-                        } else {
-                            option.target_block
-                        })
-                        .event_filter_size(chain_config.event_filter_size())
+                        .actual_target_block(option.target_block.min(current_block_num))
+                        .event_filter_size(chain_config.event_filter_size().max(1))
                         .provider(Arc::clone(&provider))
                         .build()
                 })
@@ -202,12 +198,8 @@ fn to_options(
                         .contract_type(contract_option.contract_config.contract_type().clone())
                         .bridge_type(contract_option.contract_config.bridge_type().clone())
                         .start_block(contract_option.start_block.unwrap_or(option.start_block))
-                        .actual_target_block(if target_block > current_block_num {
-                            current_block_num
-                        } else {
-                            target_block
-                        })
-                        .event_filter_size(chain_config.event_filter_size())
+                        .actual_target_block(target_block.min(current_block_num))
+                        .event_filter_size(chain_config.event_filter_size().max(1))
                         .provider(Arc::clone(&provider))
                         .build()
                 })
@@ -327,22 +319,25 @@ async fn fetch_nullifiers(option: &ProviderContractFetchOptions) -> Result<Vec<N
 }
 
 async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Result<Vec<Event<E>>> {
+    let mut events: Vec<Event<E>> = vec![];
+    if option.start_block > option.actual_target_block {
+        return Ok(events);
+    }
     let address = option
         .contract_address
         .parse::<Address>()
         .map_err(ProviderFetcherError::FromHexError)?;
-    let mut events: Vec<Event<E>> = vec![];
-    let mut disposable_start_block = option.start_block;
+
+    let mut start_block = option.start_block;
+    let mut to_block;
     loop {
-        let effective_to_block = disposable_start_block + option.event_filter_size - 1;
-        let to_block = option.actual_target_block.min(effective_to_block);
-        if disposable_start_block > to_block {
-            break;
-        }
+        to_block = option
+            .actual_target_block
+            .min(start_block + option.event_filter_size - 1);
         let filter = Filter::new()
             .topic0(E::signature())
             .address(address)
-            .from_block(BlockNumber::Number(U64::from(disposable_start_block)))
+            .from_block(BlockNumber::Number(U64::from(start_block)))
             .to_block(BlockNumber::Number(U64::from(to_block)));
         let logs = option
             .provider
@@ -362,12 +357,10 @@ async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Resul
             let event = E::decode_log(&my_log.into_raw())?;
             events.push(Event { raw: event, metadata });
         }
-        if option.actual_target_block <= effective_to_block {
+        if to_block == option.actual_target_block {
             break;
         }
-        if to_block > disposable_start_block {
-            disposable_start_block = to_block + 1;
-        }
+        start_block = to_block + 1;
     }
     Ok(events)
 }

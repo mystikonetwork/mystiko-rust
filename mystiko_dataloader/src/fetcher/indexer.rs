@@ -61,7 +61,7 @@ where
         let chain_config = option.config.find_chain(option.chain_id).ok_or_else(|| {
             FetcherError::AnyhowError(anyhow!(IndexerFetcherError::UnsupportedChainError(option.chain_id)))
         })?;
-        let indexer_filter_size = chain_config.indexer_filter_size();
+        let indexer_filter_size = chain_config.indexer_filter_size().max(1);
         let contract_options = to_options(indexer_filter_size, option);
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
@@ -129,19 +129,14 @@ async fn fetch_contract<R: LoadedData>(
     option: &ContractDataLoaderOptions,
     client: &IndexerClient,
 ) -> Result<Vec<ContractResultDataResponse>> {
-    let indexer_filter_size = option.indexer_filter_size;
-    let contract_start_block = option.start_block;
-    let mut start_block = contract_start_block;
-    let end_block = option.end_block;
-    let mut effective_to_block;
-    let mut to_block;
     let mut contract_results = Vec::new();
+    if option.start_block > option.end_block {
+        return Ok(contract_results);
+    }
+    let mut start_block = option.start_block;
+    let mut to_block;
     loop {
-        effective_to_block = start_block + indexer_filter_size - 1;
-        to_block = end_block.min(effective_to_block);
-        if start_block > to_block {
-            break;
-        }
+        to_block = option.end_block.min(start_block + option.indexer_filter_size - 1);
         let r = DataLoaderRequest::builder()
             .contract_address(option.contract_address.to_string())
             .start_block(Some(start_block))
@@ -149,12 +144,10 @@ async fn fetch_contract<R: LoadedData>(
             .build();
         let result = send_requests::<R>(option.chain_id, start_block, to_block, client, Some(vec![r])).await?;
         contract_results.extend(result);
-        if end_block <= effective_to_block {
+        if to_block == option.end_block {
             break;
         }
-        if to_block > start_block {
-            start_block = to_block + 1;
-        }
+        start_block = to_block + 1;
     }
     Ok(contract_results)
 }
@@ -164,25 +157,21 @@ async fn fetch_all<R: LoadedData>(
     option: &FetchOptions,
     client: &IndexerClient,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
+    let mut contract_results: Vec<ContractResult<ContractData<R>>> = Vec::new();
+    if option.start_block > option.target_block {
+        return Ok(contract_results);
+    }
     let mut start_block = option.start_block;
-    let end_block = option.target_block;
-    let mut effective_to_block;
     let mut to_block;
     let mut contracts_results: Vec<ContractResultDataResponse> = Vec::new();
     loop {
-        effective_to_block = start_block + indexer_filter_size - 1;
-        to_block = end_block.min(effective_to_block);
-        if start_block > to_block {
-            break;
-        }
+        to_block = option.target_block.min(start_block + indexer_filter_size - 1);
         let result = send_requests::<R>(option.chain_id, start_block, to_block, client, None).await?;
         contracts_results.extend(result);
-        if end_block <= effective_to_block {
+        if to_block == option.target_block {
             break;
         }
-        if to_block > start_block {
-            start_block = to_block + 1;
-        }
+        start_block = to_block + 1;
     }
     let contract_result_map: HashMap<String, Vec<ContractResultDataResponse>> =
         contracts_results.into_iter().fold(HashMap::new(), |mut map, result| {
@@ -197,7 +186,6 @@ async fn fetch_all<R: LoadedData>(
             }
             map
         });
-    let mut contract_results: Vec<ContractResult<ContractData<R>>> = Vec::new();
     for (address, a) in contract_result_map.iter() {
         contract_results.push(
             ContractResult::builder()
