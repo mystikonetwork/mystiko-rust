@@ -517,6 +517,48 @@ async fn test_chain_loaded_block_with_delay() {
     path.assert_async().await;
 }
 
+#[tokio::test]
+async fn test_chain_loaded_block_too_big_delay() {
+    let mut mocked_server = mockito::Server::new_async().await;
+    let test_api_key = "test_api_key";
+    let path = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("action".into(), "eth_blockNumber".into()),
+            Matcher::UrlEncoded("apikey".into(), test_api_key.into()),
+            Matcher::UrlEncoded("module".into(), "proxy".into()),
+        ]))
+        .with_status(200)
+        .with_body("{\"jsonrpc\": \"2.0\",\"id\": 1,\"result\": \"0x64\"}")
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let etherscan_client = EtherScanClient::new(
+        EtherScanClientOptions::builder()
+            .chain_id(1u64)
+            .base_url(mocked_server.url())
+            .api_key(test_api_key.to_string())
+            .build(),
+    )
+    .unwrap();
+    let delay_blocks: HashMap<u64, u64> = [(1u64, 200u64)].into_iter().collect();
+    let etherscan_fetcher = EtherscanFetcher::<LiteData>::builder()
+        .etherscan_clients(vec![Arc::new(etherscan_client)])
+        .chain_delay_num_blocks(delay_blocks)
+        .build();
+    let config = Arc::new(
+        MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let options = ChainLoadedBlockOptions::builder()
+        .chain_id(1u64)
+        .config(config.clone())
+        .build();
+    assert_eq!(etherscan_fetcher.chain_loaded_block(&options).await.unwrap(), 0u64);
+    path.assert_async().await;
+}
+
 async fn build_mock_request(mocked_server: &mut ServerGuard, params: &[Matcher], topic: &str, resp: &str) -> Mock {
     let mut params_with_topic = params.to_owned();
     params_with_topic.push(Matcher::UrlEncoded("topic0".into(), topic.into()));

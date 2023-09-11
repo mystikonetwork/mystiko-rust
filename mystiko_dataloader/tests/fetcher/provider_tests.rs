@@ -244,6 +244,26 @@ async fn test_chain_loaded_block_with_delay() {
     );
 }
 
+#[tokio::test]
+async fn test_chain_loaded_block_too_big_delay() {
+    let delay_blocks: HashMap<u64, u64> = [(56u64, 45565367u64)].into_iter().collect();
+    let provider_fetcher: ProviderFetcher<LiteData, TestProvders> =
+        ProviderFetcher::<LiteData, TestProvders>::builder()
+            .providers(Arc::new(TestProvders))
+            .chain_delay_num_blocks(delay_blocks)
+            .build();
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let options = ChainLoadedBlockOptions::builder()
+        .chain_id(56u64)
+        .config(mystiko_config.clone())
+        .build();
+    assert_eq!(provider_fetcher.chain_loaded_block(&options).await.unwrap(), 0u64);
+}
+
 #[derive(Debug, Default)]
 struct MockProviderRetryPolicy;
 
