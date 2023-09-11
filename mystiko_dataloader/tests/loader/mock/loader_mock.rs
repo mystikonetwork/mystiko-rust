@@ -4,7 +4,8 @@ use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, Retr
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
-use mystiko_dataloader::loader::{ChainDataFetcher, ChainDataLoader, DataLoaderResult};
+use mystiko_dataloader::fetcher::FetcherOptions;
+use mystiko_dataloader::loader::{ChainDataLoader, DataLoaderResult};
 use mystiko_dataloader::loader::{DataLoader, LoadOption};
 use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
 use std::collections::HashMap;
@@ -39,18 +40,13 @@ pub async fn create_loader(
             .unwrap(),
     );
 
-    let mut mock_fetchers = vec![];
     let mut fetchers = vec![];
     for _ in 0..feature_count {
         let fetcher = Arc::new(MockFetcher::new(chain_id));
-        mock_fetchers.push(fetcher.clone());
-        fetchers.push(Arc::new(
-            ChainDataFetcher::builder()
-                .skip_validation(skip_validation)
-                .fetcher(fetcher)
-                .build(),
-        ));
+        fetchers.push(fetcher);
     }
+    let mut fetcher_options = HashMap::new();
+    fetcher_options.insert(0, FetcherOptions::builder().skip_validation(skip_validation).build());
 
     let validators = (0..validator_count)
         .map(|_| Arc::new(MockValidator::new()))
@@ -66,13 +62,14 @@ pub async fn create_loader(
         .config(core_cfg.clone())
         .provider(provider.clone())
         .fetchers(fetchers.clone())
+        .fetcher_options(fetcher_options)
         .validators(validators.clone())
         .handler(handler.clone())
         .build();
     (
         core_cfg.clone(),
         Arc::new(loader),
-        mock_fetchers,
+        fetchers,
         validators,
         handler,
         Arc::new(mock),

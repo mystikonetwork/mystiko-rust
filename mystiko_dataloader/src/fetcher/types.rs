@@ -11,6 +11,13 @@ use typed_builder::TypedBuilder;
 
 pub type Result<T> = anyhow::Result<T, FetcherError>;
 
+#[derive(Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct FetcherOptions {
+    #[builder(default = false)]
+    pub skip_validation: bool,
+}
+
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct FetchOptions {
@@ -32,11 +39,20 @@ pub struct ContractFetchOptions {
     pub target_block: Option<u64>,
 }
 
+#[derive(Debug, Clone, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct ChainLoadedBlockOptions {
+    pub config: Arc<MystikoConfig>,
+    pub chain_id: u64,
+}
+
 pub type FetchResult<R> = Result<ChainResult<ContractData<R>>>;
 
 #[async_trait]
 pub trait DataFetcher<R: LoadedData>: Send + Sync {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R>;
+
+    async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64>;
 }
 
 #[async_trait]
@@ -46,6 +62,10 @@ where
 {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         self.as_ref().fetch(option).await
+    }
+
+    async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64> {
+        self.as_ref().chain_loaded_block(options).await
     }
 }
 

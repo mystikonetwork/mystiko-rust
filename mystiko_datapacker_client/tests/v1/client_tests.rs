@@ -3,7 +3,7 @@ use ethers_core::types::Address;
 use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
 use mystiko_datapacker_client::v1::DataPackerClient as DataPackerClientV1;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
-use mystiko_datapacker_common::v1::PathSchema as PathSchemaV1;
+use mystiko_datapacker_common::v1::{GranularityIndex, PathSchema as PathSchemaV1};
 use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSum, ZstdCompression};
 use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, Nullifier};
 use mystiko_utils::convert::biguint_to_bytes;
@@ -437,6 +437,59 @@ async fn test_fetch_missing_data_error() {
     for mock in mocks.into_iter() {
         mock.assert_async().await;
     }
+}
+
+#[tokio::test]
+async fn test_query_chain_loaded_block() {
+    let (mut server, client) = setup().await.unwrap();
+    let schema = PathSchemaV1::default();
+    let index_url = schema.granularity_index(1u64, 2000u64).to_string_lossy().to_string();
+    let granularity_index = GranularityIndex::builder().saved_block(10015999u64).build();
+    let index_mock = server
+        .mock("GET", index_url.as_str())
+        .with_status(200)
+        .with_body(&serde_json::to_vec(&granularity_index).unwrap())
+        .create_async()
+        .await;
+    assert_eq!(
+        client.query_chain_loaded_block(1u64).await.unwrap(),
+        granularity_index.saved_block
+    );
+    index_mock.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_query_chain_loaded_block_client_error() {
+    let (mut server, client) = setup().await.unwrap();
+    let schema = PathSchemaV1::default();
+    let index_url = schema.granularity_index(1u64, 2000u64).to_string_lossy().to_string();
+    let index_mock = server
+        .mock("GET", index_url.as_str())
+        .with_status(404)
+        .create_async()
+        .await;
+    assert_eq!(client.query_chain_loaded_block(1u64).await.unwrap(), 9999999);
+    index_mock.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_query_empty_chain_loaded_block() {
+    let (mut server, client) = setup().await.unwrap();
+    let schema = PathSchemaV1::default();
+    let index_url = schema.granularity_index(1u64, 2000u64).to_string_lossy().to_string();
+    let index_mock = server
+        .mock("GET", index_url.as_str())
+        .with_status(200)
+        .create_async()
+        .await;
+    assert_eq!(client.query_chain_loaded_block(1u64).await.unwrap(), 9999999);
+    index_mock.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_query_unsupported_chain_loaded_block() {
+    let (_, client) = setup().await.unwrap();
+    assert!(client.query_chain_loaded_block(123343u64).await.is_err());
 }
 
 #[derive(Debug, TypedBuilder)]

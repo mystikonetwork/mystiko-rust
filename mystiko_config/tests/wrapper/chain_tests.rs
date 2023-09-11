@@ -46,7 +46,7 @@ async fn test_create() {
     assert_eq!(config.explorer_url(), "https://goerli.etherscan.io");
     assert_eq!(config.explorer_api_url(), "https://api-goerli.etherscan.io");
     assert_eq!(config.explorer_prefix(), "/tx/%tx%");
-    assert_eq!(config.event_filter_block_backoff(), 200);
+    assert_eq!(config.event_delay_blocks(), 200);
     assert_eq!(config.event_filter_size(), 1000);
     assert_eq!(config.indexer_filter_size(), 10000);
     assert_eq!(

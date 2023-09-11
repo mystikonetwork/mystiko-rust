@@ -5,7 +5,7 @@ use mockall::mock;
 use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
 use mystiko_dataloader::data::{FullData, LiteData, LoadedData};
 use mystiko_dataloader::fetcher::{
-    ContractFetchOptions, DataFetcher, DataPackerFetcher, DataPackerFetcherV1, FetchOptions,
+    ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher, DataPackerFetcher, DataPackerFetcherV1, FetchOptions,
 };
 use mystiko_datapacker_client::{ChainQuery, ChainResponse};
 use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, Nullifier};
@@ -22,6 +22,7 @@ mock! {
     #[async_trait]
     impl mystiko_datapacker_client::DataPackerClient<ChainData> for DataPackerClient {
         async fn query_chain(&self, query: &ChainQuery) -> Result<ChainResponse<ChainData>>;
+        async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<u64>;
     }
 }
 
@@ -307,6 +308,18 @@ async fn test_packer_returned_none() {
     let result = fetcher.fetch(&options).await;
     assert!(result.is_err());
     assert!(result.unwrap_err().to_string().contains("no chain data found"));
+}
+
+#[tokio::test]
+async fn test_chain_loaded_block() {
+    let mut client = MockDataPackerClient::new();
+    client
+        .expect_query_chain_loaded_block()
+        .withf(|chain_id| *chain_id == 1u64)
+        .return_once(|_| Ok(1000100u64));
+    let (config, fetcher) = setup::<FullData>(client).await;
+    let options = ChainLoadedBlockOptions::builder().chain_id(1u64).config(config).build();
+    assert_eq!(fetcher.chain_loaded_block(&options).await.unwrap(), 1000100u64);
 }
 
 #[tokio::test]

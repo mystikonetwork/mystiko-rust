@@ -1,10 +1,9 @@
 use crate::data::LoadedData;
 use crate::fetcher::{
-    create_provider_pool_from_config, DataFetcher, DataPackerFetcherV1, EtherscanFetcher, IndexerFetcher,
-    ProviderFetcher,
+    create_provider_pool_from_config, DataFetcher, DataPackerFetcherV1, EtherscanFetcher, FetcherOptions,
+    IndexerFetcher, ProviderFetcher,
 };
 use crate::handler::DataHandler;
-use crate::loader::ChainDataFetcher;
 use crate::validator::rule::create_rule_validator_by_types;
 use crate::validator::DataValidator;
 use anyhow::Error as AnyhowError;
@@ -14,17 +13,20 @@ use mystiko_protos::loader::v1::{
     FetcherConfig, FetcherType, LoaderConfig, RuleValidatorCheckerType, RuleValidatorConfig, ValidatorConfig,
     ValidatorType,
 };
+use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
 pub type DataLoaderConfigResult<T> = anyhow::Result<T, DataLoaderConfigError>;
-type ChainDataFetcherFromConfig<R> = ChainDataFetcher<R, Box<dyn DataFetcher<R>>>;
+type ChainDataFetcherFromConfig<R> = Box<dyn DataFetcher<R>>;
 
 #[derive(Error, Debug)]
 pub enum DataLoaderConfigError {
     #[error("not supported fetcher type {0}")]
     FetcherTypeError(i32),
+    #[error("fetcher config not exist for fetcher type {0}")]
+    FetcherConfigNotExistError(i32),
     #[error("not supported validator type {0}")]
     ValidatorTypeError(i32),
     #[error("not supported rule validator checker type {0}")]
@@ -46,9 +48,9 @@ pub struct LoaderConfigOptions<
     pub handler: Arc<H>,
     #[builder(default, setter(strip_option))]
     pub providers: Option<Arc<P>>,
-    #[builder(default, setter(skip))]
-    pub fetchers: Vec<Arc<ChainDataFetcher<R, F>>>,
-    #[builder(default, setter(skip))]
+    #[builder(default)]
+    pub fetchers: Vec<Arc<F>>,
+    #[builder(default)]
     pub validators: Vec<Arc<V>>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
@@ -62,6 +64,33 @@ where
     V: DataValidator<R>,
     H: DataHandler<R>,
 {
+    pub fn validate_config(&self) -> DataLoaderConfigResult<()> {
+        self.validate_etherscan_fetcher_config()
+    }
+
+    fn validate_etherscan_fetcher_config(&self) -> DataLoaderConfigResult<()> {
+        if !self.config.fetchers.contains(&(FetcherType::Etherscan as i32)) {
+            return Ok(());
+        }
+
+        let etherscan_config = self.config.fetcher_config.as_ref().and_then(|c| c.etherscan.as_ref());
+
+        match etherscan_config {
+            None => Err(DataLoaderConfigError::FetcherConfigNotExistError(
+                FetcherType::Etherscan as i32,
+            )),
+            Some(e) => {
+                if e.chains.get(&self.chain_id).is_none() {
+                    Err(DataLoaderConfigError::FetcherConfigNotExistError(
+                        FetcherType::Etherscan as i32,
+                    ))
+                } else {
+                    Ok(())
+                }
+            }
+        }
+    }
+
     pub fn fetcher_types(&self) -> DataLoaderConfigResult<Vec<FetcherType>> {
         if self.config.fetchers.is_empty() {
             if self.fetchers.is_empty() {
@@ -125,68 +154,57 @@ where
         &self,
         mystiko_config: Arc<MystikoConfig>,
         providers: Arc<P>,
-    ) -> DataLoaderConfigResult<Vec<Arc<ChainDataFetcherFromConfig<R>>>> {
+    ) -> DataLoaderConfigResult<(Vec<Arc<ChainDataFetcherFromConfig<R>>>, HashMap<usize, FetcherOptions>)> {
         let mut fetchers: Vec<Arc<ChainDataFetcherFromConfig<R>>> = vec![];
+        let mut fetcher_options = HashMap::new();
         let fetcher_config: FetcherConfig = self.config.fetcher_config.clone().into();
-        for fetcher_type in self.fetcher_types()? {
+        for (index, fetcher_type) in self.fetcher_types()?.iter().enumerate() {
             match fetcher_type {
                 FetcherType::Unspecified => {
-                    return Err(DataLoaderConfigError::FetcherTypeError(fetcher_type as i32));
+                    return Err(DataLoaderConfigError::FetcherTypeError(*fetcher_type as i32));
                 }
                 FetcherType::Packer => {
-                    let skip_validation = match &fetcher_config.packer {
-                        None => false,
-                        Some(c) => c.skip_validation.unwrap_or(false),
-                    };
+                    if let Some(c) = &fetcher_config.packer {
+                        if let Some(s) = c.skip_validation {
+                            fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
+                        }
+                    }
                     let packer = DataPackerFetcherV1::from(mystiko_config.clone());
-                    let fetcher = ChainDataFetcher::builder()
-                        .fetcher(Arc::new(Box::new(packer) as Box<dyn DataFetcher<R>>))
-                        .skip_validation(skip_validation)
-                        .build();
-                    fetchers.push(Arc::new(fetcher));
+                    fetchers.push(Arc::new(Box::new(packer) as Box<dyn DataFetcher<R>>))
                 }
                 FetcherType::Indexer => {
-                    let skip_validation = match &fetcher_config.indexer {
-                        None => false,
-                        Some(c) => c.skip_validation.unwrap_or(false),
-                    };
+                    if let Some(c) = &fetcher_config.indexer {
+                        if let Some(s) = c.skip_validation {
+                            fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
+                        }
+                    }
                     let indexer = IndexerFetcher::from_config(mystiko_config.clone(), fetcher_config.indexer.clone())?;
-                    let fetcher = ChainDataFetcher::builder()
-                        .fetcher(Arc::new(Box::new(indexer) as Box<dyn DataFetcher<R>>))
-                        .skip_validation(skip_validation)
-                        .build();
-                    fetchers.push(Arc::new(fetcher));
+                    fetchers.push(Arc::new(Box::new(indexer) as Box<dyn DataFetcher<R>>));
                 }
                 FetcherType::Etherscan => {
-                    let skip_validation = match &fetcher_config.etherscan {
-                        None => false,
-                        Some(c) => c.skip_validation.unwrap_or(false),
-                    };
+                    if let Some(c) = &fetcher_config.etherscan {
+                        if let Some(s) = c.skip_validation {
+                            fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
+                        }
+                    }
                     let etherscan =
                         EtherscanFetcher::from_config(mystiko_config.clone(), fetcher_config.etherscan.clone())?;
-                    let fetcher = ChainDataFetcher::builder()
-                        .fetcher(Arc::new(Box::new(etherscan) as Box<dyn DataFetcher<R>>))
-                        .skip_validation(skip_validation)
-                        .build();
-                    fetchers.push(Arc::new(fetcher));
+                    fetchers.push(Arc::new(Box::new(etherscan) as Box<dyn DataFetcher<R>>));
                 }
                 FetcherType::Provider => {
-                    let skip_validation = match &fetcher_config.provider {
-                        None => false,
-                        Some(c) => c.skip_validation.unwrap_or(false),
-                    };
+                    if let Some(c) = &fetcher_config.provider {
+                        if let Some(s) = c.skip_validation {
+                            fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
+                        }
+                    }
                     let provider_fetcher =
                         ProviderFetcher::from_config(fetcher_config.provider.clone(), providers.clone());
-                    let fetcher = ChainDataFetcher::builder()
-                        .fetcher(Arc::new(Box::new(provider_fetcher) as Box<dyn DataFetcher<R>>))
-                        .skip_validation(skip_validation)
-                        .build();
-                    fetchers.push(Arc::new(fetcher));
+                    fetchers.push(Arc::new(Box::new(provider_fetcher) as Box<dyn DataFetcher<R>>));
                 }
             }
         }
 
-        Ok(fetchers)
+        Ok((fetchers, fetcher_options))
     }
 
     pub fn build_validators(

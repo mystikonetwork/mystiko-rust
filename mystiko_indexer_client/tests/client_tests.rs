@@ -1095,7 +1095,7 @@ async fn test_query_chain_sync_response_by_id() {
         .with_header("content-type", "application/json")
         .create_async()
         .await;
-    let resp = indexer_client.query_chain_sync_repsonse_by_id(5).await;
+    let resp = indexer_client.query_chain_sync_repsonse_by_id(5u64).await;
     assert!(resp.is_ok());
     let resp = resp.unwrap();
     assert_eq!(resp.contracts.len(), 2);

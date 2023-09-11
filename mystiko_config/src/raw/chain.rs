@@ -63,9 +63,9 @@ pub struct RawChainConfig {
     pub signer_endpoint: String,
 
     #[validate(range(min = 0))]
-    #[serde(default = "default_event_filter_block_backoff")]
-    #[builder(default = default_event_filter_block_backoff())]
-    pub event_filter_block_backoff: u64,
+    #[serde(default = "default_event_delay_blocks")]
+    #[builder(default = default_event_delay_blocks())]
+    pub event_delay_blocks: u64,
 
     #[validate(range(min = 1))]
     #[serde(default = "default_event_filter_size")]
@@ -107,7 +107,7 @@ impl Hash for RawChainConfig {
     }
 }
 
-fn default_event_filter_block_backoff() -> u64 {
+fn default_event_delay_blocks() -> u64 {
     0
 }
 

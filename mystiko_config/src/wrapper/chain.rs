@@ -130,8 +130,8 @@ impl ChainConfig {
         &self.raw.signer_endpoint
     }
 
-    pub fn event_filter_block_backoff(&self) -> u64 {
-        self.raw.event_filter_block_backoff
+    pub fn event_delay_blocks(&self) -> u64 {
+        self.raw.event_delay_blocks
     }
 
     pub fn event_filter_size(&self) -> u64 {

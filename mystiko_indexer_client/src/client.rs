@@ -119,7 +119,7 @@ impl IndexerClient {
         Ok(resp)
     }
 
-    pub async fn query_chain_sync_repsonse_by_id(&self, chain_id: u32) -> Result<ChainSyncRepsonse> {
+    pub async fn query_chain_sync_repsonse_by_id(&self, chain_id: u64) -> Result<ChainSyncRepsonse> {
         let resp = self
             .get_data::<ChainSyncRepsonse>(&format!("{}/chains/{}/block-number", &self.base_url, chain_id))
             .await?;

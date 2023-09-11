@@ -7,7 +7,7 @@ use crate::data::{FullData, LiteData};
 use crate::fetcher::FetchOptions;
 use crate::fetcher::FetchResult;
 use crate::fetcher::FetcherLogOptions;
-use crate::fetcher::{DataFetcher, FetcherError};
+use crate::fetcher::{ChainLoadedBlockOptions, DataFetcher, FetcherError};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use hex::FromHexError;
@@ -28,8 +28,10 @@ use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum IndexerFetcherError {
-    #[error("indexer config not exist error")]
-    IndexerConfigNotExistError,
+    #[error("missing base url config error")]
+    MissingBaseUrlConfigError,
+    #[error("missing timeout ms config error")]
+    MissingTimeoutMsConfigError,
     #[error("fetcher contract with error {0}")]
     ContractResultError(String),
     #[error(transparent)]
@@ -69,6 +71,15 @@ where
             .contract_results(handle_contracts_response::<R>(option.chain_id, contracts_response))
             .build())
     }
+
+    async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64, FetcherError> {
+        Ok(self
+            .indexer_client
+            .query_chain_sync_repsonse_by_id(options.chain_id)
+            .await
+            .map_err(FetcherError::AnyhowError)?
+            .current_sync_block_num)
+    }
 }
 
 impl<R> IndexerFetcher<R>
@@ -77,19 +88,18 @@ where
 {
     pub fn from_config<C: Into<IndexerFetcherConfig>>(mystiko_config: Arc<MystikoConfig>, config: C) -> Result<Self> {
         let config = config.into();
-        let base_url = config.url.unwrap_or(
-            mystiko_config
-                .indexer()
-                .ok_or(IndexerFetcherError::IndexerConfigNotExistError)?
-                .url()
-                .to_string(),
-        );
-        let timeout_ms = config.timeout_ms.unwrap_or(
-            mystiko_config
-                .indexer()
-                .ok_or(IndexerFetcherError::IndexerConfigNotExistError)?
-                .timeout_ms(),
-        );
+        let default_indexer_config = mystiko_config.indexer();
+        let default_url = default_indexer_config.map(|c| c.url().to_string());
+        let default_timeout_ms = default_indexer_config.map(|c| c.timeout_ms());
+        let base_url = config
+            .url
+            .or(default_url)
+            .ok_or(IndexerFetcherError::MissingBaseUrlConfigError)?;
+        let timeout_ms = config
+            .timeout_ms
+            .or(default_timeout_ms)
+            .ok_or(IndexerFetcherError::MissingTimeoutMsConfigError)?;
+
         // todo add filter size to indexer client
         let indexer_client = IndexerClient::builder(&base_url)
             .timeout(Duration::from_millis(timeout_ms))

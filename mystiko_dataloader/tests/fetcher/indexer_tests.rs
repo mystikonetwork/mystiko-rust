@@ -3,8 +3,10 @@ use mockito::*;
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::data::LiteData;
-use mystiko_dataloader::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions, IndexerFetcher};
-use mystiko_indexer_client::{DataLoaderRequest, IndexerClientBuilder};
+use mystiko_dataloader::fetcher::{
+    ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher, FetchOptions, IndexerFetcher,
+};
+use mystiko_indexer_client::{ApiResponse, ChainSyncRepsonse, DataLoaderRequest, IndexerClientBuilder};
 use mystiko_utils::convert::biguint_str_to_bytes;
 use mystiko_utils::hex::decode_hex;
 use std::sync::Arc;
@@ -406,4 +408,39 @@ async fn test_litedata_fetch() {
     );
     assert!(result1.contract_results[1].result.is_err());
     m.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_chain_loaded_block() {
+    let mut mocked_server = Server::new_async().await;
+    let mocked_server_url = mocked_server.url();
+    let indexer_client = IndexerClientBuilder::new(&mocked_server_url).build().unwrap();
+    let indexer_fetcher: IndexerFetcher<LiteData> = indexer_client.into();
+    let chain_sync_resp = ChainSyncRepsonse::builder()
+        .chain_id(1u64)
+        .current_sync_block_num(10000100u64)
+        .contracts(vec![])
+        .build();
+    let mocked_api_resp = ApiResponse {
+        code: 0,
+        result: &chain_sync_resp,
+    };
+    let path = mocked_server
+        .mock("get", "/chains/1/block-number")
+        .with_status(200)
+        .with_body(serde_json::to_string(&mocked_api_resp).unwrap())
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let config = Arc::new(
+        MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let options = ChainLoadedBlockOptions::builder()
+        .chain_id(1u64)
+        .config(config.clone())
+        .build();
+    assert_eq!(indexer_fetcher.chain_loaded_block(&options).await.unwrap(), 10000100u64);
+    path.assert_async().await;
 }
