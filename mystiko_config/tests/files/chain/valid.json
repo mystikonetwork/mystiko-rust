@@ -10,7 +10,7 @@
   "explorerUrl": "https://goerli.etherscan.io",
   "explorerApiUrl": "https://api-goerli.etherscan.io",
   "explorerPrefix": "/tx/%tx%",
-  "eventFilterBlockBackoff": 200,
+  "eventDelayBlocks": 200,
   "eventFilterSize": 1000,
   "indexerFilterSize": 10000,
   "providers": [

@@ -4,11 +4,11 @@ use crate::data::ContractResult;
 use crate::data::LoadedData;
 use crate::data::{Data, DataType};
 use crate::data::{FullData, LiteData};
-use crate::fetcher::DataFetcher;
 use crate::fetcher::FetchOptions;
 use crate::fetcher::FetchResult;
 use crate::fetcher::FetcherError;
 use crate::fetcher::FetcherLogOptions;
+use crate::fetcher::{ChainLoadedBlockOptions, DataFetcher};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use hex::FromHexError;
@@ -74,6 +74,15 @@ where
                     .map_err(FetcherError::AnyhowError)?,
             })
             .build())
+    }
+
+    async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64, FetcherError> {
+        Ok(self
+            .indexer_client
+            .query_chain_sync_repsonse_by_id(options.chain_id)
+            .await
+            .map_err(FetcherError::AnyhowError)?
+            .current_sync_block_num)
     }
 }
 
