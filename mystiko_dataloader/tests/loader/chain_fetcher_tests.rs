@@ -1,4 +1,4 @@
-use crate::loader::{contract_data_partial_eq, create_shared_loader, loader_load};
+use crate::loader::{contract_data_partial_eq, create_loader, loader_load};
 use ethers_core::types::U64;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
@@ -7,7 +7,7 @@ use std::collections::HashSet;
 #[tokio::test]
 async fn test_loader_start_shared_fetcher_error() {
     let chain_id = 1_u64;
-    let (cfg, loader, fetchers, _, handler, mock_provider) = create_shared_loader(chain_id, 1, 1).await;
+    let (cfg, loader, fetchers, _, handler, mock_provider) = create_loader(chain_id, 1, 1, false).await;
 
     let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
     let target_block = start_block + 1000;
@@ -39,7 +39,7 @@ async fn test_loader_start_shared_fetcher_error() {
 #[tokio::test]
 async fn test_loader_start_without_fetcher() {
     let chain_id = 1_u64;
-    let (cfg, loader, _, _, handler, mock_provider) = create_shared_loader(chain_id, 0, 1).await;
+    let (cfg, loader, _, _, handler, mock_provider) = create_loader(chain_id, 0, 1, false).await;
 
     let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
     let target_block = start_block + 1000;
@@ -59,7 +59,7 @@ async fn test_loader_start_without_fetcher() {
 #[tokio::test]
 async fn test_loader_start_one_shared_fetcher_one_contract() {
     let chain_id = 1_u64;
-    let (cfg, loader, fetchers, _, handler, mock_provider) = create_shared_loader(chain_id, 1, 1).await;
+    let (cfg, loader, fetchers, _, handler, mock_provider) = create_loader(chain_id, 1, 1, false).await;
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let mut contracts = HashSet::new();
     contracts.insert(contract_address1);
@@ -126,7 +126,7 @@ async fn test_loader_start_one_shared_fetcher_one_contract() {
 #[tokio::test]
 async fn test_loader_start_one_shared_fetcher_two_contract() {
     let chain_id = 1_u64;
-    let (cfg, loader, fetchers, _, handler, mock_provider) = create_shared_loader(chain_id, 1, 1).await;
+    let (cfg, loader, fetchers, _, handler, mock_provider) = create_loader(chain_id, 1, 1, false).await;
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let contract_address2 = "0x62121886c954d7e23077f52217b51c26ad26bE9e";
 
@@ -195,7 +195,7 @@ async fn test_loader_start_one_shared_fetcher_two_contract() {
 #[tokio::test]
 async fn test_loader_start_two_shared_fetcher() {
     let chain_id = 1_u64;
-    let (cfg, loader, fetchers, _, handler, mock_provider) = create_shared_loader(chain_id, 2, 1).await;
+    let (cfg, loader, fetchers, _, handler, mock_provider) = create_loader(chain_id, 2, 1, false).await;
 
     let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
     let delay_block = 2;
@@ -299,7 +299,7 @@ async fn test_loader_start_two_shared_fetcher() {
 #[tokio::test]
 async fn test_loader_start_two_shared_fetcher_with_error() {
     let chain_id = 1_u64;
-    let (cfg, loader, fetchers, _, handler, mock_provider) = create_shared_loader(chain_id, 2, 1).await;
+    let (cfg, loader, fetchers, _, handler, mock_provider) = create_loader(chain_id, 2, 1, false).await;
 
     let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
     let delay_block = 2;

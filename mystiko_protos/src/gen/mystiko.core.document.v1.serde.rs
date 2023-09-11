@@ -1043,7 +1043,7 @@ impl serde::Serialize for Contract {
             struct_ser.serialize_field("loadedBlockNumber", ToString::to_string(&self.loaded_block_number).as_str())?;
         }
         if self.contract_type != 0 {
-            let v = super::super::v1::ContractType::from_i32(self.contract_type)
+            let v = super::super::super::common::v1::ContractType::from_i32(self.contract_type)
                 .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.contract_type)))?;
             struct_ser.serialize_field("contractType", &v)?;
         }
@@ -1195,7 +1195,7 @@ impl<'de> serde::Deserialize<'de> for Contract {
                             if contract_type__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("contractType"));
                             }
-                            contract_type__ = Some(map.next_value::<super::super::v1::ContractType>()? as i32);
+                            contract_type__ = Some(map.next_value::<super::super::super::common::v1::ContractType>()? as i32);
                         }
                     }
                 }
@@ -1410,7 +1410,7 @@ impl serde::Serialize for Deposit {
             struct_ser.serialize_field("errorMessage", v)?;
         }
         if self.bridge_type != 0 {
-            let v = super::super::v1::BridgeType::from_i32(self.bridge_type)
+            let v = super::super::super::common::v1::BridgeType::from_i32(self.bridge_type)
                 .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.bridge_type)))?;
             struct_ser.serialize_field("bridgeType", &v)?;
         }
@@ -1842,7 +1842,7 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                             if bridge_type__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("bridgeType"));
                             }
-                            bridge_type__ = Some(map.next_value::<super::super::v1::BridgeType>()? as i32);
+                            bridge_type__ = Some(map.next_value::<super::super::super::common::v1::BridgeType>()? as i32);
                         }
                         GeneratedField::Status => {
                             if status__.is_some() {

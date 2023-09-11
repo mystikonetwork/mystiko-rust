@@ -22,6 +22,9 @@ impl serde::Serialize for EtherscanFetcherChainConfig {
         if self.url_prefix.is_some() {
             len += 1;
         }
+        if self.delay_num_blocks.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.EtherscanFetcherChainConfig", len)?;
         if let Some(v) = self.url.as_ref() {
             struct_ser.serialize_field("url", v)?;
@@ -37,6 +40,9 @@ impl serde::Serialize for EtherscanFetcherChainConfig {
         }
         if let Some(v) = self.url_prefix.as_ref() {
             struct_ser.serialize_field("urlPrefix", v)?;
+        }
+        if let Some(v) = self.delay_num_blocks.as_ref() {
+            struct_ser.serialize_field("delayNumBlocks", ToString::to_string(&v).as_str())?;
         }
         struct_ser.end()
     }
@@ -57,6 +63,8 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherChainConfig {
             "pageSize",
             "url_prefix",
             "urlPrefix",
+            "delay_num_blocks",
+            "delayNumBlocks",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -66,6 +74,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherChainConfig {
             MaxRequestsPerSecond,
             PageSize,
             UrlPrefix,
+            DelayNumBlocks,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -92,6 +101,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherChainConfig {
                             "maxRequestsPerSecond" | "max_requests_per_second" => Ok(GeneratedField::MaxRequestsPerSecond),
                             "pageSize" | "page_size" => Ok(GeneratedField::PageSize),
                             "urlPrefix" | "url_prefix" => Ok(GeneratedField::UrlPrefix),
+                            "delayNumBlocks" | "delay_num_blocks" => Ok(GeneratedField::DelayNumBlocks),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -116,6 +126,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherChainConfig {
                 let mut max_requests_per_second__ = None;
                 let mut page_size__ = None;
                 let mut url_prefix__ = None;
+                let mut delay_num_blocks__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Url => {
@@ -152,6 +163,14 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherChainConfig {
                             }
                             url_prefix__ = map.next_value()?;
                         }
+                        GeneratedField::DelayNumBlocks => {
+                            if delay_num_blocks__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("delayNumBlocks"));
+                            }
+                            delay_num_blocks__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(EtherscanFetcherChainConfig {
@@ -160,6 +179,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherChainConfig {
                     max_requests_per_second: max_requests_per_second__,
                     page_size: page_size__,
                     url_prefix: url_prefix__,
+                    delay_num_blocks: delay_num_blocks__,
                 })
             }
         }
@@ -180,12 +200,18 @@ impl serde::Serialize for EtherscanFetcherConfig {
         if !self.chains.is_empty() {
             len += 1;
         }
+        if self.skip_validation.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.EtherscanFetcherConfig", len)?;
         if let Some(v) = self.concurrency.as_ref() {
             struct_ser.serialize_field("concurrency", v)?;
         }
         if !self.chains.is_empty() {
             struct_ser.serialize_field("chains", &self.chains)?;
+        }
+        if let Some(v) = self.skip_validation.as_ref() {
+            struct_ser.serialize_field("skipValidation", v)?;
         }
         struct_ser.end()
     }
@@ -199,12 +225,15 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
         const FIELDS: &[&str] = &[
             "concurrency",
             "chains",
+            "skip_validation",
+            "skipValidation",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Concurrency,
             Chains,
+            SkipValidation,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -228,6 +257,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
                         match value {
                             "concurrency" => Ok(GeneratedField::Concurrency),
                             "chains" => Ok(GeneratedField::Chains),
+                            "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -249,6 +279,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
             {
                 let mut concurrency__ = None;
                 let mut chains__ = None;
+                let mut skip_validation__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Concurrency => {
@@ -268,11 +299,18 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
                                     .into_iter().map(|(k,v)| (k.0, v)).collect()
                             );
                         }
+                        GeneratedField::SkipValidation => {
+                            if skip_validation__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("skipValidation"));
+                            }
+                            skip_validation__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(EtherscanFetcherConfig {
                     concurrency: concurrency__,
                     chains: chains__.unwrap_or_default(),
+                    skip_validation: skip_validation__,
                 })
             }
         }
@@ -287,6 +325,9 @@ impl serde::Serialize for FetcherConfig {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
+        if self.packer.is_some() {
+            len += 1;
+        }
         if self.indexer.is_some() {
             len += 1;
         }
@@ -297,6 +338,9 @@ impl serde::Serialize for FetcherConfig {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.FetcherConfig", len)?;
+        if let Some(v) = self.packer.as_ref() {
+            struct_ser.serialize_field("packer", v)?;
+        }
         if let Some(v) = self.indexer.as_ref() {
             struct_ser.serialize_field("indexer", v)?;
         }
@@ -316,6 +360,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "packer",
             "indexer",
             "etherscan",
             "provider",
@@ -323,6 +368,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
+            Packer,
             Indexer,
             Etherscan,
             Provider,
@@ -347,6 +393,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
                         E: serde::de::Error,
                     {
                         match value {
+                            "packer" => Ok(GeneratedField::Packer),
                             "indexer" => Ok(GeneratedField::Indexer),
                             "etherscan" => Ok(GeneratedField::Etherscan),
                             "provider" => Ok(GeneratedField::Provider),
@@ -369,11 +416,18 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
                 where
                     V: serde::de::MapAccess<'de>,
             {
+                let mut packer__ = None;
                 let mut indexer__ = None;
                 let mut etherscan__ = None;
                 let mut provider__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
+                        GeneratedField::Packer => {
+                            if packer__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("packer"));
+                            }
+                            packer__ = map.next_value()?;
+                        }
                         GeneratedField::Indexer => {
                             if indexer__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("indexer"));
@@ -395,6 +449,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
                     }
                 }
                 Ok(FetcherConfig {
+                    packer: packer__,
                     indexer: indexer__,
                     etherscan: etherscan__,
                     provider: provider__,
@@ -503,6 +558,9 @@ impl serde::Serialize for IndexerFetcherConfig {
         if self.filter_size.is_some() {
             len += 1;
         }
+        if self.skip_validation.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.IndexerFetcherConfig", len)?;
         if let Some(v) = self.url.as_ref() {
             struct_ser.serialize_field("url", v)?;
@@ -512,6 +570,9 @@ impl serde::Serialize for IndexerFetcherConfig {
         }
         if let Some(v) = self.filter_size.as_ref() {
             struct_ser.serialize_field("filterSize", ToString::to_string(&v).as_str())?;
+        }
+        if let Some(v) = self.skip_validation.as_ref() {
+            struct_ser.serialize_field("skipValidation", v)?;
         }
         struct_ser.end()
     }
@@ -528,6 +589,8 @@ impl<'de> serde::Deserialize<'de> for IndexerFetcherConfig {
             "timeoutMs",
             "filter_size",
             "filterSize",
+            "skip_validation",
+            "skipValidation",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -535,6 +598,7 @@ impl<'de> serde::Deserialize<'de> for IndexerFetcherConfig {
             Url,
             TimeoutMs,
             FilterSize,
+            SkipValidation,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -559,6 +623,7 @@ impl<'de> serde::Deserialize<'de> for IndexerFetcherConfig {
                             "url" => Ok(GeneratedField::Url),
                             "timeoutMs" | "timeout_ms" => Ok(GeneratedField::TimeoutMs),
                             "filterSize" | "filter_size" => Ok(GeneratedField::FilterSize),
+                            "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -581,6 +646,7 @@ impl<'de> serde::Deserialize<'de> for IndexerFetcherConfig {
                 let mut url__ = None;
                 let mut timeout_ms__ = None;
                 let mut filter_size__ = None;
+                let mut skip_validation__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Url => {
@@ -605,12 +671,19 @@ impl<'de> serde::Deserialize<'de> for IndexerFetcherConfig {
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
+                        GeneratedField::SkipValidation => {
+                            if skip_validation__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("skipValidation"));
+                            }
+                            skip_validation__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(IndexerFetcherConfig {
                     url: url__,
                     timeout_ms: timeout_ms__,
                     filter_size: filter_size__,
+                    skip_validation: skip_validation__,
                 })
             }
         }
@@ -787,6 +860,98 @@ impl<'de> serde::Deserialize<'de> for LoaderConfig {
         deserializer.deserialize_struct("mystiko.loader.v1.LoaderConfig", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for PackerFetcherConfig {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.skip_validation.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.PackerFetcherConfig", len)?;
+        if let Some(v) = self.skip_validation.as_ref() {
+            struct_ser.serialize_field("skipValidation", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for PackerFetcherConfig {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "skip_validation",
+            "skipValidation",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            SkipValidation,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = PackerFetcherConfig;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.loader.v1.PackerFetcherConfig")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<PackerFetcherConfig, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut skip_validation__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::SkipValidation => {
+                            if skip_validation__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("skipValidation"));
+                            }
+                            skip_validation__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(PackerFetcherConfig {
+                    skip_validation: skip_validation__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.loader.v1.PackerFetcherConfig", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for ProviderFetcherChainConfig {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -798,9 +963,23 @@ impl serde::Serialize for ProviderFetcherChainConfig {
         if !self.urls.is_empty() {
             len += 1;
         }
+        if self.delay_num_blocks.is_some() {
+            len += 1;
+        }
+        if self.provider_type.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.ProviderFetcherChainConfig", len)?;
         if !self.urls.is_empty() {
             struct_ser.serialize_field("urls", &self.urls)?;
+        }
+        if let Some(v) = self.delay_num_blocks.as_ref() {
+            struct_ser.serialize_field("delayNumBlocks", ToString::to_string(&v).as_str())?;
+        }
+        if let Some(v) = self.provider_type.as_ref() {
+            let v = super::super::common::v1::ProviderType::from_i32(*v)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
+            struct_ser.serialize_field("providerType", &v)?;
         }
         struct_ser.end()
     }
@@ -813,11 +992,17 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherChainConfig {
     {
         const FIELDS: &[&str] = &[
             "urls",
+            "delay_num_blocks",
+            "delayNumBlocks",
+            "provider_type",
+            "providerType",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Urls,
+            DelayNumBlocks,
+            ProviderType,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -840,6 +1025,8 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherChainConfig {
                     {
                         match value {
                             "urls" => Ok(GeneratedField::Urls),
+                            "delayNumBlocks" | "delay_num_blocks" => Ok(GeneratedField::DelayNumBlocks),
+                            "providerType" | "provider_type" => Ok(GeneratedField::ProviderType),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -860,6 +1047,8 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherChainConfig {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut urls__ = None;
+                let mut delay_num_blocks__ = None;
+                let mut provider_type__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Urls => {
@@ -868,10 +1057,26 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherChainConfig {
                             }
                             urls__ = Some(map.next_value()?);
                         }
+                        GeneratedField::DelayNumBlocks => {
+                            if delay_num_blocks__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("delayNumBlocks"));
+                            }
+                            delay_num_blocks__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::ProviderType => {
+                            if provider_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("providerType"));
+                            }
+                            provider_type__ = map.next_value::<::std::option::Option<super::super::common::v1::ProviderType>>()?.map(|x| x as i32);
+                        }
                     }
                 }
                 Ok(ProviderFetcherChainConfig {
                     urls: urls__.unwrap_or_default(),
+                    delay_num_blocks: delay_num_blocks__,
+                    provider_type: provider_type__,
                 })
             }
         }
@@ -895,6 +1100,9 @@ impl serde::Serialize for ProviderFetcherConfig {
         if !self.chains.is_empty() {
             len += 1;
         }
+        if self.skip_validation.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.ProviderFetcherConfig", len)?;
         if let Some(v) = self.concurrency.as_ref() {
             struct_ser.serialize_field("concurrency", v)?;
@@ -904,6 +1112,9 @@ impl serde::Serialize for ProviderFetcherConfig {
         }
         if !self.chains.is_empty() {
             struct_ser.serialize_field("chains", &self.chains)?;
+        }
+        if let Some(v) = self.skip_validation.as_ref() {
+            struct_ser.serialize_field("skipValidation", v)?;
         }
         struct_ser.end()
     }
@@ -919,6 +1130,8 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
             "timeout_ms",
             "timeoutMs",
             "chains",
+            "skip_validation",
+            "skipValidation",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -926,6 +1139,7 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
             Concurrency,
             TimeoutMs,
             Chains,
+            SkipValidation,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -950,6 +1164,7 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                             "concurrency" => Ok(GeneratedField::Concurrency),
                             "timeoutMs" | "timeout_ms" => Ok(GeneratedField::TimeoutMs),
                             "chains" => Ok(GeneratedField::Chains),
+                            "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -972,6 +1187,7 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                 let mut concurrency__ = None;
                 let mut timeout_ms__ = None;
                 let mut chains__ = None;
+                let mut skip_validation__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Concurrency => {
@@ -999,12 +1215,19 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                                     .into_iter().map(|(k,v)| (k.0, v)).collect()
                             );
                         }
+                        GeneratedField::SkipValidation => {
+                            if skip_validation__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("skipValidation"));
+                            }
+                            skip_validation__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(ProviderFetcherConfig {
                     concurrency: concurrency__,
                     timeout_ms: timeout_ms__,
                     chains: chains__.unwrap_or_default(),
+                    skip_validation: skip_validation__,
                 })
             }
         }

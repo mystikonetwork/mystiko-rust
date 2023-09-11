@@ -4,7 +4,6 @@ use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
-use mystiko_dataloader::validator::rule::RuleValidatorError;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use std::str::FromStr;
 
@@ -42,11 +41,7 @@ async fn test_wrong_concurrency() {
         .contracts_data(contract_data.clone())
         .build();
     let result = validator.validate(&data, &option).await;
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(RuleValidatorError::InvalidValidateConcurrencyError.to_string().as_str()));
+    assert!(result.is_ok());
 }
 
 #[tokio::test]

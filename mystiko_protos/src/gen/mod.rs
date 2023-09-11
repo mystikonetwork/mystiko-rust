@@ -1,5 +1,13 @@
 // @generated
 pub mod mystiko {
+    pub mod common {
+        #[cfg(feature = "mystiko-common-v1")]
+        // @@protoc_insertion_point(attribute:mystiko.common.v1)
+        pub mod v1 {
+            include!("mystiko.common.v1.rs");
+            // @@protoc_insertion_point(mystiko.common.v1)
+        }
+    }
     pub mod config {
         #[cfg(feature = "mystiko-config-v1")]
         // @@protoc_insertion_point(attribute:mystiko.config.v1)

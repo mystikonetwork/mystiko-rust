@@ -36,13 +36,6 @@ where
     C: RuleChecker<R>,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
-        if option.validate_concurrency < 1 {
-            return Err(<RuleValidatorError as Into<anyhow::Error>>::into(
-                RuleValidatorError::InvalidValidateConcurrencyError,
-            )
-            .into());
-        }
-
         if data.contracts_data.is_empty() {
             return Err(
                 <RuleValidatorError as Into<anyhow::Error>>::into(RuleValidatorError::EmptyValidateDataError).into(),
@@ -79,7 +72,8 @@ where
         }
 
         if !validate_data.is_empty() {
-            let chunk_nums = (validate_data.len() + option.validate_concurrency - 1) / option.validate_concurrency;
+            let validate_concurrency = std::cmp::max(1, option.validate_concurrency);
+            let chunk_nums = (validate_data.len() + validate_concurrency - 1) / validate_concurrency;
             let chunks = validate_data.chunks(chunk_nums);
             let mut group_task = Vec::with_capacity(chunks.len());
             for chunk in chunks {

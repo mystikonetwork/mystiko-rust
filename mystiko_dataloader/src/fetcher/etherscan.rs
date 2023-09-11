@@ -16,10 +16,6 @@ use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum EtherscanFetcherError {
-    #[error("no fetcher chain config found for chain id: {0}")]
-    MissFetcherChainConfigError(u64),
-    #[error("no fetcher chain config api key found for chain id: {0}")]
-    MissFetcherChainConfigApiKeyError(u64),
     #[error("no chain config found for chain id: {0}")]
     UnsupportedChainError(u64),
 }
@@ -64,22 +60,12 @@ where
 }
 
 impl<R> EtherscanFetcher<R> {
-    pub fn from_config<C: Into<EtherscanFetcherConfig>>(
-        chain_id: u64,
-        mystiko_config: Arc<MystikoConfig>,
-        config: C,
-    ) -> Result<Self> {
+    pub fn from_config<C: Into<EtherscanFetcherConfig>>(mystiko_config: Arc<MystikoConfig>, config: C) -> Result<Self> {
         let config = config.into();
         let mut clients = Vec::new();
-        if config.chains.get(&chain_id).is_none() {
-            return Err(EtherscanFetcherError::MissFetcherChainConfigError(chain_id).into());
-        }
 
         for (chain_id, fetcher_chain_cfg) in config.chains.iter() {
-            let api_key = fetcher_chain_cfg
-                .api_key
-                .as_ref()
-                .ok_or(EtherscanFetcherError::MissFetcherChainConfigApiKeyError(*chain_id))?;
+            let api_key = fetcher_chain_cfg.api_key.clone().unwrap_or_default();
             let chain_config = mystiko_config
                 .find_chain(*chain_id)
                 .ok_or(EtherscanFetcherError::UnsupportedChainError(*chain_id))?;

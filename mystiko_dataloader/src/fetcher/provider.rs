@@ -23,9 +23,10 @@ use mystiko_ethers::{
     ChainProvidersOptions, Provider, ProviderOptions, ProviderPool, Providers, ProvidersOptions, QuorumProviderOptions,
 };
 use mystiko_etherscan_client::{Log, LogMeta};
+use mystiko_protos::common::v1::ProviderType;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::loader::v1::ProviderFetcherConfig;
-use mystiko_types::ProviderType;
+
 use mystiko_utils::convert::u256_to_bytes;
 use rustc_hex::FromHexError;
 use std::sync::Arc;
@@ -35,6 +36,8 @@ use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum ProviderFetcherError {
+    #[error("provider type error: {0}")]
+    ProviderTypeError(i32),
     #[error(transparent)]
     FromHexError(#[from] FromHexError),
     #[error(transparent)]
@@ -156,8 +159,13 @@ impl ChainProvidersOptions for FetcherChainProvidersOptions {
     async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>> {
         if let Some(chain_cfg) = self.mystiko_config.find_chain(chain_id) {
             let mut providers_options: Vec<ProviderOptions> = vec![];
+            let mut provider_type = ProviderType::Quorum;
 
             if let Some(fetcher_cfg) = self.fetcher_config.chains.get(&chain_id) {
+                if let Some(t) = fetcher_cfg.provider_type {
+                    provider_type = ProviderType::from_i32(t).ok_or(ProviderFetcherError::ProviderTypeError(t))?;
+                }
+
                 for url in &fetcher_cfg.urls {
                     let provider_options = match self.fetcher_config.timeout_ms {
                         None => ProviderOptions::builder().url(url.clone()).build(),
@@ -187,7 +195,10 @@ impl ChainProvidersOptions for FetcherChainProvidersOptions {
                 }
             }
 
-            match chain_cfg.provider_type() {
+            match provider_type {
+                ProviderType::Unspecified => Err(ProviderFetcherError::ProviderTypeError(
+                    ProviderType::Unspecified as i32,
+                ))?,
                 ProviderType::Failover => Ok(Some(ProvidersOptions::Failover(providers_options))),
                 ProviderType::Quorum => {
                     let quorum_options = QuorumProviderOptions::builder()

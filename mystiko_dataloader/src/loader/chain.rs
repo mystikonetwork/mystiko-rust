@@ -5,7 +5,8 @@ use crate::error::DataLoaderError;
 use crate::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions};
 use crate::handler::{DataHandler, HandleOption};
 use crate::loader::{
-    DataLoader, DataLoaderResult, LoadOption, LoaderConfigOptions, DEFAULT_DELAY_BLOCK, DEFAULT_VALIDATOR_CONCURRENCY,
+    DataLoader, DataLoaderConfigResult, DataLoaderResult, LoadOption, LoaderConfigOptions, DEFAULT_DELAY_BLOCK,
+    DEFAULT_VALIDATOR_CONCURRENCY,
 };
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
@@ -30,10 +31,20 @@ pub struct ChainDataLoader<
     chain_id: u64,
     provider: Arc<P>,
     #[builder(default = vec![])]
-    fetchers: Vec<Arc<F>>,
+    fetchers: Vec<Arc<ChainDataFetcher<R, F>>>,
     #[builder(default = vec![])]
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
+    #[builder(default = Default::default())]
+    _phantom: std::marker::PhantomData<R>,
+}
+
+#[derive(Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct ChainDataFetcher<R, F = Box<dyn DataFetcher<R>>> {
+    fetcher: Arc<F>,
+    #[builder(default = false)]
+    skip_validation: bool,
     #[builder(default = Default::default())]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -71,23 +82,23 @@ where
 }
 
 #[async_trait]
-pub trait AsyncFrom<'a, T>: Sized {
-    async fn from_config(item: &'a T) -> DataLoaderResult<Self>;
+pub trait FromConfig<'a, T>: Sized {
+    async fn from_config(item: &'a T) -> DataLoaderConfigResult<Self>;
 }
 
 #[async_trait]
-impl<'a, R> AsyncFrom<'a, LoaderConfigOptions<R>> for ChainDataLoader<R>
+impl<'a, R> FromConfig<'a, LoaderConfigOptions<R>> for ChainDataLoader<R>
 where
     R: LoadedData + 'static,
 {
-    async fn from_config(options: &'a LoaderConfigOptions<R>) -> DataLoaderResult<Self> {
+    async fn from_config(options: &'a LoaderConfigOptions<R>) -> DataLoaderConfigResult<Self> {
         let mystiko_config = options.build_mystiko_config().await?;
         let providers = match &options.providers {
             None => options.build_providers(mystiko_config.clone())?,
             Some(p) => p.clone(),
         };
 
-        let mut fetchers = options.build_fetchers(options.chain_id, mystiko_config.clone(), providers.clone())?;
+        let mut fetchers = options.build_fetchers(mystiko_config.clone(), providers.clone())?;
         fetchers.extend_from_slice(&options.fetchers);
         let mut validators = options.build_validators(providers.clone(), options.handler.clone())?;
         validators.extend_from_slice(&options.validators);
@@ -134,8 +145,8 @@ where
             .contract_options(contract_options)
             .build();
 
-        for (index, fetcher) in self.fetchers.iter().enumerate() {
-            let mut chain_data = match self.fetch(fetcher, &fetch_option).await {
+        for (index, chain_fetcher) in self.fetchers.iter().enumerate() {
+            let mut chain_data = match self.fetch(&chain_fetcher.fetcher, &fetch_option).await {
                 Err(e) => {
                     warn!(
                         "fetcher(index={:?}, name={:?}) raised error {:?}, try next fetcher",
@@ -148,15 +159,17 @@ where
                 Ok(d) => d,
             };
 
-            if let Err(e) = self.validate(&mut chain_data, params.option).await {
-                warn!(
-                    "validate fetcher(index={:?}, name={:?}) data raised error {:?}, try next fetcher",
-                    index,
-                    type_name_of_object::<F>(),
-                    e
-                );
-                continue;
-            };
+            if !chain_fetcher.skip_validation {
+                if let Err(e) = self.validate(&mut chain_data, params.option).await {
+                    warn!(
+                        "validate fetcher(index={:?}, name={:?}) data raised error {:?}, try next fetcher",
+                        index,
+                        type_name_of_object::<F>(),
+                        e
+                    );
+                    continue;
+                };
+            }
 
             if let Err(e) = self.handle(&chain_data).await {
                 warn!(

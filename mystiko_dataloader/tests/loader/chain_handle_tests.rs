@@ -1,4 +1,4 @@
-use crate::loader::{contract_data_partial_eq, create_shared_loader, loader_load};
+use crate::loader::{contract_data_partial_eq, create_loader, loader_load};
 use ethers_core::types::U64;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
@@ -10,7 +10,7 @@ async fn test_loader_start_shared_handler() {
     let chain_id = 1_u64;
     let delay_block = 2;
 
-    let (cfg, loader, fetchers, _, handler, mock_provider) = create_shared_loader(chain_id, 1, 1).await;
+    let (cfg, loader, fetchers, _, handler, mock_provider) = create_loader(chain_id, 1, 1, false).await;
     let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
     let target_block = start_block + 1000;
 
