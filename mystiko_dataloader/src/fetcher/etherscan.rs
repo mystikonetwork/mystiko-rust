@@ -1,13 +1,15 @@
 use crate::data::{ChainResult, ContractData, ContractResult, Data, DataType, FullData, LiteData, LoadedData};
-use crate::fetcher::{DataFetcher, FetchOptions, FetchResult, FetcherError};
+use crate::fetcher::{ChainLoadedBlockOptions, DataFetcher, FetchOptions, FetchResult, FetcherError};
 use anyhow::Result;
 use async_trait::async_trait;
 use log::info;
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
+use mystiko_config::MystikoConfig;
 use mystiko_etherscan_client::{EtherScanClient, Event, GetLogsOptions};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::u256_to_bytes;
+use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
@@ -24,6 +26,8 @@ pub struct EtherscanFetcher<R> {
     etherscan_clients: Vec<Arc<EtherScanClient>>,
     #[builder(default = Some(1))]
     concurrency: Option<u32>,
+    #[builder(default)]
+    chain_delay_num_blocks: HashMap<u64, u64>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -38,13 +42,9 @@ where
             "chain={} start fetch data, start_block={}, target_block={}",
             option.chain_id, option.start_block, option.target_block
         );
-        let client =
-            get_etherscan_client(option.chain_id, &self.etherscan_clients).map_err(FetcherError::AnyhowError)?;
-        let current_block_num: u64 = client
-            .get_block_number()
-            .await
-            .map_err(|err| FetcherError::AnyhowError(err.into()))?
-            .as_u64();
+        let (current_block_num, client) = self
+            .chain_safe_current_block(option.chain_id, option.config.clone())
+            .await?;
         let options: Vec<GetLogsOptions> = to_options(option, current_block_num).map_err(FetcherError::AnyhowError)?;
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
@@ -54,6 +54,45 @@ where
                     .map_err(FetcherError::AnyhowError)?,
             )
             .build())
+    }
+
+    async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64, FetcherError> {
+        let (current_safe_block, _) = self
+            .chain_safe_current_block(options.chain_id, options.config.clone())
+            .await?;
+        Ok(current_safe_block)
+    }
+}
+
+impl<R> EtherscanFetcher<R>
+where
+    R: LoadedData,
+{
+    async fn chain_safe_current_block(
+        &self,
+        chain_id: u64,
+        config: Arc<MystikoConfig>,
+    ) -> Result<(u64, Arc<EtherScanClient>), FetcherError> {
+        let client = get_etherscan_client(chain_id, &self.etherscan_clients).map_err(FetcherError::AnyhowError)?;
+        let delay_num_blocks = if let Some(delay_blocks) = self.chain_delay_num_blocks.get(&chain_id) {
+            *delay_blocks
+        } else {
+            config
+                .find_chain(chain_id)
+                .map(|c| c.event_delay_blocks())
+                .unwrap_or_default()
+        };
+        let current_block = client
+            .get_block_number()
+            .await
+            .map_err(|err| FetcherError::AnyhowError(err.into()))?
+            .as_u64();
+        let current_safe_block = if current_block >= delay_num_blocks {
+            current_block - delay_num_blocks
+        } else {
+            0
+        };
+        Ok((current_safe_block, client))
     }
 }
 
@@ -126,6 +165,7 @@ async fn group_fetch<R: LoadedData>(
     options: Vec<GetLogsOptions>,
     concurrency: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
+    let concurrency = if concurrency == 0 { 1 } else { concurrency };
     let chunk_nums = (options.len() + concurrency - 1) / concurrency;
     let chunks = options.chunks(chunk_nums);
     let mut group_tasks = Vec::with_capacity(chunks.len());

@@ -87,7 +87,7 @@ fn default_config() -> RawChainConfig {
         .explorer_url("https://goerli.etherscan.io".to_string())
         .explorer_api_url("https://api-goerli.etherscan.io".to_string())
         .explorer_prefix("/tx/%tx%".to_string())
-        .event_filter_block_backoff(200)
+        .event_delay_blocks(200)
         .event_filter_size(1000)
         .indexer_filter_size(10000)
         .providers(vec![Arc::new(provider_config)])

@@ -1,5 +1,7 @@
 use crate::data::{ChainResult, ContractData, ContractResult, DataType, FullData, LiteData, LoadedData};
-use crate::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions, FetchResult};
+use crate::fetcher::{
+    ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher, FetchOptions, FetchResult, FetcherError,
+};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
@@ -45,6 +47,14 @@ where
         let query = to_chain_query(option);
         let chain_data = self.query_chain(query).await?;
         Ok(to_fetch_result::<R>(option, chain_data)?)
+    }
+
+    async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64, FetcherError> {
+        Ok(self
+            .client
+            .query_chain_loaded_block(options.chain_id)
+            .await
+            .map_err(FetcherError::AnyhowError)?)
     }
 }
 

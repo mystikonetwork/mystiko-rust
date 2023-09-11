@@ -6,7 +6,7 @@ use crate::data::{Data, DataType};
 use crate::data::{FullData, LiteData};
 use crate::fetcher::error::FetcherError;
 use crate::fetcher::types::{DataFetcher, FetchOptions, FetchResult};
-use crate::fetcher::FetcherLogOptions;
+use crate::fetcher::{ChainLoadedBlockOptions, FetcherLogOptions};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_contract::EthEvent;
@@ -17,11 +17,13 @@ use ethers_providers::ProviderError;
 use log::{error, info};
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
+use mystiko_config::MystikoConfig;
 use mystiko_ethers::{Provider, Providers};
 use mystiko_etherscan_client::{Log, LogMeta};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::u256_to_bytes;
 use rustc_hex::FromHexError;
+use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
@@ -42,6 +44,8 @@ pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
     providers: Arc<P>,
     #[builder(default = Some(1))]
     concurrency: Option<u32>,
+    #[builder(default)]
+    chain_delay_num_blocks: HashMap<u64, u64>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -76,15 +80,10 @@ where
     P: Providers,
 {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
-        let provider = self.providers.get_provider(option.chain_id).await?;
-        let fetch_options = to_options(
-            option,
-            get_block_num(Arc::clone(&provider))
-                .await
-                .map_err(FetcherError::AnyhowError)?
-                .as_u64(),
-            Arc::clone(&provider),
-        )?;
+        let (current_block, provider) = self
+            .chain_safe_current_block(option.chain_id, option.config.clone())
+            .await?;
+        let fetch_options = to_options(option, current_block, provider.clone())?;
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
             .contract_results(
@@ -93,6 +92,49 @@ where
                     .map_err(FetcherError::AnyhowError)?,
             )
             .build())
+    }
+
+    async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64, FetcherError> {
+        let (current_block, _) = self
+            .chain_safe_current_block(options.chain_id, options.config.clone())
+            .await?;
+        Ok(current_block)
+    }
+}
+
+impl<R, P> ProviderFetcher<R, P>
+where
+    R: LoadedData,
+    P: Providers,
+{
+    async fn chain_safe_current_block(
+        &self,
+        chain_id: u64,
+        config: Arc<MystikoConfig>,
+    ) -> Result<(u64, Arc<Provider>), FetcherError> {
+        let provider = self
+            .providers
+            .get_provider(chain_id)
+            .await
+            .map_err(FetcherError::AnyhowError)?;
+        let delay_num_blocks = if let Some(delay_blocks) = self.chain_delay_num_blocks.get(&chain_id) {
+            *delay_blocks
+        } else {
+            config
+                .find_chain(chain_id)
+                .map(|c| c.event_delay_blocks())
+                .unwrap_or_default()
+        };
+        let current_block = get_block_num(provider.clone())
+            .await
+            .map_err(FetcherError::AnyhowError)?
+            .as_u64();
+        let current_safe_block = if current_block >= delay_num_blocks {
+            current_block - delay_num_blocks
+        } else {
+            0
+        };
+        Ok((current_safe_block, provider))
     }
 }
 
@@ -168,6 +210,7 @@ async fn fetch_contracts<R: LoadedData>(
     options: Vec<ProviderContractFetchOptions>,
     concurrency: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
+    let concurrency = if concurrency == 0 { 1 } else { concurrency };
     let chunk_nums = (options.len() + concurrency - 1) / concurrency;
     let chunks = options.chunks(chunk_nums);
     let mut group_tasks = Vec::with_capacity(chunks.len());
