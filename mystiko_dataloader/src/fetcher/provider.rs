@@ -20,6 +20,7 @@ use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_ethers::{Provider, Providers};
 use mystiko_etherscan_client::{Log, LogMeta};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
+use mystiko_types::{BridgeType, ContractType};
 use mystiko_utils::convert::u256_to_bytes;
 use rustc_hex::FromHexError;
 use std::sync::Arc;
@@ -64,6 +65,8 @@ struct CommitmentDataEvent {
 struct ProviderContractFetchOptions {
     pub(crate) chain_id: u64,
     pub(crate) contract_address: String,
+    pub(crate) contract_type: ContractType,
+    pub(crate) bridge_type: BridgeType,
     pub(crate) start_block: u64,
     pub(crate) actual_target_block: u64,
     pub(crate) event_filter_size: u64,
@@ -132,6 +135,8 @@ fn to_options(
                     ProviderContractFetchOptions::builder()
                         .chain_id(option.chain_id)
                         .contract_address(contract_config.address().to_string())
+                        .contract_type(contract_config.contract_type().clone())
+                        .bridge_type(contract_config.bridge_type().clone())
                         .start_block(option.start_block)
                         .actual_target_block(if option.target_block > current_block_num {
                             current_block_num
@@ -152,6 +157,8 @@ fn to_options(
                     ProviderContractFetchOptions::builder()
                         .chain_id(option.chain_id)
                         .contract_address(contract_option.contract_config.address().to_string())
+                        .contract_type(contract_option.contract_config.contract_type().clone())
+                        .bridge_type(contract_option.contract_config.bridge_type().clone())
                         .start_block(contract_option.start_block.unwrap_or(option.start_block))
                         .actual_target_block(if target_block > current_block_num {
                             current_block_num
@@ -206,6 +213,7 @@ async fn fetch_contract<R: LoadedData>(
 
 async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOptions) -> Result<ContractData<R>> {
     let commitments = fetch_commitments(option).await?;
+
     let data = match R::data_type() {
         DataType::Full => {
             let fulldata = FullData::builder()
@@ -253,14 +261,25 @@ async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOpti
 }
 
 async fn fetch_commitments(option: &ProviderContractFetchOptions) -> Result<Vec<Commitment>> {
-    build_commitments(CommitmentDataEvent {
-        crosschain_events: fetch_logs::<CommitmentCrossChainFilter>(option).await?,
-        queued_events: fetch_logs::<CommitmentQueuedFilter>(option).await?,
-        included_events: fetch_logs::<CommitmentIncludedFilter>(option).await?,
-    })
+    match (&option.contract_type, &option.bridge_type) {
+        (ContractType::Pool, _) => build_commitments(CommitmentDataEvent {
+            crosschain_events: vec![],
+            queued_events: fetch_logs::<CommitmentQueuedFilter>(option).await?,
+            included_events: fetch_logs::<CommitmentIncludedFilter>(option).await?,
+        }),
+        (ContractType::Deposit, BridgeType::Loop) => Ok(vec![]),
+        (ContractType::Deposit, _) => build_commitments(CommitmentDataEvent {
+            crosschain_events: fetch_logs::<CommitmentCrossChainFilter>(option).await?,
+            queued_events: vec![],
+            included_events: vec![],
+        }),
+    }
 }
 
 async fn fetch_nullifiers(option: &ProviderContractFetchOptions) -> Result<Vec<Nullifier>> {
+    if option.contract_type == ContractType::Deposit {
+        return Ok(vec![]);
+    }
     build_nullifiers(fetch_logs::<CommitmentSpentFilter>(option).await?)
 }
 
