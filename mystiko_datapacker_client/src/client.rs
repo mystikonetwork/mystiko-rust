@@ -22,6 +22,8 @@ pub struct ChainResponse<D> {
 #[async_trait]
 pub trait DataPackerClient<D>: Send + Sync {
     async fn query_chain(&self, query: &ChainQuery) -> Result<ChainResponse<D>>;
+
+    async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<u64>;
 }
 
 #[async_trait]
@@ -31,5 +33,9 @@ where
 {
     async fn query_chain(&self, query: &ChainQuery) -> Result<ChainResponse<D>> {
         self.as_ref().query_chain(query).await
+    }
+
+    async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<u64> {
+        self.as_ref().query_chain_loaded_block(chain_id).await
     }
 }

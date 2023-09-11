@@ -3,7 +3,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
 use mystiko_config::MystikoConfig;
-use mystiko_datapacker_common::v1::PathSchema as PathSchemaV1;
+use mystiko_datapacker_common::v1::{GranularityIndex, PathSchema as PathSchemaV1};
 use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSum, ZstdCompression};
 use mystiko_protos::data::v1::{ChainData, ContractData};
 use mystiko_types::{PackerChecksum, PackerCompression};
@@ -152,6 +152,28 @@ where
             Err(anyhow::anyhow!(DataPackerClientError::UnsupportedChainError(
                 query.chain_id
             )))
+        }
+    }
+
+    async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<u64> {
+        if let Some(chain_config) = self.config.find_chain(chain_id) {
+            let min_granularity = chain_config.min_granularity()?;
+            let index_url = format!(
+                "{}{}",
+                self.url,
+                self.path_schema
+                    .granularity_index(chain_id, min_granularity)
+                    .to_string_lossy()
+            );
+            if let Some(index_bytes) = self.http_get(&index_url).await? {
+                if !index_bytes.is_empty() {
+                    let index = serde_json::from_slice::<GranularityIndex>(&index_bytes)?;
+                    return Ok(index.saved_block);
+                }
+            }
+            return Ok(chain_config.start_block());
+        } else {
+            Err(anyhow::anyhow!(DataPackerClientError::UnsupportedChainError(chain_id)))
         }
     }
 }

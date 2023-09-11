@@ -4,12 +4,13 @@ use ethers_core::types::U64;
 use ethers_providers::MockResponse;
 use ethers_providers::{MockError, MockProvider, RetryClientBuilder, RetryPolicy};
 use log::LevelFilter;
-use mystiko_config::MystikoConfig;
+use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig};
 use mystiko_dataloader::data::{FullData, LiteData};
 use mystiko_dataloader::fetcher::{
-    ContractFetchOptions, DataFetcher, FetchOptions, ProviderFetcher, ProviderFetcherError,
+    ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher, FetchOptions, ProviderFetcher, ProviderFetcherError,
 };
 use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
+use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::time::Duration;
 
@@ -171,6 +172,76 @@ async fn test_litedata_fetch() {
     let data = result.data.as_ref().unwrap();
     assert_eq!(data.commitments.len(), 3);
     assert_eq!(data.commitments[0].block_number, 7969470);
+}
+
+#[tokio::test]
+async fn test_chain_loaded_block() {
+    let provider_fetcher: ProviderFetcher<LiteData, TestProvders> = Arc::new(TestProvders).into();
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let options = ChainLoadedBlockOptions::builder()
+        .chain_id(56u64)
+        .config(mystiko_config.clone())
+        .build();
+    assert_eq!(
+        provider_fetcher.chain_loaded_block(&options).await.unwrap(),
+        45565267u64
+    );
+
+    let mut raw_config = create_raw_from_file::<RawMystikoConfig>("tests/files/config/mystiko.json")
+        .await
+        .unwrap();
+    let mut chain_configs = vec![];
+    while !raw_config.chains.is_empty() {
+        let mut chain_config = raw_config.chains.remove(0).as_ref().clone();
+        if chain_config.chain_id == 137u64 {
+            chain_config.event_delay_blocks = 100u64;
+        }
+        chain_configs.push(Arc::new(chain_config));
+    }
+    raw_config.chains = chain_configs;
+    let options = ChainLoadedBlockOptions::builder()
+        .chain_id(137u64)
+        .config(Arc::new(MystikoConfig::from_raw(raw_config).unwrap()))
+        .build();
+    assert_eq!(
+        provider_fetcher.chain_loaded_block(&options).await.unwrap(),
+        45565167u64
+    );
+}
+
+#[tokio::test]
+async fn test_chain_loaded_block_with_delay() {
+    let delay_blocks: HashMap<u64, u64> = [(56u64, 100u64)].into_iter().collect();
+    let provider_fetcher: ProviderFetcher<LiteData, TestProvders> =
+        ProviderFetcher::<LiteData, TestProvders>::builder()
+            .providers(Arc::new(TestProvders))
+            .chain_delay_num_blocks(delay_blocks)
+            .build();
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let options1 = ChainLoadedBlockOptions::builder()
+        .chain_id(56u64)
+        .config(mystiko_config.clone())
+        .build();
+    let options2 = ChainLoadedBlockOptions::builder()
+        .chain_id(137u64)
+        .config(mystiko_config.clone())
+        .build();
+    assert_eq!(
+        provider_fetcher.chain_loaded_block(&options1).await.unwrap(),
+        45565167u64
+    );
+    assert_eq!(
+        provider_fetcher.chain_loaded_block(&options2).await.unwrap(),
+        45565267u64
+    );
 }
 
 #[derive(Debug, Default)]
