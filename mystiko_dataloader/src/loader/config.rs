@@ -34,35 +34,26 @@ pub enum DataLoaderConfigError {
     AnyhowError(#[from] AnyhowError),
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
-pub struct LoaderConfigOptions<
-    R,
-    P = Box<dyn Providers>,
-    F = Box<dyn DataFetcher<R>>,
-    V = Box<dyn DataValidator<R>>,
-    H = Box<dyn DataHandler<R>>,
-> {
+#[derive(TypedBuilder)]
+pub struct LoaderConfigOptions<R, H = Box<dyn DataHandler<R>>> {
     pub chain_id: u64,
     pub config: LoaderConfig,
     pub handler: Arc<H>,
     #[builder(default, setter(strip_option))]
     pub mystiko_config: Option<Arc<MystikoConfig>>,
     #[builder(default, setter(strip_option))]
-    pub providers: Option<Arc<P>>,
+    pub providers: Option<Arc<Box<dyn Providers>>>,
     #[builder(default)]
-    pub fetchers: Vec<Arc<F>>,
+    pub fetchers: Vec<Arc<Box<dyn DataFetcher<R>>>>,
     #[builder(default)]
-    pub validators: Vec<Arc<V>>,
+    pub validators: Vec<Arc<Box<dyn DataValidator<R>>>>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
 }
 
-impl<R, P, F, V, H> LoaderConfigOptions<R, P, F, V, H>
+impl<R, H> LoaderConfigOptions<R, H>
 where
     R: LoadedData + 'static,
-    P: Providers + 'static,
-    F: DataFetcher<R>,
-    V: DataValidator<R>,
     H: DataHandler<R>,
 {
     pub(crate) fn validate_config(&self) -> DataLoaderConfigResult<()> {
@@ -135,7 +126,7 @@ where
     pub(crate) fn build_fetchers(
         &self,
         mystiko_config: Arc<MystikoConfig>,
-        providers: Arc<P>,
+        providers: Arc<Box<dyn Providers>>,
     ) -> DataLoaderConfigResult<FetcherBuildData<R>> {
         let mut fetchers: Vec<Arc<Box<dyn DataFetcher<R>>>> = vec![];
         let mut fetcher_options = HashMap::new();
