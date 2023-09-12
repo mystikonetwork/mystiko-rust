@@ -1,5 +1,6 @@
+use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::Deposit;
-use mystiko_protos::core::v1::{BridgeType, DepositStatus};
+use mystiko_protos::core::v1::DepositStatus;
 use mystiko_utils::convert::biguint_to_bytes;
 use num_bigint::BigUint;
 use prost::Message;
