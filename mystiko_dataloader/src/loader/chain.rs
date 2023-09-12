@@ -22,10 +22,10 @@ use typed_builder::TypedBuilder;
 #[builder(field_defaults(setter(into)))]
 pub struct ChainDataLoader<
     R,
+    H = Box<dyn DataHandler<R>>,
     P = Provider,
     F = Box<dyn DataFetcher<R>>,
     V = Box<dyn DataValidator<R>>,
-    H = Box<dyn DataHandler<R>>,
 > {
     config: Arc<MystikoConfig>,
     chain_id: u64,
@@ -50,13 +50,13 @@ struct ChainLoadParams<'a> {
 }
 
 #[async_trait]
-impl<R, P, F, V, H> DataLoader for ChainDataLoader<R, P, F, V, H>
+impl<R, H, P, F, V> DataLoader for ChainDataLoader<R, H, P, F, V>
 where
     R: LoadedData,
+    H: DataHandler<R>,
     P: Middleware,
     F: DataFetcher<R>,
     V: DataValidator<R>,
-    H: DataHandler<R>,
 {
     async fn load(&self, options: Option<LoadOption>) -> DataLoaderResult<()> {
         let chain_cfg = self.build_chain_config().await?;
@@ -79,11 +79,12 @@ pub trait FromConfig<'a, T>: Sized {
 }
 
 #[async_trait]
-impl<'a, R> FromConfig<'a, LoaderConfigOptions<R>> for ChainDataLoader<R>
+impl<'a, R, H> FromConfig<'a, LoaderConfigOptions<R, H>> for ChainDataLoader<R, H>
 where
     R: LoadedData + 'static,
+    H: DataHandler<R> + 'static,
 {
-    async fn from_config(options: &'a LoaderConfigOptions<R>) -> DataLoaderConfigResult<Self> {
+    async fn from_config(options: &'a LoaderConfigOptions<R, H>) -> DataLoaderConfigResult<Self> {
         options.validate_config()?;
 
         let mystiko_config = options.build_mystiko_config().await?;
@@ -118,13 +119,13 @@ where
     }
 }
 
-impl<R, M, F, V, H> ChainDataLoader<R, M, F, V, H>
+impl<R, H, M, F, V> ChainDataLoader<R, H, M, F, V>
 where
     R: LoadedData,
+    H: DataHandler<R>,
     M: Middleware,
     F: DataFetcher<R>,
     V: DataValidator<R>,
-    H: DataHandler<R>,
 {
     async fn try_load(&self, params: &ChainLoadParams<'_>) -> DataLoaderResult<()> {
         let (chain_filter, contracts) = self.build_loading_contracts(params.cfg).await?;
