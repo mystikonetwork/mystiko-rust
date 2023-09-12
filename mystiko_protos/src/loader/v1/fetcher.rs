@@ -29,7 +29,7 @@ impl From<Option<ProviderFetcherConfig>> for ProviderFetcherConfig {
 impl ProviderFetcherChainConfig {
     pub fn urls(&self) -> Vec<String> {
         let mut entries: Vec<_> = self.urls.iter().collect();
-        entries.sort_by(|a, b| a.0.cmp(&b.0));
+        entries.sort_by(|a, b| a.0.cmp(b.0));
         entries.into_iter().map(|(_, v)| v.clone()).collect()
     }
 }

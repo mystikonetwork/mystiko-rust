@@ -15,7 +15,7 @@ impl From<Option<RuleValidatorConfig>> for RuleValidatorConfig {
 impl RuleValidatorConfig {
     pub fn checkers(&self) -> Vec<i32> {
         let mut entries: Vec<_> = self.checkers.iter().collect();
-        entries.sort_by(|a, b| a.0.cmp(&b.0));
+        entries.sort_by(|a, b| a.0.cmp(b.0));
         entries.into_iter().map(|(_, v)| *v).collect()
     }
 }
