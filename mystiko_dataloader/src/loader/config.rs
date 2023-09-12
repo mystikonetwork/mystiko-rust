@@ -63,34 +63,11 @@ where
     V: DataValidator<R>,
     H: DataHandler<R>,
 {
-    pub fn validate_config(&self) -> DataLoaderConfigResult<()> {
+    pub(crate) fn validate_config(&self) -> DataLoaderConfigResult<()> {
         self.validate_etherscan_fetcher_config()
     }
 
-    fn validate_etherscan_fetcher_config(&self) -> DataLoaderConfigResult<()> {
-        if !self.config.fetchers.contains(&(FetcherType::Etherscan as i32)) {
-            return Ok(());
-        }
-
-        let etherscan_config = self.config.fetcher_config.as_ref().and_then(|c| c.etherscan.as_ref());
-
-        match etherscan_config {
-            None => Err(DataLoaderConfigError::FetcherConfigNotExistError(
-                FetcherType::Etherscan as i32,
-            )),
-            Some(e) => {
-                if e.chains.get(&self.chain_id).is_none() {
-                    Err(DataLoaderConfigError::FetcherConfigNotExistError(
-                        FetcherType::Etherscan as i32,
-                    ))
-                } else {
-                    Ok(())
-                }
-            }
-        }
-    }
-
-    pub fn fetcher_types(&self) -> DataLoaderConfigResult<Vec<FetcherType>> {
+    pub(crate) fn fetcher_types(&self) -> DataLoaderConfigResult<Vec<FetcherType>> {
         if self.config.fetchers.is_empty() {
             if self.fetchers.is_empty() {
                 Ok(vec![FetcherType::Provider])
@@ -108,7 +85,7 @@ where
         }
     }
 
-    pub fn validator_types(&self) -> DataLoaderConfigResult<Vec<ValidatorType>> {
+    pub(crate) fn validator_types(&self) -> DataLoaderConfigResult<Vec<ValidatorType>> {
         let mut validator_types = vec![];
         for validator in self.config.validators.iter() {
             let validator_type =
@@ -118,7 +95,7 @@ where
         Ok(validator_types)
     }
 
-    pub fn rule_validator_checker_types(
+    pub(crate) fn rule_validator_checker_types(
         &self,
         rule_config: &RuleValidatorConfig,
     ) -> DataLoaderConfigResult<Vec<RuleValidatorCheckerType>> {
@@ -131,12 +108,12 @@ where
         Ok(checker_types)
     }
 
-    pub async fn build_mystiko_config(&self) -> DataLoaderConfigResult<Arc<MystikoConfig>> {
+    pub(crate) async fn build_mystiko_config(&self) -> DataLoaderConfigResult<Arc<MystikoConfig>> {
         let mystiko_config = MystikoConfig::from_options(self.config.mystiko_config_options.clone()).await?;
         Ok(Arc::new(mystiko_config))
     }
 
-    pub fn build_providers(
+    pub(crate) fn build_providers(
         &self,
         mystiko_config: Arc<MystikoConfig>,
     ) -> DataLoaderConfigResult<Arc<Box<dyn Providers>>> {
@@ -149,7 +126,7 @@ where
         Ok(Arc::new(Box::new(providers) as Box<dyn Providers>))
     }
 
-    pub fn build_fetchers(
+    pub(crate) fn build_fetchers(
         &self,
         mystiko_config: Arc<MystikoConfig>,
         providers: Arc<P>,
@@ -206,7 +183,7 @@ where
         Ok((fetchers, fetcher_options))
     }
 
-    pub fn build_validators(
+    pub(crate) fn build_validators(
         &self,
         providers: Arc<Box<dyn Providers>>,
         handler: Arc<Box<dyn DataHandler<R>>>,
@@ -229,5 +206,28 @@ where
             }
         }
         Ok(validators)
+    }
+
+    fn validate_etherscan_fetcher_config(&self) -> DataLoaderConfigResult<()> {
+        if !self.config.fetchers.contains(&(FetcherType::Etherscan as i32)) {
+            return Ok(());
+        }
+
+        let etherscan_config = self.config.fetcher_config.as_ref().and_then(|c| c.etherscan.as_ref());
+
+        match etherscan_config {
+            None => Err(DataLoaderConfigError::FetcherConfigNotExistError(
+                FetcherType::Etherscan as i32,
+            )),
+            Some(e) => {
+                if e.chains.get(&self.chain_id).is_none() {
+                    Err(DataLoaderConfigError::FetcherConfigNotExistError(
+                        FetcherType::Etherscan as i32,
+                    ))
+                } else {
+                    Ok(())
+                }
+            }
+        }
     }
 }

@@ -65,7 +65,7 @@ pub struct CommitmentSpentResponse {
     pub contract_id: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize, TypedBuilder)]
+#[derive(Debug, Serialize, Deserialize, TypedBuilder, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DataLoaderRequest {
     pub contract_address: String,

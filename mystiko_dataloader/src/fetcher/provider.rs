@@ -27,6 +27,7 @@ use mystiko_protos::common::v1::ProviderType;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::loader::v1::ProviderFetcherConfig;
 
+use mystiko_types::{BridgeType, ContractType};
 use mystiko_utils::convert::u256_to_bytes;
 use rustc_hex::FromHexError;
 use std::collections::HashMap;
@@ -84,8 +85,11 @@ struct CommitmentDataEvent {
 struct ProviderContractFetchOptions {
     pub(crate) chain_id: u64,
     pub(crate) contract_address: String,
+    pub(crate) contract_type: ContractType,
+    pub(crate) bridge_type: BridgeType,
     pub(crate) start_block: u64,
     pub(crate) actual_target_block: u64,
+    pub(crate) event_filter_size: u64,
     pub(crate) provider: Arc<Provider>,
 }
 
@@ -176,6 +180,7 @@ where
             .iter()
             .filter_map(|(k, v)| v.delay_num_blocks.map(|delay| (*k, delay)))
             .collect();
+        // todo save filter size in map
         ProviderFetcher::builder()
             .providers(providers)
             .chain_delay_num_blocks(delay_blocks)
@@ -272,12 +277,12 @@ fn to_options(
     current_block_num: u64,
     provider: Arc<Provider>,
 ) -> Result<Vec<ProviderContractFetchOptions>> {
+    let chain_config = option
+        .config
+        .find_chain(option.chain_id)
+        .ok_or_else(|| ProviderFetcherError::UnsupportedChainError(option.chain_id))?;
     option.contract_options.as_ref().map_or_else(
         || {
-            let chain_config = option
-                .config
-                .find_chain(option.chain_id)
-                .ok_or_else(|| ProviderFetcherError::UnsupportedChainError(option.chain_id))?;
             Ok(chain_config
                 .contracts_with_disabled()
                 .into_iter()
@@ -285,12 +290,11 @@ fn to_options(
                     ProviderContractFetchOptions::builder()
                         .chain_id(option.chain_id)
                         .contract_address(contract_config.address().to_string())
+                        .contract_type(contract_config.contract_type().clone())
+                        .bridge_type(contract_config.bridge_type().clone())
                         .start_block(option.start_block)
-                        .actual_target_block(if option.target_block > current_block_num {
-                            current_block_num
-                        } else {
-                            option.target_block
-                        })
+                        .actual_target_block(option.target_block.min(current_block_num))
+                        .event_filter_size(chain_config.event_filter_size().max(1))
                         .provider(Arc::clone(&provider))
                         .build()
                 })
@@ -304,12 +308,11 @@ fn to_options(
                     ProviderContractFetchOptions::builder()
                         .chain_id(option.chain_id)
                         .contract_address(contract_option.contract_config.address().to_string())
+                        .contract_type(contract_option.contract_config.contract_type().clone())
+                        .bridge_type(contract_option.contract_config.bridge_type().clone())
                         .start_block(contract_option.start_block.unwrap_or(option.start_block))
-                        .actual_target_block(if target_block > current_block_num {
-                            current_block_num
-                        } else {
-                            target_block
-                        })
+                        .actual_target_block(target_block.min(current_block_num))
+                        .event_filter_size(chain_config.event_filter_size().max(1))
                         .provider(Arc::clone(&provider))
                         .build()
                 })
@@ -358,6 +361,7 @@ async fn fetch_contract<R: LoadedData>(
 
 async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOptions) -> Result<ContractData<R>> {
     let commitments = fetch_commitments(option).await?;
+
     let data = match R::data_type() {
         DataType::Full => {
             let fulldata = FullData::builder()
@@ -405,46 +409,71 @@ async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOpti
 }
 
 async fn fetch_commitments(option: &ProviderContractFetchOptions) -> Result<Vec<Commitment>> {
-    build_commitments(CommitmentDataEvent {
-        crosschain_events: fetch_logs::<CommitmentCrossChainFilter>(option).await?,
-        queued_events: fetch_logs::<CommitmentQueuedFilter>(option).await?,
-        included_events: fetch_logs::<CommitmentIncludedFilter>(option).await?,
-    })
+    match (&option.contract_type, &option.bridge_type) {
+        (ContractType::Pool, _) => build_commitments(CommitmentDataEvent {
+            crosschain_events: vec![],
+            queued_events: fetch_logs::<CommitmentQueuedFilter>(option).await?,
+            included_events: fetch_logs::<CommitmentIncludedFilter>(option).await?,
+        }),
+        (ContractType::Deposit, BridgeType::Loop) => Ok(vec![]),
+        (ContractType::Deposit, _) => build_commitments(CommitmentDataEvent {
+            crosschain_events: fetch_logs::<CommitmentCrossChainFilter>(option).await?,
+            queued_events: vec![],
+            included_events: vec![],
+        }),
+    }
 }
 
 async fn fetch_nullifiers(option: &ProviderContractFetchOptions) -> Result<Vec<Nullifier>> {
+    if option.contract_type == ContractType::Deposit {
+        return Ok(vec![]);
+    }
     build_nullifiers(fetch_logs::<CommitmentSpentFilter>(option).await?)
 }
 
 async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Result<Vec<Event<E>>> {
     let mut events: Vec<Event<E>> = vec![];
-    let filter = Filter::new()
-        .topic0(E::signature())
-        .address(
-            option
-                .contract_address
-                .parse::<Address>()
-                .map_err(ProviderFetcherError::FromHexError)?,
-        )
-        .from_block(BlockNumber::Number(U64::from(option.start_block)))
-        .to_block(BlockNumber::Number(U64::from(option.actual_target_block)));
-    let logs = option
-        .provider
-        .get_logs(&filter)
-        .await
-        .map_err(ProviderFetcherError::ProviderError)?;
-    for log in logs {
-        let my_log = Log {
-            address: log.address,
-            topics: log.topics,
-            data: log.data,
-            block_hash: log.block_hash,
-            block_number: log.block_number,
-            transaction_hash: log.transaction_hash,
-        };
-        let metadata: LogMeta = (&my_log).into();
-        let event = E::decode_log(&my_log.into_raw())?;
-        events.push(Event { raw: event, metadata });
+    if option.start_block > option.actual_target_block {
+        return Ok(events);
+    }
+    let address = option
+        .contract_address
+        .parse::<Address>()
+        .map_err(ProviderFetcherError::FromHexError)?;
+
+    let mut start_block = option.start_block;
+    let mut to_block;
+    loop {
+        to_block = option
+            .actual_target_block
+            .min(start_block + option.event_filter_size - 1);
+        let filter = Filter::new()
+            .topic0(E::signature())
+            .address(address)
+            .from_block(BlockNumber::Number(U64::from(start_block)))
+            .to_block(BlockNumber::Number(U64::from(to_block)));
+        let logs = option
+            .provider
+            .get_logs(&filter)
+            .await
+            .map_err(ProviderFetcherError::ProviderError)?;
+        for log in logs {
+            let my_log = Log {
+                address: log.address,
+                topics: log.topics,
+                data: log.data,
+                block_hash: log.block_hash,
+                block_number: log.block_number,
+                transaction_hash: log.transaction_hash,
+            };
+            let metadata: LogMeta = (&my_log).into();
+            let event = E::decode_log(&my_log.into_raw())?;
+            events.push(Event { raw: event, metadata });
+        }
+        if to_block == option.actual_target_block {
+            break;
+        }
+        start_block = to_block + 1;
     }
     Ok(events)
 }
