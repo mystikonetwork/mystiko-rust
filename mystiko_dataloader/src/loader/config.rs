@@ -46,6 +46,8 @@ pub struct LoaderConfigOptions<
     pub config: LoaderConfig,
     pub handler: Arc<H>,
     #[builder(default, setter(strip_option))]
+    pub mystiko_config: Option<Arc<MystikoConfig>>,
+    #[builder(default, setter(strip_option))]
     pub providers: Option<Arc<P>>,
     #[builder(default)]
     pub fetchers: Vec<Arc<F>>,
@@ -109,8 +111,12 @@ where
     }
 
     pub(crate) async fn build_mystiko_config(&self) -> DataLoaderConfigResult<Arc<MystikoConfig>> {
-        let mystiko_config = MystikoConfig::from_options(self.config.mystiko_config_options.clone()).await?;
-        Ok(Arc::new(mystiko_config))
+        if let Some(mystiko_config) = &self.mystiko_config {
+            return Ok(mystiko_config.clone());
+        } else {
+            let mystiko_config = MystikoConfig::from_options(self.config.mystiko_config_options.clone()).await?;
+            Ok(Arc::new(mystiko_config))
+        }
     }
 
     pub(crate) fn build_providers(
