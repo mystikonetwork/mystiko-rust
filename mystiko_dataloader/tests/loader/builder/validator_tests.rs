@@ -14,7 +14,7 @@ use mystiko_protos::config::v1::ConfigOptions;
 use mystiko_protos::loader::v1::{
     LoaderConfig, RuleValidatorCheckerType, RuleValidatorConfig, ValidatorConfig, ValidatorType,
 };
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 #[tokio::test]
@@ -29,9 +29,11 @@ async fn test_create_chain_data_loader_rule_validator() {
     let chain_id = 1;
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let mystiko_cfg = Arc::new(MystikoConfig::from_options(cfg_option.clone()).await.unwrap());
+    let mut validators = HashMap::new();
+    validators.insert(0, ValidatorType::Rule as i32);
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .validators(vec![ValidatorType::Rule as i32])
+        .validators(validators.clone())
         .build();
     let handler = MockHandler::new();
     let mut contracts = HashSet::new();
@@ -65,14 +67,14 @@ async fn test_create_chain_data_loader_rule_validator() {
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .validators(vec![ValidatorType::Rule as i32])
+        .validators(validators.clone())
         .validator_config(
             ValidatorConfig::builder()
-                .rule(
-                    RuleValidatorConfig::builder()
-                        .checkers(vec![RuleValidatorCheckerType::Counter as i32])
-                        .build(),
-                )
+                .rule({
+                    let mut checkers = HashMap::new();
+                    checkers.insert(0, RuleValidatorCheckerType::Counter as i32);
+                    RuleValidatorConfig::builder().checkers(checkers.clone()).build()
+                })
                 .build(),
         )
         .build();
@@ -100,14 +102,14 @@ async fn test_create_chain_data_loader_rule_validator() {
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .validators(vec![ValidatorType::Rule as i32])
+        .validators(validators.clone())
         .validator_config(
             ValidatorConfig::builder()
-                .rule(
-                    RuleValidatorConfig::builder()
-                        .checkers(vec![RuleValidatorCheckerType::Sequence as i32])
-                        .build(),
-                )
+                .rule({
+                    let mut checkers = HashMap::new();
+                    checkers.insert(0, RuleValidatorCheckerType::Sequence as i32);
+                    RuleValidatorConfig::builder().checkers(checkers).build()
+                })
                 .build(),
         )
         .build();
@@ -139,9 +141,11 @@ async fn test_create_chain_data_loader_mock_fetcher_validator() {
     let chain_id = 1;
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let mystiko_cfg = Arc::new(MystikoConfig::from_options(cfg_option.clone()).await.unwrap());
+    let mut validators = HashMap::new();
+    validators.insert(0, ValidatorType::Rule as i32);
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .validators(vec![ValidatorType::Rule as i32])
+        .validators(validators.clone())
         .build();
     let handler = MockHandler::new();
     let mut contracts = HashSet::new();
