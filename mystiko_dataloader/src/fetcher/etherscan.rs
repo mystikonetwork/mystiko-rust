@@ -6,8 +6,9 @@ use log::info;
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_config::MystikoConfig;
-use mystiko_etherscan_client::{EtherScanClient, Event, GetLogsOptions};
+use mystiko_etherscan_client::{EtherScanClient, EtherScanClientOptions, Event, GetLogsOptions};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
+use mystiko_protos::loader::v1::EtherscanFetcherConfig;
 use mystiko_utils::convert::u256_to_bytes;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -93,6 +94,47 @@ where
             0
         };
         Ok((current_safe_block, client))
+    }
+}
+
+impl<R> EtherscanFetcher<R> {
+    pub fn from_config<C: Into<EtherscanFetcherConfig>>(mystiko_config: Arc<MystikoConfig>, config: C) -> Result<Self> {
+        let config = config.into();
+        let mut clients = Vec::new();
+
+        for (chain_id, fetcher_chain_cfg) in config.chains.iter() {
+            let api_key = fetcher_chain_cfg.api_key.clone().unwrap_or_default();
+            let chain_config = mystiko_config
+                .find_chain(*chain_id)
+                .ok_or(EtherscanFetcherError::UnsupportedChainError(*chain_id))?;
+            let url = fetcher_chain_cfg
+                .url
+                .clone()
+                .unwrap_or(chain_config.explorer_api_url().to_string());
+            let option = EtherScanClientOptions::builder()
+                .chain_id(*chain_id)
+                .base_url(url)
+                .url_prefix(fetcher_chain_cfg.url_prefix.clone())
+                .api_key(api_key.clone())
+                .max_requests_per_second(fetcher_chain_cfg.max_requests_per_second)
+                .offset(fetcher_chain_cfg.page_size)
+                .build();
+
+            let client = EtherScanClient::new(option)?;
+            clients.push(Arc::new(client));
+        }
+
+        let delay_blocks: HashMap<_, _> = config
+            .chains
+            .iter()
+            .filter_map(|(k, v)| v.delay_num_blocks.map(|delay| (*k, delay)))
+            .collect();
+
+        Ok(EtherscanFetcher::builder()
+            .concurrency(config.concurrency)
+            .chain_delay_num_blocks(delay_blocks)
+            .etherscan_clients(clients)
+            .build())
     }
 }
 

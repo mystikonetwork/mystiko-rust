@@ -353,7 +353,7 @@ pub fn create_full_rule_full_data_validator() -> (FullDataRuleValidator, Arc<Moc
     let handler = Arc::new(MockHandler::new());
     let providers = create_mock_providers(Some(&mock));
     let providers = Arc::new(providers);
-    let validator = create_full_rule_validator(handler.clone(), providers);
+    let validator = create_full_rule_validator(handler.clone(), providers).unwrap();
     (validator, handler, mock)
 }
 

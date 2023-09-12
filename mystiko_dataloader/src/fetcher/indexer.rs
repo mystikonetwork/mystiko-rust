@@ -6,26 +6,33 @@ use crate::data::{Data, DataType};
 use crate::data::{FullData, LiteData};
 use crate::fetcher::FetchOptions;
 use crate::fetcher::FetchResult;
-use crate::fetcher::FetcherError;
 use crate::fetcher::FetcherLogOptions;
-use crate::fetcher::{ChainLoadedBlockOptions, DataFetcher};
+use crate::fetcher::{ChainLoadedBlockOptions, DataFetcher, FetcherError};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use hex::FromHexError;
 use log::info;
+use mystiko_config::MystikoConfig;
 use mystiko_indexer_client::{
     CommitmentForDataLoader, CommitmentStatus as IndexerCommitmentStatus, ContractResultDataResponse,
     DataLoaderRequest, IndexerClient, NullifierForDataLoader,
 };
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
+use mystiko_protos::loader::v1::IndexerFetcherConfig;
 use mystiko_utils::convert::biguint_str_to_bytes;
 use mystiko_utils::hex::decode_hex;
 use std::collections::HashMap;
+use std::sync::Arc;
+use std::time::Duration;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum IndexerFetcherError {
+    #[error("missing base url config error")]
+    MissingBaseUrlConfigError,
+    #[error("missing timeout ms config error")]
+    MissingTimeoutMsConfigError,
     #[error("fetcher contract with error {0}")]
     ContractResultError(String),
     #[error(transparent)]
@@ -83,6 +90,31 @@ where
             .await
             .map_err(FetcherError::AnyhowError)?
             .current_sync_block_num)
+    }
+}
+
+impl<R> IndexerFetcher<R>
+where
+    R: LoadedData,
+{
+    pub fn from_config<C: Into<IndexerFetcherConfig>>(mystiko_config: Arc<MystikoConfig>, config: C) -> Result<Self> {
+        let config = config.into();
+        let default_indexer_config = mystiko_config.indexer();
+        let default_url = default_indexer_config.map(|c| c.url().to_string());
+        let default_timeout_ms = default_indexer_config.map(|c| c.timeout_ms());
+        let base_url = config
+            .url
+            .or(default_url)
+            .ok_or(IndexerFetcherError::MissingBaseUrlConfigError)?;
+        let timeout_ms = config
+            .timeout_ms
+            .or(default_timeout_ms)
+            .ok_or(IndexerFetcherError::MissingTimeoutMsConfigError)?;
+
+        let indexer_client = IndexerClient::builder(&base_url)
+            .timeout(Duration::from_millis(timeout_ms))
+            .build()?;
+        Ok(indexer_client.into())
     }
 }
 

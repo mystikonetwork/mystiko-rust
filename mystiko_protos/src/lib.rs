@@ -2,6 +2,7 @@
 #[allow(clippy::needless_borrow)]
 mod gen;
 
+pub mod common;
 pub mod config;
 pub mod core;
 pub mod data;

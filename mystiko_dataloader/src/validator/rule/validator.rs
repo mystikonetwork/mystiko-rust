@@ -3,7 +3,7 @@ use crate::data::LoadedData;
 use crate::data::{ChainResult, ContractResult};
 use crate::handler::DataHandler;
 use crate::validator::rule::checker::RuleChecker;
-use crate::validator::rule::error::Result;
+use crate::validator::rule::error::RuleValidatorResult;
 use crate::validator::rule::merger::DataMerger;
 use crate::validator::rule::{RuleValidatorError, ValidateOriginalData};
 use crate::validator::types::{DataValidator, ValidateOption, ValidateResult};
@@ -19,10 +19,12 @@ pub struct RuleValidatorOptions<R, H = Box<dyn DataHandler<R>>, C = Box<dyn Rule
     _phantom: std::marker::PhantomData<R>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, TypedBuilder)]
 pub struct RuleValidator<R, H = Box<dyn DataHandler<R>>, C = Box<dyn RuleChecker<R>>> {
     merger: DataMerger<R, H>,
+    #[builder(default)]
     checkers: Vec<Arc<C>>,
+    #[builder(default)]
     _phantom: std::marker::PhantomData<R>,
 }
 
@@ -34,13 +36,6 @@ where
     C: RuleChecker<R>,
 {
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
-        if option.validate_concurrency < 1 {
-            return Err(<RuleValidatorError as Into<anyhow::Error>>::into(
-                RuleValidatorError::InvalidValidateConcurrencyError,
-            )
-            .into());
-        }
-
         if data.contracts_data.is_empty() {
             return Err(
                 <RuleValidatorError as Into<anyhow::Error>>::into(RuleValidatorError::EmptyValidateDataError).into(),
@@ -77,7 +72,8 @@ where
         }
 
         if !validate_data.is_empty() {
-            let chunk_nums = (validate_data.len() + option.validate_concurrency - 1) / option.validate_concurrency;
+            let validate_concurrency = std::cmp::max(1, option.validate_concurrency);
+            let chunk_nums = (validate_data.len() + validate_concurrency - 1) / validate_concurrency;
             let chunks = validate_data.chunks(chunk_nums);
             let mut group_task = Vec::with_capacity(chunks.len());
             for chunk in chunks {
@@ -104,12 +100,12 @@ where
     H: DataHandler<R>,
     C: RuleChecker<R>,
 {
-    pub fn new(options: &RuleValidatorOptions<R, H, C>) -> RuleValidator<R, H, C> {
+    pub fn new(options: &RuleValidatorOptions<R, H, C>) -> Self {
         let merger = DataMerger::builder().handler(options.handler.clone()).build();
         RuleValidator {
             merger,
             checkers: options.checkers.clone(),
-            _phantom: std::marker::PhantomData,
+            _phantom: Default::default(),
         }
     }
 
@@ -137,7 +133,7 @@ where
         }
     }
 
-    async fn merge_and_check(&self, data: &ValidateOriginalData<'_, R>) -> Result<()> {
+    async fn merge_and_check(&self, data: &ValidateOriginalData<'_, R>) -> RuleValidatorResult<()> {
         let merged_data = self.merger.merge_contract_data(data).await?;
         for checker in &self.checkers {
             checker.check(data, &merged_data).await?;

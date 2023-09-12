@@ -2,16 +2,19 @@ use crate::data::ChainData;
 use crate::data::LoadedData;
 use crate::data::UnwrappedChainResult;
 use crate::error::DataLoaderError;
-use crate::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions};
+use crate::fetcher::{ContractFetchOptions, DataFetcher, FetchOptions, FetcherOptions};
 use crate::handler::{DataHandler, HandleOption};
-use crate::loader::{DataLoader, DataLoaderResult, LoadOption, DEFAULT_DELAY_BLOCK, DEFAULT_VALIDATOR_CONCURRENCY};
+use crate::loader::{
+    DataLoader, DataLoaderConfigResult, DataLoaderResult, LoadOption, LoaderConfigOptions, DEFAULT_DELAY_BLOCK,
+    DEFAULT_VALIDATOR_CONCURRENCY,
+};
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
 use ethers_providers::Middleware;
 use log::{error, warn};
 use mystiko_config::{ChainConfig, ContractConfig, MystikoConfig};
-use mystiko_ethers::Provider;
-use std::any::type_name;
+use mystiko_ethers::{Provider, Providers};
+use std::collections::HashMap;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -29,6 +32,8 @@ pub struct ChainDataLoader<
     provider: Arc<P>,
     #[builder(default = vec![])]
     fetchers: Vec<Arc<F>>,
+    #[builder(default = HashMap::new())]
+    fetcher_options: HashMap<usize, FetcherOptions>,
     #[builder(default = vec![])]
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
@@ -68,6 +73,51 @@ where
     }
 }
 
+#[async_trait]
+pub trait FromConfig<'a, T>: Sized {
+    async fn from_config(item: &'a T) -> DataLoaderConfigResult<Self>;
+}
+
+#[async_trait]
+impl<'a, R> FromConfig<'a, LoaderConfigOptions<R>> for ChainDataLoader<R>
+where
+    R: LoadedData + 'static,
+{
+    async fn from_config(options: &'a LoaderConfigOptions<R>) -> DataLoaderConfigResult<Self> {
+        options.validate_config()?;
+
+        let mystiko_config = options.build_mystiko_config().await?;
+        let providers = match &options.providers {
+            None => options.build_providers(mystiko_config.clone())?,
+            Some(p) => p.clone(),
+        };
+
+        let (fetchers, fetcher_options) = if options.fetchers.is_empty() {
+            options.build_fetchers(mystiko_config.clone(), providers.clone())?
+        } else {
+            (options.fetchers.clone(), HashMap::new())
+        };
+
+        let validators = if options.validators.is_empty() {
+            options.build_validators(providers.clone(), options.handler.clone())?
+        } else {
+            options.validators.clone()
+        };
+
+        let provider = providers.get_provider(options.chain_id).await?;
+        let loader = ChainDataLoader::builder()
+            .config(mystiko_config)
+            .chain_id(options.chain_id)
+            .provider(provider)
+            .fetchers(fetchers)
+            .fetcher_options(fetcher_options)
+            .validators(validators)
+            .handler(options.handler.clone())
+            .build();
+        Ok(loader)
+    }
+}
+
 impl<R, M, F, V, H> ChainDataLoader<R, M, F, V, H>
 where
     R: LoadedData,
@@ -100,33 +150,31 @@ where
         for (index, fetcher) in self.fetchers.iter().enumerate() {
             let mut chain_data = match self.fetch(fetcher, &fetch_option).await {
                 Err(e) => {
-                    warn!(
-                        "fetcher(index={:?}, name={:?}) raised error {:?}, try next fetcher",
-                        index,
-                        type_name_of_object::<F>(),
-                        e
-                    );
+                    warn!("fetcher(index={:?}) raised error {:?}, try next fetcher", index, e);
                     continue;
                 }
                 Ok(d) => d,
             };
 
-            if let Err(e) = self.validate(&mut chain_data, params.option).await {
-                warn!(
-                    "validate fetcher(index={:?}, name={:?}) data raised error {:?}, try next fetcher",
-                    index,
-                    type_name_of_object::<F>(),
-                    e
-                );
-                continue;
-            };
+            let skip_validation = self
+                .fetcher_options
+                .get(&index)
+                .map(|o| o.skip_validation)
+                .unwrap_or(false);
+            if !skip_validation {
+                if let Err(e) = self.validate(&mut chain_data, params.option).await {
+                    warn!(
+                        "validate fetcher(index={:?}) data raised error {:?}, try next fetcher",
+                        index, e
+                    );
+                    continue;
+                };
+            }
 
             if let Err(e) = self.handle(&chain_data).await {
                 warn!(
-                    "handle fetcher(index={:?}, name={:?}) data raised error {:?}, try next fetcher",
-                    index,
-                    type_name_of_object::<F>(),
-                    e
+                    "handle fetcher(index={:?}) data raised error {:?}, try next fetcher",
+                    index, e
                 );
 
                 continue;
@@ -173,11 +221,8 @@ where
                 let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
                 unwrapped.contract_errors.iter().for_each(|c| {
                     warn!(
-                        "validator(index={:?}, name={:?}) contract {:?} raised error {:?}",
-                        index,
-                        type_name_of_object::<R>(),
-                        c.address,
-                        c.source
+                        "validator(index={:?}) contract {:?} raised error {:?}",
+                        index, c.address, c.source
                     );
                     data.contracts_data
                         .iter()
@@ -309,14 +354,4 @@ where
             Some(options)
         }
     }
-}
-
-fn type_name_of_object<T>() -> &'static str {
-    let fully_qualified_name = type_name::<T>();
-    let struct_name = fully_qualified_name.split('<').next();
-    let name = match struct_name {
-        Some(n) => n.rsplit("::").next(),
-        None => fully_qualified_name.rsplit("::").next(),
-    };
-    name.unwrap_or(fully_qualified_name)
 }

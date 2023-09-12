@@ -118,6 +118,68 @@ pub mod sequencer_service_client {
             self.inner.unary(req, path, codec).await
         }
         ///
+        pub async fn chain_loaded_block(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ChainLoadedBlockRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ChainLoadedBlockResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/mystiko.sequencer.v1.SequencerService/ChainLoadedBlock",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "mystiko.sequencer.v1.SequencerService",
+                        "ChainLoadedBlock",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        ///
+        pub async fn contract_loaded_block(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ContractLoadedBlockRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ContractLoadedBlockResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/mystiko.sequencer.v1.SequencerService/ContractLoadedBlock",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "mystiko.sequencer.v1.SequencerService",
+                        "ContractLoadedBlock",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        ///
         pub async fn health_check(
             &mut self,
             request: impl tonic::IntoRequest<super::HealthCheckRequest>,
@@ -164,6 +226,22 @@ pub mod sequencer_service_server {
             request: tonic::Request<super::FetchChainRequest>,
         ) -> std::result::Result<
             tonic::Response<super::FetchChainResponse>,
+            tonic::Status,
+        >;
+        ///
+        async fn chain_loaded_block(
+            &self,
+            request: tonic::Request<super::ChainLoadedBlockRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ChainLoadedBlockResponse>,
+            tonic::Status,
+        >;
+        ///
+        async fn contract_loaded_block(
+            &self,
+            request: tonic::Request<super::ContractLoadedBlockRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ContractLoadedBlockResponse>,
             tonic::Status,
         >;
         ///
@@ -284,6 +362,98 @@ pub mod sequencer_service_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = FetchChainSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/mystiko.sequencer.v1.SequencerService/ChainLoadedBlock" => {
+                    #[allow(non_camel_case_types)]
+                    struct ChainLoadedBlockSvc<T: SequencerService>(pub Arc<T>);
+                    impl<
+                        T: SequencerService,
+                    > tonic::server::UnaryService<super::ChainLoadedBlockRequest>
+                    for ChainLoadedBlockSvc<T> {
+                        type Response = super::ChainLoadedBlockResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ChainLoadedBlockRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                (*inner).chain_loaded_block(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ChainLoadedBlockSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/mystiko.sequencer.v1.SequencerService/ContractLoadedBlock" => {
+                    #[allow(non_camel_case_types)]
+                    struct ContractLoadedBlockSvc<T: SequencerService>(pub Arc<T>);
+                    impl<
+                        T: SequencerService,
+                    > tonic::server::UnaryService<super::ContractLoadedBlockRequest>
+                    for ContractLoadedBlockSvc<T> {
+                        type Response = super::ContractLoadedBlockResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ContractLoadedBlockRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                (*inner).contract_loaded_block(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ContractLoadedBlockSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
