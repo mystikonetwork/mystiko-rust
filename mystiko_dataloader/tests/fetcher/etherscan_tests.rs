@@ -123,7 +123,15 @@ async fn test_etherscan_full_data_fetch() {
     .await;
     let etherscan_fetchers =
         build_etherscan_fetcher::<FullData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 0u32);
-    let fetch_options = build_fetch_options(test_address, test_chain_id, test_start_block, test_end_block).await;
+    let config_url = "./tests/files/config/mystiko.json";
+    let fetch_options = build_fetch_options(
+        config_url,
+        test_address,
+        test_chain_id,
+        test_start_block,
+        test_end_block,
+    )
+    .await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
 
     assert!(result.is_ok());
@@ -146,7 +154,7 @@ async fn test_etherscan_full_data_fetch() {
 #[tokio::test]
 async fn test_etherscan_full_data_fetch_no_contract_request() {
     let mut mocked_server = mockito::Server::new_async().await;
-    let test_chain_id = 137u64;
+    let test_chain_id: u64 = 5;
     let test_address = "";
     let test_start_block: u64 = 46013154;
     let test_end_block: u64 = 46276776;
@@ -166,11 +174,32 @@ async fn test_etherscan_full_data_fetch_no_contract_request() {
         .create_async()
         .await;
     let params = build_request_params(test_start_block, test_end_block, test_api_key, test_offset);
+    let ccc_mock_resp: &str = "{
+        \"status\":\"1\",
+        \"message\":\"OK\",
+        \"result\": [
+            {
+                \"address\": \"0xdc15e18859d9e790144f29e8612ce329036e5eb4\",
+                \"topics\": [
+                \"0xd106eb38b3368b7c294e36fae5513fdefe880be5abfad529b37b044f2fdd2dbe\",
+                \"0x13bb2050b0b9de719537a04813ba124874d5d60ddc21a0ab3a8316cd63bb6b8b\"
+                ],
+                \"data\": \"0x\",
+                \"blockNumber\": \"0x126c905\",
+                \"blockHash\": \"0x1882f125044db59cbf15cb83908226f0f84753a7f7ee95222cad0f03e2e5d34b\",
+                \"timeStamp\": \"0x628098b5\",
+                \"gasPrice\": \"0x28fa6ae00\",
+                \"gasUsed\": \"0x201d6\",
+                \"logIndex\": \"0x6\",
+                \"transactionHash\": \"0x71b037d077b025344da74e9882b5d641dd506a45819bc3f919ea656d327bb75a\",
+                \"transactionIndex\": \"0x3\"
+            }
+        ]}";
     let _m1 = build_mock_request(
         &mut mocked_server,
         &params,
         "0xd106eb38b3368b7c294e36fae5513fdefe880be5abfad529b37b044f2fdd2dbe",
-        CCC_MOCK_RESP,
+        ccc_mock_resp,
     )
     .await;
     let _m2 = build_mock_request(
@@ -196,20 +225,48 @@ async fn test_etherscan_full_data_fetch_no_contract_request() {
     .await;
     let etherscan_fetchers =
         build_etherscan_fetcher::<FullData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 1u32);
-    let fetch_options = build_fetch_options(test_address, test_chain_id, test_start_block, test_end_block).await;
+    let config_url = "./tests/files/config/mystiko_testnet.json";
+    let fetch_options = build_fetch_options(
+        config_url,
+        test_address,
+        test_chain_id,
+        test_start_block,
+        test_end_block,
+    )
+    .await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
     assert!(result.is_ok());
     let result = result.unwrap();
     assert_eq!(result.chain_id, test_chain_id);
-    assert_ne!(result.contract_results.len(), 1);
-    assert!(result.contract_results[0].result.is_ok());
-    let result = result.contract_results[0].result.as_ref().unwrap();
-    assert_eq!(result.start_block, test_start_block);
-    assert_eq!(result.end_block, test_end_block);
-    assert!(result.data.is_some());
-    let data = result.data.as_ref().unwrap();
+    let len = result.contract_results.len();
+    assert!(len > 1);
+    //pool
+    assert!(result.contract_results[len - 1].result.is_ok());
+    let contract_result = result.contract_results[len - 1].result.as_ref().unwrap();
+    assert_eq!(contract_result.start_block, test_start_block);
+    assert_eq!(contract_result.end_block, test_end_block);
+    assert!(contract_result.data.is_some());
+    let data = contract_result.data.as_ref().unwrap();
     assert_eq!(data.commitments.len(), 2);
     assert_eq!(data.nullifiers.len(), 1);
+    //deposit loop
+    assert!(result.contract_results[0].result.is_ok());
+    let contract_result = result.contract_results[0].result.as_ref().unwrap();
+    assert_eq!(contract_result.start_block, test_start_block);
+    assert_eq!(contract_result.end_block, test_end_block);
+    assert!(contract_result.data.is_some());
+    let data = contract_result.data.as_ref().unwrap();
+    assert_eq!(data.commitments.len(), 0);
+    assert_eq!(data.nullifiers.len(), 0);
+    //deposit bridge
+    assert!(result.contract_results[5].result.is_ok());
+    let contract_result = result.contract_results[5].result.as_ref().unwrap();
+    assert_eq!(contract_result.start_block, test_start_block);
+    assert_eq!(contract_result.end_block, test_end_block);
+    assert!(contract_result.data.is_some());
+    let data = contract_result.data.as_ref().unwrap();
+    assert_eq!(data.commitments.len(), 1);
+    assert_eq!(data.nullifiers.len(), 0);
 }
 
 #[tokio::test]
@@ -266,7 +323,15 @@ async fn test_etherscan_lite_data_fetch() {
     .await;
     let etherscan_fetchers =
         build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 2u32);
-    let fetch_options = build_fetch_options(test_address, test_chain_id, test_start_block, test_end_block).await;
+    let config_url = "./tests/files/config/mystiko.json";
+    let fetch_options = build_fetch_options(
+        config_url,
+        test_address,
+        test_chain_id,
+        test_start_block,
+        test_end_block,
+    )
+    .await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
     assert!(result.is_ok());
     let result = result.unwrap();
@@ -287,7 +352,7 @@ async fn test_etherscan_lite_data_fetch() {
 #[tokio::test]
 async fn test_etherscan_lite_data_fetch_no_contract_request() {
     let mut mocked_server = mockito::Server::new_async().await;
-    let test_chain_id = 137u64;
+    let test_chain_id: u64 = 5;
     let test_address = "";
     let test_start_block: u64 = 46013154;
     let test_end_block: u64 = 46276776;
@@ -359,19 +424,41 @@ async fn test_etherscan_lite_data_fetch_no_contract_request() {
     .await;
     let etherscan_fetchers =
         build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 1u32);
-    let fetch_options = build_fetch_options(test_address, test_chain_id, test_start_block, test_end_block).await;
+    let config_url = "./tests/files/config/mystiko_testnet.json";
+    let fetch_options = build_fetch_options(
+        config_url,
+        test_address,
+        test_chain_id,
+        test_start_block,
+        test_end_block,
+    )
+    .await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
     assert!(result.is_ok());
     let result = result.unwrap();
     assert_eq!(result.chain_id, test_chain_id);
-    assert_ne!(result.contract_results.len(), 1);
+    let len = result.contract_results.len();
+    assert!(len > 1);
+    //pool
+    assert!(result.contract_results[len - 1].result.is_ok());
+    let contract_result = result.contract_results[len - 1].result.as_ref().unwrap();
+    assert_eq!(contract_result.start_block, test_start_block);
+    assert_ne!(contract_result.end_block, test_end_block);
+    assert!(contract_result.data.is_some());
+    let data = contract_result.data.as_ref().unwrap();
+    assert_eq!(data.commitments.len(), 2);
+    //deposit loop
     assert!(result.contract_results[0].result.is_ok());
-    let result = result.contract_results[0].result.as_ref().unwrap();
-    assert_eq!(result.start_block, test_start_block);
-    assert_ne!(result.end_block, test_end_block);
-    assert!(result.data.is_some());
-    let data = result.data.as_ref().unwrap();
-    assert_eq!(data.commitments.len(), 3);
+    let contract_result = result.contract_results[0].result.as_ref().unwrap();
+    assert!(contract_result.data.is_some());
+    let data = contract_result.data.as_ref().unwrap();
+    assert_eq!(data.commitments.len(), 0);
+    //deposit bridge
+    assert!(result.contract_results[5].result.is_ok());
+    let contract_result = result.contract_results[5].result.as_ref().unwrap();
+    assert!(contract_result.data.is_some());
+    let data = contract_result.data.as_ref().unwrap();
+    assert_eq!(data.commitments.len(), 1);
 }
 
 #[tokio::test]
@@ -385,7 +472,8 @@ async fn test_get_etherscan_client_err() {
     let test_api_key = "test_api_key";
     let etherscan_fetchers =
         build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, test_offset, test_api_key, 1u32);
-    let fetch_options = build_fetch_options(test_address, 137u64, test_start_block, test_end_block).await;
+    let config_url = "./tests/files/config/mystiko.json";
+    let fetch_options = build_fetch_options(config_url, test_address, 137u64, test_start_block, test_end_block).await;
     let result = etherscan_fetchers.fetch(&fetch_options).await;
     assert!(result.is_err());
     let error = result.unwrap_err();
@@ -612,16 +700,13 @@ fn build_etherscan_fetcher<R: LoadedData + std::fmt::Debug>(
 }
 
 async fn build_fetch_options(
+    config_url: &str,
     test_address: &str,
     test_chain_id: u64,
     test_start_block: u64,
     test_end_block: u64,
 ) -> FetchOptions {
-    let mystiko_config = Arc::new(
-        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
-            .await
-            .unwrap(),
-    );
+    let mystiko_config = Arc::new(MystikoConfig::from_json_file(config_url).await.unwrap());
     if test_address.is_empty() {
         FetchOptions::builder()
             .chain_id(test_chain_id)

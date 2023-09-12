@@ -9,6 +9,7 @@ use mystiko_config::MystikoConfig;
 use mystiko_etherscan_client::{EtherScanClient, EtherScanClientOptions, Event, GetLogsOptions};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::loader::v1::EtherscanFetcherConfig;
+use mystiko_types::{BridgeType, ContractType};
 use mystiko_utils::convert::u256_to_bytes;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -33,6 +34,16 @@ pub struct EtherscanFetcher<R> {
     _phantom: std::marker::PhantomData<R>,
 }
 
+#[derive(Clone, Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+struct EtherscanFetchOptions {
+    pub(crate) address: String,
+    pub(crate) from_block: u64,
+    pub(crate) to_block: u64,
+    pub(crate) contract_type: ContractType,
+    pub(crate) bridge_type: BridgeType,
+}
+
 #[async_trait]
 impl<R> DataFetcher<R> for EtherscanFetcher<R>
 where
@@ -46,7 +57,8 @@ where
         let (current_block_num, client) = self
             .chain_safe_current_block(option.chain_id, option.config.clone())
             .await?;
-        let options: Vec<GetLogsOptions> = to_options(option, current_block_num).map_err(FetcherError::AnyhowError)?;
+        let options: Vec<EtherscanFetchOptions> =
+            to_options(option, current_block_num).map_err(FetcherError::AnyhowError)?;
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
             .contract_results(
@@ -159,7 +171,7 @@ fn get_etherscan_client(chain_id: u64, etherscan_clients: &[Arc<EtherScanClient>
     Err(EtherscanFetcherError::UnsupportedChainError(chain_id).into())
 }
 
-fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<GetLogsOptions>> {
+fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<EtherscanFetchOptions>> {
     option.contract_options.as_ref().map_or_else(
         || {
             let chain_config = option
@@ -170,41 +182,37 @@ fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<GetLo
                 .contracts_with_disabled()
                 .into_iter()
                 .map(|contract_config| {
-                    GetLogsOptions::builder()
+                    EtherscanFetchOptions::builder()
                         .address(contract_config.address().to_string())
                         .from_block(option.start_block)
-                        .to_block(if option.target_block > current_block_num {
-                            current_block_num
-                        } else {
-                            option.target_block
-                        })
+                        .to_block(option.target_block.min(current_block_num))
+                        .contract_type(contract_config.contract_type().clone())
+                        .bridge_type(contract_config.bridge_type().clone())
                         .build()
                 })
-                .collect::<Vec<GetLogsOptions>>())
+                .collect::<Vec<EtherscanFetchOptions>>())
         },
         |contract_options| {
             Ok(contract_options
                 .iter()
                 .map(|contract_option| {
                     let target_block = contract_option.target_block.unwrap_or(option.target_block);
-                    GetLogsOptions::builder()
+                    EtherscanFetchOptions::builder()
                         .address(contract_option.contract_config.address().to_string())
                         .from_block(contract_option.start_block.unwrap_or(option.start_block))
-                        .to_block(if target_block > current_block_num {
-                            current_block_num
-                        } else {
-                            target_block
-                        })
+                        .to_block(target_block.min(current_block_num))
+                        .contract_type(contract_option.contract_config.contract_type().clone())
+                        .bridge_type(contract_option.contract_config.bridge_type().clone())
                         .build()
                 })
-                .collect::<Vec<GetLogsOptions>>())
+                .collect::<Vec<EtherscanFetchOptions>>())
         },
     )
 }
 
 async fn group_fetch<R: LoadedData>(
     client: &Arc<EtherScanClient>,
-    options: Vec<GetLogsOptions>,
+    options: Vec<EtherscanFetchOptions>,
     concurrency: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
     let concurrency = if concurrency == 0 { 1 } else { concurrency };
@@ -223,7 +231,7 @@ async fn group_fetch<R: LoadedData>(
 
 async fn group_fetch_contracts<R: LoadedData>(
     client: &Arc<EtherScanClient>,
-    options: Vec<GetLogsOptions>,
+    options: Vec<EtherscanFetchOptions>,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
     let mut group_result = Vec::with_capacity(options.len());
     for option in options {
@@ -238,7 +246,7 @@ async fn group_fetch_contracts<R: LoadedData>(
 
 async fn fetch_contract_data<R: LoadedData>(
     client: &Arc<EtherScanClient>,
-    option: GetLogsOptions,
+    option: EtherscanFetchOptions,
 ) -> Result<ContractData<R>> {
     let commitments: Vec<Commitment> = fetch_commitments(client, &option).await?;
     let contracts_response = match R::data_type() {
@@ -283,76 +291,98 @@ async fn fetch_contract_data<R: LoadedData>(
     Ok(contracts_response)
 }
 
-async fn fetch_commitments(client: &EtherScanClient, option: &GetLogsOptions) -> Result<Vec<Commitment>> {
+async fn fetch_commitments(client: &EtherScanClient, option: &EtherscanFetchOptions) -> Result<Vec<Commitment>> {
+    let get_logs_option = GetLogsOptions::builder()
+        .address(option.address.to_string())
+        .from_block(option.from_block)
+        .to_block(option.to_block)
+        .build();
     let mut commitments: Vec<Commitment> = Vec::new();
-    client
-        .fetch_event_logs::<CommitmentCrossChainFilter>(option.clone())
-        .await?
-        .iter()
-        .for_each(|event: &Event<CommitmentCrossChainFilter>| {
-            let commitment = Commitment::builder()
-                .commitment_hash(u256_to_bytes(&event.raw.commitment))
-                .status(CommitmentStatus::SrcSucceeded)
-                .block_number(event.metadata.block_number.as_u64())
-                .included_block_number(None)
-                .src_chain_block_number(event.metadata.block_number.as_u64())
-                .leaf_index(None)
-                .rollup_fee(None)
-                .encrypted_note(None)
-                .queued_transaction_hash(None)
-                .included_transaction_hash(None)
-                .src_chain_transaction_hash(event.metadata.transaction_hash.to_fixed_bytes().to_vec())
-                .build();
-            commitments.push(commitment);
-        });
-    client
-        .fetch_event_logs::<CommitmentQueuedFilter>(option.clone())
-        .await?
-        .iter()
-        .for_each(|event: &Event<CommitmentQueuedFilter>| {
-            let commitment = Commitment::builder()
-                .commitment_hash(u256_to_bytes(&event.raw.commitment))
-                .status(CommitmentStatus::Queued)
-                .block_number(event.metadata.block_number.as_u64())
-                .included_block_number(None)
-                .src_chain_block_number(None)
-                .leaf_index(event.raw.leaf_index.as_u64())
-                .rollup_fee(u256_to_bytes(&event.raw.rollup_fee))
-                .encrypted_note(event.raw.encrypted_note.to_vec())
-                .queued_transaction_hash(event.metadata.transaction_hash.to_fixed_bytes().to_vec())
-                .included_transaction_hash(None)
-                .src_chain_transaction_hash(None)
-                .build();
-            commitments.push(commitment);
-        });
-    client
-        .fetch_event_logs::<CommitmentIncludedFilter>(option.clone())
-        .await?
-        .iter()
-        .for_each(|event| {
-            let commitment = Commitment::builder()
-                .commitment_hash(u256_to_bytes(&event.raw.commitment))
-                .status(CommitmentStatus::Included)
-                .block_number(event.metadata.block_number.as_u64())
-                .included_block_number(event.metadata.block_number.as_u64())
-                .src_chain_block_number(None)
-                .leaf_index(None)
-                .rollup_fee(None)
-                .encrypted_note(None)
-                .queued_transaction_hash(None)
-                .included_transaction_hash(event.metadata.transaction_hash.to_fixed_bytes().to_vec())
-                .src_chain_transaction_hash(None)
-                .build();
-            commitments.push(commitment);
-        });
+    match (&option.contract_type, &option.bridge_type) {
+        (ContractType::Pool, _) => {
+            client
+                .fetch_event_logs::<CommitmentQueuedFilter>(get_logs_option.clone())
+                .await?
+                .iter()
+                .for_each(|event: &Event<CommitmentQueuedFilter>| {
+                    let commitment = Commitment::builder()
+                        .commitment_hash(u256_to_bytes(&event.raw.commitment))
+                        .status(CommitmentStatus::Queued)
+                        .block_number(event.metadata.block_number.as_u64())
+                        .included_block_number(None)
+                        .src_chain_block_number(None)
+                        .leaf_index(event.raw.leaf_index.as_u64())
+                        .rollup_fee(u256_to_bytes(&event.raw.rollup_fee))
+                        .encrypted_note(event.raw.encrypted_note.to_vec())
+                        .queued_transaction_hash(event.metadata.transaction_hash.to_fixed_bytes().to_vec())
+                        .included_transaction_hash(None)
+                        .src_chain_transaction_hash(None)
+                        .build();
+                    commitments.push(commitment);
+                });
+            client
+                .fetch_event_logs::<CommitmentIncludedFilter>(get_logs_option.clone())
+                .await?
+                .iter()
+                .for_each(|event| {
+                    let commitment = Commitment::builder()
+                        .commitment_hash(u256_to_bytes(&event.raw.commitment))
+                        .status(CommitmentStatus::Included)
+                        .block_number(event.metadata.block_number.as_u64())
+                        .included_block_number(event.metadata.block_number.as_u64())
+                        .src_chain_block_number(None)
+                        .leaf_index(None)
+                        .rollup_fee(None)
+                        .encrypted_note(None)
+                        .queued_transaction_hash(None)
+                        .included_transaction_hash(event.metadata.transaction_hash.to_fixed_bytes().to_vec())
+                        .src_chain_transaction_hash(None)
+                        .build();
+                    commitments.push(commitment);
+                });
+        }
+        (ContractType::Deposit, BridgeType::Loop) => {
+            return Ok(commitments);
+        }
+        (ContractType::Deposit, _) => {
+            client
+                .fetch_event_logs::<CommitmentCrossChainFilter>(get_logs_option.clone())
+                .await?
+                .iter()
+                .for_each(|event: &Event<CommitmentCrossChainFilter>| {
+                    let commitment = Commitment::builder()
+                        .commitment_hash(u256_to_bytes(&event.raw.commitment))
+                        .status(CommitmentStatus::SrcSucceeded)
+                        .block_number(event.metadata.block_number.as_u64())
+                        .included_block_number(None)
+                        .src_chain_block_number(event.metadata.block_number.as_u64())
+                        .leaf_index(None)
+                        .rollup_fee(None)
+                        .encrypted_note(None)
+                        .queued_transaction_hash(None)
+                        .included_transaction_hash(None)
+                        .src_chain_transaction_hash(event.metadata.transaction_hash.to_fixed_bytes().to_vec())
+                        .build();
+                    commitments.push(commitment);
+                });
+        }
+    }
     commitments.sort_by_key(|commitment| commitment.block_number);
     Ok(commitments)
 }
 
-async fn fetch_nullifiers(client: &EtherScanClient, option: &GetLogsOptions) -> Result<Vec<Nullifier>> {
+async fn fetch_nullifiers(client: &EtherScanClient, option: &EtherscanFetchOptions) -> Result<Vec<Nullifier>> {
     let mut nullifiers: Vec<Nullifier> = Vec::new();
+    if option.contract_type == ContractType::Deposit {
+        return Ok(nullifiers);
+    }
+    let get_logs_option = GetLogsOptions::builder()
+        .address(option.address.to_string())
+        .from_block(option.from_block)
+        .to_block(option.to_block)
+        .build();
     client
-        .fetch_event_logs::<CommitmentSpentFilter>(option.clone())
+        .fetch_event_logs::<CommitmentSpentFilter>(get_logs_option.clone())
         .await?
         .iter()
         .for_each(|event| {
