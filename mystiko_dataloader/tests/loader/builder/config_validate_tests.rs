@@ -30,9 +30,12 @@ async fn test_fetcher_etherscan_config_validate() {
     let providers = create_mock_providers(Some(&mock));
     let providers = Arc::new(Box::new(providers) as Box<dyn Providers>);
 
+    let mut fetchers = HashMap::new();
+    fetchers.insert(0, FetcherType::Etherscan as i32);
+
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .build();
     let options = LoaderConfigOptions::<FullData>::builder()
         .chain_id(chain_id)
@@ -49,7 +52,7 @@ async fn test_fetcher_etherscan_config_validate() {
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(FetcherConfig::builder().build())
         .build();
     let options = LoaderConfigOptions::<FullData>::builder()
@@ -67,7 +70,7 @@ async fn test_fetcher_etherscan_config_validate() {
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .etherscan(EtherscanFetcherConfig::builder().build())
@@ -89,7 +92,7 @@ async fn test_fetcher_etherscan_config_validate() {
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .etherscan(EtherscanFetcherConfig::builder().chains(HashMap::new()).build())
@@ -111,7 +114,7 @@ async fn test_fetcher_etherscan_config_validate() {
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .etherscan(
@@ -154,9 +157,12 @@ async fn test_set_mystiko_config() {
     let providers = create_mock_providers(Some(&mock));
     let providers = Arc::new(Box::new(providers) as Box<dyn Providers>);
 
+    let mut fetchers = HashMap::new();
+    fetchers.insert(0, FetcherType::Etherscan as i32);
+
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .etherscan(

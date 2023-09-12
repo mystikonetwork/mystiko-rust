@@ -29,9 +29,12 @@ async fn test_create_chain_data_loader_fetcher_etherscan() {
     let providers = create_mock_providers(Some(&mock));
     let providers = Arc::new(Box::new(providers) as Box<dyn Providers>);
 
+    let mut fetchers = HashMap::new();
+    fetchers.insert(0, FetcherType::Etherscan as i32);
+
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .etherscan(
@@ -55,9 +58,12 @@ async fn test_create_chain_data_loader_fetcher_etherscan() {
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
     assert!(loader.is_ok());
 
+    let mut fetchers = HashMap::new();
+    fetchers.insert(0, FetcherType::Etherscan as i32);
+
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .etherscan(
@@ -88,7 +94,7 @@ async fn test_create_chain_data_loader_fetcher_etherscan() {
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .etherscan(
@@ -140,9 +146,11 @@ async fn test_create_chain_data_loader_fetcher_etherscan_skip_validation() {
     let providers = create_mock_providers(Some(&mock));
     let providers = Arc::new(Box::new(providers) as Box<dyn Providers>);
 
+    let mut fetchers = HashMap::new();
+    fetchers.insert(0, FetcherType::Etherscan as i32);
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Etherscan as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .etherscan(

@@ -218,7 +218,7 @@ impl ChainProvidersOptions for FetcherChainProvidersOptions {
                     provider_type = ProviderType::from_i32(t).ok_or(ProviderFetcherError::ProviderTypeError(t))?;
                 }
 
-                for url in &fetcher_cfg.urls {
+                for url in &fetcher_cfg.urls() {
                     let provider_options = match self.fetcher_config.timeout_ms {
                         None => ProviderOptions::builder().url(url.clone()).build(),
                         Some(t) => ProviderOptions::builder()

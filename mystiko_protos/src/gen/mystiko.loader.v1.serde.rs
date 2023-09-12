@@ -715,17 +715,21 @@ impl serde::Serialize for LoaderConfig {
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.LoaderConfig", len)?;
         if !self.fetchers.is_empty() {
-            let v = self.fetchers.iter().cloned().map(|v| {
-                FetcherType::from_i32(v)
-                    .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", v)))
-                }).collect::<Result<Vec<_>, _>>()?;
+            let v: std::collections::HashMap<_, _> = self.fetchers.iter()
+                .map(|(k, v)| {
+                    let v = FetcherType::from_i32(*v)
+                        .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
+                    Ok((k, v))
+                }).collect::<Result<_,_>>()?;
             struct_ser.serialize_field("fetchers", &v)?;
         }
         if !self.validators.is_empty() {
-            let v = self.validators.iter().cloned().map(|v| {
-                ValidatorType::from_i32(v)
-                    .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", v)))
-                }).collect::<Result<Vec<_>, _>>()?;
+            let v: std::collections::HashMap<_, _> = self.validators.iter()
+                .map(|(k, v)| {
+                    let v = ValidatorType::from_i32(*v)
+                        .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
+                    Ok((k, v))
+                }).collect::<Result<_,_>>()?;
             struct_ser.serialize_field("validators", &v)?;
         }
         if let Some(v) = self.mystiko_config_options.as_ref() {
@@ -820,13 +824,19 @@ impl<'de> serde::Deserialize<'de> for LoaderConfig {
                             if fetchers__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("fetchers"));
                             }
-                            fetchers__ = Some(map.next_value::<Vec<FetcherType>>()?.into_iter().map(|x| x as i32).collect());
+                            fetchers__ = Some(
+                                map.next_value::<std::collections::HashMap<::pbjson::private::NumberDeserialize<u32>, FetcherType>>()?
+                                    .into_iter().map(|(k,v)| (k.0, v as i32)).collect()
+                            );
                         }
                         GeneratedField::Validators => {
                             if validators__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("validators"));
                             }
-                            validators__ = Some(map.next_value::<Vec<ValidatorType>>()?.into_iter().map(|x| x as i32).collect());
+                            validators__ = Some(
+                                map.next_value::<std::collections::HashMap<::pbjson::private::NumberDeserialize<u32>, ValidatorType>>()?
+                                    .into_iter().map(|(k,v)| (k.0, v as i32)).collect()
+                            );
                         }
                         GeneratedField::MystikoConfigOptions => {
                             if mystiko_config_options__.is_some() {
@@ -1055,7 +1065,10 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherChainConfig {
                             if urls__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("urls"));
                             }
-                            urls__ = Some(map.next_value()?);
+                            urls__ = Some(
+                                map.next_value::<std::collections::HashMap<::pbjson::private::NumberDeserialize<u32>, _>>()?
+                                    .into_iter().map(|(k,v)| (k.0, v)).collect()
+                            );
                         }
                         GeneratedField::DelayNumBlocks => {
                             if delay_num_blocks__.is_some() {
@@ -1329,10 +1342,12 @@ impl serde::Serialize for RuleValidatorConfig {
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.RuleValidatorConfig", len)?;
         if !self.checkers.is_empty() {
-            let v = self.checkers.iter().cloned().map(|v| {
-                RuleValidatorCheckerType::from_i32(v)
-                    .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", v)))
-                }).collect::<Result<Vec<_>, _>>()?;
+            let v: std::collections::HashMap<_, _> = self.checkers.iter()
+                .map(|(k, v)| {
+                    let v = RuleValidatorCheckerType::from_i32(*v)
+                        .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
+                    Ok((k, v))
+                }).collect::<Result<_,_>>()?;
             struct_ser.serialize_field("checkers", &v)?;
         }
         struct_ser.end()
@@ -1399,7 +1414,10 @@ impl<'de> serde::Deserialize<'de> for RuleValidatorConfig {
                             if checkers__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("checkers"));
                             }
-                            checkers__ = Some(map.next_value::<Vec<RuleValidatorCheckerType>>()?.into_iter().map(|x| x as i32).collect());
+                            checkers__ = Some(
+                                map.next_value::<std::collections::HashMap<::pbjson::private::NumberDeserialize<u32>, RuleValidatorCheckerType>>()?
+                                    .into_iter().map(|(k,v)| (k.0, v as i32)).collect()
+                            );
                         }
                     }
                 }

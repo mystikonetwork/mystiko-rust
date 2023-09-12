@@ -69,7 +69,7 @@ where
             }
         } else {
             let mut fetcher_types = vec![];
-            for fetcher in self.config.fetchers.iter() {
+            for fetcher in self.config.fetchers().iter() {
                 let fetcher_type =
                     FetcherType::from_i32(*fetcher).ok_or(DataLoaderConfigError::FetcherTypeError(*fetcher))?;
                 fetcher_types.push(fetcher_type);
@@ -80,7 +80,7 @@ where
 
     pub(crate) fn validator_types(&self) -> DataLoaderConfigResult<Vec<ValidatorType>> {
         let mut validator_types = vec![];
-        for validator in self.config.validators.iter() {
+        for validator in self.config.validators().iter() {
             let validator_type =
                 ValidatorType::from_i32(*validator).ok_or(DataLoaderConfigError::ValidatorTypeError(*validator))?;
             validator_types.push(validator_type);
@@ -93,7 +93,7 @@ where
         rule_config: &RuleValidatorConfig,
     ) -> DataLoaderConfigResult<Vec<RuleValidatorCheckerType>> {
         let mut checker_types = vec![];
-        for checker in rule_config.checkers.iter() {
+        for checker in rule_config.checkers().iter() {
             let checker_type = RuleValidatorCheckerType::from_i32(*checker)
                 .ok_or(DataLoaderConfigError::RuleValidatorCheckerTypeError(*checker))?;
             checker_types.push(checker_type);
@@ -206,7 +206,7 @@ where
     }
 
     fn validate_etherscan_fetcher_config(&self) -> DataLoaderConfigResult<()> {
-        if !self.config.fetchers.contains(&(FetcherType::Etherscan as i32)) {
+        if !self.config.fetchers().contains(&(FetcherType::Etherscan as i32)) {
             return Ok(());
         }
 

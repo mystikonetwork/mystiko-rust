@@ -7,7 +7,7 @@ use mystiko_dataloader::loader::{ChainDataLoader, FromConfig, LoaderConfigOption
 use mystiko_ethers::Providers;
 use mystiko_protos::config::v1::ConfigOptions;
 use mystiko_protos::loader::v1::{FetcherConfig, FetcherType, IndexerFetcherConfig, LoaderConfig};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 #[tokio::test]
@@ -18,9 +18,11 @@ async fn test_create_chain_data_loader_fetcher_indexer() {
     let chain_id = 1;
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let mystiko_cfg = Arc::new(MystikoConfig::from_options(cfg_option.clone()).await.unwrap());
+    let mut fetchers = HashMap::new();
+    fetchers.insert(0, FetcherType::Indexer as i32);
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Indexer as i32])
+        .fetchers(fetchers.clone())
         .build();
     let handler = MockHandler::new();
     let mut contracts = HashSet::new();
@@ -41,7 +43,7 @@ async fn test_create_chain_data_loader_fetcher_indexer() {
     let providers = Arc::new(Box::new(providers) as Box<dyn Providers>);
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Indexer as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .indexer(
@@ -83,9 +85,11 @@ async fn test_create_chain_data_loader_fetcher_indexer_skip_validation() {
     let (_, mock) = EthersProvider::mocked();
     let providers = create_mock_providers(Some(&mock));
     let providers = Arc::new(Box::new(providers) as Box<dyn Providers>);
+    let mut fetchers = HashMap::new();
+    fetchers.insert(0, FetcherType::Indexer as i32);
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
-        .fetchers(vec![FetcherType::Indexer as i32])
+        .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
                 .indexer(

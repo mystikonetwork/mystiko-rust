@@ -147,9 +147,9 @@ async fn test_create_chain_data_loader_providers_merge() {
                     ProviderFetcherConfig::builder()
                         .chains({
                             let mut chains = HashMap::new();
-                            let cfg = ProviderFetcherChainConfig::builder()
-                                .urls(vec!["http://localhost:38545".to_string()])
-                                .build();
+                            let mut urls = HashMap::new();
+                            urls.insert(0, "http://localhost:38545".to_string());
+                            let cfg = ProviderFetcherChainConfig::builder().urls(urls.clone()).build();
                             chains.insert(chain_id, cfg);
                             chains
                         })
@@ -177,8 +177,10 @@ async fn test_create_chain_data_loader_providers_merge() {
                         .timeout_ms(1)
                         .chains({
                             let mut chains = HashMap::new();
+                            let mut urls = HashMap::new();
+                            urls.insert(0, "http://localhost:38545".to_string());
                             let cfg = ProviderFetcherChainConfig::builder()
-                                .urls(vec!["http://localhost:38545".to_string()])
+                                .urls(urls)
                                 .delay_num_blocks(100)
                                 .provider_type(ProviderType::Failover as i32)
                                 .build();
