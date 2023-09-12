@@ -14,7 +14,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 pub type ChainDataLoaderFullDataType =
-    ChainDataLoader<FullData, Provider, MockFetcher<FullData>, MockValidator, MockHandler<FullData>>;
+    ChainDataLoader<FullData, MockHandler<FullData>, Provider, MockFetcher<FullData>, MockValidator>;
 
 pub async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) -> DataLoaderResult<()> {
     let load_option = delay_block.map(|d| LoadOption::builder().delay_block(d).build());
@@ -60,11 +60,11 @@ pub async fn create_loader(
     let loader = ChainDataLoaderFullDataType::builder()
         .chain_id(chain_id)
         .config(core_cfg.clone())
-        .provider(provider.clone())
         .fetchers(fetchers.clone())
         .fetcher_options(fetcher_options)
         .validators(validators.clone())
         .handler(handler.clone())
+        .provider(provider)
         .build();
     (
         core_cfg.clone(),

@@ -54,7 +54,7 @@ pub struct LoaderConfigOptions<R, H = Box<dyn DataHandler<R>>> {
 impl<R, H> LoaderConfigOptions<R, H>
 where
     R: LoadedData + 'static,
-    H: DataHandler<R>,
+    H: DataHandler<R> + 'static,
 {
     pub(crate) fn validate_config(&self) -> DataLoaderConfigResult<()> {
         self.validate_etherscan_fetcher_config()
@@ -103,7 +103,7 @@ where
 
     pub(crate) async fn build_mystiko_config(&self) -> DataLoaderConfigResult<Arc<MystikoConfig>> {
         if let Some(mystiko_config) = &self.mystiko_config {
-            return Ok(mystiko_config.clone());
+            Ok(mystiko_config.clone())
         } else {
             let mystiko_config = MystikoConfig::from_options(self.config.mystiko_config_options.clone()).await?;
             Ok(Arc::new(mystiko_config))
@@ -183,7 +183,7 @@ where
     pub(crate) fn build_validators(
         &self,
         providers: Arc<Box<dyn Providers>>,
-        handler: Arc<Box<dyn DataHandler<R>>>,
+        handler: Arc<H>,
     ) -> DataLoaderConfigResult<Vec<Arc<Box<dyn DataValidator<R>>>>> {
         let mut validators = vec![];
         for validator_type in self.validator_types()? {
