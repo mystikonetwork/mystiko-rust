@@ -1323,6 +1323,7 @@ async fn setup<R: LoadedData>() -> Result<(
     let database_handler: DatabaseHandler<R, SqlStatementFormatter, SqliteStorage> = DatabaseHandler::builder()
         .config(Arc::clone(&config))
         .collection(Arc::clone(&collection))
+        .handle_batch_size(5usize)
         .build();
     let _ = database_handler.migrate().await?;
     Ok((database_handler, collection, config))
