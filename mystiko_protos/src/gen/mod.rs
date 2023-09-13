@@ -64,12 +64,28 @@ pub mod mystiko {
             // @@protoc_insertion_point(mystiko.sequencer.v1)
         }
     }
+    pub mod service {
+        #[cfg(feature = "mystiko-service-v1")]
+        // @@protoc_insertion_point(attribute:mystiko.service.v1)
+        pub mod v1 {
+            include!("mystiko.service.v1.rs");
+            // @@protoc_insertion_point(mystiko.service.v1)
+        }
+    }
     pub mod storage {
         #[cfg(feature = "mystiko-storage-v1")]
         // @@protoc_insertion_point(attribute:mystiko.storage.v1)
         pub mod v1 {
             include!("mystiko.storage.v1.rs");
             // @@protoc_insertion_point(mystiko.storage.v1)
+        }
+    }
+    pub mod testing {
+        #[cfg(feature = "mystiko-testing-v1")]
+        // @@protoc_insertion_point(attribute:mystiko.testing.v1)
+        pub mod v1 {
+            include!("mystiko.testing.v1.rs");
+            // @@protoc_insertion_point(mystiko.testing.v1)
         }
     }
 }

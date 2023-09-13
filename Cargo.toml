@@ -9,6 +9,7 @@ members = [
     "mystiko_datapacker_common",
     "mystiko_ethers",
     "mystiko_etherscan_client",
+    "mystiko_grpc",
     "mystiko_indexer_client",
     "mystiko_lib",
     "mystiko_protos",

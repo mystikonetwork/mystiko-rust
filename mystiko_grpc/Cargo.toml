@@ -1,0 +1,22 @@
+[package]
+name = "mystiko_grpc"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+fs = []
+
+[dependencies]
+anyhow = { version = "1.0.69" }
+bytes = { version = "1.4.0" }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-service-v1"] }
+http = { version = "0.2.9" }
+hyper = { version = "0.14.27", features = ["http2"]  }
+hyper-rustls = { version = "0.24.1", features = ["http2"] }
+prost = { version = "0.11.9" }
+rustls-pemfile = { version = "1.0.3" }
+tokio-rustls = { version = "0.24.1" }
+tonic = { version = "0.10.0", features = ["tls"] }
+tonic-web = { version = "0.10.0" }
+tower = { version = "0.4.13" }
