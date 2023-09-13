@@ -48,7 +48,7 @@ async fn test_create_chain_data_loader_default_provider_fetcher() {
     mock.push(block_number).unwrap();
     mock.push(block_number).unwrap();
     let loader = loader.unwrap();
-    let result = loader.load(Some(LoadOption::default())).await;
+    let result = loader.load(LoadOption::default()).await;
     assert!(result.is_ok());
 }
 
@@ -121,7 +121,7 @@ async fn test_create_chain_data_loader_providers_merge() {
         .handler(handler.clone())
         .build();
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
-    assert!(loader.is_err());
+    assert!(loader.is_ok());
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
@@ -137,7 +137,7 @@ async fn test_create_chain_data_loader_providers_merge() {
         .handler(handler.clone())
         .build();
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
-    assert!(loader.is_err());
+    assert!(loader.is_ok());
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())

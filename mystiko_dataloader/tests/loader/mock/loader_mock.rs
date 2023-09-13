@@ -1,27 +1,21 @@
 use crate::loader::{MockFetcher, MockHandler, MockValidator};
 use async_trait::async_trait;
-use ethers_providers::{MockError, MockProvider, Provider as EthersProvider, RetryClientBuilder, RetryPolicy};
+use ethers_providers::{MockError, MockProvider, RetryClientBuilder, RetryPolicy};
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::fetcher::FetcherOptions;
-use mystiko_dataloader::loader::{ChainDataLoader, DataLoaderResult};
-use mystiko_dataloader::loader::{DataLoader, LoadOption};
+use mystiko_dataloader::loader::ChainDataLoader;
 use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use std::time::Duration;
 
-pub type ChainDataLoaderFullDataType =
-    ChainDataLoader<FullData, MockHandler<FullData>, Provider, MockFetcher<FullData>, MockValidator>;
+pub(crate) type ChainDataLoaderFullDataType =
+    ChainDataLoader<FullData, MockHandler<FullData>, MockFetcher<FullData>, MockValidator>;
 
-pub async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>, delay_block: Option<u64>) -> DataLoaderResult<()> {
-    let load_option = delay_block.map(|d| LoadOption::builder().delay_block(d).build());
-    loader.load(load_option).await
-}
-
-pub async fn create_loader(
+pub(crate) async fn create_loader(
     chain_id: u64,
     feature_count: usize,
     validator_count: usize,
@@ -32,7 +26,6 @@ pub async fn create_loader(
     Vec<Arc<MockFetcher<FullData>>>,
     Vec<Arc<MockValidator>>,
     Arc<MockHandler<FullData>>,
-    Arc<MockProvider>,
 ) {
     let core_cfg = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
@@ -53,10 +46,6 @@ pub async fn create_loader(
         .collect::<Vec<_>>();
     let handler = Arc::new(MockHandler::new());
 
-    let (_, mock) = EthersProvider::mocked();
-    let provider = create_mock_provider(&mock);
-    let provider = Arc::new(provider);
-
     let loader = ChainDataLoaderFullDataType::builder()
         .chain_id(chain_id)
         .config(core_cfg.clone())
@@ -64,16 +53,8 @@ pub async fn create_loader(
         .fetcher_options(fetcher_options)
         .validators(validators.clone())
         .handler(handler.clone())
-        .provider(provider)
         .build();
-    (
-        core_cfg.clone(),
-        Arc::new(loader),
-        fetchers,
-        validators,
-        handler,
-        Arc::new(mock),
-    )
+    (core_cfg.clone(), Arc::new(loader), fetchers, validators, handler)
 }
 
 #[derive(Debug, Default)]

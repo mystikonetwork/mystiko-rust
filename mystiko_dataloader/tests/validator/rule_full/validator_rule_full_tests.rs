@@ -1,4 +1,4 @@
-use crate::validator::common::validator_mock::{create_full_rule_full_data_validator, load_commitments};
+use crate::validator::common::{create_full_rule_full_data_validator, load_commitments};
 use ethers_core::types::Bytes;
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ChainData;

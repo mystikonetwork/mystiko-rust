@@ -4,6 +4,7 @@ use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::LoadedData;
 use mystiko_dataloader::data::{ChainResult, ContractResult};
 use mystiko_dataloader::fetcher::{ChainLoadedBlockOptions, DataFetcher, FetchOptions, FetchResult, FetcherError};
+use std::time::Duration;
 use tokio::sync::RwLock;
 
 pub struct MockFetcher<R>
@@ -11,7 +12,9 @@ where
     R: LoadedData,
 {
     pub chain_id: u64,
-    pub result: RwLock<Option<ChainData<R>>>,
+    loaded_block: RwLock<Option<u64>>,
+    fetch_result: RwLock<Option<ChainData<R>>>,
+    fetch_sleep: RwLock<bool>,
 }
 
 impl<R> MockFetcher<R>
@@ -21,16 +24,24 @@ where
     pub fn new(chain_id: u64) -> Self {
         MockFetcher {
             chain_id,
-            result: RwLock::new(None),
+            loaded_block: RwLock::new(Some(u64::MAX)),
+            fetch_result: RwLock::new(None),
+            fetch_sleep: RwLock::new(false),
         }
     }
 
-    pub async fn set_result(&self, r: ChainData<R>) {
-        *self.result.write().await = Some(r);
+    pub async fn set_loaded_block(&self, block: Option<u64>) {
+        *self.loaded_block.write().await = block;
     }
 
-    pub async fn set_error_result(&self) {
-        *self.result.write().await = None;
+    pub async fn set_fetch_result(&self, r: ChainData<R>) {
+        *self.fetch_result.write().await = Some(r);
+    }
+    pub async fn set_fetch_error_result(&self) {
+        *self.fetch_result.write().await = None;
+    }
+    pub async fn set_fetch_sleep(&self, fetch_sleep: bool) {
+        *self.fetch_sleep.write().await = fetch_sleep;
     }
 }
 
@@ -40,7 +51,11 @@ where
     R: LoadedData + Clone,
 {
     async fn fetch(&self, _option: &FetchOptions) -> FetchResult<R> {
-        if let Some(ref result) = *self.result.read().await {
+        if *self.fetch_sleep.read().await {
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
+
+        if let Some(ref result) = *self.fetch_result.read().await {
             let contract_results = result
                 .contracts_data
                 .clone()
@@ -67,6 +82,15 @@ where
     }
 
     async fn chain_loaded_block(&self, _options: &ChainLoadedBlockOptions) -> Result<u64, FetcherError> {
-        Err(FetcherError::AnyhowError(anyhow::anyhow!("not implemented")))
+        if let Some(block) = *self.loaded_block.read().await {
+            if block == 0 {
+                tokio::time::sleep(Duration::from_millis(100)).await;
+                Ok(u64::MAX)
+            } else {
+                Ok(block)
+            }
+        } else {
+            Err(anyhow::Error::msg("error".to_string()).into())
+        }
     }
 }
