@@ -59,7 +59,14 @@ jobs:
         run: cargo install protoc-gen-prost-crate --force
 
       - name: Build
-        run: RUSTFLAGS="-D warnings" ./scripts/build.sh
+        env:
+          RUSTFLAGS: "-D warnings"
+        run: cargo build
+
+      - name: Build All Features
+        env:
+          RUSTFLAGS: "-D warnings"
+        run: cargo build --all-features
 
       - name: Check Format
         run: cargo fmt --all -- --check
@@ -69,7 +76,7 @@ jobs:
         run: cargo clippy --all-targets --all-features -j 4 -- -D warnings
 
       - name: Run Test
-        run: cargo llvm-cov test --all-features --no-report
+        run: cargo llvm-cov test --no-report
         env:
           DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
 

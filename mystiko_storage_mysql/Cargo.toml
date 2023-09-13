@@ -13,11 +13,11 @@ num-bigint = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }
 sqlx = { version = "0.7.0", features = [ "runtime-tokio", "tls-rustls", "mysql" ] }
-tokio = { version = "1.26.0", features = ["sync"] }
+tokio = { version = "1.27.0", features = ["sync"] }
 typed-builder = { version = "0.15.2" }
 
 [dev-dependencies]
 mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
 tempfile = { version = "3.4.0" }
-tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }
 url = { version = "2.4.0" }

@@ -1,6 +1,6 @@
 use crate::{
-    create_raw_from_file, create_raw_from_json, BridgeConfig, ChainConfig, CircuitConfig, ContractConfig,
-    DepositContractConfig, IndexerConfig, PackerConfig, PoolContractConfig, RawChainConfig, RawMystikoConfig,
+    create_raw_from_json, BridgeConfig, ChainConfig, CircuitConfig, ContractConfig, DepositContractConfig,
+    IndexerConfig, PackerConfig, PoolContractConfig, RawChainConfig, RawMystikoConfig,
 };
 use anyhow::{Error, Result};
 use mystiko_protos::config::v1::ConfigOptions;
@@ -62,8 +62,9 @@ impl MystikoConfig {
         MystikoConfig::from_raw(create_raw_from_json::<RawMystikoConfig>(json)?)
     }
 
+    #[cfg(feature = "fs")]
     pub async fn from_json_file(json_file: &str) -> Result<Self> {
-        MystikoConfig::from_raw(create_raw_from_file::<RawMystikoConfig>(json_file).await?)
+        MystikoConfig::from_raw(crate::create_raw_from_file::<RawMystikoConfig>(json_file).await?)
     }
 
     pub async fn from_remote(options: &ConfigOptions) -> Result<Self> {
@@ -109,10 +110,13 @@ impl MystikoConfig {
         O: Into<ConfigOptions>,
     {
         let options: ConfigOptions = options.into();
+        #[cfg(feature = "fs")]
         match &options.file_path {
             Some(path) => MystikoConfig::from_json_file(path).await,
             None => MystikoConfig::from_remote(&options).await,
         }
+        #[cfg(not(feature = "fs"))]
+        MystikoConfig::from_remote(&options).await
     }
 
     pub fn version(&self) -> &str {

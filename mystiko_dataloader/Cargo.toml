@@ -29,13 +29,14 @@ rustc-hex = { version = "2.1.0" }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }
 thiserror = { version = "1.0", default-features = false }
-tokio = { version = "1.26.0", features = ["sync"] }
+tokio = { version = "1.27.0", features = ["sync"] }
 typed-builder = { version = "0.15.2" }
 
 [dev-dependencies]
 env_logger = { version = "0.10.0" }
 mockall = { version = "0.11.4" }
 mockito = { version = "1.1.0" }
+mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["fs"] }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
-tokio = { version = "1.26.0", features = ["fs", "io-util", "io-std"] }
+tokio = { version = "1.27.0", features = ["fs", "io-util", "io-std"] }
 
