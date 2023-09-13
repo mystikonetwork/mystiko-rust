@@ -5,6 +5,10 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+fs = ["mystiko_relayer_config/fs"]
+
 [dependencies]
 anyhow = { version = "1.0" }
 ethers-contract = { version = "2.0.3" }
@@ -22,7 +26,7 @@ rustc-hex = { version = "2.1.0" }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = { version = "1.0.91" }
 thiserror = { version = "1.0", default-features = false }
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { version = "1.27.0", features = ["sync"] }
 typed-builder = { version = "0.15.2" }
 validator = { version = "0.16.0", features = ["derive"] }
 
@@ -33,3 +37,5 @@ ethers = { version = "2.0.4" }
 mockall = { version = "0.11.4" }
 mockito = { version = "1.1.0" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
+mystiko_relayer_client = { version = "*", path = ".", features = ["fs"] }
+tokio = { version = "1.27.0", features = ["fs", "io-util", "io-std"] }

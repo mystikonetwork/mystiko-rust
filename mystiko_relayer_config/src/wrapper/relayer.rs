@@ -1,6 +1,6 @@
 use crate::raw::chain::RawChainConfig;
+use crate::raw::create_raw_from_json;
 use crate::raw::relayer::RawRelayerConfig;
-use crate::raw::{create_raw_from_file, create_raw_from_json};
 use crate::wrapper::chain::ChainConfig;
 use anyhow::{Error, Result};
 use std::collections::HashMap;
@@ -50,8 +50,9 @@ impl RelayerConfig {
         RelayerConfig::from_raw(create_raw_from_json::<RawRelayerConfig>(json)?)
     }
 
+    #[cfg(feature = "fs")]
     pub async fn from_json_file(json_file: &str) -> Result<Self> {
-        RelayerConfig::from_raw(create_raw_from_file::<RawRelayerConfig>(json_file).await?)
+        RelayerConfig::from_raw(crate::raw::create_raw_from_file::<RawRelayerConfig>(json_file).await?)
     }
 
     pub async fn from_remote(options: &RemoteOptions) -> Result<Self> {

@@ -19,4 +19,4 @@ ulid = { version = "1.0.0" }
 [dev-dependencies]
 mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
-tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }

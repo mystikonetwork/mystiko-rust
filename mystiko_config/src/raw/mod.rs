@@ -24,8 +24,6 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_json::from_str;
 use std::fmt::Debug;
-use std::path::PathBuf;
-use tokio::fs::read_to_string;
 
 pub fn validate_raw<T>(raw: &T) -> Result<()>
 where
@@ -54,11 +52,12 @@ where
     create_raw::<T>(object)
 }
 
+#[cfg(feature = "fs")]
 pub async fn create_raw_from_file<T>(json_file: &str) -> Result<T>
 where
     T: Validate + Serialize + DeserializeOwned + Debug,
 {
-    let contents = read_to_string(PathBuf::from(json_file)).await?;
+    let contents = tokio::fs::read_to_string(std::path::PathBuf::from(json_file)).await?;
     let result: T = from_str(&contents)?;
     create_raw::<T>(result)
 }

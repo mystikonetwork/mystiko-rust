@@ -21,7 +21,7 @@ reqwest = { version = "0.11.14", features = ["rustls-tls"], default-features = f
 serde = { version = "1.0.152" }
 serde_json = { version = "1.0.91" }
 thiserror = { version = "1.0", default-features = false }
-tokio = { version = "1.26.0", features = ["time", "sync"] }
+tokio = { version = "1.27.0", features = ["time", "sync"] }
 typed-builder = { version = "0.15.2" }
 
 [dev-dependencies]
@@ -29,7 +29,7 @@ futures-util = { version = "0.3.28", features = ["sink"] }
 hex = { version = "0.4.3" }
 mockall = { version = "0.11.4" }
 mockito = { version = "1.1.0" }
-tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }
 tokio-tungstenite = { version = "0.20.0" }
 
 [features]
