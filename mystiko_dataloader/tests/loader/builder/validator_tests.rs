@@ -10,7 +10,7 @@ use mystiko_dataloader::loader::{ChainDataLoader, DataLoader, FromConfig, Loader
 use mystiko_dataloader::validator::DataValidator;
 use mystiko_dataloader::DataLoaderError;
 use mystiko_ethers::Providers;
-use mystiko_protos::config::v1::ConfigOptions;
+use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_protos::loader::v1::{
     LoaderConfig, RuleValidatorCheckerType, RuleValidatorConfig, ValidatorConfig, ValidatorType,
 };

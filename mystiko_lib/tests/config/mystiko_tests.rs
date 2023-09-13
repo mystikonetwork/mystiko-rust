@@ -1,6 +1,6 @@
 use mystiko_lib::config::version;
 use mystiko_lib::{initialize, is_initialized};
-use mystiko_protos::config::v1::ConfigOptions;
+use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_protos::core::v1::MystikoOptions;
 use prost::Message;
 

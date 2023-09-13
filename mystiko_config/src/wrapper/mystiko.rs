@@ -3,7 +3,7 @@ use crate::{
     IndexerConfig, PackerConfig, PoolContractConfig, RawChainConfig, RawMystikoConfig,
 };
 use anyhow::{Error, Result};
-use mystiko_protos::config::v1::ConfigOptions;
+use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_types::{BridgeType, CircuitType};
 use std::collections::HashMap;
 use std::sync::Arc;

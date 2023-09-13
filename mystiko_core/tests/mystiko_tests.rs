@@ -2,7 +2,7 @@ use crate::common::create_database;
 use mockito::Server;
 use mystiko_core::{Mystiko, MystikoOptions};
 use mystiko_ethers::{DefaultProviderFactory, ProviderFactory};
-use mystiko_protos::config::v1::ConfigOptions;
+use mystiko_protos::common::v1::ConfigOptions;
 
 mod common;
 

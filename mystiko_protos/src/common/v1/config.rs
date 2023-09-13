@@ -1,4 +1,4 @@
-use crate::config::v1::ConfigOptions;
+use crate::common::v1::ConfigOptions;
 
 pub trait ConfigOptionsOption {
     fn get_environment(&self) -> String;

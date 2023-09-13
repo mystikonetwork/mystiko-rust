@@ -5,7 +5,7 @@ use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::handler::DataHandler;
 use mystiko_dataloader::loader::{ChainDataLoader, FromConfig, LoaderConfigOptions};
 use mystiko_ethers::Providers;
-use mystiko_protos::config::v1::ConfigOptions;
+use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_protos::loader::v1::{
     EtherscanFetcherChainConfig, EtherscanFetcherConfig, FetcherConfig, FetcherType, LoaderConfig,
 };
