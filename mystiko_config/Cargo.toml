@@ -8,7 +8,7 @@ edition = "2021"
 [features]
 default = []
 fs = ["dep:tokio"]
-protos = ["mystiko_protos/mystiko-config-v1", "mystiko_protos/mystiko-config-bridge-v1", "mystiko_protos/mystiko-config-contract-v1"]
+proto = ["mystiko_protos/mystiko-config-v1", "mystiko_protos/mystiko-config-bridge-v1", "mystiko_protos/mystiko-config-contract-v1"]
 
 [dependencies]
 anyhow = { version = "1.0" }
@@ -29,5 +29,5 @@ validator = { version = "0.16.0", features = ["derive"] }
 
 [dev-dependencies]
 mockito = { version = "1.1.0" }
-mystiko_config = { version = "*", path = ".", features = ["fs", "protos"] }
+mystiko_config = { version = "*", path = ".", features = ["fs", "proto"] }
 tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }
