@@ -43,6 +43,8 @@ pub struct DatabaseHandler<
 > {
     config: Arc<MystikoConfig>,
     collection: Arc<Collection<F, S>>,
+    #[builder(default = 10000)]
+    pub handle_batch_size: usize,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<(R, X, C, N)>,
 }
@@ -400,42 +402,45 @@ where
     ) -> Result<(Vec<C>, Vec<Document<C>>)> {
         let mut insert_commitments: Vec<C> = Vec::new();
         let mut update_commitments: Vec<Document<C>> = Vec::new();
-        let existing_commitments: Vec<Document<C>> = self
-            .collection
-            .find(Some(Condition::and(vec![
-                SubFilter::equal(C::column_chain_id(), chain_id),
-                SubFilter::equal(C::column_contract_address(), contract_address.to_string()),
-                SubFilter::in_list(
-                    C::column_commitment_hash(),
-                    commitments
-                        .iter()
-                        .map(|p| p.commitment_hash_as_biguint())
-                        .collect::<Vec<_>>(),
-                ),
-            ])))
-            .await?;
-        let mut existing_commitments_map = existing_commitments
-            .into_iter()
-            .map(|commitment| (commitment.data.get_commitment_hash().clone(), commitment))
-            .collect::<HashMap<_, _>>();
-        for commitment_proto in commitments.into_iter() {
-            if let Some(mut existing_commitment) =
-                existing_commitments_map.remove(&commitment_proto.commitment_hash_as_biguint())
-            {
-                existing_commitment
-                    .data
-                    .update_by_proto(self.config.clone(), &commitment_proto)?;
-                existing_commitment.updated_at = current_timestamp();
-                update_commitments.push(existing_commitment);
-            } else {
-                insert_commitments.push(C::from_proto(
-                    self.config.clone(),
-                    chain_id,
-                    contract_address,
-                    commitment_proto,
-                )?);
+        for commitment_chunk in commitments.chunks(self.handle_batch_size) {
+            let existing_commitments: Vec<Document<C>> = self
+                .collection
+                .find(Some(Condition::and(vec![
+                    SubFilter::equal(C::column_chain_id(), chain_id),
+                    SubFilter::equal(C::column_contract_address(), contract_address.to_string()),
+                    SubFilter::in_list(
+                        C::column_commitment_hash(),
+                        commitment_chunk
+                            .iter()
+                            .map(|p| p.commitment_hash_as_biguint())
+                            .collect::<Vec<_>>(),
+                    ),
+                ])))
+                .await?;
+            let mut existing_commitments_map = existing_commitments
+                .into_iter()
+                .map(|commitment| (commitment.data.get_commitment_hash().clone(), commitment))
+                .collect::<HashMap<_, _>>();
+            for commitment_proto in commitment_chunk {
+                if let Some(mut existing_commitment) =
+                    existing_commitments_map.remove(&commitment_proto.commitment_hash_as_biguint())
+                {
+                    existing_commitment
+                        .data
+                        .update_by_proto(self.config.clone(), commitment_proto)?;
+                    existing_commitment.updated_at = current_timestamp();
+                    update_commitments.push(existing_commitment);
+                } else {
+                    insert_commitments.push(C::from_proto(
+                        self.config.clone(),
+                        chain_id,
+                        contract_address,
+                        commitment_proto.clone(),
+                    )?);
+                }
             }
         }
+
         Ok((insert_commitments, update_commitments))
     }
 
@@ -447,37 +452,42 @@ where
     ) -> Result<(Vec<N>, Vec<Document<N>>)> {
         let mut insert_nullifiers: Vec<N> = Vec::new();
         let mut update_nullifiers: Vec<Document<N>> = Vec::new();
-        let existing_nullifiers: Vec<Document<N>> = self
-            .collection
-            .find(Some(Condition::and(vec![
-                SubFilter::equal(N::column_chain_id(), chain_id),
-                SubFilter::equal(N::column_contract_address(), contract_address.to_string()),
-                SubFilter::in_list(
-                    N::column_nullifier(),
-                    nullifiers.iter().map(|n| n.nullifier_as_biguint()).collect::<Vec<_>>(),
-                ),
-            ])))
-            .await?;
-        let mut existing_nullifiers_map = existing_nullifiers
-            .into_iter()
-            .map(|nullifier| (nullifier.data.get_nullifier().clone(), nullifier))
-            .collect::<HashMap<_, _>>();
-        for nullifier_proto in nullifiers.into_iter() {
-            if let Some(mut existing_nullifier) =
-                existing_nullifiers_map.remove(&nullifier_proto.nullifier_as_biguint())
-            {
-                existing_nullifier
-                    .data
-                    .update_by_proto(self.config.clone(), &nullifier_proto)?;
-                existing_nullifier.updated_at = current_timestamp();
-                update_nullifiers.push(existing_nullifier);
-            } else {
-                insert_nullifiers.push(N::from_proto(
-                    self.config.clone(),
-                    chain_id,
-                    contract_address,
-                    nullifier_proto,
-                )?);
+        for nullifier_chunks in nullifiers.chunks(self.handle_batch_size) {
+            let existing_nullifiers: Vec<Document<N>> = self
+                .collection
+                .find(Some(Condition::and(vec![
+                    SubFilter::equal(N::column_chain_id(), chain_id),
+                    SubFilter::equal(N::column_contract_address(), contract_address.to_string()),
+                    SubFilter::in_list(
+                        N::column_nullifier(),
+                        nullifier_chunks
+                            .iter()
+                            .map(|n| n.nullifier_as_biguint())
+                            .collect::<Vec<_>>(),
+                    ),
+                ])))
+                .await?;
+            let mut existing_nullifiers_map = existing_nullifiers
+                .into_iter()
+                .map(|nullifier| (nullifier.data.get_nullifier().clone(), nullifier))
+                .collect::<HashMap<_, _>>();
+            for nullifier_proto in nullifier_chunks {
+                if let Some(mut existing_nullifier) =
+                    existing_nullifiers_map.remove(&nullifier_proto.nullifier_as_biguint())
+                {
+                    existing_nullifier
+                        .data
+                        .update_by_proto(self.config.clone(), nullifier_proto)?;
+                    existing_nullifier.updated_at = current_timestamp();
+                    update_nullifiers.push(existing_nullifier);
+                } else {
+                    insert_nullifiers.push(N::from_proto(
+                        self.config.clone(),
+                        chain_id,
+                        contract_address,
+                        nullifier_proto.clone(),
+                    )?);
+                }
             }
         }
         Ok((insert_nullifiers, update_nullifiers))
