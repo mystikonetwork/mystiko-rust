@@ -10,7 +10,7 @@ use crate::loader::{
 };
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
-use log::{error, warn};
+use log::warn;
 use mystiko_config::{ChainConfig, ContractConfig, MystikoConfig};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -37,7 +37,6 @@ pub struct ChainDataLoader<R, H = Box<dyn DataHandler<R>>, F = Box<dyn DataFetch
 #[derive(Debug, Clone, TypedBuilder)]
 struct ChainLoadParams<'a> {
     pub(crate) cfg: &'a ChainConfig,
-    pub(crate) start_block: u64,
     pub(crate) option: &'a LoadOption,
 }
 
@@ -51,7 +50,6 @@ struct FetcherRunParams<F> {
 #[derive(Debug, Clone, TypedBuilder)]
 struct LoaderRunParams<'a, F> {
     pub(crate) params: &'a ChainLoadParams<'a>,
-    pub(crate) target_block: u64,
     pub(crate) fetchers: Vec<FetcherRunParams<F>>,
 }
 
@@ -69,12 +67,7 @@ where
     {
         let options = options.into();
         let chain_cfg = self.build_chain_config().await?;
-        let chain_start_block = self.build_chain_start_block(&chain_cfg).await?;
-        let params = ChainLoadParams::builder()
-            .cfg(&chain_cfg)
-            .start_block(chain_start_block)
-            .option(&options)
-            .build();
+        let params = ChainLoadParams::builder().cfg(&chain_cfg).option(&options).build();
 
         self.try_load(&params).await
     }
@@ -139,81 +132,48 @@ where
 
         let results = futures::future::join_all(tasks).await;
         let fetchers: Vec<_> = results.into_iter().filter_map(|r| r.ok()).collect();
-        let target_block = fetchers
-            .iter()
-            .map(|f| f.loaded_block)
-            .max()
-            .ok_or(DataLoaderError::QueryLoadedBlocksError)?;
-        let run_params = LoaderRunParams::builder()
-            .params(params)
-            .target_block(target_block)
-            .fetchers(fetchers)
-            .build();
+        let run_params = LoaderRunParams::builder().params(params).fetchers(fetchers).build();
 
         self.run_load(&run_params).await
     }
 
     async fn run_load(&self, run_params: &LoaderRunParams<'_, F>) -> DataLoaderResult<()> {
-        let (contract_options, contracts) = self.build_loading_contracts(run_params.params.cfg).await?;
-        let mut fetch_option = FetchOptions::builder()
-            .config(self.config.clone())
-            .chain_id(self.chain_id)
-            .start_block(run_params.params.start_block)
-            .target_block(run_params.target_block)
-            .contract_options(contract_options)
-            .build();
-
-        for param in run_params.fetchers.iter() {
-            fetch_option.target_block = param.loaded_block;
-            if let Some(contracts_options) = fetch_option.contract_options.as_mut() {
-                for contract_options in contracts_options.iter_mut() {
-                    if contract_options.target_block.is_some() {
-                        contract_options.target_block = Some(param.loaded_block);
+        let contracts = self.build_loading_contracts(run_params.params.cfg).await?;
+        for fetcher in run_params.fetchers.iter() {
+            let fetch_option = self.build_fetch_options(&contracts, fetcher).await?;
+            if let Some(fetch_option) = &fetch_option {
+                let mut chain_data = match self
+                    .fetch(&run_params.params.option.fetcher, fetcher, &fetch_option)
+                    .await
+                {
+                    Err(e) => {
+                        warn!("fetch fetcher(index={:?}) raised error: {:?}", fetcher.index, e);
+                        None
+                    }
+                    Ok(d) => Some(d),
+                };
+                if let Some(chain_data) = chain_data.as_mut() {
+                    let skip_validation = self
+                        .fetcher_options
+                        .get(&fetcher.index)
+                        .map(|o| o.skip_validation)
+                        .unwrap_or(false);
+                    let mut invalid = false;
+                    if !skip_validation {
+                        if let Err(e) = self.validate(chain_data, &run_params.params.option.validator).await {
+                            warn!("validate fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
+                            invalid = true;
+                        };
+                    }
+                    if !invalid {
+                        if let Err(e) = self.handle(&chain_data).await {
+                            warn!("handle fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
+                        };
                     }
                 }
             }
-            let mut chain_data = match self
-                .fetch(&run_params.params.option.fetcher, param, &fetch_option)
-                .await
-            {
-                Err(e) => {
-                    warn!("fetch fetcher(index={:?}) raised error: {:?}", param.index, e);
-                    continue;
-                }
-                Ok(d) => d,
-            };
-
-            let skip_validation = self
-                .fetcher_options
-                .get(&param.index)
-                .map(|o| o.skip_validation)
-                .unwrap_or(false);
-            if !skip_validation {
-                if let Err(e) = self
-                    .validate(&mut chain_data, &run_params.params.option.validator)
-                    .await
-                {
-                    warn!("validate fetcher(index={:?}) data raised error: {:?}", param.index, e);
-                    continue;
-                };
-            }
-
-            if let Err(e) = self.handle(&chain_data).await {
-                warn!("handle fetcher(index={:?}) data raised error: {:?}", param.index, e);
-                continue;
-            };
-
-            let retry_fetch_options = self.build_retry_fetch_options(&contracts, run_params, param).await;
-            if let Ok(r) = retry_fetch_options {
-                match r {
-                    Some(o) => fetch_option = o,
-                    None => return Ok(()),
-                }
-            }
         }
-
-        error!("failed to load data from all fetchers");
-        Err(DataLoaderError::LoaderFetchersExhaustedError)
+        Ok(())
     }
 
     async fn query_loaded_blocks(
@@ -330,39 +290,17 @@ where
         Ok(chain_cfg)
     }
 
-    async fn build_loading_contracts(
-        &self,
-        chain: &ChainConfig,
-    ) -> DataLoaderResult<(Option<Vec<ContractFetchOptions>>, Vec<ContractConfig>)> {
+    async fn build_loading_contracts(&self, chain: &ChainConfig) -> DataLoaderResult<Vec<ContractConfig>> {
         if let Some(contracts) = self.handler.query_loading_contracts(self.chain_id).await? {
-            if !contracts.is_empty() {
-                let contract_options = contracts
-                    .iter()
-                    .map(|c| ContractFetchOptions::builder().contract_config(c.clone()).build())
-                    .collect();
-                return Ok((Some(contract_options), contracts));
-            }
+            return Ok(contracts);
         } else {
             let contracts = chain.contracts_with_disabled();
             if !contracts.is_empty() {
-                return Ok((None, contracts));
+                return Ok(contracts);
             }
         }
 
         Err(DataLoaderError::LoaderNoContractsError)
-    }
-
-    async fn build_chain_start_block(&self, chain_cfg: &ChainConfig) -> DataLoaderResult<u64> {
-        Ok(self.build_chain_loaded_block(chain_cfg).await? + 1)
-    }
-
-    async fn build_chain_loaded_block(&self, chain_cfg: &ChainConfig) -> DataLoaderResult<u64> {
-        let start_block = self
-            .handler
-            .query_chain_loaded_block(self.chain_id)
-            .await?
-            .unwrap_or_else(|| chain_cfg.start_block());
-        Ok(start_block)
     }
 
     async fn build_contract_start_block(&self, contract: &ContractConfig) -> DataLoaderResult<u64> {
@@ -375,54 +313,36 @@ where
         Ok(start_block)
     }
 
-    async fn build_retry_fetch_options(
+    async fn build_fetch_options(
         &self,
         contracts: &Vec<ContractConfig>,
-        run_params: &LoaderRunParams<'_, F>,
         fetcher: &FetcherRunParams<F>,
     ) -> DataLoaderResult<Option<FetchOptions>> {
         let mut contract_options: Vec<ContractFetchOptions> = vec![];
         for contract_cfg in contracts {
-            if let Ok(contract_start_block) = self.build_contract_start_block(contract_cfg).await {
-                // skip contract that already fetch to chain_target_block
-                if contract_start_block > run_params.target_block {
-                    continue;
-                }
-
-                if contract_start_block - 1 > fetcher.loaded_block {
-                    warn!(
-                        "contract {:?} start_block {:?} > fetcher {:?} loaded_block {:?} ",
-                        contract_cfg.address(),
-                        contract_start_block,
-                        fetcher.index,
-                        fetcher.loaded_block
-                    );
-                    return Err(DataLoaderError::FetcherLoadedBlockSmallerError(
-                        fetcher.loaded_block,
-                        contract_start_block,
-                    ));
-                }
-
-                let fetch_option = ContractFetchOptions::builder()
-                    .contract_config(contract_cfg.clone())
-                    .start_block(Some(contract_start_block))
-                    .target_block(Some(run_params.target_block))
-                    .build();
-                contract_options.push(fetch_option);
+            let contract_start_block = self.build_contract_start_block(contract_cfg).await?;
+            // skip contract that already fetch to fetcher.loaded_block
+            if contract_start_block > fetcher.loaded_block {
+                continue;
             }
+            let fetch_option = ContractFetchOptions::builder()
+                .contract_config(contract_cfg.clone())
+                .start_block(Some(contract_start_block))
+                .build();
+            contract_options.push(fetch_option);
         }
-
-        if contract_options.is_empty() {
-            Ok(None)
-        } else {
+        let start_block = contract_options.iter().map(|c| c.start_block).filter_map(|s| s).min();
+        if let Some(start_block) = start_block {
             let options = FetchOptions::builder()
                 .config(self.config.clone())
                 .chain_id(self.chain_id)
-                .start_block(run_params.params.start_block)
-                .target_block(run_params.target_block)
+                .start_block(start_block)
+                .target_block(fetcher.loaded_block)
                 .contract_options(Some(contract_options))
                 .build();
             Ok(Some(options))
+        } else {
+            Ok(None)
         }
     }
 }
