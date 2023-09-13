@@ -2,7 +2,7 @@ use anyhow::Result;
 use mystiko_protos::service::v1::ClientOptions;
 use tonic::transport::{Certificate, Channel, ClientTlsConfig, Endpoint};
 
-pub async fn grpc_client(options: &ClientOptions) -> Result<Channel> {
+pub async fn connect(options: &ClientOptions) -> Result<Channel> {
     let uri = options.to_uri()?;
     let channel = if let Some(tls) = tls_config(options).await? {
         Endpoint::from(uri).tls_config(tls)?.connect().await?

@@ -1,7 +1,7 @@
 mod common;
 
 use crate::common::{StartOptions, TestingServer, TlsKeys};
-use mystiko_grpc::grpc_client;
+use mystiko_grpc::connect;
 use mystiko_protos::service::v1::ClientOptions;
 use mystiko_protos::testing::v1::testing_service_client::TestingServiceClient;
 use mystiko_protos::testing::v1::EchoRequest;
@@ -12,7 +12,7 @@ async fn test_grpc_client() {
     let options = StartOptions::builder().port(50051u16).build();
     let mut server = setup(options).await;
     let client_options = ClientOptions::builder().port(50051u32).build();
-    let mut client = TestingServiceClient::new(grpc_client(&client_options).await.unwrap());
+    let mut client = TestingServiceClient::new(connect(&client_options).await.unwrap());
     let response = client
         .echo(EchoRequest::builder().message("hello world").build())
         .await
@@ -35,7 +35,7 @@ async fn test_grpc_client_with_ssl() {
         .ssl_cert(tls_keys.ca_pem)
         .ssl_server_name("example.com".to_string())
         .build();
-    let mut client = TestingServiceClient::new(grpc_client(&client_options).await.unwrap());
+    let mut client = TestingServiceClient::new(connect(&client_options).await.unwrap());
     let response = client
         .echo(EchoRequest::builder().message("hello world").build())
         .await
@@ -60,7 +60,7 @@ async fn test_grpc_client_with_ssl_key_file() {
         .is_ssl(true)
         .ssl_cert_path(path.to_string_lossy().to_string())
         .build();
-    let mut client = TestingServiceClient::new(grpc_client(&client_options).await.unwrap());
+    let mut client = TestingServiceClient::new(connect(&client_options).await.unwrap());
     let response = client
         .echo(EchoRequest::builder().message("hello world").build())
         .await
