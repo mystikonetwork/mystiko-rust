@@ -15,12 +15,10 @@ reqwest = { version = "0.11.14", features = ["rustls-tls"], default-features = f
 serde = { version = "1.0.152" }
 serde_json = { version = "1.0.91" }
 thiserror = { version = "1.0", default-features = false }
-tokio = { version = "1.26.0", features = ["time"] }
+tokio = { version = "1.27.0", features = ["time"] }
 typed-builder = { version = "0.15.2" }
-
-
 
 [dev-dependencies]
 mockito = { version = "1.1.0" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
-tokio = { version = "1.26.0", features = ["macros", "rt", "test-util"] }
+tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }

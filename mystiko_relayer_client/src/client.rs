@@ -357,20 +357,27 @@ where
 }
 
 async fn create_relayer_config(options: &RelayerClientOptions) -> Result<Arc<RelayerConfig>> {
+    #[cfg(feature = "fs")]
     let result = if let Some(config_file_path) = &options.relayer_config_file_path {
         RelayerConfig::from_json_file(config_file_path).await
     } else {
-        let mut remote_options = RemoteOptions::builder()
-            .is_testnet(options.is_testnet)
-            .is_staging(options.is_staging)
-            .build();
-        remote_options.base_url = options.relayer_config_remote_base_url.clone();
-        remote_options.git_revision = options.relayer_config_git_revision.clone();
-        RelayerConfig::from_remote(&remote_options).await
+        create_relayer_config_from_remote(options).await
     };
+    #[cfg(not(feature = "fs"))]
+    let result = create_relayer_config_from_remote(options).await;
 
     match result {
         Ok(config) => Ok(Arc::new(config)),
         Err(err) => Err(RelayerClientError::CreateRelayerConfigError(err.to_string())),
     }
+}
+
+async fn create_relayer_config_from_remote(options: &RelayerClientOptions) -> anyhow::Result<RelayerConfig> {
+    let mut remote_options = RemoteOptions::builder()
+        .is_testnet(options.is_testnet)
+        .is_staging(options.is_staging)
+        .build();
+    remote_options.base_url = options.relayer_config_remote_base_url.clone();
+    remote_options.git_revision = options.relayer_config_git_revision.clone();
+    RelayerConfig::from_remote(&remote_options).await
 }

@@ -17,4 +17,4 @@ typed-builder = { version = "0.15.2" }
 validator = { version = "0.16.0", features = ["derive"] }
 
 [dev-dependencies]
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }
