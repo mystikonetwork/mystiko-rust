@@ -143,7 +143,7 @@ where
             .iter()
             .map(|f| f.loaded_block)
             .max()
-            .ok_or(DataLoaderError::QueryFetcherLoadedBlockError)?;
+            .ok_or(DataLoaderError::QueryLoadedBlocksError)?;
         let run_params = LoaderRunParams::builder()
             .params(params)
             .target_block(target_block)
@@ -236,7 +236,7 @@ where
             }
             Err(_) => {
                 warn!(
-                    "query_loaded_blocks of fetcher(index={:?}) timed out {:?} ms",
+                    "query_loaded_blocks of fetcher(index={:?}) timed out after {:?} ms",
                     index, options.query_loaded_block_timeout_ms
                 );
                 Err(DataLoaderError::QueryLoadedBlocksTimeoutError(

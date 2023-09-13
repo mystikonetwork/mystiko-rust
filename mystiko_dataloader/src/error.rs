@@ -10,10 +10,10 @@ pub enum DataLoaderError {
     #[error("no contracts to be loaded")]
     LoaderNoContractsError,
     #[error("failed to query loaded block from all fetchers")]
-    QueryFetcherLoadedBlockError,
-    #[error("query of fetcher(index = {0}) loaded block timed out after (1)ms")]
+    QueryLoadedBlocksError,
+    #[error("query of fetcher(index = {0}) loaded block timed out after (1) ms")]
     QueryLoadedBlocksTimeoutError(usize, u64),
-    #[error("fetch of fetcher(index = {0}) timed out after {1}ms)")]
+    #[error("fetch of fetcher(index = {0}) timed out after {1} ms)")]
     FetchTimeoutError(usize, u64),
     #[error("fetcher loaded block {0} smaller than start block {1}")]
     FetcherLoadedBlockSmallerError(u64, u64),

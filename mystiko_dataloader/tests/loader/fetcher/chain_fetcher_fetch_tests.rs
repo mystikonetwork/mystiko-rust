@@ -43,7 +43,7 @@ async fn test_loader_start_without_fetcher() {
         .err()
         .unwrap()
         .to_string()
-        .contains(DataLoaderError::QueryFetcherLoadedBlockError.to_string().as_str()));
+        .contains(DataLoaderError::QueryLoadedBlocksError.to_string().as_str()));
 }
 
 #[tokio::test]

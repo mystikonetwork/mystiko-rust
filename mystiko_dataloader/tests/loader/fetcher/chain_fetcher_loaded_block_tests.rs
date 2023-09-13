@@ -18,7 +18,7 @@ async fn test_loader_one_fetcher_loaded_block_error() {
         .err()
         .unwrap()
         .to_string()
-        .contains(DataLoaderError::QueryFetcherLoadedBlockError.to_string().as_str()));
+        .contains(DataLoaderError::QueryLoadedBlocksError.to_string().as_str()));
 }
 
 #[tokio::test]
@@ -279,7 +279,7 @@ async fn test_loader_many_fetcher_loaded_block_timeout() {
         .err()
         .unwrap()
         .to_string()
-        .contains(DataLoaderError::QueryFetcherLoadedBlockError.to_string().as_str()));
+        .contains(DataLoaderError::QueryLoadedBlocksError.to_string().as_str()));
 
     let options = LoadOption::builder()
         .fetcher(
