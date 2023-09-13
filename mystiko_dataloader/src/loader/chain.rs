@@ -36,23 +36,23 @@ pub struct ChainDataLoader<R, H = Box<dyn DataHandler<R>>, F = Box<dyn DataFetch
 
 #[derive(Debug, Clone, TypedBuilder)]
 struct ChainLoadParams<'a> {
-    pub cfg: &'a ChainConfig,
-    pub start_block: u64,
-    pub option: &'a LoadOption,
+    pub(crate) cfg: &'a ChainConfig,
+    pub(crate) start_block: u64,
+    pub(crate) option: &'a LoadOption,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
 struct FetcherRunParams<F> {
-    pub index: usize,
-    pub fetcher: Arc<F>,
-    pub loaded_block: u64,
+    pub(crate) index: usize,
+    pub(crate) fetcher: Arc<F>,
+    pub(crate) loaded_block: u64,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
 struct LoaderRunParams<'a, F> {
-    pub params: &'a ChainLoadParams<'a>,
-    pub target_block: u64,
-    pub fetchers: Vec<FetcherRunParams<F>>,
+    pub(crate) params: &'a ChainLoadParams<'a>,
+    pub(crate) target_block: u64,
+    pub(crate) fetchers: Vec<FetcherRunParams<F>>,
 }
 
 #[async_trait]
@@ -132,11 +132,6 @@ where
     V: DataValidator<R>,
 {
     async fn try_load(&self, params: &ChainLoadParams<'_>) -> DataLoaderResult<()> {
-        let run_params = self.prepare_load(params).await?;
-        self.run_load(&run_params).await
-    }
-
-    async fn prepare_load<'a>(&'a self, params: &'a ChainLoadParams<'_>) -> DataLoaderResult<LoaderRunParams<'_, F>> {
         let mut tasks = vec![];
         for (index, fetcher) in self.fetchers.iter().enumerate() {
             tasks.push(self.query_loaded_blocks(index, fetcher, &params.option.fetcher));
@@ -154,7 +149,8 @@ where
             .target_block(target_block)
             .fetchers(fetchers)
             .build();
-        Ok(run_params)
+
+        self.run_load(&run_params).await
     }
 
     async fn run_load(&self, run_params: &LoaderRunParams<'_, F>) -> DataLoaderResult<()> {
@@ -174,7 +170,7 @@ where
                 .await
             {
                 Err(e) => {
-                    warn!("fetch fetcher(index={:?}) raised error {:?}", param.index, e);
+                    warn!("fetch fetcher(index={:?}) raised error: {:?}", param.index, e);
                     continue;
                 }
                 Ok(d) => d,
@@ -190,13 +186,13 @@ where
                     .validate(&mut chain_data, &run_params.params.option.validator)
                     .await
                 {
-                    warn!("validate fetcher(index={:?}) data raised error {:?}", param.index, e);
+                    warn!("validate fetcher(index={:?}) data raised error: {:?}", param.index, e);
                     continue;
                 };
             }
 
             if let Err(e) = self.handle(&chain_data).await {
-                warn!("handle fetcher(index={:?}) data raised error {:?}", param.index, e);
+                warn!("handle fetcher(index={:?}) data raised error: {:?}", param.index, e);
                 continue;
             };
 
@@ -233,14 +229,20 @@ where
                 .build()),
             Ok(Err(e)) => {
                 warn!(
-                    "query loaded block from fetcher(index={:?}) raised error {:?}",
+                    "query_loaded_blocks of fetcher(index={:?}) raised error: {:?}",
                     index, e
                 );
                 Err(e.into())
             }
             Err(_) => {
-                warn!("query loaded block from fetcher(index={:?}) timed out", index);
-                Err(DataLoaderError::QueryFetcherLoadedBlockTimeoutError(index))
+                warn!(
+                    "query_loaded_blocks of fetcher(index={:?}) timed out {:?} ms",
+                    index, options.query_loaded_block_timeout_ms
+                );
+                Err(DataLoaderError::QueryLoadedBlocksTimeoutError(
+                    index,
+                    options.query_loaded_block_timeout_ms,
+                ))
             }
         }
     }
@@ -258,7 +260,7 @@ where
             Ok(Ok(result)) => {
                 let unwrapped = UnwrappedChainResult::from(result);
                 unwrapped.contract_errors.iter().for_each(|error| {
-                    warn!("fetch contract {:?} raised error {:?}", error.address, error.source);
+                    warn!("fetch contract {:?} raised error: {:?}", error.address, error.source);
                 });
                 Ok(unwrapped.result)
             }
@@ -278,7 +280,7 @@ where
                 let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
                 unwrapped.contract_errors.iter().for_each(|c| {
                     warn!(
-                        "validator(index={:?}) contract {:?} raised error {:?}",
+                        "validator(index={:?}) contract {:?} raised error: {:?}",
                         index, c.address, c.source
                     );
                     data.contracts_data
@@ -300,7 +302,7 @@ where
             let handle_result = self.handler.handle(data, &handler_option).await?;
             let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(handle_result);
             unwrapped.contract_errors.iter().for_each(|c| {
-                warn!("handle contract {:?} raised error {:?}", c.address, c.source);
+                warn!("handle contract {:?} raised error: {:?}", c.address, c.source);
             });
             Ok(())
         } else {
@@ -379,9 +381,10 @@ where
 
                 if contract_start_block > fetcher.loaded_block {
                     warn!(
-                        "contract {:?} start_block {:?} > fetcher loaded_block {:?} ",
+                        "contract {:?} start_block {:?} > fetcher {:?} loaded_block {:?} ",
                         contract_cfg.address(),
                         contract_start_block,
+                        fetcher.index,
                         fetcher.loaded_block
                     );
                     return Err(DataLoaderError::FetcherLoadedBlockSmallerError(

@@ -17,9 +17,9 @@ pub const DEFAULT_VALIDATOR_CONCURRENCY: usize = 1_usize;
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadOption {
-    #[builder(default = LoadFetcherOption::builder().build())]
+    #[builder(default)]
     pub fetcher: LoadFetcherOption,
-    #[builder(default = LoadValidatorOption::builder().build())]
+    #[builder(default)]
     pub validator: LoadValidatorOption,
 }
 
@@ -38,11 +38,23 @@ pub struct LoadFetcherOption {
     pub fetch_timeout_ms: u64,
 }
 
+impl Default for LoadFetcherOption {
+    fn default() -> Self {
+        LoadFetcherOption::builder().build()
+    }
+}
+
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadValidatorOption {
     #[builder(default = DEFAULT_VALIDATOR_CONCURRENCY)]
     pub concurrency: usize,
+}
+
+impl Default for LoadValidatorOption {
+    fn default() -> Self {
+        LoadValidatorOption::builder().build()
+    }
 }
 
 impl Default for LoadOption {
