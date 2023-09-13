@@ -15,6 +15,8 @@ pub enum DataLoaderError {
     QueryLoadedBlocksTimeoutError(usize, u64),
     #[error("fetch of fetcher(index = {0}) timed out after {1} ms)")]
     FetchTimeoutError(usize, u64),
+    #[error("failed to fetch data from all fetchers")]
+    LoaderFetchersExhaustedError,
     #[error("data to be validated is empty")]
     LoaderEmptyValidateDataError,
     #[error("data to be handled is empty")]

@@ -10,7 +10,7 @@ use crate::loader::{
 };
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
-use log::warn;
+use log::{error, warn};
 use mystiko_config::{ChainConfig, ContractConfig, MystikoConfig};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -139,6 +139,7 @@ where
 
     async fn run_load(&self, run_params: &LoaderRunParams<'_, F>) -> DataLoaderResult<()> {
         let contracts = self.build_loading_contracts(run_params.params.cfg).await?;
+        let mut loaded = false;
         for fetcher in run_params.fetchers.iter() {
             let fetch_option = self.build_fetch_options(&contracts, fetcher).await?;
             if let Some(fetch_option) = &fetch_option {
@@ -168,10 +169,16 @@ where
                     if !invalid {
                         if let Err(e) = self.handle(&chain_data).await {
                             warn!("handle fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
-                        };
+                        } else {
+                            loaded = true;
+                        }
                     }
                 }
             }
+        }
+        if !run_params.fetchers.is_empty() && !loaded {
+            error!("failed to load data from all fetchers");
+            return Err(DataLoaderError::LoaderFetchersExhaustedError);
         }
         Ok(())
     }
