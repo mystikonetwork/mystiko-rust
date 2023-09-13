@@ -36,7 +36,7 @@ async fn test_create_chain_data_loader_fetcher_indexer() {
         .handler(handler.clone())
         .build();
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
-    assert!(loader.is_err());
+    assert!(loader.is_ok());
 
     let (_, mock) = EthersProvider::mocked();
     let providers = create_mock_providers(Some(&mock));

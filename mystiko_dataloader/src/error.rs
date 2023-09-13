@@ -7,10 +7,12 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum DataLoaderError {
-    #[error("loader load error {0}")]
-    LoaderLoadError(String),
     #[error("no contracts to be loaded")]
     LoaderNoContractsError,
+    #[error("failed to query loaded block from all fetchers")]
+    LoaderQueryLoadedBlcokError,
+    #[error("fetcher loaded block {0} smaller than start block {1}")]
+    LoadedBlockSmallError(u64, u64),
     #[error("failed to fetch data from all fetchers")]
     LoaderFetchersExhaustedError,
     #[error("data to be validated is empty")]

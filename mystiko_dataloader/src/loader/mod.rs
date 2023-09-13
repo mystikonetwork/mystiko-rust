@@ -15,8 +15,6 @@ pub const DEFAULT_VALIDATOR_CONCURRENCY: usize = 1_usize;
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadOption {
-    #[builder(default = Some(DEFAULT_DELAY_BLOCK))]
-    pub delay_block: Option<u64>,
     #[builder(default = DEFAULT_VALIDATOR_CONCURRENCY)]
     pub validator_concurrency: usize,
 }

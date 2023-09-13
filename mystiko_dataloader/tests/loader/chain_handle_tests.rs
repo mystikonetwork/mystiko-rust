@@ -1,16 +1,14 @@
 use crate::loader::{contract_data_partial_eq, create_loader, loader_load};
-use ethers_core::types::U64;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
+use mystiko_dataloader::DataLoaderError;
 use std::collections::HashSet;
 use std::vec;
 
 #[tokio::test]
-async fn test_loader_start_shared_handler() {
+async fn test_loader_start_handler() {
     let chain_id = 1_u64;
-    let delay_block = 2;
-
-    let (cfg, loader, fetchers, _, handler, mock_provider) = create_loader(chain_id, 1, 1, false).await;
+    let (cfg, loader, fetchers, _, handler) = create_loader(chain_id, 1, 1, false).await;
     let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
     let target_block = start_block + 1000;
 
@@ -24,7 +22,8 @@ async fn test_loader_start_shared_handler() {
         .chain_id(chain_id)
         .contracts_data(contract_data1.clone())
         .build();
-    fetchers[0].set_result(fetcher_result).await;
+    fetchers[0].set_loaded_block(Some(target_block)).await;
+    fetchers[0].set_fetch_result(fetcher_result).await;
     let mut contracts = HashSet::new();
     contracts.insert(contract_address1);
     handler.set_contracts(chain_id, contracts, cfg.clone()).await;
@@ -33,19 +32,17 @@ async fn test_loader_start_shared_handler() {
     handler
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
-    mock_provider.push(U64::from(target_block)).unwrap();
-    let result = loader_load(loader.clone(), Some(delay_block)).await;
+    let result = loader_load(loader.clone()).await;
     assert!(handler.drain_data().await.is_empty());
     assert!(result
         .err()
         .unwrap()
         .to_string()
-        .contains("failed to fetch data from all fetchers"));
+        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
 
     // handle success
     handler.set_all_success().await;
-    mock_provider.push(U64::from(target_block)).unwrap();
-    let result = loader_load(loader.clone(), Some(delay_block)).await;
+    let result = loader_load(loader.clone()).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
     assert!(result.is_ok());
 }
