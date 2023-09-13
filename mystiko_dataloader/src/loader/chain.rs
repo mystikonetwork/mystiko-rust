@@ -166,7 +166,7 @@ where
         for param in run_params.fetchers.iter() {
             fetch_option.target_block = param.loaded_block;
             let mut chain_data = match self
-                .fetch(&run_params.params.option.fetcher, &param.fetcher, &fetch_option)
+                .fetch(&run_params.params.option.fetcher, param, &fetch_option)
                 .await
             {
                 Err(e) => {
@@ -250,12 +250,12 @@ where
     async fn fetch(
         &self,
         load_fetcher_options: &LoadFetcherOption,
-        fetcher: &Arc<F>,
+        run_param: &FetcherRunParams<F>,
         fetch_options: &FetchOptions,
     ) -> DataLoaderResult<ChainData<R>> {
         let duration_ms = Duration::from_millis(load_fetcher_options.fetch_timeout_ms);
 
-        let fetch_result = timeout(duration_ms, fetcher.fetch(fetch_options)).await;
+        let fetch_result = timeout(duration_ms, run_param.fetcher.fetch(fetch_options)).await;
         match fetch_result {
             Ok(Ok(result)) => {
                 let unwrapped = UnwrappedChainResult::from(result);
@@ -265,7 +265,10 @@ where
                 Ok(unwrapped.result)
             }
             Ok(Err(e)) => Err(e.into()),
-            Err(_) => Err(DataLoaderError::FetchTimeoutError),
+            Err(_) => Err(DataLoaderError::FetchTimeoutError(
+                run_param.index,
+                load_fetcher_options.fetch_timeout_ms,
+            )),
         }
     }
 
