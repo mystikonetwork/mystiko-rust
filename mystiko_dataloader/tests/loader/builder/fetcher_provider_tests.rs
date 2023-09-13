@@ -48,7 +48,7 @@ async fn test_create_chain_data_loader_default_provider_fetcher() {
     mock.push(block_number).unwrap();
     mock.push(block_number).unwrap();
     let loader = loader.unwrap();
-    let result = loader.load(Some(LoadOption::default())).await;
+    let result = loader.load(LoadOption::default()).await;
     assert!(result.is_ok());
 }
 

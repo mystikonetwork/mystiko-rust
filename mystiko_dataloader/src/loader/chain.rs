@@ -5,8 +5,8 @@ use crate::error::DataLoaderError;
 use crate::fetcher::{ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher, FetchOptions, FetcherOptions};
 use crate::handler::{DataHandler, HandleOption};
 use crate::loader::{
-    DataLoader, DataLoaderConfigResult, DataLoaderResult, LoadOption, LoaderConfigOptions,
-    DEFAULT_VALIDATOR_CONCURRENCY,
+    DataLoader, DataLoaderConfigResult, DataLoaderResult, LoadFetcherOption, LoadOption, LoadValidatorOption,
+    LoaderConfigOptions,
 };
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
@@ -14,6 +14,8 @@ use log::{error, warn};
 use mystiko_config::{ChainConfig, ContractConfig, MystikoConfig};
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
+use tokio::time::timeout;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
@@ -36,7 +38,7 @@ pub struct ChainDataLoader<R, H = Box<dyn DataHandler<R>>, F = Box<dyn DataFetch
 struct ChainLoadParams<'a> {
     pub cfg: &'a ChainConfig,
     pub start_block: u64,
-    pub option: &'a Option<LoadOption>,
+    pub option: &'a LoadOption,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -61,7 +63,11 @@ where
     F: DataFetcher<R>,
     V: DataValidator<R>,
 {
-    async fn load(&self, options: Option<LoadOption>) -> DataLoaderResult<()> {
+    async fn load<O>(&self, options: O) -> DataLoaderResult<()>
+    where
+        O: Into<LoadOption> + Send + Sync,
+    {
+        let options = options.into();
         let chain_cfg = self.build_chain_config().await?;
         let chain_start_block = self.build_chain_start_block(&chain_cfg).await?;
         let params = ChainLoadParams::builder()
@@ -131,18 +137,18 @@ where
     }
 
     async fn prepare_load<'a>(&'a self, params: &'a ChainLoadParams<'_>) -> DataLoaderResult<LoaderRunParams<'_, F>> {
-        let mut task = vec![];
+        let mut tasks = vec![];
         for (index, fetcher) in self.fetchers.iter().enumerate() {
-            task.push(self.query_loaded_blocks(index, fetcher));
+            tasks.push(self.query_loaded_blocks(index, fetcher, &params.option.fetcher));
         }
 
-        let results = futures::future::join_all(task).await;
+        let results = futures::future::join_all(tasks).await;
         let fetchers: Vec<_> = results.into_iter().filter_map(|r| r.ok()).collect();
         let target_block = fetchers
             .iter()
             .map(|f| f.loaded_block)
             .max()
-            .ok_or(DataLoaderError::LoaderQueryLoadedBlcokError)?;
+            .ok_or(DataLoaderError::QueryFetcherLoadedBlockError)?;
         let run_params = LoaderRunParams::builder()
             .params(params)
             .target_block(target_block)
@@ -162,7 +168,11 @@ where
             .build();
 
         for param in run_params.fetchers.iter() {
-            let mut chain_data = match self.fetch(&param.fetcher, &fetch_option).await {
+            fetch_option.target_block = param.loaded_block;
+            let mut chain_data = match self
+                .fetch(&run_params.params.option.fetcher, &param.fetcher, &fetch_option)
+                .await
+            {
                 Err(e) => {
                     warn!("fetch fetcher(index={:?}) raised error {:?}", param.index, e);
                     continue;
@@ -176,7 +186,10 @@ where
                 .map(|o| o.skip_validation)
                 .unwrap_or(false);
             if !skip_validation {
-                if let Err(e) = self.validate(&mut chain_data, run_params.params.option).await {
+                if let Err(e) = self
+                    .validate(&mut chain_data, &run_params.params.option.validator)
+                    .await
+                {
                     warn!("validate fetcher(index={:?}) data raised error {:?}", param.index, e);
                     continue;
                 };
@@ -200,47 +213,65 @@ where
         Err(DataLoaderError::LoaderFetchersExhaustedError)
     }
 
-    async fn query_loaded_blocks(&self, index: usize, fetcher: &Arc<F>) -> DataLoaderResult<FetcherRunParams<F>> {
+    async fn query_loaded_blocks(
+        &self,
+        index: usize,
+        fetcher: &Arc<F>,
+        options: &LoadFetcherOption,
+    ) -> DataLoaderResult<FetcherRunParams<F>> {
         let option = ChainLoadedBlockOptions::builder()
             .chain_id(self.chain_id)
             .config(self.config.clone())
             .build();
-        let loaded_block = fetcher.chain_loaded_block(&option).await;
-        match loaded_block {
-            Ok(block) => Ok(FetcherRunParams::builder()
+        let timeout_duration = Duration::from_millis(options.query_loaded_block_timeout_ms);
+        let result = timeout(timeout_duration, fetcher.chain_loaded_block(&option)).await;
+        match result {
+            Ok(Ok(block)) => Ok(FetcherRunParams::builder()
                 .index(index)
                 .fetcher(fetcher.clone())
                 .loaded_block(block)
                 .build()),
-            Err(e) => {
-                warn!("loaded block fetcher(index={:?}) raised error {:?}", index, e);
+            Ok(Err(e)) => {
+                warn!(
+                    "query loaded block from fetcher(index={:?}) raised error {:?}",
+                    index, e
+                );
                 Err(e.into())
+            }
+            Err(_) => {
+                warn!("query loaded block from fetcher(index={:?}) timed out", index);
+                Err(DataLoaderError::QueryFetcherLoadedBlockTimeoutError(index))
             }
         }
     }
 
-    async fn fetch(&self, fetcher: &Arc<F>, option: &FetchOptions) -> DataLoaderResult<ChainData<R>> {
-        let fetch_result = fetcher.fetch(option).await?;
-        let unwrapped = UnwrappedChainResult::from(fetch_result);
+    async fn fetch(
+        &self,
+        load_fetcher_options: &LoadFetcherOption,
+        fetcher: &Arc<F>,
+        fetch_options: &FetchOptions,
+    ) -> DataLoaderResult<ChainData<R>> {
+        let duration_ms = Duration::from_millis(load_fetcher_options.fetch_timeout_ms);
 
-        // Log warnings for any contract errors
-        unwrapped.contract_errors.iter().for_each(|error| {
-            warn!("fetch contract {:?} raised error {:?}", error.address, error.source);
-        });
-
-        Ok(unwrapped.result)
+        let fetch_result = timeout(duration_ms, fetcher.fetch(fetch_options)).await;
+        match fetch_result {
+            Ok(Ok(result)) => {
+                let unwrapped = UnwrappedChainResult::from(result);
+                unwrapped.contract_errors.iter().for_each(|error| {
+                    warn!("fetch contract {:?} raised error {:?}", error.address, error.source);
+                });
+                Ok(unwrapped.result)
+            }
+            Ok(Err(e)) => Err(e.into()),
+            Err(_) => Err(DataLoaderError::FetchTimeoutError),
+        }
     }
 
-    async fn validate(&self, data: &mut ChainData<R>, options: &Option<LoadOption>) -> DataLoaderResult<()> {
+    async fn validate(&self, data: &mut ChainData<R>, options: &LoadValidatorOption) -> DataLoaderResult<()> {
         if !data.contracts_data.is_empty() {
             let validator_option = ValidateOption::builder()
                 .config(self.config.clone())
-                .validate_concurrency(
-                    options
-                        .as_ref()
-                        .map(|o| o.validator_concurrency)
-                        .unwrap_or(DEFAULT_VALIDATOR_CONCURRENCY),
-                )
+                .validate_concurrency(options.concurrency)
                 .build();
             for (index, validator) in self.validators.iter().enumerate() {
                 let validate_result = validator.validate(data, &validator_option).await?;
@@ -353,7 +384,7 @@ where
                         contract_start_block,
                         fetcher.loaded_block
                     );
-                    return Err(DataLoaderError::LoadedBlockSmallError(
+                    return Err(DataLoaderError::FetcherLoadedBlockSmallerError(
                         fetcher.loaded_block,
                         contract_start_block,
                     ));

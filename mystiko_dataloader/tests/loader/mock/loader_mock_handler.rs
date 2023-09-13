@@ -38,7 +38,7 @@ use tokio::sync::RwLock;
 // }
 
 #[derive(Debug)]
-pub struct MockHandler<R>
+pub(crate) struct MockHandler<R>
 where
     R: LoadedData,
 {

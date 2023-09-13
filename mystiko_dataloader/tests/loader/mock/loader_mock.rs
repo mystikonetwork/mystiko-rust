@@ -5,22 +5,17 @@ use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::fetcher::FetcherOptions;
-use mystiko_dataloader::loader::{ChainDataLoader, DataLoaderResult};
-use mystiko_dataloader::loader::{DataLoader, LoadOption};
+use mystiko_dataloader::loader::ChainDataLoader;
 use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use std::time::Duration;
 
-pub type ChainDataLoaderFullDataType =
+pub(crate) type ChainDataLoaderFullDataType =
     ChainDataLoader<FullData, MockHandler<FullData>, MockFetcher<FullData>, MockValidator>;
 
-pub async fn loader_load(loader: Arc<ChainDataLoaderFullDataType>) -> DataLoaderResult<()> {
-    loader.load(Some(LoadOption::default())).await
-}
-
-pub async fn create_loader(
+pub(crate) async fn create_loader(
     chain_id: u64,
     feature_count: usize,
     validator_count: usize,

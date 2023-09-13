@@ -1,4 +1,4 @@
-use crate::validator::common::validator_mock::{
+use crate::validator::common::{
     create_single_rule_full_data_validator, load_commitments, load_nullifiers, RuleCheckerType,
 };
 use mystiko_config::MystikoConfig;

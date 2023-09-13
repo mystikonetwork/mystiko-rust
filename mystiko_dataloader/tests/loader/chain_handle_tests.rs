@@ -1,6 +1,7 @@
-use crate::loader::{contract_data_partial_eq, create_loader, loader_load};
+use crate::loader::{contract_data_partial_eq, create_loader};
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
+use mystiko_dataloader::loader::DataLoader;
 use mystiko_dataloader::DataLoaderError;
 use std::collections::HashSet;
 use std::vec;
@@ -32,7 +33,7 @@ async fn test_loader_start_handler() {
     handler
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(handler.drain_data().await.is_empty());
     assert!(result
         .err()
@@ -42,7 +43,7 @@ async fn test_loader_start_handler() {
 
     // handle success
     handler.set_all_success().await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
     assert!(result.is_ok());
 }

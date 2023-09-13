@@ -1,6 +1,4 @@
-use crate::validator::common::validator_mock::{
-    create_single_rule_full_data_validator, load_commitments, RuleCheckerType,
-};
+use crate::validator::common::{create_single_rule_full_data_validator, load_commitments, RuleCheckerType};
 use ethers_core::rand;
 use ethers_core::rand::Rng;
 use mystiko_config::MystikoConfig;

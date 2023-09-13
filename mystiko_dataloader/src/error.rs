@@ -10,9 +10,13 @@ pub enum DataLoaderError {
     #[error("no contracts to be loaded")]
     LoaderNoContractsError,
     #[error("failed to query loaded block from all fetchers")]
-    LoaderQueryLoadedBlcokError,
+    QueryFetcherLoadedBlockError,
+    #[error("query fetcher {0} loaded block timeout")]
+    QueryFetcherLoadedBlockTimeoutError(usize),
+    #[error("fetcher from fetcher timeout")]
+    FetchTimeoutError,
     #[error("fetcher loaded block {0} smaller than start block {1}")]
-    LoadedBlockSmallError(u64, u64),
+    FetcherLoadedBlockSmallerError(u64, u64),
     #[error("failed to fetch data from all fetchers")]
     LoaderFetchersExhaustedError,
     #[error("data to be validated is empty")]

@@ -1,4 +1,4 @@
-use crate::validator::common::validator_mock::{create_single_rule_full_data_validator, RuleCheckerType};
+use crate::validator::common::{create_single_rule_full_data_validator, RuleCheckerType};
 use ethers_core::types::Bytes;
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ChainData;
@@ -13,7 +13,6 @@ async fn test_wrong_concurrency() {
     let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko_testnet.json")
         .await
         .unwrap();
-
     let chain_id = 5_u64;
     let mut contract_data = vec![];
     core_cfg

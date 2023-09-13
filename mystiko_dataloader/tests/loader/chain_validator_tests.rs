@@ -1,7 +1,8 @@
-use crate::loader::{contract_data_partial_eq, create_loader, loader_load};
+use crate::loader::{contract_data_partial_eq, create_loader};
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::{ChainResult, ContractResult};
+use mystiko_dataloader::loader::DataLoader;
 use mystiko_dataloader::DataLoaderError;
 use std::collections::HashSet;
 
@@ -30,7 +31,7 @@ async fn test_loader_start_without_validator() {
     contracts.insert(contract_address1);
     handler.set_contracts(chain_id, contracts, cfg.clone()).await;
 
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
     assert!(result.is_ok());
 }
@@ -71,7 +72,7 @@ async fn test_loader_start_one_validator() {
     contracts.insert(contract_address2);
     handler.set_contracts(chain_id, contracts, cfg.clone()).await;
     validators[0].set_all_success().await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
     assert!(result.is_ok());
 
@@ -79,7 +80,7 @@ async fn test_loader_start_one_validator() {
     validators[0]
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(handler.drain_data().await.is_empty());
     assert!(result
         .err()
@@ -108,7 +109,7 @@ async fn test_loader_start_one_validator() {
             ])
             .build()))
         .await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
     assert!(result
         .err()
@@ -137,7 +138,7 @@ async fn test_loader_start_one_validator() {
             ])
             .build()))
         .await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data2));
     assert!(result
         .err()
@@ -182,7 +183,7 @@ async fn test_loader_skip_validation() {
     contracts.insert(contract_address2);
     handler.set_contracts(chain_id, contracts, cfg.clone()).await;
     validators[0].set_all_success().await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
     assert!(result.is_ok());
 
@@ -190,7 +191,7 @@ async fn test_loader_skip_validation() {
     validators[0]
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
     assert!(result.is_ok());
 
@@ -210,7 +211,7 @@ async fn test_loader_skip_validation() {
             ])
             .build()))
         .await;
-    let result = loader_load(loader.clone()).await;
+    let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
     assert!(result.is_ok());
 }
