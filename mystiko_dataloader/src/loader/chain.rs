@@ -165,6 +165,13 @@ where
 
         for param in run_params.fetchers.iter() {
             fetch_option.target_block = param.loaded_block;
+            if let Some(contracts_options) = fetch_option.contract_options.as_mut() {
+                for contract_options in contracts_options.iter_mut() {
+                    if contract_options.target_block.is_some() {
+                        contract_options.target_block = Some(param.loaded_block);
+                    }
+                }
+            }
             let mut chain_data = match self
                 .fetch(&run_params.params.option.fetcher, param, &fetch_option)
                 .await
@@ -382,7 +389,7 @@ where
                     continue;
                 }
 
-                if contract_start_block > fetcher.loaded_block {
+                if contract_start_block - 1 > fetcher.loaded_block {
                     warn!(
                         "contract {:?} start_block {:?} > fetcher {:?} loaded_block {:?} ",
                         contract_cfg.address(),
