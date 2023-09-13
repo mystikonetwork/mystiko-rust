@@ -7,7 +7,7 @@ use anyhow::Result;
 use mystiko_config::MystikoConfig;
 use mystiko_database::Database;
 use mystiko_ethers::{ProviderFactory, ProviderPool};
-use mystiko_protos::config::v1::{ConfigOptions, ConfigOptionsOption};
+use mystiko_protos::common::v1::{ConfigOptions, ConfigOptionsOption};
 use mystiko_storage::{StatementFormatter, Storage};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;

@@ -8,9 +8,8 @@ use crate::DataLoaderError;
 use async_trait::async_trait;
 use typed_builder::TypedBuilder;
 
-pub const DEFAULT_SCHEDULE_INTERVAL_MS: u64 = 120_000_u64;
 pub const DEFAULT_FETCHER_QUERY_LOADED_BLOCK_TIMEOUT_MS: u64 = 5_000_u64;
-pub const DEFAULT_FETCHER_FETCH_TIMEOUT_MS: u64 = 120_000_u64;
+pub const DEFAULT_FETCHER_FETCH_TIMEOUT_MS: u64 = 300_000_u64;
 
 pub const DEFAULT_VALIDATOR_CONCURRENCY: usize = 1_usize;
 

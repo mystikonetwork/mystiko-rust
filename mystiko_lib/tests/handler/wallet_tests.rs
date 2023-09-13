@@ -1,6 +1,6 @@
 use mystiko_lib::wallet::create;
 use mystiko_lib::{initialize, is_initialized};
-use mystiko_protos::config::v1::ConfigOptions;
+use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use mystiko_protos::core::v1::MystikoOptions;
 use prost::Message;

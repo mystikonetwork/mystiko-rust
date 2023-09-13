@@ -19,7 +19,7 @@ mystiko_datapacker_client = { version = "0.1.0", path = "../mystiko_datapacker_c
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
 mystiko_etherscan_client = { version = "0.1.0", path = "../mystiko_etherscan_client" }
 mystiko_indexer_client = { version = "0.1.0", path = "../mystiko_indexer_client" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-config-v1", "mystiko-data-v1","mystiko-loader-v1"] }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-data-v1", "mystiko-loader-v1"] }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
