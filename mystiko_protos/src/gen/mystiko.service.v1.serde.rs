@@ -13,9 +13,6 @@ impl serde::Serialize for ClientOptions {
         if self.port.is_some() {
             len += 1;
         }
-        if self.is_web.is_some() {
-            len += 1;
-        }
         if self.is_ssl.is_some() {
             len += 1;
         }
@@ -35,14 +32,11 @@ impl serde::Serialize for ClientOptions {
         if let Some(v) = self.port.as_ref() {
             struct_ser.serialize_field("port", v)?;
         }
-        if let Some(v) = self.is_web.as_ref() {
-            struct_ser.serialize_field("isWeb", v)?;
-        }
         if let Some(v) = self.is_ssl.as_ref() {
             struct_ser.serialize_field("isSsl", v)?;
         }
         if let Some(v) = self.ssl_cert.as_ref() {
-            struct_ser.serialize_field("sslCert", pbjson::private::base64::encode(&v).as_str())?;
+            struct_ser.serialize_field("sslCert", v)?;
         }
         if let Some(v) = self.ssl_cert_path.as_ref() {
             struct_ser.serialize_field("sslCertPath", v)?;
@@ -62,8 +56,6 @@ impl<'de> serde::Deserialize<'de> for ClientOptions {
         const FIELDS: &[&str] = &[
             "host",
             "port",
-            "is_web",
-            "isWeb",
             "is_ssl",
             "isSsl",
             "ssl_cert",
@@ -78,7 +70,6 @@ impl<'de> serde::Deserialize<'de> for ClientOptions {
         enum GeneratedField {
             Host,
             Port,
-            IsWeb,
             IsSsl,
             SslCert,
             SslCertPath,
@@ -106,7 +97,6 @@ impl<'de> serde::Deserialize<'de> for ClientOptions {
                         match value {
                             "host" => Ok(GeneratedField::Host),
                             "port" => Ok(GeneratedField::Port),
-                            "isWeb" | "is_web" => Ok(GeneratedField::IsWeb),
                             "isSsl" | "is_ssl" => Ok(GeneratedField::IsSsl),
                             "sslCert" | "ssl_cert" => Ok(GeneratedField::SslCert),
                             "sslCertPath" | "ssl_cert_path" => Ok(GeneratedField::SslCertPath),
@@ -132,7 +122,6 @@ impl<'de> serde::Deserialize<'de> for ClientOptions {
             {
                 let mut host__ = None;
                 let mut port__ = None;
-                let mut is_web__ = None;
                 let mut is_ssl__ = None;
                 let mut ssl_cert__ = None;
                 let mut ssl_cert_path__ = None;
@@ -153,12 +142,6 @@ impl<'de> serde::Deserialize<'de> for ClientOptions {
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
-                        GeneratedField::IsWeb => {
-                            if is_web__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("isWeb"));
-                            }
-                            is_web__ = map.next_value()?;
-                        }
                         GeneratedField::IsSsl => {
                             if is_ssl__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("isSsl"));
@@ -169,9 +152,7 @@ impl<'de> serde::Deserialize<'de> for ClientOptions {
                             if ssl_cert__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("sslCert"));
                             }
-                            ssl_cert__ = 
-                                map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
-                            ;
+                            ssl_cert__ = map.next_value()?;
                         }
                         GeneratedField::SslCertPath => {
                             if ssl_cert_path__.is_some() {
@@ -190,7 +171,6 @@ impl<'de> serde::Deserialize<'de> for ClientOptions {
                 Ok(ClientOptions {
                     host: host__,
                     port: port__,
-                    is_web: is_web__,
                     is_ssl: is_ssl__,
                     ssl_cert: ssl_cert__,
                     ssl_cert_path: ssl_cert_path__,

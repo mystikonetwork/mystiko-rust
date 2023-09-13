@@ -25,18 +25,3 @@ fn test_to_uri() {
         .build();
     assert_eq!(client_options.to_uri().unwrap().to_string(), "http://example.com:8451/");
 }
-
-#[test]
-fn test_to_ssl_uri() {
-    let client_options = ClientOptions::default();
-    assert_eq!(client_options.to_ssl_uri().unwrap().to_string(), "http://127.0.0.1/");
-    let client_options = ClientOptions::builder()
-        .ssl_server_name("example.com".to_string())
-        .build();
-    assert_eq!(client_options.to_ssl_uri().unwrap().to_string(), "http://127.0.0.1/");
-    let client_options = ClientOptions::builder()
-        .is_ssl(true)
-        .ssl_server_name("example.com".to_string())
-        .build();
-    assert_eq!(client_options.to_ssl_uri().unwrap().to_string(), "https://example.com/");
-}

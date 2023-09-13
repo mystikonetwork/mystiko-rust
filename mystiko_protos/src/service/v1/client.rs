@@ -12,20 +12,15 @@ impl ClientOptions {
         }
     }
 
+    pub fn get_host(&self) -> String {
+        self.host.clone().unwrap_or(String::from(DEFAULT_HOST))
+    }
+
     pub fn to_uri(&self) -> Result<http::Uri, http::uri::InvalidUri> {
-        self.format_uri(self.host.clone())
+        self.format_uri(self.get_host())
     }
 
-    pub fn to_ssl_uri(&self) -> Result<http::Uri, http::uri::InvalidUri> {
-        if self.is_ssl() {
-            self.format_uri(self.ssl_server_name.clone().or(self.host.clone()))
-        } else {
-            self.to_uri()
-        }
-    }
-
-    fn format_uri(&self, host: Option<String>) -> Result<http::Uri, http::uri::InvalidUri> {
-        let host = host.unwrap_or(String::from(DEFAULT_HOST));
+    fn format_uri(&self, host: String) -> Result<http::Uri, http::uri::InvalidUri> {
         let port = self.port.map(|port| format!(":{}", port)).unwrap_or_default();
         http::Uri::from_str(&format!("{}://{}{}", self.scheme(), host, port))
     }
