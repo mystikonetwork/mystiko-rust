@@ -71,11 +71,7 @@ async fn test_loader_start_one_fetcher_one_contract() {
         fetchers[0].set_fetch_result(fetcher_result.clone()).await;
         let result = loader.load(None).await;
         assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-        assert!(result
-            .err()
-            .unwrap()
-            .to_string()
-            .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+        assert!(result.is_ok());
 
         // fetch one contract success, contract loaded block == target_block
         let contract_data = vec![ContractData::builder()
@@ -166,11 +162,7 @@ async fn test_loader_start_one_fetcher_two_contract() {
         fetchers[0].set_fetch_result(fetcher_result.clone()).await;
         let result = loader.load(None).await;
         assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-        assert!(result
-            .err()
-            .unwrap()
-            .to_string()
-            .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+        assert!(result.is_ok());
     }
 }
 
@@ -212,11 +204,7 @@ async fn test_loader_start_two_fetcher() {
         &handler.drain_data().await,
         &[contract_data1.clone(), contract_data2.clone()].concat()
     ));
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 
     // fetch all contract success, contract loaded block == target_block
     let mut contracts = HashSet::new();
@@ -247,11 +235,7 @@ async fn test_loader_start_two_fetcher() {
         &handler.drain_data().await,
         &[contract_data1.clone(), contract_data2.clone()].concat()
     ));
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 
     // fetch all contract success,  fetcher 2 return two contract data loaded block == target_block
     let contract_data2 = vec![
@@ -315,11 +299,7 @@ async fn test_loader_start_two_fetcher_with_error() {
         &handler.drain_data().await,
         &contract_data2.clone()
     ));
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 
     // fetcher 2 return error
     let contract_data1 = vec![ContractData::builder()
@@ -338,11 +318,7 @@ async fn test_loader_start_two_fetcher_with_error() {
         &handler.drain_data().await,
         &contract_data1.clone()
     ));
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 }
 
 #[tokio::test]
@@ -398,11 +374,7 @@ async fn test_loader_start_two_fetcher_with_timeout() {
         &handler.drain_data().await,
         &[contract_data2.clone()].concat()
     ));
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 
     fetchers[0].set_fetch_sleep(false).await;
     fetchers[1].set_fetch_sleep(true).await;
@@ -411,11 +383,7 @@ async fn test_loader_start_two_fetcher_with_timeout() {
         &handler.drain_data().await,
         &[contract_data1.clone()].concat()
     ));
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 
     let options = LoadOption::builder()
         .fetcher(LoadFetcherOption::builder().fetch_timeout_ms(200_u64).build())

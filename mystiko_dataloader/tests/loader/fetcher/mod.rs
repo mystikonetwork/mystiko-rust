@@ -1,2 +1,3 @@
 mod chain_fetcher_fetch_tests;
 mod chain_fetcher_loaded_block_tests;
+mod chain_fetcher_with_handler_tests;

@@ -1,6 +1,7 @@
 use crate::loader::{create_mock_providers, MockHandler};
 use ethers_core::types::{Log, U64};
 use ethers_providers::Provider as EthersProvider;
+use log::LevelFilter;
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::handler::DataHandler;
@@ -15,6 +16,10 @@ use std::sync::Arc;
 
 #[tokio::test]
 async fn test_create_chain_data_loader_default_provider_fetcher() {
+    let _ = env_logger::builder()
+        .filter_module("mystiko_dataloader", LevelFilter::Debug)
+        .try_init();
+
     let cfg_option = ConfigOptions::builder()
         .file_path("./tests/files/config/mystiko.json".to_string())
         .build();
@@ -40,7 +45,7 @@ async fn test_create_chain_data_loader_default_provider_fetcher() {
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
     assert!(loader.is_ok());
 
-    let block_number = U64::from(16691439);
+    let block_number = U64::from(16690441);
     mock.push::<Vec<Log>, _>(vec![]).unwrap();
     mock.push::<Vec<Log>, _>(vec![]).unwrap();
     mock.push::<Vec<Log>, _>(vec![]).unwrap();

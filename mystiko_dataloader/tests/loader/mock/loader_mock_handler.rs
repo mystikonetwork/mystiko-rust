@@ -140,15 +140,9 @@ where
             }
         }
 
-        let end_block = self
-            .data
-            .read()
-            .await
-            .get(contract_address)
-            .map(|d| d.end_block)
-            .unwrap_or(0_u64);
+        let end_block = self.data.read().await.get(contract_address).map(|d| d.end_block);
 
-        Ok(Some(end_block))
+        Ok(end_block)
     }
 
     async fn query_commitments(
