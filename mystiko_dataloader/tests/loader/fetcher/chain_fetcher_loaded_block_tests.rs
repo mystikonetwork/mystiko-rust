@@ -109,6 +109,10 @@ async fn test_loader_many_fetcher_loaded_block_some_error() {
         fetchers[i].set_fetch_result(fetcher_result.clone()).await;
         let result = loader.load(None).await;
         assert!(result.is_ok());
+        assert!(contract_data_partial_eq(
+            &handler.drain_data().await,
+            &[contract_data.clone()].concat()
+        ));
     }
 }
 
@@ -141,11 +145,11 @@ async fn test_loader_many_fetcher_loaded_block_different() {
 
     fetchers[0].set_fetch_result(fetcher_result1.clone()).await;
     let result = loader.load(None).await;
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(contract_data_partial_eq(
+        &handler.drain_data().await,
+        &[contract_data1.clone()].concat()
+    ));
+    assert!(result.is_ok());
 
     let contract_data2 = vec![ContractData::builder()
         .address(contract_address1)
@@ -158,6 +162,10 @@ async fn test_loader_many_fetcher_loaded_block_different() {
         .build();
     fetchers[1].set_fetch_result(fetcher_result2.clone()).await;
     let result = loader.load(None).await;
+    assert!(contract_data_partial_eq(
+        &handler.drain_data().await,
+        &[contract_data2.clone()].concat()
+    ));
     assert!(result.is_ok());
 
     let contract_data2 = vec![ContractData::builder()
@@ -181,6 +189,10 @@ async fn test_loader_many_fetcher_loaded_block_different() {
     fetchers[1].set_fetch_result(fetcher_result2.clone()).await;
     fetchers[2].set_fetch_result(fetcher_result3.clone()).await;
     let result = loader.load(None).await;
+    assert!(contract_data_partial_eq(
+        &handler.drain_data().await,
+        &[contract_data3.clone()].concat()
+    ));
     assert!(result.is_ok());
 }
 
@@ -211,15 +223,27 @@ async fn test_loader_many_fetcher_loaded_block_smaller_than_start_block() {
 
     fetchers[0].set_fetch_result(fetcher_result1.clone()).await;
     let result = loader.load(None).await;
+    assert!(contract_data_partial_eq(
+        &handler.drain_data().await,
+        &[contract_data1.clone()].concat()
+    ));
     assert!(result.is_ok());
 
     fetchers[0].set_loaded_block(Some(start_block)).await;
     let result = loader.load(None).await;
+    assert!(contract_data_partial_eq(
+        &handler.drain_data().await,
+        &[contract_data1.clone()].concat()
+    ));
     assert!(result.is_ok());
 
     fetchers[0].set_loaded_block(Some(start_block - 1)).await;
     let result = loader.load(None).await;
-    assert!(result.is_ok());
+    assert!(result
+        .err()
+        .unwrap()
+        .to_string()
+        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
 
     fetchers[1].set_loaded_block(Some(target_block + 1)).await;
     let result = loader.load(None).await;
@@ -240,6 +264,10 @@ async fn test_loader_many_fetcher_loaded_block_smaller_than_start_block() {
         .build();
     fetchers[1].set_fetch_result(fetcher_result2).await;
     let result = loader.load(None).await;
+    assert!(contract_data_partial_eq(
+        &handler.drain_data().await,
+        &[contract_data2.clone()].concat()
+    ));
     assert!(result.is_ok());
 }
 
@@ -289,9 +317,9 @@ async fn test_loader_many_fetcher_loaded_block_timeout() {
         )
         .build();
     let result = loader.load(Some(options)).await;
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()))
+    assert!(result.is_ok());
+    assert!(contract_data_partial_eq(
+        &handler.drain_data().await,
+        &[contract_data1.clone()].concat()
+    ));
 }

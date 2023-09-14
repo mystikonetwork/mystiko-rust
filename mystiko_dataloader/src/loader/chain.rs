@@ -132,8 +132,12 @@ where
 
         let results = futures::future::join_all(tasks).await;
         let fetchers: Vec<_> = results.into_iter().filter_map(|r| r.ok()).collect();
-        let run_params = LoaderRunParams::builder().params(params).fetchers(fetchers).build();
+        if fetchers.is_empty() {
+            error!("failed to query loaded blocks from all fetchers");
+            return Err(DataLoaderError::QueryLoadedBlocksError);
+        }
 
+        let run_params = LoaderRunParams::builder().params(params).fetchers(fetchers).build();
         self.run_load(&run_params).await
     }
 
@@ -144,7 +148,7 @@ where
             let fetch_option = self.build_fetch_options(&contracts, fetcher).await?;
             if let Some(fetch_option) = &fetch_option {
                 let mut chain_data = match self
-                    .fetch(&run_params.params.option.fetcher, fetcher, &fetch_option)
+                    .fetch(&run_params.params.option.fetcher, fetcher, fetch_option)
                     .await
                 {
                     Err(e) => {
@@ -167,7 +171,7 @@ where
                         };
                     }
                     if !invalid {
-                        if let Err(e) = self.handle(&chain_data).await {
+                        if let Err(e) = self.handle(chain_data).await {
                             warn!("handle fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
                         } else {
                             loaded = true;
@@ -176,7 +180,8 @@ where
                 }
             }
         }
-        if !run_params.fetchers.is_empty() && !loaded {
+
+        if !loaded {
             error!("failed to load data from all fetchers");
             return Err(DataLoaderError::LoaderFetchersExhaustedError);
         }
@@ -338,7 +343,7 @@ where
                 .build();
             contract_options.push(fetch_option);
         }
-        let start_block = contract_options.iter().map(|c| c.start_block).filter_map(|s| s).min();
+        let start_block = contract_options.iter().filter_map(|s| s.start_block).min();
         if let Some(start_block) = start_block {
             let options = FetchOptions::builder()
                 .config(self.config.clone())

@@ -111,11 +111,7 @@ async fn test_loader_start_one_validator() {
         .await;
     let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data1));
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 
     // validator contract2 error
     let contract_data2 = vec![ContractData::builder()
@@ -140,11 +136,7 @@ async fn test_loader_start_one_validator() {
         .await;
     let result = loader.load(None).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data2));
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 }
 
 #[tokio::test]
