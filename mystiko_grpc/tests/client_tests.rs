@@ -1,15 +1,19 @@
 mod common;
 
-use crate::common::{StartOptions, TestingServer, TlsKeys};
-use mystiko_grpc::connect;
-use mystiko_protos::service::v1::ClientOptions;
+use crate::common::MockTestingService;
+use anyhow::Result;
+use mystiko_grpc::{connect, GrpcServer};
+use mystiko_protos::service::v1::{ClientOptions, ServerOptions};
 use mystiko_protos::testing::v1::testing_service_client::TestingServiceClient;
-use mystiko_protos::testing::v1::EchoRequest;
+use mystiko_protos::testing::v1::testing_service_server::TestingServiceServer;
+use mystiko_protos::testing::v1::{EchoRequest, EchoResponse};
+use rcgen::{generate_simple_self_signed, Certificate, CertificateParams};
 use std::path::PathBuf;
+use tonic::Response;
 
 #[tokio::test]
 async fn test_grpc_client() {
-    let options = StartOptions::builder().port(50051u16).build();
+    let options = ServerOptions::builder().port(50051u32).build();
     let mut server = setup(options).await;
     let client_options = ClientOptions::builder().port(50051u32).build();
     let mut client = TestingServiceClient::new(connect(&client_options).await.unwrap());
@@ -18,15 +22,16 @@ async fn test_grpc_client() {
         .await
         .unwrap();
     assert_eq!(response.get_ref().message, "hello world");
-    server.stop().await;
+    server.stop().await.unwrap();
 }
 
 #[tokio::test]
 async fn test_grpc_client_with_ssl() {
     let tls_keys = TlsKeys::generate("example.com").unwrap();
-    let options = StartOptions::builder()
-        .port(50052u16)
-        .tls_keys(tls_keys.clone())
+    let options = ServerOptions::builder()
+        .port(50052u32)
+        .tls_key(tls_keys.server_key)
+        .tls_pem(tls_keys.server_pem)
         .build();
     let mut server = setup(options).await;
     let client_options = ClientOptions::builder()
@@ -41,7 +46,7 @@ async fn test_grpc_client_with_ssl() {
         .await
         .unwrap();
     assert_eq!(response.get_ref().message, "hello world");
-    server.stop().await;
+    server.stop().await.unwrap();
 }
 
 #[tokio::test]
@@ -50,9 +55,10 @@ async fn test_grpc_client_with_ssl_key_file() {
     let temp_folder = tempfile::tempdir().unwrap();
     let path = PathBuf::from(temp_folder.path()).join("ca.pem");
     tokio::fs::write(path.as_path(), tls_keys.ca_pem.clone()).await.unwrap();
-    let options = StartOptions::builder()
-        .port(50053u16)
-        .tls_keys(tls_keys.clone())
+    let options = ServerOptions::builder()
+        .port(50053u32)
+        .tls_key(tls_keys.server_key)
+        .tls_pem(tls_keys.server_pem)
         .build();
     let mut server = setup(options).await;
     let client_options = ClientOptions::builder()
@@ -66,12 +72,43 @@ async fn test_grpc_client_with_ssl_key_file() {
         .await
         .unwrap();
     assert_eq!(response.get_ref().message, "hello world");
-    server.stop().await;
+    server.stop().await.unwrap();
 }
 
-async fn setup(options: StartOptions) -> TestingServer {
-    let mut server = TestingServer::default();
-    let sever_ready = server.start(options).await.unwrap();
-    sever_ready.await.unwrap();
+async fn setup(options: ServerOptions) -> GrpcServer {
+    let mut server = GrpcServer::default();
+    let mut service = MockTestingService::new();
+    service.expect_echo().returning(|request| {
+        Ok(Response::new(
+            EchoResponse::builder()
+                .message(request.get_ref().message.to_string())
+                .build(),
+        ))
+    });
+    server.start(TestingServiceServer::new(service), options).await.unwrap();
     server
+}
+
+#[derive(Debug, Clone)]
+pub struct TlsKeys {
+    pub ca_pem: String,
+    pub server_key: String,
+    pub server_pem: String,
+}
+
+impl TlsKeys {
+    pub fn generate(domain_name: &str) -> Result<Self> {
+        let ca_cert = generate_simple_self_signed(vec![domain_name.to_string()])?;
+        let ca_pem = ca_cert.serialize_pem()?;
+        let mut server_params = CertificateParams::new(vec![domain_name.to_string()]);
+        server_params.is_ca = rcgen::IsCa::NoCa;
+        let server_cert = Certificate::from_params(server_params)?;
+        let server_pem = server_cert.serialize_pem_with_signer(&ca_cert)?;
+        let server_key = server_cert.serialize_private_key_pem();
+        Ok(Self {
+            ca_pem,
+            server_key,
+            server_pem,
+        })
+    }
 }

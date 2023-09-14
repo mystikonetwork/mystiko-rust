@@ -3510,13 +3510,20 @@ name = "mystiko_grpc"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bytes",
+ "http",
+ "http-body",
+ "hyper",
+ "mockall",
  "mystiko_grpc",
  "mystiko_protos",
+ "prost",
  "rcgen",
  "tempfile",
  "tokio",
  "tonic",
  "tonic-web",
+ "tower-layer",
  "typed-builder 0.15.2",
 ]
 
@@ -3585,6 +3592,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "http",
+ "mystiko_protos",
  "mystiko_utils",
  "num-bigint 0.4.3",
  "num-traits 0.2.16",
