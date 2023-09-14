@@ -346,6 +346,58 @@ impl ChainConfig {
         format!("{}{}", self.explorer_url(), self.explorer_prefix()).replace(EXPLORER_TX_PLACEHOLDER, tx_hash)
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> Result<mystiko_protos::config::v1::ChainConfig> {
+        let asset_configs = self
+            .assets()
+            .iter()
+            .map(|c| Ok((c.asset_address().to_string(), c.to_proto()?)))
+            .collect::<Result<HashMap<String, mystiko_protos::config::v1::AssetConfig>>>()?;
+        let deposit_contract_configs = self
+            .deposit_contracts_with_disabled()
+            .iter()
+            .map(|c| Ok((c.address().to_string(), c.to_proto()?)))
+            .collect::<Result<HashMap<String, mystiko_protos::config::contract::v1::DepositContractConfig>>>()?;
+        let pool_contract_configs = self
+            .pool_contracts()
+            .iter()
+            .map(|c| Ok((c.address().to_string(), c.to_proto()?)))
+            .collect::<Result<HashMap<String, mystiko_protos::config::contract::v1::PoolContractConfig>>>()?;
+        let recommended_amounts = self
+            .recommended_amounts()?
+            .iter()
+            .map(|a| a.to_string())
+            .collect::<Vec<String>>();
+        let provider_configs = self
+            .providers()
+            .iter()
+            .map(|c| c.to_proto())
+            .collect::<Vec<mystiko_protos::config::v1::ProviderConfig>>();
+        let config = mystiko_protos::config::v1::ChainConfig::builder()
+            .chain_id(self.chain_id())
+            .name(self.name().to_string())
+            .asset_symbol(self.asset_symbol().to_string())
+            .asset_decimals(self.asset_decimals())
+            .explorer_url(self.explorer_url().to_string())
+            .explorer_api_url(self.explorer_api_url().to_string())
+            .explorer_prefix(self.explorer_prefix().to_string())
+            .provider_quorum_percentage(self.provider_quorum_percentage() as u32)
+            .signer_endpoint(self.signer_endpoint().to_string())
+            .event_delay_blocks(self.event_delay_blocks())
+            .event_filter_size(self.event_filter_size())
+            .indexer_filter_size(self.indexer_filter_size())
+            .main_asset_config(self.main_asset().to_proto()?)
+            .provider_type(Into::<i32>::into(self.provider_type()))
+            .asset_configs(asset_configs)
+            .deposit_contract_configs(deposit_contract_configs)
+            .pool_contract_configs(pool_contract_configs)
+            .recommended_amounts(recommended_amounts)
+            .provider_configs(provider_configs)
+            .granularities(self.granularities().to_vec())
+            .build();
+        Ok(config)
+    }
+
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
         self.main_asset_config.validate()?;

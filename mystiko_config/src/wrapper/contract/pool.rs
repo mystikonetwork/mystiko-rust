@@ -132,6 +132,29 @@ impl PoolContractConfig {
         self.circuits().into_iter().find(|c| c.name() == circuit_name)
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> Result<mystiko_protos::config::contract::v1::PoolContractConfig> {
+        let config = mystiko_protos::config::contract::v1::PoolContractConfig::builder()
+            .version(self.version())
+            .name(self.name().to_string())
+            .address(self.address().to_string())
+            .start_block(self.start_block())
+            .pool_name(self.pool_name().to_string())
+            .min_rollup_fee(self.min_rollup_fee()?.to_string())
+            .contract_type(Into::<i32>::into(self.contract_type()))
+            .bridge_type(Into::<i32>::into(self.bridge_type()))
+            .asset_config(Some(self.asset().to_proto()?))
+            .circuit_configs(
+                self.circuits()
+                    .iter()
+                    .map(|c| c.to_proto())
+                    .collect::<Vec<mystiko_protos::config::v1::CircuitConfig>>(),
+            )
+            .circuits(self.circuits_names().clone())
+            .build();
+        Ok(config)
+    }
+
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
         if self.asset_address().is_some() && self.asset_type() == &AssetType::Main {

@@ -55,6 +55,23 @@ impl AssetConfig {
         Ok(amounts)
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> Result<mystiko_protos::config::v1::AssetConfig> {
+        let config = mystiko_protos::config::v1::AssetConfig::builder()
+            .asset_type(Into::<i32>::into(self.asset_type()))
+            .asset_symbol(self.asset_symbol().to_string())
+            .asset_decimals(self.asset_decimals())
+            .asset_address(Some(self.asset_address().to_string()))
+            .recommended_amounts(
+                self.recommended_amounts()?
+                    .iter()
+                    .map(|a| a.to_string())
+                    .collect::<Vec<String>>(),
+            )
+            .build();
+        Ok(config)
+    }
+
     pub fn validate(&self) -> Result<()> {
         Ok(self.raw.validate()?)
     }

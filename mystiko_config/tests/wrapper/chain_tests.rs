@@ -304,6 +304,66 @@ async fn test_missing_pool_contract_config() {
     );
 }
 
+#[tokio::test]
+async fn test_to_proto() {
+    let (_, _, _, config) = setup(SetupOptions::default()).await;
+    let result = config.to_proto();
+    assert!(result.is_ok());
+    let config = result.unwrap();
+    assert_eq!(config.chain_id, 5);
+    assert_eq!(&config.name, "Ethereum Goerli");
+    assert_eq!(&config.asset_symbol, "ETH");
+    assert_eq!(config.asset_decimals, 18);
+    assert_eq!(&config.explorer_url, "https://goerli.etherscan.io");
+    assert_eq!(&config.explorer_api_url, "https://api-goerli.etherscan.io");
+    assert_eq!(&config.explorer_prefix, "/tx/%tx%");
+    assert_eq!(config.provider_quorum_percentage, 80);
+    assert_eq!(
+        &config.signer_endpoint,
+        "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+    );
+    assert_eq!(config.event_delay_blocks, 200);
+    assert_eq!(config.event_filter_size, 1000);
+    assert_eq!(config.indexer_filter_size, 10000);
+    assert!(config.main_asset_config.is_some());
+    assert_eq!(config.provider_type(), mystiko_protos::common::v1::ProviderType::Quorum);
+    assert_eq!(config.provider_configs.len(), 1);
+    assert_eq!(config.deposit_contract_configs.len(), 1);
+    assert_eq!(config.asset_configs.len(), 1);
+    assert_eq!(config.pool_contract_configs.len(), 1);
+    assert_eq!(config.granularities, vec![2000, 4000, 8000, 16000]);
+    let main_asset = config.main_asset_config.unwrap();
+    assert_eq!(main_asset.asset_address(), MAIN_ASSET_ADDRESS);
+    assert_eq!(main_asset.asset_type(), mystiko_protos::common::v1::AssetType::Main);
+    assert_eq!(&main_asset.asset_symbol, "ETH");
+    assert_eq!(main_asset.asset_decimals, 18);
+    assert_eq!(
+        main_asset.recommended_amounts,
+        vec![
+            String::from("1000000000000000000"),
+            String::from("10000000000000000000"),
+        ]
+    );
+    assert_eq!(main_asset.recommended_amounts, config.recommended_amounts);
+    assert!(config
+        .asset_configs
+        .get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")
+        .is_some());
+    assert!(config
+        .pool_contract_configs
+        .get("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d")
+        .is_some());
+    assert!(config
+        .deposit_contract_configs
+        .get("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67")
+        .is_some());
+    let provider = config.provider_configs.get(0).unwrap();
+    assert_eq!(
+        &provider.url,
+        "wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+    );
+}
+
 #[derive(Default)]
 struct SetupOptions {
     full_config: bool,

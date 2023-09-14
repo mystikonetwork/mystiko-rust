@@ -22,6 +22,14 @@ impl TBridgeConfig {
         &self.raw.bridge_type
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> mystiko_protos::config::bridge::v1::BridgeConfig {
+        mystiko_protos::config::bridge::v1::BridgeConfig::builder()
+            .name(self.name().to_string())
+            .bridge_type(Into::<i32>::into(self.bridge_type()))
+            .build()
+    }
+
     pub fn validate(&self) -> Result<()> {
         Ok(self.raw.validate()?)
     }

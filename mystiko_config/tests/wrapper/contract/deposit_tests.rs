@@ -267,6 +267,38 @@ async fn test_validate_wrong_bridge_type() {
     );
 }
 
+#[tokio::test]
+async fn test_to_proto() {
+    let (_, _, _, _, config) = setup(SetupOptions::default()).await;
+    let result = config.to_proto();
+    assert!(result.is_ok());
+    let config = result.unwrap();
+    assert_eq!(config.version, 2);
+    assert_eq!(&config.name, "MystikoWithPolyERC20");
+    assert_eq!(&config.address, "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
+    assert_eq!(
+        config.contract_type(),
+        mystiko_protos::common::v1::ContractType::Deposit
+    );
+    assert_eq!(config.start_block, 1000000);
+    assert!(config.disabled);
+    assert_eq!(&config.min_amount, "10000000000000000");
+    assert_eq!(&config.max_amount, "100000000000000000");
+    assert!(config.pool_contract_config.is_some());
+    assert_eq!(config.bridge_type(), mystiko_protos::common::v1::BridgeType::Tbridge);
+    assert_eq!(config.min_bridge_fee(), "20000000000000000");
+    assert_eq!(config.min_executor_fee(), "30000000000000000");
+    assert_eq!(config.service_fee(), 2);
+    assert_eq!(config.service_fee_divider(), 1000);
+    assert!(config.bridge_fee_asset_config.is_some());
+    assert!(config.executor_fee_asset_config.is_some());
+    assert_eq!(config.peer_chain_id(), 97);
+    assert_eq!(
+        config.peer_contract_address(),
+        "0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547"
+    );
+}
+
 #[derive(Default)]
 struct SetupOptions {
     bridge_type: Option<BridgeType>,

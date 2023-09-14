@@ -34,6 +34,17 @@ impl PackerConfig {
         &self.raw.compression
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> mystiko_protos::config::v1::PackerConfig {
+        mystiko_protos::config::v1::PackerConfig::builder()
+            .url(self.url().to_string())
+            .client_timeout_ms(self.client_timeout_ms())
+            .version(self.version())
+            .checksum(Into::<i32>::into(self.checksum()))
+            .compression(Into::<i32>::into(self.compression()))
+            .build()
+    }
+
     pub fn validate(&self) -> Result<()> {
         Ok(self.raw.validate()?)
     }

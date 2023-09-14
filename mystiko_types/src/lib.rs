@@ -161,8 +161,58 @@ impl From<i32> for AccountStatus {
     }
 }
 
-impl From<ContractType> for i32 {
-    fn from(value: ContractType) -> Self {
+impl From<i32> for ContractType {
+    fn from(value: i32) -> Self {
+        match value {
+            1 => ContractType::Deposit,
+            2 => ContractType::Pool,
+            _ => ContractType::Deposit,
+        }
+    }
+}
+
+impl From<&BridgeType> for i32 {
+    fn from(value: &BridgeType) -> Self {
+        match value {
+            BridgeType::Loop => 1,
+            BridgeType::Poly => 2,
+            BridgeType::Tbridge => 3,
+            BridgeType::Celer => 4,
+            BridgeType::LayerZero => 5,
+            BridgeType::Axelar => 6,
+        }
+    }
+}
+
+impl From<&AssetType> for i32 {
+    fn from(value: &AssetType) -> Self {
+        match value {
+            AssetType::Erc20 => 1,
+            AssetType::Main => 2,
+        }
+    }
+}
+
+impl From<&CircuitType> for i32 {
+    fn from(value: &CircuitType) -> Self {
+        match value {
+            CircuitType::Rollup1 => 1,
+            CircuitType::Rollup2 => 2,
+            CircuitType::Rollup4 => 3,
+            CircuitType::Rollup8 => 4,
+            CircuitType::Rollup16 => 5,
+            CircuitType::Transaction1x0 => 6,
+            CircuitType::Transaction1x1 => 7,
+            CircuitType::Transaction1x2 => 8,
+            CircuitType::Transaction2x0 => 9,
+            CircuitType::Transaction2x1 => 10,
+            CircuitType::Transaction2x2 => 11,
+        }
+    }
+}
+
+impl From<&ContractType> for i32 {
+    fn from(value: &ContractType) -> Self {
         match value {
             ContractType::Deposit => 1,
             ContractType::Pool => 2,
@@ -170,12 +220,27 @@ impl From<ContractType> for i32 {
     }
 }
 
-impl From<i32> for ContractType {
-    fn from(value: i32) -> Self {
+impl From<&ProviderType> for i32 {
+    fn from(value: &ProviderType) -> Self {
         match value {
-            1 => ContractType::Deposit,
-            2 => ContractType::Pool,
-            _ => ContractType::Deposit,
+            ProviderType::Failover => 1,
+            ProviderType::Quorum => 2,
+        }
+    }
+}
+
+impl From<&PackerCompression> for i32 {
+    fn from(value: &PackerCompression) -> Self {
+        match value {
+            PackerCompression::Zstd => 1,
+        }
+    }
+}
+
+impl From<&PackerChecksum> for i32 {
+    fn from(value: &PackerChecksum) -> Self {
+        match value {
+            PackerChecksum::Sha512 => 1,
         }
     }
 }
