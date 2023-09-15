@@ -194,8 +194,8 @@ async fn test_builder(_pool: MySqlPool) {
         .password(parsed_url.password().unwrap().to_owned())
         .max_connections(1u32)
         .min_connections(1u32)
-        .max_lifetime(std::time::Duration::from_secs(120))
-        .idle_timeout(std::time::Duration::from_secs(60))
+        .max_lifetime_ms(120000)
+        .idle_timeout_ms(60000)
         .build();
     let _ = MySqlStorage::connect(options).await.unwrap();
 }
@@ -254,8 +254,8 @@ fn test_create_default_stroage() {
     assert_eq!(option1.password, None);
     assert_eq!(option1.max_connections, default_max_connections);
     assert_eq!(option1.min_connections, default_min_connections);
-    assert_eq!(option1.idle_timeout, None);
-    assert_eq!(option1.max_lifetime, None);
+    assert_eq!(option1.idle_timeout_ms, None);
+    assert_eq!(option1.max_lifetime_ms, None);
     let option2 = MySqlStorageOptions::builder().build();
     assert_eq!(option2.database, default_database_name.to_string());
     assert_eq!(option2.host, default_host.to_string());
@@ -264,8 +264,8 @@ fn test_create_default_stroage() {
     assert_eq!(option2.password, None);
     assert_eq!(option2.max_connections, default_max_connections);
     assert_eq!(option2.min_connections, default_min_connections);
-    assert_eq!(option2.idle_timeout, None);
-    assert_eq!(option2.max_lifetime, None);
+    assert_eq!(option2.idle_timeout_ms, None);
+    assert_eq!(option2.max_lifetime_ms, None);
 }
 
 async fn create_collection(pool: MySqlPool) -> TestDocumentCollection<SqlStatementFormatter, MySqlStorage> {
