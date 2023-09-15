@@ -103,7 +103,7 @@ async fn test_convert_with_proto() {
     assert_eq!(commitment.commitment_hash, BigUint::from(100000u64));
     assert_eq!(
         commitment.encrypted_notes,
-        Some(encode_hex_with_prefix(&[1u8, 2u8, 3u8]))
+        Some(encode_hex_with_prefix([1u8, 2u8, 3u8]))
     );
     let test_proto2 = ProtoCommitment::builder()
         .commitment_hash(biguint_to_bytes(&BigUint::from(100000u64)))
@@ -122,7 +122,7 @@ async fn test_convert_with_proto() {
     assert_eq!(commitment.status, CommitmentStatus::Included as i32);
     assert_eq!(
         commitment.encrypted_notes,
-        Some(encode_hex_with_prefix(&[1u8, 2u8, 3u8]))
+        Some(encode_hex_with_prefix([1u8, 2u8, 3u8]))
     );
     let into_result = commitment.into_proto();
     assert!(into_result.is_ok());

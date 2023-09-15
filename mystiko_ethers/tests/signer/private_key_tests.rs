@@ -8,6 +8,7 @@ use mockito::{Mock, Server};
 use mystiko_ethers::{
     ChainProvidersOptions, PrivateKeySigner, ProviderOptions, ProviderPool, ProvidersOptions, Signer,
 };
+use mystiko_utils::hex::encode_hex;
 use std::sync::Arc;
 
 mock! {
@@ -42,7 +43,7 @@ async fn test_private_key_signer() {
 
 fn generate_private_key() -> (String, Address) {
     let wallet = LocalWallet::new(&mut thread_rng());
-    (hex::encode(wallet.signer().to_bytes()), wallet.address())
+    (encode_hex(wallet.signer().to_bytes()), wallet.address())
 }
 
 fn create_provider_pool(url: String) -> Arc<ProviderPool<MockChainConfig>> {

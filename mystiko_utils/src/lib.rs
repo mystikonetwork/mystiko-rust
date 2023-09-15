@@ -4,6 +4,7 @@ extern crate num_bigint;
 extern crate num_traits;
 extern crate rust_decimal;
 
+pub mod address;
 pub mod convert;
 pub mod hex;
 pub mod time;

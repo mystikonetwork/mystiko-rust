@@ -1,15 +1,14 @@
 use anyhow::Result;
-use ethers_core::types::Address;
 use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
 use mystiko_datapacker_client::v1::DataPackerClient as DataPackerClientV1;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
 use mystiko_datapacker_common::v1::{GranularityIndex, PathSchema as PathSchemaV1};
 use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSum, ZstdCompression};
 use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, Nullifier};
+use mystiko_utils::address::string_address_to_bytes;
 use mystiko_utils::convert::biguint_to_bytes;
 use num_bigint::BigUint;
 use prost::Message;
-use std::str::FromStr;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -541,7 +540,7 @@ impl MockContractOptions {
         .collect::<Vec<_>>();
         let nullifiers = generate_nullifier(self.nullifiers_count, start_block);
         ContractData::builder()
-            .contract_address(Address::from_str(&self.contract_address).unwrap().to_fixed_bytes())
+            .contract_address(string_address_to_bytes(&self.contract_address).unwrap())
             .commitments(commitments)
             .nullifiers(nullifiers)
             .build()

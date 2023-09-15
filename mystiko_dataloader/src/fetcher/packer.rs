@@ -8,9 +8,9 @@ use ethers_core::types::Address;
 use mystiko_config::MystikoConfig;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
 use mystiko_protos::data::v1::ChainData;
+use mystiko_utils::address::{ethers_address_from_bytes, ethers_address_from_string, ethers_address_to_string};
 use std::cmp::min;
 use std::collections::HashMap;
-use std::str::FromStr;
 use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
@@ -160,7 +160,7 @@ fn to_contracts_options_map(options: &FetchOptions) -> Result<HashMap<Address, C
     let mut contracts = HashMap::new();
     if let Some(contract_options) = options.contract_options.as_ref() {
         for contract_option in contract_options {
-            let address = Address::from_str(contract_option.contract_config.address())?;
+            let address = ethers_address_from_string(contract_option.contract_config.address())?;
             contracts.insert(address, contract_option.clone());
         }
     }
@@ -176,7 +176,7 @@ fn to_contract_result_map<R: LoadedData>(
 ) -> HashMap<Address, ContractResult<ContractData<R>>> {
     let mut contracts_result = HashMap::new();
     for contract_data in chain_data.contract_data.into_iter() {
-        let address = Address::from_slice(&contract_data.contract_address);
+        let address = ethers_address_from_bytes(&contract_data.contract_address);
         if contracts_options.is_empty() || contracts_options.contains_key(&address) {
             contracts_result.insert(
                 address,
@@ -202,7 +202,7 @@ fn to_contract_result<R: LoadedData>(
     contract_data: mystiko_protos::data::v1::ContractData,
     contracts_options: &HashMap<Address, ContractFetchOptions>,
 ) -> ContractResult<ContractData<R>> {
-    let address_string = ethers_core::utils::to_checksum(address, None);
+    let address_string = ethers_address_to_string(address);
     let contract_options = contracts_options.get(address);
     let expected_start_block = contract_options
         .map(|c| c.start_block.unwrap_or(options.start_block))
@@ -279,7 +279,7 @@ fn build_result<R: LoadedData>(
         contracts_options
             .keys()
             .map(|address| {
-                let address_string = ethers_core::utils::to_checksum(address, None);
+                let address_string = ethers_address_to_string(address);
                 if let Some(contract_result) = contracts_result.remove(address) {
                     contract_result
                 } else {

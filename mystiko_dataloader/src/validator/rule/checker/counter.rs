@@ -6,11 +6,11 @@ use crate::validator::rule::checker::RuleChecker;
 use crate::validator::rule::types::ValidateMergedData;
 use crate::validator::rule::ValidateOriginalData;
 use async_trait::async_trait;
-use ethers_core::types::{Address, BlockId, BlockNumber};
+use ethers_core::types::{BlockId, BlockNumber};
 use mystiko_abi::commitment_pool::CommitmentPool;
 use mystiko_ethers::{Provider, Providers};
 use mystiko_protos::data::v1::CommitmentStatus;
-use std::str::FromStr;
+use mystiko_utils::address::ethers_address_from_string;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -34,7 +34,7 @@ where
         _data: &ValidateOriginalData<'a, R>,
         merged_data: &ValidateMergedData,
     ) -> CheckerResult<()> {
-        let address = Address::from_str(merged_data.contract_address.as_str())
+        let address = ethers_address_from_string(&merged_data.contract_address)
             .map_err(|_| RuleCheckError::ContractAddressError(merged_data.contract_address.to_string()))?;
         let provider = self.providers.get_provider(merged_data.chain_id).await?;
         let commitment_contract = CommitmentPool::new(address, provider);

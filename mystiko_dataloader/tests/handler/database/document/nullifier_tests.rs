@@ -44,7 +44,7 @@ async fn test_convert_with_proto() {
     let mut nullifier = result.unwrap();
     assert_eq!(nullifier.contract_address, "address1".to_string());
     assert_eq!(nullifier.chain_id, 1_u64);
-    assert_eq!(nullifier.transaction_hash, encode_hex_with_prefix(&[4u8, 5u8, 6u8]));
+    assert_eq!(nullifier.transaction_hash, encode_hex_with_prefix([4u8, 5u8, 6u8]));
     assert_eq!(nullifier.block_number, 100_u64);
     assert_eq!(nullifier.nullifier, BigUint::from(1111u32));
     let proto2 = ProtoNullifier {
@@ -56,7 +56,7 @@ async fn test_convert_with_proto() {
     assert!(result.is_ok());
     assert_eq!(nullifier.contract_address, "address1".to_string());
     assert_eq!(nullifier.chain_id, 1u64);
-    assert_eq!(nullifier.transaction_hash, encode_hex_with_prefix(&[44u8, 55u8, 66u8]));
+    assert_eq!(nullifier.transaction_hash, encode_hex_with_prefix([44u8, 55u8, 66u8]));
     assert_eq!(nullifier.block_number, 200u64);
     assert_eq!(nullifier.nullifier, BigUint::from(1111u32));
 }

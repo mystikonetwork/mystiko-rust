@@ -7,6 +7,7 @@ use mystiko_datapacker_common::v1::{GranularityIndex, PathSchema as PathSchemaV1
 use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSum, ZstdCompression};
 use mystiko_protos::data::v1::{ChainData, ContractData};
 use mystiko_types::{PackerChecksum, PackerCompression};
+use mystiko_utils::address::ethers_address_from_bytes;
 use prost::Message;
 use std::cmp::{max, min};
 use std::collections::HashMap;
@@ -395,7 +396,7 @@ fn merge_contracts_data(query: &ChainQuery, initial_block: u64, chain_data: Chai
     let target_block = query.target_block;
     let mut contracts_data: HashMap<Address, ContractData> = HashMap::new();
     for mut contract_data in chain_data.contract_data.into_iter() {
-        let contract_address = Address::from_slice(&contract_data.contract_address);
+        let contract_address = ethers_address_from_bytes(&contract_data.contract_address);
         contract_data.commitments = contract_data
             .commitments
             .into_iter()
