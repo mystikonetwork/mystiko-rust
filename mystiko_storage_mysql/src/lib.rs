@@ -54,10 +54,10 @@ pub struct MySqlStorageOptions {
     pub min_connections: u32,
     #[serde(default)]
     #[builder(default)]
-    pub idle_timeout: Option<Duration>,
+    pub idle_timeout_ms: Option<u64>,
     #[serde(default)]
     #[builder(default)]
-    pub max_lifetime: Option<Duration>,
+    pub max_lifetime_ms: Option<u64>,
 }
 
 impl Default for MySqlStorageOptions {
@@ -70,8 +70,8 @@ impl Default for MySqlStorageOptions {
             password: Default::default(),
             max_connections: default_max_connections(),
             min_connections: default_min_connections(),
-            idle_timeout: Default::default(),
-            max_lifetime: Default::default(),
+            idle_timeout_ms: Default::default(),
+            max_lifetime_ms: Default::default(),
         }
     }
 }
@@ -113,8 +113,8 @@ impl MySqlStorage {
         let pool = sqlx::mysql::MySqlPoolOptions::new()
             .max_connections(options.max_connections)
             .min_connections(options.min_connections)
-            .idle_timeout(options.idle_timeout)
-            .max_lifetime(options.max_lifetime)
+            .idle_timeout(options.idle_timeout_ms.map(Duration::from_millis))
+            .max_lifetime(options.max_lifetime_ms.map(Duration::from_millis))
             .connect(&url)
             .await?;
         Ok(Self {
