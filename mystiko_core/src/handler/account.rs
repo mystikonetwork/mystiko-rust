@@ -243,8 +243,9 @@ where
                     has_update = true;
                 }
             }
-            if let Some(new_status) = &options.status {
-                let account_status: AccountStatus = (*new_status).into();
+            let status = options.status();
+            if status != mystiko_protos::core::v1::AccountStatus::Unspecified {
+                let account_status: AccountStatus = status.into();
                 if account_status != account.data.status {
                     account.data.status = account_status;
                     has_update = true;

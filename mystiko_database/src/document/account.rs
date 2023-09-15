@@ -39,6 +39,7 @@ fn indexes() -> Vec<IndexColumns> {
 
 impl Account {
     pub fn from_proto(proto: ProtoAccount) -> Document<Account> {
+        let status = proto.status().into();
         Document::new(
             proto.id,
             proto.created_at,
@@ -48,7 +49,7 @@ impl Account {
                 shielded_address: proto.shielded_address,
                 public_key: proto.public_key,
                 encrypted_secret_key: proto.encrypted_secret_key,
-                status: proto.status.into(),
+                status,
                 scan_size: proto.scan_size,
                 wallet_id: proto.wallet_id,
             },
@@ -66,7 +67,9 @@ impl Account {
             .encrypted_secret_key(account.data.encrypted_secret_key)
             .scan_size(account.data.scan_size)
             .wallet_id(account.data.wallet_id)
-            .status(Into::<i32>::into(account.data.status))
+            .status(Into::<mystiko_protos::core::v1::AccountStatus>::into(
+                &account.data.status,
+            ))
             .build()
     }
 }

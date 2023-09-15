@@ -139,34 +139,3 @@ impl CircuitType {
         ]
     }
 }
-
-impl From<AccountStatus> for i32 {
-    fn from(value: AccountStatus) -> Self {
-        match value {
-            AccountStatus::Created => 1,
-            AccountStatus::Scanning => 2,
-            AccountStatus::Scanned => 3,
-        }
-    }
-}
-
-impl From<i32> for AccountStatus {
-    fn from(value: i32) -> Self {
-        match value {
-            1 => AccountStatus::Created,
-            2 => AccountStatus::Scanning,
-            3 => AccountStatus::Scanned,
-            _ => AccountStatus::Created,
-        }
-    }
-}
-
-impl From<i32> for ContractType {
-    fn from(value: i32) -> Self {
-        match value {
-            1 => ContractType::Deposit,
-            2 => ContractType::Pool,
-            _ => ContractType::Deposit,
-        }
-    }
-}

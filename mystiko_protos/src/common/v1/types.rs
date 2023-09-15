@@ -57,3 +57,13 @@ impl From<&mystiko_types::ProviderType> for ProviderType {
         }
     }
 }
+
+impl From<ContractType> for mystiko_types::ContractType {
+    fn from(value: ContractType) -> Self {
+        match value {
+            ContractType::Unspecified => mystiko_types::ContractType::Deposit,
+            ContractType::Deposit => mystiko_types::ContractType::Deposit,
+            ContractType::Pool => mystiko_types::ContractType::Pool,
+        }
+    }
+}
