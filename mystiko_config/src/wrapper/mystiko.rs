@@ -258,6 +258,46 @@ impl MystikoConfig {
         self.find_chain(chain_id).map(|c| c.transaction_url(tx_hash))
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> Result<mystiko_protos::config::v1::MystikoConfig> {
+        let chain_configs = self
+            .chains()
+            .iter()
+            .map(|c| Ok((c.chain_id(), c.to_proto()?)))
+            .collect::<Result<HashMap<u64, mystiko_protos::config::v1::ChainConfig>>>()?;
+        let bridge_configs = self
+            .bridges()
+            .iter()
+            .map(|c| {
+                (
+                    Into::<mystiko_protos::common::v1::BridgeType>::into(c.bridge_type()) as i32,
+                    c.to_proto(),
+                )
+            })
+            .collect::<HashMap<i32, mystiko_protos::config::bridge::v1::BridgeConfig>>();
+        let country_blacklist = self
+            .country_blacklist()
+            .iter()
+            .map(|c| c.to_string())
+            .collect::<Vec<String>>();
+        let circuit_configs = self
+            .circuits()
+            .iter()
+            .map(|c| c.to_proto())
+            .collect::<Vec<mystiko_protos::config::v1::CircuitConfig>>();
+        let config = mystiko_protos::config::v1::MystikoConfig::builder()
+            .version(self.version().to_string())
+            .chain_configs(chain_configs)
+            .bridge_configs(bridge_configs)
+            .git_revision(self.git_revision().map(|s| s.to_string()))
+            .indexer_config(self.indexer().map(|c| c.to_proto()))
+            .packer_config(self.packer().map(|c| c.to_proto()))
+            .country_blacklist(country_blacklist)
+            .circuit_configs(circuit_configs)
+            .build();
+        Ok(config)
+    }
+
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
         for chain_config in self.chains() {

@@ -29,6 +29,16 @@ impl ProviderConfig {
         self.raw.quorum_weight
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> mystiko_protos::config::v1::ProviderConfig {
+        mystiko_protos::config::v1::ProviderConfig::builder()
+            .url(self.url().to_string())
+            .timeout_ms(self.timeout_ms())
+            .max_try_count(self.max_try_count())
+            .quorum_weight(self.quorum_weight())
+            .build()
+    }
+
     pub fn validate(&self) -> Result<()> {
         Ok(self.raw.validate()?)
     }

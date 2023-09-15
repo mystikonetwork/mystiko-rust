@@ -14,3 +14,13 @@ async fn test_create() {
     assert_eq!(config.name(), "Celer Bridge");
     assert_eq!(config.bridge_type(), &BridgeType::Celer);
 }
+
+#[tokio::test]
+async fn test_to_proto() {
+    let raw_config = create_raw_from_file::<RawCelerBridgeConfig>(VALID_CONFIG_FILE)
+        .await
+        .unwrap();
+    let config = CelerBridgeConfig::new(Arc::new(raw_config)).to_proto();
+    assert_eq!(&config.name, "Celer Bridge");
+    assert_eq!(config.bridge_type(), mystiko_protos::common::v1::BridgeType::Celer);
+}

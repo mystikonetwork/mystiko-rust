@@ -57,6 +57,17 @@ impl BridgeConfig {
         }
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> mystiko_protos::config::bridge::v1::BridgeConfig {
+        match self {
+            BridgeConfig::Axelar(conf) => conf.to_proto(),
+            BridgeConfig::Celer(conf) => conf.to_proto(),
+            BridgeConfig::LayerZero(conf) => conf.to_proto(),
+            BridgeConfig::Poly(conf) => conf.to_proto(),
+            BridgeConfig::TBridge(conf) => conf.to_proto(),
+        }
+    }
+
     pub fn validate(&self) -> Result<()> {
         match self {
             BridgeConfig::Axelar(conf) => conf.validate(),

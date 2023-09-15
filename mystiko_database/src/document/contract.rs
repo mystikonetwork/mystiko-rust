@@ -31,12 +31,13 @@ fn indexes() -> Vec<IndexColumns> {
 
 impl Contract {
     pub fn from_proto(proto: ProtoContract) -> Document<Self> {
+        let contract_type = proto.contract_type().into();
         Document::new(
             proto.id,
             proto.created_at,
             proto.updated_at,
             Contract {
-                contract_type: proto.contract_type.into(),
+                contract_type,
                 chain_id: proto.chain_id,
                 contract_address: proto.contract_address,
                 disabled: proto.disabled,
@@ -54,7 +55,9 @@ impl Contract {
             .contract_address(contract.data.contract_address)
             .disabled(contract.data.disabled)
             .loaded_block_number(contract.data.loaded_block_number)
-            .contract_type(Into::<i32>::into(contract.data.contract_type))
+            .contract_type(Into::<mystiko_protos::common::v1::ContractType>::into(
+                &contract.data.contract_type,
+            ))
             .build()
     }
 }

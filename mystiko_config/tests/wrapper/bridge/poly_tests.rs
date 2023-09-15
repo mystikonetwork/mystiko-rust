@@ -18,3 +18,17 @@ async fn test_create() {
     assert_eq!(config.api_url(), "https://explorer.poly.network");
     assert_eq!(config.api_prefix(), "/testnet/api/v1/getcrosstx?txhash=%tx%");
 }
+
+#[tokio::test]
+async fn test_to_proto() {
+    let raw_config = create_raw_from_file::<RawPolyBridgeConfig>(VALID_CONFIG_FILE)
+        .await
+        .unwrap();
+    let config = PolyBridgeConfig::new(Arc::new(raw_config)).to_proto();
+    assert_eq!(&config.name, "Poly Bridge");
+    assert_eq!(config.bridge_type(), mystiko_protos::common::v1::BridgeType::Poly);
+    assert_eq!(&config.explorer_url.unwrap(), "https://explorer.poly.network");
+    assert_eq!(&config.explorer_prefix.unwrap(), "/tx/%tx%");
+    assert_eq!(&config.api_url.unwrap(), "https://explorer.poly.network");
+    assert_eq!(&config.api_prefix.unwrap(), "/testnet/api/v1/getcrosstx?txhash=%tx%");
+}

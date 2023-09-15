@@ -45,7 +45,10 @@ async fn test_create_default() {
     let account = account_handler.create(&options).await.unwrap();
     assert_eq!(account.name, "Account 1");
     assert_eq!(account.scan_size, DEFAULT_ACCOUNT_SCAN_SIZE);
-    assert_eq!(account.status, Into::<i32>::into(AccountStatus::Created));
+    assert_eq!(
+        account.status,
+        Into::<mystiko_protos::core::v1::AccountStatus>::into(&AccountStatus::Created) as i32
+    );
     let full_pk: FullPk = decode_hex_with_length(&account.public_key).unwrap();
     assert_eq!(
         account.shielded_address,
@@ -344,12 +347,16 @@ async fn test_update_status() {
         .unwrap();
     assert_eq!(updated_account.status, account.status);
     assert_eq!(updated_account.updated_at, account.updated_at);
-    update_options.status = Some(AccountStatus::Scanning.into());
+    update_options.status =
+        Some(Into::<mystiko_protos::core::v1::AccountStatus>::into(&AccountStatus::Scanning) as i32);
     updated_account = account_handler
         .update_by_shielded_address(&account.shielded_address, &update_options)
         .await
         .unwrap();
-    assert_eq!(updated_account.status, Into::<i32>::into(AccountStatus::Scanning));
+    assert_eq!(
+        updated_account.status,
+        Into::<mystiko_protos::core::v1::AccountStatus>::into(&AccountStatus::Scanning) as i32
+    );
 }
 
 #[tokio::test]

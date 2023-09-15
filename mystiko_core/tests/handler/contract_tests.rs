@@ -33,14 +33,20 @@ async fn test_contract_initialize() {
         if let Some(deposit_contract_config) =
             config.find_deposit_contract_by_address(contract.chain_id, &contract.contract_address)
         {
-            assert_eq!(contract.contract_type, Into::<i32>::into(ContractType::Deposit));
+            assert_eq!(
+                contract.contract_type,
+                Into::<mystiko_protos::common::v1::ContractType>::into(&ContractType::Deposit) as i32
+            );
             assert_eq!(contract.disabled, deposit_contract_config.disabled());
             assert_eq!(contract.loaded_block_number, chain_config.start_block());
         } else if config
             .find_pool_contract_by_address(contract.chain_id, &contract.contract_address)
             .is_some()
         {
-            assert_eq!(contract.contract_type, Into::<i32>::into(ContractType::Pool));
+            assert_eq!(
+                contract.contract_type,
+                Into::<mystiko_protos::common::v1::ContractType>::into(&ContractType::Pool) as i32
+            );
             assert!(!contract.disabled);
             assert_eq!(contract.loaded_block_number, chain_config.start_block());
         } else {

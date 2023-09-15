@@ -203,6 +203,33 @@ impl DepositContractConfig {
         self.raw.peer_contract_address.as_deref()
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> Result<mystiko_protos::config::contract::v1::DepositContractConfig> {
+        let config = mystiko_protos::config::contract::v1::DepositContractConfig::builder()
+            .version(self.version())
+            .name(self.name().to_string())
+            .address(self.address().to_string())
+            .start_block(self.start_block())
+            .disabled(self.disabled())
+            .min_amount(self.min_amount()?.to_string())
+            .max_amount(self.max_amount()?.to_string())
+            .pool_contract_config(Some(self.pool_contract().to_proto()?))
+            .bridge_type(Into::<mystiko_protos::common::v1::BridgeType>::into(self.bridge_type()))
+            .contract_type(Into::<mystiko_protos::common::v1::ContractType>::into(
+                self.contract_type(),
+            ))
+            .min_bridge_fee(Some(self.min_bridge_fee()?.to_string()))
+            .min_executor_fee(Some(self.min_executor_fee()?.to_string()))
+            .service_fee(Some(self.service_fee()))
+            .service_fee_divider(Some(self.service_fee_divider()))
+            .bridge_fee_asset_config(Some(self.bridge_fee_asset().to_proto()?))
+            .executor_fee_asset_config(Some(self.executor_fee_asset().to_proto()?))
+            .peer_chain_id(*self.peer_chain_id())
+            .peer_contract_address(self.peer_contract_address().map(|s| s.to_string()))
+            .build();
+        Ok(config)
+    }
+
     pub fn validate(&self) -> Result<()> {
         self.raw.validate()?;
         if self.min_amount()? > self.max_amount()? {

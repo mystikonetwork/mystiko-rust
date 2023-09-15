@@ -14,3 +14,13 @@ async fn test_create() {
     assert_eq!(config.name(), "LayerZero Bridge");
     assert_eq!(config.bridge_type(), &BridgeType::LayerZero);
 }
+
+#[tokio::test]
+async fn test_to_proto() {
+    let raw_config = create_raw_from_file::<RawLayerZeroBridgeConfig>(VALID_CONFIG_FILE)
+        .await
+        .unwrap();
+    let config = LayerZeroBridgeConfig::new(Arc::new(raw_config)).to_proto();
+    assert_eq!(&config.name, "LayerZero Bridge");
+    assert_eq!(config.bridge_type(), mystiko_protos::common::v1::BridgeType::LayerZero);
+}

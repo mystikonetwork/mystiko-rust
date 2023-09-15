@@ -42,6 +42,20 @@ impl CircuitConfig {
         &self.raw.verifying_key_file
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> mystiko_protos::config::v1::CircuitConfig {
+        mystiko_protos::config::v1::CircuitConfig::builder()
+            .name(self.name().to_string())
+            .circuit_type(Into::<mystiko_protos::common::v1::CircuitType>::into(
+                self.circuit_type(),
+            ))
+            .is_default(self.is_default())
+            .program_file(self.program_file().clone())
+            .abi_file(self.abi_file().clone())
+            .proving_key_file(self.proving_key_file().clone())
+            .verifying_key_file(self.verifying_key_file().clone())
+            .build()
+    }
     pub fn validate(&self) -> Result<()> {
         Ok(self.raw.validate()?)
     }

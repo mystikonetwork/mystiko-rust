@@ -17,3 +17,16 @@ async fn test_create() {
     assert_eq!(config.checksum(), &PackerChecksum::Sha512);
     assert_eq!(config.compression(), &PackerCompression::Zstd);
 }
+
+#[tokio::test]
+async fn test_to_proto() {
+    let raw_config = create_raw_from_file::<RawPackerConfig>(VALID_CONFIG_FILE)
+        .await
+        .unwrap();
+    let config = PackerConfig::new(Arc::new(raw_config)).to_proto();
+    assert_eq!(&config.url, "https://static.mystiko.network/packer/v1");
+    assert_eq!(config.client_timeout_ms, 15000);
+    assert_eq!(config.version, 1);
+    assert_eq!(config.checksum(), mystiko_protos::core::v1::PackerChecksum::Sha512);
+    assert_eq!(config.compression(), mystiko_protos::core::v1::PackerCompression::Zstd);
+}

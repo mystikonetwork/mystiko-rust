@@ -14,3 +14,13 @@ async fn test_create() {
     assert_eq!(config.name(), "Mystiko Testnet Bridge");
     assert_eq!(config.bridge_type(), &BridgeType::Tbridge);
 }
+
+#[tokio::test]
+async fn test_to_proto() {
+    let raw_config = create_raw_from_file::<RawTBridgeConfig>(VALID_CONFIG_FILE)
+        .await
+        .unwrap();
+    let config = TBridgeConfig::new(Arc::new(raw_config)).to_proto();
+    assert_eq!(&config.name, "Mystiko Testnet Bridge");
+    assert_eq!(config.bridge_type(), mystiko_protos::common::v1::BridgeType::Tbridge);
+}
