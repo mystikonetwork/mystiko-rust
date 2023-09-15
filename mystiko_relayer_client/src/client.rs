@@ -13,12 +13,12 @@ use mystiko_relayer_types::{
     RelayTransactStatusRequest, RelayTransactStatusResponse, TransactStatus, WaitingTransactionRequest,
 };
 use mystiko_types::NetworkType;
+use mystiko_utils::address::ethers_address_from_string;
 use reqwest::header::{HeaderValue, ACCEPT};
 use reqwest::{Client, RequestBuilder, Response};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::{sleep, Instant};
@@ -96,8 +96,8 @@ where
         }
         let chain_config = chain_config_option.unwrap();
 
-        let contract_address =
-            Address::from_str(chain_config.relayer_contract_address()).map_err(RelayerClientError::FromHexError)?;
+        let contract_address = ethers_address_from_string(chain_config.relayer_contract_address())
+            .map_err(RelayerClientError::FromHexError)?;
 
         let contract = MystikoGasRelayer::new(contract_address, provider);
 

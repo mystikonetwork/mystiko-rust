@@ -1,6 +1,5 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use ethers_core::types::Address;
 use mockall::mock;
 use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
 use mystiko_dataloader::data::{FullData, LiteData, LoadedData};
@@ -9,9 +8,9 @@ use mystiko_dataloader::fetcher::{
 };
 use mystiko_datapacker_client::{ChainQuery, ChainResponse};
 use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, Nullifier};
+use mystiko_utils::address::string_address_to_bytes;
 use mystiko_utils::convert::biguint_to_bytes;
 use num_bigint::BigUint;
-use std::str::FromStr;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -400,7 +399,7 @@ fn generate_data(options: &TestOptions, config_addresses: Vec<&str>) -> ChainRes
         }
         contracts_data.push(
             ContractData::builder()
-                .contract_address(Address::from_str(contract_address).unwrap().to_fixed_bytes())
+                .contract_address(string_address_to_bytes(contract_address).unwrap())
                 .commitments(commitments)
                 .nullifiers(nullifiers)
                 .build(),

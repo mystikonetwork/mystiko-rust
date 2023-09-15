@@ -322,7 +322,7 @@ where
         let pk_enc = encryption_public_key(&sk_enc);
         let full_pk = combined_public_key(&pk_verify, &pk_enc);
         let full_sk = combined_secret_key(&sk_verify, &sk_enc);
-        let full_sk_str = encode_hex(&full_sk);
+        let full_sk_str = encode_hex(full_sk);
         let encrypted_sk = encrypt_symmetric(&options.wallet_password, &full_sk_str)?;
         let shielded_address = ShieldedAddress::from_public_key(&pk_verify, &pk_enc);
         let account_name: String = if let Some(given_name) = &options.name {
@@ -346,7 +346,7 @@ where
         let account = Account {
             name: account_name,
             shielded_address: shielded_address.address(),
-            public_key: encode_hex(&full_pk),
+            public_key: encode_hex(full_pk),
             encrypted_secret_key: encrypted_sk,
             status: AccountStatus::Created,
             scan_size,

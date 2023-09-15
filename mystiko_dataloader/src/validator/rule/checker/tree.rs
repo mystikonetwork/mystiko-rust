@@ -6,14 +6,14 @@ use crate::validator::rule::CheckerResult;
 use crate::validator::rule::RuleCheckError;
 use crate::validator::rule::{MerkleTreeCheckerError, ValidateOriginalData};
 use async_trait::async_trait;
-use ethers_core::types::{Address, BlockId, BlockNumber};
+use ethers_core::types::{BlockId, BlockNumber};
 use mystiko_abi::commitment_pool::CommitmentPool;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_ethers::Providers;
 use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_utils::address::ethers_address_from_string;
 use mystiko_utils::convert::{biguint_to_u256, bytes_to_biguint};
 use num_bigint::BigUint;
-use std::str::FromStr;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -86,7 +86,7 @@ where
     }
 
     async fn check_tree_root(&self, data: &ValidateMergedData, tree_root: &BigUint) -> CheckerResult<()> {
-        let address = Address::from_str(data.contract_address.as_str())
+        let address = ethers_address_from_string(&data.contract_address)
             .map_err(|_| RuleCheckError::ContractAddressError(data.contract_address.clone()))?;
         let provider = self.providers.get_provider(data.chain_id).await?;
         let commitment_contract = CommitmentPool::new(address, provider);

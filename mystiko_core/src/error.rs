@@ -1,4 +1,3 @@
-use hex::FromHexError;
 use mystiko_crypto::error::CryptoError;
 use mystiko_storage::StorageError;
 use thiserror::Error;
@@ -14,7 +13,7 @@ pub enum MystikoError {
     #[error(transparent)]
     MnemonicError(#[from] bip32::Error),
     #[error(transparent)]
-    HexStringError(#[from] FromHexError),
+    HexStringError(#[from] rustc_hex::FromHexError),
     #[error(transparent)]
     StorageError(#[from] StorageError),
     #[error("invalid password: {0:?}")]

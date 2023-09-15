@@ -139,10 +139,10 @@ impl DatabaseCommitment for Commitment {
             included_block_number: proto.included_block_number,
             leaf_index: proto.leaf_index,
             rollup_fee: proto.rollup_fee.map(|f| bytes_to_biguint(&f)),
-            encrypted_notes: proto.encrypted_note.map(|n| encode_hex_with_prefix(&n)),
-            queued_transaction_hash: proto.queued_transaction_hash.map(|n| encode_hex_with_prefix(&n)),
-            included_transaction_hash: proto.included_transaction_hash.map(|n| encode_hex_with_prefix(&n)),
-            src_chain_transaction_hash: proto.src_chain_transaction_hash.map(|n| encode_hex_with_prefix(&n)),
+            encrypted_notes: proto.encrypted_note.map(encode_hex_with_prefix),
+            queued_transaction_hash: proto.queued_transaction_hash.map(encode_hex_with_prefix),
+            included_transaction_hash: proto.included_transaction_hash.map(encode_hex_with_prefix),
+            src_chain_transaction_hash: proto.src_chain_transaction_hash.map(encode_hex_with_prefix),
         })
     }
 
@@ -227,10 +227,10 @@ impl DatabaseCommitment for Commitment {
             .included_block_number(self.included_block_number)
             .leaf_index(self.leaf_index)
             .rollup_fee(self.rollup_fee.map(|f| biguint_to_bytes(&f)))
-            .encrypted_note(self.encrypted_notes.map(|n| decode_hex(&n)).transpose()?)
-            .queued_transaction_hash(self.queued_transaction_hash.map(|n| decode_hex(&n)).transpose()?)
-            .included_transaction_hash(self.included_transaction_hash.map(|n| decode_hex(&n)).transpose()?)
-            .src_chain_transaction_hash(self.src_chain_transaction_hash.map(|n| decode_hex(&n)).transpose()?)
+            .encrypted_note(self.encrypted_notes.map(decode_hex).transpose()?)
+            .queued_transaction_hash(self.queued_transaction_hash.map(decode_hex).transpose()?)
+            .included_transaction_hash(self.included_transaction_hash.map(decode_hex).transpose()?)
+            .src_chain_transaction_hash(self.src_chain_transaction_hash.map(decode_hex).transpose()?)
             .build())
     }
 }

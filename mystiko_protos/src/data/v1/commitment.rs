@@ -13,20 +13,14 @@ impl Commitment {
     }
 
     pub fn queued_transaction_hash_as_hex(&self) -> Option<String> {
-        self.queued_transaction_hash
-            .as_ref()
-            .map(|hash| encode_hex_with_prefix(hash))
+        self.queued_transaction_hash.as_ref().map(encode_hex_with_prefix)
     }
 
     pub fn included_transaction_hash_as_hex(&self) -> Option<String> {
-        self.included_transaction_hash
-            .as_ref()
-            .map(|hash| encode_hex_with_prefix(hash))
+        self.included_transaction_hash.as_ref().map(encode_hex_with_prefix)
     }
 
     pub fn src_chain_transaction_hash_as_hex(&self) -> Option<String> {
-        self.src_chain_transaction_hash
-            .as_ref()
-            .map(|hash| encode_hex_with_prefix(hash))
+        self.src_chain_transaction_hash.as_ref().map(encode_hex_with_prefix)
     }
 }

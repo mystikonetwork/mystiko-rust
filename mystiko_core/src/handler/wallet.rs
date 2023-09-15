@@ -102,7 +102,7 @@ where
     pub async fn export_mnemonic(&self, password: &str) -> Result<Mnemonic> {
         let wallet = self.check_password(password).await?;
         let entropy_string = decrypt_symmetric(password, &wallet.encrypted_entropy)?;
-        let entropy: [u8; KEY_SIZE] = decode_hex_with_length(&entropy_string)?;
+        let entropy: [u8; KEY_SIZE] = decode_hex_with_length(entropy_string)?;
         Ok(Mnemonic::from_entropy(entropy, Language::English))
     }
 

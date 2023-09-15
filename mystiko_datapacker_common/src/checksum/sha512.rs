@@ -8,6 +8,6 @@ impl crate::CheckSum for Sha512CheckSum {
     fn checksum(&self, data: &[u8]) -> String {
         let mut hasher = Sha512::new();
         hasher.update(data);
-        encode_hex(hasher.finalize().as_ref())
+        encode_hex(hasher.finalize())
     }
 }

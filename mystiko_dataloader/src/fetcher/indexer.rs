@@ -10,7 +10,6 @@ use crate::fetcher::FetcherLogOptions;
 use crate::fetcher::{ChainLoadedBlockOptions, DataFetcher, FetcherError};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use hex::FromHexError;
 use log::info;
 use mystiko_config::MystikoConfig;
 use mystiko_indexer_client::{
@@ -21,6 +20,7 @@ use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::loader::v1::IndexerFetcherConfig;
 use mystiko_utils::convert::biguint_str_to_bytes;
 use mystiko_utils::hex::decode_hex;
+use rustc_hex::FromHexError;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
