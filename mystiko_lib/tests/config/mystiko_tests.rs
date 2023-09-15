@@ -8,8 +8,10 @@ use prost::Message;
 #[test]
 fn test_get_config() {
     assert!(setup().is_ok());
-    let config = get();
-    assert!(config.is_ok());
+    let result = get();
+    assert!(result.is_ok());
+    let config = result.unwrap();
+    assert_eq!(config.version, "0.1.0");
 }
 
 fn setup() -> Result<()> {
