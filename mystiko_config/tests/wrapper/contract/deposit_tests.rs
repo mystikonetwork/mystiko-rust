@@ -299,6 +299,27 @@ async fn test_to_proto() {
     );
 }
 
+#[tokio::test]
+async fn test_to_contract_proto() {
+    let (_, _, _, _, config) = setup(SetupOptions::default()).await;
+    let contract_config = ContractConfig::Deposit(Arc::new(config));
+    let result = contract_config.to_proto();
+    assert!(result.is_ok());
+    let config = result.unwrap();
+    assert_eq!(config.version, 2);
+    assert_eq!(&config.name, "MystikoWithPolyERC20");
+    assert_eq!(&config.address, "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
+    assert_eq!(config.start_block, 1000000);
+    assert!(config.disabled);
+    assert_eq!(config.min_rollup_fee, "120000000000000000");
+    assert!(config.asset_config.is_some());
+    assert_eq!(config.bridge_type(), mystiko_protos::common::v1::BridgeType::Tbridge);
+    assert_eq!(
+        config.contract_type(),
+        mystiko_protos::common::v1::ContractType::Deposit
+    );
+}
+
 #[derive(Default)]
 struct SetupOptions {
     bridge_type: Option<BridgeType>,

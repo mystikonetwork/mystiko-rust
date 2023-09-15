@@ -3554,6 +3554,7 @@ dependencies = [
  "env_logger",
  "lazy_static",
  "log",
+ "mystiko_config",
  "mystiko_core",
  "mystiko_database",
  "mystiko_protos",

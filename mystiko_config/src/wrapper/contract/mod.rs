@@ -135,6 +135,24 @@ impl ContractConfig {
         self.asset().recommended_amounts_number::<T>()
     }
 
+    #[cfg(feature = "proto")]
+    pub fn to_proto(&self) -> Result<mystiko_protos::config::contract::v1::ContractConfig> {
+        let config = mystiko_protos::config::contract::v1::ContractConfig::builder()
+            .version(self.version())
+            .name(self.name().to_string())
+            .address(self.address().to_string())
+            .start_block(self.start_block())
+            .disabled(self.disabled())
+            .min_rollup_fee(self.min_rollup_fee()?.to_string())
+            .asset_config(Some(self.asset().to_proto()?))
+            .bridge_type(Into::<mystiko_protos::common::v1::BridgeType>::into(self.bridge_type()))
+            .contract_type(Into::<mystiko_protos::common::v1::ContractType>::into(
+                self.contract_type(),
+            ))
+            .build();
+        Ok(config)
+    }
+
     pub fn validate(&self) -> Result<()> {
         match self {
             ContractConfig::Deposit(config) => config.validate(),

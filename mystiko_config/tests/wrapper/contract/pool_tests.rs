@@ -209,6 +209,24 @@ async fn test_to_proto() {
     assert_eq!(config.circuits, vec![String::from("circuit-1.0")]);
 }
 
+#[tokio::test]
+async fn test_to_contract_proto() {
+    let (_, _, _, _, config) = setup(SetupOptions::default()).await;
+    let config = ContractConfig::Pool(Arc::new(config));
+    let result = config.to_proto();
+    assert!(result.is_ok());
+    let config = result.unwrap();
+    assert_eq!(config.version, 2);
+    assert_eq!(config.name, "CommitmentPool");
+    assert_eq!(&config.address, "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
+    assert_eq!(config.start_block, 1000000);
+    assert!(!config.disabled);
+    assert_eq!(&config.min_rollup_fee, "120000000000000000");
+    assert!(config.asset_config.is_some());
+    assert_eq!(config.contract_type(), mystiko_protos::common::v1::ContractType::Pool);
+    assert_eq!(config.bridge_type(), mystiko_protos::common::v1::BridgeType::Tbridge);
+}
+
 #[derive(Default)]
 struct SetupOptions {
     asset_address: Option<String>,

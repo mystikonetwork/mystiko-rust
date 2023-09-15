@@ -11,6 +11,7 @@ lazy_static = { version = "1.4.0" }
 log = { version = "0.4.19" }
 prost = { version = "0.11.9" }
 mystiko_core = { version = "0.1.0", path = "../mystiko_core" }
+mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["proto"] }
 mystiko_database = { version = "0.1.0", path = "../mystiko_database" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-core-document-v1", "mystiko-core-v1"] }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
