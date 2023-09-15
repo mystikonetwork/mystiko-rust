@@ -524,6 +524,56 @@ async fn validate_missing_peer_chain_config() {
     );
 }
 
+#[tokio::test]
+async fn test_to_proto() {
+    let config = MystikoConfig::from_json_file(VALID_CONFIG_FILE).await.unwrap();
+    let result = config.to_proto();
+    assert!(result.is_ok());
+    let config = result.unwrap();
+    assert_eq!(&config.version, "0.1.0");
+    assert_eq!(config.git_revision(), "b6b5b5b");
+    assert_eq!(config.country_blacklist, vec![String::from("US"), String::from("CN")]);
+    let mut chain_ids: Vec<u64> = config.chain_configs.into_keys().collect();
+    chain_ids.sort();
+    assert_eq!(chain_ids, vec![5, 97]);
+    let mut bridge_names: Vec<String> = config.bridge_configs.into_values().map(|v| v.name.clone()).collect();
+    bridge_names.sort();
+    assert_eq!(
+        bridge_names,
+        vec![
+            "Axelar Network",
+            "Celer Network",
+            "LayerZero Bridge",
+            "Mystiko Testnet Bridge",
+            "Poly Bridge"
+        ]
+    );
+    let mut circuit_names: Vec<String> = config.circuit_configs.into_iter().map(|c| c.name).collect();
+    circuit_names.sort();
+    assert_eq!(
+        circuit_names,
+        vec![
+            "zokrates-1.0-rollup1",
+            "zokrates-1.0-rollup16",
+            "zokrates-1.0-rollup2",
+            "zokrates-1.0-rollup4",
+            "zokrates-1.0-rollup8",
+            "zokrates-1.0-transaction1x0",
+            "zokrates-1.0-transaction1x1",
+            "zokrates-1.0-transaction1x2",
+            "zokrates-1.0-transaction2x0",
+            "zokrates-1.0-transaction2x1",
+            "zokrates-1.0-transaction2x2",
+            "zokrates-2.0-rollup1"
+        ]
+    );
+    assert_eq!(&config.indexer_config.unwrap().url, "https://example.com");
+    assert_eq!(
+        &config.packer_config.unwrap().url,
+        "https://static.mystiko.network/packer/v1"
+    );
+}
+
 async fn create_raw_config(full_config: bool) -> RawMystikoConfig {
     if full_config {
         create_raw_from_file::<RawMystikoConfig>(FULL_CONFIG_FILE)

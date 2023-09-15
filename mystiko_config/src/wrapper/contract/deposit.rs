@@ -222,7 +222,7 @@ impl DepositContractConfig {
             .service_fee_divider(Some(self.service_fee_divider()))
             .bridge_fee_asset_config(Some(self.bridge_fee_asset().to_proto()?))
             .executor_fee_asset_config(Some(self.executor_fee_asset().to_proto()?))
-            .peer_chain_id(self.peer_chain_id().clone())
+            .peer_chain_id(*self.peer_chain_id())
             .peer_contract_address(self.peer_contract_address().map(|s| s.to_string()))
             .build();
         Ok(config)

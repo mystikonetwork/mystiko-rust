@@ -284,7 +284,7 @@ impl MystikoConfig {
             .version(self.version().to_string())
             .chain_configs(chain_configs)
             .bridge_configs(bridge_configs)
-            .git_revision(self.git_revision().and_then(|s| Some(s.to_string())))
+            .git_revision(self.git_revision().map(|s| s.to_string()))
             .indexer_config(self.indexer().map(|c| c.to_proto()))
             .packer_config(self.packer().map(|c| c.to_proto()))
             .country_blacklist(country_blacklist)
