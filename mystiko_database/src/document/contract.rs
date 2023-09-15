@@ -54,7 +54,9 @@ impl Contract {
             .contract_address(contract.data.contract_address)
             .disabled(contract.data.disabled)
             .loaded_block_number(contract.data.loaded_block_number)
-            .contract_type(Into::<i32>::into(&contract.data.contract_type))
+            .contract_type(Into::<mystiko_protos::common::v1::ContractType>::into(
+                &contract.data.contract_type,
+            ))
             .build()
     }
 }

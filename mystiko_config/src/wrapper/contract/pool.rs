@@ -141,8 +141,10 @@ impl PoolContractConfig {
             .start_block(self.start_block())
             .pool_name(self.pool_name().to_string())
             .min_rollup_fee(self.min_rollup_fee()?.to_string())
-            .contract_type(Into::<i32>::into(self.contract_type()))
-            .bridge_type(Into::<i32>::into(self.bridge_type()))
+            .contract_type(Into::<mystiko_protos::common::v1::ContractType>::into(
+                self.contract_type(),
+            ))
+            .bridge_type(Into::<mystiko_protos::common::v1::BridgeType>::into(self.bridge_type()))
             .asset_config(Some(self.asset().to_proto()?))
             .circuit_configs(
                 self.circuits()

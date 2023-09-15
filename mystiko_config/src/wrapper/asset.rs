@@ -58,7 +58,7 @@ impl AssetConfig {
     #[cfg(feature = "proto")]
     pub fn to_proto(&self) -> Result<mystiko_protos::config::v1::AssetConfig> {
         let config = mystiko_protos::config::v1::AssetConfig::builder()
-            .asset_type(Into::<i32>::into(self.asset_type()))
+            .asset_type(Into::<mystiko_protos::common::v1::AssetType>::into(self.asset_type()))
             .asset_symbol(self.asset_symbol().to_string())
             .asset_decimals(self.asset_decimals())
             .asset_address(Some(self.asset_address().to_string()))

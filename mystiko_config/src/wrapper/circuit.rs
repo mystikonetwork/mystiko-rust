@@ -46,7 +46,9 @@ impl CircuitConfig {
     pub fn to_proto(&self) -> mystiko_protos::config::v1::CircuitConfig {
         mystiko_protos::config::v1::CircuitConfig::builder()
             .name(self.name().to_string())
-            .circuit_type(Into::<i32>::into(self.circuit_type()))
+            .circuit_type(Into::<mystiko_protos::common::v1::CircuitType>::into(
+                self.circuit_type(),
+            ))
             .is_default(self.is_default())
             .program_file(self.program_file().clone())
             .abi_file(self.abi_file().clone())

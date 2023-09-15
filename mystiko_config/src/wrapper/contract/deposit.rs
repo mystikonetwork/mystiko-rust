@@ -214,8 +214,10 @@ impl DepositContractConfig {
             .min_amount(self.min_amount()?.to_string())
             .max_amount(self.max_amount()?.to_string())
             .pool_contract_config(Some(self.pool_contract().to_proto()?))
-            .bridge_type(Into::<i32>::into(self.bridge_type()))
-            .contract_type(Into::<i32>::into(self.contract_type()))
+            .bridge_type(Into::<mystiko_protos::common::v1::BridgeType>::into(self.bridge_type()))
+            .contract_type(Into::<mystiko_protos::common::v1::ContractType>::into(
+                self.contract_type(),
+            ))
             .min_bridge_fee(Some(self.min_bridge_fee()?.to_string()))
             .min_executor_fee(Some(self.min_executor_fee()?.to_string()))
             .service_fee(Some(self.service_fee()))

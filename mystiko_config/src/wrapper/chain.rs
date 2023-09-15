@@ -387,7 +387,9 @@ impl ChainConfig {
             .event_filter_size(self.event_filter_size())
             .indexer_filter_size(self.indexer_filter_size())
             .main_asset_config(self.main_asset().to_proto()?)
-            .provider_type(Into::<i32>::into(self.provider_type()))
+            .provider_type(Into::<mystiko_protos::common::v1::ProviderType>::into(
+                self.provider_type(),
+            ))
             .asset_configs(asset_configs)
             .deposit_contract_configs(deposit_contract_configs)
             .pool_contract_configs(pool_contract_configs)

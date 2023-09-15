@@ -40,8 +40,10 @@ impl PackerConfig {
             .url(self.url().to_string())
             .client_timeout_ms(self.client_timeout_ms())
             .version(self.version())
-            .checksum(Into::<i32>::into(self.checksum()))
-            .compression(Into::<i32>::into(self.compression()))
+            .checksum(Into::<mystiko_protos::core::v1::PackerChecksum>::into(self.checksum()))
+            .compression(Into::<mystiko_protos::core::v1::PackerCompression>::into(
+                self.compression(),
+            ))
             .build()
     }
 

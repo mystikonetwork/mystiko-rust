@@ -268,7 +268,12 @@ impl MystikoConfig {
         let bridge_configs = self
             .bridges()
             .iter()
-            .map(|c| (Into::<i32>::into(c.bridge_type()), c.to_proto()))
+            .map(|c| {
+                (
+                    Into::<mystiko_protos::common::v1::BridgeType>::into(c.bridge_type()) as i32,
+                    c.to_proto(),
+                )
+            })
             .collect::<HashMap<i32, mystiko_protos::config::bridge::v1::BridgeConfig>>();
         let country_blacklist = self
             .country_blacklist()

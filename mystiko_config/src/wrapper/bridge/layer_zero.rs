@@ -26,7 +26,7 @@ impl LayerZeroBridgeConfig {
     pub fn to_proto(&self) -> mystiko_protos::config::bridge::v1::BridgeConfig {
         mystiko_protos::config::bridge::v1::BridgeConfig::builder()
             .name(self.name().to_string())
-            .bridge_type(Into::<i32>::into(self.bridge_type()))
+            .bridge_type(Into::<mystiko_protos::common::v1::BridgeType>::into(self.bridge_type()))
             .build()
     }
 
