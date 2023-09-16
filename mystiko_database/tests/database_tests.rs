@@ -12,7 +12,6 @@ async fn test_database_migration() {
     assert!(database.nullifiers.collection_exists().await.unwrap());
     assert!(database.transactions.collection_exists().await.unwrap());
     assert!(database.wallets.collection_exists().await.unwrap());
-    assert!(database.chains.collection_exists().await.unwrap());
     assert!(database.contracts.collection_exists().await.unwrap());
     assert!(database.commitments.collection_exists().await.unwrap());
 }

@@ -63,7 +63,7 @@ fn test_biguint_str_to_bytes() {
 fn test_i128_convert() {
     let value1 = 12345i128;
     let bytes = i128_to_bytes(value1);
-    let value2 = bytes_to_i128(&bytes);
+    let value2 = bytes_to_i128(bytes);
     assert_eq!(value1, value2);
 }
 
@@ -71,6 +71,6 @@ fn test_i128_convert() {
 fn test_u128_convert() {
     let value1 = 12345u128;
     let bytes = u128_to_bytes(value1);
-    let value2 = bytes_to_u128(&bytes);
+    let value2 = bytes_to_u128(bytes);
     assert_eq!(value1, value2);
 }

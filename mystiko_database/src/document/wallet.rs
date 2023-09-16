@@ -13,7 +13,7 @@ pub struct Wallet {
 }
 
 impl Wallet {
-    pub fn from_proto(proto: ProtoWallet) -> Document<Self> {
+    pub fn document_from_proto(proto: ProtoWallet) -> Document<Self> {
         Document::new(
             proto.id,
             proto.created_at,
@@ -26,7 +26,7 @@ impl Wallet {
         )
     }
 
-    pub fn into_proto(wallet: Document<Self>) -> ProtoWallet {
+    pub fn document_into_proto(wallet: Document<Self>) -> ProtoWallet {
         ProtoWallet::builder()
             .id(wallet.id)
             .created_at(wallet.created_at)

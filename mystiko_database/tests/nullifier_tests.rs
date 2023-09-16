@@ -1,7 +1,11 @@
+use mystiko_config::MystikoConfig;
 use mystiko_database::document::{Nullifier, NullifierCollection, NullifierColumn};
+use mystiko_dataloader::handler::document::DatabaseNullifier;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_utils::convert::biguint_to_bytes;
+use mystiko_utils::hex::decode_hex;
 use num_bigint::BigUint;
 use std::sync::Arc;
 
@@ -141,4 +145,58 @@ async fn test_nullifier_serde() {
         nullifier,
         serde_json::from_str(&serde_json::to_string(&nullifier).unwrap()).unwrap()
     )
+}
+
+#[tokio::test]
+async fn test_loader_database_nullifier() {
+    assert_eq!(Nullifier::column_chain_id(), "chain_id");
+    assert_eq!(Nullifier::column_contract_address(), "contract_address");
+    assert_eq!(Nullifier::column_nullifier(), "nullifier");
+    assert_eq!(Nullifier::column_block_number(), "block_number");
+    assert_eq!(Nullifier::column_transaction_hash(), "transaction_hash");
+    let mut nullifier = Nullifier {
+        chain_id: 5,
+        contract_address: String::from("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
+        block_number: 10000000u64,
+        nullifier: BigUint::from(123456789u32),
+        transaction_hash: String::from("0x81d3510c46dfe7a1fc282eb54034b848a3d83f440c551c19e4d513801be00130"),
+    };
+    assert_eq!(nullifier.get_chain_id(), 5);
+    assert_eq!(
+        nullifier.get_contract_address(),
+        "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
+    );
+    assert_eq!(nullifier.get_block_number(), 10000000u64);
+    assert_eq!(nullifier.get_nullifier(), &BigUint::from(123456789u32));
+    assert_eq!(
+        nullifier.get_transaction_hash(),
+        "0x81d3510c46dfe7a1fc282eb54034b848a3d83f440c551c19e4d513801be00130"
+    );
+    let proto = nullifier.clone().into_proto().unwrap();
+    assert_eq!(proto.nullifier, biguint_to_bytes(&BigUint::from(123456789u32)));
+    assert_eq!(proto.block_number, 10000000u64);
+    assert_eq!(
+        proto.transaction_hash,
+        decode_hex("0x81d3510c46dfe7a1fc282eb54034b848a3d83f440c551c19e4d513801be00130").unwrap()
+    );
+
+    let config = Arc::new(
+        MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let converted_nullifier = Nullifier::from_proto(
+        config.clone(),
+        5,
+        "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d",
+        proto.clone(),
+    )
+    .unwrap();
+    assert_eq!(converted_nullifier, nullifier);
+
+    nullifier.block_number = 10000001u64;
+    nullifier.nullifier = BigUint::from(123456799u32);
+    nullifier.transaction_hash = "0x81d3510c46dfe7a1fc282eb54034b848a3d83f440c551c19e4d513801be00131".to_string();
+    nullifier.update_by_proto(config.clone(), &proto).unwrap();
+    assert_eq!(converted_nullifier, nullifier);
 }

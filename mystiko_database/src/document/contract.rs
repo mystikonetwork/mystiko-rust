@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
 
-use mystiko_protos::core::document::v1::Contract as ProtoContract;
-use mystiko_storage::{Document, DocumentData, IndexColumns, UniqueColumns};
+use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::ContractType;
 use serde::{Deserialize, Serialize};
@@ -29,35 +28,55 @@ fn indexes() -> Vec<IndexColumns> {
     ]
 }
 
-impl Contract {
-    pub fn from_proto(proto: ProtoContract) -> Document<Self> {
-        let contract_type = proto.contract_type().into();
-        Document::new(
-            proto.id,
-            proto.created_at,
-            proto.updated_at,
-            Contract {
-                contract_type,
-                chain_id: proto.chain_id,
-                contract_address: proto.contract_address,
-                disabled: proto.disabled,
-                loaded_block_number: proto.loaded_block_number,
-            },
-        )
+#[cfg(feature = "loader")]
+impl mystiko_dataloader::handler::document::DatabaseContract for Contract {
+    fn column_chain_id() -> String {
+        ContractColumn::ChainId.to_string()
     }
 
-    pub fn into_proto(contract: Document<Self>) -> ProtoContract {
-        ProtoContract::builder()
-            .id(contract.id)
-            .created_at(contract.created_at)
-            .updated_at(contract.updated_at)
-            .chain_id(contract.data.chain_id)
-            .contract_address(contract.data.contract_address)
-            .disabled(contract.data.disabled)
-            .loaded_block_number(contract.data.loaded_block_number)
-            .contract_type(Into::<mystiko_protos::common::v1::ContractType>::into(
-                &contract.data.contract_type,
+    fn column_contract_address() -> String {
+        ContractColumn::ContractAddress.to_string()
+    }
+
+    fn column_loaded_block() -> String {
+        ContractColumn::LoadedBlockNumber.to_string()
+    }
+
+    fn from_config(
+        config: std::sync::Arc<mystiko_config::MystikoConfig>,
+        chain_id: u64,
+        address: &str,
+    ) -> anyhow::Result<Self> {
+        if let Some(contract_config) = config.find_contract_by_address(chain_id, address) {
+            Ok(Self {
+                contract_type: contract_config.contract_type().clone(),
+                chain_id,
+                contract_address: address.to_string(),
+                disabled: contract_config.disabled(),
+                loaded_block_number: contract_config.start_block(),
+            })
+        } else {
+            Err(anyhow::anyhow!(
+                "chain_id {} contract {} not found in config",
+                chain_id,
+                address
             ))
-            .build()
+        }
+    }
+
+    fn get_chain_id(&self) -> u64 {
+        self.chain_id
+    }
+
+    fn get_contract_address(&self) -> &String {
+        &self.contract_address
+    }
+
+    fn get_loaded_block(&self) -> u64 {
+        self.loaded_block_number
+    }
+
+    fn update_loaded_block(&mut self, block: u64) {
+        self.loaded_block_number = block;
     }
 }
