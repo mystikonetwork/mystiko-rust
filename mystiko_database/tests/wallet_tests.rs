@@ -142,7 +142,7 @@ fn test_from_proto() {
         .hashed_password(String::from("hashed password 01"))
         .account_nonce(1u32)
         .build();
-    let wallet = Wallet::from_proto(proto);
+    let wallet = Wallet::document_from_proto(proto);
     assert_eq!(wallet.id, String::from("123456"));
     assert_eq!(wallet.created_at, 1234567890u64);
     assert_eq!(wallet.updated_at, 1234567891u64);
@@ -163,7 +163,7 @@ fn test_into_proto() {
             account_nonce: 1u32,
         },
     );
-    let proto = Wallet::into_proto(wallet);
+    let proto = Wallet::document_into_proto(wallet);
     assert_eq!(proto.id, String::from("123456"));
     assert_eq!(proto.created_at, 1234567890u64);
     assert_eq!(proto.updated_at, 1234567891u64);

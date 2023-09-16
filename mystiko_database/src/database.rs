@@ -1,7 +1,6 @@
 #![forbid(unsafe_code)]
 
 use crate::document::AccountCollection;
-use crate::document::ChainCollection;
 use crate::document::CommitmentCollection;
 use crate::document::ContractCollection;
 use crate::document::DepositCollection;
@@ -15,7 +14,6 @@ use std::sync::Arc;
 #[derive(Debug)]
 pub struct Database<F: StatementFormatter, S: Storage> {
     pub accounts: AccountCollection<F, S>,
-    pub chains: ChainCollection<F, S>,
     pub commitments: CommitmentCollection<F, S>,
     pub contracts: ContractCollection<F, S>,
     pub deposits: DepositCollection<F, S>,
@@ -29,7 +27,6 @@ impl<F: StatementFormatter, S: Storage> Database<F, S> {
         let collection = Arc::new(Collection::new(formatter, storage));
         Database {
             accounts: AccountCollection::new(collection.clone()),
-            chains: ChainCollection::new(collection.clone()),
             commitments: CommitmentCollection::new(collection.clone()),
             contracts: ContractCollection::new(collection.clone()),
             deposits: DepositCollection::new(collection.clone()),
@@ -42,7 +39,6 @@ impl<F: StatementFormatter, S: Storage> Database<F, S> {
     pub async fn migrate(&self) -> Result<Vec<Document<MigrationHistory>>> {
         let migrations: Vec<Document<MigrationHistory>> = vec![
             self.accounts.migrate().await?,
-            self.chains.migrate().await?,
             self.commitments.migrate().await?,
             self.contracts.migrate().await?,
             self.deposits.migrate().await?,

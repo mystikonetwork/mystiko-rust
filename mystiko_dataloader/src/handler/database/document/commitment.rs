@@ -138,7 +138,7 @@ impl DatabaseCommitment for Commitment {
             src_chain_block_number: proto.src_chain_block_number,
             included_block_number: proto.included_block_number,
             leaf_index: proto.leaf_index,
-            rollup_fee: proto.rollup_fee.map(|f| bytes_to_biguint(&f)),
+            rollup_fee: proto.rollup_fee.map(bytes_to_biguint),
             encrypted_notes: proto.encrypted_note.map(encode_hex_with_prefix),
             queued_transaction_hash: proto.queued_transaction_hash.map(encode_hex_with_prefix),
             included_transaction_hash: proto.included_transaction_hash.map(encode_hex_with_prefix),

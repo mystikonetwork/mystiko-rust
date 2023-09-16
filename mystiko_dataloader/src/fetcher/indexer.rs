@@ -342,13 +342,7 @@ fn sort_commitments(commitment_resp: &[CommitmentForDataLoader]) -> Result<Vec<C
                 .included_block_number(commit.included_block_number)
                 .src_chain_block_number(commit.src_chain_block_number)
                 .leaf_index(commit.leaf_index)
-                .rollup_fee(
-                    commit
-                        .rollup_fee
-                        .as_ref()
-                        .map(|rf| biguint_str_to_bytes(rf))
-                        .transpose()?,
-                )
+                .rollup_fee(commit.rollup_fee.as_ref().map(biguint_str_to_bytes).transpose()?)
                 .encrypted_note(decode_hex_str_opt(commit.encrypted_note.as_ref())?)
                 .queued_transaction_hash(decode_hex_str_opt(commit.queued_transaction_hash.as_ref())?)
                 .included_transaction_hash(decode_hex_str_opt(commit.included_transaction_hash.as_ref())?)

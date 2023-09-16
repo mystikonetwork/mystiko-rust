@@ -37,7 +37,7 @@ where
 }
 
 pub fn u256_to_biguint(u: &U256) -> BigUint {
-    bytes_to_biguint(&u256_to_bytes(u))
+    bytes_to_biguint(u256_to_bytes(u))
 }
 
 pub fn u256_to_bytes(u: &U256) -> Vec<u8> {
@@ -47,33 +47,45 @@ pub fn u256_to_bytes(u: &U256) -> Vec<u8> {
 }
 
 pub fn biguint_to_u256(b: &BigUint) -> U256 {
-    bytes_to_u256(&biguint_to_bytes(b))
+    bytes_to_u256(biguint_to_bytes(b))
 }
 
 pub fn biguint_to_bytes(b: &BigUint) -> Vec<u8> {
     b.to_bytes_le()
 }
 
-pub fn biguint_str_to_bytes(biguint_str: &str) -> Result<Vec<u8>> {
-    let number = BigUint::from_str(biguint_str)?;
+pub fn biguint_str_to_bytes<S>(biguint_str: S) -> Result<Vec<u8>>
+where
+    S: AsRef<str>,
+{
+    let number = BigUint::from_str(biguint_str.as_ref())?;
     Ok(biguint_to_bytes(&number))
 }
 
-pub fn bytes_to_biguint(b: &[u8]) -> BigUint {
-    BigUint::from_bytes_le(b)
+pub fn bytes_to_biguint<B>(b: B) -> BigUint
+where
+    B: AsRef<[u8]>,
+{
+    BigUint::from_bytes_le(b.as_ref())
 }
 
-pub fn bytes_to_u256(b: &[u8]) -> U256 {
-    U256::from_little_endian(b)
+pub fn bytes_to_u256<B>(b: B) -> U256
+where
+    B: AsRef<[u8]>,
+{
+    U256::from_little_endian(b.as_ref())
 }
 
 pub fn i128_to_bytes(i: i128) -> Vec<u8> {
     i.to_be_bytes().to_vec()
 }
 
-pub fn bytes_to_i128(b: &[u8]) -> i128 {
+pub fn bytes_to_i128<B>(b: B) -> i128
+where
+    B: AsRef<[u8]>,
+{
     let mut bytes = [0; 16]; // i128 occupies 16 bytes
-    bytes.copy_from_slice(&b[..16]); // Copy the first 16 bytes from the input slice
+    bytes.copy_from_slice(&b.as_ref()[..16]); // Copy the first 16 bytes from the input slice
     FromBytes::from_be_bytes(&bytes)
 }
 
@@ -81,8 +93,11 @@ pub fn u128_to_bytes(u: u128) -> Vec<u8> {
     u.to_be_bytes().to_vec()
 }
 
-pub fn bytes_to_u128(b: &[u8]) -> u128 {
+pub fn bytes_to_u128<B>(b: B) -> u128
+where
+    B: AsRef<[u8]>,
+{
     let mut bytes = [0; 16];
-    bytes.copy_from_slice(&b[..16]);
+    bytes.copy_from_slice(&b.as_ref()[..16]);
     FromBytes::from_be_bytes(&bytes)
 }

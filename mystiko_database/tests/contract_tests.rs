@@ -1,7 +1,8 @@
 extern crate mystiko_database;
 
+use mystiko_config::MystikoConfig;
 use mystiko_database::document::{Contract, ContractCollection, ContractColumn};
-use mystiko_protos::core::document::v1::Contract as ProtoContract;
+use mystiko_dataloader::handler::document::DatabaseContract;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
@@ -149,56 +150,35 @@ async fn test_contract_serde() {
     );
 }
 
-#[test]
-fn test_from_proto() {
-    let proto = ProtoContract::builder()
-        .id(String::from("123456"))
-        .created_at(1234567890u64)
-        .updated_at(1234567891u64)
-        .chain_id(5u64)
-        .contract_address(String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"))
-        .disabled(false)
-        .loaded_block_number(1100000u64)
-        .contract_type(1)
-        .build();
-    let contract = Contract::from_proto(proto);
-    assert_eq!(contract.id, String::from("123456"));
-    assert_eq!(contract.created_at, 1234567890u64);
-    assert_eq!(contract.updated_at, 1234567891u64);
-    assert_eq!(contract.data.chain_id, 5u64);
+#[tokio::test]
+async fn test_loader_database_contract() {
+    assert_eq!(Contract::column_chain_id(), "chain_id");
+    assert_eq!(Contract::column_contract_address(), "contract_address");
+    assert_eq!(Contract::column_loaded_block(), "loaded_block_number");
+    let mut contract = Contract {
+        contract_type: ContractType::Pool,
+        chain_id: 5,
+        contract_address: String::from("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
+        disabled: false,
+        loaded_block_number: 1000000,
+    };
+    assert_eq!(contract.get_chain_id(), 5);
     assert_eq!(
-        contract.data.contract_address,
-        String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d")
+        contract.get_contract_address(),
+        "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
     );
-    assert!(!contract.data.disabled);
-    assert_eq!(contract.data.loaded_block_number, 1100000u64);
-    assert_eq!(contract.data.contract_type, ContractType::Deposit);
-}
+    assert_eq!(contract.get_loaded_block(), 1000000);
+    let config = Arc::new(
+        MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let converted_contract =
+        Contract::from_config(config.clone(), 5, "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d").unwrap();
+    assert_eq!(converted_contract, contract);
+    assert!(Contract::from_config(config, 1, "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d").is_err());
 
-#[test]
-fn test_into_proto() {
-    let contract = Document::new(
-        String::from("123456"),
-        1234567890u64,
-        1234567891u64,
-        Contract {
-            contract_type: ContractType::Deposit,
-            chain_id: 5,
-            contract_address: String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d"),
-            disabled: false,
-            loaded_block_number: 1100000,
-        },
-    );
-    let proto = Contract::into_proto(contract);
-    assert_eq!(proto.id, String::from("123456"));
-    assert_eq!(proto.created_at, 1234567890u64);
-    assert_eq!(proto.updated_at, 1234567891u64);
-    assert_eq!(proto.chain_id, 5u64);
-    assert_eq!(
-        proto.contract_address,
-        String::from("0x90fEF726f3b510521AeF20C27D1d23dcC44Dc84d")
-    );
-    assert!(!proto.disabled);
-    assert_eq!(proto.loaded_block_number, 1100000u64);
-    assert_eq!(proto.contract_type, 1);
+    contract.loaded_block_number = 2000000;
+    contract.update_loaded_block(2000001);
+    assert_eq!(contract.get_loaded_block(), 2000001);
 }

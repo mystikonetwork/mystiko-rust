@@ -45,7 +45,9 @@ where
     }
 
     pub async fn current(&self) -> Result<Option<ProtoWallet>> {
-        self.current_document().await.map(|doc| doc.map(Wallet::into_proto))
+        self.current_document()
+            .await
+            .map(|doc| doc.map(Wallet::document_into_proto))
     }
 
     pub async fn create(&self, options: &CreateWalletOptions) -> Result<ProtoWallet> {
@@ -69,15 +71,17 @@ where
             .await
             .map_err(MystikoError::StorageError)?;
         log::info!("successfully created a wallet(id = \"{}\")", wallet.id);
-        Ok(Wallet::into_proto(wallet))
+        Ok(Wallet::document_into_proto(wallet))
     }
 
     pub async fn check_current(&self) -> Result<ProtoWallet> {
-        self.check_document_current().await.map(Wallet::into_proto)
+        self.check_document_current().await.map(Wallet::document_into_proto)
     }
 
     pub async fn check_password(&self, password: &str) -> Result<ProtoWallet> {
-        self.check_document_password(password).await.map(Wallet::into_proto)
+        self.check_document_password(password)
+            .await
+            .map(Wallet::document_into_proto)
     }
 
     pub async fn update_password(&self, old_password: &str, new_password: &str) -> Result<ProtoWallet> {
@@ -96,7 +100,7 @@ where
             "successfully updated the password of the wallet(id = \"{}\")",
             wallet.id
         );
-        Ok(Wallet::into_proto(wallet))
+        Ok(Wallet::document_into_proto(wallet))
     }
 
     pub async fn export_mnemonic(&self, password: &str) -> Result<Mnemonic> {

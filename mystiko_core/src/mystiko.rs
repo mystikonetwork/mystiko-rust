@@ -1,12 +1,10 @@
 use crate::error::MystikoError;
 use crate::AccountHandler;
-use crate::ChainHandler;
-use crate::ContractHandler;
 use crate::WalletHandler;
 use anyhow::Result;
 use mystiko_config::MystikoConfig;
 use mystiko_database::Database;
-use mystiko_ethers::{ProviderFactory, ProviderPool};
+use mystiko_ethers::{ChainConfigProvidersOptions, ProviderFactory, ProviderPool};
 use mystiko_protos::common::v1::{ConfigOptions, ConfigOptionsOption};
 use mystiko_storage::{StatementFormatter, Storage};
 use std::sync::Arc;
@@ -16,10 +14,8 @@ pub struct Mystiko<F: StatementFormatter, S: Storage> {
     pub db: Arc<Database<F, S>>,
     pub config: Arc<MystikoConfig>,
     pub accounts: AccountHandler<F, S>,
-    pub chains: ChainHandler<F, S>,
-    pub contracts: ContractHandler<F, S>,
     pub wallets: WalletHandler<F, S>,
-    pub providers: Arc<ProviderPool<ChainHandler<F, S>>>,
+    pub providers: Arc<ProviderPool<ChainConfigProvidersOptions>>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -42,30 +38,23 @@ where
         let db = Arc::new(database);
         let config = create_mystiko_config(&mystiko_options).await?;
         let accounts = AccountHandler::new(db.clone());
-        let chains = ChainHandler::new(db.clone(), config.clone());
-        let contracts = ContractHandler::new(db.clone(), config.clone());
         let wallets = WalletHandler::new(db.clone());
-        let providers = if let Some(provider_factory) = mystiko_options.provider_factory {
-            ProviderPool::builder()
-                .chain_providers_options(ChainHandler::new(db.clone(), config.clone()))
-                .provider_factory(provider_factory)
-                .build()
-        } else {
-            ProviderPool::builder()
-                .chain_providers_options(ChainHandler::new(db.clone(), config.clone()))
-                .build()
-        };
+        let providers: ProviderPool<ChainConfigProvidersOptions> =
+            if let Some(provider_factory) = mystiko_options.provider_factory {
+                ProviderPool::builder()
+                    .chain_providers_options(ChainConfigProvidersOptions::builder().config(config.clone()).build())
+                    .provider_factory(provider_factory)
+                    .build()
+            } else {
+                config.clone().into()
+            };
         let mystiko = Self {
             db,
             config: config.clone(),
             accounts,
-            chains,
-            contracts,
             wallets,
             providers: Arc::new(providers),
         };
-        mystiko.chains.initialize().await?;
-        mystiko.contracts.initialize().await?;
         log::info!(
             "mystiko on {} has been initialized, config git revision {}",
             mystiko_options.config_options.get_network(),

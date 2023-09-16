@@ -86,7 +86,6 @@ impl serde::Serialize for DepositStatus {
     {
         let variant = match self {
             Self::Unspecified => "DEPOSIT_STATUS_UNSPECIFIED",
-            Self::Init => "DEPOSIT_STATUS_INIT",
             Self::AssetApproving => "DEPOSIT_STATUS_ASSET_APPROVING",
             Self::AssetApproved => "DEPOSIT_STATUS_ASSET_APPROVED",
             Self::SrcPending => "DEPOSIT_STATUS_SRC_PENDING",
@@ -106,7 +105,6 @@ impl<'de> serde::Deserialize<'de> for DepositStatus {
     {
         const FIELDS: &[&str] = &[
             "DEPOSIT_STATUS_UNSPECIFIED",
-            "DEPOSIT_STATUS_INIT",
             "DEPOSIT_STATUS_ASSET_APPROVING",
             "DEPOSIT_STATUS_ASSET_APPROVED",
             "DEPOSIT_STATUS_SRC_PENDING",
@@ -157,7 +155,6 @@ impl<'de> serde::Deserialize<'de> for DepositStatus {
             {
                 match value {
                     "DEPOSIT_STATUS_UNSPECIFIED" => Ok(DepositStatus::Unspecified),
-                    "DEPOSIT_STATUS_INIT" => Ok(DepositStatus::Init),
                     "DEPOSIT_STATUS_ASSET_APPROVING" => Ok(DepositStatus::AssetApproving),
                     "DEPOSIT_STATUS_ASSET_APPROVED" => Ok(DepositStatus::AssetApproved),
                     "DEPOSIT_STATUS_SRC_PENDING" => Ok(DepositStatus::SrcPending),
@@ -512,9 +509,6 @@ impl serde::Serialize for TransactionStatus {
     {
         let variant = match self {
             Self::Unspecified => "TRANSACTION_STATUS_UNSPECIFIED",
-            Self::Init => "TRANSACTION_STATUS_INIT",
-            Self::ProofGenerating => "TRANSACTION_STATUS_PROOF_GENERATING",
-            Self::ProofGenerated => "TRANSACTION_STATUS_PROOF_GENERATED",
             Self::Pending => "TRANSACTION_STATUS_PENDING",
             Self::Succeeded => "TRANSACTION_STATUS_SUCCEEDED",
             Self::Failed => "TRANSACTION_STATUS_FAILED",
@@ -530,9 +524,6 @@ impl<'de> serde::Deserialize<'de> for TransactionStatus {
     {
         const FIELDS: &[&str] = &[
             "TRANSACTION_STATUS_UNSPECIFIED",
-            "TRANSACTION_STATUS_INIT",
-            "TRANSACTION_STATUS_PROOF_GENERATING",
-            "TRANSACTION_STATUS_PROOF_GENERATED",
             "TRANSACTION_STATUS_PENDING",
             "TRANSACTION_STATUS_SUCCEEDED",
             "TRANSACTION_STATUS_FAILED",
@@ -579,9 +570,6 @@ impl<'de> serde::Deserialize<'de> for TransactionStatus {
             {
                 match value {
                     "TRANSACTION_STATUS_UNSPECIFIED" => Ok(TransactionStatus::Unspecified),
-                    "TRANSACTION_STATUS_INIT" => Ok(TransactionStatus::Init),
-                    "TRANSACTION_STATUS_PROOF_GENERATING" => Ok(TransactionStatus::ProofGenerating),
-                    "TRANSACTION_STATUS_PROOF_GENERATED" => Ok(TransactionStatus::ProofGenerated),
                     "TRANSACTION_STATUS_PENDING" => Ok(TransactionStatus::Pending),
                     "TRANSACTION_STATUS_SUCCEEDED" => Ok(TransactionStatus::Succeeded),
                     "TRANSACTION_STATUS_FAILED" => Ok(TransactionStatus::Failed),
