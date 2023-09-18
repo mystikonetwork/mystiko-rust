@@ -29,6 +29,6 @@ fn test_wrappers() {
     assert_eq!(deposit.service_fee_amount_as_biguint(), Some(BigUint::from(10004_u32)));
     let deposit_bytes = deposit.encode_to_vec();
     let deposit_json = serde_json::to_string(&deposit).unwrap();
-    assert_eq!(deposit, Deposit::decode(std::io::Cursor::new(&deposit_bytes)).unwrap());
+    assert_eq!(deposit, Deposit::try_from(&deposit_bytes).unwrap());
     assert_eq!(deposit, serde_json::from_str(&deposit_json).unwrap());
 }

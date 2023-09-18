@@ -1,6 +1,7 @@
 // @generated
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct AssetConfig {
@@ -17,6 +18,7 @@ pub struct AssetConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CircuitConfig {
@@ -37,6 +39,7 @@ pub struct CircuitConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ProviderConfig {
@@ -51,6 +54,7 @@ pub struct ProviderConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ChainConfig {
@@ -97,6 +101,7 @@ pub struct ChainConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IndexerConfig {
@@ -107,6 +112,7 @@ pub struct IndexerConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PackerConfig {
@@ -123,6 +129,7 @@ pub struct PackerConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MystikoConfig {

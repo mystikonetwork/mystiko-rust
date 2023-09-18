@@ -8,10 +8,8 @@ use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSu
 use mystiko_protos::data::v1::{ChainData, ContractData};
 use mystiko_types::{PackerChecksum, PackerCompression};
 use mystiko_utils::address::ethers_address_from_bytes;
-use prost::Message;
 use std::cmp::{max, min};
 use std::collections::HashMap;
-use std::io::Cursor;
 use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
@@ -247,7 +245,7 @@ where
                         .decompress(&data_bytes)
                         .await
                         .map_err(DataPackerClientError::DecompressionError)?;
-                    let chain_data = ChainData::decode(&mut Cursor::new(&decompressed_data))?;
+                    let chain_data = ChainData::try_from(&decompressed_data)?;
                     if chain_data.start_block == start_block && chain_data.end_block == start_block + granularity - 1 {
                         return Ok((start_block, Some(chain_data)));
                     }

@@ -13,6 +13,7 @@ members = [
     "mystiko_indexer_client",
     "mystiko_lib",
     "mystiko_protos",
+    "mystiko_protos_macros",
     "mystiko_relayer_abi",
     "mystiko_relayer_client",
     "mystiko_relayer_config",

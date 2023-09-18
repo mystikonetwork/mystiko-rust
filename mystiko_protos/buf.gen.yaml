@@ -10,6 +10,7 @@ plugins:
       - file_descriptor_set
       - message_attribute=.=#[derive(typed_builder::TypedBuilder)]
       - message_attribute=.=#[builder(field_defaults(default\, setter(into)))]
+      - message_attribute=.=#[derive(mystiko_protos_macros::ProtoBuilder)]
   - plugin: buf.build/community/neoeinstein-tonic
     opt:
       - compile_well_known_types

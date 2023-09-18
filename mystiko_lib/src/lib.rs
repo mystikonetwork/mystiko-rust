@@ -15,7 +15,6 @@ use mystiko_core::Mystiko;
 use mystiko_protos::core::v1::MystikoOptions as ProtoMystikoOptions;
 use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
-use prost::Message;
 use tokio::runtime::Runtime;
 use tokio::sync::RwLock;
 
@@ -28,7 +27,7 @@ lazy_static! {
 }
 
 pub fn initialize(options: &[u8]) -> Result<()> {
-    runtime().block_on(internal::initialize(ProtoMystikoOptions::decode(options)?))
+    runtime().block_on(internal::initialize(ProtoMystikoOptions::try_from(options)?))
 }
 
 pub fn is_initialized() -> bool {

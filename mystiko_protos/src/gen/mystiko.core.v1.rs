@@ -219,6 +219,7 @@ impl PackerCompression {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MystikoOptions {

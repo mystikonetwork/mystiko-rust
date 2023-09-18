@@ -4,7 +4,7 @@ use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use prost::Message;
 
 pub fn create(options: &[u8]) -> Result<Vec<u8>> {
-    let options = CreateWalletOptions::decode(options)?;
+    let options = CreateWalletOptions::try_from(options)?;
     runtime().block_on(internal::create(options))
 }
 
