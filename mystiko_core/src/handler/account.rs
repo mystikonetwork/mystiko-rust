@@ -74,7 +74,7 @@ where
             .find_documents(filter)
             .await?
             .into_iter()
-            .map(Account::into_proto)
+            .map(Account::document_into_proto)
             .collect())
     }
 
@@ -83,7 +83,7 @@ where
             .find_all_documents()
             .await?
             .into_iter()
-            .map(Account::into_proto)
+            .map(Account::document_into_proto)
             .collect())
     }
 
@@ -140,7 +140,7 @@ where
             "successfully updated the encryption of all accounts from wallet(id = \"{}\")",
             &wallet.id
         );
-        Ok(accounts.into_iter().map(Account::into_proto).collect())
+        Ok(accounts.into_iter().map(Account::document_into_proto).collect())
     }
 
     pub async fn export_secret_key_by_id(&self, wallet_password: &str, id: &str) -> Result<String> {
@@ -204,7 +204,7 @@ where
     ) -> Result<Option<ProtoAccount>> {
         self.find_one_document_by_identifier(identifier, field_name)
             .await
-            .map(|doc| doc.map(Account::into_proto))
+            .map(|doc| doc.map(Account::document_into_proto))
     }
 
     async fn find_one_document_by_identifier<T: ToString>(
@@ -263,9 +263,9 @@ where
                     &updated_account.id,
                     options
                 );
-                Ok(Account::into_proto(updated_account))
+                Ok(Account::document_into_proto(updated_account))
             } else {
-                Ok(Account::into_proto(account))
+                Ok(Account::document_into_proto(account))
             }
         } else {
             Err(MystikoError::NoSuchAccountError(field_name_str, identifier.to_string()))
@@ -372,7 +372,7 @@ where
                     .await
                     .map_err(MystikoError::StorageError)?;
             }
-            Ok(Account::into_proto(
+            Ok(Account::document_into_proto(
                 self.db
                     .accounts
                     .insert(&account)

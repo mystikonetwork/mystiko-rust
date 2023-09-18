@@ -38,7 +38,7 @@ fn indexes() -> Vec<IndexColumns> {
 }
 
 impl Account {
-    pub fn from_proto(proto: ProtoAccount) -> Document<Account> {
+    pub fn document_from_proto(proto: ProtoAccount) -> Document<Account> {
         let status = proto.status().into();
         Document::new(
             proto.id,
@@ -56,7 +56,7 @@ impl Account {
         )
     }
 
-    pub fn into_proto(account: Document<Self>) -> ProtoAccount {
+    pub fn document_into_proto(account: Document<Self>) -> ProtoAccount {
         ProtoAccount::builder()
             .id(account.id)
             .created_at(account.created_at)

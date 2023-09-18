@@ -157,7 +157,7 @@ fn test_from_proto() {
         .wallet_id(String::from("1"))
         .status(1)
         .build();
-    let account = Account::from_proto(proto);
+    let account = Account::document_from_proto(proto);
     assert_eq!(account.id, String::from("123456"));
     assert_eq!(account.created_at, 1234567890u64);
     assert_eq!(account.updated_at, 1234567891u64);
@@ -189,7 +189,7 @@ fn test_into_proto() {
             wallet_id: String::from("1"),
         },
     );
-    let proto = Account::into_proto(account);
+    let proto = Account::document_into_proto(account);
     assert_eq!(proto.id, String::from("123456"));
     assert_eq!(proto.created_at, 1234567890u64);
     assert_eq!(proto.updated_at, 1234567891u64);

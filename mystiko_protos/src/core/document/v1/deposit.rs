@@ -24,14 +24,14 @@ impl Deposit {
     }
 
     pub fn bridge_fee_amount_as_biguint(&self) -> Option<BigUint> {
-        self.bridge_fee_amount.as_ref().map(|amount| bytes_to_biguint(amount))
+        self.bridge_fee_amount.as_ref().map(bytes_to_biguint)
     }
 
     pub fn executor_fee_amount_as_biguint(&self) -> Option<BigUint> {
-        self.executor_fee_amount.as_ref().map(|amount| bytes_to_biguint(amount))
+        self.executor_fee_amount.as_ref().map(bytes_to_biguint)
     }
 
     pub fn service_fee_amount_as_biguint(&self) -> Option<BigUint> {
-        self.service_fee_amount.as_ref().map(|amount| bytes_to_biguint(amount))
+        self.service_fee_amount.as_ref().map(bytes_to_biguint)
     }
 }

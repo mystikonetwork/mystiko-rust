@@ -8,22 +8,14 @@ impl Transaction {
     }
 
     pub fn input_commitments_as_biguint(&self) -> Vec<BigUint> {
-        self.input_commitments
-            .iter()
-            .map(|commitment| bytes_to_biguint(commitment))
-            .collect()
+        self.input_commitments.iter().map(bytes_to_biguint).collect()
     }
 
     pub fn output_commitments_as_biguint(&self) -> Option<Vec<BigUint>> {
         if self.output_commitments.is_empty() {
             None
         } else {
-            Some(
-                self.output_commitments
-                    .iter()
-                    .map(|commitment| bytes_to_biguint(commitment))
-                    .collect(),
-            )
+            Some(self.output_commitments.iter().map(bytes_to_biguint).collect())
         }
     }
 
@@ -31,12 +23,7 @@ impl Transaction {
         if self.nullifiers.is_empty() {
             None
         } else {
-            Some(
-                self.nullifiers
-                    .iter()
-                    .map(|nullifier| bytes_to_biguint(nullifier))
-                    .collect(),
-            )
+            Some(self.nullifiers.iter().map(bytes_to_biguint).collect())
         }
     }
 
@@ -49,18 +36,14 @@ impl Transaction {
     }
 
     pub fn rollup_fee_amount_as_biguint(&self) -> Option<BigUint> {
-        self.rollup_fee_amount.as_ref().map(|amount| bytes_to_biguint(amount))
+        self.rollup_fee_amount.as_ref().map(bytes_to_biguint)
     }
 
     pub fn gas_relayer_fee_amount_as_biguint(&self) -> Option<BigUint> {
-        self.gas_relayer_fee_amount
-            .as_ref()
-            .map(|amount| bytes_to_biguint(amount))
+        self.gas_relayer_fee_amount.as_ref().map(bytes_to_biguint)
     }
 
     pub fn random_auditing_public_key_as_biguint(&self) -> Option<BigUint> {
-        self.random_auditing_public_key
-            .as_ref()
-            .map(|key| bytes_to_biguint(key))
+        self.random_auditing_public_key.as_ref().map(bytes_to_biguint)
     }
 }

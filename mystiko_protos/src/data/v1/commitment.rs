@@ -9,7 +9,7 @@ impl Commitment {
     }
 
     pub fn rollup_fee_as_biguint(&self) -> Option<BigUint> {
-        self.rollup_fee.as_ref().map(|fee| bytes_to_biguint(fee))
+        self.rollup_fee.as_ref().map(bytes_to_biguint)
     }
 
     pub fn queued_transaction_hash_as_hex(&self) -> Option<String> {
