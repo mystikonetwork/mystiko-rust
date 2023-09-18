@@ -29,9 +29,6 @@ fn test_wrappers() {
     );
     let commitment_bytes = commitment.encode_to_vec();
     let commitment_json = serde_json::to_string(&commitment).unwrap();
-    assert_eq!(
-        commitment,
-        Commitment::decode(std::io::Cursor::new(&commitment_bytes)).unwrap()
-    );
+    assert_eq!(commitment, Commitment::try_from(&commitment_bytes).unwrap());
     assert_eq!(commitment, serde_json::from_str(&commitment_json).unwrap());
 }

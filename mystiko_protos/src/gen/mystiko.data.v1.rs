@@ -1,6 +1,7 @@
 // @generated
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Commitment {
@@ -61,6 +62,7 @@ impl CommitmentStatus {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Nullifier {
@@ -73,6 +75,7 @@ pub struct Nullifier {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ContractData {
@@ -85,6 +88,7 @@ pub struct ContractData {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ChainData {

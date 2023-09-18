@@ -1,6 +1,7 @@
 // @generated
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FetcherConfig {
@@ -15,6 +16,7 @@ pub struct FetcherConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IndexerFetcherConfig {
@@ -29,6 +31,7 @@ pub struct IndexerFetcherConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct EtherscanFetcherConfig {
@@ -41,6 +44,7 @@ pub struct EtherscanFetcherConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct EtherscanFetcherChainConfig {
@@ -59,6 +63,7 @@ pub struct EtherscanFetcherChainConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ProviderFetcherConfig {
@@ -73,6 +78,7 @@ pub struct ProviderFetcherConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ProviderFetcherChainConfig {
@@ -85,6 +91,7 @@ pub struct ProviderFetcherChainConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PackerFetcherConfig {
@@ -128,6 +135,7 @@ impl FetcherType {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ValidatorConfig {
@@ -136,6 +144,7 @@ pub struct ValidatorConfig {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RuleValidatorConfig {
@@ -205,6 +214,7 @@ impl RuleValidatorCheckerType {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LoaderConfig {
