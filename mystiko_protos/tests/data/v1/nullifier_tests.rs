@@ -14,9 +14,6 @@ fn test_wrappers() {
     assert_eq!(nullifier.transaction_hash_as_hex(), "0xdead".to_string());
     let nullifier_bytes = nullifier.encode_to_vec();
     let nullifier_json = serde_json::to_string(&nullifier).unwrap();
-    assert_eq!(
-        nullifier,
-        Nullifier::decode(std::io::Cursor::new(&nullifier_bytes)).unwrap()
-    );
+    assert_eq!(nullifier, Nullifier::try_from(&nullifier_bytes).unwrap());
     assert_eq!(nullifier, serde_json::from_str(&nullifier_json).unwrap());
 }

@@ -54,9 +54,6 @@ fn test_wrappers() {
     );
     let transaction_bytes = transaction.encode_to_vec();
     let transaction_json = serde_json::to_string(&transaction).unwrap();
-    assert_eq!(
-        transaction,
-        Transaction::decode(std::io::Cursor::new(&transaction_bytes)).unwrap()
-    );
+    assert_eq!(transaction, Transaction::try_from(&transaction_bytes).unwrap());
     assert_eq!(transaction, serde_json::from_str(&transaction_json).unwrap());
 }

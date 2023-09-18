@@ -3596,6 +3596,7 @@ dependencies = [
  "anyhow",
  "http",
  "mystiko_protos",
+ "mystiko_protos_macros",
  "mystiko_types",
  "mystiko_utils",
  "num-bigint 0.4.3",
@@ -3608,6 +3609,18 @@ dependencies = [
  "thiserror",
  "tonic",
  "typed-builder 0.15.2",
+]
+
+[[package]]
+name = "mystiko_protos_macros"
+version = "0.1.0"
+dependencies = [
+ "heck",
+ "mystiko_protos",
+ "proc-macro2 1.0.66",
+ "prost",
+ "quote 1.0.32",
+ "syn 2.0.28",
 ]
 
 [[package]]
