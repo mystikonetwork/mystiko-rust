@@ -21,6 +21,9 @@ serde_json = { version = "1.0.91" }
 tokio = { version = "1.27.0", features = ["rt", "rt-multi-thread", "sync"] }
 typed-builder = { version = "0.14.0" }
 
+[dev-dependencies]
+mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["proto", "fs"] }
+
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = { version = "0.13.1" }
 
