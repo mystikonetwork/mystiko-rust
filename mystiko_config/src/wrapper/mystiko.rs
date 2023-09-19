@@ -295,7 +295,6 @@ impl MystikoConfig {
             .chain_configs(chain_configs)
             .bridge_configs(bridge_configs)
             .git_revision(self.git_revision().map(|s| s.to_string()))
-            .indexer_config(self.indexer().map(|c| c.to_proto()))
             .sequencer_config(self.sequencer().map(|c| c.as_ref().clone()))
             .packer_config(self.packer().map(|c| c.to_proto()))
             .country_blacklist(country_blacklist)

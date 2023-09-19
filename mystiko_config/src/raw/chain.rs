@@ -77,6 +77,11 @@ pub struct RawChainConfig {
     #[builder(default = default_indexer_filter_size())]
     pub indexer_filter_size: u64,
 
+    #[validate(range(min = 1))]
+    #[serde(default = "default_sequencer_fetch_size")]
+    #[builder(default = default_sequencer_fetch_size())]
+    pub sequencer_fetch_size: u64,
+
     #[validate(custom(function = "array_unique"))]
     #[validate(custom = "validate_nested_vec")]
     #[serde(default)]
@@ -116,6 +121,10 @@ fn default_event_filter_size() -> u64 {
 }
 
 fn default_indexer_filter_size() -> u64 {
+    500000
+}
+
+fn default_sequencer_fetch_size() -> u64 {
     500000
 }
 
