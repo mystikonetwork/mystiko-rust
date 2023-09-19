@@ -3610,6 +3610,7 @@ dependencies = [
  "thiserror",
  "tonic",
  "typed-builder 0.15.2",
+ "validator",
 ]
 
 [[package]]
