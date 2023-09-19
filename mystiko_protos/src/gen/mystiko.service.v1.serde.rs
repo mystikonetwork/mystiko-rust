@@ -198,7 +198,13 @@ impl serde::Serialize for ServerOptions {
         if self.tls_key.is_some() {
             len += 1;
         }
+        if self.tls_key_path.is_some() {
+            len += 1;
+        }
         if self.tls_pem.is_some() {
+            len += 1;
+        }
+        if self.tls_pem_path.is_some() {
             len += 1;
         }
         if self.accept_http1.is_some() {
@@ -250,8 +256,14 @@ impl serde::Serialize for ServerOptions {
         if let Some(v) = self.tls_key.as_ref() {
             struct_ser.serialize_field("tlsKey", v)?;
         }
+        if let Some(v) = self.tls_key_path.as_ref() {
+            struct_ser.serialize_field("tlsKeyPath", v)?;
+        }
         if let Some(v) = self.tls_pem.as_ref() {
             struct_ser.serialize_field("tlsPem", v)?;
+        }
+        if let Some(v) = self.tls_pem_path.as_ref() {
+            struct_ser.serialize_field("tlsPemPath", v)?;
         }
         if let Some(v) = self.accept_http1.as_ref() {
             struct_ser.serialize_field("acceptHttp1", v)?;
@@ -307,8 +319,12 @@ impl<'de> serde::Deserialize<'de> for ServerOptions {
             "port",
             "tls_key",
             "tlsKey",
+            "tls_key_path",
+            "tlsKeyPath",
             "tls_pem",
             "tlsPem",
+            "tls_pem_path",
+            "tlsPemPath",
             "accept_http1",
             "acceptHttp1",
             "enable_web",
@@ -342,7 +358,9 @@ impl<'de> serde::Deserialize<'de> for ServerOptions {
             BindAddress,
             Port,
             TlsKey,
+            TlsKeyPath,
             TlsPem,
+            TlsPemPath,
             AcceptHttp1,
             EnableWeb,
             ConcurrencyLimitPerConnection,
@@ -380,7 +398,9 @@ impl<'de> serde::Deserialize<'de> for ServerOptions {
                             "bindAddress" | "bind_address" => Ok(GeneratedField::BindAddress),
                             "port" => Ok(GeneratedField::Port),
                             "tlsKey" | "tls_key" => Ok(GeneratedField::TlsKey),
+                            "tlsKeyPath" | "tls_key_path" => Ok(GeneratedField::TlsKeyPath),
                             "tlsPem" | "tls_pem" => Ok(GeneratedField::TlsPem),
+                            "tlsPemPath" | "tls_pem_path" => Ok(GeneratedField::TlsPemPath),
                             "acceptHttp1" | "accept_http1" => Ok(GeneratedField::AcceptHttp1),
                             "enableWeb" | "enable_web" => Ok(GeneratedField::EnableWeb),
                             "concurrencyLimitPerConnection" | "concurrency_limit_per_connection" => Ok(GeneratedField::ConcurrencyLimitPerConnection),
@@ -416,7 +436,9 @@ impl<'de> serde::Deserialize<'de> for ServerOptions {
                 let mut bind_address__ = None;
                 let mut port__ = None;
                 let mut tls_key__ = None;
+                let mut tls_key_path__ = None;
                 let mut tls_pem__ = None;
+                let mut tls_pem_path__ = None;
                 let mut accept_http1__ = None;
                 let mut enable_web__ = None;
                 let mut concurrency_limit_per_connection__ = None;
@@ -452,11 +474,23 @@ impl<'de> serde::Deserialize<'de> for ServerOptions {
                             }
                             tls_key__ = map.next_value()?;
                         }
+                        GeneratedField::TlsKeyPath => {
+                            if tls_key_path__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("tlsKeyPath"));
+                            }
+                            tls_key_path__ = map.next_value()?;
+                        }
                         GeneratedField::TlsPem => {
                             if tls_pem__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("tlsPem"));
                             }
                             tls_pem__ = map.next_value()?;
+                        }
+                        GeneratedField::TlsPemPath => {
+                            if tls_pem_path__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("tlsPemPath"));
+                            }
+                            tls_pem_path__ = map.next_value()?;
                         }
                         GeneratedField::AcceptHttp1 => {
                             if accept_http1__.is_some() {
@@ -560,7 +594,9 @@ impl<'de> serde::Deserialize<'de> for ServerOptions {
                     bind_address: bind_address__,
                     port: port__,
                     tls_key: tls_key__,
+                    tls_key_path: tls_key_path__,
                     tls_pem: tls_pem__,
+                    tls_pem_path: tls_pem_path__,
                     accept_http1: accept_http1__,
                     enable_web: enable_web__,
                     concurrency_limit_per_connection: concurrency_limit_per_connection__,

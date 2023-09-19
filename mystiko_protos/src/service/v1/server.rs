@@ -25,15 +25,37 @@ impl From<Option<ServerOptions>> for ServerOptions {
 }
 
 #[cfg(feature = "grpc-server")]
-impl From<ServerOptions> for tonic::transport::Server {
-    fn from(options: ServerOptions) -> Self {
+#[derive(thiserror::Error, Debug)]
+pub enum ServerOptionsError {
+    #[error(transparent)]
+    TransportError(#[from] tonic::transport::Error),
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
+}
+
+#[cfg(feature = "grpc-server")]
+impl TryFrom<ServerOptions> for tonic::transport::Server {
+    type Error = ServerOptionsError;
+    fn try_from(options: ServerOptions) -> Result<Self, Self::Error> {
         use std::time::Duration;
         let mut server = tonic::transport::Server::builder();
-        if let (Some(tls_key), Some(tls_pem)) = (&options.tls_key, &options.tls_pem) {
+        let tls_key = if let Some(tls_key) = &options.tls_key {
+            Some(tls_key.to_string())
+        } else if let Some(tls_key_path) = &options.tls_key_path {
+            Some(std::fs::read_to_string(tls_key_path)?)
+        } else {
+            None
+        };
+        let tls_pem = if let Some(tls_pem) = &options.tls_pem {
+            Some(tls_pem.to_string())
+        } else if let Some(tls_pem_path) = &options.tls_pem_path {
+            Some(std::fs::read_to_string(tls_pem_path)?)
+        } else {
+            None
+        };
+        if let (Some(tls_key), Some(tls_pem)) = (tls_key, tls_pem) {
             let identity = tonic::transport::Identity::from_pem(tls_pem, tls_key);
-            server = server
-                .tls_config(tonic::transport::ServerTlsConfig::new().identity(identity))
-                .expect("invalid tls config");
+            server = server.tls_config(tonic::transport::ServerTlsConfig::new().identity(identity))?;
         }
         if let Some(accept_http1) = options.accept_http1 {
             server = server.accept_http1(accept_http1);
@@ -47,7 +69,7 @@ impl From<ServerOptions> for tonic::transport::Server {
         if let Some(tcp_nodelay) = options.tcp_nodelay {
             server = server.tcp_nodelay(tcp_nodelay);
         }
-        server
+        Ok(server
             .initial_stream_window_size(options.initial_stream_window_size)
             .initial_connection_window_size(options.initial_connection_window_size)
             .max_concurrent_streams(options.max_concurrent_streams)
@@ -55,6 +77,6 @@ impl From<ServerOptions> for tonic::transport::Server {
             .http2_keepalive_timeout(options.http2_keepalive_timeout_ms.map(Duration::from_millis))
             .http2_adaptive_window(options.http2_adaptive_window)
             .tcp_keepalive(options.tcp_keepalive_ms.map(Duration::from_millis))
-            .max_frame_size(options.max_frame_size)
+            .max_frame_size(options.max_frame_size))
     }
 }
