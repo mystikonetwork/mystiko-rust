@@ -208,7 +208,7 @@ impl serde::Serialize for ChainConfig {
         if self.event_filter_size != 0 {
             len += 1;
         }
-        if self.indexer_filter_size != 0 {
+        if self.sequencer_fetch_size != 0 {
             len += 1;
         }
         if self.main_asset_config.is_some() {
@@ -269,8 +269,8 @@ impl serde::Serialize for ChainConfig {
         if self.event_filter_size != 0 {
             struct_ser.serialize_field("eventFilterSize", ToString::to_string(&self.event_filter_size).as_str())?;
         }
-        if self.indexer_filter_size != 0 {
-            struct_ser.serialize_field("indexerFilterSize", ToString::to_string(&self.indexer_filter_size).as_str())?;
+        if self.sequencer_fetch_size != 0 {
+            struct_ser.serialize_field("sequencerFetchSize", ToString::to_string(&self.sequencer_fetch_size).as_str())?;
         }
         if let Some(v) = self.main_asset_config.as_ref() {
             struct_ser.serialize_field("mainAssetConfig", v)?;
@@ -329,8 +329,8 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
             "eventDelayBlocks",
             "event_filter_size",
             "eventFilterSize",
-            "indexer_filter_size",
-            "indexerFilterSize",
+            "sequencer_fetch_size",
+            "sequencerFetchSize",
             "main_asset_config",
             "mainAssetConfig",
             "provider_type",
@@ -361,7 +361,7 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
             SignerEndpoint,
             EventDelayBlocks,
             EventFilterSize,
-            IndexerFilterSize,
+            SequencerFetchSize,
             MainAssetConfig,
             ProviderType,
             AssetConfigs,
@@ -402,7 +402,7 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
                             "signerEndpoint" | "signer_endpoint" => Ok(GeneratedField::SignerEndpoint),
                             "eventDelayBlocks" | "event_delay_blocks" => Ok(GeneratedField::EventDelayBlocks),
                             "eventFilterSize" | "event_filter_size" => Ok(GeneratedField::EventFilterSize),
-                            "indexerFilterSize" | "indexer_filter_size" => Ok(GeneratedField::IndexerFilterSize),
+                            "sequencerFetchSize" | "sequencer_fetch_size" => Ok(GeneratedField::SequencerFetchSize),
                             "mainAssetConfig" | "main_asset_config" => Ok(GeneratedField::MainAssetConfig),
                             "providerType" | "provider_type" => Ok(GeneratedField::ProviderType),
                             "assetConfigs" | "asset_configs" => Ok(GeneratedField::AssetConfigs),
@@ -441,7 +441,7 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
                 let mut signer_endpoint__ = None;
                 let mut event_delay_blocks__ = None;
                 let mut event_filter_size__ = None;
-                let mut indexer_filter_size__ = None;
+                let mut sequencer_fetch_size__ = None;
                 let mut main_asset_config__ = None;
                 let mut provider_type__ = None;
                 let mut asset_configs__ = None;
@@ -528,11 +528,11 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::IndexerFilterSize => {
-                            if indexer_filter_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("indexerFilterSize"));
+                        GeneratedField::SequencerFetchSize => {
+                            if sequencer_fetch_size__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("sequencerFetchSize"));
                             }
-                            indexer_filter_size__ = 
+                            sequencer_fetch_size__ = 
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
@@ -607,7 +607,7 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
                     signer_endpoint: signer_endpoint__.unwrap_or_default(),
                     event_delay_blocks: event_delay_blocks__.unwrap_or_default(),
                     event_filter_size: event_filter_size__.unwrap_or_default(),
-                    indexer_filter_size: indexer_filter_size__.unwrap_or_default(),
+                    sequencer_fetch_size: sequencer_fetch_size__.unwrap_or_default(),
                     main_asset_config: main_asset_config__,
                     provider_type: provider_type__.unwrap_or_default(),
                     asset_configs: asset_configs__.unwrap_or_default(),
@@ -823,117 +823,6 @@ impl<'de> serde::Deserialize<'de> for CircuitConfig {
         deserializer.deserialize_struct("mystiko.config.v1.CircuitConfig", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for IndexerConfig {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if !self.url.is_empty() {
-            len += 1;
-        }
-        if self.timeout_ms != 0 {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.config.v1.IndexerConfig", len)?;
-        if !self.url.is_empty() {
-            struct_ser.serialize_field("url", &self.url)?;
-        }
-        if self.timeout_ms != 0 {
-            struct_ser.serialize_field("timeoutMs", ToString::to_string(&self.timeout_ms).as_str())?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for IndexerConfig {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "url",
-            "timeout_ms",
-            "timeoutMs",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Url,
-            TimeoutMs,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "url" => Ok(GeneratedField::Url),
-                            "timeoutMs" | "timeout_ms" => Ok(GeneratedField::TimeoutMs),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = IndexerConfig;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.config.v1.IndexerConfig")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<IndexerConfig, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut url__ = None;
-                let mut timeout_ms__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::Url => {
-                            if url__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("url"));
-                            }
-                            url__ = Some(map.next_value()?);
-                        }
-                        GeneratedField::TimeoutMs => {
-                            if timeout_ms__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("timeoutMs"));
-                            }
-                            timeout_ms__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
-                    }
-                }
-                Ok(IndexerConfig {
-                    url: url__.unwrap_or_default(),
-                    timeout_ms: timeout_ms__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.config.v1.IndexerConfig", FIELDS, GeneratedVisitor)
-    }
-}
 impl serde::Serialize for MystikoConfig {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -952,9 +841,6 @@ impl serde::Serialize for MystikoConfig {
             len += 1;
         }
         if self.git_revision.is_some() {
-            len += 1;
-        }
-        if self.indexer_config.is_some() {
             len += 1;
         }
         if self.sequencer_config.is_some() {
@@ -981,9 +867,6 @@ impl serde::Serialize for MystikoConfig {
         }
         if let Some(v) = self.git_revision.as_ref() {
             struct_ser.serialize_field("gitRevision", v)?;
-        }
-        if let Some(v) = self.indexer_config.as_ref() {
-            struct_ser.serialize_field("indexerConfig", v)?;
         }
         if let Some(v) = self.sequencer_config.as_ref() {
             struct_ser.serialize_field("sequencerConfig", v)?;
@@ -1014,8 +897,6 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
             "bridgeConfigs",
             "git_revision",
             "gitRevision",
-            "indexer_config",
-            "indexerConfig",
             "sequencer_config",
             "sequencerConfig",
             "packer_config",
@@ -1032,7 +913,6 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
             ChainConfigs,
             BridgeConfigs,
             GitRevision,
-            IndexerConfig,
             SequencerConfig,
             PackerConfig,
             CountryBlacklist,
@@ -1062,7 +942,6 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
                             "chainConfigs" | "chain_configs" => Ok(GeneratedField::ChainConfigs),
                             "bridgeConfigs" | "bridge_configs" => Ok(GeneratedField::BridgeConfigs),
                             "gitRevision" | "git_revision" => Ok(GeneratedField::GitRevision),
-                            "indexerConfig" | "indexer_config" => Ok(GeneratedField::IndexerConfig),
                             "sequencerConfig" | "sequencer_config" => Ok(GeneratedField::SequencerConfig),
                             "packerConfig" | "packer_config" => Ok(GeneratedField::PackerConfig),
                             "countryBlacklist" | "country_blacklist" => Ok(GeneratedField::CountryBlacklist),
@@ -1090,7 +969,6 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
                 let mut chain_configs__ = None;
                 let mut bridge_configs__ = None;
                 let mut git_revision__ = None;
-                let mut indexer_config__ = None;
                 let mut sequencer_config__ = None;
                 let mut packer_config__ = None;
                 let mut country_blacklist__ = None;
@@ -1127,12 +1005,6 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
                             }
                             git_revision__ = map.next_value()?;
                         }
-                        GeneratedField::IndexerConfig => {
-                            if indexer_config__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("indexerConfig"));
-                            }
-                            indexer_config__ = map.next_value()?;
-                        }
                         GeneratedField::SequencerConfig => {
                             if sequencer_config__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("sequencerConfig"));
@@ -1164,7 +1036,6 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
                     chain_configs: chain_configs__.unwrap_or_default(),
                     bridge_configs: bridge_configs__.unwrap_or_default(),
                     git_revision: git_revision__,
-                    indexer_config: indexer_config__,
                     sequencer_config: sequencer_config__,
                     packer_config: packer_config__,
                     country_blacklist: country_blacklist__.unwrap_or_default(),

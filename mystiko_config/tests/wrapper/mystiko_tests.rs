@@ -571,7 +571,6 @@ async fn test_to_proto() {
             "zokrates-2.0-rollup1"
         ]
     );
-    assert_eq!(&config.indexer_config.unwrap().url, "https://example.com");
     let sequencer_config = config.sequencer_config.clone().unwrap();
     assert_eq!(sequencer_config.host(), "example.com");
     assert_eq!(sequencer_config.port(), 23433);

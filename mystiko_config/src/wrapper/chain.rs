@@ -142,6 +142,10 @@ impl ChainConfig {
         self.raw.indexer_filter_size
     }
 
+    pub fn sequencer_fetch_size(&self) -> u64 {
+        self.raw.sequencer_fetch_size
+    }
+
     pub fn granularities(&self) -> &[u64] {
         &self.packer_sorted_granularities
     }
@@ -385,7 +389,7 @@ impl ChainConfig {
             .signer_endpoint(self.signer_endpoint().to_string())
             .event_delay_blocks(self.event_delay_blocks())
             .event_filter_size(self.event_filter_size())
-            .indexer_filter_size(self.indexer_filter_size())
+            .sequencer_fetch_size(self.sequencer_fetch_size())
             .main_asset_config(self.main_asset().to_proto()?)
             .provider_type(Into::<mystiko_protos::common::v1::ProviderType>::into(
                 self.provider_type(),

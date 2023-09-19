@@ -8,6 +8,7 @@
   "explorerPrefix": "/tx/%tx%",
   "eventFilterSize": 1000,
   "indexerFilterSize": 10000,
+  "sequencerFetchSize": 20000,
   "providers": [
     {
       "url": "wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161",
