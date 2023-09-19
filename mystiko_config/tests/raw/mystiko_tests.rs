@@ -1,6 +1,7 @@
 use mystiko_config::{
     create_raw_from_file, RawBridgeConfig, RawIndexerConfig, RawMystikoConfig, RawPackerConfig, RawTBridgeConfig,
 };
+use mystiko_protos::service::v1::ClientOptions;
 use std::sync::Arc;
 use validator::Validate;
 
@@ -89,6 +90,14 @@ async fn test_invalid_indexer() {
     assert!(config.validate().is_err());
 }
 
+#[tokio::test]
+async fn test_invalid_sequencer() {
+    let mut config = default_config().await;
+    config.sequencer = Some(Arc::new(
+        ClientOptions::builder().host("invalid host".to_string()).build(),
+    ));
+    assert!(config.validate().is_err());
+}
 #[tokio::test]
 async fn test_invalid_packer() {
     let mut config = default_config().await;

@@ -25,3 +25,15 @@ impl ClientOptions {
         http::Uri::from_str(&format!("{}://{}{}", self.scheme(), host, port))
     }
 }
+
+#[cfg(feature = "validate")]
+impl validator::Validate for ClientOptions {
+    fn validate(&self) -> Result<(), validator::ValidationErrors> {
+        let _ = self.to_uri().map_err(|_| {
+            let mut errors = validator::ValidationErrors::new();
+            errors.add("host", validator::ValidationError::new("invalid uri"));
+            errors
+        })?;
+        Ok(())
+    }
+}

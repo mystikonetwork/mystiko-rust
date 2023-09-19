@@ -1,4 +1,5 @@
 use mystiko_protos::service::v1::ClientOptions;
+use validator::Validate;
 
 #[test]
 fn test_scheme() {
@@ -24,4 +25,10 @@ fn test_to_uri() {
         .port(8451)
         .build();
     assert_eq!(client_options.to_uri().unwrap().to_string(), "http://example.com:8451/");
+}
+
+#[test]
+fn test_validate() {
+    let client_options = ClientOptions::builder().host("invalid host".to_string()).build();
+    assert!(client_options.validate().is_err());
 }

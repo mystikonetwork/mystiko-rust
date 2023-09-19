@@ -13,7 +13,7 @@ proto_full = ["mystiko-common-v1","mystiko-config-api-v1","mystiko-config-bridge
 "mystiko-config-api-v1" = ["mystiko-common-v1","mystiko-config-bridge-v1","mystiko-config-contract-v1","mystiko-config-v1"]
 "mystiko-config-bridge-v1" = ["mystiko-common-v1"]
 "mystiko-config-contract-v1" = ["mystiko-common-v1","mystiko-config-v1"]
-"mystiko-config-v1" = ["mystiko-common-v1","mystiko-core-v1"]
+"mystiko-config-v1" = ["mystiko-common-v1","mystiko-core-v1","mystiko-service-v1"]
 "mystiko-core-document-v1" = ["mystiko-common-v1","mystiko-core-v1"]
 "mystiko-core-handler-v1" = ["mystiko-core-v1"]
 "mystiko-core-v1" = ["mystiko-common-v1"]
@@ -26,6 +26,7 @@ proto_full = ["mystiko-common-v1","mystiko-config-api-v1","mystiko-config-bridge
 # @@protoc_insertion_point(features)
 "grpc-server" = ["tonic"]
 "grpc-client" = ["tonic"]
+"validate" = ["validator"]
 
 [dependencies]
 anyhow = { version = "1.0.69" }
@@ -43,6 +44,9 @@ serde_json = { version = "1.0.91" }
 tonic = { version = "0.9.2", optional = true, features = ["tls"] }
 thiserror = { version = "1.0", default-features = false }
 typed-builder = { version = "0.15.2" }
+validator = { version = "0.16.0", optional = true }
 
 [dev-dependencies]
-mystiko_protos = { version = "*", path = ".", features = ["proto_full", "grpc-server", "grpc-client"] }
+mystiko_protos = { version = "*", path = ".", features = ["proto_full", "grpc-server", "grpc-client", "validate"] }
+rcgen = { version = "0.11.1" }
+tempfile = { version = "3.7.1" }

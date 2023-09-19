@@ -37,7 +37,7 @@ impl GrpcServer {
         let options = options.into();
         let address = options.socket_address()?;
         let enable_web = options.enable_web();
-        let mut server: Server = options.into();
+        let mut server: Server = options.try_into()?;
         if enable_web {
             let router = server.layer(GrpcWebLayer::new()).add_service(service);
             self.start_with_router(router, address).await

@@ -4,6 +4,7 @@ use crate::{
 };
 use anyhow::{Error, Result};
 use mystiko_protos::common::v1::ConfigOptions;
+use mystiko_protos::service::v1::ClientOptions;
 use mystiko_types::{BridgeType, CircuitType};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -141,6 +142,10 @@ impl MystikoConfig {
 
     pub fn indexer(&self) -> Option<&IndexerConfig> {
         self.indexer_config.as_ref()
+    }
+
+    pub fn sequencer(&self) -> Option<Arc<ClientOptions>> {
+        self.raw.sequencer.clone()
     }
 
     pub fn packer(&self) -> Option<&PackerConfig> {
@@ -291,6 +296,7 @@ impl MystikoConfig {
             .bridge_configs(bridge_configs)
             .git_revision(self.git_revision().map(|s| s.to_string()))
             .indexer_config(self.indexer().map(|c| c.to_proto()))
+            .sequencer_config(self.sequencer().map(|c| c.as_ref().clone()))
             .packer_config(self.packer().map(|c| c.to_proto()))
             .country_blacklist(country_blacklist)
             .circuit_configs(circuit_configs)

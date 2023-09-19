@@ -48,6 +48,10 @@ async fn test_create() {
         ]
     );
     assert_eq!(config.indexer().unwrap().url(), "https://example.com");
+    assert_eq!(config.sequencer().unwrap().host(), "example.com");
+    assert_eq!(config.sequencer().unwrap().port(), 23433);
+    assert!(config.sequencer().unwrap().is_ssl());
+
     assert_eq!(
         config.packer().unwrap().url(),
         "https://static.mystiko.network/packer/v1"
@@ -568,6 +572,10 @@ async fn test_to_proto() {
         ]
     );
     assert_eq!(&config.indexer_config.unwrap().url, "https://example.com");
+    let sequencer_config = config.sequencer_config.clone().unwrap();
+    assert_eq!(sequencer_config.host(), "example.com");
+    assert_eq!(sequencer_config.port(), 23433);
+    assert!(sequencer_config.is_ssl());
     assert_eq!(
         &config.packer_config.unwrap().url,
         "https://static.mystiko.network/packer/v1"
