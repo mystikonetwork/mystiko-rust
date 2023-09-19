@@ -49,6 +49,7 @@ async fn test_create() {
     assert_eq!(config.event_delay_blocks(), 200);
     assert_eq!(config.event_filter_size(), 1000);
     assert_eq!(config.indexer_filter_size(), 10000);
+    assert_eq!(config.sequencer_fetch_size(), 20000);
     assert_eq!(
         config.signer_endpoint(),
         "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
@@ -324,7 +325,7 @@ async fn test_to_proto() {
     );
     assert_eq!(config.event_delay_blocks, 200);
     assert_eq!(config.event_filter_size, 1000);
-    assert_eq!(config.indexer_filter_size, 10000);
+    assert_eq!(config.sequencer_fetch_size, 20000);
     assert!(config.main_asset_config.is_some());
     assert_eq!(config.provider_type(), mystiko_protos::common::v1::ProviderType::Quorum);
     assert_eq!(config.provider_configs.len(), 1);

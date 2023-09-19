@@ -90,6 +90,7 @@ fn default_config() -> RawChainConfig {
         .event_delay_blocks(200)
         .event_filter_size(1000)
         .indexer_filter_size(10000)
+        .sequencer_fetch_size(20000)
         .providers(vec![Arc::new(provider_config)])
         .provider_type(ProviderType::Quorum)
         .provider_quorum_percentage(80)
@@ -132,6 +133,7 @@ fn test_default_values() {
         .build();
     assert_eq!(raw_config.event_filter_size, 200000);
     assert_eq!(raw_config.indexer_filter_size, 500000);
+    assert_eq!(raw_config.sequencer_fetch_size, 500000);
     assert_eq!(raw_config.explorer_prefix, EXPLORER_DEFAULT_PREFIX);
 }
 
@@ -292,6 +294,13 @@ fn test_invalid_event_filter_size() {
 fn test_invalid_indexer_filter_size() {
     let mut config = default_config();
     config.indexer_filter_size = 0;
+    assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_invalid_sequencer_fetch_size() {
+    let mut config = default_config();
+    config.sequencer_fetch_size = 0;
     assert!(config.validate().is_err());
 }
 
