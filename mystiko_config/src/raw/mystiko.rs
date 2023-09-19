@@ -3,6 +3,7 @@ use crate::RawChainConfig;
 use crate::RawCircuitConfig;
 use crate::RawIndexerConfig;
 use crate::RawPackerConfig;
+use mystiko_protos::service::v1::ClientOptions;
 use mystiko_validator::validate::{
     array_unique, is_git_revision, is_sem_ver, string_vec_each_not_empty, validate_nested_vec,
 };
@@ -10,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use validator::Validate;
 
-#[derive(Validate, Serialize, Deserialize, Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Validate, Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RawMystikoConfig {
     #[validate(custom = "is_sem_ver")]
@@ -35,6 +36,10 @@ pub struct RawMystikoConfig {
     #[validate]
     #[serde(default)]
     pub indexer: Option<Arc<RawIndexerConfig>>,
+
+    #[validate]
+    #[serde(default)]
+    pub sequencer: Option<Arc<ClientOptions>>,
 
     #[validate]
     #[serde(default)]

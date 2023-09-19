@@ -3603,11 +3603,14 @@ dependencies = [
  "pbjson",
  "pbjson-types",
  "prost",
+ "rcgen",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror",
  "tonic",
  "typed-builder 0.15.2",
+ "validator",
 ]
 
 [[package]]

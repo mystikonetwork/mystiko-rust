@@ -15,7 +15,7 @@ anyhow = { version = "1.0" }
 lazy_static = { version = "1.4.0" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1"]}
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-service-v1", "validate"]}
 mystiko_validator = { version = "0.1.0", path = "../mystiko_validator" }
 num-bigint = { version = "0.4.3" }
 num-traits = { version = "0.2.15" }

@@ -9,6 +9,14 @@ pub mod mystiko {
         }
     }
     pub mod config {
+        pub mod api {
+            #[cfg(feature = "mystiko-config-api-v1")]
+            // @@protoc_insertion_point(attribute:mystiko.config.api.v1)
+            pub mod v1 {
+                include!("mystiko.config.api.v1.rs");
+                // @@protoc_insertion_point(mystiko.config.api.v1)
+            }
+        }
         pub mod bridge {
             #[cfg(feature = "mystiko-config-bridge-v1")]
             // @@protoc_insertion_point(attribute:mystiko.config.bridge.v1)

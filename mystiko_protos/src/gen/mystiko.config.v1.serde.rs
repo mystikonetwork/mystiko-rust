@@ -957,6 +957,9 @@ impl serde::Serialize for MystikoConfig {
         if self.indexer_config.is_some() {
             len += 1;
         }
+        if self.sequencer_config.is_some() {
+            len += 1;
+        }
         if self.packer_config.is_some() {
             len += 1;
         }
@@ -981,6 +984,9 @@ impl serde::Serialize for MystikoConfig {
         }
         if let Some(v) = self.indexer_config.as_ref() {
             struct_ser.serialize_field("indexerConfig", v)?;
+        }
+        if let Some(v) = self.sequencer_config.as_ref() {
+            struct_ser.serialize_field("sequencerConfig", v)?;
         }
         if let Some(v) = self.packer_config.as_ref() {
             struct_ser.serialize_field("packerConfig", v)?;
@@ -1010,6 +1016,8 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
             "gitRevision",
             "indexer_config",
             "indexerConfig",
+            "sequencer_config",
+            "sequencerConfig",
             "packer_config",
             "packerConfig",
             "country_blacklist",
@@ -1025,6 +1033,7 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
             BridgeConfigs,
             GitRevision,
             IndexerConfig,
+            SequencerConfig,
             PackerConfig,
             CountryBlacklist,
             CircuitConfigs,
@@ -1054,6 +1063,7 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
                             "bridgeConfigs" | "bridge_configs" => Ok(GeneratedField::BridgeConfigs),
                             "gitRevision" | "git_revision" => Ok(GeneratedField::GitRevision),
                             "indexerConfig" | "indexer_config" => Ok(GeneratedField::IndexerConfig),
+                            "sequencerConfig" | "sequencer_config" => Ok(GeneratedField::SequencerConfig),
                             "packerConfig" | "packer_config" => Ok(GeneratedField::PackerConfig),
                             "countryBlacklist" | "country_blacklist" => Ok(GeneratedField::CountryBlacklist),
                             "circuitConfigs" | "circuit_configs" => Ok(GeneratedField::CircuitConfigs),
@@ -1081,6 +1091,7 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
                 let mut bridge_configs__ = None;
                 let mut git_revision__ = None;
                 let mut indexer_config__ = None;
+                let mut sequencer_config__ = None;
                 let mut packer_config__ = None;
                 let mut country_blacklist__ = None;
                 let mut circuit_configs__ = None;
@@ -1122,6 +1133,12 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
                             }
                             indexer_config__ = map.next_value()?;
                         }
+                        GeneratedField::SequencerConfig => {
+                            if sequencer_config__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("sequencerConfig"));
+                            }
+                            sequencer_config__ = map.next_value()?;
+                        }
                         GeneratedField::PackerConfig => {
                             if packer_config__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("packerConfig"));
@@ -1148,6 +1165,7 @@ impl<'de> serde::Deserialize<'de> for MystikoConfig {
                     bridge_configs: bridge_configs__.unwrap_or_default(),
                     git_revision: git_revision__,
                     indexer_config: indexer_config__,
+                    sequencer_config: sequencer_config__,
                     packer_config: packer_config__,
                     country_blacklist: country_blacklist__.unwrap_or_default(),
                     circuit_configs: circuit_configs__.unwrap_or_default(),
