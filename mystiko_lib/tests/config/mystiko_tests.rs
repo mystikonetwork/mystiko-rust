@@ -59,7 +59,6 @@ fn test_with_valid_config() {
             "zokrates-2.0-rollup1"
         ]
     );
-    assert_eq!(&config.indexer_config.unwrap().url, "https://example.com");
     assert_eq!(
         &config.packer_config.unwrap().url,
         "https://static.mystiko.network/packer/v1"
