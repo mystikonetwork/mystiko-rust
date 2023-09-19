@@ -1,12 +1,14 @@
 // @generated
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetConfigRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindDefaultCircuitRequest {
@@ -15,6 +17,7 @@ pub struct FindDefaultCircuitRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindCircuitRequest {
@@ -23,6 +26,7 @@ pub struct FindCircuitRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindChainRequest {
@@ -31,6 +35,7 @@ pub struct FindChainRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindPeerChainsRequest {
@@ -39,6 +44,7 @@ pub struct FindPeerChainsRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindAssetSymbolsRequest {
@@ -49,6 +55,7 @@ pub struct FindAssetSymbolsRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindBridgesRequest {
@@ -61,6 +68,7 @@ pub struct FindBridgesRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindBridgeRequest {
@@ -69,6 +77,7 @@ pub struct FindBridgeRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindDepositContractRequest {
@@ -83,6 +92,7 @@ pub struct FindDepositContractRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindDepositContractByAddressRequest {
@@ -93,6 +103,7 @@ pub struct FindDepositContractByAddressRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindPoolContractRequest {
@@ -107,6 +118,7 @@ pub struct FindPoolContractRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindPoolContractsRequest {
@@ -119,6 +131,7 @@ pub struct FindPoolContractsRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindPoolContractByAddressRequest {
@@ -129,6 +142,7 @@ pub struct FindPoolContractByAddressRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindContractByAddressRequest {
@@ -139,6 +153,7 @@ pub struct FindContractByAddressRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetTransactionUrlRequest {
@@ -149,6 +164,7 @@ pub struct GetTransactionUrlRequest {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetConfigResponse {
@@ -157,6 +173,7 @@ pub struct GetConfigResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindDefaultCircuitResponse {
@@ -165,6 +182,7 @@ pub struct FindDefaultCircuitResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindCircuitResponse {
@@ -173,6 +191,7 @@ pub struct FindCircuitResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindChainResponse {
@@ -181,6 +200,7 @@ pub struct FindChainResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindPeerChainsResponse {
@@ -189,6 +209,7 @@ pub struct FindPeerChainsResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindAssetSymbolsResponse {
@@ -197,6 +218,7 @@ pub struct FindAssetSymbolsResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindBridgesResponse {
@@ -205,6 +227,7 @@ pub struct FindBridgesResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindBridgeResponse {
@@ -213,6 +236,7 @@ pub struct FindBridgeResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindDepositContractResponse {
@@ -221,6 +245,7 @@ pub struct FindDepositContractResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindDepositContractByAddressResponse {
@@ -229,6 +254,7 @@ pub struct FindDepositContractByAddressResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindPoolContractResponse {
@@ -237,6 +263,7 @@ pub struct FindPoolContractResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindPoolContractsResponse {
@@ -245,6 +272,7 @@ pub struct FindPoolContractsResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindPoolContractByAddressResponse {
@@ -253,6 +281,7 @@ pub struct FindPoolContractByAddressResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct FindContractByAddressResponse {
@@ -261,6 +290,7 @@ pub struct FindContractByAddressResponse {
 }
 #[derive(typed_builder::TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
+#[derive(mystiko_protos_macros::ProtoBuilder)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetTransactionUrlResponse {
