@@ -1,22 +1,22 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use ethers_core::types::Address;
 use mockall::mock;
 use mystiko_grpc::GrpcServer;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus};
+use mystiko_protos::sequencer::v1::sequencer_service_client::SequencerServiceClient;
 use mystiko_protos::sequencer::v1::sequencer_service_server::SequencerServiceServer;
-use mystiko_protos::sequencer::v1::{ChainLoadedBlockRequest, ChainLoadedBlockResponse};
-use mystiko_protos::sequencer::v1::{ContractLoadedBlockRequest, ContractLoadedBlockResponse};
-use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
-use mystiko_protos::sequencer::v1::{FetchContractRequest, FetchContractResponse};
-use mystiko_protos::sequencer::v1::{HealthCheckRequest, HealthCheckResponse};
+use mystiko_protos::sequencer::v1::{
+    ChainLoadedBlockRequest, ChainLoadedBlockResponse, ContractLoadedBlockRequest, ContractLoadedBlockResponse,
+    FetchChainRequest, FetchChainResponse, FetchContractRequest, FetchContractResponse, HealthCheckRequest,
+    HealthCheckResponse,
+};
 use mystiko_protos::service::v1::ClientOptions;
 use mystiko_protos::service::v1::ServerOptions;
 use mystiko_sequencer_client::v1::SequencerClient as SequencerClientV1;
 use mystiko_sequencer_client::SequencerClient;
 use mystiko_utils::address::ethers_address_to_bytes;
 use tonic::{Code, Request, Response, Status};
-
-use ethers_core::types::Address;
 
 mock! {
     #[derive(Debug)]
@@ -174,7 +174,7 @@ async fn test_fetch_chain() {
             .target_block(test_end_block)
             .build()])
         .build();
-    let result = client.fetch_chain(request).await;
+    let result = client.fetch_chain(request.clone()).await;
     assert!(result.is_ok());
     let result = result.unwrap();
     assert_eq!(chain_id, result.chain_id);
@@ -187,6 +187,18 @@ async fn test_fetch_chain() {
     assert_eq!(1, result.commitments.len());
     let result = &result.commitments[0];
     assert_eq!(2, result.status);
+    server.stop().await.unwrap();
+
+    let mut service = MockSequencerService::new();
+    let esg = "cancelled err";
+    service
+        .expect_fetch_chain()
+        .returning(move |_| Err(Status::new(Code::Cancelled, esg)));
+    let mut server = setup(service, options.clone()).await;
+    let result = client.fetch_chain(request).await;
+    assert!(result.is_err());
+    let result = result.unwrap_err();
+    assert!(result.to_string().contains(esg));
     server.stop().await.unwrap();
 }
 
@@ -204,7 +216,8 @@ async fn test_health_check() {
     let mut server = setup(service, options.clone()).await;
 
     let client_options = ClientOptions::builder().port(50154u32).build();
-    let client = SequencerClientV1::connect(&client_options).await.unwrap();
+    let channel = mystiko_grpc::connect(&client_options).await.unwrap();
+    let client: SequencerClientV1 = SequencerServiceClient::new(channel).into();
     let result = client.health_check().await;
     assert!(result.is_ok());
     server.stop().await.unwrap();
