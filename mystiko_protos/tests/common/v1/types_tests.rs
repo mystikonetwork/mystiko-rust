@@ -73,3 +73,45 @@ fn test_proto_to_contract_type() {
     assert_eq!(type1, mystiko_types::ContractType::Deposit);
     assert_eq!(type2, mystiko_types::ContractType::Pool);
 }
+
+#[test]
+fn test_proto_to_bridge_type() {
+    let type1: mystiko_types::BridgeType = Into::into(BridgeType::Loop);
+    let type2: mystiko_types::BridgeType = Into::into(BridgeType::Poly);
+    let type3: mystiko_types::BridgeType = Into::into(BridgeType::Tbridge);
+    let type4: mystiko_types::BridgeType = Into::into(BridgeType::Celer);
+    let type5: mystiko_types::BridgeType = Into::into(BridgeType::LayerZero);
+    let type6: mystiko_types::BridgeType = Into::into(BridgeType::Axelar);
+    assert_eq!(type1, mystiko_types::BridgeType::Loop);
+    assert_eq!(type2, mystiko_types::BridgeType::Poly);
+    assert_eq!(type3, mystiko_types::BridgeType::Tbridge);
+    assert_eq!(type4, mystiko_types::BridgeType::Celer);
+    assert_eq!(type5, mystiko_types::BridgeType::LayerZero);
+    assert_eq!(type6, mystiko_types::BridgeType::Axelar);
+}
+
+#[test]
+fn test_proto_to_circuit_type() {
+    let type1: mystiko_types::CircuitType = Into::into(CircuitType::Rollup1);
+    let type2: mystiko_types::CircuitType = Into::into(CircuitType::Rollup2);
+    let type3: mystiko_types::CircuitType = Into::into(CircuitType::Rollup4);
+    let type4: mystiko_types::CircuitType = Into::into(CircuitType::Rollup8);
+    let type5: mystiko_types::CircuitType = Into::into(CircuitType::Rollup16);
+    let type6: mystiko_types::CircuitType = Into::into(CircuitType::Transaction1x0);
+    let type7: mystiko_types::CircuitType = Into::into(CircuitType::Transaction1x1);
+    let type8: mystiko_types::CircuitType = Into::into(CircuitType::Transaction1x2);
+    let type9: mystiko_types::CircuitType = Into::into(CircuitType::Transaction2x0);
+    let type10: mystiko_types::CircuitType = Into::into(CircuitType::Transaction2x1);
+    let type11: mystiko_types::CircuitType = Into::into(CircuitType::Transaction2x2);
+    assert_eq!(type1, mystiko_types::CircuitType::Rollup1);
+    assert_eq!(type2, mystiko_types::CircuitType::Rollup2);
+    assert_eq!(type3, mystiko_types::CircuitType::Rollup4);
+    assert_eq!(type4, mystiko_types::CircuitType::Rollup8);
+    assert_eq!(type5, mystiko_types::CircuitType::Rollup16);
+    assert_eq!(type6, mystiko_types::CircuitType::Transaction1x0);
+    assert_eq!(type7, mystiko_types::CircuitType::Transaction1x1);
+    assert_eq!(type8, mystiko_types::CircuitType::Transaction1x2);
+    assert_eq!(type9, mystiko_types::CircuitType::Transaction2x0);
+    assert_eq!(type10, mystiko_types::CircuitType::Transaction2x1);
+    assert_eq!(type11, mystiko_types::CircuitType::Transaction2x2);
+}
