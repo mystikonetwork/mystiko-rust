@@ -62,7 +62,7 @@ async fn test_chain_loaded_block() {
     let mut server = setup(service, options.clone()).await;
 
     let client_options = ClientOptions::builder().port(50151u32).build();
-    let mut client = SequencerClientV1::connect(&client_options).await.unwrap();
+    let client = SequencerClientV1::connect(&client_options).await.unwrap();
     let result = client.chain_loaded_block(chain_id).await;
     assert!(result.is_ok());
     let result = result.unwrap();
@@ -105,7 +105,7 @@ async fn test_contract_loaded_block() {
     let mut server = setup(service, options.clone()).await;
 
     let client_options = ClientOptions::builder().port(50152u32).build();
-    let mut client = SequencerClientV1::connect(&client_options).await.unwrap();
+    let client = SequencerClientV1::connect(&client_options).await.unwrap();
     let result = client.contract_loaded_block(chain_id, &address).await;
     assert!(result.is_ok());
     let result = result.unwrap();
@@ -161,7 +161,7 @@ async fn test_fetch_chain() {
         .build();
     let mut server = setup(service, options.clone()).await;
     let client_options = ClientOptions::builder().port(50153u32).build();
-    let mut client = SequencerClientV1::connect(&client_options).await.unwrap();
+    let client = SequencerClientV1::connect(&client_options).await.unwrap();
 
     let request = FetchChainRequest::builder()
         .chain_id(chain_id)
@@ -187,5 +187,37 @@ async fn test_fetch_chain() {
     assert_eq!(1, result.commitments.len());
     let result = &result.commitments[0];
     assert_eq!(2, result.status);
+    server.stop().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_health_check() {
+    let mut service = MockSequencerService::new();
+    service
+        .expect_health_check()
+        .returning(move |_| Ok(Response::new(HealthCheckResponse::builder().build())));
+    let options = ServerOptions::builder()
+        .port(50154u32)
+        .accept_http1(true)
+        .enable_web(true)
+        .build();
+    let mut server = setup(service, options.clone()).await;
+
+    let client_options = ClientOptions::builder().port(50154u32).build();
+    let client = SequencerClientV1::connect(&client_options).await.unwrap();
+    let result = client.health_check().await;
+    assert!(result.is_ok());
+    server.stop().await.unwrap();
+
+    let mut service = MockSequencerService::new();
+    let esg = "aborted err";
+    service
+        .expect_health_check()
+        .returning(move |_| Err(Status::new(Code::Aborted, esg)));
+    let mut server = setup(service, options.clone()).await;
+    let result = client.health_check().await;
+    assert!(result.is_err());
+    let result = result.unwrap_err();
+    assert!(result.to_string().contains(esg));
     server.stop().await.unwrap();
 }
