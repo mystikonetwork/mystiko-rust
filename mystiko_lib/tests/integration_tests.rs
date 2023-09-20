@@ -2,7 +2,6 @@ use anyhow::Result;
 use mystiko_lib::{destroy, initialize, is_initialized};
 use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_protos::core::v1::MystikoOptions;
-use prost::Message;
 use serial_test::serial;
 
 mod config;
@@ -21,7 +20,7 @@ pub fn setup(full_config: bool) -> Result<()> {
     let options = MystikoOptions::builder()
         .config_options(ConfigOptions::builder().file_path(file_path).is_testnet(true).build())
         .build();
-    initialize(&options.encode_to_vec())
+    initialize(options)
 }
 
 #[test]

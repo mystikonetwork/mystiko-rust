@@ -26,8 +26,13 @@ lazy_static! {
     static ref MYSTIKO_RUNTIME: Runtime = Runtime::new().unwrap();
 }
 
-pub fn initialize(options: &[u8]) -> Result<()> {
-    runtime().block_on(internal::initialize(ProtoMystikoOptions::try_from(options)?))
+pub fn initialize<T>(options: T) -> Result<()>
+where
+    T: TryInto<ProtoMystikoOptions>,
+    <T as TryInto<ProtoMystikoOptions>>::Error: std::error::Error + Send + Sync + 'static,
+{
+    let options: ProtoMystikoOptions = options.try_into()?;
+    runtime().block_on(internal::initialize(options))
 }
 
 pub fn is_initialized() -> bool {
