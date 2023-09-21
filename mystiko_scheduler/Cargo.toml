@@ -1,0 +1,22 @@
+[package]
+name = "mystiko_scheduler"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+signal = ["tokio/signal", "futures"]
+
+[dependencies]
+anyhow = { version = "1.0.69" }
+async-trait = { version = "0.1.64" }
+futures = { version = "0.3.28", optional = true }
+log = { version = "0.4.17" }
+thiserror = { version = "1.0", default-features = false }
+tokio = { version = "1.27.0", features = ["macros", "rt", "sync", "time"] }
+typed-builder = { version = "0.15.2" }
+
+[dev-dependencies]
+env_logger = { version = "0.10.0" }
+libc = { version = "0.2.148" }
+mystiko_scheduler = { version = "*", path = ".", features = ["signal"] }
+tokio = { version = "1.27.0", features = ["test-util"] }

@@ -16,7 +16,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 static SQLITE_MEMORY_PATH: &str = ":memory:";
-static DEFAULT_MAX_CONNECTION: u32 = 4;
+static DEFAULT_MAX_CONNECTION: u32 = 1;
 static DEFAULT_EXECUTE_BATCH_SIZE: usize = 1000;
 
 type Query<'a> = sqlx::query::Query<'a, Sqlite, <Sqlite as sqlx::database::HasArguments<'a>>::Arguments>;
