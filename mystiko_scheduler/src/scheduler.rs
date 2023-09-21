@@ -216,7 +216,7 @@ where
                     interruptible_sleep(sleep_ms, sleep_receiver).await;
                     *self.sleep_interrupt.lock().await = None;
                 }
-                if self.run_task_with_retry::<R, A>(&run_args, &options).await {
+                if self.run_task_with_retry::<R, A>(round, &run_args, &options).await {
                     log::error!("scheduler is aborted due to some error(s)");
                     break;
                 }
@@ -260,7 +260,13 @@ where
         last_state
     }
 
-    async fn run_task<R, A>(&self, run_args: &I, options: &StartOptions<T::Error, R, A>) -> Option<Result<(), T::Error>>
+    async fn run_task<R, A>(
+        &self,
+        round: u64,
+        try_count: u32,
+        run_args: &I,
+        options: &StartOptions<T::Error, R, A>,
+    ) -> Option<Result<(), T::Error>>
     where
         R: RetryPolicy<T::Error>,
         A: AbortPolicy<T::Error>,
@@ -268,7 +274,13 @@ where
         if let Some(timeout_ms) = options.task_timeout_ms {
             match tokio::time::timeout(Duration::from_millis(timeout_ms), self.task.run(run_args)).await {
                 Err(_) => {
-                    log::error!("run_task timed out after {}ms with args: {:?}", timeout_ms, run_args);
+                    log::error!(
+                        "run_task(round={}, try_count={}) timed out after {}ms with args: {:?}",
+                        round,
+                        try_count,
+                        timeout_ms,
+                        run_args
+                    );
                     None
                 }
                 Ok(result) => Some(result),
@@ -278,7 +290,7 @@ where
         }
     }
 
-    async fn run_task_with_retry<R, A>(&self, run_args: &I, options: &StartOptions<T::Error, R, A>) -> bool
+    async fn run_task_with_retry<R, A>(&self, round: u64, run_args: &I, options: &StartOptions<T::Error, R, A>) -> bool
     where
         R: RetryPolicy<T::Error>,
         A: AbortPolicy<T::Error>,
@@ -286,7 +298,7 @@ where
         let mut try_count = 0u32;
         let mut should_abort = false;
         while try_count <= options.max_retry_times {
-            match self.run_task::<R, A>(run_args, options).await {
+            match self.run_task::<R, A>(round, try_count + 1, run_args, options).await {
                 None => {
                     if options.abort_on_timeout {
                         should_abort = true;
@@ -298,7 +310,13 @@ where
                 }
                 Some(Ok(_)) => break,
                 Some(Err(err)) => {
-                    log::error!("run_task with args {:?} raised error: {:?}", run_args, err);
+                    log::error!(
+                        "run_task(round={}, try_count={}) with args {:?} raised error: {:?}",
+                        round,
+                        try_count + 1,
+                        run_args,
+                        err
+                    );
                     if let Some(abort_policy) = &options.abort_policy {
                         if abort_policy.should_abort(&err) {
                             should_abort = true;
