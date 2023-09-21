@@ -45,6 +45,8 @@ pub struct DatabaseHandler<
     collection: Arc<Collection<F, S>>,
     #[builder(default = 10000)]
     pub handle_batch_size: usize,
+    #[builder(default = 1)]
+    pub handle_concurrency: usize,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<(R, X, C, N)>,
 }
@@ -185,13 +187,19 @@ where
     }
 
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
-        let mut contract_tasks = Vec::with_capacity(data.contracts_data.len());
-        for contract_data in data.contracts_data.iter() {
-            contract_tasks.push(self.handle_contract(data.chain_id, contract_data));
+        let mut contract_tasks = vec![];
+        let chunks = data.contracts_data.chunks(self.handle_concurrency);
+        for contracts_chunk in chunks {
+            contract_tasks.push(self.handle_contracts(data.chain_id, contracts_chunk));
         }
+        let results = futures::future::try_join_all(contract_tasks)
+            .await?
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>();
         Ok(ChainResult::builder()
             .chain_id(data.chain_id)
-            .contract_results(futures::future::try_join_all(contract_tasks).await?)
+            .contract_results(results)
             .build())
     }
 }
@@ -319,6 +327,18 @@ where
             sub_filters.push(SubFilter::in_list(N::column_nullifier(), nullifiers));
         }
         Ok((QueryFilter::from(sub_filters), actual_end_block))
+    }
+
+    async fn handle_contracts(
+        &self,
+        chain_id: u64,
+        contracts_data: &[ContractData<R>],
+    ) -> Result<Vec<ContractResult<()>>> {
+        let mut results = Vec::with_capacity(contracts_data.len());
+        for contract_data in contracts_data.iter() {
+            results.push(self.handle_contract(chain_id, contract_data).await?);
+        }
+        Ok(results)
     }
 
     async fn handle_contract(&self, chain_id: u64, contract_data: &ContractData<R>) -> Result<ContractResult<()>> {
