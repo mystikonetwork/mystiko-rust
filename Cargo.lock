@@ -3720,6 +3720,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_scheduler"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "env_logger",
+ "futures",
+ "libc",
+ "log",
+ "mystiko_scheduler",
+ "thiserror",
+ "tokio",
+ "typed-builder 0.15.2",
+]
+
+[[package]]
 name = "mystiko_sequencer_client"
 version = "0.1.0"
 dependencies = [
@@ -3735,22 +3751,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tonic",
- "typed-builder 0.15.2",
-]
-
-[[package]]
-name = "mystiko_scheduler"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "env_logger",
- "futures",
- "libc",
- "log",
- "mystiko_scheduler",
- "thiserror",
- "tokio",
  "typed-builder 0.15.2",
 ]
 
