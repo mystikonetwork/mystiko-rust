@@ -26,10 +26,10 @@ async fn test_all_already_merged_commitment() {
         cm.leaf_index = Some(i as u64);
         cm.included_block_number = Some(i as u64);
         cm.status = CommitmentStatus::Included as i32;
-        cm.rollup_fee = Some(vec![1, 2, 3]);
-        cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_transaction_hash = Some(vec![1, 2, 3]);
-        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.rollup_fee = Some(vec![1]);
+        cm.encrypted_note = Some(vec![1]);
+        cm.included_transaction_hash = Some(vec![1]);
+        cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
     }
 
@@ -76,10 +76,10 @@ async fn test_some_already_merged_commitment() {
         let mut cm = cms[i].clone();
         cm.included_block_number = Some(i as u64);
         cm.status = CommitmentStatus::Included as i32;
-        cm.rollup_fee = Some(vec![1, 2, 3]);
-        cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_transaction_hash = Some(vec![1, 2, 3]);
-        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.rollup_fee = Some(vec![1]);
+        cm.encrypted_note = Some(vec![1]);
+        cm.included_transaction_hash = Some(vec![1]);
+        cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cms[10 + i].clone());
         fetched_cms.push(cm.clone());
     }
@@ -123,14 +123,14 @@ async fn test_some_already_merged_duplicate_queued_commitment() {
     let contract_address = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let cms = load_commitments("./tests/files/validator/commitments_100.json").await;
     let mut fetched_cms = vec![];
-    for (i, cmo) in cms.iter().enumerate().take(20).skip(10) {
+    for (i, cmo) in cms.iter().enumerate().take(10) {
         let mut cm = cmo.clone();
         cm.included_block_number = Some(i as u64);
         cm.status = CommitmentStatus::Included as i32;
-        cm.rollup_fee = Some(vec![1, 2, 3]);
-        cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_transaction_hash = Some(vec![1, 2, 3]);
-        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.rollup_fee = Some(vec![1]);
+        cm.encrypted_note = Some(vec![1]);
+        cm.included_transaction_hash = Some(vec![1]);
+        cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cmo.clone());
         fetched_cms.push(cm.clone());
     }
@@ -139,10 +139,10 @@ async fn test_some_already_merged_duplicate_queued_commitment() {
         let mut cm = cmo.clone();
         cm.included_block_number = Some(i as u64);
         cm.status = CommitmentStatus::Included as i32;
-        cm.rollup_fee = Some(vec![1, 2, 3]);
-        cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_transaction_hash = Some(vec![1, 2, 3]);
-        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.rollup_fee = Some(vec![1]);
+        cm.encrypted_note = Some(vec![1]);
+        cm.included_transaction_hash = Some(vec![1]);
+        cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
         fetched_cms.push(cmo.clone());
     }
@@ -196,10 +196,10 @@ async fn test_some_already_merged_duplicate_included_commitment() {
         cm.included_block_number = Some(i as u64);
         cm.leaf_index = Some(i as u64);
         cm.status = CommitmentStatus::Included as i32;
-        cm.rollup_fee = Some(vec![1, 2, 3]);
-        cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_transaction_hash = Some(vec![1, 2, 3]);
-        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.rollup_fee = Some(vec![1]);
+        cm.encrypted_note = Some(vec![1]);
+        cm.included_transaction_hash = Some(vec![1]);
+        cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
     }
 
@@ -208,10 +208,10 @@ async fn test_some_already_merged_duplicate_included_commitment() {
         cm.included_block_number = Some(i as u64);
         cm.leaf_index = Some(i as u64);
         cm.status = CommitmentStatus::Included as i32;
-        cm.rollup_fee = Some(vec![1, 2, 3]);
-        cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_transaction_hash = Some(vec![1, 2, 3]);
-        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.rollup_fee = Some(vec![1]);
+        cm.encrypted_note = Some(vec![1]);
+        cm.included_transaction_hash = Some(vec![1]);
+        cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
 
         cm.status = CommitmentStatus::Included as i32;
@@ -270,10 +270,10 @@ async fn test_some_already_merged_duplicate_queued_and_included_commitment() {
         cm.included_block_number = Some(i as u64);
         cm.leaf_index = Some(i as u64);
         cm.status = CommitmentStatus::Included as i32;
-        cm.rollup_fee = Some(vec![1, 2, 3]);
-        cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_transaction_hash = Some(vec![1, 2, 3]);
-        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.rollup_fee = Some(vec![1]);
+        cm.encrypted_note = Some(vec![1]);
+        cm.included_transaction_hash = Some(vec![1]);
+        cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
     }
 
@@ -290,10 +290,10 @@ async fn test_some_already_merged_duplicate_queued_and_included_commitment() {
         cm.included_block_number = Some(i as u64);
         cm.leaf_index = Some(i as u64);
         cm.status = CommitmentStatus::Included as i32;
-        cm.rollup_fee = Some(vec![1, 2, 3]);
-        cm.encrypted_note = Some(vec![1, 2, 3]);
-        cm.included_transaction_hash = Some(vec![1, 2, 3]);
-        cm.queued_transaction_hash = Some(vec![1, 2, 3]);
+        cm.rollup_fee = Some(vec![1]);
+        cm.encrypted_note = Some(vec![1]);
+        cm.included_transaction_hash = Some(vec![1]);
+        cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
     }
 
