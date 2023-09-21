@@ -19,6 +19,7 @@ members = [
     "mystiko_relayer_config",
     "mystiko_relayer_types",
     "mystiko_sequencer_client",
+    "mystiko_scheduler",
     "mystiko_storage",
     "mystiko_storage_macros",
     "mystiko_storage_mysql",
