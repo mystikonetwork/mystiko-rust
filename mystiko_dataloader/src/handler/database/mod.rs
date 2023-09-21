@@ -188,7 +188,13 @@ where
 
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
         let mut contract_tasks = vec![];
-        let chunks = data.contracts_data.chunks(self.handle_concurrency);
+        let concurrency = if self.handle_concurrency > 0 {
+            self.handle_concurrency
+        } else {
+            1
+        };
+        let chunk_size = (data.contracts_data.len() + concurrency - 1) / concurrency;
+        let chunks = data.contracts_data.chunks(chunk_size);
         for contracts_chunk in chunks {
             contract_tasks.push(self.handle_contracts(data.chain_id, contracts_chunk));
         }
