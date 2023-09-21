@@ -23,7 +23,7 @@ pub struct SequencerClient {
 pub enum SequencerClientError {
     #[error("unknown error: {0}")]
     UnknownError(String),
-    #[error("connect error: {0}")]
+    #[error("failed to connect server: {0}")]
     ConnectError(String),
     #[error(transparent)]
     TonicStatusError(#[from] tonic::Status),
@@ -52,26 +52,21 @@ impl From<SequencerServiceClient<Channel>> for SequencerClient {
 
 #[async_trait]
 impl crate::SequencerClient<FetchChainRequest, FetchChainResponse> for SequencerClient {
-    async fn chain_loaded_block(&self, chain_id: u64) -> Result<u64> {
-        log::debug!("sequencer client load block from chain {}", chain_id);
+    type Error = SequencerClientError;
+
+    async fn chain_loaded_block(&self, chain_id: u64) -> Result<u64, Self::Error> {
+        log::debug!(
+            "sequencer_client received request of chain_loaded_block with chain_id={}",
+            chain_id
+        );
         let request = ChainLoadedBlockRequest { chain_id };
-        let mut client = self.client.lock().await;
-        client
-            .chain_loaded_block(request)
-            .await
-            .map(|resp| resp.get_ref().block_number)
-            .map_err(|err| {
-                match err {
-                    err if matches!(err, tonic::Status { .. }) => SequencerClientError::TonicStatusError(err),
-                    _ => SequencerClientError::UnknownError(err.to_string()),
-                }
-                .into()
-            })
+        let response = self.client.lock().await.chain_loaded_block(request).await?;
+        Ok(response.get_ref().block_number)
     }
 
-    async fn contract_loaded_block(&self, chain_id: u64, address: &Address) -> Result<u64> {
+    async fn contract_loaded_block(&self, chain_id: u64, address: &Address) -> Result<u64, Self::Error> {
         log::debug!(
-            "sequencer client load block from chain {}, contract {}",
+            "sequencer_client received request of contract_loaded_block with chain_id={}, address={}",
             chain_id,
             address
         );
@@ -80,53 +75,19 @@ impl crate::SequencerClient<FetchChainRequest, FetchChainResponse> for Sequencer
             chain_id,
             contract_address,
         };
-        let mut client = self.client.lock().await;
-        client
-            .contract_loaded_block(request)
-            .await
-            .map(|resp| resp.get_ref().block_number)
-            .map_err(|err| {
-                match err {
-                    err if matches!(err, tonic::Status { .. }) => SequencerClientError::TonicStatusError(err),
-                    _ => SequencerClientError::UnknownError(err.to_string()),
-                }
-                .into()
-            })
+        let response = self.client.lock().await.contract_loaded_block(request).await?;
+        Ok(response.get_ref().block_number)
     }
 
-    async fn fetch_chain(&self, request: FetchChainRequest) -> Result<FetchChainResponse> {
-        log::debug!(
-            "sequencer client fetch chain {}, expected block range [{}, {}]",
-            request.chain_id,
-            request.start_block,
-            request.target_block,
-        );
-        let mut client = self.client.lock().await;
-        client
-            .fetch_chain(request)
-            .await
-            .map(|resp| resp.into_inner())
-            .map_err(|err| {
-                match err {
-                    err if matches!(err, tonic::Status { .. }) => SequencerClientError::TonicStatusError(err),
-                    _ => SequencerClientError::UnknownError(err.to_string()),
-                }
-                .into()
-            })
+    async fn fetch_chain(&self, request: FetchChainRequest) -> Result<FetchChainResponse, Self::Error> {
+        log::debug!("sequencer_client received request of fetch_chain with {:?}", request);
+        let response = self.client.lock().await.fetch_chain(request).await?;
+        Ok(response.into_inner())
     }
-    async fn health_check(&self) -> Result<()> {
-        log::debug!("sequencer client health_check");
-        let mut client = self.client.lock().await;
-        client
-            .health_check(HealthCheckRequest {})
-            .await
-            .map(|_| ())
-            .map_err(|err| {
-                match err {
-                    err if matches!(err, tonic::Status { .. }) => SequencerClientError::TonicStatusError(err),
-                    _ => SequencerClientError::UnknownError(err.to_string()),
-                }
-                .into()
-            })
+
+    async fn health_check(&self) -> Result<(), Self::Error> {
+        log::debug!("sequencer_client received request of health_check");
+        self.client.lock().await.health_check(HealthCheckRequest {}).await?;
+        Ok(())
     }
 }

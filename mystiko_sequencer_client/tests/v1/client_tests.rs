@@ -105,7 +105,9 @@ async fn test_contract_loaded_block() {
     let mut server = setup(service, options.clone()).await;
 
     let client_options = ClientOptions::builder().port(50152u32).build();
-    let client = SequencerClientV1::connect(&client_options).await.unwrap();
+    let channel = mystiko_grpc::connect(&client_options).await.unwrap();
+    let sequencer_service_client = tokio::sync::Mutex::new(SequencerServiceClient::new(channel));
+    let client = SequencerClientV1::builder().client(sequencer_service_client).build();
     let result = client.contract_loaded_block(chain_id, &address).await;
     assert!(result.is_ok());
     let result = result.unwrap();
