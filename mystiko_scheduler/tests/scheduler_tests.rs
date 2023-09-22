@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use mystiko_scheduler::{AbortPolicy, RetryPolicy, Scheduler, SchedulerTask, StartOptions};
+use mystiko_scheduler::{AbortPolicy, RetryPolicy, Scheduler, SchedulerOptions, SchedulerTask, StartOptions};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Mutex;
@@ -9,7 +9,11 @@ use typed_builder::TypedBuilder;
 async fn test_start_and_stop() {
     setup();
     let task = Arc::<CounterTask>::default();
-    let scheduler = Scheduler::new(task);
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task)
+        .status_server_port(23211u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
     assert!(!scheduler.started().await);
     let options = StartOptions::<anyhow::Error>::builder()
         .interval_ms(5000u64)
@@ -25,7 +29,11 @@ async fn test_start_and_stop() {
 async fn test_start_multiple_times() {
     setup();
     let task = Arc::<CounterTask>::default();
-    let scheduler = Scheduler::new(task);
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task)
+        .status_server_port(23212u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
     scheduler
         .start(
             None,
@@ -50,7 +58,11 @@ async fn test_start_multiple_times() {
 async fn test_stop_before_start() {
     setup();
     let task = Arc::<CounterTask>::default();
-    let scheduler = Scheduler::new(task);
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task)
+        .status_server_port(23213u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
     scheduler.join().await.unwrap();
     scheduler.stop().await.unwrap();
 }
@@ -59,7 +71,11 @@ async fn test_stop_before_start() {
 async fn test_task_timeout() {
     setup();
     let task = Arc::new(CounterTask::builder().sleep_ms(10000u64).build());
-    let scheduler = Scheduler::new(task.clone());
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task.clone())
+        .status_server_port(23214u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
     let options = StartOptions::<anyhow::Error>::builder()
         .interval_ms(2u64)
         .task_timeout_ms(1u64)
@@ -75,7 +91,11 @@ async fn test_task_timeout() {
 async fn test_task_timeout_with_abort() {
     setup();
     let task = Arc::new(CounterTask::builder().sleep_ms(10000u64).build());
-    let scheduler = Scheduler::new(task.clone());
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task.clone())
+        .status_server_port(23215u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
     let options = StartOptions::<anyhow::Error>::builder()
         .interval_ms(2u64)
         .task_timeout_ms(1u64)
@@ -90,7 +110,11 @@ async fn test_task_timeout_with_abort() {
 async fn test_task_timeout_with_retry() {
     setup();
     let task = Arc::new(CounterTask::builder().sleep_ms(10000u64).build());
-    let scheduler = Scheduler::new(task.clone());
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task.clone())
+        .status_server_port(23216u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
     let options = StartOptions::<anyhow::Error>::builder()
         .interval_ms(2u64)
         .task_timeout_ms(1u64)
@@ -106,7 +130,11 @@ async fn test_task_timeout_with_retry() {
 async fn test_retry_policy() {
     setup();
     let task = Arc::<CounterTask>::default();
-    let scheduler = Scheduler::new(task.clone());
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task.clone())
+        .status_server_port(23217u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
     let options = StartOptions::<anyhow::Error>::builder()
         .interval_ms(2u64)
         .max_retry_times(2u32)
@@ -142,7 +170,11 @@ async fn test_retry_policy() {
 async fn test_abort_policy() {
     setup();
     let task = Arc::new(CounterTask::builder().abort_on_count(4u32).build());
-    let scheduler = Scheduler::new(task.clone());
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task.clone())
+        .status_server_port(23218u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
     let options = StartOptions::<anyhow::Error>::builder()
         .interval_ms(2u64)
         .abort_policy(Arc::new(
@@ -153,6 +185,29 @@ async fn test_abort_policy() {
     scheduler.join().await.unwrap();
     assert!(!scheduler.started().await);
     assert_eq!(*task.counter.lock().await, 4u32);
+}
+
+#[tokio::test]
+async fn test_http_status() {
+    setup();
+    let task = Arc::new(CounterTask::builder().abort_on_count(4u32).build());
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task)
+        .status_server_port(23219u16)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
+    let client = hyper::Client::new();
+    let status_uri: http::Uri = "http://localhost:23219/status".parse().unwrap();
+    assert!(client.get(status_uri.clone()).await.is_err());
+
+    let options = StartOptions::<anyhow::Error>::builder().interval_ms(1000u64).build();
+    scheduler.start(None, options).await.unwrap();
+
+    let status_response = client.get(status_uri.clone()).await.unwrap();
+    assert!(status_response.status().is_success());
+
+    scheduler.stop().await.unwrap();
+    assert!(client.get(status_uri).await.is_err());
 }
 
 fn setup() {

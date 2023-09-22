@@ -3727,6 +3727,8 @@ dependencies = [
  "async-trait",
  "env_logger",
  "futures",
+ "http",
+ "hyper",
  "libc",
  "log",
  "mystiko_scheduler",

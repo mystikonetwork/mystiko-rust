@@ -12,6 +12,7 @@ async fn test_shutdown_custom_signal() {
     let scheduler: Scheduler<_, _> = SchedulerOptions::<(), SimpleTask>::builder()
         .task(task)
         .shutdown_signals(vec![SignalKind::user_defined1()])
+        .status_server_port(23220u16)
         .build()
         .into();
     let options = StartOptions::<anyhow::Error>::builder().interval_ms(5000u64).build();
