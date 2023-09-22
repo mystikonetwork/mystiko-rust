@@ -3736,6 +3736,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "mystiko_sequencer_client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "ethers-core",
+ "log",
+ "mockall",
+ "mystiko_grpc",
+ "mystiko_protos",
+ "mystiko_sequencer_client",
+ "mystiko_utils",
+ "thiserror",
+ "tokio",
+ "tonic",
+ "typed-builder 0.15.2",
+]
+
+[[package]]
 name = "mystiko_storage"
 version = "0.1.0"
 dependencies = [
