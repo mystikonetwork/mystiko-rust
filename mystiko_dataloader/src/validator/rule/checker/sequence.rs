@@ -44,12 +44,14 @@ where
     H: DataHandler<R>,
 {
     async fn check_commitment_leaf_index_sequence(&self, data: &ValidateMergedData) -> CheckerResult<()> {
-        if data
+        if let Some(window) = data
             .commitments
             .windows(2)
-            .any(|window| window[0].leaf_index + 1 != window[1].leaf_index)
+            .find(|&window| window[0].leaf_index + 1 != window[1].leaf_index)
         {
-            return Err(SequenceCheckerError::LeafIndexNotSequencedError.into());
+            return Err(
+                SequenceCheckerError::LeafIndexNotSequencedError(window[0].leaf_index, window[1].leaf_index).into(),
+            );
         }
         Ok(())
     }

@@ -76,8 +76,8 @@ pub enum SequenceCheckerError {
     TargetBlockError(u64, u64),
     #[error("commitment data empty error")]
     CommitmentDataEmptyError,
-    #[error("leaf index not sequenced error")]
-    LeafIndexNotSequencedError,
+    #[error("leaf index not sequenced error previous {0} next {1}")]
+    LeafIndexNotSequencedError(u64, u64),
     #[error("commitment status error")]
     CommitmentStatusError,
     #[error("commitment status not sequenced error")]

@@ -138,6 +138,6 @@ async fn test_many_queued_one_included_different_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::LeafIndexNotSequencedError.to_string()
+        SequenceCheckerError::LeafIndexNotSequencedError(9, 15).to_string()
     );
 }
