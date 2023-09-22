@@ -50,6 +50,7 @@ async fn test_all_already_merged_commitment() {
         .build();
     handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
@@ -99,6 +100,7 @@ async fn test_some_already_merged_commitment() {
         .chain_id(chain_id)
         .contracts_data(vec![contract_data])
         .build();
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
@@ -162,6 +164,7 @@ async fn test_some_already_merged_duplicate_queued_commitment() {
         .chain_id(chain_id)
         .contracts_data(vec![contract_data])
         .build();
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
@@ -234,6 +237,7 @@ async fn test_some_already_merged_duplicate_included_commitment() {
         .chain_id(chain_id)
         .contracts_data(vec![contract_data])
         .build();
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
@@ -312,6 +316,7 @@ async fn test_some_already_merged_duplicate_queued_and_included_commitment() {
         .chain_id(chain_id)
         .contracts_data(vec![contract_data])
         .build();
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();

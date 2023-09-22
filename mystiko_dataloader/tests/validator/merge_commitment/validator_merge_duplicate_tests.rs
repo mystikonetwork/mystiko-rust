@@ -200,6 +200,7 @@ async fn test_only_included_duplicate_commitment() {
         .contracts_data(vec![contract_data])
         .build();
     handler.add_commitments(cms[0..10].to_vec()).await;
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(cms[0..10].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
     let mock_checker_result = mock_checker_validator.validate(&data, &option).await.unwrap();
@@ -334,6 +335,8 @@ async fn test_queued_and_included_duplicate() {
             .chain_id(chain_id)
             .contracts_data(vec![contract_data])
             .build();
+        handler.add_commitments(vec![]).await;
+        handler.add_commitments(vec![]).await;
         handler.add_commitments(vec![]).await;
         let result = validator.validate(&data, &option).await.unwrap();
         let mock_checker_result = mock_checker_validator.validate(&data, &option).await.unwrap();

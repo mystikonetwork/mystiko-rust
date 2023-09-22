@@ -44,6 +44,9 @@ async fn many_queued_one_included_same_commitment(concurrency: usize) {
         .contracts_data(vec![contract_data])
         .build();
     handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
@@ -107,7 +110,9 @@ async fn test_many_queued_one_included_different_commitment() {
         .chain_id(chain_id)
         .contracts_data(vec![contract_data])
         .build();
-    handler.add_commitments(cms3.to_vec()).await;
+    handler.add_commitments(vec![cms[1].clone()]).await;
+    handler.add_commitments(vec![cms[1].clone()]).await;
+    handler.add_commitments(vec![cms[1].clone()]).await;
     handler.add_commitments(vec![cms[1].clone()]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
@@ -138,6 +143,6 @@ async fn test_many_queued_one_included_different_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::LeafIndexNotSequencedError(9, 15).to_string()
+        SequenceCheckerError::CommitmentStatusNotSequencedError.to_string()
     );
 }

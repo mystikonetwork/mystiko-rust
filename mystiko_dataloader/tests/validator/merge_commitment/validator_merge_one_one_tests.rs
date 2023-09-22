@@ -116,6 +116,7 @@ async fn test_only_no_queued_one_included_commitment() {
         .build();
 
     handler.add_commitments(vec![cms[0].clone()]).await;
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![cms[0].clone()]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     mock_checker_validator.validate(&data, &option).await.unwrap();
@@ -177,6 +178,10 @@ async fn test_only_one_queued_one_included_same_commitment() {
         .chain_id(chain_id)
         .contracts_data(vec![contract_data])
         .build();
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     mock_checker_validator.validate(&data, &option).await.unwrap();
@@ -285,6 +290,9 @@ async fn test_only_one_queued_one_included_different_commitment() {
         .contracts_data(vec![contract_data])
         .build();
     handler.add_commitments(vec![cms[0].clone()]).await;
+    handler.add_commitments(vec![cms[0].clone()]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![cms[0].clone()]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     let result2 = mock_rule_validate.validate(&data, &option).await.unwrap();
