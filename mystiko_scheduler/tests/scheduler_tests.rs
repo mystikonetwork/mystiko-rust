@@ -15,11 +15,7 @@ use typed_builder::TypedBuilder;
 async fn test_start_and_stop() {
     setup();
     let task = Arc::<CounterTask>::default();
-    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
-        .task(task)
-        .status_server_port(23211u16)
-        .build();
-    let scheduler = Scheduler::new(scheduler_options);
+    let scheduler = Scheduler::new(task);
     assert!(!scheduler.started().await);
     let options = StartOptions::<anyhow::Error>::builder()
         .interval_ms(5000u64)
@@ -204,13 +200,18 @@ async fn test_http_status() {
     let scheduler = Scheduler::new(scheduler_options);
     let client = hyper::Client::new();
     let status_uri: http::Uri = "http://localhost:23219/status".parse().unwrap();
+    let non_existing_uri: http::Uri = "http://localhost:23219/non_existing".parse().unwrap();
     assert!(client.get(status_uri.clone()).await.is_err());
+    assert!(client.get(non_existing_uri.clone()).await.is_err());
 
     let options = StartOptions::<anyhow::Error>::builder().interval_ms(1000u64).build();
     scheduler.start(None, options).await.unwrap();
 
     let status_response = client.get(status_uri.clone()).await.unwrap();
     assert!(status_response.status().is_success());
+
+    let non_existing_response = client.get(non_existing_uri).await.unwrap();
+    assert_eq!(non_existing_response.status(), http::StatusCode::NOT_FOUND);
 
     scheduler.stop().await.unwrap();
     assert!(client.get(status_uri).await.is_err());
