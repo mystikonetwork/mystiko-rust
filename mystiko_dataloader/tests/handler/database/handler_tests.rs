@@ -13,6 +13,7 @@ use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
 use mystiko_utils::convert::biguint_to_bytes;
 use mystiko_utils::hex::decode_hex;
 use num_bigint::BigUint;
+use std::fmt::Debug;
 use std::sync::Arc;
 
 #[tokio::test]
@@ -1304,7 +1305,7 @@ async fn test_initialize() {
     );
 }
 
-async fn setup<R: LoadedData>() -> Result<(
+async fn setup<R: LoadedData + Debug>() -> Result<(
     DatabaseHandler<R, SqlStatementFormatter, SqliteStorage>,
     Arc<Collection<SqlStatementFormatter, SqliteStorage>>,
     Arc<MystikoConfig>,

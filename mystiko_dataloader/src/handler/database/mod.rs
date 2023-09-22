@@ -16,6 +16,7 @@ use mystiko_protos::storage::v1::{Condition, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, DocumentData, MigrationHistory, StatementFormatter, Storage};
 use mystiko_utils::time::current_timestamp;
 use std::collections::{HashMap, HashSet};
+use std::fmt::Debug;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -34,7 +35,7 @@ pub enum DatabaseHandlerError {
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct DatabaseHandler<
-    R: LoadedData,
+    R: LoadedData + Debug,
     F: StatementFormatter,
     S: Storage,
     X: DocumentData + DatabaseContract = document::Contract,
@@ -65,7 +66,7 @@ struct HandlerContractData<
 #[async_trait]
 impl<R, F, S, X, C, N> DataHandler<R> for DatabaseHandler<R, F, S, X, C, N>
 where
-    R: LoadedData,
+    R: LoadedData + Debug,
     F: StatementFormatter,
     S: Storage,
     X: DocumentData + DatabaseContract,
@@ -212,7 +213,7 @@ where
 
 impl<R, F, S, X, C, N> DatabaseHandler<R, F, S, X, C, N>
 where
-    R: LoadedData,
+    R: LoadedData + Debug,
     F: StatementFormatter,
     S: Storage,
     X: DocumentData + DatabaseContract,

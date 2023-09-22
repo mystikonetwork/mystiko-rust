@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use mystiko_config::ContractConfig;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
@@ -21,7 +22,7 @@ pub struct CachedDataHandler<R: LoadedData, H = Box<dyn DataHandler<R>>> {
 #[async_trait]
 impl<R, H> DataHandler<R> for CachedDataHandler<R, H>
 where
-    R: LoadedData,
+    R: LoadedData + Debug,
     H: DataHandler<R>,
 {
     async fn query_loading_contracts(&self, chain_id: u64) -> Result<Option<Vec<ContractConfig>>> {
