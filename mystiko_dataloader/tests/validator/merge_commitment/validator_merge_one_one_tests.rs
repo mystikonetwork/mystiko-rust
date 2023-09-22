@@ -52,6 +52,7 @@ async fn only_one_queued_no_included_commitment(concurrency: usize) {
         .contracts_data(vec![contract_data])
         .build();
     handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);

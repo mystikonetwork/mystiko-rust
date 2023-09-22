@@ -96,11 +96,33 @@ where
             return Ok(());
         }
 
-        let count = self.query_handler_commitment_count(data, first.status).await?;
+        let count = self.sum_handler_commitment_count(data, first.status).await?;
         if count != first.leaf_index {
             Err(SequenceCheckerError::CommitmentNotSequenceWithHandlerError(count, first.leaf_index).into())
         } else {
             Ok(())
+        }
+    }
+
+    async fn sum_handler_commitment_count(
+        &self,
+        data: &ValidateMergedData,
+        status: CommitmentStatus,
+    ) -> CheckerResult<u64> {
+        match status {
+            CommitmentStatus::Unspecified => Err(SequenceCheckerError::CommitmentStatusError.into()),
+            CommitmentStatus::SrcSucceeded | CommitmentStatus::Included => {
+                self.query_handler_commitment_count(data, status).await
+            }
+            CommitmentStatus::Queued => {
+                let included_count = self
+                    .query_handler_commitment_count(data, CommitmentStatus::Included)
+                    .await?;
+                let queued_count = self
+                    .query_handler_commitment_count(data, CommitmentStatus::Queued)
+                    .await?;
+                Ok(included_count + queued_count)
+            }
         }
     }
 

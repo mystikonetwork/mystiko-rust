@@ -78,6 +78,8 @@ pub enum SequenceCheckerError {
     CommitmentDataEmptyError,
     #[error("leaf index not sequenced error")]
     LeafIndexNotSequencedError,
+    #[error("commitment status error")]
+    CommitmentStatusError,
     #[error("commitment status not sequenced error")]
     CommitmentStatusNotSequencedError,
     #[error("commitment merged not sequenced error")]
