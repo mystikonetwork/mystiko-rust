@@ -11,7 +11,7 @@ async fn test_shutdown_signal() {
     let task = Arc::<SimpleTask>::default();
     let scheduler_options = SchedulerOptions::<(), SimpleTask>::builder()
         .task(task)
-        .status_server_port(23221u16)
+        .status_server_port(23231u16)
         .build();
     let scheduler = Scheduler::new(scheduler_options);
     let options = StartOptions::<anyhow::Error>::builder().interval_ms(5000u64).build();

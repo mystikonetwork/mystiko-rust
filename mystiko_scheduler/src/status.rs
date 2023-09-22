@@ -1,18 +1,18 @@
 use crate::SchedulerError;
+use async_trait::async_trait;
 use http::{Request, Response};
 use hyper::service::{make_service_fn, service_fn};
-use hyper::Body;
 use std::fmt::Debug;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use tokio::sync::oneshot::{channel, Sender};
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Clone, TypedBuilder)]
-#[builder(field_defaults(default, setter(into)))]
-pub struct SchedulerStatus {
-    pub started: bool,
+#[async_trait]
+pub trait SchedulerStatus: Send + Sync + Debug {
+    async fn status(&self) -> anyhow::Result<(mime::Mime, hyper::Body)>;
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -20,6 +20,8 @@ pub struct SchedulerStatus {
 pub(crate) struct StatusServer {
     bind_address: String,
     port: u16,
+    #[builder(default)]
+    status: Option<Arc<Box<dyn SchedulerStatus>>>,
     #[builder(default, setter(skip))]
     join_handle: Mutex<Option<JoinHandle<Result<(), SchedulerError>>>>,
     #[builder(default, setter(skip))]
@@ -30,9 +32,13 @@ impl StatusServer {
     pub(crate) async fn start(&self) -> Result<(), SchedulerError> {
         let mut join_handle = self.join_handle.lock().await;
         if join_handle.is_none() {
-            let service = make_service_fn(|_| async {
-                let handler_fn = service_fn(handle_request);
-                Ok::<_, SchedulerError>(handler_fn)
+            let status = self.status.clone();
+            let service = make_service_fn(move |_| {
+                let status = status.clone();
+                async move {
+                    let handler_fn = service_fn(move |request| handle_request(status.clone(), request));
+                    Ok::<_, SchedulerError>(handler_fn)
+                }
             });
             let socket_address: SocketAddr = format!("{}:{}", self.bind_address, self.port).parse()?;
             let server = hyper::Server::try_bind(&socket_address)?.serve(service);
@@ -88,13 +94,34 @@ impl StatusServer {
     }
 }
 
-async fn handle_request(request: Request<Body>) -> Result<Response<Body>, SchedulerError> {
+async fn handle_request(
+    status: Option<Arc<Box<dyn SchedulerStatus>>>,
+    request: Request<hyper::Body>,
+) -> Result<Response<hyper::Body>, SchedulerError> {
     match (request.method(), request.uri().path()) {
-        (&http::Method::GET, "/status") => Ok(Response::builder()
-            .status(http::StatusCode::OK)
-            .body(Body::from("success"))?),
+        (&http::Method::GET, "/status") => {
+            if let Some(status) = status {
+                match status.status().await {
+                    Ok((content_type, body)) => Ok(Response::builder()
+                        .status(http::StatusCode::OK)
+                        .header(http::header::CONTENT_TYPE, content_type.to_string())
+                        .body(body)?),
+                    Err(err) => {
+                        log::error!("failed to query /status of scheduler_status_server: {}", err);
+                        Ok(Response::builder()
+                            .header(http::header::CONTENT_TYPE, "text/plain")
+                            .status(http::StatusCode::INTERNAL_SERVER_ERROR)
+                            .body(hyper::Body::from(err.to_string()))?)
+                    }
+                }
+            } else {
+                Ok(Response::builder()
+                    .status(http::StatusCode::OK)
+                    .body(hyper::Body::empty())?)
+            }
+        }
         _ => Ok(Response::builder()
             .status(http::StatusCode::NOT_FOUND)
-            .body(Body::empty())?),
+            .body(hyper::Body::empty())?),
     }
 }

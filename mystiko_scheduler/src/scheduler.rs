@@ -20,6 +20,9 @@ pub struct SchedulerOptions<I, T: SchedulerTask<I> + Debug> {
     #[cfg(feature = "status")]
     #[builder(default = 21818)]
     pub status_server_port: u16,
+    #[cfg(feature = "status")]
+    #[builder(default)]
+    pub status_getter: Option<Arc<Box<dyn crate::SchedulerStatus>>>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<I>,
 }
@@ -64,6 +67,7 @@ where
                 crate::StatusServer::builder()
                     .bind_address(options.status_server_bind_address)
                     .port(options.status_server_port)
+                    .status(options.status_getter)
                     .build(),
             ),
         }
