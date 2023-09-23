@@ -19,6 +19,7 @@ use thiserror::Error;
 use typed_builder::TypedBuilder;
 
 pub type DataLoaderConfigResult<T> = anyhow::Result<T, DataLoaderConfigError>;
+
 type FetcherBuildData<R> = (Vec<Arc<Box<dyn DataFetcher<R>>>>, HashMap<usize, FetcherOptions>);
 #[derive(Error, Debug)]
 pub enum DataLoaderConfigError {

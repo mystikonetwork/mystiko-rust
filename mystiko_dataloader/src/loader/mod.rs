@@ -66,6 +66,11 @@ impl Default for LoadOption {
 pub type DataLoaderResult<T> = anyhow::Result<T, DataLoaderError>;
 
 #[async_trait]
+pub trait FromConfig<T>: Sized {
+    async fn from_config(item: &T) -> DataLoaderConfigResult<Self>;
+}
+
+#[async_trait]
 pub trait DataLoader: Send + Sync {
     async fn load<O>(&self, options: O) -> DataLoaderResult<()>
     where
