@@ -32,7 +32,7 @@ pub struct StartOptions<E, R: RetryPolicy<E> = Box<dyn RetryPolicy<E>>, A: Abort
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub(crate) struct ScheduleExecutor<I, T: SchedulerTask<I> + Debug> {
+pub(crate) struct ScheduleExecutor<I, T: SchedulerTask<I>> {
     task: Arc<T>,
     #[builder(default)]
     started: RwLock<bool>,
@@ -46,9 +46,9 @@ pub(crate) struct ScheduleExecutor<I, T: SchedulerTask<I> + Debug> {
 
 impl<I, T> ScheduleExecutor<I, T>
 where
-    T: SchedulerTask<I> + Send + Sync + Debug,
-    I: Send + Sync + Debug,
-    T::Error: Send + Sync + Debug,
+    T: SchedulerTask<I>,
+    I: Send + Debug,
+    T::Error: Send + Debug,
 {
     pub(crate) async fn started(&self) -> bool {
         *self.started.read().await

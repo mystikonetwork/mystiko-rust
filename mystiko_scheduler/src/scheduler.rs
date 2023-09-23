@@ -9,7 +9,7 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct SchedulerOptions<I, T: SchedulerTask<I> + Debug> {
+pub struct SchedulerOptions<I, T: SchedulerTask<I>> {
     pub task: Arc<T>,
     #[cfg(feature = "signal")]
     #[builder(default)]
@@ -28,7 +28,7 @@ pub struct SchedulerOptions<I, T: SchedulerTask<I> + Debug> {
 }
 
 #[derive(Debug)]
-pub struct Scheduler<I, T: SchedulerTask<I> + Debug> {
+pub struct Scheduler<I, T: SchedulerTask<I>> {
     executor: Arc<ScheduleExecutor<I, T>>,
     join_handle: Mutex<Option<JoinHandle<Result<(), SchedulerError>>>>,
     #[cfg(feature = "signal")]
@@ -41,7 +41,7 @@ pub struct Scheduler<I, T: SchedulerTask<I> + Debug> {
 
 impl<I, T> Scheduler<I, T>
 where
-    T: SchedulerTask<I> + Send + Sync + Debug + 'static,
+    T: SchedulerTask<I> + 'static,
     I: Send + Sync + Debug + 'static,
     T::Error: Send + Sync + Debug + 'static,
 {
@@ -168,7 +168,7 @@ where
 
 impl<I, T> From<SchedulerOptions<I, T>> for Scheduler<I, T>
 where
-    T: SchedulerTask<I> + Send + Sync + Debug + 'static,
+    T: SchedulerTask<I> + 'static,
     I: Send + Sync + Debug + 'static,
     T::Error: Send + Sync + Debug + 'static,
 {
@@ -179,7 +179,7 @@ where
 
 impl<I, T> From<Arc<T>> for SchedulerOptions<I, T>
 where
-    T: SchedulerTask<I> + Send + Sync + Debug,
+    T: SchedulerTask<I>,
 {
     fn from(task: Arc<T>) -> Self {
         Self::builder().task(task).build()
@@ -194,7 +194,7 @@ async fn start_executor<I, T, R, A>(
     #[cfg(feature = "status")] status_server: Arc<crate::StatusServer>,
 ) -> Result<(), SchedulerError>
 where
-    T: SchedulerTask<I> + Send + Sync + Debug + 'static,
+    T: SchedulerTask<I> + 'static,
     I: Send + Sync + Debug + 'static,
     T::Error: Send + Sync + Debug + 'static,
     R: RetryPolicy<T::Error> + 'static,

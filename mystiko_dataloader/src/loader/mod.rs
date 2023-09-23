@@ -65,7 +65,7 @@ impl Default for LoadOption {
 pub type DataLoaderResult<T> = anyhow::Result<T, DataLoaderError>;
 
 #[async_trait]
-pub trait DataLoader {
+pub trait DataLoader: Send + Sync {
     async fn load<O>(&self, options: O) -> DataLoaderResult<()>
     where
         O: Into<LoadOption> + Send + Sync;
