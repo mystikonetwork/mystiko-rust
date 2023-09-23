@@ -47,8 +47,8 @@ pub(crate) struct ScheduleExecutor<I, T: SchedulerTask<I>> {
 impl<I, T> ScheduleExecutor<I, T>
 where
     T: SchedulerTask<I>,
-    I: Send + Debug,
-    T::Error: Send + Debug,
+    I: Debug,
+    T::Error: Debug,
 {
     pub(crate) async fn started(&self) -> bool {
         *self.started.read().await
