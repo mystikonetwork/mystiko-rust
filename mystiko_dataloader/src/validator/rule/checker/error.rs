@@ -76,14 +76,16 @@ pub enum SequenceCheckerError {
     TargetBlockError(u64, u64),
     #[error("commitment data empty error")]
     CommitmentDataEmptyError,
-    #[error("leaf index not sequenced error")]
-    LeafIndexNotSequencedError,
+    #[error("leaf index not sequenced error previous {0} next {1}")]
+    LeafIndexNotSequencedError(u64, u64),
+    #[error("commitment status error")]
+    CommitmentStatusError,
     #[error("commitment status not sequenced error")]
     CommitmentStatusNotSequencedError,
     #[error("commitment merged not sequenced error")]
     CommitmentMergedNotSequencedError,
-    #[error("commitments not sequenced error handler {0} fetcher {1} ")]
-    CommitmentNotSequenceWithHandlerError(u64, u64),
+    #[error("commitments not sequenced with handler status {0} handler {1} fetcher {2} ")]
+    CommitmentNotSequenceWithHandlerError(i32, u64, u64),
 }
 
 #[derive(Error, Debug)]

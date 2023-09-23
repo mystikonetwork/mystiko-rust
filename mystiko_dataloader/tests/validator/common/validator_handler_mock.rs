@@ -109,21 +109,11 @@ where
     }
 
     async fn count_commitments(&self, option: &CommitmentQueryOption) -> HandlerErrorResult<QueryResult<u64>> {
-        let mut query_result = self.query_commitments(option).await?;
-        query_result.result.pop().map_or_else(
-            || {
-                Ok(QueryResult::builder()
-                    .end_block(query_result.end_block)
-                    .result(0_u64)
-                    .build())
-            },
-            |cm| {
-                Ok(QueryResult::builder()
-                    .end_block(option.end_block)
-                    .result(cm.leaf_index.unwrap() + 1)
-                    .build())
-            },
-        )
+        let query_result = self.query_commitments(option).await?;
+        Ok(QueryResult::builder()
+            .end_block(option.end_block)
+            .result(query_result.result.len() as u64)
+            .build())
     }
 
     async fn query_nullifiers(
