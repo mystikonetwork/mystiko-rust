@@ -199,7 +199,7 @@ impl SqliteStorage {
     }
 
     pub async fn from_memory() -> Result<Self, StorageError> {
-        SqliteStorage::new(SqliteStorageOptions::builder().build()).await
+        SqliteStorage::new(SqliteStorageOptions::default()).await
     }
 
     pub async fn from_path<S>(path: S) -> Result<Self, StorageError>
@@ -207,6 +207,12 @@ impl SqliteStorage {
         S: AsRef<str>,
     {
         SqliteStorage::new(SqliteStorageOptions::builder().path(path.as_ref().to_string()).build()).await
+    }
+}
+
+impl Default for SqliteStorageOptions {
+    fn default() -> Self {
+        Self::builder().build()
     }
 }
 
