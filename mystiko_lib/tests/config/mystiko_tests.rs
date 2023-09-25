@@ -9,7 +9,7 @@ use mystiko_protos::config::api::v1::{
     FindAssetSymbolsRequest, FindBridgeRequest, FindBridgesRequest, FindChainRequest, FindCircuitRequest,
     FindContractByAddressRequest, FindDefaultCircuitRequest, FindDepositContractByAddressRequest,
     FindDepositContractRequest, FindPeerChainsRequest, FindPoolContractByAddressRequest, FindPoolContractRequest,
-    FindPoolContractsRequest, GetTransactionUrlRequest,
+    FindPoolContractsRequest, GetConfigRequest, GetTransactionUrlRequest,
 };
 use serial_test::serial;
 
@@ -17,7 +17,7 @@ use serial_test::serial;
 #[serial]
 fn test_with_valid_config() {
     assert!(setup(false).is_ok());
-    let result = get();
+    let result = get(GetConfigRequest::builder().build());
     assert!(result.is_ok());
     let response = result.unwrap();
     assert!(response.config.is_some());
