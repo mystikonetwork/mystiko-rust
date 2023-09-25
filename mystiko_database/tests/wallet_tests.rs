@@ -2,11 +2,11 @@ use mystiko_database::document::{Wallet, WalletCollection, WalletColumn};
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use std::sync::Arc;
 
 async fn create_wallets() -> WalletCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     let wallets = WalletCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     wallets.migrate().await.unwrap();
     assert!(wallets.collection_exists().await.unwrap());

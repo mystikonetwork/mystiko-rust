@@ -19,6 +19,9 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
+pub const DEFAULT_HANDLE_BATCH_SIZE: usize = 10000;
+pub const DEFAULT_HANDLE_CONCURRENCY: usize = 1;
+
 #[derive(Debug, thiserror::Error)]
 pub enum DatabaseHandlerError {
     #[error("unsupported chain id: {0}")]
@@ -43,10 +46,10 @@ pub struct DatabaseHandler<
 > {
     config: Arc<MystikoConfig>,
     collection: Arc<Collection<F, S>>,
-    #[builder(default = 10000)]
-    pub handle_batch_size: usize,
-    #[builder(default = 1)]
-    pub handle_concurrency: usize,
+    #[builder(default)]
+    pub handle_batch_size: Option<usize>,
+    #[builder(default)]
+    pub handle_concurrency: Option<usize>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<(R, X, C, N)>,
 }
@@ -188,11 +191,7 @@ where
 
     async fn handle(&self, data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
         let mut contract_tasks = vec![];
-        let concurrency = if self.handle_concurrency > 0 {
-            self.handle_concurrency
-        } else {
-            1
-        };
+        let concurrency = self.handle_concurrency.unwrap_or(DEFAULT_HANDLE_CONCURRENCY).max(1);
         let chunk_size = (data.contracts_data.len() + concurrency - 1) / concurrency;
         let chunks = data.contracts_data.chunks(chunk_size);
         for contracts_chunk in chunks {
@@ -428,7 +427,7 @@ where
     ) -> Result<(Vec<C>, Vec<Document<C>>)> {
         let mut insert_commitments: Vec<C> = Vec::new();
         let mut update_commitments: Vec<Document<C>> = Vec::new();
-        for commitment_chunk in commitments.chunks(self.handle_batch_size) {
+        for commitment_chunk in commitments.chunks(self.handle_batch_size.unwrap_or(DEFAULT_HANDLE_BATCH_SIZE)) {
             let existing_commitments: Vec<Document<C>> = self
                 .collection
                 .find(Some(Condition::and(vec![
@@ -478,7 +477,7 @@ where
     ) -> Result<(Vec<N>, Vec<Document<N>>)> {
         let mut insert_nullifiers: Vec<N> = Vec::new();
         let mut update_nullifiers: Vec<Document<N>> = Vec::new();
-        for nullifier_chunks in nullifiers.chunks(self.handle_batch_size) {
+        for nullifier_chunks in nullifiers.chunks(self.handle_batch_size.unwrap_or(DEFAULT_HANDLE_BATCH_SIZE)) {
             let existing_nullifiers: Vec<Document<N>> = self
                 .collection
                 .find(Some(Condition::and(vec![

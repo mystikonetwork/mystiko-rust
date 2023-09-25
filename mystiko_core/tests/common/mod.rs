@@ -1,6 +1,6 @@
 use mystiko_database::Database;
 use mystiko_storage::SqlStatementFormatter;
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 
 pub async fn create_database() -> Database<SqlStatementFormatter, SqliteStorage> {
     let _ = env_logger::builder()
@@ -8,6 +8,6 @@ pub async fn create_database() -> Database<SqlStatementFormatter, SqliteStorage>
         .is_test(true)
         .try_init();
     let formatter = SqlStatementFormatter::sqlite();
-    let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     Database::new(formatter, storage)
 }

@@ -3,13 +3,13 @@ extern crate mystiko_database;
 use mystiko_database::document::{Deposit, DepositCollection, DepositColumn};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigUint;
 use std::sync::Arc;
 
 async fn create_deposits() -> DepositCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     let deposits = DepositCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     deposits.migrate().await.unwrap();
     assert!(deposits.collection_exists().await.unwrap());

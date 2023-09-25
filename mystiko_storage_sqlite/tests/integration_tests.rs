@@ -1,7 +1,7 @@
 use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, DocumentColumn, DocumentData, SqlStatementFormatter};
 use mystiko_storage_macros::CollectionBuilder;
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageOptions};
 use num_bigint::{BigInt, BigUint};
 use std::path::Path;
 use std::sync::Arc;
@@ -63,15 +63,33 @@ async fn test_collection_exists() {
 async fn test_file_db() {
     let db_dir = tempdir().unwrap();
     let db_path = db_dir.path().join(Path::new("test.db"));
-    let storage = SqliteStorageBuilder::new()
-        .path(db_path.to_str().unwrap())
-        .max_connection(2u32)
-        .build()
-        .await
-        .unwrap();
+    let options = SqliteStorageOptions::builder()
+        .path(db_path.to_string_lossy().to_string())
+        .max_connections(2u32)
+        .busy_timeout_ms(1000u64)
+        .page_size(8192u32)
+        .build();
+    let storage = SqliteStorage::new(options).await.unwrap();
     let collection = TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     collection.migrate().await.unwrap();
     std::fs::remove_dir_all(db_dir).unwrap();
+}
+
+#[tokio::test]
+async fn test_default_file_db() {
+    let db_dir = tempdir().unwrap();
+    let db_path = db_dir.path().join(Path::new("test.db"));
+    let storage = SqliteStorage::from_path(db_path.to_string_lossy()).await.unwrap();
+    let collection = TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
+    collection.migrate().await.unwrap();
+    std::fs::remove_dir_all(db_dir).unwrap();
+}
+
+#[tokio::test]
+async fn test_default_memory_db() {
+    let storage = SqliteStorage::from_memory().await.unwrap();
+    let collection = TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
+    collection.migrate().await.unwrap();
 }
 
 #[tokio::test]
@@ -258,12 +276,8 @@ async fn test_unsupported_primitive_integers() {
 }
 
 async fn create_collection() -> TestDocumentCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new()
-        .in_memory()
-        .execute_batch_size(2)
-        .build()
-        .await
-        .unwrap();
+    let options = SqliteStorageOptions::builder().execute_batch_size(2usize).build();
+    let storage = SqliteStorage::new(options).await.unwrap();
     TestDocumentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)))
 }
 

@@ -7,7 +7,7 @@ use mystiko_dataloader::handler::document::DatabaseCommitment;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::convert::biguint_to_bytes;
 use mystiko_utils::hex::{decode_hex, encode_hex};
 use num_bigint::BigUint;
@@ -15,7 +15,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 async fn create_commitments() -> CommitmentCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     let commitments = CommitmentCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     commitments.migrate().await.unwrap();
     assert!(commitments.collection_exists().await.unwrap());
