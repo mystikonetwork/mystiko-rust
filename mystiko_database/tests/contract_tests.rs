@@ -5,12 +5,12 @@ use mystiko_database::document::{Contract, ContractCollection, ContractColumn};
 use mystiko_dataloader::handler::document::DatabaseContract;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::ContractType;
 use std::sync::Arc;
 
 async fn create_contracts() -> ContractCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     let contracts = ContractCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     contracts.migrate().await.unwrap();
     assert!(contracts.collection_exists().await.unwrap());

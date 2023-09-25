@@ -3827,10 +3827,12 @@ dependencies = [
  "mystiko_storage_macros",
  "mystiko_utils",
  "num-bigint 0.4.3",
+ "serde",
  "serde_json",
  "sqlx",
  "tempfile",
  "tokio",
+ "typed-builder 0.15.2",
 ]
 
 [[package]]

@@ -83,18 +83,15 @@ mod internal {
     use super::*;
     use mystiko_core::MystikoOptions;
     use mystiko_database::Database;
-    use mystiko_storage_sqlite::SqliteStorageBuilder;
+    use mystiko_storage_sqlite::SqliteStorageOptions;
 
     pub(crate) async fn initialize(options: ProtoMystikoOptions) -> Result<()> {
         if !is_initialized().await {
             let mut mystiko_guard = MYSTIKO.write().await;
             if !mystiko_guard.is_initialized() {
                 init_logger();
-                let mut storage_builder = SqliteStorageBuilder::new();
-                if let Some(db_path) = options.db_path.as_ref() {
-                    storage_builder = storage_builder.path(db_path);
-                }
-                let storage = storage_builder.build().await?;
+                let storage_options = SqliteStorageOptions::builder().path(options.db_path).build();
+                let storage = SqliteStorage::new(storage_options).await?;
                 let database = Database::new(SqlStatementFormatter::sqlite(), storage);
                 let mystiko = Mystiko::new(
                     database,

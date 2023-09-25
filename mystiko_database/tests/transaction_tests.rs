@@ -1,13 +1,13 @@
 use mystiko_database::document::{Transaction, TransactionCollection, TransactionColumn};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::{TransactionStatus, TransactionType};
 use num_bigint::BigUint;
 use std::sync::Arc;
 
 async fn create_transactions() -> TransactionCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     let transactions = TransactionCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     transactions.migrate().await.unwrap();
     assert!(transactions.collection_exists().await.unwrap());
