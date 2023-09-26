@@ -76,8 +76,11 @@ where
                 if let Some(sleep_ms) = sleep_ms {
                     let (sleep_sender, sleep_receiver) = channel::<()>();
                     *self.sleep_interrupt.lock().await = Some(sleep_sender);
-                    interruptible_sleep(sleep_ms, sleep_receiver).await;
+                    let should_interrupt = interruptible_sleep(sleep_ms, sleep_receiver).await;
                     *self.sleep_interrupt.lock().await = None;
+                    if should_interrupt {
+                        break;
+                    }
                 }
                 if self.run_task_with_retry::<R, A>(round, &run_args, &options).await {
                     log::error!("scheduler is aborted due to some error(s)");
@@ -199,11 +202,12 @@ where
     }
 }
 
-async fn interruptible_sleep(sleep_ms: u64, sleep_receiver: Receiver<()>) {
+async fn interruptible_sleep(sleep_ms: u64, sleep_receiver: Receiver<()>) -> bool {
     tokio::select! {
-        _ = tokio::time::sleep(Duration::from_millis(sleep_ms)) => {},
+        _ = tokio::time::sleep(Duration::from_millis(sleep_ms)) => { false },
         _ = sleep_receiver => {
             log::info!("scheduler sleep is interrupted!");
+            true
         },
     }
 }
