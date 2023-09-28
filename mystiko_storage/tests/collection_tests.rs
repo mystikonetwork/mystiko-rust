@@ -4,7 +4,7 @@ use mystiko_storage::{
     DropColumnMigration, Migration, RenameColumnMigration, SqlStatementFormatter,
 };
 use mystiko_storage_macros::CollectionBuilder;
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -266,6 +266,6 @@ fn migrations() -> Vec<Migration> {
 }
 
 async fn create_collection() -> Collection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     Collection::new(SqlStatementFormatter::sqlite(), storage)
 }

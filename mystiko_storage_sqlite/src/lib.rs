@@ -9,11 +9,15 @@ use mystiko_storage::{
 };
 use mystiko_utils::convert::{biguint_to_bytes, i128_to_bytes, u128_to_bytes};
 use num_bigint::{BigInt, BigUint};
+use serde::{Deserialize, Serialize};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteLockingMode, SqliteSynchronous};
 use sqlx::{ConnectOptions, Row, Sqlite};
 use std::fmt::Debug;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::Mutex;
+use typed_builder::TypedBuilder;
 
 static SQLITE_MEMORY_PATH: &str = ":memory:";
 static DEFAULT_MAX_CONNECTION: u32 = 1;
@@ -33,11 +37,18 @@ pub struct SqliteStorage {
     execute_batch_size: usize,
 }
 
-#[derive(Default)]
-pub struct SqliteStorageBuilder {
-    path: String,
-    max_connection: Option<u32>,
-    execute_batch_size: Option<usize>,
+#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
+#[builder(field_defaults(default, setter(into)))]
+pub struct SqliteStorageOptions {
+    pub path: Option<String>,
+    pub max_connections: Option<u32>,
+    pub execute_batch_size: Option<usize>,
+    pub journal_mode: Option<String>,
+    pub locking_mode: Option<String>,
+    pub synchronous: Option<String>,
+    pub read_only: bool,
+    pub busy_timeout_ms: Option<u64>,
+    pub page_size: Option<u32>,
 }
 
 #[async_trait]
@@ -122,61 +133,86 @@ impl SqliteStorage {
     }
 }
 
-impl SqliteStorageBuilder {
-    pub fn new() -> SqliteStorageBuilder {
-        SqliteStorageBuilder {
-            path: String::from(SQLITE_MEMORY_PATH),
-            max_connection: None,
-            execute_batch_size: None,
+impl SqliteStorage {
+    pub async fn new<O>(options: O) -> Result<Self, StorageError>
+    where
+        O: Into<SqliteStorageOptions>,
+    {
+        let options = options.into();
+        let in_memory = options.path.is_none();
+        let default_journal_mode = if in_memory {
+            SqliteJournalMode::Memory
+        } else {
+            SqliteJournalMode::Wal
+        };
+        let journal_mode = options
+            .journal_mode
+            .map(|mode| SqliteJournalMode::from_str(&mode))
+            .transpose()
+            .map_err(|e| StorageError::DatabaseError(e.into()))?
+            .unwrap_or(default_journal_mode);
+        let synchronous = options
+            .synchronous
+            .map(|mode| SqliteSynchronous::from_str(&mode))
+            .transpose()
+            .map_err(|e| StorageError::DatabaseError(e.into()))?
+            .unwrap_or(SqliteSynchronous::Normal);
+        let locking_mode = options
+            .locking_mode
+            .map(|mode| SqliteLockingMode::from_str(&mode))
+            .transpose()
+            .map_err(|e| StorageError::DatabaseError(e.into()))?
+            .unwrap_or(SqliteLockingMode::Normal);
+        let mut connect_options = SqliteConnectOptions::new()
+            .filename(options.path.unwrap_or(SQLITE_MEMORY_PATH.to_string()))
+            .journal_mode(journal_mode)
+            .synchronous(synchronous)
+            .locking_mode(locking_mode)
+            .read_only(options.read_only)
+            .create_if_missing(true);
+        if let Some(busy_timeout_ms) = options.busy_timeout_ms {
+            connect_options = connect_options.busy_timeout(Duration::from_millis(busy_timeout_ms));
         }
-    }
-
-    pub fn in_memory(mut self) -> Self {
-        self.path = String::from(SQLITE_MEMORY_PATH);
-        self
-    }
-
-    pub fn path(mut self, path: &str) -> Self {
-        self.path = path.to_string();
-        self
-    }
-
-    pub fn max_connection(mut self, max_connection: u32) -> Self {
-        self.max_connection = Some(max_connection);
-        self
-    }
-
-    pub fn execute_batch_size(mut self, execute_batch_size: usize) -> Self {
-        self.execute_batch_size = Some(execute_batch_size);
-        self
-    }
-
-    pub async fn build(self) -> Result<SqliteStorage, StorageError> {
-        let connection = if self.path == SQLITE_MEMORY_PATH {
+        if let Some(page_size) = options.page_size {
+            connect_options = connect_options.page_size(page_size);
+        }
+        let connection = if in_memory {
             SqliteConnection::Single(Arc::new(Mutex::new(
-                sqlx::sqlite::SqliteConnectOptions::new()
-                    .filename(SQLITE_MEMORY_PATH)
-                    .create_if_missing(true)
+                connect_options
                     .connect()
                     .await
                     .map_err(|e| StorageError::DatabaseError(e.into()))?,
             )))
         } else {
-            let options = sqlx::sqlite::SqliteConnectOptions::new()
-                .filename(&self.path)
-                .create_if_missing(true);
             SqliteConnection::Pool(
                 sqlx::sqlite::SqlitePoolOptions::new()
-                    .max_connections(self.max_connection.unwrap_or(DEFAULT_MAX_CONNECTION))
-                    .connect_with(options)
+                    .max_connections(options.max_connections.unwrap_or(DEFAULT_MAX_CONNECTION))
+                    .connect_with(connect_options)
                     .await
                     .map_err(|e| StorageError::DatabaseError(e.into()))?,
             )
         };
         Ok(SqliteStorage {
             connection,
-            execute_batch_size: self.execute_batch_size.unwrap_or(DEFAULT_EXECUTE_BATCH_SIZE),
+            execute_batch_size: options.execute_batch_size.unwrap_or(DEFAULT_EXECUTE_BATCH_SIZE),
         })
+    }
+
+    pub async fn from_memory() -> Result<Self, StorageError> {
+        SqliteStorage::new(SqliteStorageOptions::default()).await
+    }
+
+    pub async fn from_path<S>(path: S) -> Result<Self, StorageError>
+    where
+        S: AsRef<str>,
+    {
+        SqliteStorage::new(SqliteStorageOptions::builder().path(path.as_ref().to_string()).build()).await
+    }
+}
+
+impl Default for SqliteStorageOptions {
+    fn default() -> Self {
+        Self::builder().build()
     }
 }
 

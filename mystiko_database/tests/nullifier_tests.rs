@@ -3,14 +3,14 @@ use mystiko_database::document::{Nullifier, NullifierCollection, NullifierColumn
 use mystiko_dataloader::handler::document::DatabaseNullifier;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::convert::biguint_to_bytes;
 use mystiko_utils::hex::decode_hex;
 use num_bigint::BigUint;
 use std::sync::Arc;
 
 async fn create_nullifiers() -> NullifierCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     let nullifiers = NullifierCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     nullifiers.migrate().await.unwrap();
     assert!(nullifiers.collection_exists().await.unwrap());

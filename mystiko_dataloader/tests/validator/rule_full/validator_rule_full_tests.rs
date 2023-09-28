@@ -85,6 +85,8 @@ async fn test_some_included_commitment() {
             .build();
         handler.add_commitments(vec![]).await;
         handler.add_commitments(vec![]).await;
+        handler.add_commitments(vec![]).await;
+        handler.add_commitments(vec![]).await;
         let tree_root = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
         mock.push::<Bytes, _>(tree_root.clone()).unwrap();
         let include_count =

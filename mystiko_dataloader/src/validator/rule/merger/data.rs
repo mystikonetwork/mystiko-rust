@@ -159,12 +159,14 @@ fn merge_fetched_commitment(commitments: &[Commitment]) -> DataMergeResult<Vec<V
         .iter()
         .filter_map(|cm| match CommitmentStatus::from_i32(cm.status) {
             Some(status) if status == CommitmentStatus::Included || status == CommitmentStatus::Queued => {
+                // some fetcher data is already merged
+                let merged = be_merged_commitment(cm);
                 let commitment_hash = bytes_to_biguint(cm.commitment_hash.as_slice());
                 let validate_commitment = ValidateCommitment::builder()
                     .commitment_hash(commitment_hash)
                     .status(status)
                     .leaf_index(cm.leaf_index.unwrap_or(u64::MAX))
-                    .inner_merge(false)
+                    .inner_merge(merged)
                     .build();
                 Some(validate_commitment)
             }
@@ -193,7 +195,11 @@ fn merge_fetched_commitment(commitments: &[Commitment]) -> DataMergeResult<Vec<V
 
 fn merge_same_commitments(src: &mut ValidateCommitment, dst: &ValidateCommitment) -> DataMergeResult<()> {
     if !src.inner_merge {
-        if src.status != dst.status {
+        if dst.inner_merge {
+            src.status = dst.status;
+            src.leaf_index = dst.leaf_index;
+            src.inner_merge = true;
+        } else if src.status != dst.status {
             if dst.status == CommitmentStatus::Queued {
                 src.leaf_index = dst.leaf_index;
             } else if dst.status == CommitmentStatus::Included {
@@ -208,4 +214,14 @@ fn merge_same_commitments(src: &mut ValidateCommitment, dst: &ValidateCommitment
     }
 
     Ok(())
+}
+
+fn be_merged_commitment(cm: &Commitment) -> bool {
+    cm.status == CommitmentStatus::Included as i32
+        && cm.leaf_index.is_some()
+        && cm.included_block_number.is_some()
+        && cm.rollup_fee.is_some()
+        && cm.encrypted_note.is_some()
+        && cm.queued_transaction_hash.is_some()
+        && cm.included_transaction_hash.is_some()
 }

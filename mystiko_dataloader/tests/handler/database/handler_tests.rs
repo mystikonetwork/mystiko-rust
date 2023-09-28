@@ -9,7 +9,7 @@ use mystiko_dataloader::handler::{CommitmentQueryOption, DataHandler, HandleOpti
 use mystiko_protos::data::v1::{Commitment as CommitmentProto, CommitmentStatus, Nullifier as NullifierProto};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::convert::biguint_to_bytes;
 use mystiko_utils::hex::decode_hex;
 use num_bigint::BigUint;
@@ -1312,7 +1312,7 @@ async fn setup<R: LoadedData>() -> Result<(
     let _ = env_logger::builder()
         .filter_module("mystiko_dataloader", log::LevelFilter::Debug)
         .try_init();
-    let storage: SqliteStorage = SqliteStorageBuilder::new().in_memory().build().await.unwrap();
+    let storage: SqliteStorage = SqliteStorage::from_memory().await.unwrap();
     let config: Arc<MystikoConfig> = Arc::new(
         MystikoConfig::from_json_file("./tests/files/handler/config.json")
             .await

@@ -64,6 +64,8 @@ async fn one_queued_many_included_same_commitment(concurrency: usize) {
         .contracts_data(vec![contract_data])
         .build();
     handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
@@ -159,6 +161,9 @@ async fn test_many_queued_many_included_part_same_commitment() {
         .contracts_data(vec![contract_data])
         .build();
     handler.add_commitments(cms[0..5].to_vec()).await;
+    handler.add_commitments(cms[0..5].to_vec()).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
     handler.add_commitments(cms[0..5].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
     mock_checker_validator.validate(&data, &option).await.unwrap();
@@ -448,6 +453,9 @@ async fn test_many_queued_many_included_different_commitment() {
         .build();
     handler.add_commitments(cms[0..10].to_vec()).await;
     handler.add_commitments(cms[0..10].to_vec()).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(cms[0..10].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
     let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
@@ -566,7 +574,10 @@ async fn test_many_queued_many_included_handler_disorder_commitment() {
     let mut handler_cms = cms[0..10].to_vec();
     handler_cms.sort_by(|a, b| a.commitment_hash.cmp(&b.commitment_hash));
     handler.add_commitments(handler_cms.clone()).await;
-    handler.add_commitments(handler_cms).await;
+    handler.add_commitments(handler_cms.clone()).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(handler_cms.clone()).await;
     let result = validator.validate(&data, &option).await.unwrap();
     let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
@@ -592,7 +603,10 @@ async fn test_many_queued_many_included_handler_disorder_commitment() {
     let mut handler_cms = cms[0..10].to_vec();
     handler_cms.reverse();
     handler.add_commitments(handler_cms.clone()).await;
-    handler.add_commitments(handler_cms).await;
+    handler.add_commitments(handler_cms.clone()).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(handler_cms.clone()).await;
     let result = validator.validate(&data, &option).await.unwrap();
     let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
@@ -662,7 +676,7 @@ async fn test_many_queued_many_included_leaf_index_error_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::LeafIndexNotSequencedError.to_string()
+        SequenceCheckerError::LeafIndexNotSequencedError(19, 22).to_string()
     );
 
     let mut fetched_cms = vec![];
@@ -690,7 +704,6 @@ async fn test_many_queued_many_included_leaf_index_error_commitment() {
         .chain_id(chain_id)
         .contracts_data(vec![contract_data])
         .build();
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(cms1).await;
     let result = validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
@@ -698,7 +711,7 @@ async fn test_many_queued_many_included_leaf_index_error_commitment() {
     assert_eq!(result.contract_results[0].address, contract_address);
     assert_eq!(
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        SequenceCheckerError::LeafIndexNotSequencedError.to_string()
+        SequenceCheckerError::CommitmentStatusNotSequencedError.to_string()
     );
 
     let mut fetched_cms = vec![];

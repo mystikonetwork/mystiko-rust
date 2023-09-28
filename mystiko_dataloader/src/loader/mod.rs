@@ -6,6 +6,7 @@ pub use config::*;
 
 use crate::DataLoaderError;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 pub const DEFAULT_FETCHER_QUERY_LOADED_BLOCK_TIMEOUT_MS: u64 = 5_000_u64;
@@ -13,7 +14,7 @@ pub const DEFAULT_FETCHER_FETCH_TIMEOUT_MS: u64 = 300_000_u64;
 
 pub const DEFAULT_VALIDATOR_CONCURRENCY: usize = 1_usize;
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadOption {
     #[builder(default)]
@@ -28,7 +29,7 @@ impl From<Option<LoadOption>> for LoadOption {
     }
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadFetcherOption {
     #[builder(default = DEFAULT_FETCHER_QUERY_LOADED_BLOCK_TIMEOUT_MS)]
@@ -43,7 +44,7 @@ impl Default for LoadFetcherOption {
     }
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadValidatorOption {
     #[builder(default = DEFAULT_VALIDATOR_CONCURRENCY)]
@@ -65,7 +66,12 @@ impl Default for LoadOption {
 pub type DataLoaderResult<T> = anyhow::Result<T, DataLoaderError>;
 
 #[async_trait]
-pub trait DataLoader {
+pub trait FromConfig<T>: Sized {
+    async fn from_config(item: &T) -> DataLoaderConfigResult<Self>;
+}
+
+#[async_trait]
+pub trait DataLoader: Send + Sync {
     async fn load<O>(&self, options: O) -> DataLoaderResult<()>
     where
         O: Into<LoadOption> + Send + Sync;

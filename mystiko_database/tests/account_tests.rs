@@ -2,12 +2,12 @@ use mystiko_database::document::{Account, AccountCollection, AccountColumn};
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
-use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageBuilder};
+use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_types::AccountStatus;
 use std::sync::Arc;
 
 async fn create_accounts() -> AccountCollection<SqlStatementFormatter, SqliteStorage> {
-    let storage = SqliteStorageBuilder::new().build().await.unwrap();
+    let storage = SqliteStorage::from_memory().await.unwrap();
     let accounts = AccountCollection::new(Arc::new(Collection::new(SqlStatementFormatter::sqlite(), storage)));
     accounts.migrate().await.unwrap();
     assert!(accounts.collection_exists().await.unwrap());

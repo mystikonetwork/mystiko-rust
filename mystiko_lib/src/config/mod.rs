@@ -8,12 +8,17 @@ use mystiko_protos::config::api::v1::{
     FindDepositContractByAddressRequest, FindDepositContractByAddressResponse, FindDepositContractRequest,
     FindDepositContractResponse, FindPeerChainsRequest, FindPeerChainsResponse, FindPoolContractByAddressRequest,
     FindPoolContractByAddressResponse, FindPoolContractRequest, FindPoolContractResponse, FindPoolContractsRequest,
-    FindPoolContractsResponse, GetConfigResponse, GetTransactionUrlRequest, GetTransactionUrlResponse,
+    FindPoolContractsResponse, GetConfigRequest, GetConfigResponse, GetTransactionUrlRequest,
+    GetTransactionUrlResponse,
 };
 use mystiko_protos::config::contract::v1::PoolContractConfig;
 use mystiko_protos::config::v1::ChainConfig;
 
-pub fn get() -> Result<GetConfigResponse> {
+pub fn get<M>(_message: M) -> Result<GetConfigResponse>
+where
+    M: TryInto<GetConfigRequest>,
+    <M as TryInto<GetConfigRequest>>::Error: std::error::Error + Send + Sync + 'static,
+{
     runtime().block_on(internal::get())
 }
 

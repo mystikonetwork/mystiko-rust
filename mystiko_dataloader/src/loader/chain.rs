@@ -5,8 +5,8 @@ use crate::error::DataLoaderError;
 use crate::fetcher::{ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher, FetchOptions, FetcherOptions};
 use crate::handler::{DataHandler, HandleOption};
 use crate::loader::{
-    DataLoader, DataLoaderConfigResult, DataLoaderResult, LoadFetcherOption, LoadOption, LoadValidatorOption,
-    LoaderConfigOptions,
+    DataLoader, DataLoaderConfigResult, DataLoaderResult, FromConfig, LoadFetcherOption, LoadOption,
+    LoadValidatorOption, LoaderConfigOptions,
 };
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
@@ -74,17 +74,12 @@ where
 }
 
 #[async_trait]
-pub trait FromConfig<'a, T>: Sized {
-    async fn from_config(item: &'a T) -> DataLoaderConfigResult<Self>;
-}
-
-#[async_trait]
-impl<'a, R, H> FromConfig<'a, LoaderConfigOptions<R, H>> for ChainDataLoader<R, H>
+impl<R, H> FromConfig<LoaderConfigOptions<R, H>> for ChainDataLoader<R, H>
 where
     R: LoadedData + 'static,
     H: DataHandler<R> + 'static,
 {
-    async fn from_config(options: &'a LoaderConfigOptions<R, H>) -> DataLoaderConfigResult<Self> {
+    async fn from_config(options: &LoaderConfigOptions<R, H>) -> DataLoaderConfigResult<Self> {
         options.validate_config()?;
 
         let mystiko_config = options.build_mystiko_config().await?;
