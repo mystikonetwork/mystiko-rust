@@ -7,18 +7,60 @@ pub use i_message_receiver_app::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod i_message_receiver_app {
-    #[rustfmt::skip]
-    const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_srcChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"executeMessage\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]}]";
+    const _: () = {
+        ::core::include_bytes!("../json/IMessageReceiverApp.json",);
+    };
+    #[allow(deprecated)]
+    fn __abi() -> ::ethers_core::abi::Abi {
+        ::ethers_core::abi::ethabi::Contract {
+            constructor: ::core::option::Option::None,
+            functions: ::core::convert::From::from([(
+                ::std::borrow::ToOwned::to_owned("executeMessage"),
+                ::std::vec![::ethers_core::abi::ethabi::Function {
+                    name: ::std::borrow::ToOwned::to_owned("executeMessage"),
+                    inputs: ::std::vec![
+                        ::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_sender"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },
+                        ::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
+                        },
+                        ::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_message"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                        },
+                        ::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_executor"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },
+                    ],
+                    outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                        name: ::std::string::String::new(),
+                        kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                        internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                    },],
+                    constant: ::core::option::Option::None,
+                    state_mutability: ::ethers_core::abi::ethabi::StateMutability::Payable,
+                },],
+            )]),
+            events: ::std::collections::BTreeMap::new(),
+            errors: ::std::collections::BTreeMap::new(),
+            receive: false,
+            fallback: false,
+        }
+    }
     ///The parsed JSON ABI of the contract.
-    pub static IMESSAGERECEIVERAPP_ABI: ::ethers_contract::Lazy<
-        ::ethers_core::abi::Abi,
-    > = ::ethers_contract::Lazy::new(|| {
-        ::ethers_core::utils::__serde_json::from_str(__ABI)
-            .expect("ABI is always valid")
-    });
+    pub static IMESSAGERECEIVERAPP_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
+        ::ethers_contract::Lazy::new(__abi);
     pub struct IMessageReceiverApp<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for IMessageReceiverApp<M> {
         fn clone(&self) -> Self {
@@ -38,7 +80,7 @@ pub mod i_message_receiver_app {
     }
     impl<M> ::core::fmt::Debug for IMessageReceiverApp<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(IMessageReceiverApp))
+            f.debug_tuple(::core::stringify!(IMessageReceiverApp))
                 .field(&self.address())
                 .finish()
         }
@@ -46,17 +88,12 @@ pub mod i_message_receiver_app {
     impl<M: ::ethers_providers::Middleware> IMessageReceiverApp<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    IMESSAGERECEIVERAPP_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers_contract::Contract::new(
+                address.into(),
+                IMESSAGERECEIVERAPP_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `executeMessage` (0x9c649fdf) function
         pub fn execute_message(
@@ -67,15 +104,11 @@ pub mod i_message_receiver_app {
             executor: ::ethers_core::types::Address,
         ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
-                .method_hash(
-                    [156, 100, 159, 223],
-                    (sender, src_chain_id, message, executor),
-                )
+                .method_hash([156, 100, 159, 223], (sender, src_chain_id, message, executor))
                 .expect("method not found (this should never happen)")
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for IMessageReceiverApp<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for IMessageReceiverApp<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -91,12 +124,9 @@ pub mod i_message_receiver_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethcall(
-        name = "executeMessage",
-        abi = "executeMessage(address,uint64,bytes,address)"
-    )]
+    #[ethcall(name = "executeMessage", abi = "executeMessage(address,uint64,bytes,address)")]
     pub struct ExecuteMessageCall {
         pub sender: ::ethers_core::types::Address,
         pub src_chain_id: u64,
@@ -114,7 +144,7 @@ pub mod i_message_receiver_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct ExecuteMessageReturn(pub bool);
 }
