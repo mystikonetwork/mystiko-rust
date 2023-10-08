@@ -39,9 +39,9 @@ pub struct RawDepositContractConfig {
     #[validate(custom = "is_ethereum_address")]
     pub pool_address: String,
 
-    #[serde(default = "default_disabled")]
-    #[builder(default = default_disabled())]
-    pub disabled: bool,
+    #[validate(range(min = 1))]
+    #[builder(default)]
+    pub disabled_at: Option<u64>,
 
     #[validate(range(min = 1))]
     #[builder(default = None)]
@@ -101,10 +101,6 @@ fn validate_contract_type(t: &ContractType) -> Result<(), ValidationError> {
 
 fn default_contract_type() -> ContractType {
     ContractType::Deposit
-}
-
-fn default_disabled() -> bool {
-    false
 }
 
 fn default_min_bridge_fee() -> String {

@@ -284,7 +284,7 @@ fn to_options(
     option.contract_options.as_ref().map_or_else(
         || {
             Ok(chain_config
-                .contracts_with_disabled()
+                .contracts()
                 .into_iter()
                 .map(|contract_config| {
                     ProviderContractFetchOptions::builder()

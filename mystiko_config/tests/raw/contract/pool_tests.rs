@@ -11,6 +11,7 @@ fn default_config() -> RawPoolContractConfig {
             .address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67".to_string())
             .contract_type(ContractType::Pool)
             .start_block(1000000)
+            .disabled_at(Some(1001000))
             .pool_name("A Pool(since 07/20/2022)".to_string())
             .bridge_type(BridgeType::Tbridge)
             .asset_address(Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()))
@@ -37,6 +38,7 @@ fn test_default_values() {
         .asset_address(Some("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a".to_string()))
         .circuits(vec![String::from("circuit-1.0")])
         .build();
+    assert!(raw_config.disabled_at.is_none());
     assert_eq!(raw_config.min_rollup_fee, "0");
     assert_eq!(raw_config.contract_type, ContractType::Pool);
 }
@@ -60,6 +62,13 @@ fn test_validate_success() {
     config.min_rollup_fee = "0".to_string();
     config.circuits = vec![];
     assert!(config.validate().is_ok());
+}
+
+#[test]
+fn test_invalid_disabled_at() {
+    let mut config = default_config();
+    config.disabled_at = Some(0);
+    assert!(config.validate().is_err());
 }
 
 #[test]
@@ -136,6 +145,7 @@ fn test_import_valid_json_str() {
               "bridgeType": "tbridge",
               "address": "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67",
               "startBlock": 1000000,
+              "disabledAt": 1001000,
               "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
               "minRollupFee": "120000000000000000",
               "circuits": ["circuit-1.0"]

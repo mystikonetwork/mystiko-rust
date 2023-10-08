@@ -28,6 +28,7 @@ async fn test_create() {
         "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
     );
     assert!(config.disabled());
+    assert_eq!(config.disabled_at().unwrap(), 1001000);
     assert_eq!(
         config.min_amount().unwrap(),
         BigUint::from_str("10000000000000000").unwrap()
@@ -108,6 +109,7 @@ async fn test_create_contract_config() {
     assert_eq!(config.address(), "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
     assert_eq!(config.contract_type(), &ContractType::Deposit);
     assert!(config.disabled());
+    assert_eq!(config.disabled_at().unwrap(), 1001000);
     assert_eq!(config.start_block(), 1000000);
     assert!(config.event_filter_size().is_none());
     assert!(config.indexer_filter_size().is_none());
@@ -268,6 +270,34 @@ async fn test_validate_wrong_bridge_type() {
 }
 
 #[tokio::test]
+async fn test_validate_too_small_disabled_at() {
+    let (_, _, _, _, config) = setup(SetupOptions {
+        disabled_at: Some(999999),
+        ..SetupOptions::default()
+    })
+    .await;
+    assert_eq!(
+        config.validate().err().unwrap().to_string(),
+        "deposit contract 0x961f315a836542e603a3df2e0dd9d4ecd06ebc67 \
+        disabled_at 999999 is less than start_block 1000000"
+    );
+}
+
+#[tokio::test]
+async fn test_validate_pool_contract_disabled() {
+    let (_, _, _, _, config) = setup(SetupOptions {
+        pool_contract_disabled_at: Some(1000001),
+        ..SetupOptions::default()
+    })
+    .await;
+    assert_eq!(
+        config.validate().err().unwrap().to_string(),
+        "deposit contract 0x961f315a836542e603a3df2e0dd9d4ecd06ebc67 \
+        pool contract 0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d is disabled"
+    );
+}
+
+#[tokio::test]
 async fn test_to_proto() {
     let (_, _, _, _, config) = setup(SetupOptions::default()).await;
     let result = config.to_proto();
@@ -331,6 +361,8 @@ struct SetupOptions {
     incorrect_min_max: bool,
     bridge_fee_asset_address: Option<String>,
     executor_fee_asset_address: Option<String>,
+    disabled_at: Option<u64>,
+    pool_contract_disabled_at: Option<u64>,
 }
 
 async fn setup(
@@ -342,7 +374,11 @@ async fn setup(
     Arc<RawDepositContractConfig>,
     DepositContractConfig,
 ) {
-    let raw_pool_contract_config = Arc::new(create_raw_pool_contract_config().await);
+    let mut raw_pool_contract_config = create_raw_pool_contract_config().await;
+    if let Some(pool_contract_disabled_at) = options.pool_contract_disabled_at {
+        raw_pool_contract_config.disabled_at = Some(pool_contract_disabled_at);
+    }
+    let raw_pool_contract_config = Arc::new(raw_pool_contract_config);
     let main_asset_config = Arc::new(AssetConfig::new(Arc::new(create_raw_main_asset_config().await)));
     let asset_address = if let Some(address) = &raw_pool_contract_config.asset_address {
         address
@@ -407,6 +443,11 @@ async fn setup(
     if options.incorrect_min_max {
         raw_config.min_amount = String::from("1000000000000000000");
         raw_config.max_amount = String::from("100000000000000000");
+    }
+    if options.pool_contract_disabled_at.is_some() {
+        raw_config.disabled_at = None;
+    } else if let Some(disabled_at) = options.disabled_at {
+        raw_config.disabled_at = Some(disabled_at);
     }
     let raw_config_arc = Arc::new(raw_config);
     let config = DepositContractConfig::new(
