@@ -182,17 +182,6 @@ async fn test_only_queued_commitment() {
     assert_eq!(result.chain_id, chain_id);
     assert_eq!(result.contract_results.len(), 1);
     assert_eq!(result.contract_results[0].address, contract_address);
-    assert_eq!(
-        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
-        "mock query commitments error".to_string()
-    );
-
-    handler.add_commitments(vec![]).await;
-    handler.add_commitments(vec![]).await;
-    let result = validator.validate(&data, &option).await.unwrap();
-    assert_eq!(result.chain_id, chain_id);
-    assert_eq!(result.contract_results.len(), 1);
-    assert_eq!(result.contract_results[0].address, contract_address);
     assert!(result.contract_results[0].result.is_ok());
 
     let (cms1, cms2) = cms.split_at(10);
@@ -216,7 +205,6 @@ async fn test_only_queued_commitment() {
 
     let (cms3, cms4) = cms.split_at(20);
     handler.add_commitments(cms1.to_vec()).await;
-    handler.add_commitments(vec![]).await;
     let contract_data = ContractData::builder()
         .address(contract_address)
         .start_block(1_u64)
@@ -236,7 +224,6 @@ async fn test_only_queued_commitment() {
         SequenceCheckerError::CommitmentNotSequenceWithHandlerError(2, 10, 20).to_string()
     );
 
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(cms3.to_vec()).await;
     let contract_data = ContractData::builder()
         .address(contract_address)

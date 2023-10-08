@@ -46,7 +46,6 @@ async fn one_queued_many_included_same_commitment(concurrency: usize) {
         .build();
     handler.add_commitments(cms1.clone()).await;
     handler.add_commitments(vec![]).await;
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(cms1).await;
     let result = validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
@@ -97,7 +96,6 @@ async fn one_queued_many_included_same_commitment(concurrency: usize) {
         .build();
     handler.add_commitments(cms3.clone()).await;
     handler.add_commitments(vec![]).await;
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(cms3).await;
     let result = validator.validate(&data, &option).await.unwrap();
     assert_eq!(result.chain_id, chain_id);
@@ -135,7 +133,6 @@ async fn test_many_queued_one_included_different_commitment() {
         .contracts_data(vec![contract_data])
         .build();
     handler.add_commitments(vec![cms[0].clone()]).await;
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![cms[0].clone()]).await;
     let result = validator.validate(&data, &option).await.unwrap();

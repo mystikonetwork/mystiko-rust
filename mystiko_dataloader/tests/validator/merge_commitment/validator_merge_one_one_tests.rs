@@ -292,7 +292,6 @@ async fn test_only_one_queued_one_included_different_commitment() {
     handler.add_commitments(vec![cms[0].clone()]).await;
     handler.add_commitments(vec![cms[0].clone()]).await;
     handler.add_commitments(vec![]).await;
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![cms[0].clone()]).await;
     let result = validator.validate(&data, &option).await.unwrap();
     let result2 = mock_rule_validate.validate(&data, &option).await.unwrap();
