@@ -22,6 +22,8 @@ async fn test_create() {
     assert_eq!(config.address(), "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
     assert_eq!(config.contract_type(), &ContractType::Pool);
     assert_eq!(config.start_block(), 1000000);
+    assert!(config.disabled());
+    assert_eq!(config.disabled_at().unwrap(), 1001000);
     assert!(config.event_filter_size().is_none());
     assert!(config.indexer_filter_size().is_none());
     assert_eq!(
@@ -76,7 +78,7 @@ async fn test_create_contract_config() {
     assert_eq!(config.bridge_type(), &BridgeType::Tbridge);
     assert_eq!(config.address(), "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
     assert_eq!(config.contract_type(), &ContractType::Pool);
-    assert!(!config.disabled());
+    assert!(config.disabled());
     assert_eq!(config.start_block(), 1000000);
     assert!(config.event_filter_size().is_none());
     assert!(config.indexer_filter_size().is_none());
@@ -191,6 +193,20 @@ async fn test_validate_asset_type_mismatch() {
 }
 
 #[tokio::test]
+async fn test_validate_too_small_disabled_at() {
+    let (_, _, _, _, config) = setup(SetupOptions {
+        disabled_at: Some(999999),
+        ..SetupOptions::default()
+    })
+    .await;
+    assert_eq!(
+        config.validate().err().unwrap().to_string(),
+        "pool contract 0x961f315a836542e603a3df2e0dd9d4ecd06ebc67 \
+        disabled_at 999999 is less than start_block 1000000"
+    );
+}
+
+#[tokio::test]
 async fn test_to_proto() {
     let (_, _, circuit_configs, _, config) = setup(SetupOptions::default()).await;
     let result = config.to_proto();
@@ -220,7 +236,7 @@ async fn test_to_contract_proto() {
     assert_eq!(config.name, "CommitmentPool");
     assert_eq!(&config.address, "0x961f315a836542e603a3df2e0dd9d4ecd06ebc67");
     assert_eq!(config.start_block, 1000000);
-    assert!(!config.disabled);
+    assert!(config.disabled);
     assert_eq!(&config.min_rollup_fee, "120000000000000000");
     assert!(config.asset_config.is_some());
     assert_eq!(config.contract_type(), mystiko_protos::common::v1::ContractType::Pool);
@@ -234,6 +250,7 @@ struct SetupOptions {
     duplicate_circuit: bool,
     missing_circuit_type: bool,
     missing_circuit_name: bool,
+    disabled_at: Option<u64>,
 }
 
 async fn setup(
@@ -245,11 +262,13 @@ async fn setup(
     Arc<RawPoolContractConfig>,
     PoolContractConfig,
 ) {
-    let raw_config = Arc::new(
-        create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
-            .await
-            .unwrap(),
-    );
+    let mut raw_config = create_raw_from_file::<RawPoolContractConfig>(VALID_CONFIG_FILE)
+        .await
+        .unwrap();
+    if let Some(disabled_at) = options.disabled_at {
+        raw_config.disabled_at = Some(disabled_at);
+    }
+    let raw_config = Arc::new(raw_config);
     let main_asset_config = Arc::new(AssetConfig::new(Arc::new(create_raw_main_asset_config().await)));
     let mut raw_asset_config = create_raw_asset_config(
         &options

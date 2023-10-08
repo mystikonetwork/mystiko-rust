@@ -70,14 +70,13 @@ async fn test_create() {
     assert_eq!(config.provider_type(), &ProviderType::Quorum);
     assert_eq!(config.provider_quorum_percentage(), 80);
     assert_eq!(config.pool_contracts().len(), 1);
-    assert_eq!(config.deposit_contracts().len(), 0);
-    assert_eq!(config.deposit_contracts_with_disabled().len(), 1);
-    assert_eq!(config.contracts().len(), 1);
-    assert_eq!(config.contracts_with_disabled().len(), 2);
+    assert_eq!(config.deposit_contracts_without_disabled().len(), 0);
+    assert_eq!(config.deposit_contracts().len(), 1);
+    assert_eq!(config.contracts().len(), 2);
     let asset = *config.assets().get(0).unwrap();
     let provider = *config.providers().get(0).unwrap();
     let pool_contract = *config.pool_contracts().get(0).unwrap();
-    let deposit_contract = *config.deposit_contracts_with_disabled().get(0).unwrap();
+    let deposit_contract = *config.deposit_contracts().get(0).unwrap();
     assert_eq!(asset.asset_address(), "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a");
     assert_eq!(
         provider.url(),
@@ -95,8 +94,7 @@ async fn test_selectors() {
     })
     .await;
     config.validate().unwrap();
-    assert_eq!(config.contracts().len(), 11);
-    assert_eq!(config.contracts_with_disabled().len(), 12);
+    assert_eq!(config.contracts().len(), 12);
     let mut peer_chain_ids = config.find_peer_chain_ids();
     peer_chain_ids.sort();
     assert_eq!(peer_chain_ids, vec![5, 97]);

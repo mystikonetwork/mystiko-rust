@@ -49,6 +49,14 @@ impl PoolContractConfig {
         &self.raw.contract_type
     }
 
+    pub fn disabled(&self) -> bool {
+        self.disabled_at().is_some()
+    }
+
+    pub fn disabled_at(&self) -> &Option<u64> {
+        &self.raw.disabled_at
+    }
+
     pub fn start_block(&self) -> u64 {
         self.raw.start_block
     }
@@ -179,6 +187,16 @@ impl PoolContractConfig {
                     self.asset_config.asset_address(),
                     self.address(),
                     asset_address
+                )));
+            }
+        }
+        if let Some(disabled_at) = self.disabled_at() {
+            if disabled_at < &self.start_block() {
+                return Err(Error::msg(format!(
+                    "pool contract {} disabled_at {} is less than start_block {}",
+                    self.address(),
+                    disabled_at,
+                    self.start_block()
                 )));
             }
         }

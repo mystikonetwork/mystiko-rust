@@ -78,7 +78,7 @@ where
         let c = core_cfg
             .find_chain(chain_id)
             .unwrap()
-            .contracts_with_disabled()
+            .contracts()
             .into_iter()
             .filter(|c| contracts.contains(c.address()))
             .collect::<Vec<_>>();

@@ -309,7 +309,7 @@ impl MystikoConfig {
             chain_config.validate()?;
         }
         for chain_config in self.chains() {
-            for deposit_contract_config in chain_config.deposit_contracts_with_disabled() {
+            for deposit_contract_config in chain_config.deposit_contracts() {
                 if deposit_contract_config.bridge_type() != &BridgeType::Loop
                     && self.find_bridge(deposit_contract_config.bridge_type()).is_none()
                 {

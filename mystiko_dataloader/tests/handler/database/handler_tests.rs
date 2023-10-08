@@ -1276,10 +1276,7 @@ async fn test_initialize() {
         ))))
         .await
         .unwrap();
-    assert_eq!(
-        contract_1.len(),
-        config.find_chain(1_u64).unwrap().contracts_with_disabled().len()
-    );
+    assert_eq!(contract_1.len(), config.find_chain(1_u64).unwrap().contracts().len());
     let contract_56 = collection
         .find::<Contract, QueryFilter>(Some(QueryFilter::from(SubFilter::equal(
             Contract::column_chain_id(),
@@ -1287,10 +1284,7 @@ async fn test_initialize() {
         ))))
         .await
         .unwrap();
-    assert_eq!(
-        contract_56.len(),
-        config.find_chain(56_u64).unwrap().contracts_with_disabled().len()
-    );
+    assert_eq!(contract_56.len(), config.find_chain(56_u64).unwrap().contracts().len());
     let contract_137 = collection
         .find::<Contract, QueryFilter>(Some(QueryFilter::from(SubFilter::equal(
             Contract::column_chain_id(),
@@ -1300,7 +1294,7 @@ async fn test_initialize() {
         .unwrap();
     assert_eq!(
         contract_137.len(),
-        config.find_chain(137_u64).unwrap().contracts_with_disabled().len() + 1
+        config.find_chain(137_u64).unwrap().contracts().len() + 1
     );
 }
 

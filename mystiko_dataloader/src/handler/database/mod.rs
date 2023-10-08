@@ -234,7 +234,7 @@ where
             .collect::<HashSet<_>>();
         let mut insert_contracts: Vec<X> = Vec::new();
         for chain_config in self.config.chains().into_iter() {
-            for contract_config in chain_config.contracts_with_disabled().into_iter() {
+            for contract_config in chain_config.contracts().into_iter() {
                 let insert_contract =
                     X::from_config(self.config.clone(), chain_config.chain_id(), contract_config.address())?;
                 if !existing_contracts.contains(&format!("{}/{}", chain_config.chain_id(), contract_config.address())) {

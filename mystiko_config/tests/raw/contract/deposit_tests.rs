@@ -11,7 +11,7 @@ fn default_config() -> RawDepositContractConfig {
         .start_block(1000000)
         .bridge_type(BridgeType::Tbridge)
         .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
-        .disabled(true)
+        .disabled_at(Some(1001000))
         .peer_chain_id(Some(97))
         .peer_contract_address(Some("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string()))
         .min_amount("10000000000000000".to_string())
@@ -45,7 +45,7 @@ fn test_default_values() {
         .service_fee(2)
         .service_fee_divider(1000)
         .build();
-    assert!(!raw_config.disabled);
+    assert!(raw_config.disabled_at.is_none());
     assert_eq!(raw_config.min_bridge_fee, "0");
     assert_eq!(raw_config.min_executor_fee, "0");
 }
@@ -68,6 +68,13 @@ fn test_invalid_pool_address_0() {
 fn test_invalid_pool_address_1() {
     let mut config = default_config();
     config.pool_address = String::from("");
+    assert!(config.validate().is_err());
+}
+
+#[test]
+fn test_invalid_disabled_at() {
+    let mut config = default_config();
+    config.disabled_at = Some(0);
     assert!(config.validate().is_err());
 }
 
@@ -258,7 +265,7 @@ async fn test_import_valid_json_str() {
               "startBlock": 1000000,
               "bridgeType": "tbridge",
               "poolAddress": "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d",
-              "disabled": true,
+              "disabledAt": 1001000,
               "peerChainId":  97,
               "peerContractAddress": "0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547",
               "minAmount": "10000000000000000",
