@@ -77,6 +77,20 @@ async fn empty_commitment(concurrency: usize) {
         .to_string()
         .contains("empty responses array"));
 
+    let total_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
+    mock.push::<Bytes, _>(total_count.clone()).unwrap();
+    mock.push::<Bytes, _>(include_count.clone()).unwrap();
+    handler.add_commitments(vec![]).await;
+    handler.add_commitments(vec![]).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert_eq!(result.chain_id, chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, contract_address);
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        CounterCheckerError::CommitmentCountMismatchError(0, 1).to_string()
+    );
+
     let total_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap();
     mock.push::<Bytes, _>(total_count.clone()).unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
