@@ -301,7 +301,7 @@ where
         if let Some(contracts) = self.handler.query_loading_contracts(self.chain_id).await? {
             return Ok(contracts);
         } else {
-            let contracts = chain.contracts_with_disabled();
+            let contracts = chain.contracts();
             if !contracts.is_empty() {
                 return Ok(contracts);
             }

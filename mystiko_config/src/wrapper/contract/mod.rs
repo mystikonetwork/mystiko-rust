@@ -56,7 +56,14 @@ impl ContractConfig {
     pub fn disabled(&self) -> bool {
         match self {
             ContractConfig::Deposit(config) => config.disabled(),
-            ContractConfig::Pool(_) => false,
+            ContractConfig::Pool(config) => config.disabled(),
+        }
+    }
+
+    pub fn disabled_at(&self) -> &Option<u64> {
+        match self {
+            ContractConfig::Deposit(config) => config.disabled_at(),
+            ContractConfig::Pool(config) => config.disabled_at(),
         }
     }
 

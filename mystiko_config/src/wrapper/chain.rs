@@ -158,11 +158,7 @@ impl ChainConfig {
     }
 
     pub fn start_block(&self) -> u64 {
-        self.contracts_with_disabled()
-            .iter()
-            .map(|c| c.start_block())
-            .min()
-            .unwrap_or(0)
+        self.contracts().iter().map(|c| c.start_block()).min().unwrap_or(0)
     }
 
     pub fn pool_contracts(&self) -> Vec<&PoolContractConfig> {
@@ -170,30 +166,14 @@ impl ChainConfig {
     }
 
     pub fn deposit_contracts(&self) -> Vec<&DepositContractConfig> {
-        self.deposit_contracts_with_disabled()
-            .into_iter()
-            .filter(|c| !c.disabled())
-            .collect()
-    }
-
-    pub fn deposit_contracts_with_disabled(&self) -> Vec<&DepositContractConfig> {
         self.deposit_contract_configs.iter().map(|c| c.as_ref()).collect()
     }
 
-    pub fn contracts(&self) -> Vec<ContractConfig> {
-        let mut contracts: Vec<ContractConfig> = Vec::new();
-        for deposit_contract_config in self.deposit_contract_configs.iter() {
-            if !deposit_contract_config.disabled() {
-                contracts.push(ContractConfig::Deposit(deposit_contract_config.clone()));
-            }
-        }
-        for pool_contract_config in self.pool_contract_configs.iter() {
-            contracts.push(ContractConfig::Pool(pool_contract_config.clone()));
-        }
-        contracts
+    pub fn deposit_contracts_without_disabled(&self) -> Vec<&DepositContractConfig> {
+        self.deposit_contracts().into_iter().filter(|c| !c.disabled()).collect()
     }
 
-    pub fn contracts_with_disabled(&self) -> Vec<ContractConfig> {
+    pub fn contracts(&self) -> Vec<ContractConfig> {
         let mut contracts: Vec<ContractConfig> = Vec::new();
         for deposit_contract_config in self.deposit_contract_configs.iter() {
             contracts.push(ContractConfig::Deposit(deposit_contract_config.clone()));
@@ -210,7 +190,7 @@ impl ChainConfig {
 
     pub fn find_peer_chain_ids(&self) -> Vec<u64> {
         let mut ids: HashSet<u64> = HashSet::new();
-        for deposit_contract_config in self.deposit_contracts() {
+        for deposit_contract_config in self.deposit_contracts_without_disabled() {
             if deposit_contract_config.bridge_type() == &BridgeType::Loop {
                 ids.insert(self.chain_id());
             } else if let Some(peer_chain_id) = deposit_contract_config.peer_chain_id() {
@@ -222,7 +202,7 @@ impl ChainConfig {
 
     pub fn find_asset_symbols(&self, peer_chain_id: u64) -> Vec<&str> {
         let mut asset_symbols: HashSet<&str> = HashSet::new();
-        for deposit_contract_config in self.deposit_contracts() {
+        for deposit_contract_config in self.deposit_contracts_without_disabled() {
             if peer_chain_id == self.chain_id() {
                 if deposit_contract_config.bridge_type() == &BridgeType::Loop {
                     asset_symbols.insert(deposit_contract_config.asset_symbol());
@@ -240,7 +220,7 @@ impl ChainConfig {
 
     pub fn find_bridges(&self, peer_chain_id: u64, asset_symbol: &str) -> Vec<&BridgeType> {
         let mut bridges: HashSet<&BridgeType> = HashSet::new();
-        for deposit_contract_config in self.deposit_contracts() {
+        for deposit_contract_config in self.deposit_contracts_without_disabled() {
             if peer_chain_id == self.chain_id() {
                 if deposit_contract_config.bridge_type() == &BridgeType::Loop
                     && deposit_contract_config.asset_symbol() == asset_symbol
@@ -262,7 +242,7 @@ impl ChainConfig {
         asset_symbol: &str,
         bridge_type: &BridgeType,
     ) -> Option<&DepositContractConfig> {
-        for deposit_contract_config in self.deposit_contracts() {
+        for deposit_contract_config in self.deposit_contracts_without_disabled() {
             if deposit_contract_config.asset_symbol() == asset_symbol
                 && deposit_contract_config.bridge_type() == bridge_type
             {
@@ -302,9 +282,7 @@ impl ChainConfig {
     }
 
     pub fn find_deposit_contract_by_address(&self, address: &str) -> Option<&DepositContractConfig> {
-        self.deposit_contracts_with_disabled()
-            .into_iter()
-            .find(|c| c.address() == address)
+        self.deposit_contracts().into_iter().find(|c| c.address() == address)
     }
 
     pub fn find_contract_by_address(&self, address: &str) -> Option<ContractConfig> {
@@ -358,7 +336,7 @@ impl ChainConfig {
             .map(|c| Ok((c.asset_address().to_string(), c.to_proto()?)))
             .collect::<Result<HashMap<String, mystiko_protos::config::v1::AssetConfig>>>()?;
         let deposit_contract_configs = self
-            .deposit_contracts_with_disabled()
+            .deposit_contracts()
             .iter()
             .map(|c| Ok((c.address().to_string(), c.to_proto()?)))
             .collect::<Result<HashMap<String, mystiko_protos::config::contract::v1::DepositContractConfig>>>()?;
@@ -436,7 +414,7 @@ impl ChainConfig {
                 pool_contracts_versions.insert(pool_contract.asset_symbol(), pool_contract_bridges);
             }
         }
-        for deposit_contract in self.deposit_contracts_with_disabled() {
+        for deposit_contract in self.deposit_contracts() {
             deposit_contract.validate()?;
             if let Some(peer_chain_id) = deposit_contract.peer_chain_id() {
                 if self.chain_id() == *peer_chain_id {

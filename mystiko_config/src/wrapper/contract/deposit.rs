@@ -74,7 +74,11 @@ impl DepositContractConfig {
     }
 
     pub fn disabled(&self) -> bool {
-        self.raw.disabled
+        self.disabled_at().is_some()
+    }
+
+    pub fn disabled_at(&self) -> &Option<u64> {
+        &self.raw.disabled_at
     }
 
     pub fn min_amount(&self) -> Result<BigUint> {
@@ -290,6 +294,22 @@ impl DepositContractConfig {
                 self.bridge_type(),
                 self.pool_contract_config.bridge_type(),
                 self.address()
+            )));
+        }
+        if let Some(disabled_at) = self.disabled_at() {
+            if *disabled_at < self.start_block() {
+                return Err(Error::msg(format!(
+                    "deposit contract {} disabled_at {} is less than start_block {}",
+                    self.address(),
+                    disabled_at,
+                    self.start_block()
+                )));
+            }
+        } else if self.pool_contract().disabled() {
+            return Err(Error::msg(format!(
+                "deposit contract {} pool contract {} is disabled",
+                self.address(),
+                self.pool_contract().address()
             )));
         }
         Ok(())
