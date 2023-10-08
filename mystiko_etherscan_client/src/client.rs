@@ -96,11 +96,16 @@ impl EtherScanClient {
         }
         let api_key = options.api_key;
         let base_url = options.base_url.unwrap_or(get_default_base_url(chain_id)?);
-        let client = options.client.unwrap_or(Client::new());
+        let client = match options.client {
+            Some(client) => client,
+            None => Client::new(),
+        };
         let max_requests_per_second = options
             .max_requests_per_second
             .unwrap_or(DEFAULT_MAX_REQUESTS_PER_SECOND);
-        let retry_policy = options.retry_policy.unwrap_or(Box::<DefaultRetryPolicy>::default());
+        let retry_policy = options
+            .retry_policy
+            .unwrap_or_else(|| Box::<DefaultRetryPolicy>::default());
         let url_prefix = options.url_prefix.unwrap_or(DEFAULT_URL_PREFIX.into());
         Ok(Self {
             chain_id,

@@ -7,14 +7,779 @@ pub use mystiko_v2_celer::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod mystiko_v2_celer {
-    #[rustfmt::skip]
-    const __ABI: &str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountLessThanZero\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooLarge\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"AmountTooSmall\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"BridgeFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"CommitmentHashIncorrect\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"DepositsDisabled\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"ExecutorFeeTooFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromChainIdNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"FromProxyAddressNotMatched\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"HashKGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"MinAmountGreaterThanMaxAmount\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"NotChanged\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"OnlyOperator\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RandomSGreaterThanFieldSize\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"RollupFeeToFew\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SanctionedAddress\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"SenderIsNotBridgeProxy\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"CommitmentCrossChain\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"maxAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"minAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositAmountLimits\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"DepositsDisabled\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minBridgeFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinBridgeFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"MinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OperatorChanged\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinExecutorFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"peerMinRollupFee\",\"type\":\"uint256\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"PeerMinRollupFee\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"assetType\",\"outputs\":[{\"internalType\":\"enum AssetPool.AssetType\",\"name\":\"\",\"type\":\"uint8\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"bridgeProxyAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"pure\",\"type\":\"function\",\"name\":\"bridgeType\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_newOperator\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"changeOperator\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"struct IMystikoBridge.DepositRequest\",\"name\":\"_request\",\"type\":\"tuple\",\"components\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"hashK\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint128\",\"name\":\"randomS\",\"type\":\"uint128\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"encryptedNote\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"bridgeFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"executorFee\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"rollupFee\",\"type\":\"uint256\",\"components\":[]}]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"deposit\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"disableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"enableSanctionsCheck\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_srcChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_message\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"executeMessage\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getAssociatedCommitmentPool\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMaxAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinBridgeFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinExecutorFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getPeerMinRollupFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isDepositsDisabled\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainId\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerChainName\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_commitmentPoolAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setAssociatedCommitmentPool\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_bridgeProxyAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setBridgeProxyAddress\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_state\",\"type\":\"bool\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setDepositsDisabled\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBridgeFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinBridgeFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_peerChainId\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"_peerChainName\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_peerContract\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerContract\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinExecutorFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinExecutorFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_peerMinRollupFee\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setPeerMinRollupFee\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_maxAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_minAmount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateDepositAmountLimits\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"_sanction\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"updateSanctionsListAddress\",\"outputs\":[]}]";
+    const _: () = {
+        ::core::include_bytes!("../json/MystikoV2Celer.json",);
+    };
+    #[allow(deprecated)]
+    fn __abi() -> ::ethers_core::abi::Abi {
+        ::ethers_core::abi::ethabi::Contract {
+            constructor: ::core::option::Option::None,
+            functions: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("assetType"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("assetType"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(8usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                "enum AssetPool.AssetType"
+                            ),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("bridgeProxyAddress"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("bridgeProxyAddress"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("bridgeType"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("bridgeType"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::Pure,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("changeOperator"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("changeOperator"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_newOperator"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("deposit"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("deposit"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_request"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
+                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                ::ethers_core::abi::ethabi::ParamType::Uint(128usize),
+                                ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                            ],),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                "struct IMystikoBridge.DepositRequest",
+                            ),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::Payable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("disableSanctionsCheck"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("disableSanctionsCheck",),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("enableSanctionsCheck"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("enableSanctionsCheck",),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("executeMessage"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("executeMessage"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_sender"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_message"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_executor"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::Payable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getAssociatedCommitmentPool"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getAssociatedCommitmentPool",),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getMaxAmount"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getMaxAmount"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getMinAmount"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getMinAmount"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getMinBridgeFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getMinBridgeFee"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getMinExecutorFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getMinExecutorFee"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getPeerMinExecutorFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getPeerMinExecutorFee",),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getPeerMinRollupFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getPeerMinRollupFee",),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("isDepositsDisabled"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("isDepositsDisabled"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("peerChainId"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("peerChainId"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("peerChainName"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("peerChainName"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("peerContract"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("peerContract"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("sanctionsCheck"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("sanctionsCheck"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("sanctionsList"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("sanctionsList"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                "contract ISanctionsList"
+                            ),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setAssociatedCommitmentPool"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setAssociatedCommitmentPool",),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_commitmentPoolAddress",),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setBridgeProxyAddress"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setBridgeProxyAddress",),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_bridgeProxyAddress",),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setDepositsDisabled"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setDepositsDisabled",),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_state"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setMinBridgeFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setMinBridgeFee"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_minBridgeFee"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setMinExecutorFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setMinExecutorFee"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_minExecutorFee"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setPeerContract"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setPeerContract"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_peerChainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_peerChainName"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_peerContract"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setPeerMinExecutorFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setPeerMinExecutorFee",),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_peerMinExecutorFee",),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setPeerMinRollupFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setPeerMinRollupFee",),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_peerMinRollupFee"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("updateDepositAmountLimits"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("updateDepositAmountLimits",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_maxAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_minAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("updateSanctionsListAddress"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("updateSanctionsListAddress",),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_sanction"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                "contract ISanctionsList"
+                            ),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+            ]),
+            events: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("CommitmentCrossChain"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("CommitmentCrossChain",),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("commitment"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            indexed: true,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("DepositAmountLimits"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("DepositAmountLimits",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("maxAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("minAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("DepositsDisabled"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("DepositsDisabled"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("state"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("MinBridgeFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("MinBridgeFee"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("minBridgeFee"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("MinExecutorFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("MinExecutorFee"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("minExecutorFee"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("OperatorChanged"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("OperatorChanged"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("operator"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            indexed: true,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("PeerMinExecutorFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("PeerMinExecutorFee"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("peerMinExecutorFee",),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("PeerMinRollupFee"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("PeerMinRollupFee"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("peerMinRollupFee"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("SanctionsCheck"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("SanctionsCheck"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("state"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("SanctionsList"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("SanctionsList"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("sanctions"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+            ]),
+            errors: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("AmountLessThanZero"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("AmountLessThanZero"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("AmountTooLarge"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("AmountTooLarge"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("AmountTooSmall"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("AmountTooSmall"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("BridgeFeeTooFew"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("BridgeFeeTooFew"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("CommitmentHashIncorrect"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("CommitmentHashIncorrect",),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("DepositsDisabled"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("DepositsDisabled"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("ExecutorFeeTooFew"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("ExecutorFeeTooFew"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("FromChainIdNotMatched"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("FromChainIdNotMatched",),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("FromProxyAddressNotMatched"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("FromProxyAddressNotMatched",),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("HashKGreaterThanFieldSize"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("HashKGreaterThanFieldSize",),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("Invalid"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("Invalid"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("param"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                        },],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("MinAmountGreaterThanMaxAmount"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("MinAmountGreaterThanMaxAmount",),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("NotChanged"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("NotChanged"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("OnlyOperator"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("OnlyOperator"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("RandomSGreaterThanFieldSize"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("RandomSGreaterThanFieldSize",),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("RollupFeeToFew"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("RollupFeeToFew"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("SanctionedAddress"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("SanctionedAddress"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("SenderIsNotBridgeProxy"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("SenderIsNotBridgeProxy",),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+            ]),
+            receive: false,
+            fallback: false,
+        }
+    }
     ///The parsed JSON ABI of the contract.
-    pub static MYSTIKOV2CELER_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(||
-    ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid"));
+    pub static MYSTIKOV2CELER_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
+        ::ethers_contract::Lazy::new(__abi);
     pub struct MystikoV2Celer<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for MystikoV2Celer<M> {
         fn clone(&self) -> Self {
@@ -34,23 +799,20 @@ pub mod mystiko_v2_celer {
     }
     impl<M> ::core::fmt::Debug for MystikoV2Celer<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(MystikoV2Celer)).field(&self.address()).finish()
+            f.debug_tuple(::core::stringify!(MystikoV2Celer))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> MystikoV2Celer<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    MYSTIKOV2CELER_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers_contract::Contract::new(
+                address.into(),
+                MYSTIKOV2CELER_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `assetType` (0x3fe3347a) function
         pub fn asset_type(&self) -> ::ethers_contract::builders::ContractCall<M, u8> {
@@ -61,18 +823,13 @@ pub mod mystiko_v2_celer {
         ///Calls the contract's `bridgeProxyAddress` (0x2cd26d45) function
         pub fn bridge_proxy_address(
             &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([44, 210, 109, 69], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `bridgeType` (0x2421e155) function
-        pub fn bridge_type(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
+        pub fn bridge_type(&self) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
             self.0
                 .method_hash([36, 33, 225, 85], ())
                 .expect("method not found (this should never happen)")
@@ -87,26 +844,19 @@ pub mod mystiko_v2_celer {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `deposit` (0x9a03636c) function
-        pub fn deposit(
-            &self,
-            request: DepositRequest,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn deposit(&self, request: DepositRequest) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([154, 3, 99, 108], (request,))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `disableSanctionsCheck` (0xdd757c34) function
-        pub fn disable_sanctions_check(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn disable_sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([221, 117, 124, 52], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `enableSanctionsCheck` (0x01dbf19f) function
-        pub fn enable_sanctions_check(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn enable_sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([1, 219, 241, 159], ())
                 .expect("method not found (this should never happen)")
@@ -120,51 +870,37 @@ pub mod mystiko_v2_celer {
             executor: ::ethers_core::types::Address,
         ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
-                .method_hash(
-                    [156, 100, 159, 223],
-                    (sender, src_chain_id, message, executor),
-                )
+                .method_hash([156, 100, 159, 223], (sender, src_chain_id, message, executor))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getAssociatedCommitmentPool` (0xddac5dc1) function
         pub fn get_associated_commitment_pool(
             &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([221, 172, 93, 193], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getMaxAmount` (0x0ba95909) function
-        pub fn get_max_amount(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_max_amount(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([11, 169, 89, 9], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getMinAmount` (0xcfc7e2da) function
-        pub fn get_min_amount(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_min_amount(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([207, 199, 226, 218], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getMinBridgeFee` (0xefbfb2ae) function
-        pub fn get_min_bridge_fee(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_min_bridge_fee(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([239, 191, 178, 174], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getMinExecutorFee` (0xf4ad17c6) function
-        pub fn get_min_executor_fee(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_min_executor_fee(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([244, 173, 23, 198], ())
                 .expect("method not found (this should never happen)")
@@ -186,55 +922,37 @@ pub mod mystiko_v2_celer {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `isDepositsDisabled` (0xed6ea33a) function
-        pub fn is_deposits_disabled(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn is_deposits_disabled(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([237, 110, 163, 58], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `peerChainId` (0xcdfceeba) function
-        pub fn peer_chain_id(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, u64> {
+        pub fn peer_chain_id(&self) -> ::ethers_contract::builders::ContractCall<M, u64> {
             self.0
                 .method_hash([205, 252, 238, 186], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `peerChainName` (0x4e3c10b7) function
-        pub fn peer_chain_name(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
+        pub fn peer_chain_name(&self) -> ::ethers_contract::builders::ContractCall<M, ::std::string::String> {
             self.0
                 .method_hash([78, 60, 16, 183], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `peerContract` (0x21e32d55) function
-        pub fn peer_contract(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        pub fn peer_contract(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([33, 227, 45, 85], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `sanctionsCheck` (0xb1c39422) function
-        pub fn sanctions_check(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([177, 195, 148, 34], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `sanctionsList` (0xec571c6a) function
-        pub fn sanctions_list(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        pub fn sanctions_list(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([236, 87, 28, 106], ())
                 .expect("method not found (this should never happen)")
@@ -258,10 +976,7 @@ pub mod mystiko_v2_celer {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setDepositsDisabled` (0xea0cde85) function
-        pub fn set_deposits_disabled(
-            &self,
-            state: bool,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn set_deposits_disabled(&self, state: bool) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([234, 12, 222, 133], state)
                 .expect("method not found (this should never happen)")
@@ -292,10 +1007,7 @@ pub mod mystiko_v2_celer {
             peer_contract: ::ethers_core::types::Address,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash(
-                    [125, 44, 133, 32],
-                    (peer_chain_id, peer_chain_name, peer_contract),
-                )
+                .method_hash([125, 44, 133, 32], (peer_chain_id, peer_chain_name, peer_contract))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setPeerMinExecutorFee` (0x153dc450) function
@@ -338,116 +1050,69 @@ pub mod mystiko_v2_celer {
         ///Gets the contract's `CommitmentCrossChain` event
         pub fn commitment_cross_chain_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            CommitmentCrossChainFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentCrossChainFilter> {
             self.0.event()
         }
         ///Gets the contract's `DepositAmountLimits` event
         pub fn deposit_amount_limits_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            DepositAmountLimitsFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, DepositAmountLimitsFilter> {
             self.0.event()
         }
         ///Gets the contract's `DepositsDisabled` event
         pub fn deposits_disabled_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            DepositsDisabledFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, DepositsDisabledFilter> {
             self.0.event()
         }
         ///Gets the contract's `MinBridgeFee` event
         pub fn min_bridge_fee_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            MinBridgeFeeFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, MinBridgeFeeFilter> {
             self.0.event()
         }
         ///Gets the contract's `MinExecutorFee` event
         pub fn min_executor_fee_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            MinExecutorFeeFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, MinExecutorFeeFilter> {
             self.0.event()
         }
         ///Gets the contract's `OperatorChanged` event
         pub fn operator_changed_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            OperatorChangedFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter> {
             self.0.event()
         }
         ///Gets the contract's `PeerMinExecutorFee` event
         pub fn peer_min_executor_fee_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            PeerMinExecutorFeeFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, PeerMinExecutorFeeFilter> {
             self.0.event()
         }
         ///Gets the contract's `PeerMinRollupFee` event
         pub fn peer_min_rollup_fee_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            PeerMinRollupFeeFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, PeerMinRollupFeeFilter> {
             self.0.event()
         }
         ///Gets the contract's `SanctionsCheck` event
         pub fn sanctions_check_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            SanctionsCheckFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsCheckFilter> {
             self.0.event()
         }
         ///Gets the contract's `SanctionsList` event
         pub fn sanctions_list_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            SanctionsListFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsListFilter> {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(
-            &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            MystikoV2CelerEvents,
-        > {
+        pub fn events(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, MystikoV2CelerEvents> {
             self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for MystikoV2Celer<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for MystikoV2Celer<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -463,7 +1128,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "AmountLessThanZero", abi = "AmountLessThanZero()")]
     pub struct AmountLessThanZero;
@@ -478,7 +1143,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "AmountTooLarge", abi = "AmountTooLarge()")]
     pub struct AmountTooLarge;
@@ -493,7 +1158,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "AmountTooSmall", abi = "AmountTooSmall()")]
     pub struct AmountTooSmall;
@@ -508,7 +1173,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "BridgeFeeTooFew", abi = "BridgeFeeTooFew()")]
     pub struct BridgeFeeTooFew;
@@ -523,7 +1188,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "CommitmentHashIncorrect", abi = "CommitmentHashIncorrect()")]
     pub struct CommitmentHashIncorrect;
@@ -538,7 +1203,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "DepositsDisabled", abi = "DepositsDisabled()")]
     pub struct DepositsDisabled;
@@ -553,7 +1218,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "ExecutorFeeTooFew", abi = "ExecutorFeeTooFew()")]
     pub struct ExecutorFeeTooFew;
@@ -568,7 +1233,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "FromChainIdNotMatched", abi = "FromChainIdNotMatched()")]
     pub struct FromChainIdNotMatched;
@@ -583,12 +1248,9 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[etherror(
-        name = "FromProxyAddressNotMatched",
-        abi = "FromProxyAddressNotMatched()"
-    )]
+    #[etherror(name = "FromProxyAddressNotMatched", abi = "FromProxyAddressNotMatched()")]
     pub struct FromProxyAddressNotMatched;
     ///Custom Error type `HashKGreaterThanFieldSize` with signature `HashKGreaterThanFieldSize()` and selector `0x805f2a49`
     #[derive(
@@ -601,7 +1263,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "HashKGreaterThanFieldSize", abi = "HashKGreaterThanFieldSize()")]
     pub struct HashKGreaterThanFieldSize;
@@ -616,7 +1278,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
@@ -633,12 +1295,9 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[etherror(
-        name = "MinAmountGreaterThanMaxAmount",
-        abi = "MinAmountGreaterThanMaxAmount()"
-    )]
+    #[etherror(name = "MinAmountGreaterThanMaxAmount", abi = "MinAmountGreaterThanMaxAmount()")]
     pub struct MinAmountGreaterThanMaxAmount;
     ///Custom Error type `NotChanged` with signature `NotChanged()` and selector `0x36a1c33f`
     #[derive(
@@ -651,7 +1310,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "NotChanged", abi = "NotChanged()")]
     pub struct NotChanged;
@@ -666,7 +1325,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
     pub struct OnlyOperator;
@@ -681,12 +1340,9 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[etherror(
-        name = "RandomSGreaterThanFieldSize",
-        abi = "RandomSGreaterThanFieldSize()"
-    )]
+    #[etherror(name = "RandomSGreaterThanFieldSize", abi = "RandomSGreaterThanFieldSize()")]
     pub struct RandomSGreaterThanFieldSize;
     ///Custom Error type `RollupFeeToFew` with signature `RollupFeeToFew()` and selector `0xf09e057a`
     #[derive(
@@ -699,7 +1355,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "RollupFeeToFew", abi = "RollupFeeToFew()")]
     pub struct RollupFeeToFew;
@@ -714,7 +1370,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "SanctionedAddress", abi = "SanctionedAddress()")]
     pub struct SanctionedAddress;
@@ -729,20 +1385,13 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "SenderIsNotBridgeProxy", abi = "SenderIsNotBridgeProxy()")]
     pub struct SenderIsNotBridgeProxy;
     ///Container type for all of the contract's custom errors
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum MystikoV2CelerErrors {
         AmountLessThanZero(AmountLessThanZero),
@@ -768,100 +1417,63 @@ pub mod mystiko_v2_celer {
         RevertString(::std::string::String),
     }
     impl ::ethers_core::abi::AbiDecode for MystikoV2CelerErrors {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RevertString(decoded));
             }
-            if let Ok(decoded)
-                = <AmountLessThanZero as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AmountLessThanZero as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AmountLessThanZero(decoded));
             }
-            if let Ok(decoded)
-                = <AmountTooLarge as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AmountTooLarge as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AmountTooLarge(decoded));
             }
-            if let Ok(decoded)
-                = <AmountTooSmall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AmountTooSmall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AmountTooSmall(decoded));
             }
-            if let Ok(decoded)
-                = <BridgeFeeTooFew as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <BridgeFeeTooFew as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::BridgeFeeTooFew(decoded));
             }
-            if let Ok(decoded)
-                = <CommitmentHashIncorrect as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <CommitmentHashIncorrect as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::CommitmentHashIncorrect(decoded));
             }
-            if let Ok(decoded)
-                = <DepositsDisabled as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <DepositsDisabled as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::DepositsDisabled(decoded));
             }
-            if let Ok(decoded)
-                = <ExecutorFeeTooFew as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ExecutorFeeTooFew as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ExecutorFeeTooFew(decoded));
             }
-            if let Ok(decoded)
-                = <FromChainIdNotMatched as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <FromChainIdNotMatched as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::FromChainIdNotMatched(decoded));
             }
-            if let Ok(decoded)
-                = <FromProxyAddressNotMatched as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <FromProxyAddressNotMatched as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::FromProxyAddressNotMatched(decoded));
             }
-            if let Ok(decoded)
-                = <HashKGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <HashKGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::HashKGreaterThanFieldSize(decoded));
             }
-            if let Ok(decoded)
-                = <Invalid as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <Invalid as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Invalid(decoded));
             }
-            if let Ok(decoded)
-                = <MinAmountGreaterThanMaxAmount as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <MinAmountGreaterThanMaxAmount as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::MinAmountGreaterThanMaxAmount(decoded));
             }
-            if let Ok(decoded)
-                = <NotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <NotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::NotChanged(decoded));
             }
-            if let Ok(decoded)
-                = <OnlyOperator as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <OnlyOperator as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::OnlyOperator(decoded));
             }
-            if let Ok(decoded)
-                = <RandomSGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <RandomSGreaterThanFieldSize as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RandomSGreaterThanFieldSize(decoded));
             }
-            if let Ok(decoded)
-                = <RollupFeeToFew as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <RollupFeeToFew as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RollupFeeToFew(decoded));
             }
-            if let Ok(decoded)
-                = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SanctionedAddress(decoded));
             }
-            if let Ok(decoded)
-                = <SenderIsNotBridgeProxy as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SenderIsNotBridgeProxy as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SenderIsNotBridgeProxy(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -870,58 +1482,24 @@ pub mod mystiko_v2_celer {
     impl ::ethers_core::abi::AbiEncode for MystikoV2CelerErrors {
         fn encode(self) -> ::std::vec::Vec<u8> {
             match self {
-                Self::AmountLessThanZero(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::AmountTooLarge(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::AmountTooSmall(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::BridgeFeeTooFew(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::CommitmentHashIncorrect(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::DepositsDisabled(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::ExecutorFeeTooFew(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::FromChainIdNotMatched(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::FromProxyAddressNotMatched(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::HashKGreaterThanFieldSize(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::AmountLessThanZero(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AmountTooLarge(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AmountTooSmall(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::BridgeFeeTooFew(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::CommitmentHashIncorrect(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::DepositsDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::ExecutorFeeTooFew(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::FromChainIdNotMatched(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::FromProxyAddressNotMatched(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::HashKGreaterThanFieldSize(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::Invalid(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::MinAmountGreaterThanMaxAmount(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::NotChanged(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::OnlyOperator(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::RandomSGreaterThanFieldSize(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::RollupFeeToFew(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SanctionedAddress(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SenderIsNotBridgeProxy(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::MinAmountGreaterThanMaxAmount(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::NotChanged(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::OnlyOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::RandomSGreaterThanFieldSize(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::RollupFeeToFew(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SanctionedAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SenderIsNotBridgeProxy(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::RevertString(s) => ::ethers_core::abi::AbiEncode::encode(s),
             }
         }
@@ -930,72 +1508,24 @@ pub mod mystiko_v2_celer {
         fn valid_selector(selector: [u8; 4]) -> bool {
             match selector {
                 [0x08, 0xc3, 0x79, 0xa0] => true,
-                _ if selector
-                    == <AmountLessThanZero as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <AmountTooLarge as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <AmountTooSmall as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <BridgeFeeTooFew as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <CommitmentHashIncorrect as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <DepositsDisabled as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <ExecutorFeeTooFew as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <FromChainIdNotMatched as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <FromProxyAddressNotMatched as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <HashKGreaterThanFieldSize as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <Invalid as ::ethers_contract::EthError>::selector() => true,
-                _ if selector
-                    == <MinAmountGreaterThanMaxAmount as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <NotChanged as ::ethers_contract::EthError>::selector() => true,
-                _ if selector
-                    == <OnlyOperator as ::ethers_contract::EthError>::selector() => true,
-                _ if selector
-                    == <RandomSGreaterThanFieldSize as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <RollupFeeToFew as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <SanctionedAddress as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <SenderIsNotBridgeProxy as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
+                _ if selector == <AmountLessThanZero as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <AmountTooLarge as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <AmountTooSmall as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <BridgeFeeTooFew as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <CommitmentHashIncorrect as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <DepositsDisabled as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <ExecutorFeeTooFew as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <FromChainIdNotMatched as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <FromProxyAddressNotMatched as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <HashKGreaterThanFieldSize as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <Invalid as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <MinAmountGreaterThanMaxAmount as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <NotChanged as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <OnlyOperator as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <RandomSGreaterThanFieldSize as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <RollupFeeToFew as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <SanctionedAddress as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <SenderIsNotBridgeProxy as ::ethers_contract::EthError>::selector() => true,
                 _ => false,
             }
         }
@@ -1003,40 +1533,24 @@ pub mod mystiko_v2_celer {
     impl ::core::fmt::Display for MystikoV2CelerErrors {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::AmountLessThanZero(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::AmountLessThanZero(element) => ::core::fmt::Display::fmt(element, f),
                 Self::AmountTooLarge(element) => ::core::fmt::Display::fmt(element, f),
                 Self::AmountTooSmall(element) => ::core::fmt::Display::fmt(element, f),
                 Self::BridgeFeeTooFew(element) => ::core::fmt::Display::fmt(element, f),
-                Self::CommitmentHashIncorrect(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::CommitmentHashIncorrect(element) => ::core::fmt::Display::fmt(element, f),
                 Self::DepositsDisabled(element) => ::core::fmt::Display::fmt(element, f),
                 Self::ExecutorFeeTooFew(element) => ::core::fmt::Display::fmt(element, f),
-                Self::FromChainIdNotMatched(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::FromProxyAddressNotMatched(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::HashKGreaterThanFieldSize(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::FromChainIdNotMatched(element) => ::core::fmt::Display::fmt(element, f),
+                Self::FromProxyAddressNotMatched(element) => ::core::fmt::Display::fmt(element, f),
+                Self::HashKGreaterThanFieldSize(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Invalid(element) => ::core::fmt::Display::fmt(element, f),
-                Self::MinAmountGreaterThanMaxAmount(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::MinAmountGreaterThanMaxAmount(element) => ::core::fmt::Display::fmt(element, f),
                 Self::NotChanged(element) => ::core::fmt::Display::fmt(element, f),
                 Self::OnlyOperator(element) => ::core::fmt::Display::fmt(element, f),
-                Self::RandomSGreaterThanFieldSize(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::RandomSGreaterThanFieldSize(element) => ::core::fmt::Display::fmt(element, f),
                 Self::RollupFeeToFew(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SanctionedAddress(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SenderIsNotBridgeProxy(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::SenderIsNotBridgeProxy(element) => ::core::fmt::Display::fmt(element, f),
                 Self::RevertString(s) => ::core::fmt::Display::fmt(s, f),
             }
         }
@@ -1146,7 +1660,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "CommitmentCrossChain", abi = "CommitmentCrossChain(uint256)")]
     pub struct CommitmentCrossChainFilter {
@@ -1163,12 +1677,9 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethevent(
-        name = "DepositAmountLimits",
-        abi = "DepositAmountLimits(uint256,uint256)"
-    )]
+    #[ethevent(name = "DepositAmountLimits", abi = "DepositAmountLimits(uint256,uint256)")]
     pub struct DepositAmountLimitsFilter {
         pub max_amount: ::ethers_core::types::U256,
         pub min_amount: ::ethers_core::types::U256,
@@ -1183,7 +1694,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "DepositsDisabled", abi = "DepositsDisabled(bool)")]
     pub struct DepositsDisabledFilter {
@@ -1199,7 +1710,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "MinBridgeFee", abi = "MinBridgeFee(uint256)")]
     pub struct MinBridgeFeeFilter {
@@ -1215,7 +1726,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "MinExecutorFee", abi = "MinExecutorFee(uint256)")]
     pub struct MinExecutorFeeFilter {
@@ -1231,7 +1742,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "OperatorChanged", abi = "OperatorChanged(address)")]
     pub struct OperatorChangedFilter {
@@ -1248,7 +1759,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "PeerMinExecutorFee", abi = "PeerMinExecutorFee(uint256)")]
     pub struct PeerMinExecutorFeeFilter {
@@ -1264,7 +1775,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "PeerMinRollupFee", abi = "PeerMinRollupFee(uint256)")]
     pub struct PeerMinRollupFeeFilter {
@@ -1280,7 +1791,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
     pub struct SanctionsCheckFilter {
@@ -1296,7 +1807,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
     pub struct SanctionsListFilter {
@@ -1304,14 +1815,7 @@ pub mod mystiko_v2_celer {
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum MystikoV2CelerEvents {
         CommitmentCrossChainFilter(CommitmentCrossChainFilter),
@@ -1326,9 +1830,7 @@ pub mod mystiko_v2_celer {
         SanctionsListFilter(SanctionsListFilter),
     }
     impl ::ethers_contract::EthLogDecode for MystikoV2CelerEvents {
-        fn decode_log(
-            log: &::ethers_core::abi::RawLog,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = CommitmentCrossChainFilter::decode_log(log) {
                 return Ok(MystikoV2CelerEvents::CommitmentCrossChainFilter(decoded));
             }
@@ -1365,36 +1867,16 @@ pub mod mystiko_v2_celer {
     impl ::core::fmt::Display for MystikoV2CelerEvents {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::CommitmentCrossChainFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::DepositAmountLimitsFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::DepositsDisabledFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::MinBridgeFeeFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::MinExecutorFeeFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::OperatorChangedFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::PeerMinExecutorFeeFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::PeerMinRollupFeeFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::SanctionsCheckFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::SanctionsListFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::CommitmentCrossChainFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::DepositAmountLimitsFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::DepositsDisabledFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::MinBridgeFeeFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::MinExecutorFeeFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::OperatorChangedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PeerMinExecutorFeeFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PeerMinRollupFeeFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionsCheckFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionsListFilter(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
@@ -1459,7 +1941,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "assetType", abi = "assetType()")]
     pub struct AssetTypeCall;
@@ -1474,7 +1956,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "bridgeProxyAddress", abi = "bridgeProxyAddress()")]
     pub struct BridgeProxyAddressCall;
@@ -1489,7 +1971,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "bridgeType", abi = "bridgeType()")]
     pub struct BridgeTypeCall;
@@ -1504,7 +1986,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
     pub struct ChangeOperatorCall {
@@ -1521,7 +2003,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "deposit",
@@ -1541,7 +2023,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "disableSanctionsCheck", abi = "disableSanctionsCheck()")]
     pub struct DisableSanctionsCheckCall;
@@ -1556,7 +2038,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "enableSanctionsCheck", abi = "enableSanctionsCheck()")]
     pub struct EnableSanctionsCheckCall;
@@ -1571,12 +2053,9 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethcall(
-        name = "executeMessage",
-        abi = "executeMessage(address,uint64,bytes,address)"
-    )]
+    #[ethcall(name = "executeMessage", abi = "executeMessage(address,uint64,bytes,address)")]
     pub struct ExecuteMessageCall {
         pub sender: ::ethers_core::types::Address,
         pub src_chain_id: u64,
@@ -1594,12 +2073,9 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethcall(
-        name = "getAssociatedCommitmentPool",
-        abi = "getAssociatedCommitmentPool()"
-    )]
+    #[ethcall(name = "getAssociatedCommitmentPool", abi = "getAssociatedCommitmentPool()")]
     pub struct GetAssociatedCommitmentPoolCall;
     ///Container type for all input parameters for the `getMaxAmount` function with signature `getMaxAmount()` and selector `0x0ba95909`
     #[derive(
@@ -1612,7 +2088,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getMaxAmount", abi = "getMaxAmount()")]
     pub struct GetMaxAmountCall;
@@ -1627,7 +2103,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getMinAmount", abi = "getMinAmount()")]
     pub struct GetMinAmountCall;
@@ -1642,7 +2118,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getMinBridgeFee", abi = "getMinBridgeFee()")]
     pub struct GetMinBridgeFeeCall;
@@ -1657,7 +2133,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getMinExecutorFee", abi = "getMinExecutorFee()")]
     pub struct GetMinExecutorFeeCall;
@@ -1672,7 +2148,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getPeerMinExecutorFee", abi = "getPeerMinExecutorFee()")]
     pub struct GetPeerMinExecutorFeeCall;
@@ -1687,7 +2163,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getPeerMinRollupFee", abi = "getPeerMinRollupFee()")]
     pub struct GetPeerMinRollupFeeCall;
@@ -1702,7 +2178,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "isDepositsDisabled", abi = "isDepositsDisabled()")]
     pub struct IsDepositsDisabledCall;
@@ -1717,7 +2193,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "peerChainId", abi = "peerChainId()")]
     pub struct PeerChainIdCall;
@@ -1732,7 +2208,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "peerChainName", abi = "peerChainName()")]
     pub struct PeerChainNameCall;
@@ -1747,7 +2223,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "peerContract", abi = "peerContract()")]
     pub struct PeerContractCall;
@@ -1762,7 +2238,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
     pub struct SanctionsCheckCall;
@@ -1777,7 +2253,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
     pub struct SanctionsListCall;
@@ -1792,12 +2268,9 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethcall(
-        name = "setAssociatedCommitmentPool",
-        abi = "setAssociatedCommitmentPool(address)"
-    )]
+    #[ethcall(name = "setAssociatedCommitmentPool", abi = "setAssociatedCommitmentPool(address)")]
     pub struct SetAssociatedCommitmentPoolCall {
         pub commitment_pool_address: ::ethers_core::types::Address,
     }
@@ -1812,7 +2285,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setBridgeProxyAddress", abi = "setBridgeProxyAddress(address)")]
     pub struct SetBridgeProxyAddressCall {
@@ -1829,7 +2302,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setDepositsDisabled", abi = "setDepositsDisabled(bool)")]
     pub struct SetDepositsDisabledCall {
@@ -1846,7 +2319,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setMinBridgeFee", abi = "setMinBridgeFee(uint256)")]
     pub struct SetMinBridgeFeeCall {
@@ -1863,7 +2336,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setMinExecutorFee", abi = "setMinExecutorFee(uint256)")]
     pub struct SetMinExecutorFeeCall {
@@ -1880,7 +2353,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setPeerContract", abi = "setPeerContract(uint64,string,address)")]
     pub struct SetPeerContractCall {
@@ -1899,7 +2372,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setPeerMinExecutorFee", abi = "setPeerMinExecutorFee(uint256)")]
     pub struct SetPeerMinExecutorFeeCall {
@@ -1916,7 +2389,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setPeerMinRollupFee", abi = "setPeerMinRollupFee(uint256)")]
     pub struct SetPeerMinRollupFeeCall {
@@ -1933,7 +2406,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "updateDepositAmountLimits",
@@ -1954,25 +2427,15 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethcall(
-        name = "updateSanctionsListAddress",
-        abi = "updateSanctionsListAddress(address)"
-    )]
+    #[ethcall(name = "updateSanctionsListAddress", abi = "updateSanctionsListAddress(address)")]
     pub struct UpdateSanctionsListAddressCall {
         pub sanction: ::ethers_core::types::Address,
     }
     ///Container type for all of the contract's call
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum MystikoV2CelerCalls {
         AssetType(AssetTypeCall),
@@ -2008,164 +2471,99 @@ pub mod mystiko_v2_celer {
         UpdateSanctionsListAddress(UpdateSanctionsListAddressCall),
     }
     impl ::ethers_core::abi::AbiDecode for MystikoV2CelerCalls {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <AssetTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AssetTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AssetType(decoded));
             }
-            if let Ok(decoded)
-                = <BridgeProxyAddressCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <BridgeProxyAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::BridgeProxyAddress(decoded));
             }
-            if let Ok(decoded)
-                = <BridgeTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <BridgeTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::BridgeType(decoded));
             }
-            if let Ok(decoded)
-                = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ChangeOperator(decoded));
             }
-            if let Ok(decoded)
-                = <DepositCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <DepositCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Deposit(decoded));
             }
-            if let Ok(decoded)
-                = <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::DisableSanctionsCheck(decoded));
             }
-            if let Ok(decoded)
-                = <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::EnableSanctionsCheck(decoded));
             }
-            if let Ok(decoded)
-                = <ExecuteMessageCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ExecuteMessageCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ExecuteMessage(decoded));
             }
-            if let Ok(decoded)
-                = <GetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <GetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetAssociatedCommitmentPool(decoded));
             }
-            if let Ok(decoded)
-                = <GetMaxAmountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <GetMaxAmountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetMaxAmount(decoded));
             }
-            if let Ok(decoded)
-                = <GetMinAmountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <GetMinAmountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetMinAmount(decoded));
             }
-            if let Ok(decoded)
-                = <GetMinBridgeFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <GetMinBridgeFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetMinBridgeFee(decoded));
             }
-            if let Ok(decoded)
-                = <GetMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <GetMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetMinExecutorFee(decoded));
             }
-            if let Ok(decoded)
-                = <GetPeerMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <GetPeerMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetPeerMinExecutorFee(decoded));
             }
-            if let Ok(decoded)
-                = <GetPeerMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <GetPeerMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetPeerMinRollupFee(decoded));
             }
-            if let Ok(decoded)
-                = <IsDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <IsDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IsDepositsDisabled(decoded));
             }
-            if let Ok(decoded)
-                = <PeerChainIdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <PeerChainIdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PeerChainId(decoded));
             }
-            if let Ok(decoded)
-                = <PeerChainNameCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <PeerChainNameCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PeerChainName(decoded));
             }
-            if let Ok(decoded)
-                = <PeerContractCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <PeerContractCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PeerContract(decoded));
             }
-            if let Ok(decoded)
-                = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SanctionsCheck(decoded));
             }
-            if let Ok(decoded)
-                = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SanctionsList(decoded));
             }
-            if let Ok(decoded)
-                = <SetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetAssociatedCommitmentPoolCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetAssociatedCommitmentPool(decoded));
             }
-            if let Ok(decoded)
-                = <SetBridgeProxyAddressCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetBridgeProxyAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetBridgeProxyAddress(decoded));
             }
-            if let Ok(decoded)
-                = <SetDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetDepositsDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetDepositsDisabled(decoded));
             }
-            if let Ok(decoded)
-                = <SetMinBridgeFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SetMinBridgeFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetMinBridgeFee(decoded));
             }
-            if let Ok(decoded)
-                = <SetMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetMinExecutorFee(decoded));
             }
-            if let Ok(decoded)
-                = <SetPeerContractCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SetPeerContractCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetPeerContract(decoded));
             }
-            if let Ok(decoded)
-                = <SetPeerMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetPeerMinExecutorFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetPeerMinExecutorFee(decoded));
             }
-            if let Ok(decoded)
-                = <SetPeerMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetPeerMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetPeerMinRollupFee(decoded));
             }
-            if let Ok(decoded)
-                = <UpdateDepositAmountLimitsCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <UpdateDepositAmountLimitsCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::UpdateDepositAmountLimits(decoded));
             }
-            if let Ok(decoded)
-                = <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::UpdateSanctionsListAddress(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -2174,97 +2572,37 @@ pub mod mystiko_v2_celer {
     impl ::ethers_core::abi::AbiEncode for MystikoV2CelerCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::AssetType(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::BridgeProxyAddress(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::BridgeType(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::ChangeOperator(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::AssetType(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::BridgeProxyAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::BridgeType(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::ChangeOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::Deposit(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::DisableSanctionsCheck(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::EnableSanctionsCheck(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::ExecuteMessage(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::GetAssociatedCommitmentPool(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::GetMaxAmount(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::GetMinAmount(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::GetMinBridgeFee(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::GetMinExecutorFee(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::GetPeerMinExecutorFee(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::GetPeerMinRollupFee(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::IsDepositsDisabled(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::PeerChainId(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::PeerChainName(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::PeerContract(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SanctionsCheck(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SanctionsList(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetAssociatedCommitmentPool(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetBridgeProxyAddress(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetDepositsDisabled(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetMinBridgeFee(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetMinExecutorFee(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetPeerContract(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetPeerMinExecutorFee(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetPeerMinRollupFee(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::UpdateDepositAmountLimits(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::UpdateSanctionsListAddress(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::DisableSanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::EnableSanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::ExecuteMessage(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetAssociatedCommitmentPool(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetMaxAmount(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetMinAmount(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetMinBridgeFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetMinExecutorFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetPeerMinExecutorFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetPeerMinRollupFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::IsDepositsDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::PeerChainId(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::PeerChainName(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::PeerContract(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SanctionsList(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetAssociatedCommitmentPool(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetBridgeProxyAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetDepositsDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetMinBridgeFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetMinExecutorFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetPeerContract(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetPeerMinExecutorFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetPeerMinRollupFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::UpdateDepositAmountLimits(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::UpdateSanctionsListAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
             }
         }
     }
@@ -2272,64 +2610,36 @@ pub mod mystiko_v2_celer {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
                 Self::AssetType(element) => ::core::fmt::Display::fmt(element, f),
-                Self::BridgeProxyAddress(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::BridgeProxyAddress(element) => ::core::fmt::Display::fmt(element, f),
                 Self::BridgeType(element) => ::core::fmt::Display::fmt(element, f),
                 Self::ChangeOperator(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Deposit(element) => ::core::fmt::Display::fmt(element, f),
-                Self::DisableSanctionsCheck(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::EnableSanctionsCheck(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::DisableSanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
+                Self::EnableSanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
                 Self::ExecuteMessage(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetAssociatedCommitmentPool(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::GetAssociatedCommitmentPool(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetMaxAmount(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetMinAmount(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetMinBridgeFee(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetMinExecutorFee(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetPeerMinExecutorFee(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::GetPeerMinRollupFee(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::IsDepositsDisabled(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::GetPeerMinExecutorFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetPeerMinRollupFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsDepositsDisabled(element) => ::core::fmt::Display::fmt(element, f),
                 Self::PeerChainId(element) => ::core::fmt::Display::fmt(element, f),
                 Self::PeerChainName(element) => ::core::fmt::Display::fmt(element, f),
                 Self::PeerContract(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SanctionsList(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetAssociatedCommitmentPool(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::SetBridgeProxyAddress(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::SetDepositsDisabled(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::SetAssociatedCommitmentPool(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetBridgeProxyAddress(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetDepositsDisabled(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SetMinBridgeFee(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SetMinExecutorFee(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SetPeerContract(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetPeerMinExecutorFee(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::SetPeerMinRollupFee(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::UpdateDepositAmountLimits(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::UpdateSanctionsListAddress(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::SetPeerMinExecutorFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetPeerMinRollupFee(element) => ::core::fmt::Display::fmt(element, f),
+                Self::UpdateDepositAmountLimits(element) => ::core::fmt::Display::fmt(element, f),
+                Self::UpdateSanctionsListAddress(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
@@ -2499,7 +2809,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct AssetTypeReturn(pub u8);
     ///Container type for all return fields from the `bridgeProxyAddress` function with signature `bridgeProxyAddress()` and selector `0x2cd26d45`
@@ -2513,7 +2823,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct BridgeProxyAddressReturn(pub ::ethers_core::types::Address);
     ///Container type for all return fields from the `bridgeType` function with signature `bridgeType()` and selector `0x2421e155`
@@ -2527,7 +2837,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct BridgeTypeReturn(pub ::std::string::String);
     ///Container type for all return fields from the `executeMessage` function with signature `executeMessage(address,uint64,bytes,address)` and selector `0x9c649fdf`
@@ -2541,7 +2851,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct ExecuteMessageReturn(pub bool);
     ///Container type for all return fields from the `getAssociatedCommitmentPool` function with signature `getAssociatedCommitmentPool()` and selector `0xddac5dc1`
@@ -2555,7 +2865,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetAssociatedCommitmentPoolReturn(pub ::ethers_core::types::Address);
     ///Container type for all return fields from the `getMaxAmount` function with signature `getMaxAmount()` and selector `0x0ba95909`
@@ -2569,7 +2879,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetMaxAmountReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getMinAmount` function with signature `getMinAmount()` and selector `0xcfc7e2da`
@@ -2583,7 +2893,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetMinAmountReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getMinBridgeFee` function with signature `getMinBridgeFee()` and selector `0xefbfb2ae`
@@ -2597,7 +2907,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetMinBridgeFeeReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getMinExecutorFee` function with signature `getMinExecutorFee()` and selector `0xf4ad17c6`
@@ -2611,7 +2921,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetMinExecutorFeeReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getPeerMinExecutorFee` function with signature `getPeerMinExecutorFee()` and selector `0x5898a0a8`
@@ -2625,7 +2935,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetPeerMinExecutorFeeReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getPeerMinRollupFee` function with signature `getPeerMinRollupFee()` and selector `0x825b5f8d`
@@ -2639,7 +2949,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetPeerMinRollupFeeReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `isDepositsDisabled` function with signature `isDepositsDisabled()` and selector `0xed6ea33a`
@@ -2653,7 +2963,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct IsDepositsDisabledReturn(pub bool);
     ///Container type for all return fields from the `peerChainId` function with signature `peerChainId()` and selector `0xcdfceeba`
@@ -2667,7 +2977,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct PeerChainIdReturn(pub u64);
     ///Container type for all return fields from the `peerChainName` function with signature `peerChainName()` and selector `0x4e3c10b7`
@@ -2681,7 +2991,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct PeerChainNameReturn(pub ::std::string::String);
     ///Container type for all return fields from the `peerContract` function with signature `peerContract()` and selector `0x21e32d55`
@@ -2695,7 +3005,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct PeerContractReturn(pub ::ethers_core::types::Address);
     ///Container type for all return fields from the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `0xb1c39422`
@@ -2709,7 +3019,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct SanctionsCheckReturn(pub bool);
     ///Container type for all return fields from the `sanctionsList` function with signature `sanctionsList()` and selector `0xec571c6a`
@@ -2723,7 +3033,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct SanctionsListReturn(pub ::ethers_core::types::Address);
     ///`DepositRequest(uint256,uint256,uint256,uint128,bytes,uint256,uint256,uint256)`
@@ -2737,7 +3047,7 @@ pub mod mystiko_v2_celer {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct DepositRequest {
         pub amount: ::ethers_core::types::U256,

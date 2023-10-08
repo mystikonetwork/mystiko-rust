@@ -7,18 +7,500 @@ pub use i_axelar_gas_service::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod i_axelar_gas_service {
-    #[rustfmt::skip]
-    const __ABI: &str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"NothingReceived\",\"outputs\":[]},{\"inputs\":[],\"type\":\"error\",\"name\":\"TransferFailed\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sourceAddress\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"gasToken\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"gasFeeAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"refundAddress\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"GasPaidForContractCall\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sourceAddress\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"gasToken\",\"type\":\"address\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"gasFeeAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"refundAddress\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"GasPaidForContractCallWithToken\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sourceAddress\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"uint256\",\"name\":\"gasFeeAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"refundAddress\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"NativeGasPaidForContractCall\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sourceAddress\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes32\",\"name\":\"payloadHash\",\"type\":\"bytes32\",\"components\":[],\"indexed\":true},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"uint256\",\"name\":\"gasFeeAmount\",\"type\":\"uint256\",\"components\":[],\"indexed\":false},{\"internalType\":\"address\",\"name\":\"refundAddress\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"NativeGasPaidForContractCallWithToken\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"receiver\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address[]\",\"name\":\"tokens\",\"type\":\"address[]\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"collectFees\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"gasToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"gasFeeAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"refundAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"payGasForContractCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"gasToken\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"gasFeeAmount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"refundAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"payGasForContractCallWithToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"refundAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"payNativeGasForContractCall\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"destinationAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"refundAddress\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"payable\",\"type\":\"function\",\"name\":\"payNativeGasForContractCallWithToken\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"receiver\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"refund\",\"outputs\":[]}]";
+    const _: () = {
+        ::core::include_bytes!("../json/IAxelarGasService.json",);
+    };
+    #[allow(deprecated)]
+    fn __abi() -> ::ethers_core::abi::Abi {
+        ::ethers_core::abi::ethabi::Contract {
+            constructor: ::core::option::Option::None,
+            functions: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("collectFees"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("collectFees"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("receiver"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address payable"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("tokens"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
+                                    ::ethers_core::abi::ethabi::ParamType::Address,
+                                ),),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address[]"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("payGasForContractCall"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("payGasForContractCall",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sender"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("gasToken"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("gasFeeAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("refundAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("payGasForContractCallWithToken"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("payGasForContractCallWithToken",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sender"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("gasToken"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("gasFeeAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("refundAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("payNativeGasForContractCall"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("payNativeGasForContractCall",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sender"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("refundAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::Payable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("payNativeGasForContractCallWithToken"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("payNativeGasForContractCallWithToken",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sender"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("refundAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::Payable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("refund"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("refund"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("receiver"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address payable"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("token"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+            ]),
+            events: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("GasPaidForContractCall"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("GasPaidForContractCall",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("gasToken"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("gasFeeAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("refundAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("GasPaidForContractCallWithToken"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("GasPaidForContractCallWithToken",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("gasToken"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("gasFeeAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("refundAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("NativeGasPaidForContractCall"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("NativeGasPaidForContractCall",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("gasFeeAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("refundAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("NativeGasPaidForContractCallWithToken"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("NativeGasPaidForContractCallWithToken",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("gasFeeAmount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("refundAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
+                ),
+            ]),
+            errors: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("NothingReceived"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("NothingReceived"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("TransferFailed"),
+                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                        name: ::std::borrow::ToOwned::to_owned("TransferFailed"),
+                        inputs: ::std::vec![],
+                    },],
+                ),
+            ]),
+            receive: false,
+            fallback: false,
+        }
+    }
     ///The parsed JSON ABI of the contract.
-    pub static IAXELARGASSERVICE_ABI: ::ethers_contract::Lazy<
-        ::ethers_core::abi::Abi,
-    > = ::ethers_contract::Lazy::new(|| {
-        ::ethers_core::utils::__serde_json::from_str(__ABI)
-            .expect("ABI is always valid")
-    });
+    pub static IAXELARGASSERVICE_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
+        ::ethers_contract::Lazy::new(__abi);
     pub struct IAxelarGasService<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for IAxelarGasService<M> {
         fn clone(&self) -> Self {
@@ -38,23 +520,20 @@ pub mod i_axelar_gas_service {
     }
     impl<M> ::core::fmt::Debug for IAxelarGasService<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(IAxelarGasService)).field(&self.address()).finish()
+            f.debug_tuple(::core::stringify!(IAxelarGasService))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> IAxelarGasService<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    IAXELARGASSERVICE_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers_contract::Contract::new(
+                address.into(),
+                IAXELARGASSERVICE_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `collectFees` (0xda854d75) function
         pub fn collect_fees(
@@ -134,13 +613,7 @@ pub mod i_axelar_gas_service {
             self.0
                 .method_hash(
                     [12, 147, 227, 187],
-                    (
-                        sender,
-                        destination_chain,
-                        destination_address,
-                        payload,
-                        refund_address,
-                    ),
+                    (sender, destination_chain, destination_address, payload, refund_address),
                 )
                 .expect("method not found (this should never happen)")
         }
@@ -184,56 +657,34 @@ pub mod i_axelar_gas_service {
         ///Gets the contract's `GasPaidForContractCall` event
         pub fn gas_paid_for_contract_call_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            GasPaidForContractCallFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasPaidForContractCallFilter> {
             self.0.event()
         }
         ///Gets the contract's `GasPaidForContractCallWithToken` event
         pub fn gas_paid_for_contract_call_with_token_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            GasPaidForContractCallWithTokenFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, GasPaidForContractCallWithTokenFilter> {
             self.0.event()
         }
         ///Gets the contract's `NativeGasPaidForContractCall` event
         pub fn native_gas_paid_for_contract_call_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            NativeGasPaidForContractCallFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, NativeGasPaidForContractCallFilter> {
             self.0.event()
         }
         ///Gets the contract's `NativeGasPaidForContractCallWithToken` event
         pub fn native_gas_paid_for_contract_call_with_token_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            NativeGasPaidForContractCallWithTokenFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, NativeGasPaidForContractCallWithTokenFilter>
+        {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(
-            &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            IAxelarGasServiceEvents,
-        > {
+        pub fn events(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, IAxelarGasServiceEvents> {
             self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for IAxelarGasService<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for IAxelarGasService<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -249,7 +700,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "NothingReceived", abi = "NothingReceived()")]
     pub struct NothingReceived;
@@ -264,20 +715,13 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "TransferFailed", abi = "TransferFailed()")]
     pub struct TransferFailed;
     ///Container type for all of the contract's custom errors
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum IAxelarGasServiceErrors {
         NothingReceived(NothingReceived),
@@ -287,22 +731,15 @@ pub mod i_axelar_gas_service {
         RevertString(::std::string::String),
     }
     impl ::ethers_core::abi::AbiDecode for IAxelarGasServiceErrors {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RevertString(decoded));
             }
-            if let Ok(decoded)
-                = <NothingReceived as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <NothingReceived as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::NothingReceived(decoded));
             }
-            if let Ok(decoded)
-                = <TransferFailed as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <TransferFailed as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::TransferFailed(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -311,12 +748,8 @@ pub mod i_axelar_gas_service {
     impl ::ethers_core::abi::AbiEncode for IAxelarGasServiceErrors {
         fn encode(self) -> ::std::vec::Vec<u8> {
             match self {
-                Self::NothingReceived(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::TransferFailed(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::NothingReceived(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::TransferFailed(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::RevertString(s) => ::ethers_core::abi::AbiEncode::encode(s),
             }
         }
@@ -325,14 +758,8 @@ pub mod i_axelar_gas_service {
         fn valid_selector(selector: [u8; 4]) -> bool {
             match selector {
                 [0x08, 0xc3, 0x79, 0xa0] => true,
-                _ if selector
-                    == <NothingReceived as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
-                _ if selector
-                    == <TransferFailed as ::ethers_contract::EthError>::selector() => {
-                    true
-                }
+                _ if selector == <NothingReceived as ::ethers_contract::EthError>::selector() => true,
+                _ if selector == <TransferFailed as ::ethers_contract::EthError>::selector() => true,
                 _ => false,
             }
         }
@@ -371,7 +798,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(
         name = "GasPaidForContractCall",
@@ -398,7 +825,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(
         name = "GasPaidForContractCallWithToken",
@@ -427,7 +854,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(
         name = "NativeGasPaidForContractCall",
@@ -453,7 +880,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(
         name = "NativeGasPaidForContractCallWithToken",
@@ -473,51 +900,29 @@ pub mod i_axelar_gas_service {
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum IAxelarGasServiceEvents {
         GasPaidForContractCallFilter(GasPaidForContractCallFilter),
         GasPaidForContractCallWithTokenFilter(GasPaidForContractCallWithTokenFilter),
         NativeGasPaidForContractCallFilter(NativeGasPaidForContractCallFilter),
-        NativeGasPaidForContractCallWithTokenFilter(
-            NativeGasPaidForContractCallWithTokenFilter,
-        ),
+        NativeGasPaidForContractCallWithTokenFilter(NativeGasPaidForContractCallWithTokenFilter),
     }
     impl ::ethers_contract::EthLogDecode for IAxelarGasServiceEvents {
-        fn decode_log(
-            log: &::ethers_core::abi::RawLog,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = GasPaidForContractCallFilter::decode_log(log) {
-                return Ok(
-                    IAxelarGasServiceEvents::GasPaidForContractCallFilter(decoded),
-                );
+                return Ok(IAxelarGasServiceEvents::GasPaidForContractCallFilter(decoded));
             }
             if let Ok(decoded) = GasPaidForContractCallWithTokenFilter::decode_log(log) {
-                return Ok(
-                    IAxelarGasServiceEvents::GasPaidForContractCallWithTokenFilter(
-                        decoded,
-                    ),
-                );
+                return Ok(IAxelarGasServiceEvents::GasPaidForContractCallWithTokenFilter(decoded));
             }
             if let Ok(decoded) = NativeGasPaidForContractCallFilter::decode_log(log) {
-                return Ok(
-                    IAxelarGasServiceEvents::NativeGasPaidForContractCallFilter(decoded),
-                );
+                return Ok(IAxelarGasServiceEvents::NativeGasPaidForContractCallFilter(decoded));
             }
-            if let Ok(decoded)
-                = NativeGasPaidForContractCallWithTokenFilter::decode_log(log) {
-                return Ok(
-                    IAxelarGasServiceEvents::NativeGasPaidForContractCallWithTokenFilter(
-                        decoded,
-                    ),
-                );
+            if let Ok(decoded) = NativeGasPaidForContractCallWithTokenFilter::decode_log(log) {
+                return Ok(IAxelarGasServiceEvents::NativeGasPaidForContractCallWithTokenFilter(
+                    decoded,
+                ));
             }
             Err(::ethers_core::abi::Error::InvalidData)
         }
@@ -525,41 +930,29 @@ pub mod i_axelar_gas_service {
     impl ::core::fmt::Display for IAxelarGasServiceEvents {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::GasPaidForContractCallFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::GasPaidForContractCallWithTokenFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::NativeGasPaidForContractCallFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::NativeGasPaidForContractCallWithTokenFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::GasPaidForContractCallFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GasPaidForContractCallWithTokenFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NativeGasPaidForContractCallFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NativeGasPaidForContractCallWithTokenFilter(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
-    impl ::core::convert::From<GasPaidForContractCallFilter>
-    for IAxelarGasServiceEvents {
+    impl ::core::convert::From<GasPaidForContractCallFilter> for IAxelarGasServiceEvents {
         fn from(value: GasPaidForContractCallFilter) -> Self {
             Self::GasPaidForContractCallFilter(value)
         }
     }
-    impl ::core::convert::From<GasPaidForContractCallWithTokenFilter>
-    for IAxelarGasServiceEvents {
+    impl ::core::convert::From<GasPaidForContractCallWithTokenFilter> for IAxelarGasServiceEvents {
         fn from(value: GasPaidForContractCallWithTokenFilter) -> Self {
             Self::GasPaidForContractCallWithTokenFilter(value)
         }
     }
-    impl ::core::convert::From<NativeGasPaidForContractCallFilter>
-    for IAxelarGasServiceEvents {
+    impl ::core::convert::From<NativeGasPaidForContractCallFilter> for IAxelarGasServiceEvents {
         fn from(value: NativeGasPaidForContractCallFilter) -> Self {
             Self::NativeGasPaidForContractCallFilter(value)
         }
     }
-    impl ::core::convert::From<NativeGasPaidForContractCallWithTokenFilter>
-    for IAxelarGasServiceEvents {
+    impl ::core::convert::From<NativeGasPaidForContractCallWithTokenFilter> for IAxelarGasServiceEvents {
         fn from(value: NativeGasPaidForContractCallWithTokenFilter) -> Self {
             Self::NativeGasPaidForContractCallWithTokenFilter(value)
         }
@@ -575,7 +968,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "collectFees", abi = "collectFees(address,address[])")]
     pub struct CollectFeesCall {
@@ -593,7 +986,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "payGasForContractCall",
@@ -619,7 +1012,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "payGasForContractCallWithToken",
@@ -647,7 +1040,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "payNativeGasForContractCall",
@@ -671,7 +1064,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "payNativeGasForContractCallWithToken",
@@ -697,7 +1090,7 @@ pub mod i_axelar_gas_service {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "refund", abi = "refund(address,address,uint256)")]
     pub struct RefundCall {
@@ -707,14 +1100,7 @@ pub mod i_axelar_gas_service {
     }
     ///Container type for all of the contract's call
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum IAxelarGasServiceCalls {
         CollectFees(CollectFeesCall),
@@ -725,40 +1111,26 @@ pub mod i_axelar_gas_service {
         Refund(RefundCall),
     }
     impl ::ethers_core::abi::AbiDecode for IAxelarGasServiceCalls {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <CollectFeesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <CollectFeesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::CollectFees(decoded));
             }
-            if let Ok(decoded)
-                = <PayGasForContractCallCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <PayGasForContractCallCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PayGasForContractCall(decoded));
             }
-            if let Ok(decoded)
-                = <PayGasForContractCallWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <PayGasForContractCallWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PayGasForContractCallWithToken(decoded));
             }
-            if let Ok(decoded)
-                = <PayNativeGasForContractCallCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <PayNativeGasForContractCallCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PayNativeGasForContractCall(decoded));
             }
-            if let Ok(decoded)
-                = <PayNativeGasForContractCallWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) =
+                <PayNativeGasForContractCallWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(data)
+            {
                 return Ok(Self::PayNativeGasForContractCallWithToken(decoded));
             }
-            if let Ok(decoded)
-                = <RefundCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <RefundCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Refund(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -767,21 +1139,11 @@ pub mod i_axelar_gas_service {
     impl ::ethers_core::abi::AbiEncode for IAxelarGasServiceCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::CollectFees(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::PayGasForContractCall(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::PayGasForContractCallWithToken(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::PayNativeGasForContractCall(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::PayNativeGasForContractCallWithToken(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::CollectFees(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::PayGasForContractCall(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::PayGasForContractCallWithToken(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::PayNativeGasForContractCall(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::PayNativeGasForContractCallWithToken(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::Refund(element) => ::ethers_core::abi::AbiEncode::encode(element),
             }
         }
@@ -790,18 +1152,10 @@ pub mod i_axelar_gas_service {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
                 Self::CollectFees(element) => ::core::fmt::Display::fmt(element, f),
-                Self::PayGasForContractCall(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::PayGasForContractCallWithToken(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::PayNativeGasForContractCall(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::PayNativeGasForContractCallWithToken(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::PayGasForContractCall(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PayGasForContractCallWithToken(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PayNativeGasForContractCall(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PayNativeGasForContractCallWithToken(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Refund(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
@@ -816,20 +1170,17 @@ pub mod i_axelar_gas_service {
             Self::PayGasForContractCall(value)
         }
     }
-    impl ::core::convert::From<PayGasForContractCallWithTokenCall>
-    for IAxelarGasServiceCalls {
+    impl ::core::convert::From<PayGasForContractCallWithTokenCall> for IAxelarGasServiceCalls {
         fn from(value: PayGasForContractCallWithTokenCall) -> Self {
             Self::PayGasForContractCallWithToken(value)
         }
     }
-    impl ::core::convert::From<PayNativeGasForContractCallCall>
-    for IAxelarGasServiceCalls {
+    impl ::core::convert::From<PayNativeGasForContractCallCall> for IAxelarGasServiceCalls {
         fn from(value: PayNativeGasForContractCallCall) -> Self {
             Self::PayNativeGasForContractCall(value)
         }
     }
-    impl ::core::convert::From<PayNativeGasForContractCallWithTokenCall>
-    for IAxelarGasServiceCalls {
+    impl ::core::convert::From<PayNativeGasForContractCallWithTokenCall> for IAxelarGasServiceCalls {
         fn from(value: PayNativeGasForContractCallWithTokenCall) -> Self {
             Self::PayNativeGasForContractCallWithToken(value)
         }

@@ -7,14 +7,396 @@ pub use lz_app::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod lz_app {
-    #[rustfmt::skip]
-    const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"string\",\"name\":\"param\",\"type\":\"string\",\"components\":[]}],\"type\":\"error\",\"name\":\"Invalid\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true},{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[],\"indexed\":true}],\"type\":\"event\",\"name\":\"OwnershipTransferred\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[],\"indexed\":false},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SetTrustedRemote\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"forceResumeReceive\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"getConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"isTrustedRemote\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"localLayerZeroChainId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"lzEndpoint\",\"outputs\":[{\"internalType\":\"contract ILayerZeroEndpoint\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"lzReceive\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"peerLayerZeroChainId\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"renounceOwnership\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint16\",\"name\":\"_chainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"_configType\",\"type\":\"uint256\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_config\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setConfig\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_lzChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"address\",\"name\":\"_lzEndpoint\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setEndpoint\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setReceiveVersion\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_version\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setSendVersion\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_peerLayerZeroChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_peerAddress\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"setTrustedRemote\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"transferOwnership\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\",\"components\":[]}],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"trustedRemoteLookup\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\",\"components\":[]}]}]";
+    const _: () = {
+        ::core::include_bytes!("../json/LzApp.json",);
+    };
+    #[allow(deprecated)]
+    fn __abi() -> ::ethers_core::abi::Abi {
+        ::ethers_core::abi::ethabi::Contract {
+            constructor: ::core::option::Option::None,
+            functions: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("forceResumeReceive"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("forceResumeReceive"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("getConfig"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("getConfig"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_version"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_chainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::string::String::new(),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_configType"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("isTrustedRemote"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("isTrustedRemote"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                        ],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("localLayerZeroChainId"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("localLayerZeroChainId",),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("lzEndpoint"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("lzEndpoint"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                "contract ILayerZeroEndpoint",
+                            ),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("lzReceive"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("lzReceive"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_nonce"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_payload"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("owner"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("owner"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("peerLayerZeroChainId"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("peerLayerZeroChainId",),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("renounceOwnership"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("renounceOwnership"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setConfig"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setConfig"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_version"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_chainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_configType"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_config"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setEndpoint"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setEndpoint"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_lzChainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_lzEndpoint"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setReceiveVersion"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setReceiveVersion"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_version"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setSendVersion"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setSendVersion"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_version"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("setTrustedRemote"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setTrustedRemote"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_peerLayerZeroChainId",),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("_peerAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("transferOwnership"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("transferOwnership"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("newOwner"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("trustedRemoteLookup"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("trustedRemoteLookup",),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                        },],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+            ]),
+            events: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("OwnershipTransferred"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("OwnershipTransferred",),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("previousOwner"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("newOwner"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("SetTrustedRemote"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("SetTrustedRemote"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                indexed: false,
+                            },
+                            ::ethers_core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
+                ),
+            ]),
+            errors: ::core::convert::From::from([(
+                ::std::borrow::ToOwned::to_owned("Invalid"),
+                ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                    name: ::std::borrow::ToOwned::to_owned("Invalid"),
+                    inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                        name: ::std::borrow::ToOwned::to_owned("param"),
+                        kind: ::ethers_core::abi::ethabi::ParamType::String,
+                        internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                    },],
+                },],
+            )]),
+            receive: false,
+            fallback: false,
+        }
+    }
     ///The parsed JSON ABI of the contract.
-    pub static LZAPP_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(||
-    ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid"));
+    pub static LZAPP_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(__abi);
     pub struct LzApp<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for LzApp<M> {
         fn clone(&self) -> Self {
@@ -34,23 +416,18 @@ pub mod lz_app {
     }
     impl<M> ::core::fmt::Debug for LzApp<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(LzApp)).field(&self.address()).finish()
+            f.debug_tuple(::core::stringify!(LzApp)).field(&self.address()).finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> LzApp<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    LZAPP_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers_contract::Contract::new(
+                address.into(),
+                LZAPP_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `forceResumeReceive` (0x42d65a8d) function
         pub fn force_resume_receive(
@@ -69,10 +446,7 @@ pub mod lz_app {
             chain_id: u16,
             p2: ::ethers_core::types::Address,
             config_type: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Bytes,
-        > {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Bytes> {
             self.0
                 .method_hash([245, 236, 189, 188], (version, chain_id, p2, config_type))
                 .expect("method not found (this should never happen)")
@@ -88,20 +462,13 @@ pub mod lz_app {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `localLayerZeroChainId` (0x302d5f4b) function
-        pub fn local_layer_zero_chain_id(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, u16> {
+        pub fn local_layer_zero_chain_id(&self) -> ::ethers_contract::builders::ContractCall<M, u16> {
             self.0
                 .method_hash([48, 45, 95, 75], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `lzEndpoint` (0xb353aaa7) function
-        pub fn lz_endpoint(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        pub fn lz_endpoint(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([179, 83, 170, 167], ())
                 .expect("method not found (this should never happen)")
@@ -115,35 +482,23 @@ pub mod lz_app {
             payload: ::ethers_core::types::Bytes,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash(
-                    [0, 29, 53, 103],
-                    (src_chain_id, src_address, nonce, payload),
-                )
+                .method_hash([0, 29, 53, 103], (src_chain_id, src_address, nonce, payload))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `owner` (0x8da5cb5b) function
-        pub fn owner(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        pub fn owner(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([141, 165, 203, 91], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `peerLayerZeroChainId` (0x0097a063) function
-        pub fn peer_layer_zero_chain_id(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, u16> {
+        pub fn peer_layer_zero_chain_id(&self) -> ::ethers_contract::builders::ContractCall<M, u16> {
             self.0
                 .method_hash([0, 151, 160, 99], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `renounceOwnership` (0x715018a6) function
-        pub fn renounce_ownership(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn renounce_ownership(&self) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([113, 80, 24, 166], ())
                 .expect("method not found (this should never happen)")
@@ -157,10 +512,7 @@ pub mod lz_app {
             config: ::ethers_core::types::Bytes,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash(
-                    [203, 237, 139, 156],
-                    (version, chain_id, config_type, config),
-                )
+                .method_hash([203, 237, 139, 156], (version, chain_id, config_type, config))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setEndpoint` (0x4ee7ded6) function
@@ -174,19 +526,13 @@ pub mod lz_app {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setReceiveVersion` (0x10ddb137) function
-        pub fn set_receive_version(
-            &self,
-            version: u16,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn set_receive_version(&self, version: u16) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([16, 221, 177, 55], version)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setSendVersion` (0x07e0db17) function
-        pub fn set_send_version(
-            &self,
-            version: u16,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn set_send_version(&self, version: u16) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([7, 224, 219, 23], version)
                 .expect("method not found (this should never happen)")
@@ -198,10 +544,7 @@ pub mod lz_app {
             peer_address: ::ethers_core::types::Bytes,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash(
-                    [235, 141, 114, 183],
-                    (peer_layer_zero_chain_id, peer_address),
-                )
+                .method_hash([235, 141, 114, 183], (peer_layer_zero_chain_id, peer_address))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `transferOwnership` (0xf2fde38b) function
@@ -217,10 +560,7 @@ pub mod lz_app {
         pub fn trusted_remote_lookup(
             &self,
             p0: u16,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Bytes,
-        > {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Bytes> {
             self.0
                 .method_hash([117, 51, 215, 136], p0)
                 .expect("method not found (this should never happen)")
@@ -228,32 +568,21 @@ pub mod lz_app {
         ///Gets the contract's `OwnershipTransferred` event
         pub fn ownership_transferred_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            OwnershipTransferredFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OwnershipTransferredFilter> {
             self.0.event()
         }
         ///Gets the contract's `SetTrustedRemote` event
         pub fn set_trusted_remote_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            SetTrustedRemoteFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SetTrustedRemoteFilter> {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(
-            &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, LzAppEvents> {
+        pub fn events(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, LzAppEvents> {
             self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for LzApp<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for LzApp<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -269,7 +598,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
@@ -285,12 +614,9 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethevent(
-        name = "OwnershipTransferred",
-        abi = "OwnershipTransferred(address,address)"
-    )]
+    #[ethevent(name = "OwnershipTransferred", abi = "OwnershipTransferred(address,address)")]
     pub struct OwnershipTransferredFilter {
         #[ethevent(indexed)]
         pub previous_owner: ::ethers_core::types::Address,
@@ -307,7 +633,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "SetTrustedRemote", abi = "SetTrustedRemote(uint16,bytes)")]
     pub struct SetTrustedRemoteFilter {
@@ -316,23 +642,14 @@ pub mod lz_app {
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum LzAppEvents {
         OwnershipTransferredFilter(OwnershipTransferredFilter),
         SetTrustedRemoteFilter(SetTrustedRemoteFilter),
     }
     impl ::ethers_contract::EthLogDecode for LzAppEvents {
-        fn decode_log(
-            log: &::ethers_core::abi::RawLog,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = OwnershipTransferredFilter::decode_log(log) {
                 return Ok(LzAppEvents::OwnershipTransferredFilter(decoded));
             }
@@ -345,12 +662,8 @@ pub mod lz_app {
     impl ::core::fmt::Display for LzAppEvents {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::OwnershipTransferredFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::SetTrustedRemoteFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::OwnershipTransferredFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SetTrustedRemoteFilter(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
@@ -375,7 +688,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "forceResumeReceive", abi = "forceResumeReceive(uint16,bytes)")]
     pub struct ForceResumeReceiveCall {
@@ -393,7 +706,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "getConfig", abi = "getConfig(uint16,uint16,address,uint256)")]
     pub struct GetConfigCall {
@@ -413,7 +726,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "isTrustedRemote", abi = "isTrustedRemote(uint16,bytes)")]
     pub struct IsTrustedRemoteCall {
@@ -431,7 +744,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "localLayerZeroChainId", abi = "localLayerZeroChainId()")]
     pub struct LocalLayerZeroChainIdCall;
@@ -446,7 +759,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "lzEndpoint", abi = "lzEndpoint()")]
     pub struct LzEndpointCall;
@@ -461,7 +774,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "lzReceive", abi = "lzReceive(uint16,bytes,uint64,bytes)")]
     pub struct LzReceiveCall {
@@ -481,7 +794,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "owner", abi = "owner()")]
     pub struct OwnerCall;
@@ -496,7 +809,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "peerLayerZeroChainId", abi = "peerLayerZeroChainId()")]
     pub struct PeerLayerZeroChainIdCall;
@@ -511,7 +824,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "renounceOwnership", abi = "renounceOwnership()")]
     pub struct RenounceOwnershipCall;
@@ -526,7 +839,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setConfig", abi = "setConfig(uint16,uint16,uint256,bytes)")]
     pub struct SetConfigCall {
@@ -546,7 +859,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setEndpoint", abi = "setEndpoint(uint16,address)")]
     pub struct SetEndpointCall {
@@ -564,7 +877,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setReceiveVersion", abi = "setReceiveVersion(uint16)")]
     pub struct SetReceiveVersionCall {
@@ -581,7 +894,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setSendVersion", abi = "setSendVersion(uint16)")]
     pub struct SetSendVersionCall {
@@ -598,7 +911,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setTrustedRemote", abi = "setTrustedRemote(uint16,bytes)")]
     pub struct SetTrustedRemoteCall {
@@ -616,7 +929,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "transferOwnership", abi = "transferOwnership(address)")]
     pub struct TransferOwnershipCall {
@@ -633,20 +946,13 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "trustedRemoteLookup", abi = "trustedRemoteLookup(uint16)")]
     pub struct TrustedRemoteLookupCall(pub u16);
     ///Container type for all of the contract's call
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum LzAppCalls {
         ForceResumeReceive(ForceResumeReceiveCall),
@@ -667,88 +973,54 @@ pub mod lz_app {
         TrustedRemoteLookup(TrustedRemoteLookupCall),
     }
     impl ::ethers_core::abi::AbiDecode for LzAppCalls {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <ForceResumeReceiveCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <ForceResumeReceiveCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ForceResumeReceive(decoded));
             }
-            if let Ok(decoded)
-                = <GetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <GetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetConfig(decoded));
             }
-            if let Ok(decoded)
-                = <IsTrustedRemoteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <IsTrustedRemoteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IsTrustedRemote(decoded));
             }
-            if let Ok(decoded)
-                = <LocalLayerZeroChainIdCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <LocalLayerZeroChainIdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::LocalLayerZeroChainId(decoded));
             }
-            if let Ok(decoded)
-                = <LzEndpointCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <LzEndpointCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::LzEndpoint(decoded));
             }
-            if let Ok(decoded)
-                = <LzReceiveCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <LzReceiveCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::LzReceive(decoded));
             }
-            if let Ok(decoded)
-                = <OwnerCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <OwnerCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Owner(decoded));
             }
-            if let Ok(decoded)
-                = <PeerLayerZeroChainIdCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <PeerLayerZeroChainIdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::PeerLayerZeroChainId(decoded));
             }
-            if let Ok(decoded)
-                = <RenounceOwnershipCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <RenounceOwnershipCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RenounceOwnership(decoded));
             }
-            if let Ok(decoded)
-                = <SetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetConfig(decoded));
             }
-            if let Ok(decoded)
-                = <SetEndpointCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SetEndpointCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetEndpoint(decoded));
             }
-            if let Ok(decoded)
-                = <SetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetReceiveVersion(decoded));
             }
-            if let Ok(decoded)
-                = <SetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetSendVersion(decoded));
             }
-            if let Ok(decoded)
-                = <SetTrustedRemoteCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <SetTrustedRemoteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetTrustedRemote(decoded));
             }
-            if let Ok(decoded)
-                = <TransferOwnershipCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <TransferOwnershipCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::TransferOwnership(decoded));
             }
-            if let Ok(decoded)
-                = <TrustedRemoteLookupCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <TrustedRemoteLookupCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::TrustedRemoteLookup(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -757,72 +1029,36 @@ pub mod lz_app {
     impl ::ethers_core::abi::AbiEncode for LzAppCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::ForceResumeReceive(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::GetConfig(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::IsTrustedRemote(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::LocalLayerZeroChainId(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::LzEndpoint(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::LzReceive(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::ForceResumeReceive(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetConfig(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::IsTrustedRemote(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::LocalLayerZeroChainId(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::LzEndpoint(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::LzReceive(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::Owner(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::PeerLayerZeroChainId(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::RenounceOwnership(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetConfig(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetEndpoint(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetReceiveVersion(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetSendVersion(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SetTrustedRemote(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::TransferOwnership(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::TrustedRemoteLookup(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::PeerLayerZeroChainId(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::RenounceOwnership(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetConfig(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetEndpoint(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetReceiveVersion(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetSendVersion(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetTrustedRemote(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::TransferOwnership(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::TrustedRemoteLookup(element) => ::ethers_core::abi::AbiEncode::encode(element),
             }
         }
     }
     impl ::core::fmt::Display for LzAppCalls {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::ForceResumeReceive(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::ForceResumeReceive(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetConfig(element) => ::core::fmt::Display::fmt(element, f),
                 Self::IsTrustedRemote(element) => ::core::fmt::Display::fmt(element, f),
-                Self::LocalLayerZeroChainId(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::LocalLayerZeroChainId(element) => ::core::fmt::Display::fmt(element, f),
                 Self::LzEndpoint(element) => ::core::fmt::Display::fmt(element, f),
                 Self::LzReceive(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Owner(element) => ::core::fmt::Display::fmt(element, f),
-                Self::PeerLayerZeroChainId(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::PeerLayerZeroChainId(element) => ::core::fmt::Display::fmt(element, f),
                 Self::RenounceOwnership(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SetConfig(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SetEndpoint(element) => ::core::fmt::Display::fmt(element, f),
@@ -830,9 +1066,7 @@ pub mod lz_app {
                 Self::SetSendVersion(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SetTrustedRemote(element) => ::core::fmt::Display::fmt(element, f),
                 Self::TransferOwnership(element) => ::core::fmt::Display::fmt(element, f),
-                Self::TrustedRemoteLookup(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::TrustedRemoteLookup(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
@@ -927,7 +1161,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GetConfigReturn(pub ::ethers_core::types::Bytes);
     ///Container type for all return fields from the `isTrustedRemote` function with signature `isTrustedRemote(uint16,bytes)` and selector `0x3d8b38f6`
@@ -941,7 +1175,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct IsTrustedRemoteReturn(pub bool);
     ///Container type for all return fields from the `localLayerZeroChainId` function with signature `localLayerZeroChainId()` and selector `0x302d5f4b`
@@ -955,7 +1189,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct LocalLayerZeroChainIdReturn(pub u16);
     ///Container type for all return fields from the `lzEndpoint` function with signature `lzEndpoint()` and selector `0xb353aaa7`
@@ -969,7 +1203,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct LzEndpointReturn(pub ::ethers_core::types::Address);
     ///Container type for all return fields from the `owner` function with signature `owner()` and selector `0x8da5cb5b`
@@ -983,7 +1217,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct OwnerReturn(pub ::ethers_core::types::Address);
     ///Container type for all return fields from the `peerLayerZeroChainId` function with signature `peerLayerZeroChainId()` and selector `0x0097a063`
@@ -997,7 +1231,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct PeerLayerZeroChainIdReturn(pub u16);
     ///Container type for all return fields from the `trustedRemoteLookup` function with signature `trustedRemoteLookup(uint16)` and selector `0x7533d788`
@@ -1011,7 +1245,7 @@ pub mod lz_app {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct TrustedRemoteLookupReturn(pub ::ethers_core::types::Bytes);
 }

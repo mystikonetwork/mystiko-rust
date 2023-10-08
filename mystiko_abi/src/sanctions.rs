@@ -7,14 +7,81 @@ pub use sanctions::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod sanctions {
-    #[rustfmt::skip]
-    const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"state\",\"type\":\"bool\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsCheck\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"sanctions\",\"type\":\"address\",\"components\":[],\"indexed\":false}],\"type\":\"event\",\"name\":\"SanctionsList\",\"outputs\":[],\"anonymous\":false},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\",\"components\":[]}]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"sanctionsList\",\"outputs\":[{\"internalType\":\"contract ISanctionsList\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]";
+    const _: () = {
+        ::core::include_bytes!("../json/Sanctions.json",);
+    };
+    #[allow(deprecated)]
+    fn __abi() -> ::ethers_core::abi::Abi {
+        ::ethers_core::abi::ethabi::Contract {
+            constructor: ::core::option::Option::None,
+            functions: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("sanctionsCheck"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("sanctionsCheck"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("sanctionsList"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("sanctionsList"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                "contract ISanctionsList"
+                            ),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+            ]),
+            events: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("SanctionsCheck"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("SanctionsCheck"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("state"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("SanctionsList"),
+                    ::std::vec![::ethers_core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("SanctionsList"),
+                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("sanctions"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
+                ),
+            ]),
+            errors: ::std::collections::BTreeMap::new(),
+            receive: false,
+            fallback: false,
+        }
+    }
     ///The parsed JSON ABI of the contract.
-    pub static SANCTIONS_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(||
-    ::ethers_core::utils::__serde_json::from_str(__ABI).expect("ABI is always valid"));
+    pub static SANCTIONS_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(__abi);
     pub struct Sanctions<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for Sanctions<M> {
         fn clone(&self) -> Self {
@@ -34,39 +101,29 @@ pub mod sanctions {
     }
     impl<M> ::core::fmt::Debug for Sanctions<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(Sanctions)).field(&self.address()).finish()
+            f.debug_tuple(::core::stringify!(Sanctions))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> Sanctions<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    SANCTIONS_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers_contract::Contract::new(
+                address.into(),
+                SANCTIONS_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `sanctionsCheck` (0xb1c39422) function
-        pub fn sanctions_check(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([177, 195, 148, 34], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `sanctionsList` (0xec571c6a) function
-        pub fn sanctions_list(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        pub fn sanctions_list(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([236, 87, 28, 106], ())
                 .expect("method not found (this should never happen)")
@@ -74,36 +131,21 @@ pub mod sanctions {
         ///Gets the contract's `SanctionsCheck` event
         pub fn sanctions_check_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            SanctionsCheckFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsCheckFilter> {
             self.0.event()
         }
         ///Gets the contract's `SanctionsList` event
         pub fn sanctions_list_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            SanctionsListFilter,
-        > {
+        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsListFilter> {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(
-            &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            SanctionsEvents,
-        > {
+        pub fn events(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsEvents> {
             self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for Sanctions<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for Sanctions<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -118,7 +160,7 @@ pub mod sanctions {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
     pub struct SanctionsCheckFilter {
@@ -134,7 +176,7 @@ pub mod sanctions {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
     pub struct SanctionsListFilter {
@@ -142,23 +184,14 @@ pub mod sanctions {
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum SanctionsEvents {
         SanctionsCheckFilter(SanctionsCheckFilter),
         SanctionsListFilter(SanctionsListFilter),
     }
     impl ::ethers_contract::EthLogDecode for SanctionsEvents {
-        fn decode_log(
-            log: &::ethers_core::abi::RawLog,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = SanctionsCheckFilter::decode_log(log) {
                 return Ok(SanctionsEvents::SanctionsCheckFilter(decoded));
             }
@@ -171,12 +204,8 @@ pub mod sanctions {
     impl ::core::fmt::Display for SanctionsEvents {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::SanctionsCheckFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::SanctionsListFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::SanctionsCheckFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::SanctionsListFilter(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
@@ -201,7 +230,7 @@ pub mod sanctions {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
     pub struct SanctionsCheckCall;
@@ -216,36 +245,25 @@ pub mod sanctions {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
     pub struct SanctionsListCall;
     ///Container type for all of the contract's call
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum SanctionsCalls {
         SanctionsCheck(SanctionsCheckCall),
         SanctionsList(SanctionsListCall),
     }
     impl ::ethers_core::abi::AbiDecode for SanctionsCalls {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SanctionsCheck(decoded));
             }
-            if let Ok(decoded)
-                = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SanctionsList(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -254,12 +272,8 @@ pub mod sanctions {
     impl ::ethers_core::abi::AbiEncode for SanctionsCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::SanctionsCheck(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SanctionsList(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::SanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SanctionsList(element) => ::ethers_core::abi::AbiEncode::encode(element),
             }
         }
     }
@@ -292,7 +306,7 @@ pub mod sanctions {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct SanctionsCheckReturn(pub bool);
     ///Container type for all return fields from the `sanctionsList` function with signature `sanctionsList()` and selector `0xec571c6a`
@@ -306,7 +320,7 @@ pub mod sanctions {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct SanctionsListReturn(pub ::ethers_core::types::Address);
 }

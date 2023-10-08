@@ -54,7 +54,7 @@ async fn test_create_chain_data_loader_rule_validator() {
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
     assert!(loader.is_ok());
 
-    let block_number = U64::from(16691439);
+    let mut block_number = U64::from(16691439);
     mock.push::<Vec<Log>, _>(vec![]).unwrap();
     mock.push::<Vec<Log>, _>(vec![]).unwrap();
     mock.push::<Vec<Log>, _>(vec![]).unwrap();
@@ -86,7 +86,7 @@ async fn test_create_chain_data_loader_rule_validator() {
         .build();
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
     assert!(loader.is_ok());
-    let block_number = block_number + 100;
+    block_number = block_number + 100;
     mock.push::<Vec<Log>, _>(vec![]).unwrap();
     mock.push::<Vec<Log>, _>(vec![]).unwrap();
     mock.push::<Vec<Log>, _>(vec![]).unwrap();

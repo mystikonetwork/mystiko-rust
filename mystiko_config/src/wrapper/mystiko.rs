@@ -183,13 +183,13 @@ impl MystikoConfig {
     pub fn find_asset_symbols(&self, chain_id: u64, peer_chain_id: u64) -> Vec<&str> {
         self.find_chain(chain_id)
             .map(|c| c.find_asset_symbols(peer_chain_id))
-            .unwrap_or(vec![])
+            .unwrap_or_default()
     }
 
     pub fn find_bridges(&self, chain_id: u64, peer_chain_id: u64, asset_symbol: &str) -> Vec<&BridgeType> {
         self.find_chain(chain_id)
             .map(|c| c.find_bridges(peer_chain_id, asset_symbol))
-            .unwrap_or(vec![])
+            .unwrap_or_default()
     }
 
     pub fn find_bridge(&self, bridge_type: &BridgeType) -> Option<&BridgeConfig> {
@@ -226,7 +226,7 @@ impl MystikoConfig {
     ) -> Vec<&PoolContractConfig> {
         self.find_chain(chain_id)
             .map(|c| c.find_pool_contracts(asset_symbol, bridge_type))
-            .unwrap_or(vec![])
+            .unwrap_or_default()
     }
 
     pub fn find_pool_contract(

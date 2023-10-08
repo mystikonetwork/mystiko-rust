@@ -7,18 +7,127 @@ pub use i_axelar_executable::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod i_axelar_executable {
-    #[rustfmt::skip]
-    const __ABI: &str = "[{\"inputs\":[],\"type\":\"error\",\"name\":\"NotApprovedByGateway\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"execute\",\"outputs\":[]},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"commandId\",\"type\":\"bytes32\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceChain\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"sourceAddress\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"string\",\"name\":\"tokenSymbol\",\"type\":\"string\",\"components\":[]},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"executeWithToken\",\"outputs\":[]},{\"inputs\":[],\"stateMutability\":\"view\",\"type\":\"function\",\"name\":\"gateway\",\"outputs\":[{\"internalType\":\"contract IAxelarGateway\",\"name\":\"\",\"type\":\"address\",\"components\":[]}]}]";
+    const _: () = {
+        ::core::include_bytes!("../json/IAxelarExecutable.json",);
+    };
+    #[allow(deprecated)]
+    fn __abi() -> ::ethers_core::abi::Abi {
+        ::ethers_core::abi::ethabi::Contract {
+            constructor: ::core::option::Option::None,
+            functions: ::core::convert::From::from([
+                (
+                    ::std::borrow::ToOwned::to_owned("execute"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("execute"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("commandId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("executeWithToken"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("executeWithToken"),
+                        inputs: ::std::vec![
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("commandId"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceChain"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("tokenSymbol"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers_core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                    },],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("gateway"),
+                    ::std::vec![::ethers_core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("gateway"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                "contract IAxelarGateway"
+                            ),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                    },],
+                ),
+            ]),
+            events: ::std::collections::BTreeMap::new(),
+            errors: ::core::convert::From::from([(
+                ::std::borrow::ToOwned::to_owned("NotApprovedByGateway"),
+                ::std::vec![::ethers_core::abi::ethabi::AbiError {
+                    name: ::std::borrow::ToOwned::to_owned("NotApprovedByGateway",),
+                    inputs: ::std::vec![],
+                },],
+            )]),
+            receive: false,
+            fallback: false,
+        }
+    }
     ///The parsed JSON ABI of the contract.
-    pub static IAXELAREXECUTABLE_ABI: ::ethers_contract::Lazy<
-        ::ethers_core::abi::Abi,
-    > = ::ethers_contract::Lazy::new(|| {
-        ::ethers_core::utils::__serde_json::from_str(__ABI)
-            .expect("ABI is always valid")
-    });
+    pub static IAXELAREXECUTABLE_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
+        ::ethers_contract::Lazy::new(__abi);
     pub struct IAxelarExecutable<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for IAxelarExecutable<M> {
         fn clone(&self) -> Self {
@@ -38,23 +147,20 @@ pub mod i_axelar_executable {
     }
     impl<M> ::core::fmt::Debug for IAxelarExecutable<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(IAxelarExecutable)).field(&self.address()).finish()
+            f.debug_tuple(::core::stringify!(IAxelarExecutable))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> IAxelarExecutable<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    IAXELAREXECUTABLE_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers_contract::Contract::new(
+                address.into(),
+                IAXELAREXECUTABLE_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `execute` (0x49160658) function
         pub fn execute(
@@ -65,10 +171,7 @@ pub mod i_axelar_executable {
             payload: ::ethers_core::types::Bytes,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash(
-                    [73, 22, 6, 88],
-                    (command_id, source_chain, source_address, payload),
-                )
+                .method_hash([73, 22, 6, 88], (command_id, source_chain, source_address, payload))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `executeWithToken` (0x1a98b2e0) function
@@ -84,31 +187,18 @@ pub mod i_axelar_executable {
             self.0
                 .method_hash(
                     [26, 152, 178, 224],
-                    (
-                        command_id,
-                        source_chain,
-                        source_address,
-                        payload,
-                        token_symbol,
-                        amount,
-                    ),
+                    (command_id, source_chain, source_address, payload, token_symbol, amount),
                 )
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `gateway` (0x116191b6) function
-        pub fn gateway(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        pub fn gateway(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
             self.0
                 .method_hash([17, 97, 145, 182], ())
                 .expect("method not found (this should never happen)")
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for IAxelarExecutable<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for IAxelarExecutable<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -124,7 +214,7 @@ pub mod i_axelar_executable {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[etherror(name = "NotApprovedByGateway", abi = "NotApprovedByGateway()")]
     pub struct NotApprovedByGateway;
@@ -139,7 +229,7 @@ pub mod i_axelar_executable {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "execute", abi = "execute(bytes32,string,string,bytes)")]
     pub struct ExecuteCall {
@@ -159,7 +249,7 @@ pub mod i_axelar_executable {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "executeWithToken",
@@ -184,20 +274,13 @@ pub mod i_axelar_executable {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "gateway", abi = "gateway()")]
     pub struct GatewayCall;
     ///Container type for all of the contract's call
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum IAxelarExecutableCalls {
         Execute(ExecuteCall),
@@ -205,22 +288,15 @@ pub mod i_axelar_executable {
         Gateway(GatewayCall),
     }
     impl ::ethers_core::abi::AbiDecode for IAxelarExecutableCalls {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <ExecuteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ExecuteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Execute(decoded));
             }
-            if let Ok(decoded)
-                = <ExecuteWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <ExecuteWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ExecuteWithToken(decoded));
             }
-            if let Ok(decoded)
-                = <GatewayCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <GatewayCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Gateway(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -230,9 +306,7 @@ pub mod i_axelar_executable {
         fn encode(self) -> Vec<u8> {
             match self {
                 Self::Execute(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::ExecuteWithToken(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::ExecuteWithToken(element) => ::ethers_core::abi::AbiEncode::encode(element),
                 Self::Gateway(element) => ::ethers_core::abi::AbiEncode::encode(element),
             }
         }
@@ -272,7 +346,7 @@ pub mod i_axelar_executable {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct GatewayReturn(pub ::ethers_core::types::Address);
 }
