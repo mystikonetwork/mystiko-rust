@@ -74,20 +74,20 @@ impl DataPackerClient {
             .url
             .or(packer_config.map(|c| c.url().to_string()))
             .unwrap_or(DEFAULT_PACKER_V1_URL.to_string());
-        let path_schema = options.path_schema.unwrap_or(Box::<PathSchemaV1>::default());
+        let path_schema = options.path_schema.unwrap_or_else(|| Box::<PathSchemaV1>::default());
         let compression = options
             .compression
             .or(packer_config.map(|c| match c.compression() {
                 PackerCompression::Zstd => Box::<ZstdCompression>::default() as Box<dyn Compression>,
             }))
-            .unwrap_or(Box::<ZstdCompression>::default());
+            .unwrap_or_else(|| Box::<ZstdCompression>::default());
         let checksum = options
             .checksum
             .or(packer_config.map(|c| match c.checksum() {
                 PackerChecksum::Sha512 => Box::<Sha512CheckSum>::default() as Box<dyn CheckSum>,
             }))
-            .unwrap_or(Box::<Sha512CheckSum>::default());
-        let http_client = options.http_client.unwrap_or(Default::default());
+            .unwrap_or_else(|| Box::<Sha512CheckSum>::default());
+        let http_client = options.http_client.unwrap_or_default();
         DataPackerClient {
             url,
             path_schema,

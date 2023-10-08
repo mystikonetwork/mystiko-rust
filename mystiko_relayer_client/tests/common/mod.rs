@@ -70,12 +70,11 @@ pub async fn create_client(
     .unwrap();
     mock.assert_async().await;
 
-    if chain_id.is_some() && contract_address.is_some() {
-        client.relayer_config = Arc::new(
-            RelayerConfig::from_json_str(create_relayer_config(chain_id.unwrap(), contract_address.unwrap()).as_str())
-                .unwrap(),
-        );
+    if let (Some(chain), Some(address)) = (chain_id, contract_address) {
+        client.relayer_config =
+            Arc::new(RelayerConfig::from_json_str(create_relayer_config(chain, address).as_str()).unwrap());
     }
+
     client
 }
 
@@ -85,8 +84,8 @@ pub async fn create_provider_pool(chain_id: u64, provider_url: Option<String>) -
         .chain_providers_options(mock_chain_config)
         .build();
 
-    if provider_url.is_some() {
-        let provider_options = ProviderOptions::builder().url(provider_url.unwrap()).build();
+    if let Some(url) = provider_url {
+        let provider_options = ProviderOptions::builder().url(url).build();
         let factory = DefaultProviderFactory::new();
         let providers_options = ProvidersOptions::Http(provider_options);
         let provider = factory.create_provider(providers_options).await.unwrap();

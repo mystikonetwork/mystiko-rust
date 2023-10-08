@@ -70,7 +70,9 @@ impl<T> FailoverProviderBuilder<T> {
 
     pub fn build(self) -> FailoverProvider<T> {
         FailoverProvider {
-            failover_policy: self.failover_policy.unwrap_or(Box::<DefaultFailoverPolicy>::default()),
+            failover_policy: self
+                .failover_policy
+                .unwrap_or_else(|| Box::<DefaultFailoverPolicy>::default()),
             providers: self.providers,
         }
     }
