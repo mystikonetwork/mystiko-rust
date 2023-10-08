@@ -36,22 +36,12 @@
           "maxAmount": "1000000000000000000000"
         },
         {
-          "version": 6,
+          "version": 5,
           "name": "MystikoV2LoopERC20",
           "address": "0x01BC19b166986431F3f2A348497C4634defb4C29",
           "startBlock": 16690443,
           "bridgeType": "loop",
           "poolAddress": "0x62121886c954d7e23077f52217b51c26ad26bE9e",
-          "minAmount": "100000000",
-          "maxAmount": "1000000000000"
-        },
-        {
-          "version": 5,
-          "name": "MystikoV2LoopERC20",
-          "address": "0x53DFAB04453EF45bc637c2687020990c7C8C16bc",
-          "startBlock": 16690446,
-          "bridgeType": "loop",
-          "poolAddress": "0x4333Ab5682Cd4589330BD9CFcedd5E054A0e9d8D",
           "minAmount": "100000000",
           "maxAmount": "1000000000000"
         }
@@ -77,12 +67,13 @@
           "minRollupFee": "15000000"
         },
         {
-          "version": 5,
+          "version": 6,
           "name": "CommitmentPool",
           "poolName": "alpha-20230223",
           "bridgeType": "loop",
           "address": "0x4333Ab5682Cd4589330BD9CFcedd5E054A0e9d8D",
           "startBlock": 16690445,
+          "disabledAt": 16692000,
           "assetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
           "minRollupFee": "15000000"
         }

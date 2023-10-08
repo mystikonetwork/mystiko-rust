@@ -116,13 +116,10 @@ where
             .build())
     }
 
-    async fn query_nullifiers(
-        &self,
-        _option: &NullifierQueryOption,
-    ) -> HandlerErrorResult<QueryResult<Vec<Nullifier>>> {
+    async fn query_nullifiers(&self, option: &NullifierQueryOption) -> HandlerErrorResult<QueryResult<Vec<Nullifier>>> {
         self.nullifiers.write().await.pop().map_or_else(
             || Err(anyhow::Error::msg("mock query nullifiers error".to_string()).into()),
-            |ns| Ok(QueryResult::builder().end_block(0_u64).result(ns).build()),
+            |ns| Ok(QueryResult::builder().end_block(option.end_block).result(ns).build()),
         )
     }
 

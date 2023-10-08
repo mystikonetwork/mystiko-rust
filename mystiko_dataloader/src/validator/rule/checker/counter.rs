@@ -57,8 +57,16 @@ where
         merged_data: &ValidateMergedData,
         contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
-        self.check_commitment_included_count(merged_data, contract).await?;
-        self.check_commitment_count(data, merged_data, contract).await
+        if data.should_skip_commitment_check() {
+            if merged_data.commitments.is_empty() {
+                Ok(())
+            } else {
+                Err(CounterCheckerError::CommitmentAfterContractDisabledError.into())
+            }
+        } else {
+            self.check_commitment_included_count(merged_data, contract).await?;
+            self.check_commitment_count(data, merged_data, contract).await
+        }
     }
 
     async fn check_commitment_included_count(

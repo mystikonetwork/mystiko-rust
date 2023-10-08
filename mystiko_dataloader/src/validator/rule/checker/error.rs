@@ -92,6 +92,8 @@ pub enum SequenceCheckerError {
 pub enum CounterCheckerError {
     #[error("target block error expected {0} actual {1}")]
     TargetBlockError(u64, u64),
+    #[error("fetch commitment after contract disabled error")]
+    CommitmentAfterContractDisabledError,
     #[error("commitment included count mismatch error fetcher {0} provider {1}")]
     CommitmentIncludedCountMismatchError(u64, u64),
     #[error("commitment total count mismatch error fetcher {0} provider {1}")]

@@ -36,9 +36,13 @@ where
 {
     async fn check<'a>(
         &self,
-        _data: &ValidateOriginalData<'a, R>,
+        data: &ValidateOriginalData<'a, R>,
         merged_data: &ValidateMergedData,
     ) -> CheckerResult<()> {
+        if data.should_skip_commitment_check() {
+            return Ok(());
+        }
+
         if !merged_data
             .commitments
             .iter()
