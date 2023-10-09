@@ -11,6 +11,7 @@ use tonic::server::NamedService;
 use tonic::transport::server::{Router, Routes};
 use tonic::transport::{Body, Server};
 use tonic_web::GrpcWebLayer;
+use tower_http::cors::CorsLayer;
 use tower_layer::Layer;
 use typed_builder::TypedBuilder;
 
@@ -39,7 +40,11 @@ impl GrpcServer {
         let enable_web = options.enable_web();
         let mut server: Server = options.try_into()?;
         if enable_web {
-            let router = server.layer(GrpcWebLayer::new()).add_service(service);
+            let cors = CorsLayer::new()
+                .allow_headers(tower_http::cors::Any)
+                .allow_methods(tower_http::cors::Any)
+                .allow_origin(tower_http::cors::Any);
+            let router = server.layer(cors).layer(GrpcWebLayer::new()).add_service(service);
             self.start_with_router(router, address).await
         } else {
             let router = server.add_service(service);
