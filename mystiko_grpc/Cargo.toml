@@ -6,7 +6,7 @@ edition = "2021"
 [features]
 default = []
 fs = ["tokio/fs"]
-server = ["mystiko_protos/grpc-server", "bytes", "http-body", "tower-layer", "tonic-web"]
+server = ["mystiko_protos/grpc-server", "bytes", "http-body", "tower-http", "tower-layer", "tonic-web"]
 
 [dependencies]
 anyhow = { version = "1.0.69" }
@@ -17,6 +17,7 @@ mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-featur
 tokio = { version = "1.27.0", features = ["sync"] }
 tonic = { version = "0.9.2", features = ["tls", "tls-roots"] }
 tonic-web = { version = "0.9.2", optional = true }
+tower-http = { version = "0.4.4", optional = true }
 tower-layer = { version = "0.3.2", optional = true }
 typed-builder = { version = "0.15.2" }
 

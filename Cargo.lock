@@ -3555,6 +3555,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tonic-web",
+ "tower-http",
  "tower-layer",
  "typed-builder 0.15.2",
 ]
