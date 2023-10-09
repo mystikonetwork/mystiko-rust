@@ -13,6 +13,20 @@ pub struct ValidateOriginalData<'a, R: LoadedData> {
     pub option: &'a ValidateOption,
 }
 
+impl<'a, R> ValidateOriginalData<'a, R>
+where
+    R: LoadedData,
+{
+    pub fn should_skip_commitment_check(&self) -> bool {
+        if let Some(disabled_at) = self.contract_config.disabled_at() {
+            if self.contract_data.start_block > *disabled_at {
+                return true;
+            }
+        }
+        false
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, TypedBuilder)]
 pub struct ValidateMergedData {
     pub chain_id: u64,

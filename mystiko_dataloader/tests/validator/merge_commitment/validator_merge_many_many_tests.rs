@@ -163,7 +163,6 @@ async fn test_many_queued_many_included_part_same_commitment() {
     handler.add_commitments(cms[0..5].to_vec()).await;
     handler.add_commitments(cms[0..5].to_vec()).await;
     handler.add_commitments(vec![]).await;
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(cms[0..5].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
     mock_checker_validator.validate(&data, &option).await.unwrap();
@@ -454,7 +453,6 @@ async fn test_many_queued_many_included_different_commitment() {
     handler.add_commitments(cms[0..10].to_vec()).await;
     handler.add_commitments(cms[0..10].to_vec()).await;
     handler.add_commitments(vec![]).await;
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(cms[0..10].to_vec()).await;
     let result = validator.validate(&data, &option).await.unwrap();
     let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
@@ -576,7 +574,6 @@ async fn test_many_queued_many_included_handler_disorder_commitment() {
     handler.add_commitments(handler_cms.clone()).await;
     handler.add_commitments(handler_cms.clone()).await;
     handler.add_commitments(vec![]).await;
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(handler_cms.clone()).await;
     let result = validator.validate(&data, &option).await.unwrap();
     let result2 = mock_checker_validator.validate(&data, &option).await.unwrap();
@@ -604,7 +601,6 @@ async fn test_many_queued_many_included_handler_disorder_commitment() {
     handler_cms.reverse();
     handler.add_commitments(handler_cms.clone()).await;
     handler.add_commitments(handler_cms.clone()).await;
-    handler.add_commitments(vec![]).await;
     handler.add_commitments(vec![]).await;
     handler.add_commitments(handler_cms.clone()).await;
     let result = validator.validate(&data, &option).await.unwrap();
