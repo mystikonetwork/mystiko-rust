@@ -29,7 +29,7 @@ fn init_deposit_contract_config() -> RawDepositContractConfig {
         .start_block(1000000)
         .bridge_type(BridgeType::Tbridge)
         .pool_address("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d".to_string())
-        .disabled(true)
+        .disabled_at(Some(1001000))
         .peer_chain_id(Some(97))
         .peer_contract_address(Some("0x98bF2d9e3bA2A8515E660BD4104432ce3e2D7547".to_string()))
         .min_amount("10000000000000000".to_string())

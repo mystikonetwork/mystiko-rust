@@ -7,18 +7,56 @@ pub use i_layer_zero_receiver::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod i_layer_zero_receiver {
-    #[rustfmt::skip]
-    const __ABI: &str = "[{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_srcChainId\",\"type\":\"uint16\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_srcAddress\",\"type\":\"bytes\",\"components\":[]},{\"internalType\":\"uint64\",\"name\":\"_nonce\",\"type\":\"uint64\",\"components\":[]},{\"internalType\":\"bytes\",\"name\":\"_payload\",\"type\":\"bytes\",\"components\":[]}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"name\":\"lzReceive\",\"outputs\":[]}]";
+    const _: () = {
+        ::core::include_bytes!("../json/ILayerZeroReceiver.json",);
+    };
+    #[allow(deprecated)]
+    fn __abi() -> ::ethers_core::abi::Abi {
+        ::ethers_core::abi::ethabi::Contract {
+            constructor: ::core::option::Option::None,
+            functions: ::core::convert::From::from([(
+                ::std::borrow::ToOwned::to_owned("lzReceive"),
+                ::std::vec![::ethers_core::abi::ethabi::Function {
+                    name: ::std::borrow::ToOwned::to_owned("lzReceive"),
+                    inputs: ::std::vec![
+                        ::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
+                        },
+                        ::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                        },
+                        ::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_nonce"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
+                        },
+                        ::ethers_core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("_payload"),
+                            kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                        },
+                    ],
+                    outputs: ::std::vec![],
+                    constant: ::core::option::Option::None,
+                    state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                },],
+            )]),
+            events: ::std::collections::BTreeMap::new(),
+            errors: ::std::collections::BTreeMap::new(),
+            receive: false,
+            fallback: false,
+        }
+    }
     ///The parsed JSON ABI of the contract.
-    pub static ILAYERZERORECEIVER_ABI: ::ethers_contract::Lazy<
-        ::ethers_core::abi::Abi,
-    > = ::ethers_contract::Lazy::new(|| {
-        ::ethers_core::utils::__serde_json::from_str(__ABI)
-            .expect("ABI is always valid")
-    });
+    pub static ILAYERZERORECEIVER_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
+        ::ethers_contract::Lazy::new(__abi);
     pub struct ILayerZeroReceiver<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for ILayerZeroReceiver<M> {
         fn clone(&self) -> Self {
@@ -38,23 +76,20 @@ pub mod i_layer_zero_receiver {
     }
     impl<M> ::core::fmt::Debug for ILayerZeroReceiver<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(stringify!(ILayerZeroReceiver)).field(&self.address()).finish()
+            f.debug_tuple(::core::stringify!(ILayerZeroReceiver))
+                .field(&self.address())
+                .finish()
         }
     }
     impl<M: ::ethers_providers::Middleware> ILayerZeroReceiver<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    ILAYERZERORECEIVER_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers_contract::Contract::new(
+                address.into(),
+                ILAYERZERORECEIVER_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `lzReceive` (0x001d3567) function
         pub fn lz_receive(
@@ -65,15 +100,11 @@ pub mod i_layer_zero_receiver {
             payload: ::ethers_core::types::Bytes,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash(
-                    [0, 29, 53, 103],
-                    (src_chain_id, src_address, nonce, payload),
-                )
+                .method_hash([0, 29, 53, 103], (src_chain_id, src_address, nonce, payload))
                 .expect("method not found (this should never happen)")
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for ILayerZeroReceiver<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for ILayerZeroReceiver<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -89,7 +120,7 @@ pub mod i_layer_zero_receiver {
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "lzReceive", abi = "lzReceive(uint16,bytes,uint64,bytes)")]
     pub struct LzReceiveCall {

@@ -179,7 +179,7 @@ fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<Ether
                 .find_chain(option.chain_id)
                 .ok_or(EtherscanFetcherError::UnsupportedChainError(option.chain_id))?;
             Ok(chain_config
-                .contracts_with_disabled()
+                .contracts()
                 .into_iter()
                 .map(|contract_config| {
                     EtherscanFetchOptions::builder()

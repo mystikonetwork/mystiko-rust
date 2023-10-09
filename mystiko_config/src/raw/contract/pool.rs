@@ -17,6 +17,10 @@ pub struct RawPoolContractConfig {
     #[validate(custom = "is_ethereum_address")]
     pub address: String,
 
+    #[validate(range(min = 1))]
+    #[builder(default = None)]
+    pub disabled_at: Option<u64>,
+
     #[serde(rename = "type")]
     #[serde(default = "default_contract_type")]
     #[validate(custom = "validate_contract_type")]
