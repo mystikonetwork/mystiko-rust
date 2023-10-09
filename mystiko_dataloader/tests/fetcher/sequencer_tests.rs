@@ -141,7 +141,7 @@ async fn test_fulldata_fetch() {
     client
         .expect_fetch_chain()
         .returning(move |rerquest| {
-            if rerquest.start_block == test_start_block {
+            if rerquest.contracts[0].start_block.unwrap() == test_start_block {
                 Ok(response1.clone())
             } else {
                 Ok(response2.clone())
@@ -331,14 +331,13 @@ async fn test_fulldata_fetch_error() {
 
     let fetcher: SequencerFetcher<FullData, MockSequencerClient> = Arc::new(client).into();
     let fetch_results = fetcher.fetch(&fetch_options).await;
-    let result = fetch_results.unwrap();
-    assert_eq!(result.contract_results.len(), 1);
-    assert!(result.contract_results[0].result.is_err());
+    assert!(fetch_results.is_err());
     assert_eq!(
-        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        fetch_results.as_ref().err().unwrap().to_string(),
         format!("unknown error: {}", block_error_msg)
     );
 
+    //another error
     let test_start_block2 = test_end_block + 1;
     let fetch_options2 = FetchOptions::builder()
         .chain_id(test_chain_id)
@@ -373,45 +372,51 @@ async fn test_lite_data_fetch() {
 
     let test_address1 = "0xCB255075f38C75EAf2DE8A72897649dba9B90299";
     let test_address2 = "0x433dD8dBb9e631fbA277c91D09133Ae2616833Fa";
-    let test_commitment_hash =
+    let test_commitment_hash1 =
         biguint_str_to_bytes("7018260368219958685591690287020455882335116439695048193945341664494747090540").unwrap();
-    let test_transaction_hash =
+    let test_transaction_hash1 =
         decode_hex("0xdde18155633283b4e45fa9b8db3add12b0ca4172c21b33eacceee5b41295fe2b").unwrap();
-    let test_nullifier =
-        biguint_str_to_bytes("12211436598431488691766057295382431251629992667648389012648413950694818133703").unwrap();
-    let contract = build_fetch_contract_response(
+    let contract1 = build_fetch_contract_response(
         test_address1,
         test_start_block,
         test_end_block - 10,
-        test_commitment_hash.clone(),
-        test_transaction_hash.clone(),
-        Some(test_nullifier.clone()),
+        test_commitment_hash1.clone(),
+        test_transaction_hash1.clone(),
+        None,
         DataType::Lite,
     );
-    let response = build_fetch_chain_response(test_chain_id, vec![contract]);
 
     let test_start_block2: u64 = test_end_block + 1;
     let test_end_block2: u64 = test_end_block + sequencer_fetch_size;
-    let test_commitment_hash =
+    let test_commitment_hash2 =
         biguint_str_to_bytes("16739047340041860107670974487432292244530476292857805032774393627440911777131").unwrap();
-    let test_transaction_hash =
+    let test_transaction_hash2 =
         decode_hex("0xd799146e822e2826ebb3e0ecd4abae15f1fc07096bf6fdcd2af5705df0aff753").unwrap();
-    let test_nullifier =
-        biguint_str_to_bytes("12221436598431488691766057295382431251629992667648389012648413950694818133703").unwrap();
-    let contract = build_fetch_contract_response(
+    let contract2 = build_fetch_contract_response(
+        test_address2,
+        test_start_block2,
+        test_start_block2 + 10,
+        test_commitment_hash2.clone(),
+        test_transaction_hash2.clone(),
+        None,
+        DataType::Lite,
+    );
+    let response = build_fetch_chain_response(test_chain_id, vec![contract1, contract2]);
+
+    let contract1_2 = build_fetch_contract_response(
         test_address1,
         test_start_block2,
         test_end_block2 - 10,
-        test_commitment_hash.clone(),
-        test_transaction_hash.clone(),
-        Some(test_nullifier.clone()),
+        vec![1u8, 2u8, 3u8],
+        vec![4u8, 5u8, 6u8],
+        None,
         DataType::Lite,
     );
-    let response2 = build_fetch_chain_response(test_chain_id, vec![contract]);
+    let response2 = build_fetch_chain_response(test_chain_id, vec![contract1_2]);
 
     let mut client = MockSequencerClient::new();
     client.expect_fetch_chain().returning(move |request| {
-        if request.start_block == test_start_block {
+        if request.contracts.len() > 1 {
             Ok(response.clone())
         } else {
             Ok(response2.clone())
@@ -427,12 +432,12 @@ async fn test_lite_data_fetch() {
     let contract_fetch_option = vec![
         ContractFetchOptions::builder()
             .contract_config(contract_config.clone())
-            .start_block(test_start_block2)
+            .start_block(test_start_block)
             .target_block(test_end_block2)
             .build(),
         ContractFetchOptions::builder()
             .contract_config(contract_config2.clone())
-            .start_block(test_start_block)
+            .start_block(test_start_block2)
             .target_block(test_end_block2)
             .build(),
     ];
@@ -454,15 +459,15 @@ async fn test_lite_data_fetch() {
 
     assert_eq!(result.contract_results[0].address, test_address1.to_string());
     let contract_result1 = result.contract_results[0].result.as_ref().unwrap();
-    assert_eq!(contract_result1.start_block, test_start_block2);
+    assert_eq!(contract_result1.start_block, test_start_block);
     let contract1_commitments = &contract_result1.data.as_ref().unwrap().commitments;
-    assert_eq!(contract1_commitments.len(), 1);
-    assert_eq!(contract1_commitments[0].block_number, test_end_block2 - 10);
-    assert_eq!(contract1_commitments[0].commitment_hash, test_commitment_hash);
+    assert_eq!(contract1_commitments.len(), 2);
+    assert_eq!(contract1_commitments[0].block_number, test_end_block - 10);
+    assert_eq!(contract1_commitments[0].commitment_hash, test_commitment_hash1);
 
     let contract_result2 = result.contract_results[1].result.as_ref().unwrap();
-    assert_eq!(contract_result2.start_block, test_start_block);
-    assert_eq!(contract_result2.data.as_ref().unwrap().commitments.len(), 2);
+    assert_eq!(contract_result2.start_block, test_start_block2);
+    assert_eq!(contract_result2.data.as_ref().unwrap().commitments.len(), 1);
 }
 
 #[tokio::test]
