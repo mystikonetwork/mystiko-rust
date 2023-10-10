@@ -12,7 +12,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use mystiko_config::{ChainConfig, MystikoConfig};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
-use mystiko_protos::storage::v1::{Condition, QueryFilter, SubFilter};
+use mystiko_protos::storage::v1::{Condition, ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, DocumentData, MigrationHistory, StatementFormatter, Storage};
 use mystiko_utils::time::current_timestamp;
 use std::collections::{HashMap, HashSet};
@@ -268,45 +268,74 @@ where
         let actual_end_block = self
             .wrap_contract_end_block(chain_config, option.contract_address.as_str(), option.end_block)
             .await?;
-        let mut sub_filters = vec![];
-        sub_filters.push(SubFilter::equal(C::column_chain_id(), option.chain_id));
-        sub_filters.push(SubFilter::equal(
-            C::column_contract_address(),
-            option.contract_address.to_string(),
-        ));
-        let start_block = option.start_block.unwrap_or(chain_config.start_block());
-        let block_num_column = match option.status {
-            Some(status) => match status {
-                CommitmentStatus::Unspecified => {
-                    sub_filters.push(SubFilter::equal(
-                        C::column_status(),
-                        CommitmentStatus::Unspecified as i32,
-                    ));
-                    C::column_block_number()
-                }
-                CommitmentStatus::SrcSucceeded => {
-                    sub_filters.push(SubFilter::equal(
-                        C::column_status(),
-                        CommitmentStatus::SrcSucceeded as i32,
-                    ));
-                    C::column_src_block_number()
-                }
-                CommitmentStatus::Queued => {
-                    sub_filters.push(SubFilter::equal(C::column_status(), CommitmentStatus::Queued as i32));
-                    C::column_block_number()
-                }
-                CommitmentStatus::Included => {
-                    sub_filters.push(SubFilter::equal(C::column_status(), CommitmentStatus::Included as i32));
-                    C::column_included_block_number()
-                }
-            },
-            None => C::column_block_number(),
-        };
-        sub_filters.push(SubFilter::between_and(block_num_column, start_block, actual_end_block));
         if let Some(commitment_hashes) = option.commitment_hash.clone() {
-            sub_filters.push(SubFilter::in_list(C::column_commitment_hash(), commitment_hashes));
+            return Ok((
+                QueryFilter::from(vec![
+                    SubFilter::equal(C::column_chain_id(), option.chain_id),
+                    SubFilter::equal(C::column_contract_address(), option.contract_address.to_string()),
+                    SubFilter::in_list(C::column_commitment_hash(), commitment_hashes),
+                ]),
+                actual_end_block,
+            ));
         }
-        Ok((QueryFilter::from(sub_filters), actual_end_block))
+        let statuses = if let Some(status) = option.status {
+            vec![status]
+        } else {
+            vec![
+                CommitmentStatus::Unspecified,
+                CommitmentStatus::SrcSucceeded,
+                CommitmentStatus::Queued,
+                CommitmentStatus::Included,
+            ]
+        };
+        let start_block = option.start_block.unwrap_or(chain_config.start_block());
+        let conditions = statuses
+            .into_iter()
+            .map(|status| {
+                let mut sub_filters = vec![];
+                sub_filters.push(SubFilter::equal(C::column_chain_id(), option.chain_id));
+                sub_filters.push(SubFilter::equal(
+                    C::column_contract_address(),
+                    option.contract_address.to_string(),
+                ));
+                let block_num_column = match status {
+                    CommitmentStatus::Unspecified => {
+                        sub_filters.push(SubFilter::equal(
+                            C::column_status(),
+                            CommitmentStatus::Unspecified as i32,
+                        ));
+                        C::column_block_number()
+                    }
+                    CommitmentStatus::SrcSucceeded => {
+                        sub_filters.push(SubFilter::equal(
+                            C::column_status(),
+                            CommitmentStatus::SrcSucceeded as i32,
+                        ));
+                        C::column_src_block_number()
+                    }
+                    CommitmentStatus::Queued => {
+                        sub_filters.push(SubFilter::equal(C::column_status(), CommitmentStatus::Queued as i32));
+                        C::column_block_number()
+                    }
+                    CommitmentStatus::Included => {
+                        sub_filters.push(SubFilter::equal(C::column_status(), CommitmentStatus::Included as i32));
+                        C::column_included_block_number()
+                    }
+                };
+                sub_filters.push(SubFilter::between_and(block_num_column, start_block, actual_end_block));
+                Condition::builder()
+                    .sub_filters(sub_filters)
+                    .operator(ConditionOperator::And)
+                    .build()
+            })
+            .collect::<Vec<_>>();
+        Ok((
+            QueryFilter::builder()
+                .conditions(conditions)
+                .conditions_operator(ConditionOperator::Or)
+                .build(),
+            actual_end_block,
+        ))
     }
 
     async fn to_nullifier_filter(&self, option: &NullifierQueryOption) -> Result<(QueryFilter, u64)> {

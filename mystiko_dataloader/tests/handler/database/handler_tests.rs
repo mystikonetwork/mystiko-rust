@@ -166,9 +166,9 @@ async fn test_query_commitments() {
             contract_address: "address1".to_string(),
             commitment_hash: BigUint::from(1111_u32),
             status: CommitmentStatus::Included.into(),
-            block_number: 1000_u64,
+            block_number: 400_u64,
             src_chain_block_number: None,
-            included_block_number: Some(900_u64),
+            included_block_number: Some(1010_u64),
             leaf_index: Some(1_u64),
             rollup_fee: None,
             encrypted_notes: None,
@@ -196,8 +196,8 @@ async fn test_query_commitments() {
             contract_address: "address1".to_string(),
             commitment_hash: BigUint::from(3333_u32),
             status: CommitmentStatus::SrcSucceeded.into(),
-            block_number: 2800_u64,
-            src_chain_block_number: Some(2900_u64),
+            block_number: 2100_u64,
+            src_chain_block_number: Some(2000_u64),
             included_block_number: None,
             leaf_index: Some(3_u64),
             rollup_fee: None,
@@ -230,9 +230,10 @@ async fn test_query_commitments() {
         .start_block(500_u64)
         .end_block(2000_u64)
         .build();
-    let commitments = database_handler.query_commitments(&option).await.unwrap();
+    let mut commitments = database_handler.query_commitments(&option).await.unwrap();
+    commitments.result.sort_by_key(|c| c.leaf_index.unwrap_or_default());
     assert_eq!(commitments.end_block, 2000_u64);
-    assert_eq!(commitments.result.len(), 2);
+    assert_eq!(commitments.result.len(), 3);
     assert_eq!(
         commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(1111_u32))
@@ -242,6 +243,10 @@ async fn test_query_commitments() {
         biguint_to_bytes(&BigUint::from(2222_u32))
     );
     assert_eq!(commitments.result[1].block_number, 2000_u64);
+    assert_eq!(
+        commitments.result[2].commitment_hash,
+        biguint_to_bytes(&BigUint::from(3333_u32))
+    );
     // commitment status is Unspecified
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
@@ -262,18 +267,18 @@ async fn test_query_commitments() {
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
         .contract_address("address1".to_string())
-        .end_block(900_u64)
+        .end_block(2000_u64)
         .status(CommitmentStatus::Included)
-        .start_block(100_u64)
+        .start_block(1000_u64)
         .build();
     let commitments = database_handler.query_commitments(&option).await.unwrap();
-    assert_eq!(commitments.end_block, 900_u64);
+    assert_eq!(commitments.end_block, 2000_u64);
     assert_eq!(commitments.result.len(), 1);
     assert_eq!(
         commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(1111_u32))
     );
-    assert_eq!(commitments.result[0].included_block_number, Some(900_u64));
+    assert_eq!(commitments.result[0].included_block_number, Some(1010_u64));
     // commitment status is Queued
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
@@ -306,7 +311,7 @@ async fn test_query_commitments() {
         commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(3333_u32))
     );
-    assert_eq!(commitments.result[0].src_chain_block_number, Some(2900_u64));
+    assert_eq!(commitments.result[0].src_chain_block_number, Some(2000_u64));
 }
 
 #[tokio::test]
