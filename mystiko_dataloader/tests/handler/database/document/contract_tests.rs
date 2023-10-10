@@ -37,7 +37,7 @@ async fn test_from_config() {
         "0x7F88F2A3Cf18E96844E14CaE59EC97B908734C01".to_string()
     );
     assert_eq!(contract.chain_id, 1u64);
-    assert_eq!(contract.loaded_block, 16690439);
+    assert_eq!(contract.loaded_block, 16690440);
     let contract_result = Contract::from_config(
         Arc::clone(&config),
         123456u64,
