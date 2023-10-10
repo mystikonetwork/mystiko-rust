@@ -147,24 +147,16 @@ where
         match status {
             CommitmentStatus::Unspecified => Err(SequenceCheckerError::CommitmentStatusError.into()),
             CommitmentStatus::SrcSucceeded | CommitmentStatus::Included => {
-                self.query_handler_commitment_count(data, status).await
+                self.query_handler_commitment_count(data, Some(status)).await
             }
-            CommitmentStatus::Queued => {
-                let included_count = self
-                    .query_handler_commitment_count(data, CommitmentStatus::Included)
-                    .await?;
-                let queued_count = self
-                    .query_handler_commitment_count(data, CommitmentStatus::Queued)
-                    .await?;
-                Ok(included_count + queued_count)
-            }
+            CommitmentStatus::Queued => self.query_handler_commitment_count(data, None).await,
         }
     }
 
     async fn query_handler_commitment_count(
         &self,
         data: &ValidateMergedData,
-        status: CommitmentStatus,
+        status: Option<CommitmentStatus>,
     ) -> CheckerResult<u64> {
         let target_block = data.start_block - 1;
         let option = CommitmentQueryOption::builder()

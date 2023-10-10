@@ -166,9 +166,9 @@ async fn test_query_commitments() {
             contract_address: "address1".to_string(),
             commitment_hash: BigUint::from(1111_u32),
             status: CommitmentStatus::Included.into(),
-            block_number: 1000_u64,
+            block_number: 400_u64,
             src_chain_block_number: None,
-            included_block_number: Some(900_u64),
+            included_block_number: Some(1010_u64),
             leaf_index: Some(1_u64),
             rollup_fee: None,
             encrypted_notes: None,
@@ -196,8 +196,8 @@ async fn test_query_commitments() {
             contract_address: "address1".to_string(),
             commitment_hash: BigUint::from(3333_u32),
             status: CommitmentStatus::SrcSucceeded.into(),
-            block_number: 2800_u64,
-            src_chain_block_number: Some(2900_u64),
+            block_number: 2100_u64,
+            src_chain_block_number: Some(2000_u64),
             included_block_number: None,
             leaf_index: Some(3_u64),
             rollup_fee: None,
@@ -230,9 +230,10 @@ async fn test_query_commitments() {
         .start_block(500_u64)
         .end_block(2000_u64)
         .build();
-    let commitments = database_handler.query_commitments(&option).await.unwrap();
+    let mut commitments = database_handler.query_commitments(&option).await.unwrap();
+    commitments.result.sort_by_key(|c| c.leaf_index.unwrap_or_default());
     assert_eq!(commitments.end_block, 2000_u64);
-    assert_eq!(commitments.result.len(), 2);
+    assert_eq!(commitments.result.len(), 3);
     assert_eq!(
         commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(1111_u32))
@@ -242,6 +243,10 @@ async fn test_query_commitments() {
         biguint_to_bytes(&BigUint::from(2222_u32))
     );
     assert_eq!(commitments.result[1].block_number, 2000_u64);
+    assert_eq!(
+        commitments.result[2].commitment_hash,
+        biguint_to_bytes(&BigUint::from(3333_u32))
+    );
     // commitment status is Unspecified
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
@@ -262,18 +267,18 @@ async fn test_query_commitments() {
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
         .contract_address("address1".to_string())
-        .end_block(900_u64)
+        .end_block(2000_u64)
         .status(CommitmentStatus::Included)
-        .start_block(100_u64)
+        .start_block(1000_u64)
         .build();
     let commitments = database_handler.query_commitments(&option).await.unwrap();
-    assert_eq!(commitments.end_block, 900_u64);
+    assert_eq!(commitments.end_block, 2000_u64);
     assert_eq!(commitments.result.len(), 1);
     assert_eq!(
         commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(1111_u32))
     );
-    assert_eq!(commitments.result[0].included_block_number, Some(900_u64));
+    assert_eq!(commitments.result[0].included_block_number, Some(1010_u64));
     // commitment status is Queued
     let option = CommitmentQueryOption::builder()
         .chain_id(1_u64)
@@ -306,7 +311,7 @@ async fn test_query_commitments() {
         commitments.result[0].commitment_hash,
         biguint_to_bytes(&BigUint::from(3333_u32))
     );
-    assert_eq!(commitments.result[0].src_chain_block_number, Some(2900_u64));
+    assert_eq!(commitments.result[0].src_chain_block_number, Some(2000_u64));
 }
 
 #[tokio::test]
@@ -1251,7 +1256,6 @@ async fn test_initialize() {
     collection.insert_batch(&mock_contracts).await.unwrap();
     let result = database_handler.initialize().await;
     assert!(result.is_ok());
-    let chain_config_1 = config.find_chain(1_u64).unwrap();
     let contract_1_1 = config
         .find_deposit_contract_by_address(1_u64, "0x53DFAB04453EF45bc637c2687020990c7C8C16bc")
         .unwrap();
@@ -1268,7 +1272,7 @@ async fn test_initialize() {
     assert!(db_contract_1_1.is_some());
     let db_contract_1_1 = db_contract_1_1.unwrap();
     assert_eq!(contract_1_1.address(), db_contract_1_1.data.contract_address);
-    assert_eq!(chain_config_1.start_block(), db_contract_1_1.data.loaded_block);
+    assert_eq!(contract_1_1.start_block(), db_contract_1_1.data.loaded_block);
     let contract_1: Vec<Document<Contract>> = collection
         .find::<Contract, QueryFilter>(Some(QueryFilter::from(SubFilter::equal(
             Contract::column_chain_id(),

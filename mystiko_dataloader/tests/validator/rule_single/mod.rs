@@ -1,3 +1,5 @@
+mod validator_rule_counter_full_data_tests;
+mod validator_rule_counter_lite_data_tests;
 mod validator_rule_counter_tests;
 mod validator_rule_integrity_tests;
 mod validator_rule_sequence_tests;
