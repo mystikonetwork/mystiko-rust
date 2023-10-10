@@ -135,35 +135,45 @@ where
                 .block(BlockId::Number(BlockNumber::Number(merged_data.end_block.into())))
                 .await?
                 .as_u64();
+
             match merged_data.commitments.last() {
-                None => {
-                    let target_block = merged_data.start_block - 1;
-                    let option = CommitmentQueryOption::builder()
-                        .chain_id(merged_data.chain_id)
-                        .contract_address(merged_data.contract_address.clone())
-                        .end_block(target_block)
-                        .build();
-                    let query_result = self.handler.count_commitments(&option).await?;
-                    if query_result.end_block != target_block {
-                        return Err(CounterCheckerError::TargetBlockError(target_block, query_result.end_block).into());
-                    }
-                    if total != query_result.result {
-                        return Err(
-                            CounterCheckerError::CommitmentCountMismatchError(query_result.result, total).into(),
-                        );
-                    }
-                }
+                None => self.check_commitment_count_with_handler(total, merged_data).await?,
                 Some(cm) => {
-                    let fetched_total_count = cm.leaf_index + 1;
-                    if total != fetched_total_count {
-                        return Err(
-                            CounterCheckerError::CommitmentCountMismatchError(fetched_total_count, total).into(),
-                        );
+                    if cm.status == CommitmentStatus::Included && !cm.inner_merge {
+                        self.check_commitment_count_with_handler(total, merged_data).await?;
+                    } else {
+                        let fetched_total_count = cm.leaf_index + 1;
+                        if total != fetched_total_count {
+                            return Err(
+                                CounterCheckerError::CommitmentCountMismatchError(fetched_total_count, total).into(),
+                            );
+                        }
                     }
                 }
-            }
+            };
         }
 
+        Ok(())
+    }
+
+    async fn check_commitment_count_with_handler<'a>(
+        &self,
+        total: u64,
+        merged_data: &ValidateMergedData,
+    ) -> CheckerResult<()> {
+        let target_block = merged_data.start_block - 1;
+        let option = CommitmentQueryOption::builder()
+            .chain_id(merged_data.chain_id)
+            .contract_address(merged_data.contract_address.clone())
+            .end_block(target_block)
+            .build();
+        let query_result = self.handler.count_commitments(&option).await?;
+        if query_result.end_block != target_block {
+            return Err(CounterCheckerError::TargetBlockError(target_block, query_result.end_block).into());
+        }
+        if total != query_result.result {
+            return Err(CounterCheckerError::CommitmentCountMismatchError(query_result.result, total).into());
+        }
         Ok(())
     }
 
