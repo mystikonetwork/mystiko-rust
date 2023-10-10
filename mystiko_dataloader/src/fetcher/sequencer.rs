@@ -37,16 +37,6 @@ pub enum SequencerFetcherError {
     UnsupportedChainError(u64),
 }
 
-#[derive(Clone, Debug, TypedBuilder)]
-#[builder(field_defaults(setter(into)))]
-struct FetchContractOptions {
-    pub(crate) chain_id: u64,
-    pub(crate) contract_address: String,
-    pub(crate) start_block: u64,
-    pub(crate) target_block: u64,
-    pub(crate) sequencer_fetch_size: u64,
-}
-
 #[async_trait]
 impl<R, C> DataFetcher<R> for SequencerFetcher<R, C>
 where
@@ -65,23 +55,12 @@ where
         })?;
         let sequencer_fetch_size = chain_config.sequencer_fetch_size().max(1);
 
-        let contract_options = to_options(sequencer_fetch_size, option);
+        let responses = fetch_response::<R, C>(sequencer_fetch_size, option, &self.client)
+            .await
+            .map_err(FetcherError::AnyhowError)?;
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
-            .contract_results(match contract_options {
-                Some(options) => fetch_contracts::<R, C>(
-                    options,
-                    &self.client,
-                    option.chain_id,
-                    option.start_block,
-                    option.target_block,
-                )
-                .await
-                .map_err(FetcherError::AnyhowError)?,
-                None => fetch_all::<R, C>(sequencer_fetch_size, option, &self.client)
-                    .await
-                    .map_err(FetcherError::AnyhowError)?,
-            })
+            .contract_results(build_results::<R>(responses, option))
             .build())
     }
 
@@ -94,144 +73,113 @@ where
     }
 }
 
-async fn fetch_contracts<R: LoadedData, C: SequencerClient<FetchChainRequest, FetchChainResponse>>(
-    options: Vec<FetchContractOptions>,
+async fn fetch_response<R: LoadedData, C: SequencerClient<FetchChainRequest, FetchChainResponse>>(
+    sequencer_fetch_size: u64,
+    option: &FetchOptions,
     client: &Arc<C>,
-    chain_id: u64,
-    start_block: u64,
-    to_block: u64,
-) -> Result<Vec<ContractResult<ContractData<R>>>> {
-    let is_full: bool = R::data_type() == DataType::Full;
+) -> Result<Vec<FetchContractResponse>> {
     let mut responses = Vec::new();
-    let mut contract_start_block;
-    let mut contract_to_block;
+    let is_full = R::data_type() == DataType::Full;
+    let mut chain_start_block = option.start_block;
+    let mut chain_target_block;
     let mut i: u64 = 0;
+
     loop {
         let mut contracts = Vec::new();
-        for option in options.iter() {
-            contract_start_block = option.start_block + option.sequencer_fetch_size * i;
-            contract_to_block = option
-                .target_block
-                .min(contract_start_block + option.sequencer_fetch_size - 1);
-            if contract_start_block <= contract_to_block {
-                contracts.push(
-                    FetchContractRequest::builder()
-                        .contract_address(string_address_to_bytes(option.contract_address.as_str())?)
+        let mut is_some = false;
+
+        if let Some(contract_options) = option.contract_options.as_ref() {
+            is_some = true;
+            for contract_option in contract_options {
+                let contract_start_block =
+                    contract_option.start_block.unwrap_or(option.start_block) + sequencer_fetch_size * i;
+                let contract_to_block = contract_option
+                    .target_block
+                    .unwrap_or(option.target_block)
+                    .min(contract_start_block + sequencer_fetch_size - 1);
+
+                if contract_start_block <= contract_to_block {
+                    let address = string_address_to_bytes(contract_option.contract_config.address())?;
+                    let contract_request = FetchContractRequest::builder()
+                        .contract_address(address)
                         .start_block(contract_start_block)
                         .target_block(contract_to_block)
-                        .build(),
-                );
+                        .build();
+
+                    contracts.push(contract_request);
+                }
             }
         }
-        if contracts.is_empty() {
+        if is_some && contracts.is_empty() {
             break;
         }
-        i += 1;
-        //build chain request
-        let request = FetchChainRequest::builder()
-            .chain_id(chain_id)
-            .start_block(start_block)
-            .target_block(to_block)
+
+        chain_target_block = option.target_block.min(chain_start_block + sequencer_fetch_size - 1);
+
+        let chain_request = FetchChainRequest::builder()
+            .chain_id(option.chain_id)
+            .start_block(chain_start_block)
+            .target_block(chain_target_block)
             .contracts(contracts)
             .is_full(is_full)
             .build();
-        let response = client.fetch_chain(request).await?;
+        let response = client.fetch_chain(chain_request).await?;
         responses.extend(response.contracts);
+
+        if !is_some && chain_target_block == option.target_block {
+            break;
+        }
+        chain_start_block = chain_target_block + 1;
+        i += 1;
     }
-    build_results::<R>(responses, options)
+
+    Ok(responses)
 }
 
 fn build_results<R: LoadedData>(
     contracts_results: Vec<FetchContractResponse>,
-    options: Vec<FetchContractOptions>,
-) -> Result<Vec<ContractResult<ContractData<R>>>> {
-    let mut contract_results: Vec<ContractResult<ContractData<R>>> = Vec::new();
+    option: &FetchOptions,
+) -> Vec<ContractResult<ContractData<R>>> {
     let contract_result_map: HashMap<String, Vec<FetchContractResponse>> =
         contracts_results.into_iter().fold(HashMap::new(), |mut map, result| {
             let address = string_address_from_bytes(result.contract_address.clone());
-            match map.get_mut(&address) {
-                Some(results) => {
-                    results.push(result);
-                }
-                None => {
-                    map.insert(address, vec![result]);
-                }
-            }
+            map.entry(address).or_default().push(result);
             map
         });
-    for option in options {
-        let address = &option.contract_address;
-        if let Some(response) = contract_result_map.get(address) {
-                contract_results.push(
+    let mut results: Vec<ContractResult<ContractData<R>>> = Vec::new();
+    if let Some(contract_options) = option.contract_options.as_ref() {
+        for contract_option in contract_options {
+            let address = contract_option.contract_config.address();
+            if let Some(response) = contract_result_map.get(address) {
+                results.push(
                     ContractResult::builder()
                         .address(address.to_string())
                         .result(build_contract_result::<R>(
                             option.chain_id,
-                            address,
-                            option.start_block,
+                            &address.to_string(),
+                            contract_option.start_block.unwrap_or(option.start_block),
                             response,
                         ))
                         .build(),
                 );
-        }
-    }
-    Ok(contract_results)
-}
-
-async fn fetch_all<R: LoadedData, C: SequencerClient<FetchChainRequest, FetchChainResponse>>(
-    sequencer_fetch_size: u64,
-    option: &FetchOptions,
-    client: &Arc<C>,
-) -> Result<Vec<ContractResult<ContractData<R>>>> {
-    let mut contract_results: Vec<ContractResult<ContractData<R>>> = Vec::new();
-
-    let is_full = R::data_type() == DataType::Full;
-    let mut start_block = option.start_block;
-    let mut to_block;
-    let mut contracts_results: Vec<FetchContractResponse> = Vec::new();
-    loop {
-        to_block = option.target_block.min(start_block + sequencer_fetch_size - 1);
-        let request = FetchChainRequest::builder()
-            .chain_id(option.chain_id)
-            .start_block(start_block)
-            .target_block(to_block)
-            .contracts(vec![])
-            .is_full(is_full)
-            .build();
-        let result = client.fetch_chain(request).await?;
-        contracts_results.extend(result.contracts);
-        if to_block == option.target_block {
-            break;
-        }
-        start_block = to_block + 1;
-    }
-    let contract_result_map: HashMap<String, Vec<FetchContractResponse>> =
-        contracts_results.into_iter().fold(HashMap::new(), |mut map, result| {
-            let address = string_address_from_bytes(result.contract_address.clone());
-            match map.get_mut(&address) {
-                Some(results) => {
-                    results.push(result);
-                }
-                None => {
-                    map.insert(address, vec![result]);
-                }
             }
-            map
-        });
-    for (address, a) in contract_result_map.iter() {
-        contract_results.push(
-            ContractResult::builder()
-                .address(address.to_string())
-                .result(build_contract_result::<R>(
-                    option.chain_id,
-                    address,
-                    option.start_block,
-                    a,
-                ))
-                .build(),
-        );
+        }
+    } else {
+        for (address, contract_results) in contract_result_map.iter() {
+            results.push(
+                ContractResult::builder()
+                    .address(address.to_string())
+                    .result(build_contract_result::<R>(
+                        option.chain_id,
+                        address,
+                        option.start_block,
+                        contract_results,
+                    ))
+                    .build(),
+            );
+        }
     }
-    Ok(contract_results)
+    results
 }
 
 fn build_contract_result<R: LoadedData>(
@@ -295,23 +243,6 @@ fn build_contract_result<R: LoadedData>(
         .end_block(actual_end_block)
         .data(data)
         .build())
-}
-
-fn to_options(sequencer_fetch_size: u64, option: &FetchOptions) -> Option<Vec<FetchContractOptions>> {
-    option.contract_options.as_ref().map(|contract_options| {
-        contract_options
-            .iter()
-            .map(|contract_option| {
-                FetchContractOptions::builder()
-                    .chain_id(option.chain_id)
-                    .contract_address(contract_option.contract_config.address().to_string())
-                    .start_block(contract_option.start_block.unwrap_or(option.start_block))
-                    .target_block(contract_option.target_block.unwrap_or(option.target_block))
-                    .sequencer_fetch_size(sequencer_fetch_size)
-                    .build()
-            })
-            .collect::<Vec<FetchContractOptions>>()
-    })
 }
 
 impl<R, C> SequencerFetcher<R, C>

@@ -40,6 +40,7 @@ struct EtherscanFetchOptions {
     pub(crate) address: String,
     pub(crate) from_block: u64,
     pub(crate) to_block: u64,
+    pub(crate) disabled_at: bool,
     pub(crate) contract_type: ContractType,
     pub(crate) bridge_type: BridgeType,
 }
@@ -186,6 +187,7 @@ fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<Ether
                         .address(contract_config.address().to_string())
                         .from_block(option.start_block)
                         .to_block(option.target_block.min(current_block_num))
+                        .disabled_at(option.start_block > contract_config.disabled_at().unwrap_or(option.start_block))
                         .contract_type(contract_config.contract_type().clone())
                         .bridge_type(contract_config.bridge_type().clone())
                         .build()
@@ -196,11 +198,13 @@ fn to_options(option: &FetchOptions, current_block_num: u64) -> Result<Vec<Ether
             Ok(contract_options
                 .iter()
                 .map(|contract_option| {
+                    let start_block = contract_option.start_block.unwrap_or(option.start_block);
                     let target_block = contract_option.target_block.unwrap_or(option.target_block);
                     EtherscanFetchOptions::builder()
                         .address(contract_option.contract_config.address().to_string())
-                        .from_block(contract_option.start_block.unwrap_or(option.start_block))
+                        .from_block(start_block)
                         .to_block(target_block.min(current_block_num))
+                        .disabled_at(start_block > contract_option.contract_config.disabled_at().unwrap_or(start_block))
                         .contract_type(contract_option.contract_config.contract_type().clone())
                         .bridge_type(contract_option.contract_config.bridge_type().clone())
                         .build()
@@ -248,7 +252,11 @@ async fn fetch_contract_data<R: LoadedData>(
     client: &Arc<EtherScanClient>,
     option: EtherscanFetchOptions,
 ) -> Result<ContractData<R>> {
-    let commitments: Vec<Commitment> = fetch_commitments(client, &option).await?;
+    let commitments: Vec<Commitment> = if option.disabled_at {
+        Vec::new()
+    } else {
+        fetch_commitments(client, &option).await?
+    };
     let contracts_response = match R::data_type() {
         DataType::Lite => {
             info!(
