@@ -1251,7 +1251,6 @@ async fn test_initialize() {
     collection.insert_batch(&mock_contracts).await.unwrap();
     let result = database_handler.initialize().await;
     assert!(result.is_ok());
-    let chain_config_1 = config.find_chain(1_u64).unwrap();
     let contract_1_1 = config
         .find_deposit_contract_by_address(1_u64, "0x53DFAB04453EF45bc637c2687020990c7C8C16bc")
         .unwrap();
@@ -1268,7 +1267,7 @@ async fn test_initialize() {
     assert!(db_contract_1_1.is_some());
     let db_contract_1_1 = db_contract_1_1.unwrap();
     assert_eq!(contract_1_1.address(), db_contract_1_1.data.contract_address);
-    assert_eq!(chain_config_1.start_block(), db_contract_1_1.data.loaded_block);
+    assert_eq!(contract_1_1.start_block(), db_contract_1_1.data.loaded_block);
     let contract_1: Vec<Document<Contract>> = collection
         .find::<Contract, QueryFilter>(Some(QueryFilter::from(SubFilter::equal(
             Contract::column_chain_id(),

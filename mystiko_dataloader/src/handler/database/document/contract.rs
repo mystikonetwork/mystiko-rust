@@ -43,11 +43,11 @@ impl DatabaseContract for Contract {
 
     fn from_config(config: Arc<MystikoConfig>, chain_id: u64, address: &str) -> Result<Self> {
         if let Some(chain_config) = config.find_chain(chain_id) {
-            if chain_config.find_contract_by_address(address).is_some() {
+            if let Some(contract_config) = chain_config.find_contract_by_address(address) {
                 return Ok(Contract::builder()
                     .chain_id(chain_id)
                     .contract_address(address)
-                    .loaded_block(chain_config.start_block())
+                    .loaded_block(contract_config.start_block())
                     .build());
             }
         }
