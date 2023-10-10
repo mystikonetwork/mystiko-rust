@@ -312,6 +312,17 @@ async fn test_query_commitments() {
         biguint_to_bytes(&BigUint::from(3333_u32))
     );
     assert_eq!(commitments.result[0].src_chain_block_number, Some(2000_u64));
+    // test recover right commitment status
+    // no option field
+    let option = CommitmentQueryOption::builder()
+        .chain_id(1_u64)
+        .contract_address("address1".to_string())
+        .start_block(100_u64)
+        .end_block(1000_u64)
+        .build();
+    let commitments = database_handler.query_commitments(&option).await.unwrap();
+    assert_eq!(commitments.result.len(), 1);
+    assert_eq!(commitments.result[0].status, CommitmentStatus::Queued as i32);
 }
 
 #[tokio::test]

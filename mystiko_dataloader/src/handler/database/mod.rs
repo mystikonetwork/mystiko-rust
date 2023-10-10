@@ -101,13 +101,8 @@ where
     }
 
     async fn query_commitment(&self, option: &CommitmentQueryOption) -> crate::handler::Result<Option<Commitment>> {
-        let (filter, _) = self.to_commitment_filter(option).await?;
-        let commitment: Option<Document<C>> = self
-            .collection
-            .find_one(Some(filter))
-            .await
-            .map_err(anyhow::Error::new)?;
-        Ok(commitment.map(|c| c.data.into_proto()).transpose()?)
+        let result = self.query_commitments(option).await?;
+        Ok(result.result.into_iter().next())
     }
 
     async fn query_commitments(
@@ -116,25 +111,26 @@ where
     ) -> Result<QueryResult<Vec<Commitment>>, HandlerError> {
         let (filter, actual_end_block) = self.to_commitment_filter(option).await?;
         let commitments: Vec<Document<C>> = self.collection.find(Some(filter)).await.map_err(anyhow::Error::new)?;
+        let commitments: Vec<Commitment> = commitments
+            .into_iter()
+            .map(|c| c.data.into_proto())
+            .collect::<Result<Vec<_>>>()?;
         Ok(QueryResult::builder()
             .end_block(actual_end_block)
-            .result(
-                commitments
-                    .into_iter()
-                    .map(|c| c.data.into_proto())
-                    .collect::<Result<Vec<_>>>()?,
-            )
+            .result(recover_commitments_status(
+                commitments,
+                actual_end_block,
+                &option.status,
+            ))
             .build())
     }
 
     async fn count_commitments(&self, option: &CommitmentQueryOption) -> Result<QueryResult<u64>, HandlerError> {
-        let (filter, actual_end_block) = self.to_commitment_filter(option).await?;
-        let count = self
-            .collection
-            .count::<C, QueryFilter>(Some(filter))
-            .await
-            .map_err(anyhow::Error::new)?;
-        Ok(QueryResult::builder().end_block(actual_end_block).result(count).build())
+        let result = self.query_commitments(option).await?;
+        Ok(QueryResult::builder()
+            .end_block(result.end_block)
+            .result(result.result.len() as u64)
+            .build())
     }
 
     async fn query_nullifier(&self, option: &NullifierQueryOption) -> crate::handler::Result<Option<Nullifier>> {
@@ -265,74 +261,35 @@ where
         let chain_config = self.config.find_chain(option.chain_id).ok_or(anyhow::anyhow!(
             DatabaseHandlerError::UnsupportedChainError(option.chain_id)
         ))?;
+        let start_block = option.start_block.unwrap_or(chain_config.start_block());
         let actual_end_block = self
             .wrap_contract_end_block(chain_config, option.contract_address.as_str(), option.end_block)
             .await?;
+        let mut conditions = vec![
+            Condition::from(SubFilter::equal(C::column_chain_id(), option.chain_id)),
+            Condition::from(SubFilter::equal(
+                C::column_contract_address(),
+                option.contract_address.to_string(),
+            )),
+            Condition::builder()
+                .sub_filters(vec![
+                    SubFilter::between_and(C::column_src_block_number(), start_block, actual_end_block),
+                    SubFilter::between_and(C::column_block_number(), start_block, actual_end_block),
+                    SubFilter::between_and(C::column_included_block_number(), start_block, actual_end_block),
+                ])
+                .operator(ConditionOperator::Or)
+                .build(),
+        ];
         if let Some(commitment_hashes) = option.commitment_hash.clone() {
-            return Ok((
-                QueryFilter::from(vec![
-                    SubFilter::equal(C::column_chain_id(), option.chain_id),
-                    SubFilter::equal(C::column_contract_address(), option.contract_address.to_string()),
-                    SubFilter::in_list(C::column_commitment_hash(), commitment_hashes),
-                ]),
-                actual_end_block,
-            ));
+            conditions.push(Condition::from(SubFilter::in_list(
+                C::column_commitment_hash(),
+                commitment_hashes,
+            )));
         }
-        let statuses = if let Some(status) = option.status {
-            vec![status]
-        } else {
-            vec![
-                CommitmentStatus::Unspecified,
-                CommitmentStatus::SrcSucceeded,
-                CommitmentStatus::Queued,
-                CommitmentStatus::Included,
-            ]
-        };
-        let start_block = option.start_block.unwrap_or(chain_config.start_block());
-        let conditions = statuses
-            .into_iter()
-            .map(|status| {
-                let mut sub_filters = vec![];
-                sub_filters.push(SubFilter::equal(C::column_chain_id(), option.chain_id));
-                sub_filters.push(SubFilter::equal(
-                    C::column_contract_address(),
-                    option.contract_address.to_string(),
-                ));
-                let block_num_column = match status {
-                    CommitmentStatus::Unspecified => {
-                        sub_filters.push(SubFilter::equal(
-                            C::column_status(),
-                            CommitmentStatus::Unspecified as i32,
-                        ));
-                        C::column_block_number()
-                    }
-                    CommitmentStatus::SrcSucceeded => {
-                        sub_filters.push(SubFilter::equal(
-                            C::column_status(),
-                            CommitmentStatus::SrcSucceeded as i32,
-                        ));
-                        C::column_src_block_number()
-                    }
-                    CommitmentStatus::Queued => {
-                        sub_filters.push(SubFilter::equal(C::column_status(), CommitmentStatus::Queued as i32));
-                        C::column_block_number()
-                    }
-                    CommitmentStatus::Included => {
-                        sub_filters.push(SubFilter::equal(C::column_status(), CommitmentStatus::Included as i32));
-                        C::column_included_block_number()
-                    }
-                };
-                sub_filters.push(SubFilter::between_and(block_num_column, start_block, actual_end_block));
-                Condition::builder()
-                    .sub_filters(sub_filters)
-                    .operator(ConditionOperator::And)
-                    .build()
-            })
-            .collect::<Vec<_>>();
         Ok((
             QueryFilter::builder()
                 .conditions(conditions)
-                .conditions_operator(ConditionOperator::Or)
+                .conditions_operator(ConditionOperator::And)
                 .build(),
             actual_end_block,
         ))
@@ -604,5 +561,26 @@ where
             .await?
             .unwrap_or(chain_config.start_block());
         Ok(std::cmp::min(contract_loaded_block, end_block))
+    }
+}
+
+fn recover_commitments_status(
+    mut commitments: Vec<Commitment>,
+    end_block: u64,
+    status: &Option<CommitmentStatus>,
+) -> Vec<Commitment> {
+    for commitment in commitments.iter_mut() {
+        if commitment.status == CommitmentStatus::Included as i32 {
+            if let Some(included_block_number) = commitment.included_block_number {
+                if included_block_number > end_block {
+                    commitment.status = CommitmentStatus::Queued as i32;
+                }
+            }
+        }
+    }
+    if let Some(status) = status {
+        commitments.into_iter().filter(|c| c.status == *status as i32).collect()
+    } else {
+        commitments
     }
 }
