@@ -21,7 +21,6 @@ async fn test_create() {
     assert_eq!(config.contract_type(), &ContractType::Deposit);
     assert_eq!(config.start_block(), 1000000);
     assert!(config.event_filter_size().is_none());
-    assert!(config.indexer_filter_size().is_none());
     assert_eq!(config.bridge_type(), &BridgeType::Tbridge);
     assert_eq!(
         config.pool_contract_address(),
@@ -112,7 +111,6 @@ async fn test_create_contract_config() {
     assert_eq!(config.disabled_at().unwrap(), 1001000);
     assert_eq!(config.start_block(), 1000000);
     assert!(config.event_filter_size().is_none());
-    assert!(config.indexer_filter_size().is_none());
     assert_eq!(config.bridge_type(), &BridgeType::Tbridge);
     assert_eq!(
         config.min_rollup_fee().unwrap(),
@@ -144,12 +142,10 @@ async fn test_create_contract_config() {
 async fn test_create_with_filter_size() {
     let (_, _, _, _, config) = setup(SetupOptions {
         event_filter_size: Some(100000),
-        indexer_filter_size: Some(1000000000),
         ..SetupOptions::default()
     })
     .await;
     assert_eq!(config.event_filter_size().unwrap(), 100000);
-    assert_eq!(config.indexer_filter_size().unwrap(), 1000000000);
 }
 
 #[tokio::test]
@@ -357,7 +353,6 @@ struct SetupOptions {
     no_peer_chain_id: bool,
     no_peer_contract_address: bool,
     event_filter_size: Option<u64>,
-    indexer_filter_size: Option<u64>,
     incorrect_min_max: bool,
     bridge_fee_asset_address: Option<String>,
     executor_fee_asset_address: Option<String>,
@@ -436,9 +431,6 @@ async fn setup(
     }
     if let Some(event_filter_size) = options.event_filter_size {
         raw_config.event_filter_size = Some(event_filter_size);
-    }
-    if let Some(indexer_filter_size) = options.indexer_filter_size {
-        raw_config.indexer_filter_size = Some(indexer_filter_size);
     }
     if options.incorrect_min_max {
         raw_config.min_amount = String::from("1000000000000000000");

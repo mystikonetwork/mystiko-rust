@@ -1,7 +1,7 @@
 use crate::data::LoadedData;
 use crate::fetcher::{
     create_provider_pool_from_config, DataFetcher, DataPackerFetcherV1, EtherscanFetcher, FetcherOptions,
-    IndexerFetcher, ProviderFetcher,
+    ProviderFetcher, SequencerFetcher,
 };
 use crate::handler::DataHandler;
 use crate::validator::rule::create_rule_validator_by_types;
@@ -124,7 +124,7 @@ where
         Ok(Arc::new(Box::new(providers) as Box<dyn Providers>))
     }
 
-    pub(crate) fn build_fetchers(
+    pub(crate) async fn build_fetchers(
         &self,
         mystiko_config: Arc<MystikoConfig>,
         providers: Arc<Box<dyn Providers>>,
@@ -146,14 +146,18 @@ where
                     let packer = DataPackerFetcherV1::from(mystiko_config.clone());
                     fetchers.push(Arc::new(Box::new(packer) as Box<dyn DataFetcher<R>>))
                 }
-                FetcherType::Indexer => {
-                    if let Some(c) = &fetcher_config.indexer {
+                FetcherType::Sequencer => {
+                    if let Some(c) = &fetcher_config.sequencer {
                         if let Some(s) = c.skip_validation {
                             fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
                         }
                     }
-                    let indexer = IndexerFetcher::from_config(mystiko_config.clone(), fetcher_config.indexer.clone())?;
-                    fetchers.push(Arc::new(Box::new(indexer) as Box<dyn DataFetcher<R>>));
+                    let sequencer = SequencerFetcher::<R, mystiko_sequencer_client::v1::SequencerClient>::from_config(
+                        mystiko_config.clone(),
+                        fetcher_config.sequencer.clone(),
+                    )
+                    .await?;
+                    fetchers.push(Arc::new(Box::new(sequencer) as Box<dyn DataFetcher<R>>));
                 }
                 FetcherType::Etherscan => {
                     if let Some(c) = &fetcher_config.etherscan {

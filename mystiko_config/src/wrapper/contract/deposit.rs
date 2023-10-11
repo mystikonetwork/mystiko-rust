@@ -57,10 +57,6 @@ impl DepositContractConfig {
         &self.raw.event_filter_size
     }
 
-    pub fn indexer_filter_size(&self) -> &Option<u64> {
-        &self.raw.indexer_filter_size
-    }
-
     pub fn bridge_type(&self) -> &BridgeType {
         &self.raw.bridge_type
     }

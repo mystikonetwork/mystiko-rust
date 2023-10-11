@@ -52,7 +52,6 @@ fn test_raw_contract_config_trait() {
     assert_eq!(ContractType::Pool, config.contract_type);
     assert_eq!(1000000, config.start_block);
     assert_eq!(None, config.event_filter_size);
-    assert_eq!(None, config.indexer_filter_size);
 }
 
 #[test]

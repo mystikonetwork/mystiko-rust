@@ -89,7 +89,9 @@ where
         };
 
         let (fetchers, fetcher_options) = if options.fetchers.is_empty() {
-            options.build_fetchers(mystiko_config.clone(), providers.clone())?
+            options
+                .build_fetchers(mystiko_config.clone(), providers.clone())
+                .await?
         } else {
             (options.fetchers.clone(), HashMap::new())
         };

@@ -138,10 +138,6 @@ impl ChainConfig {
         self.raw.event_filter_size
     }
 
-    pub fn indexer_filter_size(&self) -> u64 {
-        self.raw.indexer_filter_size
-    }
-
     pub fn sequencer_fetch_size(&self) -> u64 {
         self.raw.sequencer_fetch_size
     }
@@ -307,20 +303,6 @@ impl ChainConfig {
             pool_contract.event_filter_size().unwrap_or(self.event_filter_size())
         } else {
             self.event_filter_size()
-        }
-    }
-
-    pub fn contract_indexer_filter_size(&self, address: &str) -> u64 {
-        if let Some(deposit_contract) = self.find_deposit_contract_by_address(address) {
-            deposit_contract
-                .indexer_filter_size()
-                .unwrap_or(self.indexer_filter_size())
-        } else if let Some(pool_contract) = self.find_pool_contract_by_address(address) {
-            pool_contract
-                .indexer_filter_size()
-                .unwrap_or(self.indexer_filter_size())
-        } else {
-            self.indexer_filter_size()
         }
     }
 

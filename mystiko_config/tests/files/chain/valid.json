@@ -12,7 +12,6 @@
   "explorerPrefix": "/tx/%tx%",
   "eventDelayBlocks": 200,
   "eventFilterSize": 1000,
-  "indexerFilterSize": 10000,
   "sequencerFetchSize": 20000,
   "providers": [
     {

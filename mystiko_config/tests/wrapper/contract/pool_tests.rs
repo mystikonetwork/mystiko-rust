@@ -25,7 +25,6 @@ async fn test_create() {
     assert!(config.disabled());
     assert_eq!(config.disabled_at().unwrap(), 1001000);
     assert!(config.event_filter_size().is_none());
-    assert!(config.indexer_filter_size().is_none());
     assert_eq!(
         config.asset().asset_address(),
         "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"
@@ -62,10 +61,8 @@ async fn test_create() {
     );
     let mut raw_config1 = raw_config.as_ref().clone();
     raw_config1.event_filter_size = Some(1000);
-    raw_config1.indexer_filter_size = Some(10000);
     let config1 = PoolContractConfig::new(Arc::new(raw_config1), main_asset_config, asset_config, circuit_configs);
     assert_eq!(config1.event_filter_size().unwrap(), 1000);
-    assert_eq!(config1.indexer_filter_size().unwrap(), 10000);
 }
 
 #[tokio::test]
@@ -81,7 +78,6 @@ async fn test_create_contract_config() {
     assert!(config.disabled());
     assert_eq!(config.start_block(), 1000000);
     assert!(config.event_filter_size().is_none());
-    assert!(config.indexer_filter_size().is_none());
     assert_eq!(
         config.asset().asset_address(),
         "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"

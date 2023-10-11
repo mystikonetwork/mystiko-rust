@@ -48,7 +48,6 @@ async fn test_create() {
     assert_eq!(config.explorer_prefix(), "/tx/%tx%");
     assert_eq!(config.event_delay_blocks(), 200);
     assert_eq!(config.event_filter_size(), 1000);
-    assert_eq!(config.indexer_filter_size(), 10000);
     assert_eq!(config.sequencer_fetch_size(), 20000);
     assert_eq!(
         config.signer_endpoint(),
@@ -195,22 +194,6 @@ async fn test_event_filter_size() {
     assert_eq!(
         config.contract_event_filter_size("0x9b42ec45f6fb6c7d252c66741e960585888de7b6"),
         3000
-    );
-    assert_eq!(
-        config.contract_indexer_filter_size("0x7b5753f81f73d160583083c33b0f863837197fb3"),
-        10000
-    );
-    assert_eq!(
-        config.contract_indexer_filter_size("0xbF5605f5Ed6d18ed957cBA80dbA8838dFcb9A69f"),
-        10000
-    );
-    assert_eq!(
-        config.contract_indexer_filter_size("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"),
-        20000
-    );
-    assert_eq!(
-        config.contract_indexer_filter_size("0x9b42ec45f6fb6c7d252c66741e960585888de7b6"),
-        30000
     );
 }
 

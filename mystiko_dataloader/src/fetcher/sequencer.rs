@@ -5,7 +5,9 @@ use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 use log::info;
+use mystiko_config::MystikoConfig;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
+use mystiko_protos::loader::v1::SequencerFetcherConfig;
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
 use mystiko_protos::sequencer::v1::{FetchContractRequest, FetchContractResponse};
 use mystiko_sequencer_client::SequencerClient;
@@ -36,6 +38,8 @@ pub enum SequencerFetcherError {
     StartBlockTooBigError(u64, u64),
     #[error("no chain config found for chain id: {0}")]
     UnsupportedChainError(u64),
+    #[error("missing sequencer config")]
+    MissingSequencerConfigError,
 }
 
 #[async_trait]
@@ -71,6 +75,45 @@ where
             .chain_loaded_block(options.chain_id)
             .await
             .map_err(|err| FetcherError::AnyhowError(err.into()))?)
+    }
+}
+
+impl<R, C> SequencerFetcher<R, C>
+where
+    R: LoadedData,
+    C: SequencerClient<FetchChainRequest, FetchChainResponse>,
+{
+    pub fn new(client: Arc<C>) -> Self {
+        Self::builder().client(client).build()
+    }
+}
+
+impl<R, C> From<Arc<C>> for SequencerFetcher<R, C>
+where
+    R: LoadedData,
+    C: SequencerClient<FetchChainRequest, FetchChainResponse>,
+{
+    fn from(client: Arc<C>) -> Self {
+        Self::new(client)
+    }
+}
+
+impl<R> SequencerFetcher<R, mystiko_sequencer_client::v1::SequencerClient>
+where
+    R: LoadedData,
+{
+    pub async fn from_config<C>(mystiko_config: Arc<MystikoConfig>, config: C) -> Result<Self>
+    where
+        C: Into<SequencerFetcherConfig>,
+    {
+        let sequencer_config = config.into();
+        let client_options = sequencer_config
+            .options
+            .map(Arc::new)
+            .or(mystiko_config.sequencer())
+            .ok_or(SequencerFetcherError::MissingSequencerConfigError)?;
+        let client = mystiko_sequencer_client::v1::SequencerClient::connect(client_options.as_ref()).await?;
+        Ok(Arc::new(client).into())
     }
 }
 
@@ -243,24 +286,4 @@ fn build_contract_result<R: LoadedData>(
         .end_block(actual_end_block)
         .data(data)
         .build())
-}
-
-impl<R, C> SequencerFetcher<R, C>
-where
-    R: LoadedData,
-    C: SequencerClient<FetchChainRequest, FetchChainResponse>,
-{
-    pub fn new(client: Arc<C>) -> Self {
-        Self::builder().client(client).build()
-    }
-}
-
-impl<R, C> From<Arc<C>> for SequencerFetcher<R, C>
-where
-    R: LoadedData,
-    C: SequencerClient<FetchChainRequest, FetchChainResponse>,
-{
-    fn from(client: Arc<C>) -> Self {
-        Self::new(client)
-    }
 }
