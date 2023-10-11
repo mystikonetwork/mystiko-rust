@@ -89,6 +89,7 @@ struct ProviderContractFetchOptions {
     pub(crate) bridge_type: BridgeType,
     pub(crate) start_block: u64,
     pub(crate) actual_target_block: u64,
+    pub(crate) disabled_at: bool,
     pub(crate) event_filter_size: u64,
     pub(crate) provider: Arc<Provider>,
 }
@@ -294,6 +295,7 @@ fn to_options(
                         .bridge_type(contract_config.bridge_type().clone())
                         .start_block(option.start_block)
                         .actual_target_block(option.target_block.min(current_block_num))
+                        .disabled_at(option.start_block > contract_config.disabled_at().unwrap_or(option.start_block))
                         .event_filter_size(chain_config.event_filter_size().max(1))
                         .provider(Arc::clone(&provider))
                         .build()
@@ -305,13 +307,15 @@ fn to_options(
                 .iter()
                 .map(|contract_option| {
                     let target_block = contract_option.target_block.unwrap_or(option.target_block);
+                    let start_block = contract_option.start_block.unwrap_or(option.start_block);
                     ProviderContractFetchOptions::builder()
                         .chain_id(option.chain_id)
                         .contract_address(contract_option.contract_config.address().to_string())
                         .contract_type(contract_option.contract_config.contract_type().clone())
                         .bridge_type(contract_option.contract_config.bridge_type().clone())
-                        .start_block(contract_option.start_block.unwrap_or(option.start_block))
+                        .start_block(start_block)
                         .actual_target_block(target_block.min(current_block_num))
+                        .disabled_at(start_block > contract_option.contract_config.disabled_at().unwrap_or(start_block))
                         .event_filter_size(chain_config.event_filter_size().max(1))
                         .provider(Arc::clone(&provider))
                         .build()
@@ -360,7 +364,11 @@ async fn fetch_contract<R: LoadedData>(
 }
 
 async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOptions) -> Result<ContractData<R>> {
-    let commitments = fetch_commitments(option).await?;
+    let commitments = if option.disabled_at {
+        Vec::new()
+    } else {
+        fetch_commitments(option).await?
+    };
 
     let data = match R::data_type() {
         DataType::Full => {
