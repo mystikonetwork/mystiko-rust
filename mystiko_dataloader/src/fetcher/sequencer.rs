@@ -18,6 +18,7 @@ use crate::data::{ChainResult, ContractData, ContractResult, DataType, FullData,
 use crate::fetcher::{
     ChainLoadedBlockOptions, DataFetcher, FetchOptions, FetchResult, FetcherError, FetcherLogOptions,
 };
+use crate::handler::{dedup_commitments, dedup_nullifiers};
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
@@ -78,61 +79,61 @@ async fn fetch_response<R: LoadedData, C: SequencerClient<FetchChainRequest, Fet
     option: &FetchOptions,
     client: &Arc<C>,
 ) -> Result<Vec<FetchContractResponse>> {
-    let mut responses = Vec::new();
-    let is_full = R::data_type() == DataType::Full;
-    let mut chain_start_block = option.start_block;
-    let mut chain_target_block;
-    let mut i: u64 = 0;
-
-    loop {
-        let mut contracts = Vec::new();
-        let mut is_some = false;
-
-        if let Some(contract_options) = option.contract_options.as_ref() {
-            is_some = true;
-            for contract_option in contract_options {
-                let contract_start_block =
-                    contract_option.start_block.unwrap_or(option.start_block) + sequencer_fetch_size * i;
-                let contract_to_block = contract_option
-                    .target_block
-                    .unwrap_or(option.target_block)
-                    .min(contract_start_block + sequencer_fetch_size - 1);
-
-                if contract_start_block <= contract_to_block {
-                    let address = string_address_to_bytes(contract_option.contract_config.address())?;
-                    let contract_request = FetchContractRequest::builder()
-                        .contract_address(address)
-                        .start_block(contract_start_block)
-                        .target_block(contract_to_block)
-                        .build();
-
-                    contracts.push(contract_request);
+    let mut requests = Vec::new();
+    if let Some(contracts_options) = option.contract_options.as_ref() {
+        let mut contracts_requests = Vec::new();
+        for contract_option in contracts_options.iter() {
+            let mut contract_requests = Vec::new();
+            let contract_start_block = contract_option.start_block.unwrap_or(option.start_block);
+            let contract_target_block = contract_option.target_block.unwrap_or(option.target_block);
+            for start_block in (contract_start_block..=contract_target_block).step_by(sequencer_fetch_size as usize) {
+                let target_block = contract_target_block.min(start_block + sequencer_fetch_size - 1);
+                let address = string_address_to_bytes(contract_option.contract_config.address())?;
+                let contract_request = FetchContractRequest::builder()
+                    .contract_address(address)
+                    .start_block(start_block)
+                    .target_block(target_block)
+                    .build();
+                contract_requests.push(contract_request);
+            }
+            contracts_requests.push(contract_requests);
+        }
+        loop {
+            let mut batched_contract_requests = vec![];
+            for contract_requests in contracts_requests.iter_mut() {
+                if !contract_requests.is_empty() {
+                    batched_contract_requests.push(contract_requests.remove(0));
                 }
             }
+            if !batched_contract_requests.is_empty() {
+                let chain_request = FetchChainRequest::builder()
+                    .chain_id(option.chain_id)
+                    .start_block(option.start_block)
+                    .target_block(option.target_block)
+                    .contracts(batched_contract_requests)
+                    .is_full(R::data_type() == DataType::Full)
+                    .build();
+                requests.push(chain_request);
+            } else {
+                break;
+            }
         }
-        if is_some && contracts.is_empty() {
-            break;
+    } else {
+        for start_block in (option.start_block..=option.target_block).step_by(sequencer_fetch_size as usize) {
+            let target_block = option.target_block.min(start_block + sequencer_fetch_size - 1);
+            let chain_request = FetchChainRequest::builder()
+                .chain_id(option.chain_id)
+                .start_block(start_block)
+                .target_block(target_block)
+                .is_full(R::data_type() == DataType::Full)
+                .build();
+            requests.push(chain_request);
         }
-
-        chain_target_block = option.target_block.min(chain_start_block + sequencer_fetch_size - 1);
-
-        let chain_request = FetchChainRequest::builder()
-            .chain_id(option.chain_id)
-            .start_block(chain_start_block)
-            .target_block(chain_target_block)
-            .contracts(contracts)
-            .is_full(is_full)
-            .build();
-        let response = client.fetch_chain(chain_request).await?;
-        responses.extend(response.contracts);
-
-        if !is_some && chain_target_block == option.target_block {
-            break;
-        }
-        chain_start_block = chain_target_block + 1;
-        i += 1;
     }
-
+    let mut responses = Vec::new();
+    for request in requests.into_iter() {
+        responses.extend(client.fetch_chain(request).await?.contracts);
+    }
     Ok(responses)
 }
 
@@ -142,38 +143,37 @@ fn build_results<R: LoadedData>(
 ) -> Vec<ContractResult<ContractData<R>>> {
     let contract_result_map: HashMap<String, Vec<FetchContractResponse>> =
         contracts_results.into_iter().fold(HashMap::new(), |mut map, result| {
-            let address = string_address_from_bytes(result.contract_address.clone());
+            let address = string_address_from_bytes(&result.contract_address);
             map.entry(address).or_default().push(result);
             map
         });
     let mut results: Vec<ContractResult<ContractData<R>>> = Vec::new();
-    if let Some(contract_options) = option.contract_options.as_ref() {
-        for contract_option in contract_options {
-            let address = contract_option.contract_config.address();
-            if let Some(response) = contract_result_map.get(address) {
-                results.push(
-                    ContractResult::builder()
-                        .address(address.to_string())
-                        .result(build_contract_result::<R>(
-                            option.chain_id,
-                            &address.to_string(),
-                            contract_option.start_block.unwrap_or(option.start_block),
-                            response,
-                        ))
-                        .build(),
-                );
-            }
-        }
+    let contracts = if let Some(contract_options) = &option.contract_options {
+        contract_options
+            .iter()
+            .map(|contract_option| {
+                (
+                    contract_option.contract_config.address().to_string(),
+                    contract_option.start_block.unwrap_or(option.start_block),
+                )
+            })
+            .collect::<Vec<_>>()
     } else {
-        for (address, contract_results) in contract_result_map.iter() {
+        contract_result_map
+            .keys()
+            .map(|address| (address.to_string(), option.start_block))
+            .collect::<Vec<_>>()
+    };
+    for (address, start_block) in contracts.into_iter() {
+        if let Some(response) = contract_result_map.get(&address) {
             results.push(
                 ContractResult::builder()
                     .address(address.to_string())
                     .result(build_contract_result::<R>(
                         option.chain_id,
-                        address,
-                        option.start_block,
-                        contract_results,
+                        &address.to_string(),
+                        start_block,
+                        response,
                     ))
                     .build(),
             );
@@ -196,11 +196,11 @@ fn build_contract_result<R: LoadedData>(
         nullifiers.extend_from_slice(&contract_response.nullifiers);
         actual_end_block = actual_end_block.max(contract_response.end_block);
     }
-    commitments.sort_by_key(|commitment| commitment.block_number);
+    commitments = dedup_commitments(commitments);
+    nullifiers = dedup_nullifiers(nullifiers);
 
     let data = match R::data_type() {
         DataType::Full => {
-            nullifiers.sort_by_key(|nullifier| nullifier.block_number);
             let fulldata = FullData::builder()
                 .commitments(commitments)
                 .nullifiers(nullifiers)
