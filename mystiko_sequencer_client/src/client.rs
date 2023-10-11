@@ -4,7 +4,7 @@ use ethers_core::types::Address;
 
 #[async_trait]
 pub trait SequencerClient<D, R>: Send + Sync {
-    type Error;
+    type Error: std::error::Error + Send + Sync + 'static;
 
     async fn chain_loaded_block(&self, chain_id: u64) -> Result<u64, Self::Error>;
 

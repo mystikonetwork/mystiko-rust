@@ -3432,6 +3432,7 @@ dependencies = [
  "mystiko_etherscan_client",
  "mystiko_indexer_client",
  "mystiko_protos",
+ "mystiko_sequencer_client",
  "mystiko_storage",
  "mystiko_storage_macros",
  "mystiko_storage_sqlite",
