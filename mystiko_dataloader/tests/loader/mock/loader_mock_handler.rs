@@ -95,6 +95,19 @@ where
         *self.result.write().await = result;
     }
 
+    pub async fn set_chain_loaded_blocks_error(&self) {
+        *self.chain_loaded_blocks_error.write().await = true;
+    }
+
+    pub async fn set_contract_loaded_blocks_error(&self, addr: &str) {
+        *self
+            .contract_loaded_blocks_error
+            .write()
+            .await
+            .entry(addr.to_string())
+            .or_default() = true;
+    }
+
     pub async fn drain_data(&self) -> HashMap<String, ContractData<R>> {
         let mut data_write = self.data.write().await;
         let mut drained_data = HashMap::new();
