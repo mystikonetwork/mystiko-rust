@@ -131,9 +131,9 @@ async fn test_fulldata_fetch() {
             test_address,
             test_start_block2,
             test_end_block2 - 1,
-            test_commitment_hash.clone(),
-            test_transaction_hash.clone(),
-            Some(test_nullifier.clone()),
+            vec![1u8, 2u8, 3u8],
+            vec![4u8, 5u8, 6u8],
+            Some(vec![7u8, 8u8, 9u8]),
             DataType::Full,
         )],
     );
