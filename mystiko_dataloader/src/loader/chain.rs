@@ -61,6 +61,17 @@ where
     F: DataFetcher<R>,
     V: DataValidator<R>,
 {
+    async fn chain_loaded_block(&self, chain_id: u64) -> DataLoaderResult<Option<u64>> {
+        Ok(self.handler.query_chain_loaded_block(chain_id).await?)
+    }
+
+    async fn contract_loaded_block(&self, chain_id: u64, contract_address: &str) -> DataLoaderResult<Option<u64>> {
+        Ok(self
+            .handler
+            .query_contract_loaded_block(chain_id, contract_address)
+            .await?)
+    }
+
     async fn load<O>(&self, options: O) -> DataLoaderResult<()>
     where
         O: Into<LoadOption> + Send + Sync,
