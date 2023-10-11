@@ -81,8 +81,7 @@ impl MystikoStatic {
 
 mod internal {
     use super::*;
-    use mystiko_core::MystikoOptions;
-    use mystiko_database::Database;
+    use mystiko_core::{Database, MystikoOptions};
     use mystiko_storage_sqlite::SqliteStorageOptions;
 
     pub(crate) async fn initialize(options: ProtoMystikoOptions) -> Result<()> {

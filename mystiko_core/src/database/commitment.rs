@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigUint;
@@ -79,7 +77,6 @@ fn indexes() -> Vec<IndexColumns> {
     ]
 }
 
-#[cfg(feature = "loader")]
 impl mystiko_dataloader::handler::document::DatabaseCommitment for Commitment {
     fn column_chain_id() -> String {
         CommitmentColumn::ChainId.to_string()

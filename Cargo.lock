@@ -3334,18 +3334,21 @@ dependencies = [
  "mystiko_abi",
  "mystiko_config",
  "mystiko_crypto",
- "mystiko_database",
+ "mystiko_dataloader",
  "mystiko_ethers",
  "mystiko_protocol",
  "mystiko_protos",
  "mystiko_storage",
+ "mystiko_storage_macros",
  "mystiko_storage_sqlite",
  "mystiko_types",
  "mystiko_utils",
+ "num-bigint 0.4.3",
  "rand_core 0.6.4",
  "regex 1.9.3",
  "rustc-hex",
  "serde",
+ "serde_json",
  "thiserror",
  "tokio",
  "typed-builder 0.15.2",
@@ -3388,26 +3391,6 @@ dependencies = [
  "zokrates_field",
  "zokrates_interpreter",
  "zokrates_proof_systems",
-]
-
-[[package]]
-name = "mystiko_database"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "mystiko_config",
- "mystiko_database",
- "mystiko_dataloader",
- "mystiko_protos",
- "mystiko_storage",
- "mystiko_storage_macros",
- "mystiko_storage_sqlite",
- "mystiko_types",
- "mystiko_utils",
- "num-bigint 0.4.3",
- "serde",
- "serde_json",
- "tokio",
 ]
 
 [[package]]
@@ -3571,7 +3554,6 @@ dependencies = [
  "log",
  "mystiko_config",
  "mystiko_core",
- "mystiko_database",
  "mystiko_protos",
  "mystiko_storage",
  "mystiko_storage_sqlite",

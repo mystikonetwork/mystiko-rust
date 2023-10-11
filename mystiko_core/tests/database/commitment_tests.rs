@@ -1,8 +1,5 @@
-extern crate mystiko_database;
-extern crate num_bigint;
-
 use mystiko_config::MystikoConfig;
-use mystiko_database::document::{Commitment, CommitmentCollection, CommitmentColumn};
+use mystiko_core::{Commitment, CommitmentCollection, CommitmentColumn};
 use mystiko_dataloader::handler::document::DatabaseCommitment;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
@@ -426,7 +423,7 @@ async fn test_loader_database_commitment() {
     );
 
     let config = Arc::new(
-        MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+        MystikoConfig::from_json_file("tests/files/mystiko/config.json")
             .await
             .unwrap(),
     );

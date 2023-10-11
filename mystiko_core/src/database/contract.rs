@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::ContractType;
@@ -28,7 +26,6 @@ fn indexes() -> Vec<IndexColumns> {
     ]
 }
 
-#[cfg(feature = "loader")]
 impl mystiko_dataloader::handler::document::DatabaseContract for Contract {
     fn column_chain_id() -> String {
         ContractColumn::ChainId.to_string()

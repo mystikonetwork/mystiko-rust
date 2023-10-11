@@ -1,4 +1,4 @@
-use mystiko_database::Database;
+use mystiko_core::Database;
 use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 

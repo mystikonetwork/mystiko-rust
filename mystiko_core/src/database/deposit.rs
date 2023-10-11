@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{BridgeType, DepositStatus};

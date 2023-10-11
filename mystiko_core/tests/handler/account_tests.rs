@@ -1,9 +1,8 @@
 use crate::common::create_database;
 use mystiko_core::WalletHandler;
+use mystiko_core::{AccountColumn, Database};
 use mystiko_core::{AccountHandler, DEFAULT_ACCOUNT_SCAN_SIZE};
 use mystiko_crypto::crypto::decrypt_symmetric;
-use mystiko_database::document::AccountColumn;
-use mystiko_database::Database;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::full_public_key;
 use mystiko_protocol::types::{FullPk, FullSk};

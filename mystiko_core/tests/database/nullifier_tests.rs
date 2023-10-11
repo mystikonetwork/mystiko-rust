@@ -1,5 +1,5 @@
 use mystiko_config::MystikoConfig;
-use mystiko_database::document::{Nullifier, NullifierCollection, NullifierColumn};
+use mystiko_core::{Nullifier, NullifierCollection, NullifierColumn};
 use mystiko_dataloader::handler::document::DatabaseNullifier;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
@@ -181,7 +181,7 @@ async fn test_loader_database_nullifier() {
     );
 
     let config = Arc::new(
-        MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+        MystikoConfig::from_json_file("tests/files/mystiko/config.json")
             .await
             .unwrap(),
     );

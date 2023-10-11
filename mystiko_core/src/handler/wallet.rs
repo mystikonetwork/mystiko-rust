@@ -1,11 +1,8 @@
-use crate::MystikoError;
-use crate::Result;
+use crate::{Database, MystikoError, Result, Wallet};
 use bip32::{Language, Mnemonic, KEY_SIZE};
 use lazy_static::lazy_static;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_crypto::hash::checksum;
-use mystiko_database::document::Wallet;
-use mystiko_database::Database;
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter};

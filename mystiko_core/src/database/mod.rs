@@ -1,12 +1,19 @@
-#![forbid(unsafe_code)]
+mod account;
+mod commitment;
+mod contract;
+mod deposit;
+mod nullifier;
+mod transaction;
+mod wallet;
 
-use crate::document::AccountCollection;
-use crate::document::CommitmentCollection;
-use crate::document::ContractCollection;
-use crate::document::DepositCollection;
-use crate::document::NullifierCollection;
-use crate::document::TransactionCollection;
-use crate::document::WalletCollection;
+pub use account::*;
+pub use commitment::*;
+pub use contract::*;
+pub use deposit::*;
+pub use nullifier::*;
+pub use transaction::*;
+pub use wallet::*;
+
 use anyhow::Result;
 use mystiko_storage::{Collection, Document, MigrationHistory, StatementFormatter, Storage};
 use std::sync::Arc;

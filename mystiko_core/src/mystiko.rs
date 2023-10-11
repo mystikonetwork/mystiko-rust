@@ -1,9 +1,6 @@
-use crate::error::MystikoError;
-use crate::AccountHandler;
-use crate::WalletHandler;
+use crate::{AccountHandler, Database, MystikoError, WalletHandler};
 use anyhow::Result;
 use mystiko_config::MystikoConfig;
-use mystiko_database::Database;
 use mystiko_ethers::{ChainConfigProvidersOptions, ProviderFactory, ProviderPool};
 use mystiko_protos::common::v1::{ConfigOptions, ConfigOptionsOption};
 use mystiko_storage::{StatementFormatter, Storage};

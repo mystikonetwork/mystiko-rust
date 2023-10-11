@@ -1,6 +1,4 @@
-extern crate mystiko_database;
-
-use mystiko_database::document::{Deposit, DepositCollection, DepositColumn};
+use mystiko_core::{Deposit, DepositCollection, DepositColumn};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;

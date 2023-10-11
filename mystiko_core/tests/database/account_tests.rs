@@ -1,4 +1,4 @@
-use mystiko_database::document::{Account, AccountCollection, AccountColumn};
+use mystiko_core::{Account, AccountCollection, AccountColumn};
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};

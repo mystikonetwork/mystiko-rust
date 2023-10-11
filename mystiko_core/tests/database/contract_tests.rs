@@ -1,7 +1,5 @@
-extern crate mystiko_database;
-
 use mystiko_config::MystikoConfig;
-use mystiko_database::document::{Contract, ContractCollection, ContractColumn};
+use mystiko_core::{Contract, ContractCollection, ContractColumn};
 use mystiko_dataloader::handler::document::DatabaseContract;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
@@ -169,7 +167,7 @@ async fn test_loader_database_contract() {
     );
     assert_eq!(contract.get_loaded_block(), 1000000);
     let config = Arc::new(
-        MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+        MystikoConfig::from_json_file("tests/files/mystiko/config.json")
             .await
             .unwrap(),
     );

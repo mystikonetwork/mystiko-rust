@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_storage::{Document, DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;

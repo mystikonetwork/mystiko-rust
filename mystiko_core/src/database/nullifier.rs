@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigUint;
@@ -37,7 +35,6 @@ fn indexes() -> Vec<IndexColumns> {
     ]
 }
 
-#[cfg(feature = "loader")]
 impl mystiko_dataloader::handler::document::DatabaseNullifier for Nullifier {
     fn column_chain_id() -> String {
         NullifierColumn::ChainId.to_string()
