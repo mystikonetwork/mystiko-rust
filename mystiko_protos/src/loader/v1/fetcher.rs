@@ -1,5 +1,5 @@
 use crate::loader::v1::{
-    EtherscanFetcherConfig, FetcherConfig, IndexerFetcherConfig, ProviderFetcherChainConfig, ProviderFetcherConfig,
+    EtherscanFetcherConfig, FetcherConfig, ProviderFetcherChainConfig, ProviderFetcherConfig, SequencerFetcherConfig,
 };
 
 impl From<Option<FetcherConfig>> for FetcherConfig {
@@ -8,8 +8,8 @@ impl From<Option<FetcherConfig>> for FetcherConfig {
     }
 }
 
-impl From<Option<IndexerFetcherConfig>> for IndexerFetcherConfig {
-    fn from(opt: Option<IndexerFetcherConfig>) -> IndexerFetcherConfig {
+impl From<Option<SequencerFetcherConfig>> for SequencerFetcherConfig {
+    fn from(opt: Option<SequencerFetcherConfig>) -> SequencerFetcherConfig {
         opt.unwrap_or_default()
     }
 }

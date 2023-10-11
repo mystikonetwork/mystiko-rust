@@ -32,10 +32,6 @@ pub struct RawDepositContractConfig {
     #[builder(default = None)]
     pub event_filter_size: Option<u64>,
 
-    #[validate(range(min = 1))]
-    #[builder(default = None)]
-    pub indexer_filter_size: Option<u64>,
-
     #[validate(custom = "is_ethereum_address")]
     pub pool_address: String,
 

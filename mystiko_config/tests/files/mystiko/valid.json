@@ -256,9 +256,6 @@
       "verifyingKeyFile": ["./Transaction2x2.vkey.gz"]
     }
   ],
-  "indexer": {
-    "url": "https://example.com"
-  },
   "sequencer": {
     "host": "example.com",
     "port": 23433,

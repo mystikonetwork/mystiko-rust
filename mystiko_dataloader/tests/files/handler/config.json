@@ -143,7 +143,6 @@
         }
       ],
       "signerEndpoint": "https://bsc-dataseed1.binance.org",
-      "indexerFilterSize": 50000,
       "depositContracts": [
         {
           "version": 5,
@@ -280,7 +279,6 @@
       "chainId": 137,
       "explorerUrl": "https://polygonscan.com",
       "explorerApiUrl": "https://api.polygonscan.com",
-      "indexerFilterSize": 50000,
       "providers": [
         {
           "url": "https://polygon-mainnet.g.alchemy.com/v2/MTiziebRglgFZFSiLIwHWDTN5J25Oyoo"
@@ -672,10 +670,6 @@
       ]
     }
   ],
-  "indexer": {
-    "url": "https://indexer.mystiko.network",
-    "timeoutMs": 120000
-  },
   "packer": {
     "url": "https://static.mystiko.network/packer/v1",
     "version": 1,

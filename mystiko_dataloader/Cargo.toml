@@ -17,7 +17,6 @@ mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.g
 mystiko_datapacker_client = { version = "0.1.0", path = "../mystiko_datapacker_client" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
 mystiko_etherscan_client = { version = "0.1.0", path = "../mystiko_etherscan_client" }
-mystiko_indexer_client = { version = "0.1.0", path = "../mystiko_indexer_client" }
 mystiko_sequencer_client = { version = "0.1.0", path = "../mystiko_sequencer_client" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-data-v1", "mystiko-loader-v1"] }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }

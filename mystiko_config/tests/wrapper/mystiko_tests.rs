@@ -47,7 +47,6 @@ async fn test_create() {
             "zokrates-2.0-rollup1"
         ]
     );
-    assert_eq!(config.indexer().unwrap().url(), "https://example.com");
     assert_eq!(config.sequencer().unwrap().host(), "example.com");
     assert_eq!(config.sequencer().unwrap().port(), 23433);
     assert!(config.sequencer().unwrap().is_ssl());

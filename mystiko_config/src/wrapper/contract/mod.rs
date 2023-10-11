@@ -81,13 +81,6 @@ impl ContractConfig {
         }
     }
 
-    pub fn indexer_filter_size(&self) -> &Option<u64> {
-        match self {
-            ContractConfig::Deposit(config) => config.indexer_filter_size(),
-            ContractConfig::Pool(config) => config.indexer_filter_size(),
-        }
-    }
-
     pub fn min_rollup_fee(&self) -> Result<BigUint> {
         match self {
             ContractConfig::Deposit(config) => config.min_rollup_fee(),

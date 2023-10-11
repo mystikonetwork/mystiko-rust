@@ -34,10 +34,6 @@ pub struct RawPoolContractConfig {
     #[builder(default = None)]
     pub event_filter_size: Option<u64>,
 
-    #[validate(range(min = 1))]
-    #[builder(default = None)]
-    pub indexer_filter_size: Option<u64>,
-
     #[validate(length(min = 1))]
     pub pool_name: String,
 

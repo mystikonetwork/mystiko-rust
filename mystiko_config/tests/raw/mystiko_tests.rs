@@ -1,6 +1,4 @@
-use mystiko_config::{
-    create_raw_from_file, RawBridgeConfig, RawIndexerConfig, RawMystikoConfig, RawPackerConfig, RawTBridgeConfig,
-};
+use mystiko_config::{create_raw_from_file, RawBridgeConfig, RawMystikoConfig, RawPackerConfig, RawTBridgeConfig};
 use mystiko_protos::service::v1::ClientOptions;
 use std::sync::Arc;
 use validator::Validate;
@@ -75,18 +73,6 @@ async fn test_invalid_circuits_1() {
     let mut circuit_config = (*config.circuits.remove(0)).clone();
     circuit_config.name = "".to_string();
     config.circuits.insert(0, Arc::new(circuit_config));
-    assert!(config.validate().is_err());
-}
-
-#[tokio::test]
-async fn test_invalid_indexer() {
-    let mut config = default_config().await;
-    config.indexer = Some(Arc::new(
-        RawIndexerConfig::builder()
-            .url("not a url".to_string())
-            .timeout_ms(1000)
-            .build(),
-    ));
     assert!(config.validate().is_err());
 }
 

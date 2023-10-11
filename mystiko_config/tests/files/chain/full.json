@@ -7,7 +7,6 @@
   "explorerApiUrl": "https://api-goerli.etherscan.io",
   "explorerPrefix": "/tx/%tx%",
   "eventFilterSize": 1000,
-  "indexerFilterSize": 10000,
   "sequencerFetchSize": 20000,
   "providers": [
     {
@@ -38,8 +37,7 @@
       "maxAmount": "10000000000000000000",
       "minBridgeFee": "20000000000000000",
       "minExecutorFee": "30000000000000000",
-      "eventFilterSize": 2000,
-      "indexerFilterSize": 20000
+      "eventFilterSize": 2000
     },
     {
       "version": 2,
@@ -126,8 +124,7 @@
       "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
       "minRollupFee": "40000000000000000",
       "circuits": ["zokrates-2.0-rollup1"],
-      "eventFilterSize": 3000,
-      "indexerFilterSize": 30000
+      "eventFilterSize": 3000
     },
     {
       "version": 2,

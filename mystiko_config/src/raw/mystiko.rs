@@ -1,7 +1,6 @@
 use crate::RawBridgeConfig;
 use crate::RawChainConfig;
 use crate::RawCircuitConfig;
-use crate::RawIndexerConfig;
 use crate::RawPackerConfig;
 use mystiko_protos::service::v1::ClientOptions;
 use mystiko_validator::validate::{
@@ -32,10 +31,6 @@ pub struct RawMystikoConfig {
     #[validate(custom(function = "array_unique"), custom(function = "validate_nested_vec"))]
     #[serde(default)]
     pub circuits: Vec<Arc<RawCircuitConfig>>,
-
-    #[validate]
-    #[serde(default)]
-    pub indexer: Option<Arc<RawIndexerConfig>>,
 
     #[validate]
     #[serde(default)]

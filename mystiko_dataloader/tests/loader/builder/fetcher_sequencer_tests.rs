@@ -6,12 +6,13 @@ use mystiko_dataloader::handler::DataHandler;
 use mystiko_dataloader::loader::{ChainDataLoader, FromConfig, LoaderConfigOptions};
 use mystiko_ethers::Providers;
 use mystiko_protos::common::v1::ConfigOptions;
-use mystiko_protos::loader::v1::{FetcherConfig, FetcherType, IndexerFetcherConfig, LoaderConfig};
+use mystiko_protos::loader::v1::{FetcherConfig, FetcherType, LoaderConfig, SequencerFetcherConfig};
+use mystiko_protos::service::v1::ClientOptions;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 #[tokio::test]
-async fn test_create_chain_data_loader_fetcher_indexer() {
+async fn test_create_chain_data_loader_fetcher_sequencer() {
     let cfg_option = ConfigOptions::builder()
         .file_path("./tests/files/config/mystiko_wrong_provider.json".to_string())
         .build();
@@ -19,7 +20,7 @@ async fn test_create_chain_data_loader_fetcher_indexer() {
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
     let mystiko_cfg = Arc::new(MystikoConfig::from_options(cfg_option.clone()).await.unwrap());
     let mut fetchers = HashMap::new();
-    fetchers.insert(0, FetcherType::Indexer as i32);
+    fetchers.insert(0, FetcherType::Sequencer as i32);
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
         .fetchers(fetchers.clone())
@@ -46,12 +47,16 @@ async fn test_create_chain_data_loader_fetcher_indexer() {
         .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
-                .indexer(
-                    IndexerFetcherConfig::builder()
-                        .url("http://localhost:38545".to_string())
-                        .timeout_ms(2000)
-                        .filter_size(100)
+                .sequencer(
+                    SequencerFetcherConfig::builder()
                         .skip_validation(false)
+                        .options(
+                            ClientOptions::builder()
+                                .host("localhost".to_string())
+                                .port(50051)
+                                .is_ssl(true)
+                                .build(),
+                        )
                         .build(),
                 )
                 .build(),
@@ -68,7 +73,7 @@ async fn test_create_chain_data_loader_fetcher_indexer() {
 }
 
 #[tokio::test]
-async fn test_create_chain_data_loader_fetcher_indexer_skip_validation() {
+async fn test_create_chain_data_loader_fetcher_sequencer_skip_validation() {
     let cfg_option = ConfigOptions::builder()
         .file_path("./tests/files/config/mystiko_wrong_provider.json".to_string())
         .build();
@@ -86,17 +91,22 @@ async fn test_create_chain_data_loader_fetcher_indexer_skip_validation() {
     let providers = create_mock_providers(Some(&mock));
     let providers = Arc::new(Box::new(providers) as Box<dyn Providers>);
     let mut fetchers = HashMap::new();
-    fetchers.insert(0, FetcherType::Indexer as i32);
+    fetchers.insert(0, FetcherType::Sequencer as i32);
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
         .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
-                .indexer(
-                    IndexerFetcherConfig::builder()
-                        .url("http://localhost:38545".to_string())
-                        .timeout_ms(2000)
+                .sequencer(
+                    SequencerFetcherConfig::builder()
                         .skip_validation(true)
+                        .options(
+                            ClientOptions::builder()
+                                .host("localhost".to_string())
+                                .port(50051)
+                                .is_ssl(true)
+                                .build(),
+                        )
                         .build(),
                 )
                 .build(),

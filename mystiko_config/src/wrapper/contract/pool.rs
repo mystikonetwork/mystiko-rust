@@ -65,10 +65,6 @@ impl PoolContractConfig {
         &self.raw.event_filter_size
     }
 
-    pub fn indexer_filter_size(&self) -> &Option<u64> {
-        &self.raw.indexer_filter_size
-    }
-
     pub fn pool_name(&self) -> &str {
         &self.raw.pool_name
     }

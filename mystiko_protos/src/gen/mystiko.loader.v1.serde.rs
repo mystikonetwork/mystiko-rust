@@ -328,7 +328,7 @@ impl serde::Serialize for FetcherConfig {
         if self.packer.is_some() {
             len += 1;
         }
-        if self.indexer.is_some() {
+        if self.sequencer.is_some() {
             len += 1;
         }
         if self.etherscan.is_some() {
@@ -341,8 +341,8 @@ impl serde::Serialize for FetcherConfig {
         if let Some(v) = self.packer.as_ref() {
             struct_ser.serialize_field("packer", v)?;
         }
-        if let Some(v) = self.indexer.as_ref() {
-            struct_ser.serialize_field("indexer", v)?;
+        if let Some(v) = self.sequencer.as_ref() {
+            struct_ser.serialize_field("sequencer", v)?;
         }
         if let Some(v) = self.etherscan.as_ref() {
             struct_ser.serialize_field("etherscan", v)?;
@@ -361,7 +361,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
     {
         const FIELDS: &[&str] = &[
             "packer",
-            "indexer",
+            "sequencer",
             "etherscan",
             "provider",
         ];
@@ -369,7 +369,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Packer,
-            Indexer,
+            Sequencer,
             Etherscan,
             Provider,
         }
@@ -394,7 +394,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
                     {
                         match value {
                             "packer" => Ok(GeneratedField::Packer),
-                            "indexer" => Ok(GeneratedField::Indexer),
+                            "sequencer" => Ok(GeneratedField::Sequencer),
                             "etherscan" => Ok(GeneratedField::Etherscan),
                             "provider" => Ok(GeneratedField::Provider),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -417,7 +417,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut packer__ = None;
-                let mut indexer__ = None;
+                let mut sequencer__ = None;
                 let mut etherscan__ = None;
                 let mut provider__ = None;
                 while let Some(k) = map.next_key()? {
@@ -428,11 +428,11 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
                             }
                             packer__ = map.next_value()?;
                         }
-                        GeneratedField::Indexer => {
-                            if indexer__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("indexer"));
+                        GeneratedField::Sequencer => {
+                            if sequencer__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("sequencer"));
                             }
-                            indexer__ = map.next_value()?;
+                            sequencer__ = map.next_value()?;
                         }
                         GeneratedField::Etherscan => {
                             if etherscan__.is_some() {
@@ -450,7 +450,7 @@ impl<'de> serde::Deserialize<'de> for FetcherConfig {
                 }
                 Ok(FetcherConfig {
                     packer: packer__,
-                    indexer: indexer__,
+                    sequencer: sequencer__,
                     etherscan: etherscan__,
                     provider: provider__,
                 })
@@ -468,7 +468,7 @@ impl serde::Serialize for FetcherType {
         let variant = match self {
             Self::Unspecified => "FETCHER_TYPE_UNSPECIFIED",
             Self::Packer => "FETCHER_TYPE_PACKER",
-            Self::Indexer => "FETCHER_TYPE_INDEXER",
+            Self::Sequencer => "FETCHER_TYPE_SEQUENCER",
             Self::Etherscan => "FETCHER_TYPE_ETHERSCAN",
             Self::Provider => "FETCHER_TYPE_PROVIDER",
         };
@@ -484,7 +484,7 @@ impl<'de> serde::Deserialize<'de> for FetcherType {
         const FIELDS: &[&str] = &[
             "FETCHER_TYPE_UNSPECIFIED",
             "FETCHER_TYPE_PACKER",
-            "FETCHER_TYPE_INDEXER",
+            "FETCHER_TYPE_SEQUENCER",
             "FETCHER_TYPE_ETHERSCAN",
             "FETCHER_TYPE_PROVIDER",
         ];
@@ -531,7 +531,7 @@ impl<'de> serde::Deserialize<'de> for FetcherType {
                 match value {
                     "FETCHER_TYPE_UNSPECIFIED" => Ok(FetcherType::Unspecified),
                     "FETCHER_TYPE_PACKER" => Ok(FetcherType::Packer),
-                    "FETCHER_TYPE_INDEXER" => Ok(FetcherType::Indexer),
+                    "FETCHER_TYPE_SEQUENCER" => Ok(FetcherType::Sequencer),
                     "FETCHER_TYPE_ETHERSCAN" => Ok(FetcherType::Etherscan),
                     "FETCHER_TYPE_PROVIDER" => Ok(FetcherType::Provider),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
@@ -539,155 +539,6 @@ impl<'de> serde::Deserialize<'de> for FetcherType {
             }
         }
         deserializer.deserialize_any(GeneratedVisitor)
-    }
-}
-impl serde::Serialize for IndexerFetcherConfig {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.url.is_some() {
-            len += 1;
-        }
-        if self.timeout_ms.is_some() {
-            len += 1;
-        }
-        if self.filter_size.is_some() {
-            len += 1;
-        }
-        if self.skip_validation.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.IndexerFetcherConfig", len)?;
-        if let Some(v) = self.url.as_ref() {
-            struct_ser.serialize_field("url", v)?;
-        }
-        if let Some(v) = self.timeout_ms.as_ref() {
-            struct_ser.serialize_field("timeoutMs", ToString::to_string(&v).as_str())?;
-        }
-        if let Some(v) = self.filter_size.as_ref() {
-            struct_ser.serialize_field("filterSize", ToString::to_string(&v).as_str())?;
-        }
-        if let Some(v) = self.skip_validation.as_ref() {
-            struct_ser.serialize_field("skipValidation", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for IndexerFetcherConfig {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "url",
-            "timeout_ms",
-            "timeoutMs",
-            "filter_size",
-            "filterSize",
-            "skip_validation",
-            "skipValidation",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Url,
-            TimeoutMs,
-            FilterSize,
-            SkipValidation,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "url" => Ok(GeneratedField::Url),
-                            "timeoutMs" | "timeout_ms" => Ok(GeneratedField::TimeoutMs),
-                            "filterSize" | "filter_size" => Ok(GeneratedField::FilterSize),
-                            "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = IndexerFetcherConfig;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.loader.v1.IndexerFetcherConfig")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<IndexerFetcherConfig, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut url__ = None;
-                let mut timeout_ms__ = None;
-                let mut filter_size__ = None;
-                let mut skip_validation__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::Url => {
-                            if url__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("url"));
-                            }
-                            url__ = map.next_value()?;
-                        }
-                        GeneratedField::TimeoutMs => {
-                            if timeout_ms__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("timeoutMs"));
-                            }
-                            timeout_ms__ = 
-                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
-                            ;
-                        }
-                        GeneratedField::FilterSize => {
-                            if filter_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("filterSize"));
-                            }
-                            filter_size__ = 
-                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
-                            ;
-                        }
-                        GeneratedField::SkipValidation => {
-                            if skip_validation__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("skipValidation"));
-                            }
-                            skip_validation__ = map.next_value()?;
-                        }
-                    }
-                }
-                Ok(IndexerFetcherConfig {
-                    url: url__,
-                    timeout_ms: timeout_ms__,
-                    filter_size: filter_size__,
-                    skip_validation: skip_validation__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.loader.v1.IndexerFetcherConfig", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for LoaderConfig {
@@ -1427,6 +1278,115 @@ impl<'de> serde::Deserialize<'de> for RuleValidatorConfig {
             }
         }
         deserializer.deserialize_struct("mystiko.loader.v1.RuleValidatorConfig", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for SequencerFetcherConfig {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.skip_validation.is_some() {
+            len += 1;
+        }
+        if self.options.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.SequencerFetcherConfig", len)?;
+        if let Some(v) = self.skip_validation.as_ref() {
+            struct_ser.serialize_field("skipValidation", v)?;
+        }
+        if let Some(v) = self.options.as_ref() {
+            struct_ser.serialize_field("options", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for SequencerFetcherConfig {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "skip_validation",
+            "skipValidation",
+            "options",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            SkipValidation,
+            Options,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
+                            "options" => Ok(GeneratedField::Options),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = SequencerFetcherConfig;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.loader.v1.SequencerFetcherConfig")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<SequencerFetcherConfig, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut skip_validation__ = None;
+                let mut options__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::SkipValidation => {
+                            if skip_validation__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("skipValidation"));
+                            }
+                            skip_validation__ = map.next_value()?;
+                        }
+                        GeneratedField::Options => {
+                            if options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("options"));
+                            }
+                            options__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(SequencerFetcherConfig {
+                    skip_validation: skip_validation__,
+                    options: options__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.loader.v1.SequencerFetcherConfig", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for ValidatorConfig {

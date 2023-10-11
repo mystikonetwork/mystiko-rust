@@ -21,7 +21,6 @@
         }
       ],
       "signerEndpoint": "https://bsc-dataseed1.binance.org",
-      "indexerFilterSize": 50000,
       "depositContracts": [],
       "poolContracts": [
         {
@@ -252,10 +251,6 @@
       ]
     }
   ],
-  "indexer": {
-    "url": "https://indexer.mystiko.network",
-    "timeoutMs": 120000
-  },
   "packer": {
     "url": "https://static.mystiko.network/packer/v1",
     "version": 1,

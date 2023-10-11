@@ -256,9 +256,6 @@
       "verifyingKeyFile": ["./Transaction2x2.vkey.gz"]
     }
   ],
-  "indexer": {
-    "url": "https://example.com"
-  },
   "packer": {
     "url": "https://static.mystiko.network/packer/v1"
   },

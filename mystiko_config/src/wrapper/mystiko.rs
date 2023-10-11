@@ -1,6 +1,6 @@
 use crate::{
     create_raw_from_json, BridgeConfig, ChainConfig, CircuitConfig, ContractConfig, DepositContractConfig,
-    IndexerConfig, PackerConfig, PoolContractConfig, RawChainConfig, RawMystikoConfig,
+    PackerConfig, PoolContractConfig, RawChainConfig, RawMystikoConfig,
 };
 use anyhow::{Error, Result};
 use mystiko_protos::common::v1::ConfigOptions;
@@ -16,7 +16,6 @@ pub struct MystikoConfig {
     chain_configs: Vec<Arc<ChainConfig>>,
     circuit_configs: Vec<Arc<CircuitConfig>>,
     bridge_configs: Vec<Arc<BridgeConfig>>,
-    indexer_config: Option<IndexerConfig>,
     packer_config: Option<PackerConfig>,
     default_circuit_configs: HashMap<CircuitType, Arc<CircuitConfig>>,
     circuit_configs_by_name: HashMap<String, Arc<CircuitConfig>>,
@@ -36,7 +35,6 @@ impl MystikoConfig {
             .iter()
             .map(|r| Arc::new(BridgeConfig::new(r.clone())))
             .collect();
-        let indexer_config = raw.indexer.as_ref().map(|r| IndexerConfig::new(r.clone()));
         let packer_config = raw.packer.as_ref().map(|r| PackerConfig::new(r.clone()));
         let default_circuit_configs = initialize_default_circuit_configs(&circuit_configs)?;
         let circuit_configs_by_name = initialize_circuit_configs_by_name(&circuit_configs)?;
@@ -46,7 +44,6 @@ impl MystikoConfig {
             chain_configs,
             bridge_configs,
             circuit_configs,
-            indexer_config,
             packer_config,
             default_circuit_configs,
             circuit_configs_by_name,
@@ -138,10 +135,6 @@ impl MystikoConfig {
 
     pub fn chains(&self) -> Vec<&ChainConfig> {
         self.chain_configs.iter().map(|c| c.as_ref()).collect()
-    }
-
-    pub fn indexer(&self) -> Option<&IndexerConfig> {
-        self.indexer_config.as_ref()
     }
 
     pub fn sequencer(&self) -> Option<Arc<ClientOptions>> {
@@ -385,9 +378,6 @@ impl MystikoConfig {
         }
         for circuit_config in self.circuits() {
             circuit_config.validate()?;
-        }
-        if let Some(indexer_config) = self.indexer() {
-            indexer_config.validate()?;
         }
         Ok(())
     }
