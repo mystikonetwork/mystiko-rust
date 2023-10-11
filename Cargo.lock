@@ -3338,6 +3338,7 @@ dependencies = [
  "mystiko_ethers",
  "mystiko_protocol",
  "mystiko_protos",
+ "mystiko_scheduler",
  "mystiko_storage",
  "mystiko_storage_macros",
  "mystiko_storage_sqlite",

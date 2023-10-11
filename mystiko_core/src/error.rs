@@ -1,4 +1,5 @@
 use mystiko_crypto::error::CryptoError;
+use mystiko_dataloader::DataLoaderError;
 use mystiko_storage::StorageError;
 use thiserror::Error;
 
@@ -26,4 +27,6 @@ pub enum MystikoError {
     NoSuchAccountError(String, String),
     #[error("invalid provider url provided: {0:?}")]
     InvalidProviderUrlError(String),
+    #[error(transparent)]
+    DataLoaderError(#[from] DataLoaderError),
 }
