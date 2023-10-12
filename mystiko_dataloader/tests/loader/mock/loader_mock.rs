@@ -17,7 +17,7 @@ pub(crate) type ChainDataLoaderFullDataType =
 
 pub(crate) async fn create_loader(
     chain_id: u64,
-    feature_count: usize,
+    fetcher_count: usize,
     validator_count: usize,
     skip_validation: bool,
 ) -> (
@@ -34,7 +34,7 @@ pub(crate) async fn create_loader(
     );
 
     let mut fetchers = vec![];
-    for _ in 0..feature_count {
+    for _ in 0..fetcher_count {
         let fetcher = Arc::new(MockFetcher::new(chain_id));
         fetchers.push(fetcher);
     }

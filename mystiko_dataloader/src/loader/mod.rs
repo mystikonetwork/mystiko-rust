@@ -72,6 +72,10 @@ pub trait FromConfig<T>: Sized {
 
 #[async_trait]
 pub trait DataLoader: Send + Sync {
+    async fn chain_loaded_block(&self, chain_id: u64) -> DataLoaderResult<Option<u64>>;
+
+    async fn contract_loaded_block(&self, chain_id: u64, contract_address: &str) -> DataLoaderResult<Option<u64>>;
+
     async fn load<O>(&self, options: O) -> DataLoaderResult<()>
     where
         O: Into<LoadOption> + Send + Sync;
