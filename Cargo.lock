@@ -3752,6 +3752,7 @@ dependencies = [
  "mystiko_protos",
  "mystiko_sequencer_client",
  "mystiko_utils",
+ "num-bigint 0.4.3",
  "thiserror",
  "tokio",
  "tonic",
