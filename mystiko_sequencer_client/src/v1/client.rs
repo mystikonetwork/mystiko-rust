@@ -110,7 +110,7 @@ impl crate::SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, N
         &self,
         chain_id: u64,
         contract_address: &Address,
-        commitment_hashes: Vec<BigUint>,
+        commitment_hashes: &[BigUint],
     ) -> Result<Vec<Commitment>, Self::Error> {
         log::debug!(
             "sequencer_client received request of get_commitments \
@@ -132,7 +132,7 @@ impl crate::SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, N
         &self,
         chain_id: u64,
         contract_address: &Address,
-        nullifier_hashes: Vec<BigUint>,
+        nullifier_hashes: &[BigUint],
     ) -> Result<Vec<Nullifier>, Self::Error> {
         log::debug!(
             "sequencer_client received request of get_nullifiers \
