@@ -24,7 +24,10 @@ use crate::handler::{dedup_commitments, dedup_nullifiers};
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct SequencerFetcher<R: LoadedData, C: SequencerClient<FetchChainRequest, FetchChainResponse>> {
+pub struct SequencerFetcher<
+    R: LoadedData,
+    C: SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, Nullifier>,
+> {
     client: Arc<C>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
@@ -46,7 +49,7 @@ pub enum SequencerFetcherError {
 impl<R, C> DataFetcher<R> for SequencerFetcher<R, C>
 where
     R: LoadedData,
-    C: SequencerClient<FetchChainRequest, FetchChainResponse>,
+    C: SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, Nullifier>,
 {
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         if option.start_block > option.target_block {
@@ -70,18 +73,19 @@ where
     }
 
     async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64, FetcherError> {
-        Ok(self
+        let result = self
             .client
-            .chain_loaded_block(options.chain_id)
+            .chain_loaded_block(options.chain_id, false)
             .await
-            .map_err(|err| FetcherError::AnyhowError(err.into()))?)
+            .map_err(|err| FetcherError::AnyhowError(err.into()))?;
+        Ok(result.loaded_block)
     }
 }
 
 impl<R, C> SequencerFetcher<R, C>
 where
     R: LoadedData,
-    C: SequencerClient<FetchChainRequest, FetchChainResponse>,
+    C: SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, Nullifier>,
 {
     pub fn new(client: Arc<C>) -> Self {
         Self::builder().client(client).build()
@@ -91,7 +95,7 @@ where
 impl<R, C> From<Arc<C>> for SequencerFetcher<R, C>
 where
     R: LoadedData,
-    C: SequencerClient<FetchChainRequest, FetchChainResponse>,
+    C: SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, Nullifier>,
 {
     fn from(client: Arc<C>) -> Self {
         Self::new(client)
@@ -117,7 +121,10 @@ where
     }
 }
 
-async fn fetch_response<R: LoadedData, C: SequencerClient<FetchChainRequest, FetchChainResponse>>(
+async fn fetch_response<
+    R: LoadedData,
+    C: SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, Nullifier>,
+>(
     sequencer_fetch_size: u64,
     option: &FetchOptions,
     client: &Arc<C>,

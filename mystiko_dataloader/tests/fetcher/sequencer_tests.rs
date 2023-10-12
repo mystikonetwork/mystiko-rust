@@ -13,17 +13,31 @@ use mystiko_dataloader::fetcher::{
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse, FetchContractResponse};
 use mystiko_sequencer_client::v1::SequencerClientError;
+use mystiko_sequencer_client::ChainLoadedBlock;
 use mystiko_utils::{address::string_address_to_bytes, convert::biguint_str_to_bytes, hex::decode_hex};
+use num_bigint::BigUint;
 
 mock! {
     #[derive(Debug)]
     SequencerClient {}
     #[async_trait]
-    impl mystiko_sequencer_client::SequencerClient<FetchChainRequest, FetchChainResponse> for SequencerClient {
+    impl mystiko_sequencer_client::SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, Nullifier> for SequencerClient {
         type Error = SequencerClientError;
-        async fn chain_loaded_block(&self, chain_id: u64) ->Result<u64, SequencerClientError>;
+        async fn chain_loaded_block(&self, chain_id: u64, with_contracts: bool) ->Result<ChainLoadedBlock, SequencerClientError>;
         async fn contract_loaded_block(&self, chain_id: u64, contract_address: &Address) -> Result<u64, SequencerClientError>;
         async fn fetch_chain(&self, request: FetchChainRequest) -> Result<FetchChainResponse, SequencerClientError>;
+        async fn get_commitments(
+            &self,
+            chain_id: u64,
+            contract_address: &Address,
+            commitment_hashes: Vec<BigUint>,
+        ) -> Result<Vec<Commitment>, SequencerClientError>;
+        async fn get_nullifiers(
+            &self,
+            chain_id: u64,
+            contract_address: &Address,
+            nullifier_hashes: Vec<BigUint>,
+        ) -> Result<Vec<Nullifier>, SequencerClientError>;
         async fn health_check(&self) -> Result<(), SequencerClientError>;
     }
 }
@@ -476,7 +490,7 @@ async fn test_chain_loaded_block() {
     let mut client = MockSequencerClient::new();
     client
         .expect_chain_loaded_block()
-        .returning(move |_| Ok(expect_block_number));
+        .returning(move |_, _| Ok(ChainLoadedBlock::builder().loaded_block(expect_block_number).build()));
     let config = Arc::new(
         MystikoConfig::from_json_file("tests/files/config/mystiko.json")
             .await

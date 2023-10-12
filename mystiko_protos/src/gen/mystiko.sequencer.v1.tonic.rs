@@ -180,6 +180,68 @@ pub mod sequencer_service_client {
             self.inner.unary(req, path, codec).await
         }
         ///
+        pub async fn get_commitments(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetCommitmentsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetCommitmentsResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/mystiko.sequencer.v1.SequencerService/GetCommitments",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "mystiko.sequencer.v1.SequencerService",
+                        "GetCommitments",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        ///
+        pub async fn get_nullifiers(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetNullifiersRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetNullifiersResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/mystiko.sequencer.v1.SequencerService/GetNullifiers",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "mystiko.sequencer.v1.SequencerService",
+                        "GetNullifiers",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        ///
         pub async fn health_check(
             &mut self,
             request: impl tonic::IntoRequest<super::HealthCheckRequest>,
@@ -242,6 +304,22 @@ pub mod sequencer_service_server {
             request: tonic::Request<super::ContractLoadedBlockRequest>,
         ) -> std::result::Result<
             tonic::Response<super::ContractLoadedBlockResponse>,
+            tonic::Status,
+        >;
+        ///
+        async fn get_commitments(
+            &self,
+            request: tonic::Request<super::GetCommitmentsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetCommitmentsResponse>,
+            tonic::Status,
+        >;
+        ///
+        async fn get_nullifiers(
+            &self,
+            request: tonic::Request<super::GetNullifiersRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetNullifiersResponse>,
             tonic::Status,
         >;
         ///
@@ -454,6 +532,98 @@ pub mod sequencer_service_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = ContractLoadedBlockSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/mystiko.sequencer.v1.SequencerService/GetCommitments" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetCommitmentsSvc<T: SequencerService>(pub Arc<T>);
+                    impl<
+                        T: SequencerService,
+                    > tonic::server::UnaryService<super::GetCommitmentsRequest>
+                    for GetCommitmentsSvc<T> {
+                        type Response = super::GetCommitmentsResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetCommitmentsRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                (*inner).get_commitments(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = GetCommitmentsSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/mystiko.sequencer.v1.SequencerService/GetNullifiers" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetNullifiersSvc<T: SequencerService>(pub Arc<T>);
+                    impl<
+                        T: SequencerService,
+                    > tonic::server::UnaryService<super::GetNullifiersRequest>
+                    for GetNullifiersSvc<T> {
+                        type Response = super::GetNullifiersResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetNullifiersRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                (*inner).get_nullifiers(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = GetNullifiersSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
