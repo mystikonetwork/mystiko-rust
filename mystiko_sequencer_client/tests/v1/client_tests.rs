@@ -298,7 +298,7 @@ async fn test_get_commitments() {
         .get_commitments(
             1_u64,
             &ethers_address_from_string("0xCB255075f38C75EAf2DE8A72897649dba9B90299").unwrap(),
-            commitment_hashes.clone(),
+            &commitment_hashes,
         )
         .await
         .unwrap();
@@ -352,7 +352,7 @@ async fn test_get_nullifiers() {
         .get_nullifiers(
             1_u64,
             &ethers_address_from_string("0xCB255075f38C75EAf2DE8A72897649dba9B90299").unwrap(),
-            nullifier_hashes.clone(),
+            &nullifier_hashes,
         )
         .await
         .unwrap();
