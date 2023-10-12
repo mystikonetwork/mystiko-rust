@@ -30,13 +30,13 @@ mock! {
             &self,
             chain_id: u64,
             contract_address: &Address,
-            commitment_hashes: Vec<BigUint>,
+            commitment_hashes: &[BigUint],
         ) -> Result<Vec<Commitment>, SequencerClientError>;
         async fn get_nullifiers(
             &self,
             chain_id: u64,
             contract_address: &Address,
-            nullifier_hashes: Vec<BigUint>,
+            nullifier_hashes: &[BigUint],
         ) -> Result<Vec<Nullifier>, SequencerClientError>;
         async fn health_check(&self) -> Result<(), SequencerClientError>;
     }
