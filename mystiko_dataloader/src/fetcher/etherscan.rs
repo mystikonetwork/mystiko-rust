@@ -18,7 +18,7 @@ use typed_builder::TypedBuilder;
 
 #[derive(Error, Debug)]
 pub enum EtherscanFetcherError {
-    #[error("no chain config found for chain id: {0}")]
+    #[error("etherscan fetcher no chain config found for chain id: {0}")]
     UnsupportedChainError(u64),
 }
 
@@ -111,8 +111,16 @@ where
 }
 
 impl<R> EtherscanFetcher<R> {
-    pub fn from_config<C: Into<EtherscanFetcherConfig>>(mystiko_config: Arc<MystikoConfig>, config: C) -> Result<Self> {
-        let config = config.into();
+    pub fn from_config<C: Into<EtherscanFetcherConfig>>(
+        loader_chain_id: u64,
+        mystiko_config: Arc<MystikoConfig>,
+        config: C,
+    ) -> Result<Self> {
+        let mut config = config.into();
+        if config.chains.is_empty() {
+            config.chains.insert(loader_chain_id, Default::default());
+        }
+
         let mut clients = Vec::new();
 
         for (chain_id, fetcher_chain_cfg) in config.chains.iter() {
