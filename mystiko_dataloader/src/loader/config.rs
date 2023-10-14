@@ -126,6 +126,7 @@ where
 
     pub(crate) async fn build_fetchers(
         &self,
+        chain_id: u64,
         mystiko_config: Arc<MystikoConfig>,
         providers: Arc<Box<dyn Providers>>,
     ) -> DataLoaderConfigResult<FetcherBuildData<R>> {
@@ -165,8 +166,11 @@ where
                             fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
                         }
                     }
-                    let etherscan =
-                        EtherscanFetcher::from_config(mystiko_config.clone(), fetcher_config.etherscan.clone())?;
+                    let etherscan = EtherscanFetcher::from_config(
+                        chain_id,
+                        mystiko_config.clone(),
+                        fetcher_config.etherscan.clone(),
+                    )?;
                     fetchers.push(Arc::new(Box::new(etherscan) as Box<dyn DataFetcher<R>>));
                 }
                 FetcherType::Provider => {
@@ -217,19 +221,14 @@ where
 
         let etherscan_config = self.config.fetcher_config.as_ref().and_then(|c| c.etherscan.as_ref());
 
-        match etherscan_config {
-            None => Err(DataLoaderConfigError::FetcherConfigNotExistError(
-                FetcherType::Etherscan as i32,
-            )),
-            Some(e) => {
-                if e.chains.get(&self.chain_id).is_none() {
-                    Err(DataLoaderConfigError::FetcherConfigNotExistError(
-                        FetcherType::Etherscan as i32,
-                    ))
-                } else {
-                    Ok(())
-                }
+        if let Some(e) = etherscan_config {
+            if e.chains.get(&self.chain_id).is_none() {
+                return Err(DataLoaderConfigError::FetcherConfigNotExistError(
+                    FetcherType::Etherscan as i32,
+                ));
             }
         }
+
+        Ok(())
     }
 }

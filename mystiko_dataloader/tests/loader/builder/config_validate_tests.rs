@@ -44,11 +44,7 @@ async fn test_fetcher_etherscan_config_validate() {
         .providers(providers.clone())
         .build();
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
-    assert!(loader.err().unwrap().to_string().contains(
-        DataLoaderConfigError::FetcherConfigNotExistError(FetcherType::Etherscan as i32)
-            .to_string()
-            .as_str()
-    ));
+    assert!(loader.is_ok());
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
@@ -62,11 +58,7 @@ async fn test_fetcher_etherscan_config_validate() {
         .providers(providers.clone())
         .build();
     let loader = ChainDataLoader::<FullData>::from_config(&options).await;
-    assert!(loader.err().unwrap().to_string().contains(
-        DataLoaderConfigError::FetcherConfigNotExistError(FetcherType::Etherscan as i32)
-            .to_string()
-            .as_str()
-    ));
+    assert!(loader.is_ok());
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
