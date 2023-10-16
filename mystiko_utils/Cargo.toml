@@ -5,6 +5,7 @@ edition = "2021"
 
 [features]
 config = ["dep:config", "dep:serde_json", "dep:serde", "dep:typed-builder"]
+json = ["dep:serde_json", "dep:serde"]
 
 [dependencies]
 anyhow = { version = "1.0" }
@@ -19,4 +20,4 @@ serde_json = { version = "1.0.91" ,optional = true}
 typed-builder = { version = "0.15.2",optional = true}
 
 [dev-dependencies]
-mystiko_utils = { version = "*", path = ".", features = ["config"] }
+mystiko_utils = { version = "*", path = ".", features = ["config", "json"] }
