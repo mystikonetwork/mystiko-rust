@@ -57,6 +57,14 @@ pub mod mystiko {
                 // @@protoc_insertion_point(mystiko.core.handler.v1)
             }
         }
+        pub mod synchronizer {
+            #[cfg(feature = "mystiko-core-synchronizer-v1")]
+            // @@protoc_insertion_point(attribute:mystiko.core.synchronizer.v1)
+            pub mod v1 {
+                include!("mystiko.core.synchronizer.v1.rs");
+                // @@protoc_insertion_point(mystiko.core.synchronizer.v1)
+            }
+        }
         #[cfg(feature = "mystiko-core-v1")]
         // @@protoc_insertion_point(attribute:mystiko.core.v1)
         pub mod v1 {
