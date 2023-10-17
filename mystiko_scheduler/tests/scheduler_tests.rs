@@ -85,7 +85,7 @@ async fn test_task_timeout() {
         .no_retry_on_timeout(true)
         .build();
     scheduler.start(None, options).await.unwrap();
-    scheduler.join().await.unwrap();
+    scheduler.wait_shutdown().await.unwrap();
     assert_eq!(*task.counter.lock().await, 2u32);
 }
 

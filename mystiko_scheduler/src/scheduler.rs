@@ -123,7 +123,6 @@ where
         if let Some(join_handle) = self.join_handle.lock().await.take() {
             join_handle.await?
         } else {
-            log::warn!("scheduler does not have join_handle, are you sure it was started?");
             Ok(())
         }
     }
@@ -138,7 +137,11 @@ where
     #[cfg(feature = "signal")]
     pub async fn wait_shutdown(&self) -> Result<(), SchedulerError> {
         if let Some(shutdown_join_handle) = self.shutdown_join_handle.lock().await.take() {
-            shutdown_join_handle.await?;
+            if let Some(join_handle) = self.join_handle.lock().await.take() {
+                futures::future::select(join_handle, shutdown_join_handle).await;
+            } else {
+                shutdown_join_handle.await?;
+            }
         }
         self.stop().await
     }
