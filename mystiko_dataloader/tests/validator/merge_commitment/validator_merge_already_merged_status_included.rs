@@ -170,6 +170,7 @@ async fn test_some_already_merged_commitment_some_not() {
         cm.included_transaction_hash = Some(vec![1]);
         cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
+        fetched_cms.push(cms[i + 10].clone());
     }
 
     for i in 5..10 {
@@ -182,7 +183,7 @@ async fn test_some_already_merged_commitment_some_not() {
         cm.included_transaction_hash = Some(vec![1]);
         cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
-        fetched_cms.push(cms[i + 5].clone());
+        fetched_cms.push(cms[i + 10].clone());
     }
 
     let contract_data = ContractData::builder()
@@ -268,6 +269,7 @@ async fn test_some_already_merged_commitment_some_not_wrong_sequence() {
         cm.included_transaction_hash = Some(vec![1]);
         cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
+        fetched_cms.push(cms[i + 10].clone());
     }
 
     for i in 5..10 {
@@ -280,7 +282,7 @@ async fn test_some_already_merged_commitment_some_not_wrong_sequence() {
         cm.included_transaction_hash = Some(vec![1]);
         cm.queued_transaction_hash = Some(vec![1]);
         fetched_cms.push(cm.clone());
-        fetched_cms.push(cms[i + 5].clone());
+        fetched_cms.push(cms[i + 10].clone());
     }
 
     let contract_data = ContractData::builder()
