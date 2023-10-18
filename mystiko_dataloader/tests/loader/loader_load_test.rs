@@ -7,15 +7,11 @@ use std::collections::HashSet;
 use std::vec;
 
 #[tokio::test]
-async fn test_loader_start() {
+async fn test_loader_success() {
     let (_, loader, fetchers, _, _) = create_loader(1, 1, 1, false).await;
     fetchers[0].set_loaded_block(Some(100)).await;
     let result = loader.load(Some(LoadOption::default())).await;
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::LoaderFetchersExhaustedError.to_string().as_str()));
+    assert!(result.is_ok());
 }
 
 #[tokio::test]

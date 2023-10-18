@@ -91,7 +91,7 @@ where
             return Ok(vec![]);
         }
 
-        let mut validates = merge_fetched_commitment(commitments)?;
+        let mut validates = self.merge_fetched_commitment(data, commitments)?;
         self.recovery_leaf_index(data, &mut validates).await?;
         self.sort_by_leaf_index(&mut validates);
         Ok(validates)
@@ -150,47 +150,67 @@ where
     fn sort_by_leaf_index(&self, commitments: &mut [ValidateCommitment]) {
         commitments.sort_by(|a, b| a.leaf_index.cmp(&b.leaf_index));
     }
-}
 
-fn merge_fetched_commitment(commitments: &[Commitment]) -> DataMergeResult<Vec<ValidateCommitment>> {
-    let mut commitment_map = HashMap::new();
+    fn merge_fetched_commitment(
+        &self,
+        data: &ValidateOriginalData<'_, R>,
+        commitments: &[Commitment],
+    ) -> DataMergeResult<Vec<ValidateCommitment>> {
+        let mut commitment_map = HashMap::new();
 
-    commitments
-        .iter()
-        .filter_map(|cm| match CommitmentStatus::from_i32(cm.status) {
-            Some(status) if status == CommitmentStatus::Included || status == CommitmentStatus::Queued => {
-                // some fetcher data is already merged
-                let merged = be_merged_commitment(cm);
-                let commitment_hash = bytes_to_biguint(cm.commitment_hash.as_slice());
-                let validate_commitment = ValidateCommitment::builder()
-                    .commitment_hash(commitment_hash)
-                    .status(status)
-                    .leaf_index(cm.leaf_index.unwrap_or(u64::MAX))
-                    .inner_merge(merged)
-                    .build();
-                Some(validate_commitment)
-            }
-            _ => None,
-        })
-        .try_for_each(|validate_commitment| -> DataMergeResult<()> {
-            match commitment_map.entry(validate_commitment.commitment_hash.clone()) {
-                Entry::Occupied(mut entry) => {
-                    let elem: &mut ValidateCommitment = entry.get_mut();
-                    if elem.commitment_hash != validate_commitment.commitment_hash {
-                        error!("commitment hash collision");
-                        return Err(DataMergeError::CommitmentHashCollisionError);
+        commitments
+            .iter()
+            .filter_map(|cm| match CommitmentStatus::from_i32(cm.status) {
+                Some(status) if status == CommitmentStatus::Included || status == CommitmentStatus::Queued => {
+                    // some fetcher data is already merged
+                    let merged = self.be_merged_commitment(data, cm);
+                    let commitment_hash = bytes_to_biguint(cm.commitment_hash.as_slice());
+                    let validate_commitment = ValidateCommitment::builder()
+                        .commitment_hash(commitment_hash)
+                        .status(status)
+                        .leaf_index(cm.leaf_index.unwrap_or(u64::MAX))
+                        .inner_merge(merged)
+                        .build();
+                    Some(validate_commitment)
+                }
+                _ => None,
+            })
+            .try_for_each(|validate_commitment| -> DataMergeResult<()> {
+                match commitment_map.entry(validate_commitment.commitment_hash.clone()) {
+                    Entry::Occupied(mut entry) => {
+                        let elem: &mut ValidateCommitment = entry.get_mut();
+                        if elem.commitment_hash != validate_commitment.commitment_hash {
+                            error!("commitment hash collision");
+                            return Err(DataMergeError::CommitmentHashCollisionError);
+                        }
+
+                        merge_same_commitments(elem, &validate_commitment)?;
                     }
-
-                    merge_same_commitments(elem, &validate_commitment)?;
+                    Entry::Vacant(entry) => {
+                        entry.insert(validate_commitment);
+                    }
                 }
-                Entry::Vacant(entry) => {
-                    entry.insert(validate_commitment);
-                }
-            }
-            Ok(())
-        })?;
+                Ok(())
+            })?;
 
-    Ok(commitment_map.into_values().collect())
+        Ok(commitment_map.into_values().collect())
+    }
+
+    fn be_merged_commitment(&self, data: &ValidateOriginalData<'_, R>, cm: &Commitment) -> bool {
+        if cm.status == CommitmentStatus::Included as i32
+            && cm.leaf_index.is_some()
+            && cm.included_block_number.is_some()
+            && cm.rollup_fee.is_some()
+            && cm.encrypted_note.is_some()
+            && cm.queued_transaction_hash.is_some()
+            && cm.included_transaction_hash.is_some()
+            && cm.block_number >= data.contract_data.start_block
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
 
 fn merge_same_commitments(src: &mut ValidateCommitment, dst: &ValidateCommitment) -> DataMergeResult<()> {
@@ -214,14 +234,4 @@ fn merge_same_commitments(src: &mut ValidateCommitment, dst: &ValidateCommitment
     }
 
     Ok(())
-}
-
-fn be_merged_commitment(cm: &Commitment) -> bool {
-    cm.status == CommitmentStatus::Included as i32
-        && cm.leaf_index.is_some()
-        && cm.included_block_number.is_some()
-        && cm.rollup_fee.is_some()
-        && cm.encrypted_note.is_some()
-        && cm.queued_transaction_hash.is_some()
-        && cm.included_transaction_hash.is_some()
 }

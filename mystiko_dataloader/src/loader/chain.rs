@@ -151,10 +151,14 @@ where
 
     async fn run_load(&self, run_params: &LoaderRunParams<'_, F>) -> DataLoaderResult<()> {
         let contracts = self.build_loading_contracts(run_params.params.cfg).await?;
-        let mut loaded = false;
+        let mut loaded = None;
         for fetcher in run_params.fetchers.iter() {
             let fetch_option = self.build_fetch_options(&contracts, fetcher).await?;
             if let Some(fetch_option) = &fetch_option {
+                if loaded.is_none() {
+                    loaded = Some(false);
+                }
+
                 let mut chain_data = match self
                     .fetch(&run_params.params.option.fetcher, fetcher, fetch_option)
                     .await
@@ -182,14 +186,14 @@ where
                         if let Err(e) = self.handle(chain_data).await {
                             warn!("handle fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
                         } else {
-                            loaded = true;
+                            loaded = Some(true);
                         }
                     }
                 }
             }
         }
 
-        if !loaded {
+        if let Some(false) = loaded {
             error!("failed to load data from all fetchers");
             return Err(DataLoaderError::LoaderFetchersExhaustedError);
         }
