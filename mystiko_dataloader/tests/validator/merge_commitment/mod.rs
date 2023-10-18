@@ -1,4 +1,5 @@
 mod validator_invalid_data_tests;
+mod validator_merge_already_merged_status_included;
 mod validator_merge_already_merged_tests;
 mod validator_merge_duplicate_tests;
 mod validator_merge_many_many_tests;
