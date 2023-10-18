@@ -1,5 +1,6 @@
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 pub fn dedup_commitments(commitments: Vec<Commitment>) -> Vec<Commitment> {
@@ -35,10 +36,13 @@ pub fn dedup_nullifiers(nullifiers: Vec<Nullifier>) -> Vec<Nullifier> {
 }
 
 pub fn merge_commitments(commitment1: Commitment, commitment2: Commitment) -> Commitment {
-    let (first, last) = if commitment1.block_number < commitment2.block_number {
-        (commitment1, commitment2)
-    } else {
-        (commitment2, commitment1)
+    let (first, last) = match commitment1.block_number.cmp(&commitment2.block_number) {
+        Ordering::Less => (commitment1, commitment2),
+        Ordering::Equal => match commitment1.status.cmp(&commitment2.status) {
+            Ordering::Less => (commitment1, commitment2),
+            _ => (commitment2, commitment1),
+        },
+        Ordering::Greater => (commitment2, commitment1),
     };
     Commitment::builder()
         .commitment_hash(first.commitment_hash)
