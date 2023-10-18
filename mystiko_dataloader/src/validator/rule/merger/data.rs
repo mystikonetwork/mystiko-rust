@@ -197,7 +197,7 @@ where
     }
 
     fn be_merged_commitment(&self, data: &ValidateOriginalData<'_, R>, cm: &Commitment) -> bool {
-        if cm.status == CommitmentStatus::Included as i32
+        cm.status == CommitmentStatus::Included as i32
             && cm.leaf_index.is_some()
             && cm.included_block_number.is_some()
             && cm.rollup_fee.is_some()
@@ -205,11 +205,6 @@ where
             && cm.queued_transaction_hash.is_some()
             && cm.included_transaction_hash.is_some()
             && cm.block_number >= data.contract_data.start_block
-        {
-            return true;
-        }
-
-        false
     }
 }
 
