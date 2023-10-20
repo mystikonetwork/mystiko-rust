@@ -3326,16 +3326,21 @@ dependencies = [
  "async-trait",
  "bip32",
  "env_logger",
+ "ethers-core",
+ "ethers-middleware",
  "ethers-providers",
+ "ethers-signers",
  "futures",
  "lazy_static",
  "log",
+ "mockall",
  "mockito",
  "mystiko_abi",
  "mystiko_config",
  "mystiko_crypto",
  "mystiko_dataloader",
  "mystiko_ethers",
+ "mystiko_grpc",
  "mystiko_protocol",
  "mystiko_protos",
  "mystiko_scheduler",
@@ -3352,6 +3357,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
+ "tonic",
  "typed-builder 0.15.2",
 ]
 
@@ -3480,10 +3486,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "ethers-core",
- "ethers-middleware",
  "ethers-providers",
- "ethers-signers",
  "futures-core",
  "futures-util",
  "lazy_static",
@@ -3590,6 +3593,7 @@ name = "mystiko_protos"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "ethers-core",
  "http",
  "mystiko_protos",
  "mystiko_protos_macros",

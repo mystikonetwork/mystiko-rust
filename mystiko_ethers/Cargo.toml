@@ -8,10 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0" }
 async-trait = { version = "0.1.64" }
-ethers-core = { version = "2.0.4" }
-ethers-middleware = { version = "2.0.4" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
-ethers-signers = { version = "2.0.4" }
 futures-core = { version = "0.3.28" }
 lazy_static = { version = "1.4.0" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config", optional = true }
