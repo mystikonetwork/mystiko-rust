@@ -3740,6 +3740,7 @@ dependencies = [
  "mystiko_sequencer_client",
  "mystiko_utils",
  "num-bigint 0.4.3",
+ "serde",
  "thiserror",
  "tokio",
  "tonic",
