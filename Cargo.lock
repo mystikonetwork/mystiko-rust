@@ -3737,7 +3737,6 @@ dependencies = [
  "mystiko_utils",
  "num-bigint 0.4.3",
  "serde",
- "serde_json",
  "thiserror",
  "tokio",
  "tonic",
