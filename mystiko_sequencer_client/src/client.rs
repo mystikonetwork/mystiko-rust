@@ -2,16 +2,17 @@ use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
 use num_bigint::BigUint;
+use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
 #[builder(field_defaults(setter(into)))]
 pub struct ContractLoadedBlock {
     pub address: String,
     pub loaded_block: u64,
 }
 
-#[derive(Debug, Clone, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
 #[builder(field_defaults(setter(into)))]
 pub struct ChainLoadedBlock {
     pub loaded_block: u64,
