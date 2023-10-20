@@ -1,4 +1,4 @@
-use mystiko_database::document::{Wallet, WalletCollection, WalletColumn};
+use mystiko_core::{Wallet, WalletCollection, WalletColumn};
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};

@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_storage::{Document, DocumentData};
 use mystiko_storage_macros::CollectionBuilder;

@@ -1,4 +1,4 @@
-use mystiko_database::document::{Transaction, TransactionCollection, TransactionColumn};
+use mystiko_core::{Transaction, TransactionCollection, TransactionColumn};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;

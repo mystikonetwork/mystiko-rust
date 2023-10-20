@@ -16,17 +16,21 @@ log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
 mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "93fbd08" }
-mystiko_database = { version = "0.1.0", path = "../mystiko_database" }
+mystiko_dataloader = { version = "0.1.0", path = "../mystiko_dataloader" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers", features = ["config"] }
 mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "93fbd08" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-core-v1","mystiko-storage-v1","mystiko-core-handler-v1","mystiko-core-document-v1"] }
+mystiko_scheduler = { version = "0.1.0", path = "../mystiko_scheduler" }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
+mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
+num-bigint = { version = "0.4", features = ["serde"] }
 rand_core = { version = "0.6.4", features = ["std"] }
 regex = { version = "1.7.3" }
 rustc-hex = { version = "2.1.0" }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
+serde_json = { version = "1.0.91" }
 thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.27.0", features = ["sync"] }
 typed-builder = { version = "0.15.2" }

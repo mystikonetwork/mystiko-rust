@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 use mystiko_storage::{DocumentData, IndexColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_types::{TransactionStatus, TransactionType};

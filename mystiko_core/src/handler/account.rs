@@ -1,13 +1,7 @@
-use crate::MystikoError;
-use crate::Result;
-use crate::WalletHandler;
+use crate::{Account, AccountColumn, Database, MystikoError, Result, Wallet, WalletHandler};
 use bip32::XPrv;
 use futures::TryFutureExt;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
-use mystiko_database::document::Account;
-use mystiko_database::document::AccountColumn;
-use mystiko_database::document::Wallet;
-use mystiko_database::Database;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::{
     combined_public_key, combined_secret_key, encryption_public_key, separate_secret_keys, verification_public_key,

@@ -3,7 +3,6 @@ members = [
     "mystiko_abi",
     "mystiko_config",
     "mystiko_core",
-    "mystiko_database",
     "mystiko_dataloader",
     "mystiko_datapacker_client",
     "mystiko_datapacker_common",
