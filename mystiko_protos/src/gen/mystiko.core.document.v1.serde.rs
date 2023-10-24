@@ -935,7 +935,7 @@ impl<'de> serde::Deserialize<'de> for Deposit {
         deserializer.deserialize_struct("mystiko.core.document.v1.Deposit", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for Transaction {
+impl serde::Serialize for Spend {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -1027,13 +1027,13 @@ impl serde::Serialize for Transaction {
         if self.transaction_hash.is_some() {
             len += 1;
         }
-        if self.transaction_type != 0 {
+        if self.spend_type != 0 {
             len += 1;
         }
         if self.status != 0 {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("mystiko.core.document.v1.Transaction", len)?;
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.document.v1.Spend", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
         }
@@ -1118,20 +1118,20 @@ impl serde::Serialize for Transaction {
         if let Some(v) = self.transaction_hash.as_ref() {
             struct_ser.serialize_field("transactionHash", v)?;
         }
-        if self.transaction_type != 0 {
-            let v = super::super::v1::TransactionType::from_i32(self.transaction_type)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.transaction_type)))?;
-            struct_ser.serialize_field("transactionType", &v)?;
+        if self.spend_type != 0 {
+            let v = super::super::v1::SpendType::from_i32(self.spend_type)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.spend_type)))?;
+            struct_ser.serialize_field("spendType", &v)?;
         }
         if self.status != 0 {
-            let v = super::super::v1::TransactionStatus::from_i32(self.status)
+            let v = super::super::v1::SpendStatus::from_i32(self.status)
                 .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
             struct_ser.serialize_field("status", &v)?;
         }
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for Transaction {
+impl<'de> serde::Deserialize<'de> for Spend {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
@@ -1189,8 +1189,8 @@ impl<'de> serde::Deserialize<'de> for Transaction {
             "errorMessage",
             "transaction_hash",
             "transactionHash",
-            "transaction_type",
-            "transactionType",
+            "spend_type",
+            "spendType",
             "status",
         ];
 
@@ -1224,7 +1224,7 @@ impl<'de> serde::Deserialize<'de> for Transaction {
             RandomAuditingPublicKey,
             ErrorMessage,
             TransactionHash,
-            TransactionType,
+            SpendType,
             Status,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -1275,7 +1275,7 @@ impl<'de> serde::Deserialize<'de> for Transaction {
                             "randomAuditingPublicKey" | "random_auditing_public_key" => Ok(GeneratedField::RandomAuditingPublicKey),
                             "errorMessage" | "error_message" => Ok(GeneratedField::ErrorMessage),
                             "transactionHash" | "transaction_hash" => Ok(GeneratedField::TransactionHash),
-                            "transactionType" | "transaction_type" => Ok(GeneratedField::TransactionType),
+                            "spendType" | "spend_type" => Ok(GeneratedField::SpendType),
                             "status" => Ok(GeneratedField::Status),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -1286,13 +1286,13 @@ impl<'de> serde::Deserialize<'de> for Transaction {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = Transaction;
+            type Value = Spend;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.core.document.v1.Transaction")
+                formatter.write_str("struct mystiko.core.document.v1.Spend")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<Transaction, V::Error>
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<Spend, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -1324,7 +1324,7 @@ impl<'de> serde::Deserialize<'de> for Transaction {
                 let mut random_auditing_public_key__ = None;
                 let mut error_message__ = None;
                 let mut transaction_hash__ = None;
-                let mut transaction_type__ = None;
+                let mut spend_type__ = None;
                 let mut status__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -1525,21 +1525,21 @@ impl<'de> serde::Deserialize<'de> for Transaction {
                             }
                             transaction_hash__ = map.next_value()?;
                         }
-                        GeneratedField::TransactionType => {
-                            if transaction_type__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("transactionType"));
+                        GeneratedField::SpendType => {
+                            if spend_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("spendType"));
                             }
-                            transaction_type__ = Some(map.next_value::<super::super::v1::TransactionType>()? as i32);
+                            spend_type__ = Some(map.next_value::<super::super::v1::SpendType>()? as i32);
                         }
                         GeneratedField::Status => {
                             if status__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("status"));
                             }
-                            status__ = Some(map.next_value::<super::super::v1::TransactionStatus>()? as i32);
+                            status__ = Some(map.next_value::<super::super::v1::SpendStatus>()? as i32);
                         }
                     }
                 }
-                Ok(Transaction {
+                Ok(Spend {
                     id: id__.unwrap_or_default(),
                     created_at: created_at__.unwrap_or_default(),
                     updated_at: updated_at__.unwrap_or_default(),
@@ -1568,12 +1568,12 @@ impl<'de> serde::Deserialize<'de> for Transaction {
                     random_auditing_public_key: random_auditing_public_key__,
                     error_message: error_message__,
                     transaction_hash: transaction_hash__,
-                    transaction_type: transaction_type__.unwrap_or_default(),
+                    spend_type: spend_type__.unwrap_or_default(),
                     status: status__.unwrap_or_default(),
                 })
             }
         }
-        deserializer.deserialize_struct("mystiko.core.document.v1.Transaction", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("mystiko.core.document.v1.Spend", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for Wallet {

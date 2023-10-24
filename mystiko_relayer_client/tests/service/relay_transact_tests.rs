@@ -4,7 +4,7 @@ use mystiko_relayer_client::client::{HANDSHAKE_URL_PATH, SUPPORTED_API_VERSION};
 use mystiko_relayer_client::error::RelayerClientError;
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{HandshakeResponse, RelayTransactRequest, TransactRequestData};
-use mystiko_types::{BridgeType, CircuitType, TransactionType};
+use mystiko_types::{BridgeType, CircuitType, SpendType};
 use serde_json::to_string;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -30,7 +30,7 @@ async fn test_relay_transact() {
             relayer_url: mock_url,
             data: TransactRequestData {
                 contract_param: Default::default(),
-                transaction_type: TransactionType::Withdraw,
+                transaction_type: SpendType::Withdraw,
                 bridge_type: BridgeType::Loop,
                 chain_id: CHAIN_ID,
                 asset_symbol: "MTT".to_string(),
@@ -61,7 +61,7 @@ async fn test_relay_transact_invalid() {
             relayer_url: "http://localhost:8090".to_string(),
             data: TransactRequestData {
                 contract_param: Default::default(),
-                transaction_type: TransactionType::Withdraw,
+                transaction_type: SpendType::Withdraw,
                 bridge_type: BridgeType::Loop,
                 chain_id: CHAIN_ID,
                 asset_symbol: "MTT".to_string(),
@@ -110,7 +110,7 @@ async fn test_relay_transact_unsupported_api_version() {
             relayer_url: mock_url,
             data: TransactRequestData {
                 contract_param: Default::default(),
-                transaction_type: TransactionType::Withdraw,
+                transaction_type: SpendType::Withdraw,
                 bridge_type: BridgeType::Loop,
                 chain_id: CHAIN_ID,
                 asset_symbol: "MTT".to_string(),

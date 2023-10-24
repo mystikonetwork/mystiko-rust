@@ -85,7 +85,7 @@ pub enum DepositStatus {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub enum TransactionStatus {
+pub enum SpendStatus {
     Init,
     ProofGenerating,
     ProofGenerated,
@@ -96,7 +96,7 @@ pub enum TransactionStatus {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub enum TransactionType {
+pub enum SpendType {
     Transfer,
     Withdraw,
 }
@@ -120,6 +120,15 @@ pub enum PackerChecksum {
 pub enum PackerCompression {
     #[default]
     Zstd,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum TransactionType {
+    Legacy,
+    #[default]
+    Eip1559,
+    Eip2930,
 }
 
 impl CircuitType {

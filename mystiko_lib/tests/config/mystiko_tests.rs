@@ -4,13 +4,13 @@ use mystiko_lib::config::{
     find_default_circuit, find_deposit_contract, find_deposit_contract_by_address, find_peer_chains,
     find_pool_contract, find_pool_contract_by_address, find_pool_contracts, get, get_transaction_url,
 };
-use mystiko_protos::common::v1::{BridgeType, CircuitType};
-use mystiko_protos::config::api::v1::{
+use mystiko_protos::api::config::v1::{
     FindAssetSymbolsRequest, FindBridgeRequest, FindBridgesRequest, FindChainRequest, FindCircuitRequest,
     FindContractByAddressRequest, FindDefaultCircuitRequest, FindDepositContractByAddressRequest,
     FindDepositContractRequest, FindPeerChainsRequest, FindPoolContractByAddressRequest, FindPoolContractRequest,
     FindPoolContractsRequest, GetConfigRequest, GetTransactionUrlRequest,
 };
+use mystiko_protos::common::v1::{BridgeType, CircuitType};
 use serial_test::serial;
 
 #[test]

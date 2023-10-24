@@ -23,7 +23,7 @@ use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{
     HandshakeResponse, RegisterInfoResponse, RelayTransactResponse, RelayTransactStatusResponse, TransactStatus,
 };
-use mystiko_types::TransactionType;
+use mystiko_types::SpendType;
 use serde_json::{json, to_string};
 use std::sync::Arc;
 use std::time::Duration;
@@ -153,7 +153,7 @@ pub async fn mock_transaction_status(server: Arc<RwLock<ServerGuard>>) -> Mock {
     let response = success(RelayTransactStatusResponse {
         uuid: String::from("78d08829"),
         chain_id: 31337,
-        transaction_type: TransactionType::Withdraw,
+        transaction_type: SpendType::Withdraw,
         status: TransactStatus::Queued,
         transaction_hash: None,
         error_msg: None,

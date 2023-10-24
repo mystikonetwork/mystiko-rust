@@ -1,5 +1,21 @@
 // @generated
 pub mod mystiko {
+    pub mod api {
+        pub mod config {
+            #[cfg(feature = "mystiko-api-config-v1")]
+            // @@protoc_insertion_point(attribute:mystiko.api.config.v1)
+            pub mod v1 {
+                include!("mystiko.api.config.v1.rs");
+                // @@protoc_insertion_point(mystiko.api.config.v1)
+            }
+        }
+        #[cfg(feature = "mystiko-api-v1")]
+        // @@protoc_insertion_point(attribute:mystiko.api.v1)
+        pub mod v1 {
+            include!("mystiko.api.v1.rs");
+            // @@protoc_insertion_point(mystiko.api.v1)
+        }
+    }
     pub mod common {
         #[cfg(feature = "mystiko-common-v1")]
         // @@protoc_insertion_point(attribute:mystiko.common.v1)
@@ -9,14 +25,6 @@ pub mod mystiko {
         }
     }
     pub mod config {
-        pub mod api {
-            #[cfg(feature = "mystiko-config-api-v1")]
-            // @@protoc_insertion_point(attribute:mystiko.config.api.v1)
-            pub mod v1 {
-                include!("mystiko.config.api.v1.rs");
-                // @@protoc_insertion_point(mystiko.config.api.v1)
-            }
-        }
         pub mod bridge {
             #[cfg(feature = "mystiko-config-bridge-v1")]
             // @@protoc_insertion_point(attribute:mystiko.config.bridge.v1)

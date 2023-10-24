@@ -1,4 +1,113 @@
 // @generated
+impl serde::Serialize for AccessListItem {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.address.is_some() {
+            len += 1;
+        }
+        if !self.storage_keys.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.AccessListItem", len)?;
+        if let Some(v) = self.address.as_ref() {
+            struct_ser.serialize_field("address", v)?;
+        }
+        if !self.storage_keys.is_empty() {
+            struct_ser.serialize_field("storageKeys", &self.storage_keys)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for AccessListItem {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "address",
+            "storage_keys",
+            "storageKeys",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Address,
+            StorageKeys,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "address" => Ok(GeneratedField::Address),
+                            "storageKeys" | "storage_keys" => Ok(GeneratedField::StorageKeys),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = AccessListItem;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.v1.AccessListItem")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<AccessListItem, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut address__ = None;
+                let mut storage_keys__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Address => {
+                            if address__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("address"));
+                            }
+                            address__ = map.next_value()?;
+                        }
+                        GeneratedField::StorageKeys => {
+                            if storage_keys__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("storageKeys"));
+                            }
+                            storage_keys__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(AccessListItem {
+                    address: address__,
+                    storage_keys: storage_keys__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.v1.AccessListItem", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for AccountStatus {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -169,6 +278,365 @@ impl<'de> serde::Deserialize<'de> for DepositStatus {
         deserializer.deserialize_any(GeneratedVisitor)
     }
 }
+impl serde::Serialize for Eip1559Transaction {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.from.is_some() {
+            len += 1;
+        }
+        if self.to.is_some() {
+            len += 1;
+        }
+        if self.gas.is_some() {
+            len += 1;
+        }
+        if self.value.is_some() {
+            len += 1;
+        }
+        if self.data.is_some() {
+            len += 1;
+        }
+        if self.nonce.is_some() {
+            len += 1;
+        }
+        if self.max_fee_per_gas.is_some() {
+            len += 1;
+        }
+        if self.max_priority_fee_per_gas.is_some() {
+            len += 1;
+        }
+        if self.chain_id.is_some() {
+            len += 1;
+        }
+        if !self.access_list.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.Eip1559Transaction", len)?;
+        if let Some(v) = self.from.as_ref() {
+            struct_ser.serialize_field("from", v)?;
+        }
+        if let Some(v) = self.to.as_ref() {
+            struct_ser.serialize_field("to", v)?;
+        }
+        if let Some(v) = self.gas.as_ref() {
+            struct_ser.serialize_field("gas", v)?;
+        }
+        if let Some(v) = self.value.as_ref() {
+            struct_ser.serialize_field("value", v)?;
+        }
+        if let Some(v) = self.data.as_ref() {
+            struct_ser.serialize_field("data", v)?;
+        }
+        if let Some(v) = self.nonce.as_ref() {
+            struct_ser.serialize_field("nonce", v)?;
+        }
+        if let Some(v) = self.max_fee_per_gas.as_ref() {
+            struct_ser.serialize_field("maxFeePerGas", v)?;
+        }
+        if let Some(v) = self.max_priority_fee_per_gas.as_ref() {
+            struct_ser.serialize_field("maxPriorityFeePerGas", v)?;
+        }
+        if let Some(v) = self.chain_id.as_ref() {
+            struct_ser.serialize_field("chainId", ToString::to_string(&v).as_str())?;
+        }
+        if !self.access_list.is_empty() {
+            struct_ser.serialize_field("accessList", &self.access_list)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for Eip1559Transaction {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "from",
+            "to",
+            "gas",
+            "value",
+            "data",
+            "nonce",
+            "max_fee_per_gas",
+            "maxFeePerGas",
+            "max_priority_fee_per_gas",
+            "maxPriorityFeePerGas",
+            "chain_id",
+            "chainId",
+            "access_list",
+            "accessList",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            From,
+            To,
+            Gas,
+            Value,
+            Data,
+            Nonce,
+            MaxFeePerGas,
+            MaxPriorityFeePerGas,
+            ChainId,
+            AccessList,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "from" => Ok(GeneratedField::From),
+                            "to" => Ok(GeneratedField::To),
+                            "gas" => Ok(GeneratedField::Gas),
+                            "value" => Ok(GeneratedField::Value),
+                            "data" => Ok(GeneratedField::Data),
+                            "nonce" => Ok(GeneratedField::Nonce),
+                            "maxFeePerGas" | "max_fee_per_gas" => Ok(GeneratedField::MaxFeePerGas),
+                            "maxPriorityFeePerGas" | "max_priority_fee_per_gas" => Ok(GeneratedField::MaxPriorityFeePerGas),
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "accessList" | "access_list" => Ok(GeneratedField::AccessList),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = Eip1559Transaction;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.v1.Eip1559Transaction")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<Eip1559Transaction, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut from__ = None;
+                let mut to__ = None;
+                let mut gas__ = None;
+                let mut value__ = None;
+                let mut data__ = None;
+                let mut nonce__ = None;
+                let mut max_fee_per_gas__ = None;
+                let mut max_priority_fee_per_gas__ = None;
+                let mut chain_id__ = None;
+                let mut access_list__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::From => {
+                            if from__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("from"));
+                            }
+                            from__ = map.next_value()?;
+                        }
+                        GeneratedField::To => {
+                            if to__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("to"));
+                            }
+                            to__ = map.next_value()?;
+                        }
+                        GeneratedField::Gas => {
+                            if gas__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("gas"));
+                            }
+                            gas__ = map.next_value()?;
+                        }
+                        GeneratedField::Value => {
+                            if value__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("value"));
+                            }
+                            value__ = map.next_value()?;
+                        }
+                        GeneratedField::Data => {
+                            if data__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("data"));
+                            }
+                            data__ = map.next_value()?;
+                        }
+                        GeneratedField::Nonce => {
+                            if nonce__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("nonce"));
+                            }
+                            nonce__ = map.next_value()?;
+                        }
+                        GeneratedField::MaxFeePerGas => {
+                            if max_fee_per_gas__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxFeePerGas"));
+                            }
+                            max_fee_per_gas__ = map.next_value()?;
+                        }
+                        GeneratedField::MaxPriorityFeePerGas => {
+                            if max_priority_fee_per_gas__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxPriorityFeePerGas"));
+                            }
+                            max_priority_fee_per_gas__ = map.next_value()?;
+                        }
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::AccessList => {
+                            if access_list__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("accessList"));
+                            }
+                            access_list__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(Eip1559Transaction {
+                    from: from__,
+                    to: to__,
+                    gas: gas__,
+                    value: value__,
+                    data: data__,
+                    nonce: nonce__,
+                    max_fee_per_gas: max_fee_per_gas__,
+                    max_priority_fee_per_gas: max_priority_fee_per_gas__,
+                    chain_id: chain_id__,
+                    access_list: access_list__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.v1.Eip1559Transaction", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for Eip2930Transaction {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.tx.is_some() {
+            len += 1;
+        }
+        if !self.access_list.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.Eip2930Transaction", len)?;
+        if let Some(v) = self.tx.as_ref() {
+            struct_ser.serialize_field("tx", v)?;
+        }
+        if !self.access_list.is_empty() {
+            struct_ser.serialize_field("accessList", &self.access_list)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for Eip2930Transaction {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "tx",
+            "access_list",
+            "accessList",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Tx,
+            AccessList,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "tx" => Ok(GeneratedField::Tx),
+                            "accessList" | "access_list" => Ok(GeneratedField::AccessList),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = Eip2930Transaction;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.v1.Eip2930Transaction")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<Eip2930Transaction, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut tx__ = None;
+                let mut access_list__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Tx => {
+                            if tx__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("tx"));
+                            }
+                            tx__ = map.next_value()?;
+                        }
+                        GeneratedField::AccessList => {
+                            if access_list__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("accessList"));
+                            }
+                            access_list__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(Eip2930Transaction {
+                    tx: tx__,
+                    access_list: access_list__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.v1.Eip2930Transaction", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for GetAddressRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -329,6 +797,220 @@ impl<'de> serde::Deserialize<'de> for GetAddressResponse {
             }
         }
         deserializer.deserialize_struct("mystiko.core.v1.GetAddressResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for LegacyTransaction {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.from.is_some() {
+            len += 1;
+        }
+        if self.to.is_some() {
+            len += 1;
+        }
+        if self.gas.is_some() {
+            len += 1;
+        }
+        if self.gas_price.is_some() {
+            len += 1;
+        }
+        if self.value.is_some() {
+            len += 1;
+        }
+        if self.data.is_some() {
+            len += 1;
+        }
+        if self.nonce.is_some() {
+            len += 1;
+        }
+        if self.chain_id.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.LegacyTransaction", len)?;
+        if let Some(v) = self.from.as_ref() {
+            struct_ser.serialize_field("from", v)?;
+        }
+        if let Some(v) = self.to.as_ref() {
+            struct_ser.serialize_field("to", v)?;
+        }
+        if let Some(v) = self.gas.as_ref() {
+            struct_ser.serialize_field("gas", v)?;
+        }
+        if let Some(v) = self.gas_price.as_ref() {
+            struct_ser.serialize_field("gasPrice", v)?;
+        }
+        if let Some(v) = self.value.as_ref() {
+            struct_ser.serialize_field("value", v)?;
+        }
+        if let Some(v) = self.data.as_ref() {
+            struct_ser.serialize_field("data", v)?;
+        }
+        if let Some(v) = self.nonce.as_ref() {
+            struct_ser.serialize_field("nonce", v)?;
+        }
+        if let Some(v) = self.chain_id.as_ref() {
+            struct_ser.serialize_field("chainId", ToString::to_string(&v).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for LegacyTransaction {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "from",
+            "to",
+            "gas",
+            "gas_price",
+            "gasPrice",
+            "value",
+            "data",
+            "nonce",
+            "chain_id",
+            "chainId",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            From,
+            To,
+            Gas,
+            GasPrice,
+            Value,
+            Data,
+            Nonce,
+            ChainId,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "from" => Ok(GeneratedField::From),
+                            "to" => Ok(GeneratedField::To),
+                            "gas" => Ok(GeneratedField::Gas),
+                            "gasPrice" | "gas_price" => Ok(GeneratedField::GasPrice),
+                            "value" => Ok(GeneratedField::Value),
+                            "data" => Ok(GeneratedField::Data),
+                            "nonce" => Ok(GeneratedField::Nonce),
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = LegacyTransaction;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.v1.LegacyTransaction")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<LegacyTransaction, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut from__ = None;
+                let mut to__ = None;
+                let mut gas__ = None;
+                let mut gas_price__ = None;
+                let mut value__ = None;
+                let mut data__ = None;
+                let mut nonce__ = None;
+                let mut chain_id__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::From => {
+                            if from__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("from"));
+                            }
+                            from__ = map.next_value()?;
+                        }
+                        GeneratedField::To => {
+                            if to__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("to"));
+                            }
+                            to__ = map.next_value()?;
+                        }
+                        GeneratedField::Gas => {
+                            if gas__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("gas"));
+                            }
+                            gas__ = map.next_value()?;
+                        }
+                        GeneratedField::GasPrice => {
+                            if gas_price__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("gasPrice"));
+                            }
+                            gas_price__ = map.next_value()?;
+                        }
+                        GeneratedField::Value => {
+                            if value__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("value"));
+                            }
+                            value__ = map.next_value()?;
+                        }
+                        GeneratedField::Data => {
+                            if data__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("data"));
+                            }
+                            data__ = map.next_value()?;
+                        }
+                        GeneratedField::Nonce => {
+                            if nonce__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("nonce"));
+                            }
+                            nonce__ = map.next_value()?;
+                        }
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(LegacyTransaction {
+                    from: from__,
+                    to: to__,
+                    gas: gas__,
+                    gas_price: gas_price__,
+                    value: value__,
+                    data: data__,
+                    nonce: nonce__,
+                    chain_id: chain_id__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.v1.LegacyTransaction", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for MystikoOptions {
@@ -886,6 +1568,161 @@ impl<'de> serde::Deserialize<'de> for SendTransactionResponse {
         deserializer.deserialize_struct("mystiko.core.v1.SendTransactionResponse", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for SpendStatus {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let variant = match self {
+            Self::Unspecified => "SPEND_STATUS_UNSPECIFIED",
+            Self::Pending => "SPEND_STATUS_PENDING",
+            Self::Succeeded => "SPEND_STATUS_SUCCEEDED",
+            Self::Failed => "SPEND_STATUS_FAILED",
+        };
+        serializer.serialize_str(variant)
+    }
+}
+impl<'de> serde::Deserialize<'de> for SpendStatus {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "SPEND_STATUS_UNSPECIFIED",
+            "SPEND_STATUS_PENDING",
+            "SPEND_STATUS_SUCCEEDED",
+            "SPEND_STATUS_FAILED",
+        ];
+
+        struct GeneratedVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = SpendStatus;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(formatter, "expected one of: {:?}", &FIELDS)
+            }
+
+            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(SpendStatus::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
+            }
+
+            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(SpendStatus::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
+            }
+
+            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                match value {
+                    "SPEND_STATUS_UNSPECIFIED" => Ok(SpendStatus::Unspecified),
+                    "SPEND_STATUS_PENDING" => Ok(SpendStatus::Pending),
+                    "SPEND_STATUS_SUCCEEDED" => Ok(SpendStatus::Succeeded),
+                    "SPEND_STATUS_FAILED" => Ok(SpendStatus::Failed),
+                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
+                }
+            }
+        }
+        deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
+impl serde::Serialize for SpendType {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let variant = match self {
+            Self::Unspecified => "SPEND_TYPE_UNSPECIFIED",
+            Self::Transfer => "SPEND_TYPE_TRANSFER",
+            Self::Withdraw => "SPEND_TYPE_WITHDRAW",
+        };
+        serializer.serialize_str(variant)
+    }
+}
+impl<'de> serde::Deserialize<'de> for SpendType {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "SPEND_TYPE_UNSPECIFIED",
+            "SPEND_TYPE_TRANSFER",
+            "SPEND_TYPE_WITHDRAW",
+        ];
+
+        struct GeneratedVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = SpendType;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(formatter, "expected one of: {:?}", &FIELDS)
+            }
+
+            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(SpendType::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
+            }
+
+            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(SpendType::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
+            }
+
+            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                match value {
+                    "SPEND_TYPE_UNSPECIFIED" => Ok(SpendType::Unspecified),
+                    "SPEND_TYPE_TRANSFER" => Ok(SpendType::Transfer),
+                    "SPEND_TYPE_WITHDRAW" => Ok(SpendType::Withdraw),
+                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
+                }
+            }
+        }
+        deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
 impl serde::Serialize for Transaction {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -894,48 +1731,22 @@ impl serde::Serialize for Transaction {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.from.is_some() {
-            len += 1;
-        }
-        if self.to.is_some() {
-            len += 1;
-        }
-        if self.gas.is_some() {
-            len += 1;
-        }
-        if self.gas_price.is_some() {
-            len += 1;
-        }
-        if self.value.is_some() {
-            len += 1;
-        }
-        if self.data.is_some() {
-            len += 1;
-        }
-        if self.nonce.is_some() {
+        if self.transaction.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.Transaction", len)?;
-        if let Some(v) = self.from.as_ref() {
-            struct_ser.serialize_field("from", v)?;
-        }
-        if let Some(v) = self.to.as_ref() {
-            struct_ser.serialize_field("to", v)?;
-        }
-        if let Some(v) = self.gas.as_ref() {
-            struct_ser.serialize_field("gas", v)?;
-        }
-        if let Some(v) = self.gas_price.as_ref() {
-            struct_ser.serialize_field("gasPrice", v)?;
-        }
-        if let Some(v) = self.value.as_ref() {
-            struct_ser.serialize_field("value", v)?;
-        }
-        if let Some(v) = self.data.as_ref() {
-            struct_ser.serialize_field("data", v)?;
-        }
-        if let Some(v) = self.nonce.as_ref() {
-            struct_ser.serialize_field("nonce", v)?;
+        if let Some(v) = self.transaction.as_ref() {
+            match v {
+                transaction::Transaction::LegacyTransaction(v) => {
+                    struct_ser.serialize_field("legacyTransaction", v)?;
+                }
+                transaction::Transaction::Eip1559Transaction(v) => {
+                    struct_ser.serialize_field("eip1559Transaction", v)?;
+                }
+                transaction::Transaction::Eip2930Transaction(v) => {
+                    struct_ser.serialize_field("eip2930Transaction", v)?;
+                }
+            }
         }
         struct_ser.end()
     }
@@ -947,25 +1758,19 @@ impl<'de> serde::Deserialize<'de> for Transaction {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "from",
-            "to",
-            "gas",
-            "gas_price",
-            "gasPrice",
-            "value",
-            "data",
-            "nonce",
+            "legacy_transaction",
+            "legacyTransaction",
+            "eip1559_transaction",
+            "eip1559Transaction",
+            "eip2930_transaction",
+            "eip2930Transaction",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            From,
-            To,
-            Gas,
-            GasPrice,
-            Value,
-            Data,
-            Nonce,
+            LegacyTransaction,
+            Eip1559Transaction,
+            Eip2930Transaction,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -987,13 +1792,9 @@ impl<'de> serde::Deserialize<'de> for Transaction {
                         E: serde::de::Error,
                     {
                         match value {
-                            "from" => Ok(GeneratedField::From),
-                            "to" => Ok(GeneratedField::To),
-                            "gas" => Ok(GeneratedField::Gas),
-                            "gasPrice" | "gas_price" => Ok(GeneratedField::GasPrice),
-                            "value" => Ok(GeneratedField::Value),
-                            "data" => Ok(GeneratedField::Data),
-                            "nonce" => Ok(GeneratedField::Nonce),
+                            "legacyTransaction" | "legacy_transaction" => Ok(GeneratedField::LegacyTransaction),
+                            "eip1559Transaction" | "eip1559_transaction" => Ok(GeneratedField::Eip1559Transaction),
+                            "eip2930Transaction" | "eip2930_transaction" => Ok(GeneratedField::Eip2930Transaction),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1013,225 +1814,37 @@ impl<'de> serde::Deserialize<'de> for Transaction {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut from__ = None;
-                let mut to__ = None;
-                let mut gas__ = None;
-                let mut gas_price__ = None;
-                let mut value__ = None;
-                let mut data__ = None;
-                let mut nonce__ = None;
+                let mut transaction__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
-                        GeneratedField::From => {
-                            if from__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("from"));
+                        GeneratedField::LegacyTransaction => {
+                            if transaction__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("legacyTransaction"));
                             }
-                            from__ = map.next_value()?;
+                            transaction__ = map.next_value::<::std::option::Option<_>>()?.map(transaction::Transaction::LegacyTransaction)
+;
                         }
-                        GeneratedField::To => {
-                            if to__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("to"));
+                        GeneratedField::Eip1559Transaction => {
+                            if transaction__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("eip1559Transaction"));
                             }
-                            to__ = map.next_value()?;
+                            transaction__ = map.next_value::<::std::option::Option<_>>()?.map(transaction::Transaction::Eip1559Transaction)
+;
                         }
-                        GeneratedField::Gas => {
-                            if gas__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("gas"));
+                        GeneratedField::Eip2930Transaction => {
+                            if transaction__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("eip2930Transaction"));
                             }
-                            gas__ = map.next_value()?;
-                        }
-                        GeneratedField::GasPrice => {
-                            if gas_price__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("gasPrice"));
-                            }
-                            gas_price__ = map.next_value()?;
-                        }
-                        GeneratedField::Value => {
-                            if value__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("value"));
-                            }
-                            value__ = map.next_value()?;
-                        }
-                        GeneratedField::Data => {
-                            if data__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("data"));
-                            }
-                            data__ = map.next_value()?;
-                        }
-                        GeneratedField::Nonce => {
-                            if nonce__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("nonce"));
-                            }
-                            nonce__ = map.next_value()?;
+                            transaction__ = map.next_value::<::std::option::Option<_>>()?.map(transaction::Transaction::Eip2930Transaction)
+;
                         }
                     }
                 }
                 Ok(Transaction {
-                    from: from__,
-                    to: to__,
-                    gas: gas__,
-                    gas_price: gas_price__,
-                    value: value__,
-                    data: data__,
-                    nonce: nonce__,
+                    transaction: transaction__,
                 })
             }
         }
         deserializer.deserialize_struct("mystiko.core.v1.Transaction", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for TransactionStatus {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let variant = match self {
-            Self::Unspecified => "TRANSACTION_STATUS_UNSPECIFIED",
-            Self::Pending => "TRANSACTION_STATUS_PENDING",
-            Self::Succeeded => "TRANSACTION_STATUS_SUCCEEDED",
-            Self::Failed => "TRANSACTION_STATUS_FAILED",
-        };
-        serializer.serialize_str(variant)
-    }
-}
-impl<'de> serde::Deserialize<'de> for TransactionStatus {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "TRANSACTION_STATUS_UNSPECIFIED",
-            "TRANSACTION_STATUS_PENDING",
-            "TRANSACTION_STATUS_SUCCEEDED",
-            "TRANSACTION_STATUS_FAILED",
-        ];
-
-        struct GeneratedVisitor;
-
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = TransactionStatus;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(formatter, "expected one of: {:?}", &FIELDS)
-            }
-
-            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                use std::convert::TryFrom;
-                i32::try_from(v)
-                    .ok()
-                    .and_then(TransactionStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
-            }
-
-            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                use std::convert::TryFrom;
-                i32::try_from(v)
-                    .ok()
-                    .and_then(TransactionStatus::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
-            }
-
-            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                match value {
-                    "TRANSACTION_STATUS_UNSPECIFIED" => Ok(TransactionStatus::Unspecified),
-                    "TRANSACTION_STATUS_PENDING" => Ok(TransactionStatus::Pending),
-                    "TRANSACTION_STATUS_SUCCEEDED" => Ok(TransactionStatus::Succeeded),
-                    "TRANSACTION_STATUS_FAILED" => Ok(TransactionStatus::Failed),
-                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
-                }
-            }
-        }
-        deserializer.deserialize_any(GeneratedVisitor)
-    }
-}
-impl serde::Serialize for TransactionType {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let variant = match self {
-            Self::Unspecified => "TRANSACTION_TYPE_UNSPECIFIED",
-            Self::Transfer => "TRANSACTION_TYPE_TRANSFER",
-            Self::Withdraw => "TRANSACTION_TYPE_WITHDRAW",
-        };
-        serializer.serialize_str(variant)
-    }
-}
-impl<'de> serde::Deserialize<'de> for TransactionType {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "TRANSACTION_TYPE_UNSPECIFIED",
-            "TRANSACTION_TYPE_TRANSFER",
-            "TRANSACTION_TYPE_WITHDRAW",
-        ];
-
-        struct GeneratedVisitor;
-
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = TransactionType;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(formatter, "expected one of: {:?}", &FIELDS)
-            }
-
-            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                use std::convert::TryFrom;
-                i32::try_from(v)
-                    .ok()
-                    .and_then(TransactionType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
-                    })
-            }
-
-            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                use std::convert::TryFrom;
-                i32::try_from(v)
-                    .ok()
-                    .and_then(TransactionType::from_i32)
-                    .ok_or_else(|| {
-                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
-                    })
-            }
-
-            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                match value {
-                    "TRANSACTION_TYPE_UNSPECIFIED" => Ok(TransactionType::Unspecified),
-                    "TRANSACTION_TYPE_TRANSFER" => Ok(TransactionType::Transfer),
-                    "TRANSACTION_TYPE_WITHDRAW" => Ok(TransactionType::Withdraw),
-                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
-                }
-            }
-        }
-        deserializer.deserialize_any(GeneratedVisitor)
     }
 }

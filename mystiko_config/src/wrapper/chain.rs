@@ -4,7 +4,7 @@ use crate::{
     MAIN_ASSET_ADDRESS,
 };
 use anyhow::{Error, Result};
-use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
+use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType, TransactionType};
 use num_bigint::BigUint;
 use num_traits::{NumCast, Zero};
 use std::collections::{HashMap, HashSet};
@@ -128,6 +128,10 @@ impl ChainConfig {
 
     pub fn signer_endpoint(&self) -> &str {
         &self.raw.signer_endpoint
+    }
+
+    pub fn transaction_type(&self) -> &TransactionType {
+        &self.raw.transaction_type
     }
 
     pub fn event_delay_blocks(&self) -> u64 {
@@ -353,6 +357,9 @@ impl ChainConfig {
             .main_asset_config(self.main_asset().to_proto()?)
             .provider_type(Into::<mystiko_protos::common::v1::ProviderType>::into(
                 self.provider_type(),
+            ))
+            .transaction_type(Into::<mystiko_protos::common::v1::TransactionType>::into(
+                self.transaction_type(),
             ))
             .asset_configs(asset_configs)
             .deposit_contract_configs(deposit_contract_configs)

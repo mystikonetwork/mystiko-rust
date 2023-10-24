@@ -1,8 +1,8 @@
-use crate::core::document::v1::Transaction;
+use crate::core::document::v1::Spend;
 use mystiko_utils::convert::bytes_to_biguint;
 use num_bigint::BigUint;
 
-impl Transaction {
+impl Spend {
     pub fn root_hash_as_biguint(&self) -> BigUint {
         bytes_to_biguint(&self.root_hash)
     }

@@ -217,6 +217,9 @@ impl serde::Serialize for ChainConfig {
         if self.provider_type != 0 {
             len += 1;
         }
+        if self.transaction_type != 0 {
+            len += 1;
+        }
         if !self.asset_configs.is_empty() {
             len += 1;
         }
@@ -280,6 +283,11 @@ impl serde::Serialize for ChainConfig {
                 .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.provider_type)))?;
             struct_ser.serialize_field("providerType", &v)?;
         }
+        if self.transaction_type != 0 {
+            let v = super::super::common::v1::TransactionType::from_i32(self.transaction_type)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.transaction_type)))?;
+            struct_ser.serialize_field("transactionType", &v)?;
+        }
         if !self.asset_configs.is_empty() {
             struct_ser.serialize_field("assetConfigs", &self.asset_configs)?;
         }
@@ -335,6 +343,8 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
             "mainAssetConfig",
             "provider_type",
             "providerType",
+            "transaction_type",
+            "transactionType",
             "asset_configs",
             "assetConfigs",
             "deposit_contract_configs",
@@ -364,6 +374,7 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
             SequencerFetchSize,
             MainAssetConfig,
             ProviderType,
+            TransactionType,
             AssetConfigs,
             DepositContractConfigs,
             PoolContractConfigs,
@@ -405,6 +416,7 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
                             "sequencerFetchSize" | "sequencer_fetch_size" => Ok(GeneratedField::SequencerFetchSize),
                             "mainAssetConfig" | "main_asset_config" => Ok(GeneratedField::MainAssetConfig),
                             "providerType" | "provider_type" => Ok(GeneratedField::ProviderType),
+                            "transactionType" | "transaction_type" => Ok(GeneratedField::TransactionType),
                             "assetConfigs" | "asset_configs" => Ok(GeneratedField::AssetConfigs),
                             "depositContractConfigs" | "deposit_contract_configs" => Ok(GeneratedField::DepositContractConfigs),
                             "poolContractConfigs" | "pool_contract_configs" => Ok(GeneratedField::PoolContractConfigs),
@@ -444,6 +456,7 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
                 let mut sequencer_fetch_size__ = None;
                 let mut main_asset_config__ = None;
                 let mut provider_type__ = None;
+                let mut transaction_type__ = None;
                 let mut asset_configs__ = None;
                 let mut deposit_contract_configs__ = None;
                 let mut pool_contract_configs__ = None;
@@ -548,6 +561,12 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
                             }
                             provider_type__ = Some(map.next_value::<super::super::common::v1::ProviderType>()? as i32);
                         }
+                        GeneratedField::TransactionType => {
+                            if transaction_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("transactionType"));
+                            }
+                            transaction_type__ = Some(map.next_value::<super::super::common::v1::TransactionType>()? as i32);
+                        }
                         GeneratedField::AssetConfigs => {
                             if asset_configs__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("assetConfigs"));
@@ -610,6 +629,7 @@ impl<'de> serde::Deserialize<'de> for ChainConfig {
                     sequencer_fetch_size: sequencer_fetch_size__.unwrap_or_default(),
                     main_asset_config: main_asset_config__,
                     provider_type: provider_type__.unwrap_or_default(),
+                    transaction_type: transaction_type__.unwrap_or_default(),
                     asset_configs: asset_configs__.unwrap_or_default(),
                     deposit_contract_configs: deposit_contract_configs__.unwrap_or_default(),
                     pool_contract_configs: pool_contract_configs__.unwrap_or_default(),

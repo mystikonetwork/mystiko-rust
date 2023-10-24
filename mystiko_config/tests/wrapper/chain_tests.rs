@@ -1,7 +1,7 @@
 use mystiko_config::{
     create_raw_from_file, ChainConfig, CircuitConfig, RawChainConfig, RawCircuitConfig, MAIN_ASSET_ADDRESS,
 };
-use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType};
+use mystiko_types::{AssetType, BridgeType, CircuitType, ProviderType, TransactionType};
 use num_bigint::BigUint;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -68,6 +68,7 @@ async fn test_create() {
     assert_eq!(config.providers().len(), 1);
     assert_eq!(config.provider_type(), &ProviderType::Quorum);
     assert_eq!(config.provider_quorum_percentage(), 80);
+    assert_eq!(config.transaction_type(), &TransactionType::Legacy);
     assert_eq!(config.pool_contracts().len(), 1);
     assert_eq!(config.deposit_contracts_without_disabled().len(), 0);
     assert_eq!(config.deposit_contracts().len(), 1);
@@ -309,6 +310,10 @@ async fn test_to_proto() {
     assert_eq!(config.sequencer_fetch_size, 20000);
     assert!(config.main_asset_config.is_some());
     assert_eq!(config.provider_type(), mystiko_protos::common::v1::ProviderType::Quorum);
+    assert_eq!(
+        config.transaction_type(),
+        mystiko_protos::common::v1::TransactionType::Legacy
+    );
     assert_eq!(config.provider_configs.len(), 1);
     assert_eq!(config.deposit_contract_configs.len(), 1);
     assert_eq!(config.asset_configs.len(), 1);
