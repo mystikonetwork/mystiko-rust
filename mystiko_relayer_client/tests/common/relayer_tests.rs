@@ -8,7 +8,7 @@ use mystiko_relayer_client::client::{RelayerClient, RelayerClientOptions, TRANSA
 use mystiko_relayer_client::error::RelayerClientError;
 use mystiko_relayer_types::response::{failed, success, ResponseCode};
 use mystiko_relayer_types::{RelayTransactStatusRequest, RelayTransactStatusResponse, TransactStatus};
-use mystiko_types::TransactionType;
+use mystiko_types::SpendType;
 use serde_json::to_string;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -60,7 +60,7 @@ async fn test_handle_error_response() {
                 Some(RelayTransactStatusResponse {
                     uuid: "".to_string(),
                     chain_id: 97,
-                    transaction_type: TransactionType::Transfer,
+                    transaction_type: SpendType::Transfer,
                     status: TransactStatus::Queued,
                     transaction_hash: None,
                     error_msg: None,
@@ -99,7 +99,7 @@ async fn test_handle_error_response() {
             to_string(&success(Some(RelayTransactStatusResponse {
                 uuid: "".to_string(),
                 chain_id: 97,
-                transaction_type: TransactionType::Transfer,
+                transaction_type: SpendType::Transfer,
                 status: TransactStatus::Succeeded,
                 transaction_hash: None,
                 error_msg: None,

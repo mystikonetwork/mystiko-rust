@@ -1,6 +1,7 @@
 use crate::TransactionSigner;
 use async_trait::async_trait;
-use ethers_core::types::{Address, TransactionRequest, TxHash};
+use ethers_core::types::transaction::eip2718::TypedTransaction;
+use ethers_core::types::{Address, TxHash};
 use mystiko_protos::core::v1::transaction_service_client::TransactionServiceClient;
 use mystiko_protos::core::v1::{GetAddressRequest, SendTransactionRequest, Transaction};
 use mystiko_protos::service::v1::ClientOptions;
@@ -58,7 +59,7 @@ impl TransactionSigner for GrpcSigner {
 
     async fn send_transaction<T>(&self, chain_id: u64, tx: T) -> Result<TxHash, Self::Error>
     where
-        T: Into<TransactionRequest> + Send + Sync,
+        T: Into<TypedTransaction> + Send + Sync + 'static,
     {
         let ethers_tx = tx.into();
         let tx: Transaction = ethers_tx.into();

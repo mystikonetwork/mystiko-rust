@@ -1,4 +1,4 @@
-use crate::common::v1::{AssetType, BridgeType, CircuitType, ContractType, ProviderType};
+use crate::common::v1::{AssetType, BridgeType, CircuitType, ContractType, ProviderType, TransactionType};
 
 impl From<&mystiko_types::BridgeType> for BridgeType {
     fn from(value: &mystiko_types::BridgeType) -> Self {
@@ -97,6 +97,16 @@ impl From<&mystiko_types::ProviderType> for ProviderType {
         match value {
             mystiko_types::ProviderType::Failover => ProviderType::Failover,
             mystiko_types::ProviderType::Quorum => ProviderType::Quorum,
+        }
+    }
+}
+
+impl From<&mystiko_types::TransactionType> for TransactionType {
+    fn from(value: &mystiko_types::TransactionType) -> Self {
+        match value {
+            mystiko_types::TransactionType::Legacy => TransactionType::Legacy,
+            mystiko_types::TransactionType::Eip1559 => TransactionType::Eip1559,
+            mystiko_types::TransactionType::Eip2930 => TransactionType::Eip2930,
         }
     }
 }

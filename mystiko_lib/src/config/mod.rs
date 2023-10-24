@@ -1,7 +1,6 @@
 use crate::runtime;
 use anyhow::Result;
-use mystiko_protos::common::v1::BridgeType;
-use mystiko_protos::config::api::v1::{
+use mystiko_protos::api::config::v1::{
     FindAssetSymbolsRequest, FindAssetSymbolsResponse, FindBridgeRequest, FindBridgeResponse, FindBridgesRequest,
     FindBridgesResponse, FindChainRequest, FindChainResponse, FindCircuitRequest, FindCircuitResponse,
     FindContractByAddressRequest, FindContractByAddressResponse, FindDefaultCircuitRequest, FindDefaultCircuitResponse,
@@ -11,6 +10,7 @@ use mystiko_protos::config::api::v1::{
     FindPoolContractsResponse, GetConfigRequest, GetConfigResponse, GetTransactionUrlRequest,
     GetTransactionUrlResponse,
 };
+use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::config::contract::v1::PoolContractConfig;
 use mystiko_protos::config::v1::ChainConfig;
 

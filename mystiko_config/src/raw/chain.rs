@@ -2,7 +2,7 @@ use crate::RawAssetConfig;
 use crate::RawDepositContractConfig;
 use crate::RawPoolContractConfig;
 use crate::RawProviderConfig;
-use mystiko_types::ProviderType;
+use mystiko_types::{ProviderType, TransactionType};
 use mystiko_validator::validate::{array_unique, is_number_string_vec, validate_nested_vec};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -61,6 +61,10 @@ pub struct RawChainConfig {
 
     #[validate(url)]
     pub signer_endpoint: String,
+
+    #[serde(default = "default_transaction_type")]
+    #[builder(default = default_transaction_type())]
+    pub transaction_type: TransactionType,
 
     #[validate(range(min = 0))]
     #[serde(default = "default_event_delay_blocks")]
@@ -125,6 +129,10 @@ fn default_explorer_prefix() -> String {
 
 fn default_provider_type() -> ProviderType {
     ProviderType::Failover
+}
+
+fn default_transaction_type() -> TransactionType {
+    TransactionType::Eip1559
 }
 
 fn default_quorum_percentage() -> u8 {

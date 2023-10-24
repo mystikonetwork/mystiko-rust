@@ -1,7 +1,8 @@
 use crate::PrivateKeySignerError::GetProviderError;
 use crate::TransactionSigner;
 use async_trait::async_trait;
-use ethers_core::types::{Address, TransactionRequest, TxHash};
+use ethers_core::types::transaction::eip2718::TypedTransaction;
+use ethers_core::types::{Address, TxHash};
 use ethers_middleware::signer::SignerMiddlewareError;
 use ethers_middleware::MiddlewareBuilder;
 use ethers_providers::Middleware;
@@ -64,7 +65,7 @@ where
 
     async fn send_transaction<T>(&self, chain_id: u64, tx: T) -> Result<TxHash, Self::Error>
     where
-        T: Into<TransactionRequest> + Send + Sync,
+        T: Into<TypedTransaction> + Send + Sync + 'static,
     {
         let wallet = self.wallet.clone().with_chain_id(chain_id);
         let provider = self

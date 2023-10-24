@@ -4,7 +4,7 @@ use mystiko_relayer_client::client::TRANSACTION_STATUS_URL_PATH;
 use mystiko_relayer_client::error::RelayerClientError;
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{RelayTransactStatusResponse, TransactStatus, WaitingTransactionRequest};
-use mystiko_types::TransactionType;
+use mystiko_types::SpendType;
 use serde_json::to_string;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -33,7 +33,7 @@ async fn wait_transaction_until_queued() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: TransactionType::Withdraw,
+                transaction_type: SpendType::Withdraw,
                 status: TransactStatus::Queued,
                 transaction_hash: None,
                 error_msg: None,
@@ -83,7 +83,7 @@ async fn wait_transaction_until_pending() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: TransactionType::Withdraw,
+                transaction_type: SpendType::Withdraw,
                 status: TransactStatus::Pending,
                 transaction_hash: None,
                 error_msg: None,
@@ -133,7 +133,7 @@ async fn wait_transaction_until_succeeded() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: TransactionType::Withdraw,
+                transaction_type: SpendType::Withdraw,
                 status: TransactStatus::Succeeded,
                 transaction_hash: None,
                 error_msg: None,
@@ -183,7 +183,7 @@ async fn wait_transaction_until_confirmed_timeout() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: TransactionType::Withdraw,
+                transaction_type: SpendType::Withdraw,
                 status: TransactStatus::Queued,
                 transaction_hash: None,
                 error_msg: None,
@@ -235,7 +235,7 @@ async fn wait_transaction_until_confirmed_failed() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: TransactionType::Withdraw,
+                transaction_type: SpendType::Withdraw,
                 status: TransactStatus::Failed,
                 transaction_hash: None,
                 error_msg: Some("test error message".to_string()),

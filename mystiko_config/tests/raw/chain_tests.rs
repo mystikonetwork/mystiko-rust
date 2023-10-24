@@ -3,7 +3,7 @@ use mystiko_config::{
     create_raw, create_raw_from_file, RawAssetConfig, RawChainConfig, RawDepositContractConfig, RawPoolContractConfig,
     RawProviderConfig, EXPLORER_DEFAULT_PREFIX,
 };
-use mystiko_types::{AssetType, BridgeType, ContractType, ProviderType};
+use mystiko_types::{AssetType, BridgeType, ContractType, ProviderType, TransactionType};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
@@ -94,6 +94,7 @@ fn default_config() -> RawChainConfig {
         .provider_type(ProviderType::Quorum)
         .provider_quorum_percentage(80)
         .signer_endpoint("https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161".to_string())
+        .transaction_type(TransactionType::Legacy)
         .deposit_contracts(vec![Arc::new(deposit_contract_config)])
         .pool_contracts(vec![Arc::new(pool_contract_config)])
         .assets(vec![Arc::new(asset_config)])

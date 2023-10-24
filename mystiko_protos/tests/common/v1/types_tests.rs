@@ -1,4 +1,4 @@
-use mystiko_protos::common::v1::{AssetType, BridgeType, CircuitType, ContractType, ProviderType};
+use mystiko_protos::common::v1::{AssetType, BridgeType, CircuitType, ContractType, ProviderType, TransactionType};
 
 #[test]
 fn test_bridge_type_to_proto() {
@@ -114,4 +114,14 @@ fn test_proto_to_circuit_type() {
     assert_eq!(type9, mystiko_types::CircuitType::Transaction2x0);
     assert_eq!(type10, mystiko_types::CircuitType::Transaction2x1);
     assert_eq!(type11, mystiko_types::CircuitType::Transaction2x2);
+}
+
+#[test]
+fn test_transaction_type_to_proto() {
+    let type1: TransactionType = Into::into(&mystiko_types::TransactionType::Legacy);
+    let type2: TransactionType = Into::into(&mystiko_types::TransactionType::Eip1559);
+    let type3: TransactionType = Into::into(&mystiko_types::TransactionType::Eip2930);
+    assert_eq!(type1, TransactionType::Legacy);
+    assert_eq!(type2, TransactionType::Eip1559);
+    assert_eq!(type3, TransactionType::Eip2930);
 }

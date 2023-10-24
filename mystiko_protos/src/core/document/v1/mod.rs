@@ -1,6 +1,6 @@
 mod deposit;
-mod transaction;
+mod spend;
 
 pub use crate::gen::mystiko::core::document::v1::*;
 pub use deposit::*;
-pub use transaction::*;
+pub use spend::*;

@@ -1,2 +1,2 @@
 mod deposit_tests;
-mod transaction_tests;
+mod spend_tests;

@@ -11,7 +11,7 @@ extern crate validator;
 pub mod response;
 
 use mystiko_abi::commitment_pool::TransactRequest;
-use mystiko_types::{BridgeType, CircuitType, TransactionType};
+use mystiko_types::{BridgeType, CircuitType, SpendType};
 use mystiko_validator::validate::is_ethereum_address;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -29,7 +29,7 @@ pub struct RelayTransactRequest {
 #[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug, Clone)]
 pub struct TransactRequestData {
     pub contract_param: TransactRequest,
-    pub transaction_type: TransactionType,
+    pub transaction_type: SpendType,
     pub bridge_type: BridgeType,
     #[validate(range(min = 1))]
     pub chain_id: u64,
@@ -59,7 +59,7 @@ pub struct RelayTransactStatusRequest {
 pub struct RelayTransactStatusResponse {
     pub uuid: String,
     pub chain_id: u64,
-    pub transaction_type: TransactionType,
+    pub transaction_type: SpendType,
     pub status: TransactStatus,
     pub transaction_hash: Option<String>,
     pub error_msg: Option<String>,

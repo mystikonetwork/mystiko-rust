@@ -3,7 +3,7 @@ mod commitment;
 mod contract;
 mod deposit;
 mod nullifier;
-mod transaction;
+mod spend;
 mod wallet;
 
 pub use account::*;
@@ -11,7 +11,7 @@ pub use commitment::*;
 pub use contract::*;
 pub use deposit::*;
 pub use nullifier::*;
-pub use transaction::*;
+pub use spend::*;
 pub use wallet::*;
 
 use anyhow::Result;
@@ -25,7 +25,7 @@ pub struct Database<F: StatementFormatter, S: Storage> {
     pub contracts: ContractCollection<F, S>,
     pub deposits: DepositCollection<F, S>,
     pub nullifiers: NullifierCollection<F, S>,
-    pub transactions: TransactionCollection<F, S>,
+    pub spends: SpendCollection<F, S>,
     pub wallets: WalletCollection<F, S>,
 }
 
@@ -38,7 +38,7 @@ impl<F: StatementFormatter, S: Storage> Database<F, S> {
             contracts: ContractCollection::new(collection.clone()),
             deposits: DepositCollection::new(collection.clone()),
             nullifiers: NullifierCollection::new(collection.clone()),
-            transactions: TransactionCollection::new(collection.clone()),
+            spends: SpendCollection::new(collection.clone()),
             wallets: WalletCollection::new(collection),
         }
     }
@@ -50,7 +50,7 @@ impl<F: StatementFormatter, S: Storage> Database<F, S> {
             self.contracts.migrate().await?,
             self.deposits.migrate().await?,
             self.nullifiers.migrate().await?,
-            self.transactions.migrate().await?,
+            self.spends.migrate().await?,
             self.wallets.migrate().await?,
         ];
         Ok(migrations)
