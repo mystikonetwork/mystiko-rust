@@ -3326,6 +3326,7 @@ dependencies = [
  "async-trait",
  "bip32",
  "env_logger",
+ "ethers-contract",
  "ethers-core",
  "ethers-middleware",
  "ethers-providers",
