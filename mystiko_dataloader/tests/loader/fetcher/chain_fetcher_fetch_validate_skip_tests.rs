@@ -59,10 +59,7 @@ async fn test_loader_start_one_fetcher_skip_fetch() {
         .build();
     let result = loader.load(option).await;
     assert!(contract_data_partial_eq(&handler.drain_data().await, &vec![]));
-    assert!(matches!(
-        result.err().unwrap(),
-        DataLoaderError::LoaderFetchersExhaustedError
-    ));
+    assert!(result.is_ok());
 }
 
 #[tokio::test]

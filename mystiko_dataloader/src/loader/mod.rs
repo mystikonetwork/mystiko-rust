@@ -12,15 +12,12 @@ use typed_builder::TypedBuilder;
 
 pub const DEFAULT_FETCHER_QUERY_LOADED_BLOCK_TIMEOUT_MS: u64 = 5_000_u64;
 pub const DEFAULT_FETCHER_FETCH_TIMEOUT_MS: u64 = 300_000_u64;
-
 pub const DEFAULT_VALIDATOR_CONCURRENCY: usize = 1_usize;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadOption {
-    #[builder(default)]
     pub fetcher: LoadFetcherOption,
-    #[builder(default)]
     pub validator: LoadValidatorOption,
 }
 
@@ -37,16 +34,13 @@ pub struct LoadFetcherOption {
     pub query_loaded_block_timeout_ms: u64,
     #[builder(default = DEFAULT_FETCHER_FETCH_TIMEOUT_MS)]
     pub fetch_timeout_ms: u64,
-    #[builder(default = HashMap::new())]
     pub skips: HashMap<String, LoadFetcherSkipOption>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadFetcherSkipOption {
-    #[builder(default)]
     pub skip_fetch: Option<bool>,
-    #[builder(default)]
     pub skip_validation: Option<bool>,
 }
 
@@ -61,16 +55,13 @@ impl Default for LoadFetcherOption {
 pub struct LoadValidatorOption {
     #[builder(default = DEFAULT_VALIDATOR_CONCURRENCY)]
     pub concurrency: usize,
-    #[builder(default = HashMap::new())]
     pub skips: HashMap<String, LoadValidatorSkipOption>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadValidatorSkipOption {
-    #[builder(default)]
     pub skip_validation: Option<bool>,
-    #[builder(default = HashMap::new())]
     pub skip_checkers: HashMap<String, bool>,
 }
 

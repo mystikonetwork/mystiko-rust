@@ -39,11 +39,7 @@ async fn test_loader_start_without_fetcher() {
     // fetch return error
     let result = loader.load(None).await;
     assert!(handler.drain_data().await.is_empty());
-    assert!(result
-        .err()
-        .unwrap()
-        .to_string()
-        .contains(DataLoaderError::QueryLoadedBlocksError.to_string().as_str()));
+    assert!(result.is_ok());
 }
 
 #[tokio::test]

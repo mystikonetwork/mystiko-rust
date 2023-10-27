@@ -133,7 +133,7 @@ where
         let mut fetchers: Vec<Arc<Box<dyn DataFetcher<R>>>> = vec![];
         let mut fetcher_options = HashMap::new();
         let fetcher_config: FetcherConfig = self.config.fetcher_config.clone().into();
-        for (_, fetcher_type) in self.fetcher_types()?.iter().enumerate() {
+        for fetcher_type in self.fetcher_types()?.iter() {
             match fetcher_type {
                 FetcherType::Unspecified => {
                     return Err(DataLoaderConfigError::FetcherTypeError(*fetcher_type as i32));

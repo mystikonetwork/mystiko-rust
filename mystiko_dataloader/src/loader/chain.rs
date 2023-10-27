@@ -23,14 +23,14 @@ use typed_builder::TypedBuilder;
 pub struct ChainDataLoader<R, H = Box<dyn DataHandler<R>>, F = Box<dyn DataFetcher<R>>, V = Box<dyn DataValidator<R>>> {
     config: Arc<MystikoConfig>,
     chain_id: u64,
-    #[builder(default = vec![])]
+    #[builder(default)]
     fetchers: Vec<Arc<F>>,
-    #[builder(default = HashMap::new())]
+    #[builder(default)]
     fetcher_options: HashMap<String, FetcherOptions>,
-    #[builder(default = vec![])]
+    #[builder(default)]
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
-    #[builder(default = Default::default())]
+    #[builder(default)]
     _phantom: std::marker::PhantomData<R>,
 }
 
@@ -134,7 +134,15 @@ where
     async fn try_load(&self, params: &ChainLoadParams<'_>) -> DataLoaderResult<()> {
         let mut tasks = vec![];
         for fetcher in self.fetchers.iter() {
-            tasks.push(self.query_loaded_blocks(fetcher, &params.option.fetcher));
+            let skip_fetch = self.skip_fetch(fetcher.name(), &params.option.fetcher);
+            if !skip_fetch {
+                tasks.push(self.query_loaded_blocks(fetcher, &params.option.fetcher));
+            }
+        }
+
+        if tasks.is_empty() {
+            warn!("no fetcher to load data");
+            return Ok(());
         }
 
         let results = futures::future::join_all(tasks).await;
@@ -158,43 +166,40 @@ where
                     loaded = Some(false);
                 }
 
-                let skip_fetch = self.skip_fetch(fetcher.fetcher.name(), &run_params.params.option.fetcher);
-                if !skip_fetch {
-                    let mut chain_data = match self
-                        .fetch(&run_params.params.option.fetcher, fetcher, fetch_option)
-                        .await
-                    {
-                        Err(e) => {
-                            warn!("fetch fetcher(name={:?}) raised error: {:?}", fetcher.fetcher.name(), e);
-                            None
-                        }
-                        Ok(d) => Some(d),
-                    };
+                let mut chain_data = match self
+                    .fetch(&run_params.params.option.fetcher, fetcher, fetch_option)
+                    .await
+                {
+                    Err(e) => {
+                        warn!("fetch fetcher(name={:?}) raised error: {:?}", fetcher.fetcher.name(), e);
+                        None
+                    }
+                    Ok(d) => Some(d),
+                };
 
-                    if let Some(chain_data) = chain_data.as_mut() {
-                        let skip_validation =
-                            self.skip_validation(fetcher.fetcher.name(), &run_params.params.option.fetcher);
-                        let mut invalid = false;
-                        if !skip_validation {
-                            if let Err(e) = self.validate(chain_data, &run_params.params.option.validator).await {
-                                warn!(
-                                    "validate fetcher(name={:?}) data raised error: {:?}",
-                                    fetcher.fetcher.name(),
-                                    e
-                                );
-                                invalid = true;
-                            };
-                        }
-                        if !invalid {
-                            if let Err(e) = self.handle(chain_data).await {
-                                warn!(
-                                    "handle fetcher(name={:?}) data raised error: {:?}",
-                                    fetcher.fetcher.name(),
-                                    e
-                                );
-                            } else {
-                                loaded = Some(true);
-                            }
+                if let Some(chain_data) = chain_data.as_mut() {
+                    let skip_validation =
+                        self.skip_validation(fetcher.fetcher.name(), &run_params.params.option.fetcher);
+                    let mut invalid = false;
+                    if !skip_validation {
+                        if let Err(e) = self.validate(chain_data, &run_params.params.option.validator).await {
+                            warn!(
+                                "validate fetcher(name={:?}) data raised error: {:?}",
+                                fetcher.fetcher.name(),
+                                e
+                            );
+                            invalid = true;
+                        };
+                    }
+                    if !invalid {
+                        if let Err(e) = self.handle(chain_data).await {
+                            warn!(
+                                "handle fetcher(name={:?}) data raised error: {:?}",
+                                fetcher.fetcher.name(),
+                                e
+                            );
+                        } else {
+                            loaded = Some(true);
                         }
                     }
                 }
@@ -393,22 +398,16 @@ where
             .skips
             .get(fetcher_name)
             .and_then(|option| option.skip_fetch)
-            .unwrap_or(false)
+            .unwrap_or_default()
     }
 
     fn skip_validation(&self, fetcher_name: &str, load_fetcher_option: &LoadFetcherOption) -> bool {
-        let load_skip_validation = load_fetcher_option
+        load_fetcher_option
             .skips
             .get(fetcher_name)
-            .and_then(|option| option.skip_validation);
-        match load_skip_validation {
-            Some(skip_validation) => skip_validation,
-            None => self
-                .fetcher_options
-                .get(fetcher_name)
-                .map(|o| o.skip_validation)
-                .unwrap_or(false),
-        }
+            .and_then(|option| option.skip_validation)
+            .or(self.fetcher_options.get(fetcher_name).map(|o| o.skip_validation))
+            .unwrap_or_default()
     }
 
     fn skip_validator(&self, validator_name: &str, load_validator_option: &LoadValidatorOption) -> bool {
@@ -416,6 +415,6 @@ where
             .skips
             .get(validator_name)
             .and_then(|option| option.skip_validation)
-            .unwrap_or(false)
+            .unwrap_or_default()
     }
 }
