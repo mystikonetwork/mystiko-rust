@@ -1,9 +1,11 @@
-pub mod v1;
+mod handler;
+
+pub use handler::*;
 
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait Synchronizer<O, S>: Send + Sync {
+pub trait SynchronizerHandler<O, S>: Send + Sync {
     type Error;
 
     async fn chain_synced_block(&self, chain_id: u64) -> Result<Option<u64>, Self::Error>;
