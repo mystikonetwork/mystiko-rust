@@ -164,7 +164,7 @@ async fn only_included_commitment(concurrency: usize) {
     );
 
     let mut skip_checkers = HashMap::new();
-    skip_checkers.insert("counter".to_string(), false);
+    skip_checkers.insert("counter", false);
     let option = ValidateOption::builder()
         .config(core_cfg.clone())
         .validate_concurrency(concurrency)
@@ -182,7 +182,7 @@ async fn only_included_commitment(concurrency: usize) {
     );
 
     let mut skip_checkers = HashMap::new();
-    skip_checkers.insert("counter".to_string(), true);
+    skip_checkers.insert("counter", true);
     let option = ValidateOption::builder()
         .config(core_cfg.clone())
         .validate_concurrency(concurrency)

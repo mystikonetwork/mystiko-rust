@@ -108,10 +108,10 @@ async fn test_some_included_commitment_skip_all_checkers() {
         .await
         .unwrap();
     let mut skip_checkers = HashMap::new();
-    skip_checkers.insert("counter".to_string(), true);
-    skip_checkers.insert("integrity".to_string(), true);
-    skip_checkers.insert("sequence".to_string(), true);
-    skip_checkers.insert("merkle_tree".to_string(), true);
+    skip_checkers.insert("counter", true);
+    skip_checkers.insert("integrity", true);
+    skip_checkers.insert("sequence", true);
+    skip_checkers.insert("merkle_tree", true);
     for concurrency in 1_usize..3_usize {
         let option = ValidateOption::builder()
             .config(core_cfg.clone())
