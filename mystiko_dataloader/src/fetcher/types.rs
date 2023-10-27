@@ -50,8 +50,8 @@ pub type FetchResult<R> = Result<ChainResult<ContractData<R>>>;
 
 #[async_trait]
 pub trait DataFetcher<R: LoadedData>: Send + Sync {
+    fn name(&self) -> &'static str;
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R>;
-
     async fn chain_loaded_block(&self, options: &ChainLoadedBlockOptions) -> Result<u64>;
 }
 
@@ -60,6 +60,10 @@ impl<R> DataFetcher<R> for Box<dyn DataFetcher<R>>
 where
     R: LoadedData,
 {
+    fn name(&self) -> &'static str {
+        self.as_ref().name()
+    }
+
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         self.as_ref().fetch(option).await
     }

@@ -16,6 +16,8 @@ use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
+const ETHERSCAN_FETCHER_NAME: &str = "etherscan";
+
 #[derive(Error, Debug)]
 pub enum EtherscanFetcherError {
     #[error("etherscan fetcher no chain config found for chain id: {0}")]
@@ -50,6 +52,10 @@ impl<R> DataFetcher<R> for EtherscanFetcher<R>
 where
     R: LoadedData,
 {
+    fn name(&self) -> &'static str {
+        ETHERSCAN_FETCHER_NAME
+    }
+
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         info!(
             "chain={} start fetch data, start_block={}, target_block={}",

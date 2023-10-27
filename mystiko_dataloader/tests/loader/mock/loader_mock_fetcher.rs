@@ -50,6 +50,10 @@ impl<R> DataFetcher<R> for MockFetcher<R>
 where
     R: LoadedData + Clone,
 {
+    fn name(&self) -> &'static str {
+        "mock_fetcher"
+    }
+
     async fn fetch(&self, _option: &FetchOptions) -> FetchResult<R> {
         if *self.fetch_sleep.read().await {
             tokio::time::sleep(Duration::from_millis(100)).await;

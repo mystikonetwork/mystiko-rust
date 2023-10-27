@@ -36,6 +36,8 @@ use std::time::Duration;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
+const PROVIDER_FETCHER_NAME: &str = "provider";
+
 #[derive(Error, Debug)]
 pub enum ProviderFetcherError {
     #[error("provider type error: {0}")]
@@ -100,6 +102,10 @@ where
     R: LoadedData,
     P: Providers,
 {
+    fn name(&self) -> &'static str {
+        PROVIDER_FETCHER_NAME
+    }
+
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         let (current_block, provider) = self
             .chain_safe_current_block(option.chain_id, option.config.clone())

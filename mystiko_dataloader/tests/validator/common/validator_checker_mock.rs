@@ -24,6 +24,10 @@ impl<R> RuleChecker<R> for MockRuleChecker<R>
 where
     R: LoadedData,
 {
+    fn name(&self) -> &'static str {
+        "mock_checker"
+    }
+
     async fn check<'a>(
         &self,
         _data: &ValidateOriginalData<'a, R>,

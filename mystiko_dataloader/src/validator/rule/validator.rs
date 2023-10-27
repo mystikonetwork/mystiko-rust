@@ -11,6 +11,8 @@ use async_trait::async_trait;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
+const RULE_VALIDATOR_NAME: &str = "rule_validator";
+
 #[derive(Debug, TypedBuilder)]
 pub struct RuleValidatorOptions<R, H = Box<dyn DataHandler<R>>, C = Box<dyn RuleChecker<R>>> {
     handler: Arc<H>,
@@ -35,6 +37,10 @@ where
     H: DataHandler<R>,
     C: RuleChecker<R>,
 {
+    fn name(&self) -> &'static str {
+        RULE_VALIDATOR_NAME
+    }
+
     async fn validate(&self, data: &ChainData<R>, option: &ValidateOption) -> ValidateResult {
         if data.contracts_data.is_empty() {
             return Err(
@@ -136,7 +142,10 @@ where
     async fn merge_and_check(&self, data: &ValidateOriginalData<'_, R>) -> RuleValidatorResult<()> {
         let merged_data = self.merger.merge_contract_data(data).await?;
         for checker in &self.checkers {
-            checker.check(data, &merged_data).await?;
+            let should_skip = data.option.skip_checkers.get(checker.name()).unwrap_or(&false);
+            if !should_skip {
+                checker.check(data, &merged_data).await?;
+            }
         }
         Ok(())
     }

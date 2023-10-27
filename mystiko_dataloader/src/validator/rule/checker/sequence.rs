@@ -9,6 +9,8 @@ use mystiko_protos::data::v1::CommitmentStatus;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
+const RULE_SEQUENCE_CHECKER_NAME: &str = "sequence";
+
 #[derive(Debug, TypedBuilder)]
 pub struct SequenceChecker<R, H = Box<dyn DataHandler<R>>> {
     handler: Arc<H>,
@@ -22,6 +24,10 @@ where
     R: LoadedData,
     H: DataHandler<R>,
 {
+    fn name(&self) -> &'static str {
+        RULE_SEQUENCE_CHECKER_NAME
+    }
+
     async fn check<'a>(
         &self,
         _data: &ValidateOriginalData<'a, R>,

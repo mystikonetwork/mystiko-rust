@@ -7,7 +7,9 @@ use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::validator::rule::CounterCheckerError;
 use mystiko_dataloader::validator::{DataValidator, ValidateOption};
 use mystiko_protos::data::v1::CommitmentStatus;
+use std::collections::HashMap;
 use std::str::FromStr;
+use std::sync::Arc;
 
 #[tokio::test]
 async fn test_empty_commitment() {
@@ -119,11 +121,13 @@ async fn test_only_included_commitment() {
 
 async fn only_included_commitment(concurrency: usize) {
     let (validator, handler, mock, _, _) = create_single_rule_full_data_validator(Some(vec![RuleCheckerType::Counter]));
-    let core_cfg = MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
-        .await
-        .unwrap();
+    let core_cfg = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
     let option = ValidateOption::builder()
-        .config(core_cfg)
+        .config(core_cfg.clone())
         .validate_concurrency(concurrency)
         .build();
     let chain_id = 1_u64;
@@ -158,6 +162,39 @@ async fn only_included_commitment(concurrency: usize) {
         result.contract_results[0].result.as_ref().err().unwrap().to_string(),
         CounterCheckerError::CommitmentIncludedCountMismatchError(1, 0).to_string()
     );
+
+    let mut skip_checkers = HashMap::new();
+    skip_checkers.insert("counter".to_string(), false);
+    let option = ValidateOption::builder()
+        .config(core_cfg.clone())
+        .validate_concurrency(concurrency)
+        .skip_checkers(skip_checkers)
+        .build();
+    mock.push::<Bytes, _>(include_count.clone()).unwrap();
+    handler.add_commitments(vec![cms[0].clone()]).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert_eq!(result.chain_id, chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, contract_address);
+    assert_eq!(
+        result.contract_results[0].result.as_ref().err().unwrap().to_string(),
+        CounterCheckerError::CommitmentIncludedCountMismatchError(1, 0).to_string()
+    );
+
+    let mut skip_checkers = HashMap::new();
+    skip_checkers.insert("counter".to_string(), true);
+    let option = ValidateOption::builder()
+        .config(core_cfg.clone())
+        .validate_concurrency(concurrency)
+        .skip_checkers(skip_checkers)
+        .build();
+    mock.push::<Bytes, _>(include_count.clone()).unwrap();
+    handler.add_commitments(vec![cms[0].clone()]).await;
+    let result = validator.validate(&data, &option).await.unwrap();
+    assert_eq!(result.chain_id, chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, contract_address);
+    assert!(result.contract_results[0].result.is_ok());
 
     let include_count = Bytes::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap();
     mock.push::<Bytes, _>(include_count.clone()).unwrap();
