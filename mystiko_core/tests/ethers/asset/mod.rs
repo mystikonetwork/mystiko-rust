@@ -1,1 +1,1 @@
-mod v1_tests;
+mod handler_tests;

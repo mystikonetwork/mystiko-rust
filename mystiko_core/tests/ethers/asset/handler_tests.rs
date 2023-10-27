@@ -4,9 +4,8 @@ use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, NameOrAddress, TransactionRequest, TxHash, U256};
 use mockall::mock;
 use mystiko_core::{
-    v1::{PublicAssets, PublicAssetsError},
-    BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssets as PublicAssetsTrait,
-    TransferOptions,
+    BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssetHandler, PublicAssets,
+    PublicAssetsError, TransferOptions,
 };
 use mystiko_ethers::{JsonRpcParams, Provider, ProviderWrapper};
 use mystiko_utils::address::ethers_address_from_string;

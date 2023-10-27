@@ -1,5 +1,6 @@
 use crate::{
-    BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, TransactionSigner, TransferOptions,
+    BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssetHandler,
+    TransactionSigner, TransferOptions,
 };
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -37,7 +38,7 @@ pub enum PublicAssetsError {
 }
 
 #[async_trait]
-impl<P, S> super::PublicAssets for PublicAssets<P, S>
+impl<P, S> PublicAssetHandler for PublicAssets<P, S>
 where
     P: Providers,
     S: TransactionSigner,

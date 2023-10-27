@@ -1,4 +1,6 @@
-pub mod v1;
+mod handler;
+
+pub use handler::*;
 
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -56,7 +58,7 @@ pub struct Erc20TransferOptions<T: Into<TypedTransaction> + Clone + Default> {
 }
 
 #[async_trait]
-pub trait PublicAssets: Send + Sync {
+pub trait PublicAssetHandler: Send + Sync {
     type Error;
 
     async fn balance_of(&self, options: BalanceOptions) -> Result<U256, Self::Error>;
