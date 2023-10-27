@@ -6,20 +6,18 @@ pub use config::*;
 
 use crate::DataLoaderError;
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
+use std::collections::HashMap;
 use typed_builder::TypedBuilder;
 
 pub const DEFAULT_FETCHER_QUERY_LOADED_BLOCK_TIMEOUT_MS: u64 = 5_000_u64;
 pub const DEFAULT_FETCHER_FETCH_TIMEOUT_MS: u64 = 300_000_u64;
-
 pub const DEFAULT_VALIDATOR_CONCURRENCY: usize = 1_usize;
 
-#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadOption {
-    #[builder(default)]
     pub fetcher: LoadFetcherOption,
-    #[builder(default)]
     pub validator: LoadValidatorOption,
 }
 
@@ -29,13 +27,21 @@ impl From<Option<LoadOption>> for LoadOption {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadFetcherOption {
     #[builder(default = DEFAULT_FETCHER_QUERY_LOADED_BLOCK_TIMEOUT_MS)]
     pub query_loaded_block_timeout_ms: u64,
     #[builder(default = DEFAULT_FETCHER_FETCH_TIMEOUT_MS)]
     pub fetch_timeout_ms: u64,
+    pub skips: HashMap<&'static str, LoadFetcherSkipOption>,
+}
+
+#[derive(Debug, Clone, Serialize, TypedBuilder)]
+#[builder(field_defaults(default, setter(into)))]
+pub struct LoadFetcherSkipOption {
+    pub skip_fetch: Option<bool>,
+    pub skip_validation: Option<bool>,
 }
 
 impl Default for LoadFetcherOption {
@@ -44,11 +50,19 @@ impl Default for LoadFetcherOption {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
+#[derive(Debug, Clone, Serialize, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadValidatorOption {
     #[builder(default = DEFAULT_VALIDATOR_CONCURRENCY)]
     pub concurrency: usize,
+    pub skips: HashMap<String, LoadValidatorSkipOption>,
+}
+
+#[derive(Debug, Clone, Serialize, TypedBuilder)]
+#[builder(field_defaults(default, setter(into)))]
+pub struct LoadValidatorSkipOption {
+    pub skip_validation: Option<bool>,
+    pub skip_checkers: HashMap<&'static str, bool>,
 }
 
 impl Default for LoadValidatorOption {

@@ -22,6 +22,8 @@ use crate::fetcher::{
 };
 use crate::handler::{dedup_commitments, dedup_nullifiers};
 
+const SEQUENCER_FETCHER_NAME: &str = "sequencer";
+
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct SequencerFetcher<
@@ -51,6 +53,10 @@ where
     R: LoadedData,
     C: SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, Nullifier>,
 {
+    fn name(&self) -> &'static str {
+        SEQUENCER_FETCHER_NAME
+    }
+
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         if option.start_block > option.target_block {
             return Err(FetcherError::AnyhowError(anyhow!(

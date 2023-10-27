@@ -7,14 +7,16 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum DataLoaderError {
-    #[error("no contracts to be loaded")]
+    #[error("no contracts to load data from")]
     LoaderNoContractsError,
+    #[error("no fetcher to load data from")]
+    LoaderNoFetchersError,
     #[error("failed to query loaded block from all fetchers")]
     QueryLoadedBlocksError,
-    #[error("query of fetcher(index = {0}) loaded block timed out after (1) ms")]
-    QueryLoadedBlocksTimeoutError(usize, u64),
-    #[error("fetch of fetcher(index = {0}) timed out after {1} ms)")]
-    FetchTimeoutError(usize, u64),
+    #[error("query of fetcher(name = {0}) loaded block timed out after (1) ms")]
+    QueryLoadedBlocksTimeoutError(String, u64),
+    #[error("fetch of fetcher(name = {0}) timed out after {1} ms)")]
+    FetchTimeoutError(String, u64),
     #[error("failed to fetch data from all fetchers")]
     LoaderFetchersExhaustedError,
     #[error("data to be validated is empty")]

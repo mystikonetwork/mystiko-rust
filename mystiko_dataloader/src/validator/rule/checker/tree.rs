@@ -17,6 +17,8 @@ use num_bigint::BigUint;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
+const RULE_MERKLE_TREE_CHECKER_NAME: &str = "merkle_tree";
+
 #[derive(Debug, TypedBuilder)]
 pub struct MerkleTreeChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {
     providers: Arc<P>,
@@ -34,6 +36,10 @@ where
     H: DataHandler<R>,
     P: Providers,
 {
+    fn name(&self) -> &'static str {
+        RULE_MERKLE_TREE_CHECKER_NAME
+    }
+
     async fn check<'a>(
         &self,
         data: &ValidateOriginalData<'a, R>,

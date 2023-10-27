@@ -23,14 +23,14 @@ use typed_builder::TypedBuilder;
 pub struct ChainDataLoader<R, H = Box<dyn DataHandler<R>>, F = Box<dyn DataFetcher<R>>, V = Box<dyn DataValidator<R>>> {
     config: Arc<MystikoConfig>,
     chain_id: u64,
-    #[builder(default = vec![])]
+    #[builder(default)]
     fetchers: Vec<Arc<F>>,
-    #[builder(default = HashMap::new())]
-    fetcher_options: HashMap<usize, FetcherOptions>,
-    #[builder(default = vec![])]
+    #[builder(default)]
+    fetcher_options: HashMap<String, FetcherOptions>,
+    #[builder(default)]
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
-    #[builder(default = Default::default())]
+    #[builder(default)]
     _phantom: std::marker::PhantomData<R>,
 }
 
@@ -42,15 +42,20 @@ struct ChainLoadParams<'a> {
 
 #[derive(Debug, Clone, TypedBuilder)]
 struct FetcherRunParams<F> {
-    pub(crate) index: usize,
     pub(crate) fetcher: Arc<F>,
     pub(crate) loaded_block: u64,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
-struct LoaderRunParams<'a, F> {
+struct ValidatorRunParams<V> {
+    pub(crate) validator: Arc<V>,
+}
+
+#[derive(Debug, Clone, TypedBuilder)]
+struct LoaderRunParams<'a, F, V> {
     pub(crate) params: &'a ChainLoadParams<'a>,
     pub(crate) fetchers: Vec<FetcherRunParams<F>>,
+    pub(crate) validators: Vec<ValidatorRunParams<V>>,
 }
 
 #[async_trait]
@@ -133,9 +138,16 @@ where
     V: DataValidator<R>,
 {
     async fn try_load(&self, params: &ChainLoadParams<'_>) -> DataLoaderResult<()> {
-        let mut tasks = vec![];
-        for (index, fetcher) in self.fetchers.iter().enumerate() {
-            tasks.push(self.query_loaded_blocks(index, fetcher, &params.option.fetcher));
+        let tasks = self
+            .fetchers
+            .iter()
+            .filter(|f| !self.skip_fetcher(f.name(), &params.option.fetcher))
+            .map(|f| self.query_loaded_blocks(f, &params.option.fetcher))
+            .collect::<Vec<_>>();
+
+        if tasks.is_empty() {
+            warn!("no fetcher to load data");
+            return Err(DataLoaderError::LoaderNoFetchersError);
         }
 
         let results = futures::future::join_all(tasks).await;
@@ -145,46 +157,56 @@ where
             return Err(DataLoaderError::QueryLoadedBlocksError);
         }
 
-        let run_params = LoaderRunParams::builder().params(params).fetchers(fetchers).build();
+        let validators = self
+            .validators
+            .iter()
+            .filter(|v| !self.skip_validator(v.name(), &params.option.validator))
+            .map(|v| ValidatorRunParams::builder().validator(v.clone()).build())
+            .collect();
+
+        let run_params = LoaderRunParams::builder()
+            .params(params)
+            .fetchers(fetchers)
+            .validators(validators)
+            .build();
         self.run_load(&run_params).await
     }
 
-    async fn run_load(&self, run_params: &LoaderRunParams<'_, F>) -> DataLoaderResult<()> {
+    async fn run_load(&self, run_params: &LoaderRunParams<'_, F, V>) -> DataLoaderResult<()> {
         let contracts = self.build_loading_contracts(run_params.params.cfg).await?;
         let mut loaded = None;
-        for fetcher in run_params.fetchers.iter() {
-            let fetch_option = self.build_fetch_options(&contracts, fetcher).await?;
+        for fetcher_params in run_params.fetchers.iter() {
+            let name = fetcher_params.fetcher.name();
+            let fetch_option = self.build_fetch_options(&contracts, fetcher_params).await?;
             if let Some(fetch_option) = &fetch_option {
                 if loaded.is_none() {
                     loaded = Some(false);
                 }
 
                 let mut chain_data = match self
-                    .fetch(&run_params.params.option.fetcher, fetcher, fetch_option)
+                    .fetch(fetcher_params, &run_params.params.option.fetcher, fetch_option)
                     .await
                 {
                     Err(e) => {
-                        warn!("fetch fetcher(index={:?}) raised error: {:?}", fetcher.index, e);
+                        warn!("fetch fetcher(name={:?}) raised error: {:?}", name, e);
                         None
                     }
                     Ok(d) => Some(d),
                 };
+
                 if let Some(chain_data) = chain_data.as_mut() {
-                    let skip_validation = self
-                        .fetcher_options
-                        .get(&fetcher.index)
-                        .map(|o| o.skip_validation)
-                        .unwrap_or(false);
+                    let skip_validation =
+                        self.skip_validation(fetcher_params.fetcher.name(), &run_params.params.option.fetcher);
                     let mut invalid = false;
                     if !skip_validation {
-                        if let Err(e) = self.validate(chain_data, &run_params.params.option.validator).await {
-                            warn!("validate fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
+                        if let Err(e) = self.validate(run_params, chain_data).await {
+                            warn!("validate fetcher(name={:?}) data raised error: {:?}", name, e);
                             invalid = true;
                         };
                     }
                     if !invalid {
                         if let Err(e) = self.handle(chain_data).await {
-                            warn!("handle fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
+                            warn!("handle fetcher(name={:?}) data raised error: {:?}", name, e);
                         } else {
                             loaded = Some(true);
                         }
@@ -202,7 +224,6 @@ where
 
     async fn query_loaded_blocks(
         &self,
-        index: usize,
         fetcher: &Arc<F>,
         options: &LoadFetcherOption,
     ) -> DataLoaderResult<FetcherRunParams<F>> {
@@ -212,26 +233,23 @@ where
             .build();
         let timeout_duration = Duration::from_millis(options.query_loaded_block_timeout_ms);
         let result = timeout(timeout_duration, fetcher.chain_loaded_block(&option)).await;
+        let name = fetcher.name();
         match result {
             Ok(Ok(block)) => Ok(FetcherRunParams::builder()
-                .index(index)
                 .fetcher(fetcher.clone())
                 .loaded_block(block)
                 .build()),
             Ok(Err(e)) => {
-                warn!(
-                    "query_loaded_blocks of fetcher(index={:?}) raised error: {:?}",
-                    index, e
-                );
+                warn!("query_loaded_blocks of fetcher(name={:?}) raised error: {:?}", name, e);
                 Err(e.into())
             }
             Err(_) => {
                 warn!(
-                    "query_loaded_blocks of fetcher(index={:?}) timed out after {:?} ms",
-                    index, options.query_loaded_block_timeout_ms
+                    "query_loaded_blocks of fetcher(name={:?}) timed out after {:?} ms",
+                    name, options.query_loaded_block_timeout_ms
                 );
                 Err(DataLoaderError::QueryLoadedBlocksTimeoutError(
-                    index,
+                    name.to_string(),
                     options.query_loaded_block_timeout_ms,
                 ))
             }
@@ -240,13 +258,13 @@ where
 
     async fn fetch(
         &self,
+        params: &FetcherRunParams<F>,
         load_fetcher_options: &LoadFetcherOption,
-        run_param: &FetcherRunParams<F>,
         fetch_options: &FetchOptions,
     ) -> DataLoaderResult<ChainData<R>> {
         let duration_ms = Duration::from_millis(load_fetcher_options.fetch_timeout_ms);
 
-        let fetch_result = timeout(duration_ms, run_param.fetcher.fetch(fetch_options)).await;
+        let fetch_result = timeout(duration_ms, params.fetcher.fetch(fetch_options)).await;
         match fetch_result {
             Ok(Ok(result)) => {
                 let unwrapped = UnwrappedChainResult::from(result);
@@ -257,25 +275,35 @@ where
             }
             Ok(Err(e)) => Err(e.into()),
             Err(_) => Err(DataLoaderError::FetchTimeoutError(
-                run_param.index,
+                params.fetcher.name().to_string(),
                 load_fetcher_options.fetch_timeout_ms,
             )),
         }
     }
 
-    async fn validate(&self, data: &mut ChainData<R>, options: &LoadValidatorOption) -> DataLoaderResult<()> {
+    async fn validate(&self, run_param: &LoaderRunParams<'_, F, V>, data: &mut ChainData<R>) -> DataLoaderResult<()> {
         if !data.contracts_data.is_empty() {
-            let validator_option = ValidateOption::builder()
-                .config(self.config.clone())
-                .validate_concurrency(options.concurrency)
-                .build();
-            for (index, validator) in self.validators.iter().enumerate() {
-                let validate_result = validator.validate(data, &validator_option).await?;
+            for validator_params in run_param.validators.iter() {
+                let skip_checkers = run_param
+                    .params
+                    .option
+                    .validator
+                    .skips
+                    .get(validator_params.validator.name())
+                    .map_or_else(HashMap::new, |o| o.skip_checkers.clone());
+                let validator_option = ValidateOption::builder()
+                    .config(self.config.clone())
+                    .validate_concurrency(run_param.params.option.validator.concurrency)
+                    .skip_checkers(skip_checkers)
+                    .build();
+                let validate_result = validator_params.validator.validate(data, &validator_option).await?;
                 let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
                 unwrapped.contract_errors.iter().for_each(|c| {
                     warn!(
-                        "validator(index={:?}) contract {:?} raised error: {:?}",
-                        index, c.address, c.source
+                        "validator(name={:?}) contract {:?} raised error: {:?}",
+                        validator_params.validator.name(),
+                        c.address,
+                        c.source
                     );
                     data.contracts_data
                         .iter()
@@ -368,5 +396,30 @@ where
         } else {
             Ok(None)
         }
+    }
+
+    fn skip_fetcher(&self, fetcher_name: &str, load_fetcher_option: &LoadFetcherOption) -> bool {
+        load_fetcher_option
+            .skips
+            .get(fetcher_name)
+            .and_then(|option| option.skip_fetch)
+            .unwrap_or_default()
+    }
+
+    fn skip_validator(&self, validator_name: &str, load_validator_option: &LoadValidatorOption) -> bool {
+        load_validator_option
+            .skips
+            .get(validator_name)
+            .and_then(|option| option.skip_validation)
+            .unwrap_or_default()
+    }
+
+    fn skip_validation(&self, fetcher_name: &str, load_fetcher_option: &LoadFetcherOption) -> bool {
+        load_fetcher_option
+            .skips
+            .get(fetcher_name)
+            .and_then(|option| option.skip_validation)
+            .or(self.fetcher_options.get(fetcher_name).map(|o| o.skip_validation))
+            .unwrap_or_default()
     }
 }

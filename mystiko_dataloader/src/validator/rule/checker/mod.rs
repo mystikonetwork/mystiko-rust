@@ -19,6 +19,7 @@ pub type CheckerResult<T> = anyhow::Result<T, RuleCheckError>;
 
 #[async_trait]
 pub trait RuleChecker<R: LoadedData>: Send + Sync {
+    fn name(&self) -> &'static str;
     async fn check<'a>(
         &self,
         data: &ValidateOriginalData<'a, R>,
@@ -31,6 +32,10 @@ impl<R> RuleChecker<R> for Box<dyn RuleChecker<R>>
 where
     R: LoadedData,
 {
+    fn name(&self) -> &'static str {
+        self.as_ref().name()
+    }
+
     async fn check<'a>(
         &self,
         data: &ValidateOriginalData<'a, R>,
