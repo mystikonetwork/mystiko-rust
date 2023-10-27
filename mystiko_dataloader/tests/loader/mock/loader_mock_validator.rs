@@ -5,22 +5,30 @@ use mystiko_dataloader::data::{ChainResult, ContractResult};
 use mystiko_dataloader::validator::{DataValidator, ValidateOption, ValidateResult};
 use tokio::sync::RwLock;
 
-pub struct MockValidator {
+pub struct MockValidator<R>
+where
+    R: LoadedData,
+{
     all_success: RwLock<bool>,
     result: RwLock<ValidateResult>,
+    _phantom: std::marker::PhantomData<R>,
 }
 
-impl Default for MockValidator {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+// impl Default for MockValidator {
+//     fn default() -> Self {
+//         Self::new()
+//     }
+// }
 
-impl MockValidator {
+impl<R> MockValidator<R>
+where
+    R: LoadedData + Clone,
+{
     pub fn new() -> Self {
         MockValidator {
             all_success: RwLock::new(true),
             result: RwLock::new(ValidateResult::Err(anyhow::Error::msg("error".to_string()).into())),
+            _phantom: std::marker::PhantomData,
         }
     }
 
@@ -35,10 +43,14 @@ impl MockValidator {
 }
 
 #[async_trait]
-impl<R> DataValidator<R> for MockValidator
+impl<R> DataValidator<R> for MockValidator<R>
 where
     R: LoadedData,
 {
+    fn name(&self) -> &'static str {
+        "mock_validator"
+    }
+
     async fn validate(&self, data: &ChainData<R>, _option: &ValidateOption) -> ValidateResult {
         if *self.all_success.read().await {
             let contract_results = data

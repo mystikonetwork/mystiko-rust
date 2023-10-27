@@ -13,7 +13,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 pub(crate) type ChainDataLoaderFullDataType =
-    ChainDataLoader<FullData, MockHandler<FullData>, MockFetcher<FullData>, MockValidator>;
+    ChainDataLoader<FullData, MockHandler<FullData>, MockFetcher<FullData>, MockValidator<FullData>>;
 
 pub(crate) async fn create_loader(
     chain_id: u64,
@@ -24,7 +24,7 @@ pub(crate) async fn create_loader(
     Arc<MystikoConfig>,
     Arc<ChainDataLoaderFullDataType>,
     Vec<Arc<MockFetcher<FullData>>>,
-    Vec<Arc<MockValidator>>,
+    Vec<Arc<MockValidator<FullData>>>,
     Arc<MockHandler<FullData>>,
 ) {
     let core_cfg = Arc::new(
@@ -39,7 +39,10 @@ pub(crate) async fn create_loader(
         fetchers.push(fetcher);
     }
     let mut fetcher_options = HashMap::new();
-    fetcher_options.insert(0, FetcherOptions::builder().skip_validation(skip_validation).build());
+    fetcher_options.insert(
+        "mock_fetcher".to_string(),
+        FetcherOptions::builder().skip_validation(skip_validation).build(),
+    );
 
     let validators = (0..validator_count)
         .map(|_| Arc::new(MockValidator::new()))

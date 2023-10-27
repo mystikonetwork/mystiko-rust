@@ -20,7 +20,7 @@ use typed_builder::TypedBuilder;
 
 pub type DataLoaderConfigResult<T> = anyhow::Result<T, DataLoaderConfigError>;
 
-type FetcherBuildData<R> = (Vec<Arc<Box<dyn DataFetcher<R>>>>, HashMap<usize, FetcherOptions>);
+type FetcherBuildData<R> = (Vec<Arc<Box<dyn DataFetcher<R>>>>, HashMap<String, FetcherOptions>);
 #[derive(Error, Debug)]
 pub enum DataLoaderConfigError {
     #[error("not supported fetcher type {0}")]
@@ -133,54 +133,66 @@ where
         let mut fetchers: Vec<Arc<Box<dyn DataFetcher<R>>>> = vec![];
         let mut fetcher_options = HashMap::new();
         let fetcher_config: FetcherConfig = self.config.fetcher_config.clone().into();
-        for (index, fetcher_type) in self.fetcher_types()?.iter().enumerate() {
+        for (_, fetcher_type) in self.fetcher_types()?.iter().enumerate() {
             match fetcher_type {
                 FetcherType::Unspecified => {
                     return Err(DataLoaderConfigError::FetcherTypeError(*fetcher_type as i32));
                 }
                 FetcherType::Packer => {
+                    let packer = DataPackerFetcherV1::from(mystiko_config.clone());
                     if let Some(c) = &fetcher_config.packer {
                         if let Some(s) = c.skip_validation {
-                            fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
+                            fetcher_options.insert(
+                                packer.name().to_string(),
+                                FetcherOptions::builder().skip_validation(s).build(),
+                            );
                         }
                     }
-                    let packer = DataPackerFetcherV1::from(mystiko_config.clone());
                     fetchers.push(Arc::new(Box::new(packer) as Box<dyn DataFetcher<R>>))
                 }
                 FetcherType::Sequencer => {
-                    if let Some(c) = &fetcher_config.sequencer {
-                        if let Some(s) = c.skip_validation {
-                            fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
-                        }
-                    }
                     let sequencer = SequencerFetcher::<R, mystiko_sequencer_client::v1::SequencerClient>::from_config(
                         mystiko_config.clone(),
                         fetcher_config.sequencer.clone(),
                     )
                     .await?;
+                    if let Some(c) = &fetcher_config.sequencer {
+                        if let Some(s) = c.skip_validation {
+                            fetcher_options.insert(
+                                sequencer.name().to_string(),
+                                FetcherOptions::builder().skip_validation(s).build(),
+                            );
+                        }
+                    }
                     fetchers.push(Arc::new(Box::new(sequencer) as Box<dyn DataFetcher<R>>));
                 }
                 FetcherType::Etherscan => {
-                    if let Some(c) = &fetcher_config.etherscan {
-                        if let Some(s) = c.skip_validation {
-                            fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
-                        }
-                    }
                     let etherscan = EtherscanFetcher::from_config(
                         chain_id,
                         mystiko_config.clone(),
                         fetcher_config.etherscan.clone(),
                     )?;
+                    if let Some(c) = &fetcher_config.etherscan {
+                        if let Some(s) = c.skip_validation {
+                            fetcher_options.insert(
+                                etherscan.name().to_string(),
+                                FetcherOptions::builder().skip_validation(s).build(),
+                            );
+                        }
+                    }
                     fetchers.push(Arc::new(Box::new(etherscan) as Box<dyn DataFetcher<R>>));
                 }
                 FetcherType::Provider => {
-                    if let Some(c) = &fetcher_config.provider {
-                        if let Some(s) = c.skip_validation {
-                            fetcher_options.insert(index, FetcherOptions::builder().skip_validation(s).build());
-                        }
-                    }
                     let provider_fetcher =
                         ProviderFetcher::from_config(fetcher_config.provider.clone(), providers.clone());
+                    if let Some(c) = &fetcher_config.provider {
+                        if let Some(s) = c.skip_validation {
+                            fetcher_options.insert(
+                                provider_fetcher.name().to_string(),
+                                FetcherOptions::builder().skip_validation(s).build(),
+                            );
+                        }
+                    }
                     fetchers.push(Arc::new(Box::new(provider_fetcher) as Box<dyn DataFetcher<R>>));
                 }
             }

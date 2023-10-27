@@ -26,7 +26,7 @@ pub struct ChainDataLoader<R, H = Box<dyn DataHandler<R>>, F = Box<dyn DataFetch
     #[builder(default = vec![])]
     fetchers: Vec<Arc<F>>,
     #[builder(default = HashMap::new())]
-    fetcher_options: HashMap<usize, FetcherOptions>,
+    fetcher_options: HashMap<String, FetcherOptions>,
     #[builder(default = vec![])]
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
@@ -42,7 +42,6 @@ struct ChainLoadParams<'a> {
 
 #[derive(Debug, Clone, TypedBuilder)]
 struct FetcherRunParams<F> {
-    pub(crate) index: usize,
     pub(crate) fetcher: Arc<F>,
     pub(crate) loaded_block: u64,
 }
@@ -134,8 +133,8 @@ where
 {
     async fn try_load(&self, params: &ChainLoadParams<'_>) -> DataLoaderResult<()> {
         let mut tasks = vec![];
-        for (index, fetcher) in self.fetchers.iter().enumerate() {
-            tasks.push(self.query_loaded_blocks(index, fetcher, &params.option.fetcher));
+        for fetcher in self.fetchers.iter() {
+            tasks.push(self.query_loaded_blocks(fetcher, &params.option.fetcher));
         }
 
         let results = futures::future::join_all(tasks).await;
@@ -159,34 +158,43 @@ where
                     loaded = Some(false);
                 }
 
-                let mut chain_data = match self
-                    .fetch(&run_params.params.option.fetcher, fetcher, fetch_option)
-                    .await
-                {
-                    Err(e) => {
-                        warn!("fetch fetcher(index={:?}) raised error: {:?}", fetcher.index, e);
-                        None
-                    }
-                    Ok(d) => Some(d),
-                };
-                if let Some(chain_data) = chain_data.as_mut() {
-                    let skip_validation = self
-                        .fetcher_options
-                        .get(&fetcher.index)
-                        .map(|o| o.skip_validation)
-                        .unwrap_or(false);
-                    let mut invalid = false;
-                    if !skip_validation {
-                        if let Err(e) = self.validate(chain_data, &run_params.params.option.validator).await {
-                            warn!("validate fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
-                            invalid = true;
-                        };
-                    }
-                    if !invalid {
-                        if let Err(e) = self.handle(chain_data).await {
-                            warn!("handle fetcher(index={:?}) data raised error: {:?}", fetcher.index, e);
-                        } else {
-                            loaded = Some(true);
+                let skip_fetch = self.skip_fetch(fetcher.fetcher.name(), &run_params.params.option.fetcher);
+                if !skip_fetch {
+                    let mut chain_data = match self
+                        .fetch(&run_params.params.option.fetcher, fetcher, fetch_option)
+                        .await
+                    {
+                        Err(e) => {
+                            warn!("fetch fetcher(name={:?}) raised error: {:?}", fetcher.fetcher.name(), e);
+                            None
+                        }
+                        Ok(d) => Some(d),
+                    };
+
+                    if let Some(chain_data) = chain_data.as_mut() {
+                        let skip_validation =
+                            self.skip_validation(fetcher.fetcher.name(), &run_params.params.option.fetcher);
+                        let mut invalid = false;
+                        if !skip_validation {
+                            if let Err(e) = self.validate(chain_data, &run_params.params.option.validator).await {
+                                warn!(
+                                    "validate fetcher(name={:?}) data raised error: {:?}",
+                                    fetcher.fetcher.name(),
+                                    e
+                                );
+                                invalid = true;
+                            };
+                        }
+                        if !invalid {
+                            if let Err(e) = self.handle(chain_data).await {
+                                warn!(
+                                    "handle fetcher(name={:?}) data raised error: {:?}",
+                                    fetcher.fetcher.name(),
+                                    e
+                                );
+                            } else {
+                                loaded = Some(true);
+                            }
                         }
                     }
                 }
@@ -202,7 +210,6 @@ where
 
     async fn query_loaded_blocks(
         &self,
-        index: usize,
         fetcher: &Arc<F>,
         options: &LoadFetcherOption,
     ) -> DataLoaderResult<FetcherRunParams<F>> {
@@ -214,24 +221,25 @@ where
         let result = timeout(timeout_duration, fetcher.chain_loaded_block(&option)).await;
         match result {
             Ok(Ok(block)) => Ok(FetcherRunParams::builder()
-                .index(index)
                 .fetcher(fetcher.clone())
                 .loaded_block(block)
                 .build()),
             Ok(Err(e)) => {
                 warn!(
-                    "query_loaded_blocks of fetcher(index={:?}) raised error: {:?}",
-                    index, e
+                    "query_loaded_blocks of fetcher(name={:?}) raised error: {:?}",
+                    fetcher.name(),
+                    e
                 );
                 Err(e.into())
             }
             Err(_) => {
                 warn!(
-                    "query_loaded_blocks of fetcher(index={:?}) timed out after {:?} ms",
-                    index, options.query_loaded_block_timeout_ms
+                    "query_loaded_blocks of fetcher(name={:?}) timed out after {:?} ms",
+                    fetcher.name(),
+                    options.query_loaded_block_timeout_ms
                 );
                 Err(DataLoaderError::QueryLoadedBlocksTimeoutError(
-                    index,
+                    fetcher.name().to_string(),
                     options.query_loaded_block_timeout_ms,
                 ))
             }
@@ -257,7 +265,7 @@ where
             }
             Ok(Err(e)) => Err(e.into()),
             Err(_) => Err(DataLoaderError::FetchTimeoutError(
-                run_param.index,
+                run_param.fetcher.name().to_string(),
                 load_fetcher_options.fetch_timeout_ms,
             )),
         }
@@ -265,23 +273,33 @@ where
 
     async fn validate(&self, data: &mut ChainData<R>, options: &LoadValidatorOption) -> DataLoaderResult<()> {
         if !data.contracts_data.is_empty() {
-            let validator_option = ValidateOption::builder()
-                .config(self.config.clone())
-                .validate_concurrency(options.concurrency)
-                .build();
-            for (index, validator) in self.validators.iter().enumerate() {
-                let validate_result = validator.validate(data, &validator_option).await?;
-                let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
-                unwrapped.contract_errors.iter().for_each(|c| {
-                    warn!(
-                        "validator(index={:?}) contract {:?} raised error: {:?}",
-                        index, c.address, c.source
-                    );
-                    data.contracts_data
-                        .iter()
-                        .position(|d| d.address == c.address)
-                        .map(|i| data.contracts_data.remove(i));
-                });
+            for validator in self.validators.iter() {
+                let skip_validator = self.skip_validator(validator.name(), options);
+                if !skip_validator {
+                    let skip_checkers = options
+                        .skips
+                        .get(validator.name())
+                        .map_or_else(HashMap::new, |o| o.skip_checkers.clone());
+                    let validator_option = ValidateOption::builder()
+                        .config(self.config.clone())
+                        .validate_concurrency(options.concurrency)
+                        .skip_checkers(skip_checkers)
+                        .build();
+                    let validate_result = validator.validate(data, &validator_option).await?;
+                    let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
+                    unwrapped.contract_errors.iter().for_each(|c| {
+                        warn!(
+                            "validator(name={:?}) contract {:?} raised error: {:?}",
+                            validator.name(),
+                            c.address,
+                            c.source
+                        );
+                        data.contracts_data
+                            .iter()
+                            .position(|d| d.address == c.address)
+                            .map(|i| data.contracts_data.remove(i));
+                    });
+                }
             }
             Ok(())
         } else {
@@ -368,5 +386,38 @@ where
         } else {
             Ok(None)
         }
+    }
+
+    fn skip_fetch(&self, fetcher_name: &str, load_fetcher_option: &LoadFetcherOption) -> bool {
+        load_fetcher_option
+            .skips
+            .get(fetcher_name)
+            .and_then(|option| option.skip_fetch)
+            .unwrap_or(false)
+    }
+
+    fn skip_validation(&self, fetcher_name: &str, load_fetcher_option: &LoadFetcherOption) -> bool {
+        let skip_validation = load_fetcher_option
+            .skips
+            .get(fetcher_name)
+            .and_then(|option| option.skip_validation)
+            .unwrap_or(false);
+
+        if skip_validation {
+            return true;
+        }
+
+        self.fetcher_options
+            .get(fetcher_name)
+            .map(|o| o.skip_validation)
+            .unwrap_or(false)
+    }
+
+    fn skip_validator(&self, validator_name: &str, load_validator_option: &LoadValidatorOption) -> bool {
+        load_validator_option
+            .skips
+            .get(validator_name)
+            .and_then(|option| option.skip_validation)
+            .unwrap_or(false)
     }
 }

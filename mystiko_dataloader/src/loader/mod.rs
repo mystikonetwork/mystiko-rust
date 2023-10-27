@@ -1,6 +1,8 @@
 mod chain;
 mod config;
 
+use std::collections::HashMap;
+
 pub use chain::*;
 pub use config::*;
 
@@ -36,6 +38,17 @@ pub struct LoadFetcherOption {
     pub query_loaded_block_timeout_ms: u64,
     #[builder(default = DEFAULT_FETCHER_FETCH_TIMEOUT_MS)]
     pub fetch_timeout_ms: u64,
+    #[builder(default = HashMap::new())]
+    pub skips: HashMap<String, LoadFetcherSkipOption>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
+#[builder(field_defaults(default, setter(into)))]
+pub struct LoadFetcherSkipOption {
+    #[builder(default)]
+    pub skip_fetch: Option<bool>,
+    #[builder(default)]
+    pub skip_validation: Option<bool>,
 }
 
 impl Default for LoadFetcherOption {
@@ -49,6 +62,17 @@ impl Default for LoadFetcherOption {
 pub struct LoadValidatorOption {
     #[builder(default = DEFAULT_VALIDATOR_CONCURRENCY)]
     pub concurrency: usize,
+    #[builder(default = HashMap::new())]
+    pub skips: HashMap<String, LoadValidatorSkipOption>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TypedBuilder)]
+#[builder(field_defaults(default, setter(into)))]
+pub struct LoadValidatorSkipOption {
+    #[builder(default)]
+    pub skip_validation: Option<bool>,
+    #[builder(default = HashMap::new())]
+    pub skip_checkers: HashMap<String, bool>,
 }
 
 impl Default for LoadValidatorOption {

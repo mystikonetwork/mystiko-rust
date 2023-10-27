@@ -15,6 +15,8 @@ use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
+const PACKER_FETCHER_NAME: &str = "packer";
+
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct DataPackerFetcher<R: LoadedData, C: DataPackerClient<ChainData>> {
@@ -43,6 +45,10 @@ where
     R: LoadedData,
     C: DataPackerClient<ChainData>,
 {
+    fn name(&self) -> &'static str {
+        PACKER_FETCHER_NAME
+    }
+
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
         let query = to_chain_query(option);
         let chain_data = self.query_chain(query).await?;
