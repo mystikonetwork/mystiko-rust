@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::sync::Arc;
 use validator::{Validate, ValidationError};
@@ -94,8 +94,8 @@ pub fn is_numeric(s: &str, no_symbol: bool) -> bool {
     }
 }
 
-pub fn is_api_version(array: &[String]) -> Result<(), ValidationError> {
-    for version in array {
+pub fn is_api_version(map: &HashMap<u16, String>) -> Result<(), ValidationError> {
+    for version in map.values() {
         if !IS_API_VERSION.is_match(version) {
             return Err(ValidationError::new("api version is invalid"));
         }

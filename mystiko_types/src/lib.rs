@@ -101,9 +101,10 @@ pub enum SpendType {
     Withdraw,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum NetworkType {
+    #[default]
     Testnet,
     Mainnet,
 }
