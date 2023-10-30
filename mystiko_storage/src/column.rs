@@ -1,33 +1,7 @@
-use mystiko_protos::storage::v1::ColumnType;
-use num_bigint::{BigInt, BigUint};
+use mystiko_protos::storage::v1::{ColumnType, ColumnValue};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::fmt::Debug;
 use typed_builder::TypedBuilder;
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum ColumnValue {
-    Bool(bool),
-    Char(char),
-    I8(i8),
-    I16(i16),
-    I32(i32),
-    I64(i64),
-    I128(i128),
-    ISize(isize),
-    U8(u8),
-    U16(u16),
-    U32(u32),
-    U64(u64),
-    U128(u128),
-    USize(usize),
-    F32(f32),
-    F64(f64),
-    String(String),
-    BigInt(BigInt),
-    BigUint(BigUint),
-    Json(Value),
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TypedBuilder)]
 pub struct Column {
@@ -56,6 +30,11 @@ pub struct IndexColumns {
     pub column_names: Vec<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, TypedBuilder)]
+pub struct ColumnValues {
+    pub(crate) column_values: Vec<(String, Option<ColumnValue>)>,
+}
+
 impl<T: ToString, I: IntoIterator<Item = T>> From<I> for UniqueColumns {
     fn from(value: I) -> Self {
         UniqueColumns::builder()
@@ -69,5 +48,54 @@ impl<T: ToString, I: IntoIterator<Item = T>> From<I> for IndexColumns {
         IndexColumns::builder()
             .column_names(value.into_iter().map(|v| v.to_string()).collect())
             .build()
+    }
+}
+
+impl ColumnValues {
+    pub fn new() -> Self {
+        ColumnValues {
+            column_values: Default::default(),
+        }
+    }
+
+    pub fn set_value<C, V>(mut self, column: C, value: V) -> Self
+    where
+        C: ToString,
+        V: Into<ColumnValue>,
+    {
+        self.column_values.push((column.to_string(), Some(value.into())));
+        self
+    }
+
+    pub fn set_null_value<C>(mut self, column: C) -> Self
+    where
+        C: ToString,
+    {
+        self.column_values.push((column.to_string(), None));
+        self
+    }
+}
+
+impl<C, V> From<Vec<(C, V)>> for ColumnValues
+where
+    C: ToString,
+    V: Into<ColumnValue>,
+{
+    fn from(values: Vec<(C, V)>) -> Self {
+        let mut column_values = Self::new();
+        for (column, value) in values {
+            column_values = column_values.set_value(column, value);
+        }
+        column_values
+    }
+}
+
+impl<C, V> From<(C, V)> for ColumnValues
+where
+    C: ToString,
+    V: Into<ColumnValue>,
+{
+    fn from(value: (C, V)) -> Self {
+        vec![value].into()
     }
 }

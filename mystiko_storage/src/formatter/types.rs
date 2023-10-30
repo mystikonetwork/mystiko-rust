@@ -1,4 +1,4 @@
-use crate::{Document, DocumentData, Migration, StorageError};
+use crate::{ColumnValues, Document, DocumentData, Migration, StorageError};
 use anyhow::Result;
 use mystiko_protos::storage::v1::{ColumnValue, QueryFilter};
 use serde::{Deserialize, Serialize};
@@ -19,6 +19,11 @@ pub struct CountStatement {
 pub trait StatementFormatter: Send + Sync + Debug {
     fn format_insert<T: DocumentData>(&self, doc: &Document<T>) -> Statement;
     fn format_update<T: DocumentData>(&self, doc: &Document<T>) -> Statement;
+    fn format_update_by_filter<T: DocumentData, Q: Into<QueryFilter>, V: Into<ColumnValues>>(
+        &self,
+        column_values: V,
+        filter_option: Option<Q>,
+    ) -> Result<Statement, StorageError>;
     fn format_delete<T: DocumentData>(&self, doc: &Document<T>) -> Statement;
     fn format_delete_by_filter<T: DocumentData, Q: Into<QueryFilter>>(
         &self,

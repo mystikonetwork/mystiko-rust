@@ -1,6 +1,6 @@
 use crate::{
-    Document, DocumentColumn, DocumentData, MigrationHistory, MigrationHistoryColumn, Statement, StatementFormatter,
-    Storage, StorageError,
+    ColumnValues, Document, DocumentColumn, DocumentData, MigrationHistory, MigrationHistoryColumn, Statement,
+    StatementFormatter, Storage, StorageError,
 };
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use std::time::SystemTime;
@@ -94,6 +94,22 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
                 .await?;
             Ok(documents_new)
         }
+    }
+
+    pub async fn update_by_filter<D: DocumentData, V: Into<ColumnValues>, Q: Into<QueryFilter>>(
+        &self,
+        column_values: V,
+        filter: Option<Q>,
+    ) -> Result<(), StorageError> {
+        let column_values = column_values
+            .into()
+            .set_value(DocumentColumn::UpdatedAt, current_timestamp());
+        self.storage
+            .execute(
+                self.formatter
+                    .format_update_by_filter::<D, Q, _>(column_values, filter)?,
+            )
+            .await
     }
 
     pub async fn delete<D: DocumentData>(&self, document: &Document<D>) -> Result<(), StorageError> {

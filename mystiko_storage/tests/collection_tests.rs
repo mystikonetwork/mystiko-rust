@@ -114,6 +114,51 @@ async fn test_update() {
 }
 
 #[tokio::test]
+async fn test_update_by_filter() {
+    let collection = create_collection().await;
+    collection.migrate::<TestDocument>().await.unwrap();
+    collection
+        .insert_batch(&[
+            TestDocument {
+                field1: 1,
+                field2: 2,
+                field3: true,
+            },
+            TestDocument {
+                field1: 3,
+                field2: 4,
+                field3: false,
+            },
+            TestDocument {
+                field1: 5,
+                field2: 6,
+                field3: true,
+            },
+        ])
+        .await
+        .unwrap();
+    collection
+        .update_by_filter::<TestDocument, _, _>(
+            (TestDocumentColumn::Field3, false),
+            Some(SubFilter::equal(TestDocumentColumn::Field3, true)),
+        )
+        .await
+        .unwrap();
+    let document1 = collection
+        .find_one::<TestDocument, _>(Some(SubFilter::equal(TestDocumentColumn::Field1, 1i16)))
+        .await
+        .unwrap()
+        .unwrap();
+    let document2 = collection
+        .find_one::<TestDocument, _>(Some(SubFilter::equal(TestDocumentColumn::Field1, 3i16)))
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(!document1.data.field3);
+    assert!(!document2.data.field3);
+}
+
+#[tokio::test]
 async fn test_delete() {
     let collection = create_collection().await;
     collection.migrate::<TestDocument>().await.unwrap();

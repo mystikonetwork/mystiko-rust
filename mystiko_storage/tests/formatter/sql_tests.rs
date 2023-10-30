@@ -3,8 +3,8 @@ use mystiko_protos::storage::v1::{
     ColumnType, ColumnValue, Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter,
 };
 use mystiko_storage::{
-    AddColumnMigration, AddIndexMigration, Column, Document, DocumentData, DropColumnMigration, IndexColumns,
-    Migration, RenameColumnMigration, SqlStatementFormatter, SqlType, StatementFormatter, UniqueColumns,
+    AddColumnMigration, AddIndexMigration, Column, ColumnValues, Document, DocumentData, DropColumnMigration,
+    IndexColumns, Migration, RenameColumnMigration, SqlStatementFormatter, SqlType, StatementFormatter, UniqueColumns,
 };
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::{BigInt, BigUint};
@@ -141,6 +141,122 @@ fn test_format_update() {
     assert_eq!(statement2.column_values.len(), 42);
     let statements = formatter.format_update_batch(&vec![document1, document2]);
     assert_eq!(statements, vec![statement1, statement2]);
+}
+
+#[test]
+fn test_format_update_by_filter() {
+    let formatter = SqlStatementFormatter::sqlite();
+    let statement1 = formatter
+        .format_update_by_filter::<TestDocument, QueryFilter, _>(
+            ColumnValues::new()
+                .set_value(TestDocumentColumn::Field11, 0xdeadbeef_u64)
+                .set_null_value(TestDocumentColumn::Field12),
+            None,
+        )
+        .unwrap();
+    assert_eq!(
+        statement1.statement,
+        "UPDATE `test_documents` \
+        SET `field11` = ?, `field12` = NULL"
+    );
+    assert_eq!(statement1.column_values.len(), 1);
+    let statement2 = formatter
+        .format_update_by_filter::<TestDocument, _, _>(
+            (TestDocumentColumn::Field11, 0xdeadbeef_u64),
+            Some(SubFilter::equal(TestDocumentColumn::Field5, 1u8)),
+        )
+        .unwrap();
+    assert_eq!(
+        statement2.statement,
+        "UPDATE `test_documents` \
+        SET `field11` = ? \
+        WHERE `field5` = ?"
+    );
+    assert_eq!(statement2.column_values.len(), 2);
+    let statement3 = formatter
+        .format_update_by_filter::<TestDocument, _, _>(
+            (TestDocumentColumn::Field11, 0xdeadbeef_u64),
+            Some(
+                QueryFilter::builder()
+                    .order_by(
+                        OrderBy::builder()
+                            .order(Order::Desc)
+                            .columns(vec![TestDocumentColumn::Field1.to_string()])
+                            .build(),
+                    )
+                    .conditions_operator(ConditionOperator::And)
+                    .limit(1)
+                    .offset(2)
+                    .build(),
+            ),
+        )
+        .unwrap();
+    assert_eq!(
+        statement3.statement,
+        "UPDATE `test_documents` \
+        SET `field11` = ? \
+        ORDER BY `field1` DESC LIMIT 1 OFFSET 2"
+    );
+    assert_eq!(statement3.column_values.len(), 1);
+    let statement4 = formatter
+        .format_update_by_filter::<TestDocument, _, _>(
+            (TestDocumentColumn::Field11, 0xdeadbeef_u64),
+            Some(
+                QueryFilter::builder()
+                    .conditions_operator(ConditionOperator::And)
+                    .conditions(vec![SubFilter::equal(TestDocumentColumn::Field5, 1u8).into()])
+                    .order_by(
+                        OrderBy::builder()
+                            .order(Order::Desc)
+                            .columns(vec![TestDocumentColumn::Field1.to_string()])
+                            .build(),
+                    )
+                    .limit(1)
+                    .offset(2)
+                    .build(),
+            ),
+        )
+        .unwrap();
+    assert_eq!(
+        statement4.statement,
+        "UPDATE `test_documents` \
+        SET `field11` = ? \
+        WHERE `field5` = ? ORDER BY `field1` DESC LIMIT 1 OFFSET 2"
+    );
+    assert_eq!(statement4.column_values.len(), 2);
+}
+
+#[test]
+fn test_format_update_by_filter_with_wrong_type_error() {
+    let formatter = SqlStatementFormatter::sqlite();
+    let err = formatter
+        .format_update_by_filter::<TestDocument, QueryFilter, _>((TestDocumentColumn::Field11, 0xdeadbeef_u32), None)
+        .unwrap_err();
+    assert_eq!(
+        err.to_string(),
+        "column \"field11\" has wrong value type, expected: \"U64\" vs actual: \"U32\""
+    );
+}
+
+#[test]
+fn test_format_update_by_filter_with_non_nullable_error() {
+    let formatter = SqlStatementFormatter::sqlite();
+    let err = formatter
+        .format_update_by_filter::<TestDocument, QueryFilter, _>(
+            ColumnValues::new().set_null_value(TestDocumentColumn::Field11),
+            None,
+        )
+        .unwrap_err();
+    assert_eq!(err.to_string(), "set null to required column: \"field11\")");
+}
+
+#[test]
+fn test_format_update_by_filter_with_non_existing_column_error() {
+    let formatter = SqlStatementFormatter::sqlite();
+    let err = formatter
+        .format_update_by_filter::<TestDocument, QueryFilter, _>(("non_existing_column", 0xdeadbeef_u64), None)
+        .unwrap_err();
+    assert_eq!(err.to_string(), "no such column \"non_existing_column\"");
 }
 
 #[test]

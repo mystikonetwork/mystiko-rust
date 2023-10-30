@@ -15,6 +15,8 @@ pub enum StorageError {
     SerdeJsonError(#[from] serde_json::Error),
     #[error("missing required column: {0:?})")]
     MissingRequiredColumnError(String),
+    #[error("set null to required column: {0:?})")]
+    SetNullToRequiredColumnError(String),
     #[error("failed to execute query on database: {0:?}")]
     DatabaseError(#[source] anyhow::Error),
     #[error("data is corrupted: {0:?}")]
