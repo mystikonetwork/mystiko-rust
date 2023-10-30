@@ -9,7 +9,7 @@ use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
 use typed_builder::TypedBuilder;
 
-const RULE_INTEGRITY_CHECKER_NAME: &str = "integrity";
+pub const RULE_INTEGRITY_CHECKER_NAME: &str = "integrity";
 
 #[derive(Debug, Default, TypedBuilder)]
 pub struct IntegrityChecker<R> {

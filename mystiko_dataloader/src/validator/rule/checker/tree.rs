@@ -17,7 +17,7 @@ use num_bigint::BigUint;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-const RULE_MERKLE_TREE_CHECKER_NAME: &str = "merkle_tree";
+pub const RULE_MERKLE_TREE_CHECKER_NAME: &str = "merkle_tree";
 
 #[derive(Debug, TypedBuilder)]
 pub struct MerkleTreeChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {

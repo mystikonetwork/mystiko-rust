@@ -36,7 +36,7 @@ use std::time::Duration;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
-const PROVIDER_FETCHER_NAME: &str = "provider";
+pub const PROVIDER_FETCHER_NAME: &str = "provider";
 
 #[derive(Error, Debug)]
 pub enum ProviderFetcherError {

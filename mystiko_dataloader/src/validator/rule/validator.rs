@@ -11,7 +11,7 @@ use async_trait::async_trait;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-const RULE_VALIDATOR_NAME: &str = "rule_validator";
+pub const RULE_VALIDATOR_NAME: &str = "rule_validator";
 
 #[derive(Debug, TypedBuilder)]
 pub struct RuleValidatorOptions<R, H = Box<dyn DataHandler<R>>, C = Box<dyn RuleChecker<R>>> {

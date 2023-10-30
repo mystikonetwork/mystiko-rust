@@ -15,7 +15,7 @@ use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 const CONTRACT_VERSION_SUPPORT_FULL_COUNTER_QUERY: u32 = 6;
-const RULE_COUNTER_CHECKER_NAME: &str = "counter";
+pub const RULE_COUNTER_CHECKER_NAME: &str = "counter";
 
 #[derive(Debug, TypedBuilder)]
 pub struct CounterChecker<R, H = Box<dyn DataHandler<R>>, P = Box<dyn Providers>> {

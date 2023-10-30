@@ -22,7 +22,7 @@ use crate::fetcher::{
 };
 use crate::handler::{dedup_commitments, dedup_nullifiers};
 
-const SEQUENCER_FETCHER_NAME: &str = "sequencer";
+pub const SEQUENCER_FETCHER_NAME: &str = "sequencer";
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
