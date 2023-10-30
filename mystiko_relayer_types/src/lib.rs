@@ -29,7 +29,7 @@ pub struct RelayTransactRequest {
 #[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug, Clone)]
 pub struct TransactRequestData {
     pub contract_param: TransactRequest,
-    pub transaction_type: SpendType,
+    pub spend_type: SpendType,
     pub bridge_type: BridgeType,
     #[validate(range(min = 1))]
     pub chain_id: u64,
@@ -59,7 +59,7 @@ pub struct RelayTransactStatusRequest {
 pub struct RelayTransactStatusResponse {
     pub uuid: String,
     pub chain_id: u64,
-    pub transaction_type: SpendType,
+    pub spend_type: SpendType,
     pub status: TransactStatus,
     pub transaction_hash: Option<String>,
     pub error_msg: Option<String>,

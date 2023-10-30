@@ -153,7 +153,7 @@ pub async fn mock_transaction_status(server: Arc<RwLock<ServerGuard>>) -> Mock {
     let response = success(RelayTransactStatusResponse {
         uuid: String::from("78d08829"),
         chain_id: 31337,
-        transaction_type: SpendType::Withdraw,
+        spend_type: SpendType::Withdraw,
         status: TransactStatus::Queued,
         transaction_hash: None,
         error_msg: None,

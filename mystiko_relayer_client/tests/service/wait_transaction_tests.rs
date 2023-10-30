@@ -33,7 +33,7 @@ async fn wait_transaction_until_queued() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: SpendType::Withdraw,
+                spend_type: SpendType::Withdraw,
                 status: TransactStatus::Queued,
                 transaction_hash: None,
                 error_msg: None,
@@ -83,7 +83,7 @@ async fn wait_transaction_until_pending() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: SpendType::Withdraw,
+                spend_type: SpendType::Withdraw,
                 status: TransactStatus::Pending,
                 transaction_hash: None,
                 error_msg: None,
@@ -133,7 +133,7 @@ async fn wait_transaction_until_succeeded() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: SpendType::Withdraw,
+                spend_type: SpendType::Withdraw,
                 status: TransactStatus::Succeeded,
                 transaction_hash: None,
                 error_msg: None,
@@ -183,7 +183,7 @@ async fn wait_transaction_until_confirmed_timeout() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: SpendType::Withdraw,
+                spend_type: SpendType::Withdraw,
                 status: TransactStatus::Queued,
                 transaction_hash: None,
                 error_msg: None,
@@ -235,7 +235,7 @@ async fn wait_transaction_until_confirmed_failed() {
             to_string(&success(RelayTransactStatusResponse {
                 uuid: "78d08829".to_string(),
                 chain_id: CHAIN_ID,
-                transaction_type: SpendType::Withdraw,
+                spend_type: SpendType::Withdraw,
                 status: TransactStatus::Failed,
                 transaction_hash: None,
                 error_msg: Some("test error message".to_string()),
