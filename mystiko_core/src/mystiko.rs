@@ -55,10 +55,7 @@ where
         log::info!(
             "mystiko on {} has been initialized, config git revision {}",
             mystiko_options.config_options.get_network(),
-            mystiko_options
-                .config_options
-                .get_git_revision()
-                .unwrap_or("unknown".into())
+            config.git_revision().unwrap_or("unknown".into())
         );
         Ok(mystiko)
     }
