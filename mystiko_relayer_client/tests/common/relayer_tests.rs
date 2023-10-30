@@ -60,7 +60,7 @@ async fn test_handle_error_response() {
                 Some(RelayTransactStatusResponse {
                     uuid: "".to_string(),
                     chain_id: 97,
-                    transaction_type: SpendType::Transfer,
+                    spend_type: SpendType::Transfer,
                     status: TransactStatus::Queued,
                     transaction_hash: None,
                     error_msg: None,
@@ -99,7 +99,7 @@ async fn test_handle_error_response() {
             to_string(&success(Some(RelayTransactStatusResponse {
                 uuid: "".to_string(),
                 chain_id: 97,
-                transaction_type: SpendType::Transfer,
+                spend_type: SpendType::Transfer,
                 status: TransactStatus::Succeeded,
                 transaction_hash: None,
                 error_msg: None,
