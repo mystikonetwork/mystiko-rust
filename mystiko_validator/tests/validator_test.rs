@@ -1,5 +1,8 @@
+use mystiko_validator::validate::{
+    array_unique, is_api_version, is_ethereum_address, is_number_string, is_number_string_vec, is_numeric, is_sem_ver,
+    string_vec_each_not_empty,
+};
 use std::collections::HashMap;
-use mystiko_validator::validate::{array_unique, is_api_version, is_ethereum_address, is_number_string, is_number_string_vec, is_numeric, is_sem_ver, string_vec_each_not_empty};
 
 #[test]
 fn test_is_ethereum_address() {
