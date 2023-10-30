@@ -1,6 +1,7 @@
 use crate::{
-    AddColumnMigration, AddIndexMigration, Column, CountStatement, CreateCollectionMigration, Document, DocumentColumn,
-    DocumentData, DropColumnMigration, Migration, RenameColumnMigration, Statement, StatementFormatter, StorageError,
+    AddColumnMigration, AddIndexMigration, Column, ColumnValues, CountStatement, CreateCollectionMigration, Document,
+    DocumentColumn, DocumentData, DropColumnMigration, Migration, RenameColumnMigration, Statement, StatementFormatter,
+    StorageError,
 };
 use anyhow::Result;
 use mystiko_protos::storage::v1::{
@@ -78,6 +79,72 @@ impl StatementFormatter for SqlStatementFormatter {
             ),
             column_values,
         )
+    }
+
+    fn format_update_by_filter<T, Q, V>(
+        &self,
+        column_values: V,
+        filter_option: Option<Q>,
+    ) -> Result<Statement, StorageError>
+    where
+        T: DocumentData,
+        Q: Into<QueryFilter>,
+        V: Into<ColumnValues>,
+    {
+        let column_values = column_values.into().column_values;
+        check_column_values::<T>(&column_values)?;
+        let mut values = vec![];
+        let updates = column_values
+            .into_iter()
+            .map(|(column, value)| {
+                if let Some(value) = value {
+                    values.push(value);
+                    format!("`{}` = {}", column, self.value_mark())
+                } else {
+                    format!("`{}` = NULL", column)
+                }
+            })
+            .collect::<Vec<_>>();
+        let statement = match filter_option {
+            Some(filter) => {
+                let query_filter: QueryFilter = filter.into();
+                let no_condition = query_filter.conditions.is_empty();
+                let filter_statement = self.format_query_filter::<T>(query_filter)?;
+                if filter_statement.statement.is_empty() {
+                    Statement::new(
+                        format!("UPDATE `{}` SET {}", T::collection_name(), updates.join(", ")),
+                        values,
+                    )
+                } else if no_condition {
+                    values.extend(filter_statement.column_values);
+                    Statement::new(
+                        format!(
+                            "UPDATE `{}` SET {} {}",
+                            T::collection_name(),
+                            updates.join(", "),
+                            filter_statement.statement
+                        ),
+                        values,
+                    )
+                } else {
+                    values.extend(filter_statement.column_values);
+                    Statement::new(
+                        format!(
+                            "UPDATE `{}` SET {} WHERE {}",
+                            T::collection_name(),
+                            updates.join(", "),
+                            filter_statement.statement
+                        ),
+                        values,
+                    )
+                }
+            }
+            None => Statement::new(
+                format!("UPDATE `{}` SET {}", T::collection_name(), updates.join(", ")),
+                values,
+            ),
+        };
+        Ok(statement)
     }
 
     fn format_delete<T: DocumentData>(&self, doc: &Document<T>) -> Statement {
@@ -561,11 +628,15 @@ fn default_index_name(collection_name: &str, column_names: &[String]) -> String 
     format!("{}_index_{}", collection_name, column_names.join("_"))
 }
 
-fn check_filter_column_value<T: DocumentData>(filter: &SubFilter) -> Result<(), StorageError> {
-    let columns = Document::<T>::columns()
+fn columns_map<T: DocumentData>() -> HashMap<String, Column> {
+    Document::<T>::columns()
         .into_iter()
         .map(|c| (c.column_name.clone(), c))
-        .collect::<HashMap<String, Column>>();
+        .collect::<HashMap<String, Column>>()
+}
+
+fn check_filter_column_value<T: DocumentData>(filter: &SubFilter) -> Result<(), StorageError> {
+    let columns = columns_map::<T>();
     if let Some(column) = columns.get(&filter.column) {
         for value in filter.values.iter() {
             let column_type = value.column_type()?;
@@ -579,6 +650,29 @@ fn check_filter_column_value<T: DocumentData>(filter: &SubFilter) -> Result<(), 
         }
     } else {
         return Err(StorageError::NoSuchColumnError(filter.column.clone()));
+    }
+    Ok(())
+}
+
+fn check_column_values<T: DocumentData>(column_values: &[(String, Option<ColumnValue>)]) -> Result<(), StorageError> {
+    let columns = columns_map::<T>();
+    for (column_name, column_value) in column_values.iter() {
+        if let Some(column) = columns.get(column_name) {
+            if let Some(column_value) = column_value {
+                let column_type = column_value.column_type()?;
+                if column_type != column.column_type {
+                    return Err(StorageError::WrongColumnValueTypeError(
+                        column_name.clone(),
+                        format!("{:?}", column.column_type),
+                        format!("{:?}", column_type),
+                    ));
+                }
+            } else if !column.nullable {
+                return Err(StorageError::SetNullToRequiredColumnError(column_name.clone()));
+            }
+        } else {
+            return Err(StorageError::NoSuchColumnError(column_name.clone()));
+        }
     }
     Ok(())
 }

@@ -1,5 +1,5 @@
 use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
-use mystiko_storage::{Collection, DocumentColumn, DocumentData, SqlStatementFormatter};
+use mystiko_storage::{Collection, ColumnValues, DocumentColumn, DocumentData, SqlStatementFormatter};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_storage_sqlite::{SqliteStorage, SqliteStorageOptions};
 use num_bigint::{BigInt, BigUint};
@@ -122,6 +122,39 @@ async fn test_update() {
     assert!(!documents[0].data.field1);
     assert!(documents[1].data.field2.is_none());
     assert!(documents[2].data.field39.is_empty());
+}
+
+#[tokio::test]
+async fn test_update_all() {
+    let collection = create_collection().await;
+    collection.migrate().await.unwrap();
+    collection.insert_batch(&test_documents()).await.unwrap();
+    collection
+        .update_all((TestDocumentColumn::Field1, false))
+        .await
+        .unwrap();
+    let documents = collection.find_all().await.unwrap();
+    for document in documents.into_iter() {
+        assert!(!document.data.field1);
+    }
+}
+
+#[tokio::test]
+async fn test_update_by_filter() {
+    let collection = create_collection().await;
+    collection.migrate().await.unwrap();
+    collection.insert_batch(&test_documents()).await.unwrap();
+    collection
+        .update_by_filter(
+            ColumnValues::new().set_null_value(TestDocumentColumn::Field4),
+            SubFilter::is_not_null(TestDocumentColumn::Field4),
+        )
+        .await
+        .unwrap();
+    let documents = collection.find_all().await.unwrap();
+    for document in documents.into_iter() {
+        assert!(document.data.field4.is_none());
+    }
 }
 
 #[tokio::test]

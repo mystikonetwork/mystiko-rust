@@ -1,5 +1,5 @@
 use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
-use mystiko_storage::{Collection, DocumentColumn, DocumentData, SqlStatementFormatter};
+use mystiko_storage::{Collection, ColumnValues, DocumentColumn, DocumentData, SqlStatementFormatter};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_storage_mysql::{MySqlStorage, MySqlStorageOptions};
 use num_bigint::{BigInt, BigUint};
@@ -81,6 +81,39 @@ async fn test_update(pool: MySqlPool) {
     assert!(!documents[0].data.field1);
     assert!(documents[1].data.field2.is_none());
     assert!(documents[2].data.field39.is_empty());
+}
+
+#[sqlx::test]
+async fn test_update_all(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
+    collection.migrate().await.unwrap();
+    collection.insert_batch(&test_documents()).await.unwrap();
+    collection
+        .update_all((TestDocumentColumn::Field1, false))
+        .await
+        .unwrap();
+    let documents = collection.find_all().await.unwrap();
+    for document in documents.into_iter() {
+        assert!(!document.data.field1);
+    }
+}
+
+#[sqlx::test]
+async fn test_update_by_filter(pool: MySqlPool) {
+    let collection = create_collection(pool).await;
+    collection.migrate().await.unwrap();
+    collection.insert_batch(&test_documents()).await.unwrap();
+    collection
+        .update_by_filter(
+            ColumnValues::new().set_null_value(TestDocumentColumn::Field4),
+            SubFilter::is_not_null(TestDocumentColumn::Field4),
+        )
+        .await
+        .unwrap();
+    let documents = collection.find_all().await.unwrap();
+    for document in documents.into_iter() {
+        assert!(document.data.field4.is_none());
+    }
 }
 
 #[sqlx::test]
@@ -239,7 +272,7 @@ async fn test_unsupported_primitive_integers(pool: MySqlPool) {
 }
 
 #[test]
-fn test_create_default_stroage() {
+fn test_create_default_storage() {
     let option1 = MySqlStorageOptions::default();
     let default_database_name = "mystiko_database";
     let default_host = "localhost";
