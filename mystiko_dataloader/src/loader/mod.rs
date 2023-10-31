@@ -6,7 +6,7 @@ pub use config::*;
 
 use crate::DataLoaderError;
 use async_trait::async_trait;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use typed_builder::TypedBuilder;
 
@@ -27,17 +27,17 @@ impl From<Option<LoadOption>> for LoadOption {
     }
 }
 
-#[derive(Debug, Clone, Serialize, TypedBuilder, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadFetcherOption {
     #[builder(default = DEFAULT_FETCHER_QUERY_LOADED_BLOCK_TIMEOUT_MS)]
     pub query_loaded_block_timeout_ms: u64,
     #[builder(default = DEFAULT_FETCHER_FETCH_TIMEOUT_MS)]
     pub fetch_timeout_ms: u64,
-    pub skips: HashMap<&'static str, LoadFetcherSkipOption>,
+    pub skips: HashMap<String, LoadFetcherSkipOption>,
 }
 
-#[derive(Debug, Clone, Serialize, TypedBuilder, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadFetcherSkipOption {
     pub skip_fetch: Option<bool>,
@@ -50,19 +50,19 @@ impl Default for LoadFetcherOption {
     }
 }
 
-#[derive(Debug, Clone, Serialize, TypedBuilder, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadValidatorOption {
     #[builder(default = DEFAULT_VALIDATOR_CONCURRENCY)]
     pub concurrency: usize,
-    pub skips: HashMap<&'static str, LoadValidatorSkipOption>,
+    pub skips: HashMap<String, LoadValidatorSkipOption>,
 }
 
-#[derive(Debug, Clone, Serialize, TypedBuilder, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadValidatorSkipOption {
     pub skip_validation: Option<bool>,
-    pub skip_checkers: HashMap<&'static str, bool>,
+    pub skip_checkers: HashMap<String, bool>,
 }
 
 impl Default for LoadValidatorOption {

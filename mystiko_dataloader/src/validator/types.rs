@@ -17,7 +17,7 @@ pub struct ValidateOption {
     pub config: Arc<MystikoConfig>,
     pub validate_concurrency: usize,
     #[builder(default = HashMap::new())]
-    pub skip_checkers: HashMap<&'static str, bool>,
+    pub skip_checkers: HashMap<String, bool>,
 }
 
 pub type ValidateResult = Result<ChainResult<()>>;

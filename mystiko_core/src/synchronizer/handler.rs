@@ -172,9 +172,9 @@ where
             .build();
 
         let mut fetcher_skips = HashMap::new();
-        fetcher_skips.insert(PACKER_FETCHER_NAME, packer_fetcher_option);
-        fetcher_skips.insert(SEQUENCER_FETCHER_NAME, sequencer_fetcher_option);
-        fetcher_skips.insert(PROVIDER_FETCHER_NAME, provider_fetcher_option);
+        fetcher_skips.insert(PACKER_FETCHER_NAME.to_string(), packer_fetcher_option);
+        fetcher_skips.insert(SEQUENCER_FETCHER_NAME.to_string(), sequencer_fetcher_option);
+        fetcher_skips.insert(PROVIDER_FETCHER_NAME.to_string(), provider_fetcher_option);
 
         let mut options = LoadFetcherOption::builder().skips(fetcher_skips).build();
         if let Some(timeout) = sync_option.fetcher_fetch_timeout_ms {
@@ -189,23 +189,23 @@ where
     fn build_load_validator_option(&self, sync_option: &SyncOptions) -> LoadValidatorOption {
         let mut skip_checkers = HashMap::new();
         if let Some(disabled) = sync_option.disable_rule_validator_integrity_check {
-            skip_checkers.insert(RULE_INTEGRITY_CHECKER_NAME, disabled);
+            skip_checkers.insert(RULE_INTEGRITY_CHECKER_NAME.to_string(), disabled);
         }
         if let Some(disabled) = sync_option.disable_rule_validator_sequence_check {
-            skip_checkers.insert(RULE_SEQUENCE_CHECKER_NAME, disabled);
+            skip_checkers.insert(RULE_SEQUENCE_CHECKER_NAME.to_string(), disabled);
         }
         if let Some(disabled) = sync_option.disable_rule_validator_counter_check {
-            skip_checkers.insert(RULE_COUNTER_CHECKER_NAME, disabled);
+            skip_checkers.insert(RULE_COUNTER_CHECKER_NAME.to_string(), disabled);
         }
         if let Some(disabled) = sync_option.disable_rule_validator_tree_check {
-            skip_checkers.insert(RULE_MERKLE_TREE_CHECKER_NAME, disabled);
+            skip_checkers.insert(RULE_MERKLE_TREE_CHECKER_NAME.to_string(), disabled);
         }
 
         let rule_validator_option = LoadValidatorSkipOption::builder()
             .skip_validation(sync_option.disable_rule_validator)
             .skip_checkers(skip_checkers)
             .build();
-        let validator_skips = HashMap::from([(RULE_VALIDATOR_NAME, rule_validator_option)]);
+        let validator_skips = HashMap::from([(RULE_VALIDATOR_NAME.to_string(), rule_validator_option)]);
         let mut options = LoadValidatorOption::builder().skips(validator_skips).build();
         if let Some(concurrency) = sync_option.validator_validate_concurrency {
             options.concurrency = concurrency as usize;
