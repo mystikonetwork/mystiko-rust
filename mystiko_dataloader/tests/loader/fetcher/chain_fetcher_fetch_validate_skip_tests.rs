@@ -39,7 +39,7 @@ async fn test_loader_start_one_fetcher_skip_fetch() {
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
-        fetchers[0].name(),
+        fetchers[0].name().to_string(),
         LoadFetcherSkipOption::builder().skip_fetch(Some(false)).build(),
     );
     let option = LoadOption::builder()
@@ -51,7 +51,7 @@ async fn test_loader_start_one_fetcher_skip_fetch() {
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
-        fetchers[0].name(),
+        fetchers[0].name().to_string(),
         LoadFetcherSkipOption::builder().skip_fetch(Some(true)).build(),
     );
     let option = LoadOption::builder()
@@ -96,7 +96,7 @@ async fn test_loader_start_one_fetcher_only_skip_data_validation() {
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
-        fetchers[0].name(),
+        fetchers[0].name().to_string(),
         LoadFetcherSkipOption::builder().skip_validation(Some(false)).build(),
     );
     let option = LoadOption::builder()
@@ -114,7 +114,7 @@ async fn test_loader_start_one_fetcher_only_skip_data_validation() {
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
-        fetchers[0].name(),
+        fetchers[0].name().to_string(),
         LoadFetcherSkipOption::builder().skip_validation(Some(true)).build(),
     );
     let option = LoadOption::builder()
@@ -159,7 +159,7 @@ async fn test_loader_start_one_fetcher_skip_validation_priority() {
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
-        fetchers[0].name(),
+        fetchers[0].name().to_string(),
         LoadFetcherSkipOption::builder().skip_validation(Some(false)).build(),
     );
     let option = LoadOption::builder()
@@ -177,7 +177,7 @@ async fn test_loader_start_one_fetcher_skip_validation_priority() {
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
-        fetchers[0].name(),
+        fetchers[0].name().to_string(),
         LoadFetcherSkipOption::builder().skip_validation(Some(true)).build(),
     );
     let option = LoadOption::builder()
@@ -229,7 +229,7 @@ async fn test_loader_start_one_fetcher_skip_validator() {
 
     let mut skip_validator = HashMap::new();
     skip_validator.insert(
-        validators[0].name(),
+        validators[0].name().to_string(),
         LoadValidatorSkipOption::builder().skip_validation(Some(false)).build(),
     );
     let option = LoadOption::builder()
@@ -244,7 +244,7 @@ async fn test_loader_start_one_fetcher_skip_validator() {
 
     let mut skip_validator = HashMap::new();
     skip_validator.insert(
-        validators[0].name(),
+        validators[0].name().to_string(),
         LoadValidatorSkipOption::builder().skip_validation(Some(true)).build(),
     );
     let option = LoadOption::builder()

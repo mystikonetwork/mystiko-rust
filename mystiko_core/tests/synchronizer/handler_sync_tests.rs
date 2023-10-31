@@ -75,7 +75,7 @@ async fn test_chain_synced_with_packer_disabled_options() {
         expected_load_options
             .fetcher
             .skips
-            .entry(PACKER_FETCHER_NAME)
+            .entry(PACKER_FETCHER_NAME.to_string())
             .and_modify(|skip_option| {
                 skip_option.skip_fetch = Some(status);
                 skip_option.skip_validation = Some(!status);
@@ -101,7 +101,7 @@ async fn test_chain_synced_with_sequencer_disabled_options() {
         expected_load_options
             .fetcher
             .skips
-            .entry(SEQUENCER_FETCHER_NAME)
+            .entry(SEQUENCER_FETCHER_NAME.to_string())
             .and_modify(|skip_option| {
                 skip_option.skip_fetch = Some(status);
                 skip_option.skip_validation = Some(!status);
@@ -127,7 +127,7 @@ async fn test_chain_synced_with_provider_disabled_options() {
         expected_load_options
             .fetcher
             .skips
-            .entry(PROVIDER_FETCHER_NAME)
+            .entry(PROVIDER_FETCHER_NAME.to_string())
             .and_modify(|skip_option| {
                 skip_option.skip_fetch = Some(status);
                 skip_option.skip_validation = Some(status);
@@ -153,7 +153,7 @@ async fn test_chain_synced_with_rule_validator_disabled_options() {
         expected_load_options
             .validator
             .skips
-            .entry(RULE_VALIDATOR_NAME)
+            .entry(RULE_VALIDATOR_NAME.to_string())
             .and_modify(|skip_option| {
                 skip_option.skip_validation = Some(status);
             });
@@ -177,12 +177,20 @@ async fn test_chain_synced_with_checker_disabled_options() {
         expected_load_options
             .validator
             .skips
-            .entry(RULE_VALIDATOR_NAME)
+            .entry(RULE_VALIDATOR_NAME.to_string())
             .and_modify(|skip_option| {
-                skip_option.skip_checkers.insert(RULE_COUNTER_CHECKER_NAME, status);
-                skip_option.skip_checkers.insert(RULE_SEQUENCE_CHECKER_NAME, status);
-                skip_option.skip_checkers.insert(RULE_INTEGRITY_CHECKER_NAME, status);
-                skip_option.skip_checkers.insert(RULE_MERKLE_TREE_CHECKER_NAME, status);
+                skip_option
+                    .skip_checkers
+                    .insert(RULE_COUNTER_CHECKER_NAME.to_string(), status);
+                skip_option
+                    .skip_checkers
+                    .insert(RULE_SEQUENCE_CHECKER_NAME.to_string(), status);
+                skip_option
+                    .skip_checkers
+                    .insert(RULE_INTEGRITY_CHECKER_NAME.to_string(), status);
+                skip_option
+                    .skip_checkers
+                    .insert(RULE_MERKLE_TREE_CHECKER_NAME.to_string(), status);
             });
         loader
             .expect_load::<LoadOption>()
@@ -217,9 +225,18 @@ fn build_default_expect_load_option() -> LoadOption {
 
 fn build_default_expect_load_fetcher_option() -> LoadFetcherOption {
     let mut skips = HashMap::new();
-    skips.insert(PACKER_FETCHER_NAME, LoadFetcherSkipOption::builder().build());
-    skips.insert(SEQUENCER_FETCHER_NAME, LoadFetcherSkipOption::builder().build());
-    skips.insert(PROVIDER_FETCHER_NAME, LoadFetcherSkipOption::builder().build());
+    skips.insert(
+        PACKER_FETCHER_NAME.to_string(),
+        LoadFetcherSkipOption::builder().build(),
+    );
+    skips.insert(
+        SEQUENCER_FETCHER_NAME.to_string(),
+        LoadFetcherSkipOption::builder().build(),
+    );
+    skips.insert(
+        PROVIDER_FETCHER_NAME.to_string(),
+        LoadFetcherSkipOption::builder().build(),
+    );
     LoadFetcherOption::builder().skips(skips).build()
 }
 
@@ -227,7 +244,7 @@ fn build_default_expect_load_validator_option() -> LoadValidatorOption {
     let skip_checkers = HashMap::new();
     let mut skips = HashMap::new();
     skips.insert(
-        RULE_VALIDATOR_NAME,
+        RULE_VALIDATOR_NAME.to_string(),
         LoadValidatorSkipOption::builder().skip_checkers(skip_checkers).build(),
     );
     LoadValidatorOption::builder().skips(skips).build()
