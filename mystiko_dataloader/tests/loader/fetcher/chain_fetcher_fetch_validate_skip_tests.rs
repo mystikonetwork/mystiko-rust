@@ -229,7 +229,7 @@ async fn test_loader_start_one_fetcher_skip_validator() {
 
     let mut skip_validator = HashMap::new();
     skip_validator.insert(
-        validators[0].name().to_string(),
+        validators[0].name(),
         LoadValidatorSkipOption::builder().skip_validation(Some(false)).build(),
     );
     let option = LoadOption::builder()
@@ -244,7 +244,7 @@ async fn test_loader_start_one_fetcher_skip_validator() {
 
     let mut skip_validator = HashMap::new();
     skip_validator.insert(
-        validators[0].name().to_string(),
+        validators[0].name(),
         LoadValidatorSkipOption::builder().skip_validation(Some(true)).build(),
     );
     let option = LoadOption::builder()

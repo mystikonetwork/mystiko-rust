@@ -15,7 +15,7 @@ use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
-const PACKER_FETCHER_NAME: &str = "packer";
+pub const PACKER_FETCHER_NAME: &str = "packer";
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]

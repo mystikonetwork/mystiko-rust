@@ -9,7 +9,7 @@ use mystiko_protos::data::v1::CommitmentStatus;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-const RULE_SEQUENCE_CHECKER_NAME: &str = "sequence";
+pub const RULE_SEQUENCE_CHECKER_NAME: &str = "sequence";
 
 #[derive(Debug, TypedBuilder)]
 pub struct SequenceChecker<R, H = Box<dyn DataHandler<R>>> {

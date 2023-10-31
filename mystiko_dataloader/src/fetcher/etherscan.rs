@@ -16,7 +16,7 @@ use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
-const ETHERSCAN_FETCHER_NAME: &str = "etherscan";
+pub const ETHERSCAN_FETCHER_NAME: &str = "etherscan";
 
 #[derive(Error, Debug)]
 pub enum EtherscanFetcherError {
