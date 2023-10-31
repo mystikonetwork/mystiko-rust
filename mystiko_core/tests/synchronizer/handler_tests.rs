@@ -143,4 +143,13 @@ async fn test_status_with_contract() {
     assert_eq!(result.chains[0].synced_block, 200);
     assert_eq!(result.chains[0].contracts.len(), 1);
     assert_eq!(result.chains[0].contracts[0].synced_block, 300);
+
+    let mut loader = MockSyncDataLoader::new();
+    loader.expect_chain_loaded_block().returning(|_| Ok(Some(200)));
+    loader
+        .expect_contract_loaded_block()
+        .returning(|_, _| Err(DataLoaderError::LoaderNoContractsError));
+    let synchronizer = create_synchronizer(5, vec![loader]).await;
+    let result = synchronizer.status(true).await;
+    assert!(matches!(result.err().unwrap(), SynchronizerError::DataLoaderError(_)));
 }

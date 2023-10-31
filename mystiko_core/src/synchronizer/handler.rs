@@ -109,27 +109,40 @@ where
                 .mystiko_config
                 .find_chain(*chain_id)
                 .ok_or_else(|| SynchronizerError::UnsupportedChainError(*chain_id))?;
-            for contract in chain_cfg.pool_contracts().iter() {
-                let contract_sync_block = loader
-                    .contract_loaded_block(*chain_id, contract.address())
-                    .await?
-                    .unwrap_or_default();
-                let contract_status = ContractStatus::builder()
-                    .contract_address(contract.address())
-                    .synced_block(contract_sync_block)
-                    .build();
-                chain_status.contracts.push(contract_status);
-            }
+            let tasks: Vec<_> = chain_cfg
+                .pool_contracts()
+                .iter()
+                .map(|pool| self.contract_status(chain_id, loader, pool.address()))
+                .collect();
+            let contracts = futures::future::try_join_all(tasks).await?;
+            chain_status.contracts = contracts;
         }
 
         Ok(chain_status)
+    }
+
+    async fn contract_status(
+        &self,
+        chain_id: &u64,
+        loader: &L,
+        contract_addr: &str,
+    ) -> Result<ContractStatus, SynchronizerError> {
+        let contract_sync_block = loader
+            .contract_loaded_block(*chain_id, contract_addr)
+            .await?
+            .unwrap_or_default();
+        let contract_status = ContractStatus::builder()
+            .contract_address(contract_addr)
+            .synced_block(contract_sync_block)
+            .build();
+        Ok(contract_status)
     }
 
     async fn chain_sync(&self, chain_id: &u64, loader: &L, sync_option: &SyncOptions) {
         let load_option = self.build_load_option(sync_option);
         let result = loader.load(load_option).await;
         if let Err(err) = result {
-            log::warn!("chain(id={:?}) load error: {:?}", chain_id, err);
+            log::error!("chain(id={:?}) load error: {:?}", chain_id, err);
         }
     }
 
@@ -192,8 +205,7 @@ where
             .skip_validation(sync_option.disable_rule_validator)
             .skip_checkers(skip_checkers)
             .build();
-        let mut validator_skips = HashMap::new();
-        validator_skips.insert(RULE_VALIDATOR_NAME, rule_validator_option);
+        let validator_skips = HashMap::from([(RULE_VALIDATOR_NAME, rule_validator_option)]);
         let mut options = LoadValidatorOption::builder().skips(validator_skips).build();
         if let Some(concurrency) = sync_option.validator_validate_concurrency {
             options.concurrency = concurrency as usize;
