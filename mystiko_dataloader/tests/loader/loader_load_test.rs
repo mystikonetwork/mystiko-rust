@@ -26,6 +26,14 @@ async fn test_loader_load_error() {
 }
 
 #[tokio::test]
+async fn test_loader_options() {
+    let options = LoadOption::builder().build();
+    let ser = serde_json::to_string(&options).unwrap();
+    let des = serde_json::from_str::<LoadOption>(&ser).unwrap();
+    assert_eq!(options, des);
+}
+
+#[tokio::test]
 async fn test_loader_chain_loaded_block() {
     let chain_id = 1_u64;
     let (cfg, loader, fetchers, _, handler) = create_loader(chain_id, 1, 1, false).await;
