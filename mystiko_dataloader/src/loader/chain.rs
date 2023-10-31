@@ -188,7 +188,7 @@ where
                     .await
                 {
                     Err(e) => {
-                        warn!("fetch fetcher(name={:?}) raised error: {:?}", name, e);
+                        warn!("fetch fetcher(name={:?}) failed: {:?}", name, e);
                         None
                     }
                     Ok(d) => Some(d),
@@ -200,13 +200,13 @@ where
                     let mut invalid = false;
                     if !skip_validation {
                         if let Err(e) = self.validate(run_params, chain_data).await {
-                            warn!("validate fetcher(name={:?}) data raised error: {:?}", name, e);
+                            warn!("validate fetcher(name={:?}) data failed: {:?}", name, e);
                             invalid = true;
                         };
                     }
                     if !invalid {
                         if let Err(e) = self.handle(chain_data).await {
-                            warn!("handle fetcher(name={:?}) data raised error: {:?}", name, e);
+                            warn!("handle fetcher(name={:?}) data failed: {:?}", name, e);
                         } else {
                             loaded = Some(true);
                         }
@@ -240,7 +240,7 @@ where
                 .loaded_block(block)
                 .build()),
             Ok(Err(e)) => {
-                warn!("query_loaded_blocks of fetcher(name={:?}) raised error: {:?}", name, e);
+                warn!("query_loaded_blocks of fetcher(name={:?}) failed: {:?}", name, e);
                 Err(e.into())
             }
             Err(_) => {
@@ -269,7 +269,7 @@ where
             Ok(Ok(result)) => {
                 let unwrapped = UnwrappedChainResult::from(result);
                 unwrapped.contract_errors.iter().for_each(|error| {
-                    warn!("fetch contract {:?} raised error: {:?}", error.address, error.source);
+                    warn!("fetch contract {:?} failed: {:?}", error.address, error.source);
                 });
                 Ok(unwrapped.result)
             }
@@ -300,7 +300,7 @@ where
                 let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
                 unwrapped.contract_errors.iter().for_each(|c| {
                     warn!(
-                        "validator(name={:?}) contract {:?} raised error: {:?}",
+                        "validator(name={:?}) contract {:?} failed: {:?}",
                         validator_params.validator.name(),
                         c.address,
                         c.source
@@ -324,7 +324,7 @@ where
             let handle_result = self.handler.handle(data, &handler_option).await?;
             let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(handle_result);
             unwrapped.contract_errors.iter().for_each(|c| {
-                warn!("handle contract {:?} raised error: {:?}", c.address, c.source);
+                warn!("handle contract {:?} failed: {:?}", c.address, c.source);
             });
             Ok(())
         } else {

@@ -57,9 +57,9 @@ pub struct Deposit {
     #[column(length_limit = 128)]
     pub transaction_hash: Option<String>,
     #[column(length_limit = 128)]
-    pub relay_transaction_hash: Option<String>,
+    pub queued_transaction_hash: Option<String>,
     #[column(length_limit = 128)]
-    pub rollup_transaction_hash: Option<String>,
+    pub included_transaction_hash: Option<String>,
 }
 
 fn uniques() -> Vec<UniqueColumns> {
@@ -81,8 +81,8 @@ fn indexes() -> Vec<IndexColumns> {
         vec![DepositColumn::ShieldedRecipientAddress].into(),
         vec![DepositColumn::AssetApproveTransactionHash].into(),
         vec![DepositColumn::TransactionHash].into(),
-        vec![DepositColumn::RelayTransactionHash].into(),
-        vec![DepositColumn::RollupTransactionHash].into(),
+        vec![DepositColumn::QueuedTransactionHash].into(),
+        vec![DepositColumn::IncludedTransactionHash].into(),
         vec![DepositColumn::WalletId].into(),
     ]
 }

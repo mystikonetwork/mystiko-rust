@@ -50,8 +50,8 @@ async fn test_deposits_crud() {
                 dst_pool_address: String::from("dst_pool_address 1"),
                 asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
                 transaction_hash: Some(String::from("transaction_hash 1")),
-                relay_transaction_hash: Some(String::from("relay_transaction_hash 1")),
-                rollup_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
+                queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
+                included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
             })
             .await
             .unwrap(),
@@ -87,8 +87,8 @@ async fn test_deposits_crud() {
                     dst_pool_address: String::from("dst_pool_address 2"),
                     asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 2")),
                     transaction_hash: Some(String::from("transaction_hash 2")),
-                    relay_transaction_hash: Some(String::from("relay_transaction_hash 2")),
-                    rollup_transaction_hash: Some(String::from("rollup_transaction_hash 2")),
+                    queued_transaction_hash: Some(String::from("relay_transaction_hash 2")),
+                    included_transaction_hash: Some(String::from("rollup_transaction_hash 2")),
                 },
                 Deposit {
                     chain_id: 3,
@@ -118,8 +118,8 @@ async fn test_deposits_crud() {
                     dst_pool_address: String::from("dst_pool_address 3"),
                     asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 3")),
                     transaction_hash: Some(String::from("transaction_hash 3")),
-                    relay_transaction_hash: Some(String::from("relay_transaction_hash 3")),
-                    rollup_transaction_hash: Some(String::from("rollup_transaction_hash 3")),
+                    queued_transaction_hash: Some(String::from("relay_transaction_hash 3")),
+                    included_transaction_hash: Some(String::from("rollup_transaction_hash 3")),
                 },
             ])
             .await
@@ -239,8 +239,8 @@ async fn test_deposit_serde() {
             dst_pool_address: String::from("dst_pool_address 1"),
             asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
             transaction_hash: Some(String::from("transaction_hash 1")),
-            relay_transaction_hash: Some(String::from("relay_transaction_hash 1")),
-            rollup_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
+            queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
+            included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
         })
         .await
         .unwrap();
