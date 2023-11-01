@@ -14,7 +14,7 @@ pub const DEFAULT_FETCHER_QUERY_LOADED_BLOCK_TIMEOUT_MS: u64 = 5_000_u64;
 pub const DEFAULT_FETCHER_FETCH_TIMEOUT_MS: u64 = 300_000_u64;
 pub const DEFAULT_VALIDATOR_CONCURRENCY: usize = 1_usize;
 
-#[derive(Debug, Clone, Serialize, TypedBuilder, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 pub struct LoadOption {
     pub fetcher: LoadFetcherOption,
