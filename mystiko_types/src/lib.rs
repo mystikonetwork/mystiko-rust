@@ -59,47 +59,12 @@ pub enum AccountStatus {
     Scanned,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum CommitmentStatus {
-    Init,
-    SrcSucceeded,
-    Queued,
-    Included,
-    Spent,
-    Failed,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum DepositStatus {
-    Init,
-    AssetApproving,
-    AssetApproved,
-    SrcPending,
-    SrcSucceeded,
-    Queued,
-    Included,
-    Failed,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum SpendStatus {
-    Init,
-    ProofGenerating,
-    ProofGenerated,
-    Pending,
-    Succeeded,
-    Failed,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum SpendType {
-    Transfer,
-    Withdraw,
-}
+// #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+// #[serde(rename_all = "camelCase")]
+// pub enum SpendType {
+//     Transfer,
+//     Withdraw,
+// }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]

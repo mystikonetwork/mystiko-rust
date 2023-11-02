@@ -1,6 +1,8 @@
 mod handler;
+mod loader;
 
 pub use handler::*;
+pub use loader::*;
 
 use async_trait::async_trait;
 

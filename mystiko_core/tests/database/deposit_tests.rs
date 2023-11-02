@@ -1,8 +1,9 @@
 use mystiko_core::{Deposit, DepositCollection, DepositColumn};
+use mystiko_protos::common::v1::BridgeType;
+use mystiko_protos::core::v1::DepositStatus;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
-use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigUint;
 use std::sync::Arc;
 
@@ -33,7 +34,7 @@ async fn test_deposits_crud() {
                 asset_symbol: String::from("asset_symbol 1"),
                 asset_decimals: 6,
                 asset_address: Some(String::from("asset_address 1")),
-                bridge_type: BridgeType::Axelar,
+                bridge_type: BridgeType::Axelar as i32,
                 amount: BigUint::from(101u32),
                 rollup_fee_amount: BigUint::from(102u32),
                 bridge_fee_amount: BigUint::from(103u32),
@@ -42,7 +43,7 @@ async fn test_deposits_crud() {
                 executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
                 service_fee_amount: BigUint::from(105u32),
                 shielded_recipient_address: String::from("shielded_recipient_address 1"),
-                status: DepositStatus::Init,
+                status: DepositStatus::Unspecified as i32,
                 error_message: Some(String::from("error_message 1")),
                 wallet_id: String::from("wallet_id 1"),
                 dst_chain_id: 11,
@@ -50,8 +51,8 @@ async fn test_deposits_crud() {
                 dst_pool_address: String::from("dst_pool_address 1"),
                 asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
                 transaction_hash: Some(String::from("transaction_hash 1")),
-                relay_transaction_hash: Some(String::from("relay_transaction_hash 1")),
-                rollup_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
+                queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
+                included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
             })
             .await
             .unwrap(),
@@ -70,7 +71,7 @@ async fn test_deposits_crud() {
                     asset_symbol: String::from("asset_symbol 2"),
                     asset_decimals: 12,
                     asset_address: Some(String::from("asset_address 2")),
-                    bridge_type: BridgeType::Celer,
+                    bridge_type: BridgeType::Celer as i32,
                     amount: BigUint::from(201u32),
                     rollup_fee_amount: BigUint::from(202u32),
                     bridge_fee_amount: BigUint::from(203u32),
@@ -79,7 +80,7 @@ async fn test_deposits_crud() {
                     executor_fee_asset_address: Some(String::from("executor_fee_asset_address 2")),
                     service_fee_amount: BigUint::from(205u32),
                     shielded_recipient_address: String::from("shielded_recipient_address 2"),
-                    status: DepositStatus::Included,
+                    status: DepositStatus::Included as i32,
                     error_message: Some(String::from("error_message 2")),
                     wallet_id: String::from("wallet_id 2"),
                     dst_chain_id: 22,
@@ -87,8 +88,8 @@ async fn test_deposits_crud() {
                     dst_pool_address: String::from("dst_pool_address 2"),
                     asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 2")),
                     transaction_hash: Some(String::from("transaction_hash 2")),
-                    relay_transaction_hash: Some(String::from("relay_transaction_hash 2")),
-                    rollup_transaction_hash: Some(String::from("rollup_transaction_hash 2")),
+                    queued_transaction_hash: Some(String::from("relay_transaction_hash 2")),
+                    included_transaction_hash: Some(String::from("rollup_transaction_hash 2")),
                 },
                 Deposit {
                     chain_id: 3,
@@ -101,7 +102,7 @@ async fn test_deposits_crud() {
                     asset_symbol: String::from("asset_symbol 3"),
                     asset_decimals: 18,
                     asset_address: Some(String::from("asset_address 3")),
-                    bridge_type: BridgeType::LayerZero,
+                    bridge_type: BridgeType::LayerZero as i32,
                     amount: BigUint::from(301u32),
                     rollup_fee_amount: BigUint::from(302u32),
                     bridge_fee_amount: BigUint::from(303u32),
@@ -110,7 +111,7 @@ async fn test_deposits_crud() {
                     executor_fee_asset_address: Some(String::from("executor_fee_asset_address 3")),
                     service_fee_amount: BigUint::from(305u32),
                     shielded_recipient_address: String::from("shielded_recipient_address 3"),
-                    status: DepositStatus::Queued,
+                    status: DepositStatus::Queued as i32,
                     error_message: Some(String::from("error_message 3")),
                     wallet_id: String::from("wallet_id 3"),
                     dst_chain_id: 33,
@@ -118,8 +119,8 @@ async fn test_deposits_crud() {
                     dst_pool_address: String::from("dst_pool_address 3"),
                     asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 3")),
                     transaction_hash: Some(String::from("transaction_hash 3")),
-                    relay_transaction_hash: Some(String::from("relay_transaction_hash 3")),
-                    rollup_transaction_hash: Some(String::from("rollup_transaction_hash 3")),
+                    queued_transaction_hash: Some(String::from("relay_transaction_hash 3")),
+                    included_transaction_hash: Some(String::from("rollup_transaction_hash 3")),
                 },
             ])
             .await
@@ -149,7 +150,7 @@ async fn test_deposits_crud() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(found_first_deposit.data.status, DepositStatus::Init,);
+    assert_eq!(found_first_deposit.data.status, DepositStatus::Unspecified as i32,);
     found_deposits = deposits
         .find(
             QueryFilter::builder()
@@ -222,7 +223,7 @@ async fn test_deposit_serde() {
             asset_symbol: String::from("asset_symbol 1"),
             asset_decimals: 6,
             asset_address: Some(String::from("asset_address 1")),
-            bridge_type: BridgeType::Axelar,
+            bridge_type: BridgeType::Axelar as i32,
             amount: BigUint::from(101u32),
             rollup_fee_amount: BigUint::from(102u32),
             bridge_fee_amount: BigUint::from(103u32),
@@ -231,7 +232,7 @@ async fn test_deposit_serde() {
             executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
             service_fee_amount: BigUint::from(105u32),
             shielded_recipient_address: String::from("shielded_recipient_address 1"),
-            status: DepositStatus::Init,
+            status: DepositStatus::Unspecified as i32,
             error_message: Some(String::from("error_message 1")),
             wallet_id: String::from("wallet_id 1"),
             dst_chain_id: 11,
@@ -239,8 +240,8 @@ async fn test_deposit_serde() {
             dst_pool_address: String::from("dst_pool_address 1"),
             asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
             transaction_hash: Some(String::from("transaction_hash 1")),
-            relay_transaction_hash: Some(String::from("relay_transaction_hash 1")),
-            rollup_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
+            queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
+            included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
         })
         .await
         .unwrap();

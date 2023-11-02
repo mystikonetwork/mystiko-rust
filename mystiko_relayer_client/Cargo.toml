@@ -21,6 +21,7 @@ mystiko_relayer_config = { version = "0.1.0", path = "../mystiko_relayer_config"
 mystiko_relayer_types = { version = "0.1.0", path = "../mystiko_relayer_types" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false }
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 rust_decimal = { version = "1.29.0" }
 rustc-hex = { version = "2.1.0" }
