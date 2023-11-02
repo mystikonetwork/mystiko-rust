@@ -29,13 +29,13 @@ pub async fn create_sync_loader_handler(
             .unwrap(),
     );
 
-    let mystiko_db = create_database().await;
-    let mystiko_db = Arc::new(mystiko_db);
+    let db = create_database().await;
+    let db = Arc::new(db);
     let handler = SyncLoaderHandler::builder()
-        .mystiko_db(mystiko_db.clone())
+        .db(db.clone())
         .raw(mock_database_handler)
         .build();
-    (handler, mystiko_db, config)
+    (handler, db, config)
 }
 
 pub async fn create_database() -> MystikoDatabase {

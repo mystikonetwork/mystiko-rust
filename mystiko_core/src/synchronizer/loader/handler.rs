@@ -21,7 +21,7 @@ type SyncLoaderHandlerResult<T> = Result<T, SyncLoaderHandlerError>;
 #[derive(Debug, Error)]
 pub enum SyncLoaderHandlerError {
     #[error("invalid commitment status: {0}")]
-    CommitmentStatusError(i32),
+    CommitmentStatusError(String),
     #[error(transparent)]
     AnyhowError(#[from] anyhow::Error),
     #[error(transparent)]
@@ -30,7 +30,7 @@ pub enum SyncLoaderHandlerError {
 
 #[derive(TypedBuilder)]
 pub struct SyncLoaderHandler<F: StatementFormatter, S: Storage, H: DataHandler<FullData>> {
-    mystiko_db: Arc<Database<F, S>>,
+    db: Arc<Database<F, S>>,
     raw: H,
 }
 
@@ -125,15 +125,15 @@ where
         cms: &[Commitment],
     ) -> SyncLoaderHandlerResult<()> {
         let dedup_cms = dedup_commitments(cms.to_vec());
-
-        for cm_status in [
+        let tasks = [
             CommitmentStatus::SrcSucceeded,
             CommitmentStatus::Queued,
             CommitmentStatus::Included,
-        ] {
-            self.update_by_commitments_status(chain_id, address, &dedup_cms, cm_status)
-                .await?;
-        }
+        ]
+        .iter()
+        .map(|cm_status| self.update_by_commitments_status(chain_id, address, &dedup_cms, *cm_status))
+        .collect::<Vec<_>>();
+        let _ = futures::future::try_join_all(tasks).await?;
         Ok(())
     }
 
@@ -154,7 +154,7 @@ where
                 SubFilter::equal(CommitmentColumn::Spent, false),
                 SubFilter::is_not_null(CommitmentColumn::Nullifier),
             ]);
-            let commitments = self.mystiko_db.commitments.find(condition).await?;
+            let commitments = self.db.commitments.find(condition).await?;
             let to_update: Vec<_> = commitments
                 .into_iter()
                 .filter(|commitment| {
@@ -169,7 +169,7 @@ where
                     commitment
                 })
                 .collect();
-            self.mystiko_db.commitments.update_batch(to_update.as_slice()).await?;
+            self.db.commitments.update_batch(to_update.as_slice()).await?;
         }
 
         Ok(())
@@ -189,7 +189,7 @@ where
             .collect::<HashMap<_, _>>();
         if !cms.is_empty() {
             let condition = build_filter_by_commitment_status(chain_id, address, cm_status)?;
-            let deposits = self.mystiko_db.deposits.find(condition).await?;
+            let deposits = self.db.deposits.find(condition).await?;
             let to_update = deposits
                 .into_iter()
                 .filter_map(|deposit| {
@@ -199,7 +199,7 @@ where
                 .collect::<Result<Vec<_>, _>>()?;
 
             if !to_update.is_empty() {
-                self.mystiko_db.deposits.update_batch(to_update.as_slice()).await?;
+                self.db.deposits.update_batch(to_update.as_slice()).await?;
             }
         }
         Ok(())
@@ -239,7 +239,11 @@ fn build_filter_by_commitment_status(
                 SubFilter::in_list(DepositColumn::Status, filter_status),
             ])
         }
-        s => return Err(SyncLoaderHandlerError::CommitmentStatusError(s as i32)),
+        s => {
+            return Err(SyncLoaderHandlerError::CommitmentStatusError(
+                s.as_str_name().to_string(),
+            ))
+        }
     };
 
     Ok(condition)
@@ -250,20 +254,30 @@ fn update_deposit_by_commitment_status(
     cm: &Commitment,
 ) -> SyncLoaderHandlerResult<Document<Deposit>> {
     let mut updated_deposit = deposit.clone();
-    match cm.status {
-        status if status == i32::from(CommitmentStatus::SrcSucceeded) => {
+    match CommitmentStatus::from_i32(cm.status) {
+        Some(CommitmentStatus::SrcSucceeded) => {
             if let Some(tx) = cm.src_chain_transaction_hash_as_hex() {
                 updated_deposit.data.transaction_hash = Some(tx);
             }
             updated_deposit.data.status = DepositStatus::SrcSucceeded as i32;
         }
-        status if status == i32::from(CommitmentStatus::Queued) => {
+        Some(CommitmentStatus::Queued) => {
             updated_deposit.data.status = DepositStatus::Queued as i32;
         }
-        status if status == i32::from(CommitmentStatus::Included) => {
+        Some(CommitmentStatus::Included) => {
             updated_deposit.data.status = DepositStatus::Included as i32;
         }
-        s => return Err(SyncLoaderHandlerError::CommitmentStatusError(s)),
+        Some(s) => {
+            return Err(SyncLoaderHandlerError::CommitmentStatusError(
+                s.as_str_name().to_string(),
+            ))
+        }
+        None => {
+            return Err(SyncLoaderHandlerError::CommitmentStatusError(format!(
+                "unknown commitment status {:?}",
+                cm.status
+            )))
+        }
     }
 
     if let Some(tx) = cm.queued_transaction_hash_as_hex() {
