@@ -11,7 +11,6 @@ use mystiko_config::MystikoConfig;
 use mystiko_core::Deposit;
 use mystiko_core::{Database, SyncLoaderHandler};
 use mystiko_dataloader::data::FullData;
-use mystiko_dataloader::handler::DataHandler;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
@@ -19,7 +18,7 @@ use num_bigint::BigUint;
 use std::sync::Arc;
 
 pub type MystikoDatabase = Database<SqlStatementFormatter, SqliteStorage>;
-type FullDataSyncLoaderHandler = SyncLoaderHandler<SqlStatementFormatter, SqliteStorage, FullData>;
+type FullDataSyncLoaderHandler = SyncLoaderHandler<SqlStatementFormatter, SqliteStorage, MockSyncDataHandler<FullData>>;
 
 pub async fn create_sync_loader_handler(
     mock_database_handler: MockSyncDataHandler<FullData>,
@@ -34,7 +33,7 @@ pub async fn create_sync_loader_handler(
     let mystiko_db = Arc::new(mystiko_db);
     let handler = SyncLoaderHandler::builder()
         .mystiko_db(mystiko_db.clone())
-        .raw(Box::new(mock_database_handler) as Box<dyn DataHandler<FullData>>)
+        .raw(mock_database_handler)
         .build();
     (handler, mystiko_db, config)
 }

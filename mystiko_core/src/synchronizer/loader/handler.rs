@@ -1,7 +1,7 @@
 use crate::{CommitmentColumn, Database, Deposit, DepositColumn};
 use async_trait::async_trait;
 use mystiko_config::ContractConfig;
-use mystiko_dataloader::data::{ChainData, ChainResult, ContractData, DataRef, FullData, LiteData, LoadedData};
+use mystiko_dataloader::data::{ChainData, ChainResult, ContractData, FullData};
 use mystiko_dataloader::handler::{
     dedup_commitments, CommitmentQueryOption, DataHandler, HandleOption, NullifierQueryOption, QueryResult,
 };
@@ -29,20 +29,20 @@ pub enum SyncLoaderHandlerError {
 }
 
 #[derive(TypedBuilder)]
-pub struct SyncLoaderHandler<F: StatementFormatter, S: Storage, R: LoadedData> {
+pub struct SyncLoaderHandler<F: StatementFormatter, S: Storage, H: DataHandler<FullData>> {
     mystiko_db: Arc<Database<F, S>>,
-    raw: Box<dyn DataHandler<R>>,
+    raw: H,
 }
 
 #[async_trait]
-impl<F, S, R> DataHandler<R> for SyncLoaderHandler<F, S, R>
+impl<F, S, H> DataHandler<FullData> for SyncLoaderHandler<F, S, H>
 where
     F: StatementFormatter,
     S: Storage,
-    R: LoadedData,
+    H: DataHandler<FullData>,
 {
-    async fn query_loading_contracts(&self, _chain_id: u64) -> handlerResult<Option<Vec<ContractConfig>>> {
-        self.raw.query_loading_contracts(_chain_id).await
+    async fn query_loading_contracts(&self, chain_id: u64) -> handlerResult<Option<Vec<ContractConfig>>> {
+        self.raw.query_loading_contracts(chain_id).await
     }
 
     async fn query_chain_loaded_block(&self, chain_id: u64) -> handlerResult<Option<u64>> {
@@ -77,7 +77,7 @@ where
         self.raw.count_nullifiers(option).await
     }
 
-    async fn handle(&self, data: &ChainData<R>, option: &HandleOption) -> handlerResult<ChainResult<()>> {
+    async fn handle(&self, data: &ChainData<FullData>, option: &HandleOption) -> handlerResult<ChainResult<()>> {
         let result = self.update(data).await;
         if let Err(e) = result {
             log::error!("failed to update data: {:?}", e);
@@ -87,13 +87,13 @@ where
     }
 }
 
-impl<F, S, R> SyncLoaderHandler<F, S, R>
+impl<F, S, H> SyncLoaderHandler<F, S, H>
 where
     F: StatementFormatter,
     S: Storage,
-    R: LoadedData,
+    H: DataHandler<FullData>,
 {
-    async fn update(&self, data: &ChainData<R>) -> SyncLoaderHandlerResult<()> {
+    async fn update(&self, data: &ChainData<FullData>) -> SyncLoaderHandlerResult<()> {
         let tasks = data
             .contracts_data
             .iter()
@@ -104,23 +104,18 @@ where
         Ok(())
     }
 
-    async fn update_by_contract(&self, chain_id: u64, contract_data: &ContractData<R>) -> SyncLoaderHandlerResult<()> {
-        if let Some(ref d) = contract_data.data {
-            match R::data_ref(d) {
-                DataRef::Full(full) => self.update_by_full_data(chain_id, &contract_data.address, full).await?,
-                DataRef::Lite(lite) => self.update_by_lite_data(chain_id, &contract_data.address, lite).await?,
-            }
+    async fn update_by_contract(
+        &self,
+        chain_id: u64,
+        contract_data: &ContractData<FullData>,
+    ) -> SyncLoaderHandlerResult<()> {
+        if let Some(full) = &contract_data.data {
+            self.update_by_commitments(chain_id, &contract_data.address, &full.commitments)
+                .await?;
+            self.update_by_nullifiers(chain_id, &contract_data.address, &full.nullifiers)
+                .await?;
         }
         Ok(())
-    }
-
-    async fn update_by_full_data(&self, chain_id: u64, address: &str, full: &FullData) -> SyncLoaderHandlerResult<()> {
-        self.update_by_commitments(chain_id, address, &full.commitments).await?;
-        self.update_by_nullifiers(chain_id, address, &full.nullifiers).await
-    }
-
-    async fn update_by_lite_data(&self, chain_id: u64, address: &str, lite: &LiteData) -> SyncLoaderHandlerResult<()> {
-        self.update_by_commitments(chain_id, address, &lite.commitments).await
     }
 
     async fn update_by_commitments(
@@ -160,15 +155,20 @@ where
                 SubFilter::is_not_null(CommitmentColumn::Nullifier),
             ]);
             let commitments = self.mystiko_db.commitments.find(condition).await?;
-            let mut to_update = Vec::new();
-            for mut commitment in &mut commitments.into_iter() {
-                if let Some(n) = &commitment.data.nullifier {
-                    if nullifiers.contains(n) {
-                        commitment.data.spent = true;
-                        to_update.push(commitment);
-                    }
-                }
-            }
+            let to_update: Vec<_> = commitments
+                .into_iter()
+                .filter(|commitment| {
+                    commitment
+                        .data
+                        .nullifier
+                        .as_ref()
+                        .map_or(false, |n| nullifiers.contains(n))
+                })
+                .map(|mut commitment| {
+                    commitment.data.spent = true;
+                    commitment
+                })
+                .collect();
             self.mystiko_db.commitments.update_batch(to_update.as_slice()).await?;
         }
 
@@ -188,92 +188,91 @@ where
             .map(|cm| (bytes_to_biguint(&cm.commitment_hash), cm))
             .collect::<HashMap<_, _>>();
         if !cms.is_empty() {
-            let condition = self.build_filter_by_commitment_status(chain_id, address, cm_status)?;
+            let condition = build_filter_by_commitment_status(chain_id, address, cm_status)?;
             let deposits = self.mystiko_db.deposits.find(condition).await?;
-            let mut to_update = Vec::new();
-            for mut deposit in &mut deposits.into_iter() {
-                let cm = cms.get(&deposit.data.commitment_hash);
-                if let Some(c) = cm {
-                    self.update_deposit_by_commitment_status(&mut deposit, c)?;
-                    to_update.push(deposit);
-                }
-            }
+            let to_update = deposits
+                .into_iter()
+                .filter_map(|deposit| {
+                    cms.get(&deposit.data.commitment_hash)
+                        .map(|c| update_deposit_by_commitment_status(&deposit, c))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
             if !to_update.is_empty() {
                 self.mystiko_db.deposits.update_batch(to_update.as_slice()).await?;
             }
         }
         Ok(())
     }
+}
 
-    fn build_filter_by_commitment_status(
-        &self,
-        chain_id: u64,
-        address: &str,
-        cm_status: CommitmentStatus,
-    ) -> SyncLoaderHandlerResult<Condition> {
-        let mut filter_status = vec![
-            DepositStatus::Unspecified as i32,
-            DepositStatus::AssetApproving as i32,
-            DepositStatus::AssetApproved as i32,
-            DepositStatus::Failed as i32,
-        ];
-        let condition = match cm_status {
-            CommitmentStatus::SrcSucceeded => {
-                filter_status.push(DepositStatus::SrcPending as i32);
-                Condition::and(vec![
-                    SubFilter::equal(DepositColumn::ChainId, chain_id),
-                    SubFilter::equal(DepositColumn::ContractAddress, address.to_string()),
-                    SubFilter::in_list(DepositColumn::Status, filter_status),
-                ])
-            }
-            CommitmentStatus::Queued => Condition::and(vec![
+fn build_filter_by_commitment_status(
+    chain_id: u64,
+    address: &str,
+    cm_status: CommitmentStatus,
+) -> SyncLoaderHandlerResult<Condition> {
+    let mut filter_status = vec![
+        DepositStatus::Unspecified as i32,
+        DepositStatus::AssetApproving as i32,
+        DepositStatus::AssetApproved as i32,
+        DepositStatus::Failed as i32,
+    ];
+    let condition = match cm_status {
+        CommitmentStatus::SrcSucceeded => {
+            filter_status.push(DepositStatus::SrcPending as i32);
+            Condition::and(vec![
+                SubFilter::equal(DepositColumn::ChainId, chain_id),
+                SubFilter::equal(DepositColumn::ContractAddress, address.to_string()),
+                SubFilter::in_list(DepositColumn::Status, filter_status),
+            ])
+        }
+        CommitmentStatus::Queued => Condition::and(vec![
+            SubFilter::equal(DepositColumn::DstChainId, chain_id),
+            SubFilter::equal(DepositColumn::DstPoolAddress, address.to_string()),
+            SubFilter::in_list(DepositColumn::Status, filter_status),
+        ]),
+        CommitmentStatus::Included => {
+            filter_status.push(DepositStatus::Queued as i32);
+            Condition::and(vec![
                 SubFilter::equal(DepositColumn::DstChainId, chain_id),
                 SubFilter::equal(DepositColumn::DstPoolAddress, address.to_string()),
                 SubFilter::in_list(DepositColumn::Status, filter_status),
-            ]),
-            CommitmentStatus::Included => {
-                filter_status.push(DepositStatus::Queued as i32);
-                Condition::and(vec![
-                    SubFilter::equal(DepositColumn::DstChainId, chain_id),
-                    SubFilter::equal(DepositColumn::DstPoolAddress, address.to_string()),
-                    SubFilter::in_list(DepositColumn::Status, filter_status),
-                ])
-            }
-            s => return Err(SyncLoaderHandlerError::CommitmentStatusError(s as i32)),
-        };
+            ])
+        }
+        s => return Err(SyncLoaderHandlerError::CommitmentStatusError(s as i32)),
+    };
 
-        Ok(condition)
+    Ok(condition)
+}
+
+fn update_deposit_by_commitment_status(
+    deposit: &Document<Deposit>,
+    cm: &Commitment,
+) -> SyncLoaderHandlerResult<Document<Deposit>> {
+    let mut updated_deposit = deposit.clone();
+    match cm.status {
+        status if status == i32::from(CommitmentStatus::SrcSucceeded) => {
+            if let Some(tx) = cm.src_chain_transaction_hash_as_hex() {
+                updated_deposit.data.transaction_hash = Some(tx);
+            }
+            updated_deposit.data.status = DepositStatus::SrcSucceeded as i32;
+        }
+        status if status == i32::from(CommitmentStatus::Queued) => {
+            updated_deposit.data.status = DepositStatus::Queued as i32;
+        }
+        status if status == i32::from(CommitmentStatus::Included) => {
+            updated_deposit.data.status = DepositStatus::Included as i32;
+        }
+        s => return Err(SyncLoaderHandlerError::CommitmentStatusError(s)),
     }
 
-    fn update_deposit_by_commitment_status(
-        &self,
-        deposit: &mut Document<Deposit>,
-        cm: &Commitment,
-    ) -> SyncLoaderHandlerResult<()> {
-        match cm.status {
-            status if status == i32::from(CommitmentStatus::SrcSucceeded) => {
-                if let Some(tx) = cm.src_chain_transaction_hash_as_hex() {
-                    deposit.data.transaction_hash = Some(tx);
-                }
-                deposit.data.status = DepositStatus::SrcSucceeded as i32;
-            }
-            status if status == i32::from(CommitmentStatus::Queued) => {
-                deposit.data.status = DepositStatus::Queued as i32;
-            }
-            status if status == i32::from(CommitmentStatus::Included) => {
-                deposit.data.status = DepositStatus::Included as i32;
-            }
-            s => return Err(SyncLoaderHandlerError::CommitmentStatusError(s)),
-        }
-
-        if let Some(tx) = cm.queued_transaction_hash_as_hex() {
-            deposit.data.queued_transaction_hash = Some(tx);
-        }
-
-        if let Some(tx) = cm.included_transaction_hash_as_hex() {
-            deposit.data.included_transaction_hash = Some(tx);
-        }
-
-        Ok(())
+    if let Some(tx) = cm.queued_transaction_hash_as_hex() {
+        updated_deposit.data.queued_transaction_hash = Some(tx);
     }
+
+    if let Some(tx) = cm.included_transaction_hash_as_hex() {
+        updated_deposit.data.included_transaction_hash = Some(tx);
+    }
+
+    Ok(updated_deposit)
 }
