@@ -1,4 +1,5 @@
 use crate::TransactionSigner;
+use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, TxHash};
@@ -7,7 +8,6 @@ use mystiko_protos::core::v1::{GetAddressRequest, SendTransactionRequest, Transa
 use mystiko_protos::service::v1::ClientOptions;
 use mystiko_utils::address::ethers_address_from_string;
 use std::str::FromStr;
-use thiserror::Error;
 use tokio::sync::Mutex;
 use tonic::transport::Channel;
 use typed_builder::TypedBuilder;
@@ -18,35 +18,21 @@ pub struct GrpcSigner {
     client: Mutex<TransactionServiceClient<Channel>>,
 }
 
-#[derive(Debug, Error)]
-pub enum GrpcSignerError {
-    #[error("failed to connect to grpc server: {0}")]
-    ConnectError(anyhow::Error),
-    #[error(transparent)]
-    GrpcError(#[from] tonic::Status),
-    #[error(transparent)]
-    FromHexError(#[from] rustc_hex::FromHexError),
-}
-
 impl GrpcSigner {
     pub fn new(client: TransactionServiceClient<Channel>) -> Self {
         Self::builder().client(client).build()
     }
 
-    pub async fn connect(options: &ClientOptions) -> Result<Self, GrpcSignerError> {
+    pub async fn connect(options: &ClientOptions) -> Result<Self> {
         Ok(Self::new(TransactionServiceClient::new(
-            mystiko_grpc::connect(options)
-                .await
-                .map_err(GrpcSignerError::ConnectError)?,
+            mystiko_grpc::connect(options).await?,
         )))
     }
 }
 
 #[async_trait]
 impl TransactionSigner for GrpcSigner {
-    type Error = GrpcSignerError;
-
-    async fn address(&self) -> Result<Address, Self::Error> {
+    async fn address(&self) -> Result<Address> {
         let response = self
             .client
             .lock()
@@ -57,12 +43,8 @@ impl TransactionSigner for GrpcSigner {
         Ok(ethers_address_from_string(response.address)?)
     }
 
-    async fn send_transaction<T>(&self, chain_id: u64, tx: T) -> Result<TxHash, Self::Error>
-    where
-        T: Into<TypedTransaction> + Send + Sync + 'static,
-    {
-        let ethers_tx = tx.into();
-        let tx: Transaction = ethers_tx.into();
+    async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> Result<TxHash> {
+        let tx: Transaction = tx.into();
         let request = SendTransactionRequest::builder()
             .chain_id(chain_id)
             .transaction(tx)

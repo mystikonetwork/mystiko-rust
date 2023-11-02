@@ -48,7 +48,7 @@ async fn test_transfer() {
         ..Default::default()
     });
     signer
-        .expect_send_transaction::<TypedTransaction>()
+        .expect_send_transaction()
         .withf(move |chain_id, tx| *chain_id == 1_u64 && tx == &expected_tx)
         .returning(|_, _| {
             Ok(TxHash::decode_hex("0xbabc0eb1e1d720da01feefb176bae8683183dc8b2a4d599e91bda5efca9ef60f").unwrap())
@@ -153,7 +153,7 @@ async fn test_erc20_approve() {
         });
     let mut signer = MockTransactionSigner::new();
     signer
-        .expect_send_transaction::<TypedTransaction>()
+        .expect_send_transaction()
         .withf(|chain_id, tx| *chain_id == 1_u64 && tx.data().unwrap().clone().encode_hex().contains("095ea7b3"))
         .returning(|_, _| {
             Ok(TxHash::decode_hex("0xbabc0eb1e1d720da01feefb176bae8683183dc8b2a4d599e91bda5efca9ef60f").unwrap())
@@ -249,7 +249,7 @@ async fn test_erc20_transfer() {
         .returning(|_, _| Ok(serde_json::json!(U256::from(0xdeadbeef_u64).encode_hex())));
     let mut signer = MockTransactionSigner::new();
     signer
-        .expect_send_transaction::<TypedTransaction>()
+        .expect_send_transaction()
         .withf(|chain_id, tx| *chain_id == 1_u64 && tx.data().unwrap().clone().encode_hex().contains("a9059cbb"))
         .returning(|_, _| {
             Ok(TxHash::decode_hex("0xbabc0eb1e1d720da01feefb176bae8683183dc8b2a4d599e91bda5efca9ef60f").unwrap())
@@ -387,10 +387,7 @@ mock! {
 
     #[async_trait]
     impl mystiko_core::TransactionSigner for TransactionSigner {
-        type Error = anyhow::Error;
         async fn address(&self) -> anyhow::Result<Address>;
-        async fn send_transaction<T>(&self, chain_id: u64, tx: T) -> anyhow::Result<TxHash>
-        where
-            T: Into<TypedTransaction> + Send + Sync + 'static;
+        async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> anyhow::Result<TxHash>;
     }
 }

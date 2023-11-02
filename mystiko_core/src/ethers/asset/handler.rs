@@ -42,7 +42,6 @@ impl<P, S> PublicAssetHandler for PublicAssets<P, S>
 where
     P: Providers,
     S: TransactionSigner,
-    S::Error: Debug,
 {
     type Error = PublicAssetsError;
 
