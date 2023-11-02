@@ -24,7 +24,7 @@ async fn test_send_transaction() {
     let tx_hash = signer
         .send_transaction(
             56_u64,
-            TransactionRequest::pay("0x70f657164e5b75689b64b7fd1fa275f334f28e18", 100),
+            TransactionRequest::pay("0x70f657164e5b75689b64b7fd1fa275f334f28e18", 100).into(),
         )
         .await
         .unwrap();

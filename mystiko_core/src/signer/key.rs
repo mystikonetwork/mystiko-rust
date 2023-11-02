@@ -1,15 +1,13 @@
-use crate::PrivateKeySignerError::GetProviderError;
 use crate::TransactionSigner;
+use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, TxHash};
-use ethers_middleware::signer::SignerMiddlewareError;
 use ethers_middleware::MiddlewareBuilder;
 use ethers_providers::Middleware;
-use ethers_signers::{LocalWallet, Signer, WalletError};
-use mystiko_ethers::{Provider, Providers};
+use ethers_signers::{LocalWallet, Signer};
+use mystiko_ethers::Providers;
 use std::sync::Arc;
-use thiserror::Error;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
@@ -26,21 +24,11 @@ pub struct PrivateKeySignerOptions<P: Providers> {
     providers: Arc<P>,
 }
 
-#[derive(Debug, Error)]
-pub enum PrivateKeySignerError {
-    #[error(transparent)]
-    WalletError(#[from] WalletError),
-    #[error(transparent)]
-    SignerMiddlewareError(#[from] SignerMiddlewareError<Arc<Provider>, LocalWallet>),
-    #[error("failed to get provider of chain_id={0}: {1}")]
-    GetProviderError(u64, anyhow::Error),
-}
-
 impl<P> PrivateKeySigner<P>
 where
     P: Providers,
 {
-    pub fn new<O>(options: O) -> Result<Self, PrivateKeySignerError>
+    pub fn new<O>(options: O) -> Result<Self>
     where
         O: Into<PrivateKeySignerOptions<P>>,
     {
@@ -57,24 +45,15 @@ impl<P> TransactionSigner for PrivateKeySigner<P>
 where
     P: Providers,
 {
-    type Error = PrivateKeySignerError;
-
-    async fn address(&self) -> Result<Address, Self::Error> {
+    async fn address(&self) -> Result<Address> {
         Ok(self.wallet.address())
     }
 
-    async fn send_transaction<T>(&self, chain_id: u64, tx: T) -> Result<TxHash, Self::Error>
-    where
-        T: Into<TypedTransaction> + Send + Sync + 'static,
-    {
+    async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> Result<TxHash> {
         let wallet = self.wallet.clone().with_chain_id(chain_id);
-        let provider = self
-            .providers
-            .get_provider(chain_id)
-            .await
-            .map_err(|err| GetProviderError(chain_id, err))?;
+        let provider = self.providers.get_provider(chain_id).await?;
         let client = provider.with_signer(wallet);
-        let resp = client.send_transaction(tx.into(), None).await?;
+        let resp = client.send_transaction(tx, None).await?;
         Ok(resp.tx_hash())
     }
 }

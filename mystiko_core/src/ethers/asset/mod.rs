@@ -1,7 +1,9 @@
 mod handler;
 
 pub use handler::*;
+use std::sync::Arc;
 
+use crate::TransactionSigner;
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, TxHash, U256};
@@ -16,11 +18,15 @@ pub struct BalanceOptions {
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct TransferOptions<T: Into<TypedTransaction> + Clone + Default> {
+pub struct TransferOptions<
+    T: Into<TypedTransaction> + Clone + Default,
+    S: TransactionSigner = Box<dyn TransactionSigner>,
+> {
     pub chain_id: u64,
     pub owner: Address,
     pub recipient: Address,
     pub amount: U256,
+    pub signer: Arc<S>,
     #[builder(default)]
     pub tx: T,
 }
@@ -35,24 +41,32 @@ pub struct Erc20BalanceOptions {
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct Erc20ApproveOptions<T: Into<TypedTransaction> + Clone + Default> {
+pub struct Erc20ApproveOptions<
+    T: Into<TypedTransaction> + Clone + Default,
+    S: TransactionSigner = Box<dyn TransactionSigner>,
+> {
     pub chain_id: u64,
     pub asset_address: Address,
     pub owner: Address,
     pub recipient: Address,
     pub amount: U256,
+    pub signer: Arc<S>,
     #[builder(default)]
     pub tx: T,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct Erc20TransferOptions<T: Into<TypedTransaction> + Clone + Default> {
+pub struct Erc20TransferOptions<
+    T: Into<TypedTransaction> + Clone + Default,
+    S: TransactionSigner = Box<dyn TransactionSigner>,
+> {
     pub chain_id: u64,
     pub asset_address: Address,
     pub owner: Address,
     pub recipient: Address,
     pub amount: U256,
+    pub signer: Arc<S>,
     #[builder(default)]
     pub tx: T,
 }
@@ -63,26 +77,20 @@ pub trait PublicAssetHandler: Send + Sync {
 
     async fn balance_of(&self, options: BalanceOptions) -> Result<U256, Self::Error>;
 
-    async fn transfer<T>(&self, options: TransferOptions<T>) -> Result<TxHash, Self::Error>
+    async fn transfer<T, S>(&self, options: TransferOptions<T, S>) -> Result<TxHash, Self::Error>
     where
+        S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static;
 
     async fn erc20_balance_of(&self, options: Erc20BalanceOptions) -> Result<U256, Self::Error>;
 
-    async fn erc20_approve<T>(&self, options: Erc20ApproveOptions<T>) -> Result<Option<TxHash>, Self::Error>
+    async fn erc20_approve<T, S>(&self, options: Erc20ApproveOptions<T, S>) -> Result<Option<TxHash>, Self::Error>
     where
+        S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static;
 
-    async fn erc20_transfer<T>(&self, options: Erc20TransferOptions<T>) -> Result<TxHash, Self::Error>
+    async fn erc20_transfer<T, S>(&self, options: Erc20TransferOptions<T, S>) -> Result<TxHash, Self::Error>
     where
+        S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static;
-}
-
-impl<T> From<TransferOptions<T>> for BalanceOptions
-where
-    T: Into<TypedTransaction> + Clone + Default,
-{
-    fn from(options: TransferOptions<T>) -> Self {
-        Self::builder().chain_id(options.chain_id).owner(options.owner).build()
-    }
 }

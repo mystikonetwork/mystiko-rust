@@ -18,7 +18,7 @@ async fn test_balance_of() {
         .expect_request()
         .withf(move |method, _| method == "eth_getBalance")
         .returning(|_, _| Ok(serde_json::json!("0xdeadbeef")));
-    let assets = setup(1, provider, MockTransactionSigner::new());
+    let assets = setup(1, provider);
     let balance = assets
         .balance_of(
             BalanceOptions::builder()
@@ -48,19 +48,20 @@ async fn test_transfer() {
         ..Default::default()
     });
     signer
-        .expect_send_transaction::<TypedTransaction>()
+        .expect_send_transaction()
         .withf(move |chain_id, tx| *chain_id == 1_u64 && tx == &expected_tx)
         .returning(|_, _| {
             Ok(TxHash::decode_hex("0xbabc0eb1e1d720da01feefb176bae8683183dc8b2a4d599e91bda5efca9ef60f").unwrap())
         });
-    let assets = setup(1_u64, provider, signer);
+    let assets = setup(1_u64, provider);
     let tx_hash = assets
         .transfer(
-            TransferOptions::<TransactionRequest>::builder()
+            TransferOptions::<TransactionRequest, MockTransactionSigner>::builder()
                 .chain_id(1_u64)
                 .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
                 .recipient(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
                 .amount(0x10_u64)
+                .signer(signer)
                 .build(),
         )
         .await
@@ -78,14 +79,15 @@ async fn test_transfer_with_insufficient_balance() {
         .expect_request()
         .withf(move |method, _| method == "eth_getBalance")
         .returning(|_, _| Ok(serde_json::json!("0x00")));
-    let assets = setup(1, provider, MockTransactionSigner::new());
+    let assets = setup(1, provider);
     let error = assets
         .transfer(
-            TransferOptions::<TransactionRequest>::builder()
+            TransferOptions::<TransactionRequest, MockTransactionSigner>::builder()
                 .chain_id(1_u64)
                 .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
                 .recipient(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
                 .amount(0x10_u64)
+                .signer(MockTransactionSigner::new())
                 .build(),
         )
         .await
@@ -106,7 +108,7 @@ async fn test_erc20_balance_of() {
         .expect_request()
         .withf(|method, _| method == "eth_call")
         .returning(|_, _| Ok(serde_json::json!(U256::from(0xdeadbeef_u64).encode_hex())));
-    let assets = setup(1, provider, MockTransactionSigner::new());
+    let assets = setup(1, provider);
     let balance = assets
         .erc20_balance_of(
             Erc20BalanceOptions::builder()
@@ -153,20 +155,21 @@ async fn test_erc20_approve() {
         });
     let mut signer = MockTransactionSigner::new();
     signer
-        .expect_send_transaction::<TypedTransaction>()
+        .expect_send_transaction()
         .withf(|chain_id, tx| *chain_id == 1_u64 && tx.data().unwrap().clone().encode_hex().contains("095ea7b3"))
         .returning(|_, _| {
             Ok(TxHash::decode_hex("0xbabc0eb1e1d720da01feefb176bae8683183dc8b2a4d599e91bda5efca9ef60f").unwrap())
         });
-    let assets = setup(1, provider, signer);
+    let assets = setup(1, provider);
     let tx_hash = assets
         .erc20_approve(
-            Erc20ApproveOptions::<TransactionRequest>::builder()
+            Erc20ApproveOptions::<TransactionRequest, MockTransactionSigner>::builder()
                 .chain_id(1_u64)
                 .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
                 .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
                 .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
                 .amount(0x10_u64)
+                .signer(signer)
                 .build(),
         )
         .await
@@ -184,15 +187,16 @@ async fn test_erc20_approve_with_sufficient_allowance() {
         .expect_request()
         .withf(|method, _| method == "eth_call")
         .returning(|_, _| Ok(serde_json::json!(U256::from(0xdeadbeef_u64).encode_hex())));
-    let assets = setup(1, provider, MockTransactionSigner::new());
+    let assets = setup(1, provider);
     let tx_hash = assets
         .erc20_approve(
-            Erc20ApproveOptions::<TransactionRequest>::builder()
+            Erc20ApproveOptions::<TransactionRequest, MockTransactionSigner>::builder()
                 .chain_id(1_u64)
                 .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
                 .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
                 .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
                 .amount(0x10_u64)
+                .signer(MockTransactionSigner::new())
                 .build(),
         )
         .await
@@ -219,15 +223,16 @@ async fn test_erc20_approve_with_insufficient_balance() {
                 "unexpected params".to_string(),
             )),
         });
-    let assets = setup(1, provider, MockTransactionSigner::new());
+    let assets = setup(1, provider);
     let tx_hash = assets
         .erc20_approve(
-            Erc20ApproveOptions::<TransactionRequest>::builder()
+            Erc20ApproveOptions::<TransactionRequest, MockTransactionSigner>::builder()
                 .chain_id(1_u64)
                 .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
                 .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
                 .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
                 .amount(0x10_u64)
+                .signer(MockTransactionSigner::new())
                 .build(),
         )
         .await;
@@ -249,20 +254,21 @@ async fn test_erc20_transfer() {
         .returning(|_, _| Ok(serde_json::json!(U256::from(0xdeadbeef_u64).encode_hex())));
     let mut signer = MockTransactionSigner::new();
     signer
-        .expect_send_transaction::<TypedTransaction>()
+        .expect_send_transaction()
         .withf(|chain_id, tx| *chain_id == 1_u64 && tx.data().unwrap().clone().encode_hex().contains("a9059cbb"))
         .returning(|_, _| {
             Ok(TxHash::decode_hex("0xbabc0eb1e1d720da01feefb176bae8683183dc8b2a4d599e91bda5efca9ef60f").unwrap())
         });
-    let assets = setup(1, provider, signer);
+    let assets = setup(1, provider);
     let tx_hash = assets
         .erc20_transfer(
-            Erc20TransferOptions::<TransactionRequest>::builder()
+            Erc20TransferOptions::<TransactionRequest, MockTransactionSigner>::builder()
                 .chain_id(1_u64)
                 .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
                 .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
                 .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
                 .amount(0x10_u64)
+                .signer(signer)
                 .build(),
         )
         .await
@@ -280,15 +286,16 @@ async fn test_erc20_transfer_with_insufficient_balance() {
         .expect_request()
         .withf(|method, _| method == "eth_call")
         .returning(|_, _| Ok(serde_json::json!(U256::from(0x9_u64).encode_hex())));
-    let assets = setup(1, provider, MockTransactionSigner::new());
+    let assets = setup(1, provider);
     let tx_hash = assets
         .erc20_transfer(
-            Erc20TransferOptions::<TransactionRequest>::builder()
+            Erc20TransferOptions::<TransactionRequest, MockTransactionSigner>::builder()
                 .chain_id(1_u64)
                 .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
                 .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
                 .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
                 .amount(0x10_u64)
+                .signer(MockTransactionSigner::new())
                 .build(),
         )
         .await;
@@ -320,15 +327,16 @@ async fn test_erc20_transfer_with_insufficient_allowance() {
                 "unexpected params".to_string(),
             )),
         });
-    let assets = setup(1, provider, MockTransactionSigner::new());
+    let assets = setup(1, provider);
     let tx_hash = assets
         .erc20_transfer(
-            Erc20TransferOptions::<TransactionRequest>::builder()
+            Erc20TransferOptions::<TransactionRequest, MockTransactionSigner>::builder()
                 .chain_id(1_u64)
                 .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
                 .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
                 .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
                 .amount(0x10_u64)
+                .signer(MockTransactionSigner::new())
                 .build(),
         )
         .await;
@@ -341,18 +349,14 @@ async fn test_erc20_transfer_with_insufficient_allowance() {
     }
 }
 
-fn setup(
-    chain_id: u64,
-    provider: MockProvider,
-    signer: MockTransactionSigner,
-) -> PublicAssets<MockProviders, MockTransactionSigner> {
+fn setup(chain_id: u64, provider: MockProvider) -> PublicAssets<MockProviders> {
     let provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
     let mut providers = MockProviders::new();
     providers
         .expect_get_provider()
         .withf(move |id| *id == chain_id)
         .returning(move |_| Ok(provider.clone()));
-    PublicAssets::builder().providers(providers).signer(signer).build()
+    PublicAssets::builder().providers(providers).build()
 }
 
 mock! {
@@ -387,10 +391,7 @@ mock! {
 
     #[async_trait]
     impl mystiko_core::TransactionSigner for TransactionSigner {
-        type Error = anyhow::Error;
         async fn address(&self) -> anyhow::Result<Address>;
-        async fn send_transaction<T>(&self, chain_id: u64, tx: T) -> anyhow::Result<TxHash>
-        where
-            T: Into<TypedTransaction> + Send + Sync + 'static;
+        async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> anyhow::Result<TxHash>;
     }
 }
