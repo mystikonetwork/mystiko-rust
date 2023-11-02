@@ -16,9 +16,8 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct PublicAssets<P: Providers, S: TransactionSigner> {
+pub struct PublicAssets<P: Providers> {
     providers: Arc<P>,
-    signer: Arc<S>,
 }
 
 #[derive(Debug, Error)]
@@ -38,10 +37,9 @@ pub enum PublicAssetsError {
 }
 
 #[async_trait]
-impl<P, S> PublicAssetHandler for PublicAssets<P, S>
+impl<P> PublicAssetHandler for PublicAssets<P>
 where
     P: Providers,
-    S: TransactionSigner,
 {
     type Error = PublicAssetsError;
 
@@ -54,11 +52,19 @@ where
         Ok(provider.get_balance(options.owner, None).await?)
     }
 
-    async fn transfer<T>(&self, options: TransferOptions<T>) -> Result<TxHash, Self::Error>
+    async fn transfer<T, S>(&self, options: TransferOptions<T, S>) -> Result<TxHash, Self::Error>
     where
+        S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
     {
-        let balance = self.balance_of(options.clone().into()).await?;
+        let balance = self
+            .balance_of(
+                BalanceOptions::builder()
+                    .chain_id(options.chain_id)
+                    .owner(options.owner)
+                    .build(),
+            )
+            .await?;
         if balance < options.amount {
             return Err(PublicAssetsError::InsufficientBalanceError(balance, options.amount));
         }
@@ -66,7 +72,7 @@ where
         tx.set_from(options.owner);
         tx.set_to(options.recipient);
         tx.set_value(options.amount);
-        Ok(self
+        Ok(options
             .signer
             .send_transaction(options.chain_id, tx)
             .await
@@ -83,8 +89,9 @@ where
         Ok(contract.balance_of(options.owner).await?)
     }
 
-    async fn erc20_approve<T>(&self, options: Erc20ApproveOptions<T>) -> Result<Option<TxHash>, Self::Error>
+    async fn erc20_approve<T, S>(&self, options: Erc20ApproveOptions<T, S>) -> Result<Option<TxHash>, Self::Error>
     where
+        S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
     {
         let provider = self
@@ -105,7 +112,7 @@ where
             if let Some(call_data) = contract.approve(options.recipient, allowance).calldata() {
                 tx.set_data(call_data);
             }
-            let tx_hash = self
+            let tx_hash = options
                 .signer
                 .send_transaction(options.chain_id, tx)
                 .await
@@ -116,8 +123,9 @@ where
         }
     }
 
-    async fn erc20_transfer<T>(&self, options: Erc20TransferOptions<T>) -> Result<TxHash, Self::Error>
+    async fn erc20_transfer<T, S>(&self, options: Erc20TransferOptions<T, S>) -> Result<TxHash, Self::Error>
     where
+        S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
     {
         let provider = self
@@ -139,7 +147,7 @@ where
         if let Some(call_data) = contract.transfer(options.recipient, options.amount).calldata() {
             tx.set_data(call_data);
         }
-        Ok(self
+        Ok(options
             .signer
             .send_transaction(options.chain_id, tx)
             .await
