@@ -1,8 +1,8 @@
 use mystiko_core::{Spend, SpendCollection, SpendColumn};
+use mystiko_protos::core::v1::{SpendStatus, SpendType};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
-use mystiko_types::{SpendStatus, SpendType};
 use num_bigint::BigUint;
 use std::sync::Arc;
 
@@ -45,8 +45,8 @@ async fn test_spend_crud() {
                 signature: Some(String::from("signature 1")),
                 random_auditing_public_key: Some(BigUint::from(11111u32)),
                 encrypted_auditor_notes: Some(vec![String::from("ean1"), String::from("ean2")]),
-                spend_type: SpendType::Transfer,
-                status: SpendStatus::Init,
+                spend_type: SpendType::Transfer as i32,
+                status: SpendStatus::Unspecified as i32,
                 error_message: Some(String::from("error_message 1")),
                 transaction_hash: Some(String::from("transaction_hash 1")),
                 wallet_id: String::from("wallet_id 1"),
@@ -80,8 +80,8 @@ async fn test_spend_crud() {
                     signature: Some(String::from("signature 2")),
                     random_auditing_public_key: Some(BigUint::from(22222u32)),
                     encrypted_auditor_notes: None,
-                    spend_type: SpendType::Withdraw,
-                    status: SpendStatus::ProofGenerated,
+                    spend_type: SpendType::Withdraw as i32,
+                    status: SpendStatus::Pending as i32,
                     error_message: Some(String::from("error_message 2")),
                     transaction_hash: Some(String::from("transaction_hash 2")),
                     wallet_id: String::from("wallet_id 2"),
@@ -109,8 +109,8 @@ async fn test_spend_crud() {
                     signature: Some(String::from("signature 3")),
                     random_auditing_public_key: Some(BigUint::from(33333u32)),
                     encrypted_auditor_notes: Some(vec![]),
-                    spend_type: SpendType::Withdraw,
-                    status: SpendStatus::Failed,
+                    spend_type: SpendType::Withdraw as i32,
+                    status: SpendStatus::Failed as i32,
                     error_message: Some(String::from("error_message 3")),
                     transaction_hash: Some(String::from("transaction_hash 3")),
                     wallet_id: String::from("wallet_id 3"),
@@ -146,7 +146,7 @@ async fn test_spend_crud() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(found_first_spend.data.status, SpendStatus::Init,);
+    assert_eq!(found_first_spend.data.status, SpendStatus::Unspecified as i32,);
     found_spends = spends
         .find(
             QueryFilter::builder()
@@ -222,8 +222,8 @@ async fn test_spend_serde() {
             signature: Some(String::from("signature 1")),
             random_auditing_public_key: Some(BigUint::from(11111u32)),
             encrypted_auditor_notes: Some(vec![String::from("ean1"), String::from("ean2")]),
-            spend_type: SpendType::Transfer,
-            status: SpendStatus::Init,
+            spend_type: SpendType::Transfer as i32,
+            status: SpendStatus::Unspecified as i32,
             error_message: Some(String::from("error_message 1")),
             transaction_hash: Some(String::from("transaction_hash 1")),
             wallet_id: String::from("wallet_id 1"),

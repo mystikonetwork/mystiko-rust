@@ -13,6 +13,7 @@ use mystiko_ethers::{
     ChainProvidersOptions, DefaultProviderFactory, ProviderFactory, ProviderOptions, ProviderPool, Providers,
     ProvidersOptions,
 };
+use mystiko_protos::core::v1::SpendType;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_client::client::{
     RelayerClient, RelayerClientOptions, HANDSHAKE_URL_PATH, INFO_URL_PATH, SUPPORTED_API_VERSION,
@@ -23,7 +24,6 @@ use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{
     HandshakeResponse, RegisterInfoResponse, RelayTransactResponse, RelayTransactStatusResponse, TransactStatus,
 };
-use mystiko_types::SpendType;
 use serde_json::{json, to_string};
 use std::sync::Arc;
 use std::time::Duration;

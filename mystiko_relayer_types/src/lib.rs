@@ -11,7 +11,8 @@ extern crate validator;
 pub mod response;
 
 use mystiko_abi::commitment_pool::TransactRequest;
-use mystiko_types::{BridgeType, CircuitType, SpendType};
+use mystiko_protos::core::v1::SpendType;
+use mystiko_types::{BridgeType, CircuitType};
 use mystiko_validator::validate::is_ethereum_address;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;

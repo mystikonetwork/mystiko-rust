@@ -1,10 +1,11 @@
 use crate::common::{create_client, create_provider_pool, mock_handshake_supported_server, mock_relay_transact_server};
 use mockito::Server;
+use mystiko_protos::core::v1::SpendType;
 use mystiko_relayer_client::client::{HANDSHAKE_URL_PATH, SUPPORTED_API_VERSION};
 use mystiko_relayer_client::error::RelayerClientError;
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{HandshakeResponse, RelayTransactRequest, TransactRequestData};
-use mystiko_types::{BridgeType, CircuitType, SpendType};
+use mystiko_types::{BridgeType, CircuitType};
 use serde_json::to_string;
 use std::sync::Arc;
 use tokio::sync::RwLock;

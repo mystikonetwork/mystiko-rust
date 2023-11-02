@@ -6,10 +6,10 @@ use mystiko_dataloader::handler::{
     dedup_commitments, CommitmentQueryOption, DataHandler, HandleOption, NullifierQueryOption, QueryResult,
 };
 use mystiko_dataloader::handler::{HandlerError, Result as handlerResult};
+use mystiko_protos::core::v1::DepositStatus;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::storage::v1::{Condition, SubFilter};
 use mystiko_storage::{Document, StatementFormatter, Storage, StorageError};
-use mystiko_types::DepositStatus;
 use mystiko_utils::convert::bytes_to_biguint;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -83,7 +83,6 @@ where
             log::error!("failed to update data: {:?}", e);
             return Err(HandlerError::from(anyhow::Error::from(e)));
         }
-
         self.raw.handle(data, option).await
     }
 }
@@ -199,7 +198,9 @@ where
                     to_update.push(deposit);
                 }
             }
-            self.mystiko_db.deposits.update_batch(to_update.as_slice()).await?;
+            if !to_update.is_empty() {
+                self.mystiko_db.deposits.update_batch(to_update.as_slice()).await?;
+            }
         }
         Ok(())
     }
@@ -211,7 +212,7 @@ where
         cm_status: CommitmentStatus,
     ) -> SyncLoaderHandlerResult<Condition> {
         let mut filter_status = vec![
-            DepositStatus::Init as i32,
+            DepositStatus::Unspecified as i32,
             DepositStatus::AssetApproving as i32,
             DepositStatus::AssetApproved as i32,
             DepositStatus::Failed as i32,
@@ -254,13 +255,13 @@ where
                 if let Some(tx) = cm.src_chain_transaction_hash_as_hex() {
                     deposit.data.transaction_hash = Some(tx);
                 }
-                deposit.data.status = DepositStatus::SrcSucceeded;
+                deposit.data.status = DepositStatus::SrcSucceeded as i32;
             }
             status if status == i32::from(CommitmentStatus::Queued) => {
-                deposit.data.status = DepositStatus::Queued;
+                deposit.data.status = DepositStatus::Queued as i32;
             }
             status if status == i32::from(CommitmentStatus::Included) => {
-                deposit.data.status = DepositStatus::Included;
+                deposit.data.status = DepositStatus::Included as i32;
             }
             s => return Err(SyncLoaderHandlerError::CommitmentStatusError(s)),
         }

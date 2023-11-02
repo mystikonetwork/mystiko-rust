@@ -1,6 +1,5 @@
 use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
-use mystiko_types::{BridgeType, DepositStatus};
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 
@@ -24,8 +23,7 @@ pub struct Deposit {
     pub asset_decimals: u32,
     #[column(length_limit = 64)]
     pub asset_address: Option<String>,
-    #[column(length_limit = 32)]
-    pub bridge_type: BridgeType,
+    pub bridge_type: i32,
     #[column(length_limit = 128)]
     pub amount: BigUint,
     #[column(length_limit = 128)]
@@ -42,8 +40,7 @@ pub struct Deposit {
     pub service_fee_amount: BigUint,
     #[column(length_limit = 128)]
     pub shielded_recipient_address: String,
-    #[column(length_limit = 32)]
-    pub status: DepositStatus,
+    pub status: i32,
     pub error_message: Option<String>,
     #[column(length_limit = 64)]
     pub wallet_id: String,

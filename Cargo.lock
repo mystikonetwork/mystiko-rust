@@ -3654,6 +3654,7 @@ dependencies = [
  "mockito",
  "mystiko_abi",
  "mystiko_ethers",
+ "mystiko_protos",
  "mystiko_relayer_abi",
  "mystiko_relayer_client",
  "mystiko_relayer_config",
@@ -3696,6 +3697,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "mystiko_abi",
+ "mystiko_protos",
  "mystiko_types",
  "mystiko_validator",
  "num-bigint 0.4.3",
