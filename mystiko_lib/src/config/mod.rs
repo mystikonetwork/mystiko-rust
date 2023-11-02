@@ -10,142 +10,421 @@ use mystiko_protos::api::config::v1::{
     FindPoolContractsResponse, GetConfigRequest, GetConfigResponse, GetTransactionUrlRequest,
     GetTransactionUrlResponse,
 };
+use mystiko_protos::api::v1::{api_response, ApiResponse, StatusCode};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::config::contract::v1::PoolContractConfig;
 use mystiko_protos::config::v1::ChainConfig;
+use prost::Message;
 
-pub fn get<M>(_message: M) -> Result<GetConfigResponse>
+pub fn get<M>(_message: M) -> ApiResponse
 where
     M: TryInto<GetConfigRequest>,
     <M as TryInto<GetConfigRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    runtime().block_on(internal::get())
+    runtime().block_on(async {
+        match internal::get().await {
+            Ok(response) => ApiResponse::builder()
+                .code(StatusCode::Success)
+                .result(api_response::Result::Data(response.encode_to_vec()))
+                .build(),
+            Err(err) => ApiResponse::builder()
+                .code(StatusCode::UnknownError)
+                .result(api_response::Result::ErrorMessage(err.to_string()))
+                .build(),
+        }
+    })
 }
 
-pub fn find_default_circuit<M>(message: M) -> Result<FindDefaultCircuitResponse>
+pub fn find_default_circuit<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindDefaultCircuitRequest>,
     <M as TryInto<FindDefaultCircuitRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindDefaultCircuitRequest = message.try_into()?;
-    runtime().block_on(internal::find_default_circuit(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_default_circuit(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_circuit<M>(message: M) -> Result<FindCircuitResponse>
+pub fn find_circuit<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindCircuitRequest>,
     <M as TryInto<FindCircuitRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindCircuitRequest = message.try_into()?;
-    runtime().block_on(internal::find_circuit(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_circuit(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_chain<M>(message: M) -> Result<FindChainResponse>
+pub fn find_chain<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindChainRequest>,
     <M as TryInto<FindChainRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindChainRequest = message.try_into()?;
-    runtime().block_on(internal::find_chain(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_chain(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_peer_chains<M>(message: M) -> Result<FindPeerChainsResponse>
+pub fn find_peer_chains<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindPeerChainsRequest>,
     <M as TryInto<FindPeerChainsRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindPeerChainsRequest = message.try_into()?;
-    runtime().block_on(internal::find_peer_chains(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_peer_chains(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_asset_symbols<M>(message: M) -> Result<FindAssetSymbolsResponse>
+pub fn find_asset_symbols<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindAssetSymbolsRequest>,
     <M as TryInto<FindAssetSymbolsRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindAssetSymbolsRequest = message.try_into()?;
-    runtime().block_on(internal::find_asset_symbols(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_asset_symbols(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_bridges<M>(message: M) -> Result<FindBridgesResponse>
+pub fn find_bridges<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindBridgesRequest>,
     <M as TryInto<FindBridgesRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindBridgesRequest = message.try_into()?;
-    runtime().block_on(internal::find_bridges(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_bridges(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_bridge<M>(message: M) -> Result<FindBridgeResponse>
+pub fn find_bridge<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindBridgeRequest>,
     <M as TryInto<FindBridgeRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindBridgeRequest = message.try_into()?;
-    runtime().block_on(internal::find_bridge(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_bridge(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_deposit_contract<M>(message: M) -> Result<FindDepositContractResponse>
+pub fn find_deposit_contract<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindDepositContractRequest>,
     <M as TryInto<FindDepositContractRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindDepositContractRequest = message.try_into()?;
-    runtime().block_on(internal::find_deposit_contract(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_deposit_contract(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_deposit_contract_by_address<M>(message: M) -> Result<FindDepositContractByAddressResponse>
+pub fn find_deposit_contract_by_address<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindDepositContractByAddressRequest>,
     <M as TryInto<FindDepositContractByAddressRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindDepositContractByAddressRequest = message.try_into()?;
-    runtime().block_on(internal::find_deposit_contract_by_address(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_deposit_contract_by_address(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_pool_contract<M>(message: M) -> Result<FindPoolContractResponse>
+pub fn find_pool_contract<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindPoolContractRequest>,
     <M as TryInto<FindPoolContractRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindPoolContractRequest = message.try_into()?;
-    runtime().block_on(internal::find_pool_contract(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_pool_contract(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_pool_contracts<M>(message: M) -> Result<FindPoolContractsResponse>
+pub fn find_pool_contracts<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindPoolContractsRequest>,
     <M as TryInto<FindPoolContractsRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindPoolContractsRequest = message.try_into()?;
-    runtime().block_on(internal::find_pool_contracts(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_pool_contracts(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_pool_contract_by_address<M>(message: M) -> Result<FindPoolContractByAddressResponse>
+pub fn find_pool_contract_by_address<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindPoolContractByAddressRequest>,
     <M as TryInto<FindPoolContractByAddressRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindPoolContractByAddressRequest = message.try_into()?;
-    runtime().block_on(internal::find_pool_contract_by_address(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_pool_contract_by_address(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn find_contract_by_address<M>(message: M) -> Result<FindContractByAddressResponse>
+pub fn find_contract_by_address<M>(message: M) -> ApiResponse
 where
     M: TryInto<FindContractByAddressRequest>,
     <M as TryInto<FindContractByAddressRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: FindContractByAddressRequest = message.try_into()?;
-    runtime().block_on(internal::find_contract_by_address(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::find_contract_by_address(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
-pub fn get_transaction_url<M>(message: M) -> Result<GetTransactionUrlResponse>
+pub fn get_transaction_url<M>(message: M) -> ApiResponse
 where
     M: TryInto<GetTransactionUrlRequest>,
     <M as TryInto<GetTransactionUrlRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
-    let message: GetTransactionUrlRequest = message.try_into()?;
-    runtime().block_on(internal::get_transaction_url(message))
+    let response = match message.try_into() {
+        Ok(message) => runtime().block_on(async {
+            internal::get_transaction_url(message).await.map(|data| {
+                ApiResponse::builder()
+                    .code(StatusCode::Success)
+                    .result(api_response::Result::Data(data.encode_to_vec()))
+                    .build()
+            })
+        }),
+        Err(err) => Ok(ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()),
+    };
+
+    response.unwrap_or_else(|err| {
+        ApiResponse::builder()
+            .code(StatusCode::UnknownError)
+            .result(api_response::Result::ErrorMessage(err.to_string()))
+            .build()
+    })
 }
 
 mod internal {
