@@ -20,6 +20,7 @@ use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct Database<F: StatementFormatter, S: Storage> {
+    collection: Arc<Collection<F, S>>,
     pub accounts: AccountCollection<F, S>,
     pub commitments: CommitmentCollection<F, S>,
     pub contracts: ContractCollection<F, S>,
@@ -33,6 +34,7 @@ impl<F: StatementFormatter, S: Storage> Database<F, S> {
     pub fn new(formatter: F, storage: S) -> Self {
         let collection = Arc::new(Collection::new(formatter, storage));
         Database {
+            collection: collection.clone(),
             accounts: AccountCollection::new(collection.clone()),
             commitments: CommitmentCollection::new(collection.clone()),
             contracts: ContractCollection::new(collection.clone()),
@@ -54,5 +56,9 @@ impl<F: StatementFormatter, S: Storage> Database<F, S> {
             self.wallets.migrate().await?,
         ];
         Ok(migrations)
+    }
+
+    pub fn collection(&self) -> Arc<Collection<F, S>> {
+        self.collection.clone()
     }
 }

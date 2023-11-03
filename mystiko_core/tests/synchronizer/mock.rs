@@ -28,10 +28,10 @@ pub async fn create_synchronizer(chain_id: u64, loaders: Vec<MockSyncDataLoader>
             .await
             .unwrap(),
     );
-    let chains: HashMap<u64, MockSyncDataLoader> = loaders
+    let loaders: HashMap<u64, MockSyncDataLoader> = loaders
         .into_iter()
         .enumerate()
         .map(|(index, loader)| ((index as u64) + chain_id, loader))
         .collect();
-    Synchronizer::builder().mystiko_config(config).chains(chains).build()
+    Synchronizer::builder().mystiko_config(config).loaders(loaders).build()
 }
