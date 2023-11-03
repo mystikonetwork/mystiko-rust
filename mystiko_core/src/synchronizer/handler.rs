@@ -1,4 +1,4 @@
-use crate::{Database, SyncLoaderHandler, SynchronizerHandler};
+use crate::{Commitment, Contract, Database, Nullifier, SyncLoaderHandler, SynchronizerHandler};
 use async_trait::async_trait;
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::FullData;
@@ -51,6 +51,8 @@ pub enum SynchronizerError {
     DataLoaderError(#[from] DataLoaderError),
     #[error(transparent)]
     DataLoaderConfigError(#[from] DataLoaderConfigError),
+    #[error(transparent)]
+    AnyhowError(#[from] anyhow::Error),
 }
 
 #[async_trait]
@@ -117,17 +119,18 @@ impl Synchronizer<ChainDataLoader<FullData>> {
     ) -> Result<Self, SynchronizerError> {
         let loader_config = options.loader_config.unwrap_or_else(build_default_wallet_loader_config);
         let collection = options.db.collection();
-        let loader_handle = DatabaseHandler::<FullData, F, S>::builder()
+        let loader_handle = DatabaseHandler::<FullData, F, S, Contract, Commitment, Nullifier>::builder()
             .config(options.mystiko_config.clone())
             .collection(collection)
             .build();
+        loader_handle.initialize().await?;
         let sync_handler = SyncLoaderHandler::builder()
             .db(options.db.clone())
             .raw(loader_handle)
             .build();
         let handler = Arc::new(Box::new(sync_handler) as Box<dyn DataHandler<FullData>>);
-        let mut loaders = HashMap::new();
-        for chain_cfg in options.mystiko_config.chains().iter() {
+
+        let tasks = options.mystiko_config.chains().into_iter().map(|chain_cfg| {
             let chain_id = chain_cfg.chain_id();
             let option = LoaderConfigOptions::builder()
                 .chain_id(chain_id)
@@ -135,9 +138,13 @@ impl Synchronizer<ChainDataLoader<FullData>> {
                 .providers(options.providers.clone())
                 .handler(handler.clone())
                 .build();
-            let loader = ChainDataLoader::from_config(&option).await?;
-            loaders.insert(chain_id, loader);
-        }
+            async move {
+                let loader = ChainDataLoader::from_config(&option).await?;
+                Ok((chain_id, loader)) as Result<_, SynchronizerError>
+            }
+        });
+        let results = futures::future::try_join_all(tasks).await?;
+        let loaders = results.into_iter().collect::<HashMap<_, _>>();
 
         Ok(Self::builder()
             .mystiko_config(options.mystiko_config)
