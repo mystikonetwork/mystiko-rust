@@ -253,5 +253,9 @@
   "packer": {
     "url": "https://static.mystiko.network/packer/v1"
   },
+  "sequencer": {
+    "host": "sequencer.auditablezk.mystiko.network",
+    "isSsl": true
+  },
   "countryBlacklist": ["US", "CN"]
 }

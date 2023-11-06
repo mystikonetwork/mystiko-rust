@@ -135,6 +135,7 @@ impl Synchronizer<ChainDataLoader<FullData>> {
             let option = LoaderConfigOptions::builder()
                 .chain_id(chain_id)
                 .config(loader_config.clone())
+                .mystiko_config(options.mystiko_config.clone())
                 .providers(options.providers.clone())
                 .handler(handler.clone())
                 .build();
