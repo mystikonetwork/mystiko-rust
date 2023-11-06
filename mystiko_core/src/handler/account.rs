@@ -1,7 +1,8 @@
-use crate::{Account, AccountColumn, Database, MystikoError, Result, Wallet, WalletHandler};
+use crate::{Account, AccountColumn, Database, Wallet, WalletHandler, WalletHandlerError};
 use bip32::XPrv;
 use futures::TryFutureExt;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
+use mystiko_crypto::error::CryptoError;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::{
     combined_public_key, combined_secret_key, encryption_public_key, separate_secret_keys, verification_public_key,
@@ -10,9 +11,10 @@ use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, UpdateAccountOptions};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
-use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage};
+use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage, StorageError};
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
+use thiserror::Error;
 
 // m/purpose/coin_type/account/key_type/address_index
 pub const DEFAULT_KEY_DERIVE_PATH: &str = "m/44'/94085'/0'";
@@ -22,6 +24,24 @@ pub struct AccountHandler<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
     wallets: WalletHandler<F, S>,
 }
+
+#[derive(Debug, Error)]
+pub enum AccountHandlerError {
+    #[error(transparent)]
+    StorageError(#[from] StorageError),
+    #[error(transparent)]
+    CryptoError(#[from] CryptoError),
+    #[error(transparent)]
+    MnemonicError(#[from] bip32::Error),
+    #[error(transparent)]
+    HexStringError(#[from] rustc_hex::FromHexError),
+    #[error(transparent)]
+    WalletHandlerError(#[from] WalletHandlerError),
+    #[error("no such account where {0:?} = {1:?}")]
+    NoSuchAccountError(String, String),
+}
+
+type Result<T> = std::result::Result<T, AccountHandlerError>;
 
 impl<F, S> AccountHandler<F, S>
 where
@@ -49,7 +69,11 @@ where
 
     pub async fn count<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<u64> {
         let filter = self.wrap_filter(Some(filter)).await?;
-        self.db.accounts.count(filter).await.map_err(MystikoError::StorageError)
+        self.db
+            .accounts
+            .count(filter)
+            .await
+            .map_err(AccountHandlerError::StorageError)
     }
 
     pub async fn count_all(&self) -> Result<u64> {
@@ -127,7 +151,7 @@ where
             .accounts
             .update_batch(&accounts)
             .await
-            .map_err(MystikoError::StorageError)?;
+            .map_err(AccountHandlerError::StorageError)?;
         log::info!(
             "successfully updated the encryption of all accounts from wallet(id = \"{}\")",
             &wallet.id
@@ -175,7 +199,7 @@ where
             .accounts
             .find(filter)
             .await
-            .map_err(MystikoError::StorageError)?
+            .map_err(AccountHandlerError::StorageError)?
             .into_iter()
             .collect())
     }
@@ -210,7 +234,7 @@ where
             .accounts
             .find_one(wrapped_filter)
             .await
-            .map_err(MystikoError::StorageError)
+            .map_err(AccountHandlerError::StorageError)
     }
 
     async fn update_by_identifier<T: ToString>(
@@ -234,7 +258,7 @@ where
                     .db
                     .accounts
                     .update(&account)
-                    .map_err(MystikoError::StorageError)
+                    .map_err(AccountHandlerError::StorageError)
                     .await?;
                 log::info!(
                     "successfully updated an account(id = \"{}\") with options: {:?}",
@@ -246,7 +270,10 @@ where
                 Ok(Account::document_into_proto(account))
             }
         } else {
-            Err(MystikoError::NoSuchAccountError(field_name_str, identifier.to_string()))
+            Err(AccountHandlerError::NoSuchAccountError(
+                field_name_str,
+                identifier.to_string(),
+            ))
         }
     }
 
@@ -261,7 +288,10 @@ where
         if let Some(account) = self.find_one_by_identifier(identifier, field_name).await? {
             Ok(decrypt_symmetric(wallet_password, &account.encrypted_secret_key)?)
         } else {
-            Err(MystikoError::NoSuchAccountError(field_name_str, identifier.to_string()))
+            Err(AccountHandlerError::NoSuchAccountError(
+                field_name_str,
+                identifier.to_string(),
+            ))
         }
     }
 
@@ -338,14 +368,14 @@ where
                     .wallets
                     .update(wallet)
                     .await
-                    .map_err(MystikoError::StorageError)?;
+                    .map_err(AccountHandlerError::StorageError)?;
             }
             Ok(Account::document_into_proto(
                 self.db
                     .accounts
                     .insert(&account)
                     .await
-                    .map_err(MystikoError::StorageError)?,
+                    .map_err(AccountHandlerError::StorageError)?,
             ))
         }
     }

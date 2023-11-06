@@ -152,7 +152,7 @@ fn test_with_valid_config() {
 #[test]
 #[serial]
 fn test_with_full_config() {
-    assert!(setup(true).is_ok());
+    setup(true).unwrap();
     let result = find_peer_chains(FindPeerChainsRequest::builder().chain_id(5u64).build());
     assert!(result.is_ok());
     let response = result.unwrap();
