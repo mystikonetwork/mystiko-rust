@@ -2,6 +2,8 @@
 pub mod document;
 #[cfg(feature = "mystiko-core-handler-v1")]
 pub mod handler;
+#[cfg(feature = "mystiko-core-scanner-v1")]
+pub mod scanner;
 #[cfg(feature = "mystiko-core-synchronizer-v1")]
 pub mod synchronizer;
 #[cfg(feature = "mystiko-core-v1")]

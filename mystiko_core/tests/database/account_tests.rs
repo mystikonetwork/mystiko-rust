@@ -3,7 +3,6 @@ use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
-use mystiko_types::AccountStatus;
 use std::sync::Arc;
 
 async fn create_accounts() -> AccountCollection<SqlStatementFormatter, SqliteStorage> {
@@ -27,9 +26,8 @@ async fn test_accounts_crud() {
                 shielded_address: String::from("shielded address 1"),
                 public_key: String::from("public key 1"),
                 encrypted_secret_key: String::from("encrypted secret key 1"),
-                status: AccountStatus::Created,
-                scan_size: 1,
                 wallet_id: String::from("1"),
+                scanned_to_id: None,
             })
             .await
             .unwrap(),
@@ -42,18 +40,16 @@ async fn test_accounts_crud() {
                     shielded_address: String::from("shielded address 2"),
                     public_key: String::from("public key 2"),
                     encrypted_secret_key: String::from("encrypted secret key 2"),
-                    status: AccountStatus::Scanned,
-                    scan_size: 2,
                     wallet_id: String::from("2"),
+                    scanned_to_id: Some(String::from("2")),
                 },
                 Account {
                     name: String::from("account 3"),
                     shielded_address: String::from("shielded address 3"),
                     public_key: String::from("public key 3"),
                     encrypted_secret_key: String::from("encrypted secret key 3"),
-                    status: AccountStatus::Scanning,
-                    scan_size: 3,
                     wallet_id: String::from("3"),
+                    scanned_to_id: Some(String::from("3")),
                 },
             ])
             .await
@@ -64,7 +60,7 @@ async fn test_accounts_crud() {
     assert_eq!(accounts.count_all().await.unwrap(), 3);
     assert_eq!(
         accounts
-            .count(SubFilter::equal(AccountColumn::ScanSize, 2u32))
+            .count(SubFilter::is_null(AccountColumn::ScannedToId))
             .await
             .unwrap(),
         1
@@ -95,12 +91,12 @@ async fn test_accounts_crud() {
     assert_eq!(found_account, inserted_accounts[2]);
 
     // testing update/update_batch
-    found_account.data.scan_size = 30;
+    found_account.data.scanned_to_id = Some(String::from("30"));
     let updated_account = accounts.update(&found_account).await.unwrap();
     assert_eq!(updated_account.data, found_account.data);
-    inserted_accounts[0].data.scan_size = 10;
-    inserted_accounts[1].data.scan_size = 20;
-    inserted_accounts[2].data.scan_size = 30;
+    inserted_accounts[0].data.scanned_to_id = Some(String::from("10"));
+    inserted_accounts[1].data.scanned_to_id = Some(String::from("20"));
+    inserted_accounts[2].data.scanned_to_id = Some(String::from("30"));
     found_accounts = accounts.update_batch(&inserted_accounts).await.unwrap();
     assert_eq!(found_accounts[0].data, inserted_accounts[0].data);
     assert_eq!(found_accounts[1].data, inserted_accounts[1].data);
@@ -131,9 +127,8 @@ async fn test_account_serde() {
             shielded_address: String::from("shielded address 1"),
             public_key: String::from("public key 1"),
             encrypted_secret_key: String::from("encrypted secret key 1"),
-            status: AccountStatus::Created,
-            scan_size: 1,
             wallet_id: String::from("1"),
+            scanned_to_id: None,
         })
         .await
         .unwrap();
@@ -153,9 +148,8 @@ fn test_from_proto() {
         .shielded_address(String::from("shielded address 1"))
         .public_key(String::from("public key 1"))
         .encrypted_secret_key(String::from("encrypted secret key 1"))
-        .scan_size(1u32)
         .wallet_id(String::from("1"))
-        .status(1)
+        .scanned_to_id(String::from("1"))
         .build();
     let account = Account::document_from_proto(proto);
     assert_eq!(account.id, String::from("123456"));
@@ -168,9 +162,8 @@ fn test_from_proto() {
         account.data.encrypted_secret_key,
         String::from("encrypted secret key 1")
     );
-    assert_eq!(account.data.scan_size, 1u32);
+    assert_eq!(account.data.scanned_to_id, Some(String::from("1")));
     assert_eq!(account.data.wallet_id, String::from("1"));
-    assert_eq!(account.data.status, AccountStatus::Created);
 }
 
 #[test]
@@ -184,9 +177,8 @@ fn test_into_proto() {
             shielded_address: String::from("shielded address 1"),
             public_key: String::from("public key 1"),
             encrypted_secret_key: String::from("encrypted secret key 1"),
-            status: AccountStatus::Created,
-            scan_size: 1,
             wallet_id: String::from("1"),
+            scanned_to_id: Some(String::from("1")),
         },
     );
     let proto = Account::document_into_proto(account);
@@ -197,7 +189,6 @@ fn test_into_proto() {
     assert_eq!(proto.shielded_address, String::from("shielded address 1"));
     assert_eq!(proto.public_key, String::from("public key 1"));
     assert_eq!(proto.encrypted_secret_key, String::from("encrypted secret key 1"));
-    assert_eq!(proto.scan_size, 1u32);
     assert_eq!(proto.wallet_id, String::from("1"));
-    assert_eq!(proto.status, 1);
+    assert_eq!(proto.scanned_to_id, Some(String::from("1")));
 }

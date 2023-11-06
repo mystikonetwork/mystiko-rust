@@ -1,7 +1,7 @@
 use crate::common::create_database;
+use mystiko_core::AccountHandler;
 use mystiko_core::WalletHandler;
 use mystiko_core::{AccountColumn, Database};
-use mystiko_core::{AccountHandler, DEFAULT_ACCOUNT_SCAN_SIZE};
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::full_public_key;
@@ -10,7 +10,6 @@ use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOption
 use mystiko_protos::storage::v1::SubFilter;
 use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
-use mystiko_types::AccountStatus;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
 
@@ -43,11 +42,6 @@ async fn test_create_default() {
         .build();
     let account = account_handler.create(&options).await.unwrap();
     assert_eq!(account.name, "Account 1");
-    assert_eq!(account.scan_size, DEFAULT_ACCOUNT_SCAN_SIZE);
-    assert_eq!(
-        account.status,
-        Into::<mystiko_protos::core::v1::AccountStatus>::into(&AccountStatus::Created) as i32
-    );
     let full_pk: FullPk = decode_hex_with_length(&account.public_key).unwrap();
     assert_eq!(
         account.shielded_address,
@@ -71,20 +65,6 @@ async fn test_create_with_name() {
     let account2 = account_handler.create(&options).await.unwrap();
     assert_eq!(account2.name, "Awesome Account 2");
     assert_ne!(account1.shielded_address, account2.shielded_address);
-}
-
-#[tokio::test]
-async fn test_create_with_scan_size() {
-    let (account_handler, _, _) = setup().await;
-    let mut options = CreateAccountOptions::builder()
-        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-        .scan_size(0)
-        .build();
-    let mut account = account_handler.create(&options).await.unwrap();
-    assert_eq!(account.scan_size, DEFAULT_ACCOUNT_SCAN_SIZE);
-    options.scan_size = Some(100);
-    account = account_handler.create(&options).await.unwrap();
-    assert_eq!(account.scan_size, 100);
 }
 
 #[tokio::test]
@@ -164,15 +144,14 @@ async fn test_create_with_same_wallet_mnemonic_phrase() {
 async fn test_find() {
     let (account_handler, _, _) = setup().await;
     assert_eq!(account_handler.find_all().await.unwrap(), vec![]);
-    let mut options = CreateAccountOptions::builder()
+    let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let account1 = account_handler.create(&options).await.unwrap();
     let mut accounts = account_handler.find_all().await.unwrap();
     assert_eq!(accounts, vec![account1.clone()]);
-    options.scan_size = Some(200);
     let account2 = account_handler.create(&options).await.unwrap();
-    let filter = SubFilter::less_equal(AccountColumn::ScanSize, 200u32);
+    let filter = SubFilter::equal(AccountColumn::ShieldedAddress, account2.shielded_address.clone());
     accounts = account_handler.find(filter).await.unwrap();
     assert_eq!(accounts, vec![account2.clone()]);
     accounts = account_handler.find_all().await.unwrap();
@@ -253,15 +232,14 @@ async fn test_find_by_shielded_address() {
 async fn test_count() {
     let (account_handler, _, _) = setup().await;
     assert_eq!(account_handler.count_all().await.unwrap(), 0);
-    let mut options = CreateAccountOptions::builder()
+    let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     account_handler.create(&options).await.unwrap();
     assert_eq!(account_handler.count_all().await.unwrap(), 1);
-    options.scan_size = Some(200);
-    account_handler.create(&options).await.unwrap();
+    let account = account_handler.create(&options).await.unwrap();
     assert_eq!(account_handler.count_all().await.unwrap(), 2);
-    let filter = SubFilter::less_equal(AccountColumn::ScanSize, 200u32);
+    let filter = SubFilter::equal(AccountColumn::ShieldedAddress, account.shielded_address);
     assert_eq!(account_handler.count(filter).await.unwrap(), 1);
 }
 
@@ -295,67 +273,6 @@ async fn test_update_name() {
         .await
         .unwrap();
     assert_eq!(updated_account.name, "Awesome Account Name");
-}
-
-#[tokio::test]
-async fn test_update_scan_size() {
-    let (account_handler, _, _) = setup().await;
-    let options = CreateAccountOptions::builder()
-        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-        .build();
-    let account = account_handler.create(&options).await.unwrap();
-    let mut update_options = UpdateAccountOptions::builder()
-        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-        .scan_size(0)
-        .build();
-    let mut updated_account = account_handler
-        .update_by_public_key(&account.public_key, &update_options)
-        .await
-        .unwrap();
-    assert_eq!(updated_account.scan_size, account.scan_size);
-    assert_eq!(updated_account.updated_at, account.updated_at);
-    update_options.scan_size = Some(account.scan_size);
-    updated_account = account_handler
-        .update_by_shielded_address(&account.shielded_address, &update_options)
-        .await
-        .unwrap();
-    assert_eq!(updated_account.scan_size, account.scan_size);
-    assert_eq!(updated_account.updated_at, account.updated_at);
-    update_options.scan_size = Some(200);
-    updated_account = account_handler
-        .update_by_shielded_address(&account.shielded_address, &update_options)
-        .await
-        .unwrap();
-    assert_eq!(updated_account.scan_size, 200);
-}
-
-#[tokio::test]
-async fn test_update_status() {
-    let (account_handler, _, _) = setup().await;
-    let options = CreateAccountOptions::builder()
-        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-        .build();
-    let account = account_handler.create(&options).await.unwrap();
-    let mut update_options = UpdateAccountOptions::builder()
-        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-        .status(Some(account.status))
-        .build();
-    let mut updated_account = account_handler
-        .update_by_public_key(&account.public_key, &update_options)
-        .await
-        .unwrap();
-    assert_eq!(updated_account.status, account.status);
-    assert_eq!(updated_account.updated_at, account.updated_at);
-    update_options.status =
-        Some(Into::<mystiko_protos::core::v1::AccountStatus>::into(&AccountStatus::Scanning) as i32);
-    updated_account = account_handler
-        .update_by_shielded_address(&account.shielded_address, &update_options)
-        .await
-        .unwrap();
-    assert_eq!(
-        updated_account.status,
-        Into::<mystiko_protos::core::v1::AccountStatus>::into(&AccountStatus::Scanning) as i32
-    );
 }
 
 #[tokio::test]
