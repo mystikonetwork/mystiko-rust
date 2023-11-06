@@ -1,16 +1,26 @@
-use crate::SynchronizerHandler;
+use crate::{Commitment, Contract, Database, Nullifier, SyncLoaderHandler, SynchronizerHandler};
 use async_trait::async_trait;
 use mystiko_config::MystikoConfig;
+use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::fetcher::{PACKER_FETCHER_NAME, PROVIDER_FETCHER_NAME, SEQUENCER_FETCHER_NAME};
+use mystiko_dataloader::handler::{DataHandler, DatabaseHandler};
 use mystiko_dataloader::loader::{
-    DataLoader, LoadFetcherOption, LoadFetcherSkipOption, LoadOption, LoadValidatorOption, LoadValidatorSkipOption,
+    ChainDataLoader, DataLoader, DataLoaderConfigError, FromConfig, LoadFetcherOption, LoadFetcherSkipOption,
+    LoadOption, LoadValidatorOption, LoadValidatorSkipOption, LoaderConfigOptions,
 };
 use mystiko_dataloader::validator::rule::{
     RULE_COUNTER_CHECKER_NAME, RULE_INTEGRITY_CHECKER_NAME, RULE_MERKLE_TREE_CHECKER_NAME, RULE_SEQUENCE_CHECKER_NAME,
     RULE_VALIDATOR_NAME,
 };
 use mystiko_dataloader::DataLoaderError;
+use mystiko_ethers::Providers;
 use mystiko_protos::core::synchronizer::v1::{ChainStatus, ContractStatus, SyncOptions, SynchronizerStatus};
+use mystiko_protos::loader::v1::{
+    FetcherConfig, LoaderConfig, PackerFetcherConfig, RuleValidatorCheckerType, RuleValidatorConfig,
+    SequencerFetcherConfig, ValidatorConfig,
+};
+use mystiko_protos::loader::v1::{FetcherType, ValidatorType};
+use mystiko_storage::{StatementFormatter, Storage};
 use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
@@ -20,7 +30,17 @@ use typed_builder::TypedBuilder;
 #[builder(field_defaults(setter(into)))]
 pub struct Synchronizer<L: DataLoader> {
     mystiko_config: Arc<MystikoConfig>,
-    chains: HashMap<u64, L>,
+    loaders: HashMap<u64, L>,
+}
+
+#[derive(Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct SynchronizerOptions<F: StatementFormatter, S: Storage> {
+    mystiko_config: Arc<MystikoConfig>,
+    providers: Arc<Box<dyn Providers>>,
+    db: Arc<Database<F, S>>,
+    #[builder(default)]
+    loader_config: Option<LoaderConfig>,
 }
 
 #[derive(Debug, Error)]
@@ -29,6 +49,10 @@ pub enum SynchronizerError {
     UnsupportedChainError(u64),
     #[error(transparent)]
     DataLoaderError(#[from] DataLoaderError),
+    #[error(transparent)]
+    DataLoaderConfigError(#[from] DataLoaderConfigError),
+    #[error(transparent)]
+    AnyhowError(#[from] anyhow::Error),
 }
 
 #[async_trait]
@@ -40,7 +64,7 @@ where
 
     async fn chain_synced_block(&self, chain_id: u64) -> Result<Option<u64>, Self::Error> {
         let loader = self
-            .chains
+            .loaders
             .get(&chain_id)
             .ok_or(SynchronizerError::UnsupportedChainError(chain_id))?;
         let result = loader.chain_loaded_block(chain_id).await?;
@@ -49,7 +73,7 @@ where
 
     async fn contract_synced_block(&self, chain_id: u64, contract_address: &str) -> Result<Option<u64>, Self::Error> {
         let loader = self
-            .chains
+            .loaders
             .get(&chain_id)
             .ok_or(SynchronizerError::UnsupportedChainError(chain_id))?;
         let result = loader.contract_loaded_block(chain_id, contract_address).await?;
@@ -58,7 +82,7 @@ where
 
     async fn status(&self, with_contracts: bool) -> Result<SynchronizerStatus, Self::Error> {
         let tasks = self
-            .chains
+            .loaders
             .iter()
             .map(|(chain_id, loader)| self.chain_status(chain_id, loader, with_contracts))
             .collect::<Vec<_>>();
@@ -68,7 +92,7 @@ where
 
     async fn sync(&self, sync_option: SyncOptions) -> Result<(), Self::Error> {
         let chains = if sync_option.chain_ids.is_empty() {
-            self.chains.keys().copied().collect::<Vec<_>>()
+            self.loaders.keys().copied().collect::<Vec<_>>()
         } else {
             sync_option.chain_ids.clone()
         };
@@ -76,7 +100,7 @@ where
         let loader_tasks: Vec<_> = chains
             .iter()
             .filter_map(|chain_id| {
-                if let Some(loader) = self.chains.get(chain_id) {
+                if let Some(loader) = self.loaders.get(chain_id) {
                     Some(self.chain_sync(chain_id, loader, &sync_option))
                 } else {
                     log::warn!("chain(id={:?}) not supported", chain_id);
@@ -86,6 +110,46 @@ where
             .collect();
         let _ = futures::future::join_all(loader_tasks).await;
         Ok(())
+    }
+}
+
+impl Synchronizer<ChainDataLoader<FullData>> {
+    pub async fn new<F: StatementFormatter + 'static, S: Storage + 'static>(
+        options: SynchronizerOptions<F, S>,
+    ) -> Result<Self, SynchronizerError> {
+        let loader_config = options.loader_config.unwrap_or_else(build_default_wallet_loader_config);
+        let collection = options.db.collection();
+        let loader_handle = DatabaseHandler::<FullData, F, S, Contract, Commitment, Nullifier>::builder()
+            .config(options.mystiko_config.clone())
+            .collection(collection)
+            .build();
+        loader_handle.initialize().await?;
+        let sync_handler = SyncLoaderHandler::builder()
+            .db(options.db.clone())
+            .raw(loader_handle)
+            .build();
+        let handler = Arc::new(Box::new(sync_handler) as Box<dyn DataHandler<FullData>>);
+
+        let tasks = options.mystiko_config.chains().into_iter().map(|chain_cfg| {
+            let chain_id = chain_cfg.chain_id();
+            let option = LoaderConfigOptions::builder()
+                .chain_id(chain_id)
+                .config(loader_config.clone())
+                .providers(options.providers.clone())
+                .handler(handler.clone())
+                .build();
+            async move {
+                let loader = ChainDataLoader::from_config(&option).await?;
+                Ok((chain_id, loader)) as Result<_, SynchronizerError>
+            }
+        });
+        let results = futures::future::try_join_all(tasks).await?;
+        let loaders = results.into_iter().collect::<HashMap<_, _>>();
+
+        Ok(Self::builder()
+            .mystiko_config(options.mystiko_config)
+            .loaders(loaders)
+            .build())
     }
 }
 
@@ -212,4 +276,35 @@ where
         }
         options
     }
+}
+
+fn build_default_wallet_loader_config() -> LoaderConfig {
+    let fetchers = HashMap::from([
+        (1, FetcherType::Packer as i32),
+        (2, FetcherType::Sequencer as i32),
+        (3, FetcherType::Provider as i32),
+    ]);
+    let fetcher_config = FetcherConfig::builder()
+        .packer(PackerFetcherConfig::builder().skip_validation(true).build())
+        .sequencer(SequencerFetcherConfig::builder().skip_validation(true).build())
+        .build();
+
+    let validators = HashMap::from([(1, ValidatorType::Rule as i32)]);
+    let validator_config = ValidatorConfig::builder()
+        .rule({
+            let checkers = HashMap::from([
+                (1, RuleValidatorCheckerType::Integrity as i32),
+                (2, RuleValidatorCheckerType::Sequence as i32),
+                (3, RuleValidatorCheckerType::Counter as i32),
+                (4, RuleValidatorCheckerType::Tree as i32),
+            ]);
+            RuleValidatorConfig::builder().checkers(checkers).build()
+        })
+        .build();
+    LoaderConfig::builder()
+        .fetchers(fetchers)
+        .fetcher_config(fetcher_config)
+        .validators(validators)
+        .validator_config(validator_config)
+        .build()
 }

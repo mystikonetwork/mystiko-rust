@@ -194,7 +194,7 @@ where
                 .into_iter()
                 .filter_map(|deposit| {
                     cms.get(&deposit.data.commitment_hash)
-                        .map(|c| update_deposit_by_commitment_status(&deposit, c))
+                        .map(|c| update_deposit_by_commitment_status(deposit, c))
                 })
                 .collect::<Result<Vec<_>, _>>()?;
 
@@ -250,22 +250,21 @@ fn build_filter_by_commitment_status(
 }
 
 fn update_deposit_by_commitment_status(
-    deposit: &Document<Deposit>,
+    mut deposit: Document<Deposit>,
     cm: &Commitment,
 ) -> SyncLoaderHandlerResult<Document<Deposit>> {
-    let mut updated_deposit = deposit.clone();
     match CommitmentStatus::from_i32(cm.status) {
         Some(CommitmentStatus::SrcSucceeded) => {
             if let Some(tx) = cm.src_chain_transaction_hash_as_hex() {
-                updated_deposit.data.transaction_hash = Some(tx);
+                deposit.data.transaction_hash = Some(tx);
             }
-            updated_deposit.data.status = DepositStatus::SrcSucceeded as i32;
+            deposit.data.status = DepositStatus::SrcSucceeded as i32;
         }
         Some(CommitmentStatus::Queued) => {
-            updated_deposit.data.status = DepositStatus::Queued as i32;
+            deposit.data.status = DepositStatus::Queued as i32;
         }
         Some(CommitmentStatus::Included) => {
-            updated_deposit.data.status = DepositStatus::Included as i32;
+            deposit.data.status = DepositStatus::Included as i32;
         }
         Some(s) => {
             return Err(SyncLoaderHandlerError::CommitmentStatusError(
@@ -281,12 +280,12 @@ fn update_deposit_by_commitment_status(
     }
 
     if let Some(tx) = cm.queued_transaction_hash_as_hex() {
-        updated_deposit.data.queued_transaction_hash = Some(tx);
+        deposit.data.queued_transaction_hash = Some(tx);
     }
 
     if let Some(tx) = cm.included_transaction_hash_as_hex() {
-        updated_deposit.data.included_transaction_hash = Some(tx);
+        deposit.data.included_transaction_hash = Some(tx);
     }
 
-    Ok(updated_deposit)
+    Ok(deposit)
 }
