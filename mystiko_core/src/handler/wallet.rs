@@ -1,16 +1,18 @@
-use crate::{Database, MystikoError, Result, Wallet};
+use crate::{Database, Wallet};
 use bip32::{Language, Mnemonic, KEY_SIZE};
 use lazy_static::lazy_static;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
+use mystiko_crypto::error::CryptoError;
 use mystiko_crypto::hash::checksum;
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter};
-use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage};
+use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage, StorageError};
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use rand_core::OsRng;
 use regex::Regex;
 use std::sync::Arc;
+use thiserror::Error;
 
 lazy_static! {
     static ref PASSWORD_LOWER_REGEX: Regex = Regex::new(r"[a-z]").unwrap();
@@ -31,6 +33,26 @@ const PASSWORD_HINT: &str = "\
 pub struct WalletHandler<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
 }
+
+#[derive(Debug, Error)]
+pub enum WalletHandlerError {
+    #[error(transparent)]
+    StorageError(#[from] StorageError),
+    #[error(transparent)]
+    CryptoError(#[from] CryptoError),
+    #[error(transparent)]
+    HexStringError(#[from] rustc_hex::FromHexError),
+    #[error(transparent)]
+    MnemonicError(#[from] bip32::Error),
+    #[error("invalid password: {0:?}")]
+    InvalidPasswordError(String),
+    #[error("password is wrong")]
+    MismatchedPasswordError,
+    #[error("no existing wallet found")]
+    NoExistingWalletError,
+}
+
+type Result<T> = std::result::Result<T, WalletHandlerError>;
 
 impl<F, S> WalletHandler<F, S>
 where
@@ -66,7 +88,7 @@ where
             .wallets
             .insert(&wallet)
             .await
-            .map_err(MystikoError::StorageError)?;
+            .map_err(WalletHandlerError::StorageError)?;
         log::info!("successfully created a wallet(id = \"{}\")", wallet.id);
         Ok(Wallet::document_into_proto(wallet))
     }
@@ -92,7 +114,7 @@ where
             .wallets
             .update(&wallet)
             .await
-            .map_err(MystikoError::StorageError)?;
+            .map_err(WalletHandlerError::StorageError)?;
         log::info!(
             "successfully updated the password of the wallet(id = \"{}\")",
             wallet.id
@@ -125,14 +147,14 @@ where
             .wallets
             .find_one(filter)
             .await
-            .map_err(MystikoError::StorageError)
+            .map_err(WalletHandlerError::StorageError)
     }
 
     pub(crate) async fn check_document_current(&self) -> Result<Document<Wallet>> {
         if let Some(wallet) = self.current_document().await? {
             Ok(wallet)
         } else {
-            Err(MystikoError::NoExistingWalletError)
+            Err(WalletHandlerError::NoExistingWalletError)
         }
     }
 
@@ -142,7 +164,7 @@ where
         if wallet.data.hashed_password == hashed_password {
             Ok(wallet)
         } else {
-            Err(MystikoError::MismatchedPasswordError)
+            Err(WalletHandlerError::MismatchedPasswordError)
         }
     }
 }
@@ -156,6 +178,6 @@ fn validate_password(password: &str) -> Result<()> {
     {
         Ok(())
     } else {
-        Err(MystikoError::InvalidPasswordError(PASSWORD_HINT.to_string()))
+        Err(WalletHandlerError::InvalidPasswordError(PASSWORD_HINT.to_string()))
     }
 }

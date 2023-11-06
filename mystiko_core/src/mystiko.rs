@@ -1,26 +1,35 @@
-use crate::{AccountHandler, Database, MystikoError, WalletHandler};
+use crate::{
+    AccountHandler, Database, MystikoError, Synchronizer, SynchronizerHandler, SynchronizerOptions, WalletHandler,
+};
 use anyhow::Result;
 use mystiko_config::MystikoConfig;
-use mystiko_ethers::{ChainConfigProvidersOptions, ProviderFactory, ProviderPool};
+use mystiko_dataloader::data::FullData;
+use mystiko_dataloader::loader::ChainDataLoader;
+use mystiko_ethers::{ChainConfigProvidersOptions, ProviderFactory, ProviderPool, Providers};
 use mystiko_protos::common::v1::{ConfigOptions, ConfigOptionsOption};
+use mystiko_protos::core::synchronizer::v1::{SyncOptions, SynchronizerStatus};
+use mystiko_protos::loader::v1::LoaderConfig;
 use mystiko_storage::{StatementFormatter, Storage};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-pub struct Mystiko<F: StatementFormatter, S: Storage> {
+pub struct Mystiko<
+    F: StatementFormatter,
+    S: Storage,
+    Y: SynchronizerHandler<SyncOptions, SynchronizerStatus> = Synchronizer<ChainDataLoader<FullData>>,
+> {
     pub db: Arc<Database<F, S>>,
     pub config: Arc<MystikoConfig>,
     pub accounts: AccountHandler<F, S>,
     pub wallets: WalletHandler<F, S>,
-    pub providers: Arc<ProviderPool<ChainConfigProvidersOptions>>,
+    pub synchronizer: Y,
 }
 
 #[derive(Debug, TypedBuilder)]
-#[builder(field_defaults(setter(into)))]
+#[builder(field_defaults(default, setter(into)))]
 pub struct MystikoOptions {
-    #[builder(default)]
     pub config_options: Option<ConfigOptions>,
-    #[builder(default)]
+    pub loader_config: Option<LoaderConfig>,
     pub provider_factory: Option<Box<dyn ProviderFactory>>,
 }
 
@@ -45,12 +54,22 @@ where
             } else {
                 config.clone().into()
             };
+        let providers = Arc::new(Box::new(providers) as Box<dyn Providers>);
+        let synchronizer = Synchronizer::new(
+            SynchronizerOptions::<F, S>::builder()
+                .db(db.clone())
+                .mystiko_config(config.clone())
+                .providers(providers.clone())
+                .loader_config(mystiko_options.loader_config)
+                .build(),
+        )
+        .await?;
         let mystiko = Self {
             db,
             config: config.clone(),
             accounts,
             wallets,
-            providers: Arc::new(providers),
+            synchronizer,
         };
         log::info!(
             "mystiko on {} has been initialized, config git revision {}",

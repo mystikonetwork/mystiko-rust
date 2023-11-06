@@ -46,7 +46,7 @@ async fn test_create_with_config_options() {
 }
 
 #[tokio::test]
-async fn test_crete_with_provider_factory() {
+async fn test_create_with_provider_factory() {
     let database = create_database().await;
     let mystiko_options = MystikoOptions::builder()
         .config_options(
