@@ -13,9 +13,6 @@ impl serde::Serialize for CreateAccountOptions {
         if self.name.is_some() {
             len += 1;
         }
-        if self.scan_size.is_some() {
-            len += 1;
-        }
         if self.secret_key.is_some() {
             len += 1;
         }
@@ -25,9 +22,6 @@ impl serde::Serialize for CreateAccountOptions {
         }
         if let Some(v) = self.name.as_ref() {
             struct_ser.serialize_field("name", v)?;
-        }
-        if let Some(v) = self.scan_size.as_ref() {
-            struct_ser.serialize_field("scanSize", v)?;
         }
         if let Some(v) = self.secret_key.as_ref() {
             struct_ser.serialize_field("secretKey", v)?;
@@ -45,8 +39,6 @@ impl<'de> serde::Deserialize<'de> for CreateAccountOptions {
             "wallet_password",
             "walletPassword",
             "name",
-            "scan_size",
-            "scanSize",
             "secret_key",
             "secretKey",
         ];
@@ -55,7 +47,6 @@ impl<'de> serde::Deserialize<'de> for CreateAccountOptions {
         enum GeneratedField {
             WalletPassword,
             Name,
-            ScanSize,
             SecretKey,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -80,7 +71,6 @@ impl<'de> serde::Deserialize<'de> for CreateAccountOptions {
                         match value {
                             "walletPassword" | "wallet_password" => Ok(GeneratedField::WalletPassword),
                             "name" => Ok(GeneratedField::Name),
-                            "scanSize" | "scan_size" => Ok(GeneratedField::ScanSize),
                             "secretKey" | "secret_key" => Ok(GeneratedField::SecretKey),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -103,7 +93,6 @@ impl<'de> serde::Deserialize<'de> for CreateAccountOptions {
             {
                 let mut wallet_password__ = None;
                 let mut name__ = None;
-                let mut scan_size__ = None;
                 let mut secret_key__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -119,14 +108,6 @@ impl<'de> serde::Deserialize<'de> for CreateAccountOptions {
                             }
                             name__ = map.next_value()?;
                         }
-                        GeneratedField::ScanSize => {
-                            if scan_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("scanSize"));
-                            }
-                            scan_size__ = 
-                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
-                            ;
-                        }
                         GeneratedField::SecretKey => {
                             if secret_key__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("secretKey"));
@@ -138,7 +119,6 @@ impl<'de> serde::Deserialize<'de> for CreateAccountOptions {
                 Ok(CreateAccountOptions {
                     wallet_password: wallet_password__.unwrap_or_default(),
                     name: name__,
-                    scan_size: scan_size__,
                     secret_key: secret_key__,
                 })
             }
@@ -269,26 +249,12 @@ impl serde::Serialize for UpdateAccountOptions {
         if self.name.is_some() {
             len += 1;
         }
-        if self.scan_size.is_some() {
-            len += 1;
-        }
-        if self.status.is_some() {
-            len += 1;
-        }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.handler.v1.UpdateAccountOptions", len)?;
         if !self.wallet_password.is_empty() {
             struct_ser.serialize_field("walletPassword", &self.wallet_password)?;
         }
         if let Some(v) = self.name.as_ref() {
             struct_ser.serialize_field("name", v)?;
-        }
-        if let Some(v) = self.scan_size.as_ref() {
-            struct_ser.serialize_field("scanSize", v)?;
-        }
-        if let Some(v) = self.status.as_ref() {
-            let v = super::super::v1::AccountStatus::from_i32(*v)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
-            struct_ser.serialize_field("status", &v)?;
         }
         struct_ser.end()
     }
@@ -303,17 +269,12 @@ impl<'de> serde::Deserialize<'de> for UpdateAccountOptions {
             "wallet_password",
             "walletPassword",
             "name",
-            "scan_size",
-            "scanSize",
-            "status",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             WalletPassword,
             Name,
-            ScanSize,
-            Status,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -337,8 +298,6 @@ impl<'de> serde::Deserialize<'de> for UpdateAccountOptions {
                         match value {
                             "walletPassword" | "wallet_password" => Ok(GeneratedField::WalletPassword),
                             "name" => Ok(GeneratedField::Name),
-                            "scanSize" | "scan_size" => Ok(GeneratedField::ScanSize),
-                            "status" => Ok(GeneratedField::Status),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -360,8 +319,6 @@ impl<'de> serde::Deserialize<'de> for UpdateAccountOptions {
             {
                 let mut wallet_password__ = None;
                 let mut name__ = None;
-                let mut scan_size__ = None;
-                let mut status__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::WalletPassword => {
@@ -376,27 +333,11 @@ impl<'de> serde::Deserialize<'de> for UpdateAccountOptions {
                             }
                             name__ = map.next_value()?;
                         }
-                        GeneratedField::ScanSize => {
-                            if scan_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("scanSize"));
-                            }
-                            scan_size__ = 
-                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
-                            ;
-                        }
-                        GeneratedField::Status => {
-                            if status__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("status"));
-                            }
-                            status__ = map.next_value::<::std::option::Option<super::super::v1::AccountStatus>>()?.map(|x| x as i32);
-                        }
                     }
                 }
                 Ok(UpdateAccountOptions {
                     wallet_password: wallet_password__.unwrap_or_default(),
                     name: name__,
-                    scan_size: scan_size__,
-                    status: status__,
                 })
             }
         }

@@ -50,22 +50,6 @@ pub enum ProviderType {
     Failover,
     Quorum,
 }
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum AccountStatus {
-    Created,
-    Scanning,
-    Scanned,
-}
-
-// #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-// #[serde(rename_all = "camelCase")]
-// pub enum SpendType {
-//     Transfer,
-//     Withdraw,
-// }
-
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum NetworkType {

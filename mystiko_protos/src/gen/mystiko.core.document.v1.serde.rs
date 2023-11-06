@@ -28,13 +28,10 @@ impl serde::Serialize for Account {
         if !self.encrypted_secret_key.is_empty() {
             len += 1;
         }
-        if self.scan_size != 0 {
-            len += 1;
-        }
         if !self.wallet_id.is_empty() {
             len += 1;
         }
-        if self.status != 0 {
+        if self.scanned_to_id.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.document.v1.Account", len)?;
@@ -59,16 +56,11 @@ impl serde::Serialize for Account {
         if !self.encrypted_secret_key.is_empty() {
             struct_ser.serialize_field("encryptedSecretKey", &self.encrypted_secret_key)?;
         }
-        if self.scan_size != 0 {
-            struct_ser.serialize_field("scanSize", &self.scan_size)?;
-        }
         if !self.wallet_id.is_empty() {
             struct_ser.serialize_field("walletId", &self.wallet_id)?;
         }
-        if self.status != 0 {
-            let v = super::super::v1::AccountStatus::from_i32(self.status)
-                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.status)))?;
-            struct_ser.serialize_field("status", &v)?;
+        if let Some(v) = self.scanned_to_id.as_ref() {
+            struct_ser.serialize_field("scannedToId", v)?;
         }
         struct_ser.end()
     }
@@ -92,11 +84,10 @@ impl<'de> serde::Deserialize<'de> for Account {
             "publicKey",
             "encrypted_secret_key",
             "encryptedSecretKey",
-            "scan_size",
-            "scanSize",
             "wallet_id",
             "walletId",
-            "status",
+            "scanned_to_id",
+            "scannedToId",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -108,9 +99,8 @@ impl<'de> serde::Deserialize<'de> for Account {
             ShieldedAddress,
             PublicKey,
             EncryptedSecretKey,
-            ScanSize,
             WalletId,
-            Status,
+            ScannedToId,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -139,9 +129,8 @@ impl<'de> serde::Deserialize<'de> for Account {
                             "shieldedAddress" | "shielded_address" => Ok(GeneratedField::ShieldedAddress),
                             "publicKey" | "public_key" => Ok(GeneratedField::PublicKey),
                             "encryptedSecretKey" | "encrypted_secret_key" => Ok(GeneratedField::EncryptedSecretKey),
-                            "scanSize" | "scan_size" => Ok(GeneratedField::ScanSize),
                             "walletId" | "wallet_id" => Ok(GeneratedField::WalletId),
-                            "status" => Ok(GeneratedField::Status),
+                            "scannedToId" | "scanned_to_id" => Ok(GeneratedField::ScannedToId),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -168,9 +157,8 @@ impl<'de> serde::Deserialize<'de> for Account {
                 let mut shielded_address__ = None;
                 let mut public_key__ = None;
                 let mut encrypted_secret_key__ = None;
-                let mut scan_size__ = None;
                 let mut wallet_id__ = None;
-                let mut status__ = None;
+                let mut scanned_to_id__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Id => {
@@ -219,25 +207,17 @@ impl<'de> serde::Deserialize<'de> for Account {
                             }
                             encrypted_secret_key__ = Some(map.next_value()?);
                         }
-                        GeneratedField::ScanSize => {
-                            if scan_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("scanSize"));
-                            }
-                            scan_size__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
                         GeneratedField::WalletId => {
                             if wallet_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("walletId"));
                             }
                             wallet_id__ = Some(map.next_value()?);
                         }
-                        GeneratedField::Status => {
-                            if status__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("status"));
+                        GeneratedField::ScannedToId => {
+                            if scanned_to_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("scannedToId"));
                             }
-                            status__ = Some(map.next_value::<super::super::v1::AccountStatus>()? as i32);
+                            scanned_to_id__ = map.next_value()?;
                         }
                     }
                 }
@@ -249,9 +229,8 @@ impl<'de> serde::Deserialize<'de> for Account {
                     shielded_address: shielded_address__.unwrap_or_default(),
                     public_key: public_key__.unwrap_or_default(),
                     encrypted_secret_key: encrypted_secret_key__.unwrap_or_default(),
-                    scan_size: scan_size__.unwrap_or_default(),
                     wallet_id: wallet_id__.unwrap_or_default(),
-                    status: status__.unwrap_or_default(),
+                    scanned_to_id: scanned_to_id__,
                 })
             }
         }

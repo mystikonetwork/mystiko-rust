@@ -9,6 +9,14 @@ pub mod mystiko {
                 // @@protoc_insertion_point(mystiko.api.config.v1)
             }
         }
+        pub mod handler {
+            #[cfg(feature = "mystiko-api-handler-v1")]
+            // @@protoc_insertion_point(attribute:mystiko.api.handler.v1)
+            pub mod v1 {
+                include!("mystiko.api.handler.v1.rs");
+                // @@protoc_insertion_point(mystiko.api.handler.v1)
+            }
+        }
         #[cfg(feature = "mystiko-api-v1")]
         // @@protoc_insertion_point(attribute:mystiko.api.v1)
         pub mod v1 {
@@ -63,6 +71,14 @@ pub mod mystiko {
             pub mod v1 {
                 include!("mystiko.core.handler.v1.rs");
                 // @@protoc_insertion_point(mystiko.core.handler.v1)
+            }
+        }
+        pub mod scanner {
+            #[cfg(feature = "mystiko-core-scanner-v1")]
+            // @@protoc_insertion_point(attribute:mystiko.core.scanner.v1)
+            pub mod v1 {
+                include!("mystiko.core.scanner.v1.rs");
+                // @@protoc_insertion_point(mystiko.core.scanner.v1)
             }
         }
         pub mod synchronizer {

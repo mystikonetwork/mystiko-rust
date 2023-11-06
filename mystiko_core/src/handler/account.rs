@@ -11,11 +11,9 @@ use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, UpdateAccountOptions};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage};
-use mystiko_types::AccountStatus;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
 
-pub const DEFAULT_ACCOUNT_SCAN_SIZE: u32 = 10000;
 // m/purpose/coin_type/account/key_type/address_index
 pub const DEFAULT_KEY_DERIVE_PATH: &str = "m/44'/94085'/0'";
 
@@ -231,20 +229,6 @@ where
                     has_update = true;
                 }
             }
-            if let Some(new_scan_size) = options.scan_size {
-                if new_scan_size > 0 && new_scan_size != account.data.scan_size {
-                    account.data.scan_size = new_scan_size;
-                    has_update = true;
-                }
-            }
-            let status = options.status();
-            if status != mystiko_protos::core::v1::AccountStatus::Unspecified {
-                let account_status: AccountStatus = status.into();
-                if account_status != account.data.status {
-                    account.data.status = account_status;
-                    has_update = true;
-                }
-            }
             if has_update {
                 let updated_account = self
                     .db
@@ -328,23 +312,13 @@ where
         } else {
             self.default_account_name().await?
         };
-        let scan_size: u32 = if let Some(scan_size) = &options.scan_size {
-            if *scan_size > 0 {
-                *scan_size
-            } else {
-                DEFAULT_ACCOUNT_SCAN_SIZE
-            }
-        } else {
-            DEFAULT_ACCOUNT_SCAN_SIZE
-        };
         let account = Account {
             name: account_name,
             shielded_address: shielded_address.address(),
             public_key: encode_hex(full_pk),
             encrypted_secret_key: encrypted_sk,
-            status: AccountStatus::Created,
-            scan_size,
             wallet_id: wallet.id.clone(),
+            scanned_to_id: None,
         };
         Ok((account, account_nonce))
     }

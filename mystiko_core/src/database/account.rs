@@ -1,7 +1,6 @@
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_storage::{Document, DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
-use mystiko_types::AccountStatus;
 use serde::{Deserialize, Serialize};
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
@@ -13,11 +12,10 @@ pub struct Account {
     #[column(length_limit = 255)]
     pub public_key: String,
     pub encrypted_secret_key: String,
-    #[column(length_limit = 32)]
-    pub status: AccountStatus,
-    pub scan_size: u32,
     #[column(length_limit = 64)]
     pub wallet_id: String,
+    #[column(length_limit = 64)]
+    pub scanned_to_id: Option<String>,
 }
 
 fn uniques() -> Vec<UniqueColumns> {
@@ -37,7 +35,6 @@ fn indexes() -> Vec<IndexColumns> {
 
 impl Account {
     pub fn document_from_proto(proto: ProtoAccount) -> Document<Account> {
-        let status = proto.status().into();
         Document::new(
             proto.id,
             proto.created_at,
@@ -47,9 +44,8 @@ impl Account {
                 shielded_address: proto.shielded_address,
                 public_key: proto.public_key,
                 encrypted_secret_key: proto.encrypted_secret_key,
-                status,
-                scan_size: proto.scan_size,
                 wallet_id: proto.wallet_id,
+                scanned_to_id: proto.scanned_to_id,
             },
         )
     }
@@ -63,11 +59,8 @@ impl Account {
             .shielded_address(account.data.shielded_address)
             .public_key(account.data.public_key)
             .encrypted_secret_key(account.data.encrypted_secret_key)
-            .scan_size(account.data.scan_size)
             .wallet_id(account.data.wallet_id)
-            .status(Into::<mystiko_protos::core::v1::AccountStatus>::into(
-                &account.data.status,
-            ))
+            .scanned_to_id(account.data.scanned_to_id)
             .build()
     }
 }
