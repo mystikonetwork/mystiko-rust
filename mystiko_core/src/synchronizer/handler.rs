@@ -1,6 +1,6 @@
 use crate::{Commitment, Contract, Database, Nullifier, SyncLoaderHandler, SynchronizerHandler};
 use async_trait::async_trait;
-use mystiko_config::MystikoConfig;
+use mystiko_config::{ChainConfig, MystikoConfig};
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::fetcher::{PACKER_FETCHER_NAME, PROVIDER_FETCHER_NAME, SEQUENCER_FETCHER_NAME};
 use mystiko_dataloader::handler::{DataHandler, DatabaseHandler};
@@ -16,8 +16,8 @@ use mystiko_dataloader::DataLoaderError;
 use mystiko_ethers::Providers;
 use mystiko_protos::core::synchronizer::v1::{ChainStatus, ContractStatus, SyncOptions, SynchronizerStatus};
 use mystiko_protos::loader::v1::{
-    FetcherConfig, LoaderConfig, PackerFetcherConfig, RuleValidatorCheckerType, RuleValidatorConfig,
-    SequencerFetcherConfig, ValidatorConfig,
+    FetcherConfig, LoaderConfig, PackerFetcherConfig, ProviderFetcherChainConfig, ProviderFetcherConfig,
+    RuleValidatorCheckerType, RuleValidatorConfig, SequencerFetcherConfig, ValidatorConfig,
 };
 use mystiko_protos::loader::v1::{FetcherType, ValidatorType};
 use mystiko_storage::{StatementFormatter, Storage};
@@ -25,6 +25,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
+
+const DEFAULT_PROVIDER_FETCHER_DELAY_BLOCK_MULTIPLE: u64 = 3;
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
@@ -117,7 +119,6 @@ impl Synchronizer<ChainDataLoader<FullData>> {
     pub async fn new<F: StatementFormatter + 'static, S: Storage + 'static>(
         options: SynchronizerOptions<F, S>,
     ) -> Result<Self, SynchronizerError> {
-        let loader_config = options.loader_config.unwrap_or_else(build_default_wallet_loader_config);
         let collection = options.db.collection();
         let loader_handle = DatabaseHandler::<FullData, F, S, Contract, Commitment, Nullifier>::builder()
             .config(options.mystiko_config.clone())
@@ -132,6 +133,10 @@ impl Synchronizer<ChainDataLoader<FullData>> {
 
         let tasks = options.mystiko_config.chains().into_iter().map(|chain_cfg| {
             let chain_id = chain_cfg.chain_id();
+            let loader_config = options
+                .loader_config
+                .clone()
+                .unwrap_or_else(|| build_default_wallet_loader_config(chain_cfg));
             let option = LoaderConfigOptions::builder()
                 .chain_id(chain_id)
                 .config(loader_config.clone())
@@ -279,15 +284,24 @@ where
     }
 }
 
-fn build_default_wallet_loader_config() -> LoaderConfig {
+fn build_default_wallet_loader_config(chain_config: &ChainConfig) -> LoaderConfig {
     let fetchers = HashMap::from([
         (1, FetcherType::Packer as i32),
         (2, FetcherType::Sequencer as i32),
         (3, FetcherType::Provider as i32),
     ]);
+
+    let provider_chain_config = HashMap::from([(
+        chain_config.chain_id(),
+        ProviderFetcherChainConfig::builder()
+            .delay_num_blocks(chain_config.event_delay_blocks() * DEFAULT_PROVIDER_FETCHER_DELAY_BLOCK_MULTIPLE)
+            .build(),
+    )]);
+
     let fetcher_config = FetcherConfig::builder()
         .packer(PackerFetcherConfig::builder().skip_validation(true).build())
         .sequencer(SequencerFetcherConfig::builder().skip_validation(true).build())
+        .provider(ProviderFetcherConfig::builder().chains(provider_chain_config).build())
         .build();
 
     let validators = HashMap::from([(1, ValidatorType::Rule as i32)]);
