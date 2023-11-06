@@ -94,7 +94,12 @@ mod internal {
                 let database = Database::new(SqlStatementFormatter::sqlite(), storage);
                 let mystiko = Mystiko::new(
                     database,
-                    Some(MystikoOptions::builder().config_options(options.config_options).build()),
+                    Some(
+                        MystikoOptions::builder()
+                            .config_options(options.config_options)
+                            .loader_config(options.loader_config)
+                            .build(),
+                    ),
                 )
                 .await?;
                 mystiko_guard.initialize(mystiko);

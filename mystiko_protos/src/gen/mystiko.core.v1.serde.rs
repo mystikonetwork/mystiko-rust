@@ -945,12 +945,18 @@ impl serde::Serialize for MystikoOptions {
         if self.config_options.is_some() {
             len += 1;
         }
+        if self.loader_config.is_some() {
+            len += 1;
+        }
         if self.db_path.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.MystikoOptions", len)?;
         if let Some(v) = self.config_options.as_ref() {
             struct_ser.serialize_field("configOptions", v)?;
+        }
+        if let Some(v) = self.loader_config.as_ref() {
+            struct_ser.serialize_field("loaderConfig", v)?;
         }
         if let Some(v) = self.db_path.as_ref() {
             struct_ser.serialize_field("dbPath", v)?;
@@ -967,6 +973,8 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
         const FIELDS: &[&str] = &[
             "config_options",
             "configOptions",
+            "loader_config",
+            "loaderConfig",
             "db_path",
             "dbPath",
         ];
@@ -974,6 +982,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             ConfigOptions,
+            LoaderConfig,
             DbPath,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -997,6 +1006,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                     {
                         match value {
                             "configOptions" | "config_options" => Ok(GeneratedField::ConfigOptions),
+                            "loaderConfig" | "loader_config" => Ok(GeneratedField::LoaderConfig),
                             "dbPath" | "db_path" => Ok(GeneratedField::DbPath),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -1018,6 +1028,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut config_options__ = None;
+                let mut loader_config__ = None;
                 let mut db_path__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -1026,6 +1037,12 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                                 return Err(serde::de::Error::duplicate_field("configOptions"));
                             }
                             config_options__ = map.next_value()?;
+                        }
+                        GeneratedField::LoaderConfig => {
+                            if loader_config__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("loaderConfig"));
+                            }
+                            loader_config__ = map.next_value()?;
                         }
                         GeneratedField::DbPath => {
                             if db_path__.is_some() {
@@ -1037,6 +1054,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                 }
                 Ok(MystikoOptions {
                     config_options: config_options__,
+                    loader_config: loader_config__,
                     db_path: db_path__,
                 })
             }
