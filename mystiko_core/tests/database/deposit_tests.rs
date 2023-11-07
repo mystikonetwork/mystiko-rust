@@ -1,10 +1,10 @@
 use mystiko_core::{Deposit, DepositCollection, DepositColumn};
 use mystiko_protos::common::v1::BridgeType;
+use mystiko_protos::core::document::v1::Deposit as ProtoDeposit;
 use mystiko_protos::core::v1::DepositStatus;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
-use num_bigint::BigUint;
 use std::sync::Arc;
 
 async fn create_deposits() -> DepositCollection<SqlStatementFormatter, SqliteStorage> {
@@ -27,21 +27,21 @@ async fn test_deposits_crud() {
                 chain_id: 1,
                 contract_address: String::from("contract_address 1"),
                 pool_address: String::from("pool_address 1"),
-                commitment_hash: BigUint::from(1u32),
-                hash_k: BigUint::from(11u32),
-                random_s: BigUint::from(111u32),
+                commitment_hash: String::from("1"),
+                hash_k: String::from("11"),
+                random_s: String::from("111"),
                 encrypted_note: String::from("encrypted_note 1"),
                 asset_symbol: String::from("asset_symbol 1"),
-                asset_decimals: 6,
                 asset_address: Some(String::from("asset_address 1")),
                 bridge_type: BridgeType::Axelar as i32,
-                amount: BigUint::from(101u32),
-                rollup_fee_amount: BigUint::from(102u32),
-                bridge_fee_amount: BigUint::from(103u32),
+                amount: 101_f64,
+                rollup_fee_amount: 102_f64,
+                bridge_fee_amount: Some(103_f64),
                 bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 1")),
-                executor_fee_amount: BigUint::from(104u32),
+                bridge_fee_asset_symbol: Some(String::from("MTT")),
+                executor_fee_amount: Some(104_f64),
                 executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
-                service_fee_amount: BigUint::from(105u32),
+                executor_fee_asset_symbol: Some(String::from("STT")),
                 shielded_recipient_address: String::from("shielded_recipient_address 1"),
                 status: DepositStatus::Unspecified as i32,
                 error_message: Some(String::from("error_message 1")),
@@ -50,7 +50,7 @@ async fn test_deposits_crud() {
                 dst_chain_contract_address: String::from("dst_chain_contract_address 1"),
                 dst_pool_address: String::from("dst_pool_address 1"),
                 asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
-                transaction_hash: Some(String::from("transaction_hash 1")),
+                src_chain_transaction_hash: Some(String::from("transaction_hash 1")),
                 queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
                 included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
             })
@@ -64,21 +64,21 @@ async fn test_deposits_crud() {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
                     pool_address: String::from("pool_address 2"),
-                    commitment_hash: BigUint::from(2u32),
-                    hash_k: BigUint::from(22u32),
-                    random_s: BigUint::from(222u32),
+                    commitment_hash: String::from("2"),
+                    hash_k: String::from("22"),
+                    random_s: String::from("222"),
                     encrypted_note: String::from("encrypted_note 2"),
                     asset_symbol: String::from("asset_symbol 2"),
-                    asset_decimals: 12,
                     asset_address: Some(String::from("asset_address 2")),
                     bridge_type: BridgeType::Celer as i32,
-                    amount: BigUint::from(201u32),
-                    rollup_fee_amount: BigUint::from(202u32),
-                    bridge_fee_amount: BigUint::from(203u32),
+                    amount: 201_f64,
+                    rollup_fee_amount: 202_f64,
+                    bridge_fee_amount: Some(203_f64),
                     bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 2")),
-                    executor_fee_amount: BigUint::from(204u32),
+                    bridge_fee_asset_symbol: Some(String::from("MTT")),
+                    executor_fee_amount: Some(204_f64),
                     executor_fee_asset_address: Some(String::from("executor_fee_asset_address 2")),
-                    service_fee_amount: BigUint::from(205u32),
+                    executor_fee_asset_symbol: Some(String::from("STT")),
                     shielded_recipient_address: String::from("shielded_recipient_address 2"),
                     status: DepositStatus::Included as i32,
                     error_message: Some(String::from("error_message 2")),
@@ -87,7 +87,7 @@ async fn test_deposits_crud() {
                     dst_chain_contract_address: String::from("dst_chain_contract_address 2"),
                     dst_pool_address: String::from("dst_pool_address 2"),
                     asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 2")),
-                    transaction_hash: Some(String::from("transaction_hash 2")),
+                    src_chain_transaction_hash: Some(String::from("transaction_hash 2")),
                     queued_transaction_hash: Some(String::from("relay_transaction_hash 2")),
                     included_transaction_hash: Some(String::from("rollup_transaction_hash 2")),
                 },
@@ -95,21 +95,21 @@ async fn test_deposits_crud() {
                     chain_id: 3,
                     contract_address: String::from("contract_address 3"),
                     pool_address: String::from("pool_address 3"),
-                    commitment_hash: BigUint::from(3u32),
-                    hash_k: BigUint::from(33u32),
-                    random_s: BigUint::from(333u32),
+                    commitment_hash: String::from("3"),
+                    hash_k: String::from("33"),
+                    random_s: String::from("333"),
                     encrypted_note: String::from("encrypted_note 3"),
                     asset_symbol: String::from("asset_symbol 3"),
-                    asset_decimals: 18,
                     asset_address: Some(String::from("asset_address 3")),
                     bridge_type: BridgeType::LayerZero as i32,
-                    amount: BigUint::from(301u32),
-                    rollup_fee_amount: BigUint::from(302u32),
-                    bridge_fee_amount: BigUint::from(303u32),
+                    amount: 301_f64,
+                    rollup_fee_amount: 302_f64,
+                    bridge_fee_amount: Some(303_f64),
                     bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 3")),
-                    executor_fee_amount: BigUint::from(304u32),
+                    bridge_fee_asset_symbol: Some(String::from("MTT")),
+                    executor_fee_amount: Some(304_f64),
                     executor_fee_asset_address: Some(String::from("executor_fee_asset_address 3")),
-                    service_fee_amount: BigUint::from(305u32),
+                    executor_fee_asset_symbol: Some(String::from("STT")),
                     shielded_recipient_address: String::from("shielded_recipient_address 3"),
                     status: DepositStatus::Queued as i32,
                     error_message: Some(String::from("error_message 3")),
@@ -118,7 +118,7 @@ async fn test_deposits_crud() {
                     dst_chain_contract_address: String::from("dst_chain_contract_address 3"),
                     dst_pool_address: String::from("dst_pool_address 3"),
                     asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 3")),
-                    transaction_hash: Some(String::from("transaction_hash 3")),
+                    src_chain_transaction_hash: Some(String::from("transaction_hash 3")),
                     queued_transaction_hash: Some(String::from("relay_transaction_hash 3")),
                     included_transaction_hash: Some(String::from("rollup_transaction_hash 3")),
                 },
@@ -131,7 +131,7 @@ async fn test_deposits_crud() {
     assert_eq!(deposits.count_all().await.unwrap(), 3);
     assert_eq!(
         deposits
-            .count(SubFilter::equal(DepositColumn::HashK, num_bigint::BigUint::from(22u32)))
+            .count(SubFilter::equal(DepositColumn::HashK, "22"))
             .await
             .unwrap(),
         1
@@ -163,10 +163,7 @@ async fn test_deposits_crud() {
         .unwrap();
     assert_eq!(found_deposits, inserted_deposits[1..]);
     let mut found_deposit = deposits
-        .find_one(SubFilter::equal(
-            DepositColumn::RandomS,
-            num_bigint::BigUint::from(222u32),
-        ))
+        .find_one(SubFilter::equal(DepositColumn::RandomS, "222"))
         .await
         .unwrap()
         .unwrap();
@@ -216,21 +213,21 @@ async fn test_deposit_serde() {
             chain_id: 1,
             contract_address: String::from("contract_address 1"),
             pool_address: String::from("pool_address 1"),
-            commitment_hash: BigUint::from(1u32),
-            hash_k: BigUint::from(11u32),
-            random_s: BigUint::from(111u32),
+            commitment_hash: String::from("1"),
+            hash_k: String::from("11"),
+            random_s: String::from("111"),
             encrypted_note: String::from("encrypted_note 1"),
             asset_symbol: String::from("asset_symbol 1"),
-            asset_decimals: 6,
             asset_address: Some(String::from("asset_address 1")),
             bridge_type: BridgeType::Axelar as i32,
-            amount: BigUint::from(101u32),
-            rollup_fee_amount: BigUint::from(102u32),
-            bridge_fee_amount: BigUint::from(103u32),
+            amount: 101_f64,
+            rollup_fee_amount: 102_f64,
+            bridge_fee_amount: Some(103_f64),
             bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 1")),
-            executor_fee_amount: BigUint::from(104u32),
+            bridge_fee_asset_symbol: Some(String::from("MTT")),
+            executor_fee_amount: Some(104_f64),
             executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
-            service_fee_amount: BigUint::from(105u32),
+            executor_fee_asset_symbol: Some(String::from("STT")),
             shielded_recipient_address: String::from("shielded_recipient_address 1"),
             status: DepositStatus::Unspecified as i32,
             error_message: Some(String::from("error_message 1")),
@@ -239,7 +236,7 @@ async fn test_deposit_serde() {
             dst_chain_contract_address: String::from("dst_chain_contract_address 1"),
             dst_pool_address: String::from("dst_pool_address 1"),
             asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
-            transaction_hash: Some(String::from("transaction_hash 1")),
+            src_chain_transaction_hash: Some(String::from("transaction_hash 1")),
             queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
             included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
         })
@@ -248,5 +245,197 @@ async fn test_deposit_serde() {
     assert_eq!(
         deposit,
         serde_json::from_str(&serde_json::to_string(&deposit).unwrap()).unwrap()
+    );
+}
+
+#[test]
+fn test_from_proto() {
+    let proto = ProtoDeposit::builder()
+        .id("1234")
+        .created_at(1234567890_u64)
+        .updated_at(1234567891_u64)
+        .chain_id(1_u64)
+        .contract_address(String::from("contract_address 1"))
+        .pool_address(String::from("pool_address 1"))
+        .commitment_hash(String::from("1"))
+        .hash_k(String::from("11"))
+        .random_s(String::from("111"))
+        .encrypted_note(String::from("encrypted_note 1"))
+        .asset_symbol(String::from("asset_symbol 1"))
+        .asset_address(String::from("asset_address 1"))
+        .bridge_type(BridgeType::Axelar as i32)
+        .amount(101_f64)
+        .rollup_fee_amount(102_f64)
+        .bridge_fee_amount(103_f64)
+        .bridge_fee_asset_address(String::from("bridge_fee_asset_address 1"))
+        .bridge_fee_asset_symbol(String::from("MTT"))
+        .executor_fee_amount(104_f64)
+        .executor_fee_asset_address(String::from("executor_fee_asset_address 1"))
+        .executor_fee_asset_symbol(String::from("STT"))
+        .shielded_recipient_address(String::from("shielded_recipient_address 1"))
+        .status(DepositStatus::Unspecified as i32)
+        .error_message(String::from("error_message 1"))
+        .wallet_id(String::from("wallet_id 1"))
+        .dst_chain_id(11_u64)
+        .dst_chain_contract_address(String::from("dst_chain_contract_address 1"))
+        .dst_pool_address(String::from("dst_pool_address 1"))
+        .asset_approve_transaction_hash(String::from("asset_approve_transaction_hash 1"))
+        .src_chain_transaction_hash(String::from("transaction_hash 1"))
+        .queued_transaction_hash(String::from("relay_transaction_hash 1"))
+        .included_transaction_hash(String::from("rollup_transaction_hash 1"))
+        .build();
+    let deposit = Deposit::document_from_proto(proto);
+    assert_eq!(deposit.id, String::from("1234"));
+    assert_eq!(deposit.created_at, 1234567890_u64);
+    assert_eq!(deposit.updated_at, 1234567891_u64);
+    assert_eq!(deposit.data.chain_id, 1);
+    assert_eq!(deposit.data.contract_address, String::from("contract_address 1"));
+    assert_eq!(deposit.data.pool_address, String::from("pool_address 1"));
+    assert_eq!(deposit.data.commitment_hash, String::from("1"));
+    assert_eq!(deposit.data.hash_k, String::from("11"));
+    assert_eq!(deposit.data.random_s, String::from("111"));
+    assert_eq!(deposit.data.encrypted_note, String::from("encrypted_note 1"));
+    assert_eq!(deposit.data.asset_symbol, String::from("asset_symbol 1"));
+    assert_eq!(deposit.data.asset_address, Some(String::from("asset_address 1")));
+    assert_eq!(deposit.data.bridge_type, BridgeType::Axelar as i32);
+    assert_eq!(deposit.data.amount, 101_f64);
+    assert_eq!(deposit.data.rollup_fee_amount, 102_f64);
+    assert_eq!(deposit.data.bridge_fee_amount, Some(103_f64));
+    assert_eq!(
+        deposit.data.bridge_fee_asset_address,
+        Some(String::from("bridge_fee_asset_address 1"))
+    );
+    assert_eq!(deposit.data.bridge_fee_asset_symbol, Some(String::from("MTT")));
+    assert_eq!(deposit.data.executor_fee_amount, Some(104_f64));
+    assert_eq!(
+        deposit.data.executor_fee_asset_address,
+        Some(String::from("executor_fee_asset_address 1"))
+    );
+    assert_eq!(deposit.data.executor_fee_asset_symbol, Some(String::from("STT")));
+    assert_eq!(
+        deposit.data.shielded_recipient_address,
+        String::from("shielded_recipient_address 1")
+    );
+    assert_eq!(deposit.data.status, DepositStatus::Unspecified as i32);
+    assert_eq!(deposit.data.error_message, Some(String::from("error_message 1")));
+    assert_eq!(deposit.data.wallet_id, String::from("wallet_id 1"));
+    assert_eq!(deposit.data.dst_chain_id, 11);
+    assert_eq!(
+        deposit.data.dst_chain_contract_address,
+        String::from("dst_chain_contract_address 1")
+    );
+    assert_eq!(deposit.data.dst_pool_address, String::from("dst_pool_address 1"));
+    assert_eq!(
+        deposit.data.asset_approve_transaction_hash,
+        Some(String::from("asset_approve_transaction_hash 1"))
+    );
+    assert_eq!(
+        deposit.data.src_chain_transaction_hash,
+        Some(String::from("transaction_hash 1"))
+    );
+    assert_eq!(
+        deposit.data.queued_transaction_hash,
+        Some(String::from("relay_transaction_hash 1"))
+    );
+    assert_eq!(
+        deposit.data.included_transaction_hash,
+        Some(String::from("rollup_transaction_hash 1"))
+    );
+}
+
+#[test]
+fn test_into_proto() {
+    let deposit = Document::new(
+        String::from("1234"),
+        1234567890_u64,
+        1234567891_u64,
+        Deposit {
+            chain_id: 1,
+            contract_address: String::from("contract_address 1"),
+            pool_address: String::from("pool_address 1"),
+            commitment_hash: String::from("1"),
+            hash_k: String::from("11"),
+            random_s: String::from("111"),
+            encrypted_note: String::from("encrypted_note 1"),
+            asset_symbol: String::from("asset_symbol 1"),
+            asset_address: Some(String::from("asset_address 1")),
+            bridge_type: BridgeType::Axelar as i32,
+            amount: 101_f64,
+            rollup_fee_amount: 102_f64,
+            bridge_fee_amount: Some(103_f64),
+            bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 1")),
+            bridge_fee_asset_symbol: Some(String::from("MTT")),
+            executor_fee_amount: Some(104_f64),
+            executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
+            executor_fee_asset_symbol: Some(String::from("STT")),
+            shielded_recipient_address: String::from("shielded_recipient_address 1"),
+            status: DepositStatus::Unspecified as i32,
+            error_message: Some(String::from("error_message 1")),
+            wallet_id: String::from("wallet_id 1"),
+            dst_chain_id: 11,
+            dst_chain_contract_address: String::from("dst_chain_contract_address 1"),
+            dst_pool_address: String::from("dst_pool_address 1"),
+            asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
+            src_chain_transaction_hash: Some(String::from("transaction_hash 1")),
+            queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
+            included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
+        },
+    );
+    let proto = Deposit::document_into_proto(deposit);
+    assert_eq!(proto.id, String::from("1234"));
+    assert_eq!(proto.created_at, 1234567890_u64);
+    assert_eq!(proto.updated_at, 1234567891_u64);
+    assert_eq!(proto.chain_id, 1);
+    assert_eq!(proto.contract_address, String::from("contract_address 1"));
+    assert_eq!(proto.pool_address, String::from("pool_address 1"));
+    assert_eq!(proto.commitment_hash, String::from("1"));
+    assert_eq!(proto.hash_k, String::from("11"));
+    assert_eq!(proto.random_s, String::from("111"));
+    assert_eq!(proto.encrypted_note, String::from("encrypted_note 1"));
+    assert_eq!(proto.asset_symbol, String::from("asset_symbol 1"));
+    assert_eq!(proto.asset_address, Some(String::from("asset_address 1")));
+    assert_eq!(proto.bridge_type, BridgeType::Axelar as i32);
+    assert_eq!(proto.amount, 101_f64);
+    assert_eq!(proto.rollup_fee_amount, 102_f64);
+    assert_eq!(proto.bridge_fee_amount, Some(103_f64));
+    assert_eq!(
+        proto.bridge_fee_asset_address,
+        Some(String::from("bridge_fee_asset_address 1"))
+    );
+    assert_eq!(proto.bridge_fee_asset_symbol, Some(String::from("MTT")));
+    assert_eq!(proto.executor_fee_amount, Some(104_f64));
+    assert_eq!(
+        proto.executor_fee_asset_address,
+        Some(String::from("executor_fee_asset_address 1"))
+    );
+    assert_eq!(proto.executor_fee_asset_symbol, Some(String::from("STT")));
+    assert_eq!(
+        proto.shielded_recipient_address,
+        String::from("shielded_recipient_address 1")
+    );
+    assert_eq!(proto.status, DepositStatus::Unspecified as i32);
+    assert_eq!(proto.error_message, Some(String::from("error_message 1")));
+    assert_eq!(proto.wallet_id, String::from("wallet_id 1"));
+    assert_eq!(proto.dst_chain_id, 11);
+    assert_eq!(
+        proto.dst_chain_contract_address,
+        String::from("dst_chain_contract_address 1")
+    );
+    assert_eq!(proto.dst_pool_address, String::from("dst_pool_address 1"));
+    assert_eq!(
+        proto.asset_approve_transaction_hash,
+        Some(String::from("asset_approve_transaction_hash 1"))
+    );
+    assert_eq!(
+        proto.src_chain_transaction_hash,
+        Some(String::from("transaction_hash 1"))
+    );
+    assert_eq!(
+        proto.queued_transaction_hash,
+        Some(String::from("relay_transaction_hash 1"))
+    );
+    assert_eq!(
+        proto.included_transaction_hash,
+        Some(String::from("rollup_transaction_hash 1"))
     );
 }

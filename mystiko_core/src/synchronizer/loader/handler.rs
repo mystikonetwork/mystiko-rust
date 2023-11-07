@@ -185,7 +185,7 @@ where
         let cms = dedup_cms
             .iter()
             .filter(|cm| cm.status == cm_status as i32)
-            .map(|cm| (bytes_to_biguint(&cm.commitment_hash), cm))
+            .map(|cm| (bytes_to_biguint(&cm.commitment_hash).to_string(), cm))
             .collect::<HashMap<_, _>>();
         if !cms.is_empty() {
             let condition = build_filter_by_commitment_status(chain_id, address, cm_status)?;
@@ -256,7 +256,7 @@ fn update_deposit_by_commitment_status(
     match CommitmentStatus::from_i32(cm.status) {
         Some(CommitmentStatus::SrcSucceeded) => {
             if let Some(tx) = cm.src_chain_transaction_hash_as_hex() {
-                deposit.data.transaction_hash = Some(tx);
+                deposit.data.src_chain_transaction_hash = Some(tx);
             }
             deposit.data.status = DepositStatus::SrcSucceeded as i32;
         }

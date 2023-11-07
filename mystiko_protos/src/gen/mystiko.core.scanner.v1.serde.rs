@@ -766,12 +766,6 @@ impl serde::Serialize for ScanResult {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if !self.from_id.is_empty() {
-            len += 1;
-        }
-        if !self.to_id.is_empty() {
-            len += 1;
-        }
         if self.total_count != 0 {
             len += 1;
         }
@@ -781,13 +775,10 @@ impl serde::Serialize for ScanResult {
         if !self.scanned_shielded_addresses.is_empty() {
             len += 1;
         }
+        if self.to_id.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ScanResult", len)?;
-        if !self.from_id.is_empty() {
-            struct_ser.serialize_field("fromId", &self.from_id)?;
-        }
-        if !self.to_id.is_empty() {
-            struct_ser.serialize_field("toId", &self.to_id)?;
-        }
         if self.total_count != 0 {
             struct_ser.serialize_field("totalCount", ToString::to_string(&self.total_count).as_str())?;
         }
@@ -796,6 +787,9 @@ impl serde::Serialize for ScanResult {
         }
         if !self.scanned_shielded_addresses.is_empty() {
             struct_ser.serialize_field("scannedShieldedAddresses", &self.scanned_shielded_addresses)?;
+        }
+        if let Some(v) = self.to_id.as_ref() {
+            struct_ser.serialize_field("toId", v)?;
         }
         struct_ser.end()
     }
@@ -807,25 +801,22 @@ impl<'de> serde::Deserialize<'de> for ScanResult {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "from_id",
-            "fromId",
-            "to_id",
-            "toId",
             "total_count",
             "totalCount",
             "owned_count",
             "ownedCount",
             "scanned_shielded_addresses",
             "scannedShieldedAddresses",
+            "to_id",
+            "toId",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            FromId,
-            ToId,
             TotalCount,
             OwnedCount,
             ScannedShieldedAddresses,
+            ToId,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -847,11 +838,10 @@ impl<'de> serde::Deserialize<'de> for ScanResult {
                         E: serde::de::Error,
                     {
                         match value {
-                            "fromId" | "from_id" => Ok(GeneratedField::FromId),
-                            "toId" | "to_id" => Ok(GeneratedField::ToId),
                             "totalCount" | "total_count" => Ok(GeneratedField::TotalCount),
                             "ownedCount" | "owned_count" => Ok(GeneratedField::OwnedCount),
                             "scannedShieldedAddresses" | "scanned_shielded_addresses" => Ok(GeneratedField::ScannedShieldedAddresses),
+                            "toId" | "to_id" => Ok(GeneratedField::ToId),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -871,25 +861,12 @@ impl<'de> serde::Deserialize<'de> for ScanResult {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut from_id__ = None;
-                let mut to_id__ = None;
                 let mut total_count__ = None;
                 let mut owned_count__ = None;
                 let mut scanned_shielded_addresses__ = None;
+                let mut to_id__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
-                        GeneratedField::FromId => {
-                            if from_id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("fromId"));
-                            }
-                            from_id__ = Some(map.next_value()?);
-                        }
-                        GeneratedField::ToId => {
-                            if to_id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("toId"));
-                            }
-                            to_id__ = Some(map.next_value()?);
-                        }
                         GeneratedField::TotalCount => {
                             if total_count__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("totalCount"));
@@ -912,14 +889,19 @@ impl<'de> serde::Deserialize<'de> for ScanResult {
                             }
                             scanned_shielded_addresses__ = Some(map.next_value()?);
                         }
+                        GeneratedField::ToId => {
+                            if to_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("toId"));
+                            }
+                            to_id__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(ScanResult {
-                    from_id: from_id__.unwrap_or_default(),
-                    to_id: to_id__.unwrap_or_default(),
                     total_count: total_count__.unwrap_or_default(),
                     owned_count: owned_count__.unwrap_or_default(),
                     scanned_shielded_addresses: scanned_shielded_addresses__.unwrap_or_default(),
+                    to_id: to_id__,
                 })
             }
         }
