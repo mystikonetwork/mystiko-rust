@@ -1305,6 +1305,218 @@ impl<'de> serde::Deserialize<'de> for ExportSecretKeyResponse {
         deserializer.deserialize_struct("mystiko.api.handler.v1.ExportSecretKeyResponse", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for FindAccountByIdentifierRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.identifier.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindAccountByIdentifierRequest", len)?;
+        if let Some(v) = self.identifier.as_ref() {
+            match v {
+                find_account_by_identifier_request::Identifier::Id(v) => {
+                    struct_ser.serialize_field("id", v)?;
+                }
+                find_account_by_identifier_request::Identifier::ShieldedAddress(v) => {
+                    struct_ser.serialize_field("shieldedAddress", v)?;
+                }
+                find_account_by_identifier_request::Identifier::PublicKey(v) => {
+                    struct_ser.serialize_field("publicKey", v)?;
+                }
+            }
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for FindAccountByIdentifierRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "id",
+            "shielded_address",
+            "shieldedAddress",
+            "public_key",
+            "publicKey",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Id,
+            ShieldedAddress,
+            PublicKey,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "id" => Ok(GeneratedField::Id),
+                            "shieldedAddress" | "shielded_address" => Ok(GeneratedField::ShieldedAddress),
+                            "publicKey" | "public_key" => Ok(GeneratedField::PublicKey),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = FindAccountByIdentifierRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.FindAccountByIdentifierRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<FindAccountByIdentifierRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut identifier__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Id => {
+                            if identifier__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("id"));
+                            }
+                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_by_identifier_request::Identifier::Id);
+                        }
+                        GeneratedField::ShieldedAddress => {
+                            if identifier__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("shieldedAddress"));
+                            }
+                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_by_identifier_request::Identifier::ShieldedAddress);
+                        }
+                        GeneratedField::PublicKey => {
+                            if identifier__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("publicKey"));
+                            }
+                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_by_identifier_request::Identifier::PublicKey);
+                        }
+                    }
+                }
+                Ok(FindAccountByIdentifierRequest {
+                    identifier: identifier__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.FindAccountByIdentifierRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for FindAccountByIdentifierResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.account.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindAccountByIdentifierResponse", len)?;
+        if let Some(v) = self.account.as_ref() {
+            struct_ser.serialize_field("account", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for FindAccountByIdentifierResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "account",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Account,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "account" => Ok(GeneratedField::Account),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = FindAccountByIdentifierResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.FindAccountByIdentifierResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<FindAccountByIdentifierResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut account__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Account => {
+                            if account__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("account"));
+                            }
+                            account__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(FindAccountByIdentifierResponse {
+                    account: account__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.FindAccountByIdentifierResponse", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for FindAccountRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -1313,12 +1525,19 @@ impl serde::Serialize for FindAccountRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.filter.is_some() {
+        if self.condition.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindAccountRequest", len)?;
-        if let Some(v) = self.filter.as_ref() {
-            struct_ser.serialize_field("filter", v)?;
+        if let Some(v) = self.condition.as_ref() {
+            match v {
+                find_account_request::Condition::Filter(v) => {
+                    struct_ser.serialize_field("filter", v)?;
+                }
+                find_account_request::Condition::FindAll(v) => {
+                    struct_ser.serialize_field("findAll", v)?;
+                }
+            }
         }
         struct_ser.end()
     }
@@ -1331,11 +1550,14 @@ impl<'de> serde::Deserialize<'de> for FindAccountRequest {
     {
         const FIELDS: &[&str] = &[
             "filter",
+            "find_all",
+            "findAll",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Filter,
+            FindAll,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1358,6 +1580,7 @@ impl<'de> serde::Deserialize<'de> for FindAccountRequest {
                     {
                         match value {
                             "filter" => Ok(GeneratedField::Filter),
+                            "findAll" | "find_all" => Ok(GeneratedField::FindAll),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1377,19 +1600,26 @@ impl<'de> serde::Deserialize<'de> for FindAccountRequest {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut filter__ = None;
+                let mut condition__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Filter => {
-                            if filter__.is_some() {
+                            if condition__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("filter"));
                             }
-                            filter__ = map.next_value()?;
+                            condition__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_request::Condition::Filter)
+;
+                        }
+                        GeneratedField::FindAll => {
+                            if condition__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("findAll"));
+                            }
+                            condition__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_request::Condition::FindAll);
                         }
                     }
                 }
                 Ok(FindAccountRequest {
-                    filter: filter__,
+                    condition: condition__,
                 })
             }
         }
