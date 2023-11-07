@@ -60,7 +60,7 @@ async fn test_handle_src_succeeded_commitment_with_update() {
                     assert!(result.is_ok());
                     let updated_deposits = mystiko_db.deposits.find_all().await.unwrap();
                     db_deposits[i].data.status = DepositStatus::SrcSucceeded as i32;
-                    db_deposits[i].data.transaction_hash = Some(String::from("0x6666"));
+                    db_deposits[i].data.src_chain_transaction_hash = Some(String::from("0x6666"));
                     for j in 0..count {
                         assert_eq!(updated_deposits[j].data, db_deposits[j].data);
                     }

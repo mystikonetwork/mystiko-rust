@@ -1,49 +1,49 @@
 use crate::core::document::v1::Spend;
-use mystiko_utils::convert::bytes_to_biguint;
-use num_bigint::BigUint;
+use num_bigint::{BigUint, ParseBigIntError};
+use std::str::FromStr;
 
 impl Spend {
-    pub fn root_hash_as_biguint(&self) -> BigUint {
-        bytes_to_biguint(&self.root_hash)
+    pub fn root_hash_as_biguint(&self) -> Result<BigUint, ParseBigIntError> {
+        BigUint::from_str(&self.root_hash)
     }
 
-    pub fn input_commitments_as_biguint(&self) -> Vec<BigUint> {
-        self.input_commitments.iter().map(bytes_to_biguint).collect()
+    pub fn input_commitments_as_biguint(&self) -> Result<Vec<BigUint>, ParseBigIntError> {
+        self.input_commitments
+            .iter()
+            .map(|n| BigUint::from_str(n))
+            .collect::<Result<Vec<_>, _>>()
     }
 
-    pub fn output_commitments_as_biguint(&self) -> Option<Vec<BigUint>> {
+    pub fn output_commitments_as_biguint(&self) -> Result<Option<Vec<BigUint>>, ParseBigIntError> {
         if self.output_commitments.is_empty() {
-            None
+            Ok(None)
         } else {
-            Some(self.output_commitments.iter().map(bytes_to_biguint).collect())
+            Ok(Some(
+                self.output_commitments
+                    .iter()
+                    .map(|n| BigUint::from_str(n))
+                    .collect::<Result<_, _>>()?,
+            ))
         }
     }
 
-    pub fn nullifiers_as_biguint(&self) -> Option<Vec<BigUint>> {
+    pub fn nullifiers_as_biguint(&self) -> Result<Option<Vec<BigUint>>, ParseBigIntError> {
         if self.nullifiers.is_empty() {
-            None
+            Ok(None)
         } else {
-            Some(self.nullifiers.iter().map(bytes_to_biguint).collect())
+            Ok(Some(
+                self.nullifiers
+                    .iter()
+                    .map(|n| BigUint::from_str(n))
+                    .collect::<Result<_, _>>()?,
+            ))
         }
     }
 
-    pub fn amount_as_biguint(&self) -> BigUint {
-        bytes_to_biguint(&self.amount)
-    }
-
-    pub fn public_amount_as_biguint(&self) -> BigUint {
-        bytes_to_biguint(&self.public_amount)
-    }
-
-    pub fn rollup_fee_amount_as_biguint(&self) -> Option<BigUint> {
-        self.rollup_fee_amount.as_ref().map(bytes_to_biguint)
-    }
-
-    pub fn gas_relayer_fee_amount_as_biguint(&self) -> Option<BigUint> {
-        self.gas_relayer_fee_amount.as_ref().map(bytes_to_biguint)
-    }
-
-    pub fn random_auditing_public_key_as_biguint(&self) -> Option<BigUint> {
-        self.random_auditing_public_key.as_ref().map(bytes_to_biguint)
+    pub fn random_auditing_public_key_as_biguint(&self) -> Result<Option<BigUint>, ParseBigIntError> {
+        self.random_auditing_public_key
+            .as_ref()
+            .map(|n| BigUint::from_str(n))
+            .transpose()
     }
 }
