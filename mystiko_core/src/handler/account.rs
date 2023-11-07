@@ -112,9 +112,8 @@ where
             .await
     }
 
-    pub async fn find_by_public_key(&self, shielded_address: &str) -> Result<Option<ProtoAccount>> {
-        self.find_one_by_identifier(shielded_address, AccountColumn::PublicKey)
-            .await
+    pub async fn find_by_public_key(&self, public_key: &str) -> Result<Option<ProtoAccount>> {
+        self.find_one_by_identifier(public_key, AccountColumn::PublicKey).await
     }
 
     pub async fn update_by_id(&self, id: &str, options: &UpdateAccountOptions) -> Result<ProtoAccount> {

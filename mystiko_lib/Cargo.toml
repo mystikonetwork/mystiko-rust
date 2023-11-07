@@ -12,7 +12,7 @@ log = { version = "0.4.19" }
 prost = { version = "0.11.9" }
 mystiko_core = { version = "0.1.0", path = "../mystiko_core" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["proto"] }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-core-document-v1", "mystiko-core-v1", "mystiko-api-config-v1"] }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-core-document-v1", "mystiko-core-v1", "mystiko-api-config-v1", "mystiko-api-handler-v1", "mystiko-api-v1"] }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
@@ -23,6 +23,11 @@ typed-builder = { version = "0.14.0" }
 [dev-dependencies]
 mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["proto", "fs"] }
 serial_test = { version = "2.0.0" }
+bip32 = { version = "0.5.0" }
+mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "93fbd08" }
+mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
+mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "93fbd08" }
+
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = { version = "0.13.1" }
