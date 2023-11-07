@@ -5,7 +5,7 @@ extern crate env_logger;
 extern crate log;
 
 pub mod config;
-mod error;
+pub mod error;
 pub mod handler;
 
 pub use handler::*;

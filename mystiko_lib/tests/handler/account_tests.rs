@@ -1,6 +1,6 @@
 use crate::{extract_data, setup};
 use mystiko_crypto::crypto::decrypt_symmetric;
-use mystiko_lib::account::{create, export_secret_key, find, find_by_identifier, update, update_encryption};
+use mystiko_lib::account::{count, create, export_secret_key, find, find_by_identifier, update, update_encryption};
 use mystiko_lib::wallet;
 use mystiko_lib::wallet::update_password;
 use mystiko_protocol::address::ShieldedAddress;
@@ -8,10 +8,10 @@ use mystiko_protocol::key::full_public_key;
 use mystiko_protocol::types::{FullPk, FullSk};
 use mystiko_protos::api::handler::v1::find_account_request::Condition;
 use mystiko_protos::api::handler::v1::{
-    export_secret_key_request, find_account_by_identifier_request, update_account_request, CreateAccountRequest,
-    CreateAccountResponse, CreateWalletRequest, ExportSecretKeyRequest, ExportSecretKeyResponse,
-    FindAccountByIdentifierRequest, FindAccountRequest, FindAccountResponse, UpdateAccountRequest,
-    UpdateAccountResponse, UpdateEncryptionRequest, UpdatePasswordRequest,
+    export_secret_key_request, find_account_by_identifier_request, update_account_request, CountAccountRequest,
+    CountAccountResponse, CreateAccountRequest, CreateAccountResponse, CreateWalletRequest, ExportSecretKeyRequest,
+    ExportSecretKeyResponse, FindAccountByIdentifierRequest, FindAccountRequest, FindAccountResponse,
+    UpdateAccountRequest, UpdateAccountResponse, UpdateEncryptionRequest, UpdatePasswordRequest,
 };
 use mystiko_protos::api::v1::StatusCode;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions, UpdateAccountOptions};
@@ -58,6 +58,36 @@ fn test_create_default() {
     let full_sk_str = decrypt_symmetric(DEFAULT_WALLET_PASSWORD, &account.encrypted_secret_key).unwrap();
     let full_sk: FullSk = decode_hex_with_length(full_sk_str).unwrap();
     assert_eq!(full_pk, full_public_key(&full_sk));
+}
+
+#[test]
+#[serial]
+fn test_count() {
+    account_setup(false);
+    let response = create(
+        CreateAccountRequest::builder()
+            .options(
+                CreateAccountOptions::builder()
+                    .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+                    .build(),
+            )
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let response = count(
+        CountAccountRequest::builder()
+            .filter(
+                QueryFilter::builder()
+                    .conditions_operator(ConditionOperator::And)
+                    .build(),
+            )
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let count = CountAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .count;
+    assert_eq!(count, 1);
 }
 
 #[test]
@@ -387,7 +417,7 @@ fn test_update_encryption() {
 
 #[test]
 #[serial]
-fn test_export_secret_key() {
+fn test_export_secret_key_by_id() {
     account_setup(false);
     let response = create(
         CreateAccountRequest::builder()
@@ -408,6 +438,86 @@ fn test_export_secret_key() {
         ExportSecretKeyRequest::builder()
             .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
             .identifier(export_secret_key_request::Identifier::Id(account.id))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let secret_key_str = ExportSecretKeyResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .secret_key;
+    let full_sk: FullSk = decode_hex_with_length(secret_key_str).unwrap();
+    let full_pk = full_public_key(&full_sk);
+    assert_eq!(account.public_key, encode_hex(full_pk));
+    assert_eq!(
+        account.shielded_address,
+        ShieldedAddress::from_full_public_key(&full_pk).address()
+    );
+}
+
+#[test]
+#[serial]
+fn test_export_secret_key_by_public_key() {
+    account_setup(false);
+    let response = create(
+        CreateAccountRequest::builder()
+            .options(
+                CreateAccountOptions::builder()
+                    .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+                    .build(),
+            )
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let account = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    // export secret key by id
+    let response = export_secret_key(
+        ExportSecretKeyRequest::builder()
+            .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+            .identifier(export_secret_key_request::Identifier::PublicKey(
+                account.public_key.clone(),
+            ))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let secret_key_str = ExportSecretKeyResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .secret_key;
+    let full_sk: FullSk = decode_hex_with_length(secret_key_str).unwrap();
+    let full_pk = full_public_key(&full_sk);
+    assert_eq!(account.public_key, encode_hex(full_pk));
+    assert_eq!(
+        account.shielded_address,
+        ShieldedAddress::from_full_public_key(&full_pk).address()
+    );
+}
+
+#[test]
+#[serial]
+fn test_export_secret_key_by_shielded_address() {
+    account_setup(false);
+    let response = create(
+        CreateAccountRequest::builder()
+            .options(
+                CreateAccountOptions::builder()
+                    .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+                    .build(),
+            )
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let account = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    // export secret key by id
+    let response = export_secret_key(
+        ExportSecretKeyRequest::builder()
+            .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+            .identifier(export_secret_key_request::Identifier::ShieldedAddress(
+                account.shielded_address.clone(),
+            ))
             .build(),
     );
     assert_eq!(response.code(), StatusCode::Success);

@@ -27,7 +27,8 @@ bip32 = { version = "0.5.0" }
 mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "93fbd08" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "93fbd08" }
-
+mystiko_dataloader = { version = "0.1.0", path = "../mystiko_dataloader" }
+rustc-hex = { version = "2.1.0" }
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = { version = "0.13.1" }
