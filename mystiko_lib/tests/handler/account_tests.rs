@@ -1,6 +1,6 @@
 use crate::{extract_data, setup};
 use mystiko_crypto::crypto::decrypt_symmetric;
-use mystiko_lib::account::{create, export_secret_key, find, update, update_encryption};
+use mystiko_lib::account::{create, export_secret_key, find, find_by_identifier, update, update_encryption};
 use mystiko_lib::wallet;
 use mystiko_lib::wallet::update_password;
 use mystiko_protocol::address::ShieldedAddress;
@@ -8,9 +8,10 @@ use mystiko_protocol::key::full_public_key;
 use mystiko_protocol::types::{FullPk, FullSk};
 use mystiko_protos::api::handler::v1::find_account_request::Condition;
 use mystiko_protos::api::handler::v1::{
-    export_secret_key_request, update_account_request, CreateAccountRequest, CreateAccountResponse,
-    CreateWalletRequest, ExportSecretKeyRequest, ExportSecretKeyResponse, FindAccountRequest, FindAccountResponse,
-    UpdateAccountRequest, UpdateAccountResponse, UpdateEncryptionRequest, UpdatePasswordRequest,
+    export_secret_key_request, find_account_by_identifier_request, update_account_request, CreateAccountRequest,
+    CreateAccountResponse, CreateWalletRequest, ExportSecretKeyRequest, ExportSecretKeyResponse,
+    FindAccountByIdentifierRequest, FindAccountRequest, FindAccountResponse, UpdateAccountRequest,
+    UpdateAccountResponse, UpdateEncryptionRequest, UpdatePasswordRequest,
 };
 use mystiko_protos::api::v1::StatusCode;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions, UpdateAccountOptions};
@@ -93,11 +94,11 @@ fn test_find() {
         .unwrap();
     let response = find(
         FindAccountRequest::builder()
-            .filter(
+            .condition(Condition::Filter(
                 QueryFilter::builder()
                     .conditions_operator(ConditionOperator::And)
                     .build(),
-            )
+            ))
             .build(),
     );
     assert_eq!(response.code(), StatusCode::Success);
@@ -105,12 +106,153 @@ fn test_find() {
         .unwrap()
         .account;
     assert_eq!(accounts, vec![account]);
+    let response = find(
+        FindAccountRequest::builder()
+            .condition(Condition::FindAll(true))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let accounts = FindAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account;
+    assert_eq!(accounts.len(), 1);
 }
 
 #[test]
 #[serial]
-fn test_find_by_identifier() {
+fn test_find_by_id() {
     account_setup(false);
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let response = create(CreateAccountRequest::builder().options(options.clone()).build());
+    assert_eq!(response.code(), StatusCode::Success);
+    let account1 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    let response = create(CreateAccountRequest::builder().options(options.clone()).build());
+    assert_eq!(response.code(), StatusCode::Success);
+    let account2 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    let response = find_by_identifier(
+        FindAccountByIdentifierRequest::builder()
+            .identifier(find_account_by_identifier_request::Identifier::Id(account1.id.clone()))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let account3 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    assert_eq!(account1, account3);
+    let response = find_by_identifier(
+        FindAccountByIdentifierRequest::builder()
+            .identifier(find_account_by_identifier_request::Identifier::Id(account2.id.clone()))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let account4 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    assert_eq!(account2, account4);
+}
+
+#[test]
+#[serial]
+fn test_find_by_public_key() {
+    account_setup(false);
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let response = create(CreateAccountRequest::builder().options(options.clone()).build());
+    assert_eq!(response.code(), StatusCode::Success);
+    let account1 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    let response = create(CreateAccountRequest::builder().options(options.clone()).build());
+    assert_eq!(response.code(), StatusCode::Success);
+    let account2 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    let response = find_by_identifier(
+        FindAccountByIdentifierRequest::builder()
+            .identifier(find_account_by_identifier_request::Identifier::PublicKey(
+                account1.public_key.clone(),
+            ))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let account3 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    assert_eq!(account1, account3);
+    let response = find_by_identifier(
+        FindAccountByIdentifierRequest::builder()
+            .identifier(find_account_by_identifier_request::Identifier::PublicKey(
+                account2.public_key.clone(),
+            ))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let account4 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    assert_eq!(account2, account4);
+}
+
+#[test]
+#[serial]
+fn test_find_by_shielded_address() {
+    account_setup(false);
+    let options = CreateAccountOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .build();
+    let response = create(CreateAccountRequest::builder().options(options.clone()).build());
+    assert_eq!(response.code(), StatusCode::Success);
+    let account1 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    let response = create(CreateAccountRequest::builder().options(options.clone()).build());
+    assert_eq!(response.code(), StatusCode::Success);
+    let account2 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    let response = find_by_identifier(
+        FindAccountByIdentifierRequest::builder()
+            .identifier(find_account_by_identifier_request::Identifier::ShieldedAddress(
+                account1.shielded_address.clone(),
+            ))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let account3 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    assert_eq!(account1, account3);
+    let response = find_by_identifier(
+        FindAccountByIdentifierRequest::builder()
+            .identifier(find_account_by_identifier_request::Identifier::ShieldedAddress(
+                account2.shielded_address.clone(),
+            ))
+            .build(),
+    );
+    assert_eq!(response.code(), StatusCode::Success);
+    let account4 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .account
+        .unwrap();
+    assert_eq!(account2, account4);
 }
 
 #[test]
