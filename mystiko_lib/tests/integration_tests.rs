@@ -26,9 +26,7 @@ pub fn setup(full_config: bool) {
 
 pub fn extract_data(result: api_response::Result) -> Vec<u8> {
     match result {
-        api_response::Result::Data(data) => {
-            return data;
-        }
+        api_response::Result::Data(data) => data,
         api_response::Result::ErrorMessage(err) => {
             panic!("{}", err);
         }
