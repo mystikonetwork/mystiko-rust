@@ -194,7 +194,10 @@ async fn test_commitments_crud() {
         .find(
             Condition::builder()
                 .operator(ConditionOperator::And)
-                .sub_filters(vec![SubFilter::equal(CommitmentColumn::BridgeType, 1_i32)])
+                .sub_filters(vec![SubFilter::equal(
+                    CommitmentColumn::BridgeType,
+                    BridgeType::Loop as i32,
+                )])
                 .build(),
         )
         .await
