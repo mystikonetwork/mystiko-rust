@@ -1,6 +1,7 @@
 use mystiko_config::MystikoConfig;
 use mystiko_core::{Commitment, CommitmentCollection, CommitmentColumn};
 use mystiko_dataloader::handler::document::DatabaseCommitment;
+use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{Condition, ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
@@ -30,7 +31,7 @@ async fn test_commitments_crud() {
             .insert(&Commitment {
                 chain_id: 5,
                 contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
-                bridge_type: 1_i32,
+                bridge_type: BridgeType::Loop as i32,
                 commitment_hash: BigUint::from_str(
                     "9709495941671889428395361755215352896616366060066411186055604144562505250548",
                 )
@@ -73,7 +74,7 @@ async fn test_commitments_crud() {
                 Commitment {
                     chain_id: 5,
                     contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
-                    bridge_type: 1_i32,
+                    bridge_type: BridgeType::Loop as i32,
                     commitment_hash: BigUint::from_str(
                         "9709505941671889428395361755215352896616366060066411186\
                         055604144562505250548",
@@ -108,7 +109,7 @@ async fn test_commitments_crud() {
                 Commitment {
                     chain_id: 5,
                     contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
-                    bridge_type: 1_i32,
+                    bridge_type: BridgeType::Loop as i32,
                     commitment_hash: BigUint::from_str(
                         "9709515941671889428395361755215352896616366060066411186055604144562505250548",
                     )
@@ -256,7 +257,7 @@ async fn test_commitment_serde() {
         .insert(&Commitment {
             chain_id: 5,
             contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
-            bridge_type: 1_i32,
+            bridge_type: BridgeType::Loop as i32,
             commitment_hash: BigUint::from_str(
                 "9709495941671889428395361755215352896616366060066411186055604144562505250548",
             )
@@ -316,7 +317,7 @@ async fn test_loader_database_commitment() {
     let mut commitment = Commitment {
         chain_id: 5,
         contract_address: String::from("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
-        bridge_type: 3_i32,
+        bridge_type: BridgeType::Tbridge as i32,
         commitment_hash: BigUint::from_str(
             "9709495941671889428395361755215352896616366060066411186055604144562505250548",
         )
