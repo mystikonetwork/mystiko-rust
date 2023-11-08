@@ -39,3 +39,20 @@ fn test_initialize() {
     setup(false);
     assert!(is_initialized());
 }
+
+#[test]
+#[serial]
+fn test_initialize_with_error_config() {
+    destroy();
+    let file_path = "tests/files/error.json";
+    let options = MystikoOptions::builder()
+        .config_options(
+            ConfigOptions::builder()
+                .file_path(file_path.to_string())
+                .is_testnet(true)
+                .build(),
+        )
+        .build();
+    let response = initialize(options);
+    assert_ne!(response.code(), StatusCode::Success);
+}
