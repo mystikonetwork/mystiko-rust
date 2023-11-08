@@ -1,8 +1,9 @@
 use mystiko_config::MystikoConfig;
 use mystiko_core::{Commitment, CommitmentCollection, CommitmentColumn};
 use mystiko_dataloader::handler::document::DatabaseCommitment;
+use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::data::v1::CommitmentStatus;
-use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
+use mystiko_protos::storage::v1::{Condition, ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::convert::biguint_to_bytes;
@@ -30,6 +31,7 @@ async fn test_commitments_crud() {
             .insert(&Commitment {
                 chain_id: 5,
                 contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+                bridge_type: BridgeType::Loop as i32,
                 commitment_hash: BigUint::from_str(
                     "9709495941671889428395361755215352896616366060066411186055604144562505250548",
                 )
@@ -72,6 +74,7 @@ async fn test_commitments_crud() {
                 Commitment {
                     chain_id: 5,
                     contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+                    bridge_type: BridgeType::Loop as i32,
                     commitment_hash: BigUint::from_str(
                         "9709505941671889428395361755215352896616366060066411186\
                         055604144562505250548",
@@ -106,6 +109,7 @@ async fn test_commitments_crud() {
                 Commitment {
                     chain_id: 5,
                     contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+                    bridge_type: BridgeType::Loop as i32,
                     commitment_hash: BigUint::from_str(
                         "9709515941671889428395361755215352896616366060066411186055604144562505250548",
                     )
@@ -184,6 +188,22 @@ async fn test_commitments_crud() {
         .unwrap()
         .unwrap();
     assert_eq!(found_commitment, inserted_commitments[0]);
+
+    // // testing find_bridge_type
+    let bridge_commitments = commitments
+        .find(
+            Condition::builder()
+                .operator(ConditionOperator::And)
+                .sub_filters(vec![SubFilter::equal(
+                    CommitmentColumn::BridgeType,
+                    BridgeType::Loop as i32,
+                )])
+                .build(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bridge_commitments, inserted_commitments);
+
     // // testing find_by_id
     found_commitment = commitments
         .find_by_id(&inserted_commitments[1].id)
@@ -240,6 +260,7 @@ async fn test_commitment_serde() {
         .insert(&Commitment {
             chain_id: 5,
             contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+            bridge_type: BridgeType::Loop as i32,
             commitment_hash: BigUint::from_str(
                 "9709495941671889428395361755215352896616366060066411186055604144562505250548",
             )
@@ -299,6 +320,7 @@ async fn test_loader_database_commitment() {
     let mut commitment = Commitment {
         chain_id: 5,
         contract_address: String::from("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
+        bridge_type: BridgeType::Tbridge as i32,
         commitment_hash: BigUint::from_str(
             "9709495941671889428395361755215352896616366060066411186055604144562505250548",
         )
@@ -536,6 +558,7 @@ async fn test_loader_database_commitment() {
 fn compare_commitment(commitment1: &Commitment, commitment2: &Commitment) {
     assert_eq!(commitment1.chain_id, commitment2.chain_id);
     assert_eq!(commitment1.contract_address, commitment2.contract_address);
+    assert_eq!(commitment1.bridge_type, commitment2.bridge_type);
     assert_eq!(commitment1.commitment_hash, commitment2.commitment_hash);
     assert_eq!(commitment1.block_number, commitment2.block_number);
     assert_eq!(commitment1.asset_symbol, commitment2.asset_symbol);

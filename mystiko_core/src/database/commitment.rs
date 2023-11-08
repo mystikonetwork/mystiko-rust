@@ -1,3 +1,4 @@
+use mystiko_protos::common::v1::BridgeType;
 use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigUint;
@@ -9,6 +10,7 @@ pub struct Commitment {
     pub chain_id: u64,
     #[column(length_limit = 64)]
     pub contract_address: String,
+    pub bridge_type: i32,
     #[column(length_limit = 128)]
     pub commitment_hash: BigUint,
     #[column(length_limit = 16)]
@@ -60,6 +62,7 @@ fn indexes() -> Vec<IndexColumns> {
     vec![
         vec![CommitmentColumn::ChainId].into(),
         vec![CommitmentColumn::ContractAddress].into(),
+        vec![CommitmentColumn::BridgeType].into(),
         vec![CommitmentColumn::CommitmentHash].into(),
         vec![CommitmentColumn::LeafIndex].into(),
         vec![CommitmentColumn::Status].into(),
@@ -143,9 +146,11 @@ impl mystiko_dataloader::handler::document::DatabaseCommitment for Commitment {
             } else {
                 Some(asset.asset_address().to_string())
             };
+            let bridge_type: BridgeType = contract_config.bridge_type().into();
             Ok(Self {
                 chain_id,
                 contract_address: address.to_string(),
+                bridge_type: bridge_type as i32,
                 commitment_hash: mystiko_utils::convert::bytes_to_biguint(&proto.commitment_hash),
                 asset_symbol: asset.asset_symbol().to_string(),
                 asset_decimals: asset.asset_decimals(),
