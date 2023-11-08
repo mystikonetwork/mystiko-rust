@@ -43,6 +43,7 @@ fn test_initialize() {
 #[test]
 #[serial]
 fn test_initialize_with_error_config() {
+    destroy();
     let file_path = "tests/files/error.json";
     let options = MystikoOptions::builder()
         .config_options(
