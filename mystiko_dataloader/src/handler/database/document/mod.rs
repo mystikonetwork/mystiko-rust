@@ -36,6 +36,8 @@ pub trait DatabaseCommitment: DocumentData {
 
     fn column_contract_address() -> String;
 
+    fn column_bridge_type() -> String;
+
     fn column_commitment_hash() -> String;
 
     fn column_status() -> String;
@@ -58,11 +60,19 @@ pub trait DatabaseCommitment: DocumentData {
 
     fn column_src_transaction_hash() -> String;
 
-    fn from_proto(config: Arc<MystikoConfig>, chain_id: u64, address: &str, proto: ProtoCommitment) -> Result<Self>;
+    fn from_proto(
+        config: Arc<MystikoConfig>,
+        chain_id: u64,
+        address: &str,
+        bridge_type: i32,
+        proto: ProtoCommitment,
+    ) -> Result<Self>;
 
     fn get_chain_id(&self) -> u64;
 
     fn get_contract_address(&self) -> &String;
+
+    fn get_bridge_type(&self) -> i32;
 
     fn get_commitment_hash(&self) -> &BigUint;
 

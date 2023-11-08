@@ -10,6 +10,7 @@ use std::sync::Arc;
 fn test_commitment() {
     assert_eq!(Commitment::column_chain_id(), "chain_id".to_string());
     assert_eq!(Commitment::column_contract_address(), "contract_address".to_string());
+    assert_eq!(Commitment::column_bridge_type(), "bridge_type".to_string());
     assert_eq!(Commitment::column_commitment_hash(), "commitment_hash".to_string());
     assert_eq!(Commitment::column_status(), "status".to_string());
     assert_eq!(Commitment::column_block_number(), "block_number".to_string());
@@ -39,6 +40,7 @@ fn test_commitment() {
     let test_commitment = Commitment::builder()
         .chain_id(1_u64)
         .contract_address("address1".to_string())
+        .bridge_type(1_i32)
         .commitment_hash(BigUint::from(1111_u32))
         .status(CommitmentStatus::Queued as i32)
         .block_number(1000u64)
@@ -97,7 +99,7 @@ async fn test_convert_with_proto() {
         .queued_transaction_hash(vec![4u8, 5u8, 6u8])
         .src_chain_transaction_hash(vec![7u8, 8u8, 9u8])
         .build();
-    let commitment = Commitment::from_proto(Arc::clone(&config), 1_u64, "address1", test_proto1);
+    let commitment = Commitment::from_proto(Arc::clone(&config), 1_u64, "address1", 1, test_proto1);
     assert!(commitment.is_ok());
     let mut commitment = commitment.unwrap();
     assert_eq!(commitment.commitment_hash, BigUint::from(100000u64));

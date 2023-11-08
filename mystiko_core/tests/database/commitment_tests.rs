@@ -30,6 +30,7 @@ async fn test_commitments_crud() {
             .insert(&Commitment {
                 chain_id: 5,
                 contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+                bridge_type: 1,
                 commitment_hash: BigUint::from_str(
                     "9709495941671889428395361755215352896616366060066411186055604144562505250548",
                 )
@@ -72,6 +73,7 @@ async fn test_commitments_crud() {
                 Commitment {
                     chain_id: 5,
                     contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+                    bridge_type: 1,
                     commitment_hash: BigUint::from_str(
                         "9709505941671889428395361755215352896616366060066411186\
                         055604144562505250548",
@@ -106,6 +108,7 @@ async fn test_commitments_crud() {
                 Commitment {
                     chain_id: 5,
                     contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+                    bridge_type: 1,
                     commitment_hash: BigUint::from_str(
                         "9709515941671889428395361755215352896616366060066411186055604144562505250548",
                     )
@@ -240,6 +243,7 @@ async fn test_commitment_serde() {
         .insert(&Commitment {
             chain_id: 5,
             contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+            bridge_type: 1,
             commitment_hash: BigUint::from_str(
                 "9709495941671889428395361755215352896616366060066411186055604144562505250548",
             )
@@ -282,6 +286,7 @@ async fn test_commitment_serde() {
 async fn test_loader_database_commitment() {
     assert_eq!(Commitment::column_chain_id(), "chain_id");
     assert_eq!(Commitment::column_contract_address(), "contract_address");
+    assert_eq!(Commitment::column_bridge_type(), "bridge_type");
     assert_eq!(Commitment::column_commitment_hash(), "commitment_hash");
     assert_eq!(Commitment::column_block_number(), "block_number");
     assert_eq!(Commitment::column_status(), "status");
@@ -299,6 +304,7 @@ async fn test_loader_database_commitment() {
     let mut commitment = Commitment {
         chain_id: 5,
         contract_address: String::from("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"),
+        bridge_type: 1,
         commitment_hash: BigUint::from_str(
             "9709495941671889428395361755215352896616366060066411186055604144562505250548",
         )
@@ -339,6 +345,7 @@ async fn test_loader_database_commitment() {
         commitment.get_contract_address(),
         "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"
     );
+    assert_eq!(commitment.get_bridge_type(), 1);
     assert_eq!(
         commitment.get_commitment_hash(),
         &BigUint::from_str("9709495941671889428395361755215352896616366060066411186055604144562505250548",).unwrap()
@@ -431,6 +438,7 @@ async fn test_loader_database_commitment() {
         config.clone(),
         commitment.chain_id,
         &commitment.contract_address,
+        commitment.bridge_type,
         proto_commitment.clone(),
     )
     .unwrap();
@@ -439,6 +447,7 @@ async fn test_loader_database_commitment() {
         config.clone(),
         123434u64,
         &commitment.contract_address,
+        commitment.bridge_type,
         proto_commitment.clone(),
     )
     .is_err());
@@ -452,6 +461,7 @@ async fn test_loader_database_commitment() {
         config.clone(),
         commitment.chain_id,
         &commitment.contract_address,
+        commitment.bridge_type,
         proto_commitment.clone(),
     )
     .unwrap();

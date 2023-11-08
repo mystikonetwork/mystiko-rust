@@ -100,6 +100,7 @@ async fn test_query_commitment() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1111_u32),
             status: CommitmentStatus::Included.into(),
             block_number: 1000_u64,
@@ -115,6 +116,7 @@ async fn test_query_commitment() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(2222_u32),
             status: CommitmentStatus::Queued.into(),
             block_number: 2000_u64,
@@ -164,6 +166,7 @@ async fn test_query_commitments() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1111_u32),
             status: CommitmentStatus::Included.into(),
             block_number: 400_u64,
@@ -179,6 +182,7 @@ async fn test_query_commitments() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(2222_u32),
             status: CommitmentStatus::Queued.into(),
             block_number: 2000_u64,
@@ -194,6 +198,7 @@ async fn test_query_commitments() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(3333_u32),
             status: CommitmentStatus::SrcSucceeded.into(),
             block_number: 2100_u64,
@@ -209,6 +214,7 @@ async fn test_query_commitments() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(4444_u32),
             status: CommitmentStatus::Unspecified.into(),
             block_number: 3000_u64,
@@ -345,6 +351,7 @@ async fn test_count_commitments() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1111_u32),
             status: CommitmentStatus::Included.into(),
             block_number: 1000_u64,
@@ -360,6 +367,7 @@ async fn test_count_commitments() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(2222_u32),
             status: CommitmentStatus::Queued.into(),
             block_number: 2000_u64,
@@ -375,6 +383,7 @@ async fn test_count_commitments() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address1".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(3333_u32),
             status: CommitmentStatus::SrcSucceeded.into(),
             block_number: 2800_u64,
@@ -390,6 +399,7 @@ async fn test_count_commitments() {
         Commitment {
             chain_id: 1_u64,
             contract_address: "address2".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(4444_u32),
             status: CommitmentStatus::Unspecified.into(),
             block_number: 3000_u64,
@@ -611,17 +621,17 @@ async fn test_full_data_handle() {
     let mock_contracts = [
         Contract {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
             loaded_block: 2000_u64,
         },
         Contract {
             chain_id: 1_u64,
-            contract_address: "address2".to_string(),
+            contract_address: "0x62121886c954d7e23077f52217b51c26ad26bE9e".to_string(),
             loaded_block: 20000_u64,
         },
         Contract {
             chain_id: 1_u64,
-            contract_address: "address3".to_string(),
+            contract_address: "0x4333Ab5682Cd4589330BD9CFcedd5E054A0e9d8D".to_string(),
             loaded_block: 5000_u64,
         },
     ];
@@ -629,7 +639,8 @@ async fn test_full_data_handle() {
     let mock_commitments = [
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1111_u32),
             status: CommitmentStatus::Included.into(),
             block_number: 1000_u64,
@@ -644,7 +655,8 @@ async fn test_full_data_handle() {
         },
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1222_u32),
             status: CommitmentStatus::Queued.into(),
             block_number: 1700_u64,
@@ -659,7 +671,8 @@ async fn test_full_data_handle() {
         },
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1333_u32),
             status: CommitmentStatus::SrcSucceeded.into(),
             block_number: 1800_u64,
@@ -674,7 +687,8 @@ async fn test_full_data_handle() {
         },
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address2".to_string(),
+            contract_address: "0x62121886c954d7e23077f52217b51c26ad26bE9e".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(4444_u32),
             status: CommitmentStatus::Unspecified.into(),
             block_number: 1500_u64,
@@ -689,7 +703,8 @@ async fn test_full_data_handle() {
         },
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address2".to_string(),
+            contract_address: "0x62121886c954d7e23077f52217b51c26ad26bE9e".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(21111_u32),
             status: CommitmentStatus::Unspecified.into(),
             block_number: 1600_u64,
@@ -707,14 +722,14 @@ async fn test_full_data_handle() {
     let mock_nullifiers = [
         Nullifier {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
             nullifier: BigUint::from(1111_u32),
             block_number: 1000_u64,
             transaction_hash: "0x1111".to_string(),
         },
         Nullifier {
             chain_id: 1_u64,
-            contract_address: "address2".to_string(),
+            contract_address: "0x62121886c954d7e23077f52217b51c26ad26bE9e".to_string(),
             nullifier: BigUint::from(11111_u32),
             block_number: 1800_u64,
             transaction_hash: "0x11111".to_string(),
@@ -723,7 +738,7 @@ async fn test_full_data_handle() {
     collection.insert_batch(&mock_nullifiers).await.unwrap();
     let contracts_data = vec![
         ContractData::builder()
-            .address("address1")
+            .address("0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411")
             .start_block(2000_u64)
             .end_block(4000_u64)
             .data(
@@ -785,7 +800,7 @@ async fn test_full_data_handle() {
             )
             .build(),
         ContractData::builder()
-            .address("address2")
+            .address("0x62121886c954d7e23077f52217b51c26ad26bE9e")
             .start_block(20000_u64)
             .end_block(40000_u64)
             .data(
@@ -847,7 +862,7 @@ async fn test_full_data_handle() {
             )
             .build(),
         ContractData::builder()
-            .address("address3")
+            .address("0x4333Ab5682Cd4589330BD9CFcedd5E054A0e9d8D")
             .start_block(5000_u64)
             .end_block(10000_u64)
             .data(
@@ -924,18 +939,30 @@ async fn test_full_data_handle() {
     let result = handle_result.unwrap();
     assert_eq!(result.chain_id, 1_u64);
     assert_eq!(result.contract_results.len(), 4);
-    assert_eq!(result.contract_results[0].address, "address1");
+    assert_eq!(
+        result.contract_results[0].address,
+        "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411"
+    );
     assert!(result.contract_results[0].result.is_ok());
-    assert_eq!(result.contract_results[1].address, "address2");
+    assert_eq!(
+        result.contract_results[1].address,
+        "0x62121886c954d7e23077f52217b51c26ad26bE9e"
+    );
     assert!(result.contract_results[1].result.is_ok());
-    assert_eq!(result.contract_results[2].address, "address3");
+    assert_eq!(
+        result.contract_results[2].address,
+        "0x4333Ab5682Cd4589330BD9CFcedd5E054A0e9d8D"
+    );
     assert!(result.contract_results[2].result.is_ok());
     assert_eq!(result.contract_results[3].address, "address4");
     assert!(result.contract_results[3].result.is_err());
     let address1_commitments: Vec<Document<Commitment>> = collection
         .find(Some(QueryFilter::from(vec![
             SubFilter::equal(Commitment::column_chain_id(), 1_u64),
-            SubFilter::equal(Commitment::column_contract_address(), "address1"),
+            SubFilter::equal(
+                Commitment::column_contract_address(),
+                "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+            ),
         ])))
         .await
         .unwrap();
@@ -945,6 +972,7 @@ async fn test_full_data_handle() {
         .filter(|c| c.data.commitment_hash == BigUint::from(1222_u32))
         .collect::<Vec<Document<Commitment>>>();
     assert_eq!(commitment_1222.len(), 1);
+    assert_eq!(commitment_1222[0].data.bridge_type, 1_i32);
     assert_eq!(commitment_1222[0].data.commitment_hash, BigUint::from(1222_u32));
     assert_eq!(commitment_1222[0].data.src_chain_block_number, Some(1500_u64));
     assert_eq!(commitment_1222[0].data.included_block_number, Some(2011_u64));
@@ -964,7 +992,10 @@ async fn test_full_data_handle() {
     let address1_nullifiers: Vec<Document<Nullifier>> = collection
         .find::<Nullifier, QueryFilter>(Some(QueryFilter::from(vec![
             SubFilter::equal(Nullifier::column_chain_id(), 1_u64),
-            SubFilter::equal(Nullifier::column_contract_address(), "address1"),
+            SubFilter::equal(
+                Nullifier::column_contract_address(),
+                "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+            ),
         ])))
         .await
         .unwrap();
@@ -972,7 +1003,10 @@ async fn test_full_data_handle() {
     let address2_nullifiers: Vec<Document<Nullifier>> = collection
         .find(Some(QueryFilter::from(vec![
             SubFilter::equal(Nullifier::column_chain_id(), 1_u64),
-            SubFilter::equal(Nullifier::column_contract_address(), "address2"),
+            SubFilter::equal(
+                Nullifier::column_contract_address(),
+                "0x62121886c954d7e23077f52217b51c26ad26bE9e",
+            ),
         ])))
         .await
         .unwrap();
@@ -980,11 +1014,15 @@ async fn test_full_data_handle() {
     let address3_commitments: Vec<Document<Commitment>> = collection
         .find(Some(QueryFilter::from(vec![
             SubFilter::equal(Commitment::column_chain_id(), 1_u64),
-            SubFilter::equal(Commitment::column_contract_address(), "address3"),
+            SubFilter::equal(
+                Commitment::column_contract_address(),
+                "0x4333Ab5682Cd4589330BD9CFcedd5E054A0e9d8D",
+            ),
         ])))
         .await
         .unwrap();
     assert_eq!(address3_commitments.len(), 1);
+    assert_eq!(address3_commitments[0].data.bridge_type, 1_i32);
     assert_eq!(address3_commitments[0].data.src_chain_block_number, Some(5222_u64));
     assert_eq!(
         address3_commitments[0].data.src_chain_transaction_hash,
@@ -998,12 +1036,12 @@ async fn test_lite_data_handle() {
     let mock_contracts = [
         Contract {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
             loaded_block: 2000_u64,
         },
         Contract {
             chain_id: 1_u64,
-            contract_address: "address2".to_string(),
+            contract_address: "0x62121886c954d7e23077f52217b51c26ad26bE9e".to_string(),
             loaded_block: 20000_u64,
         },
     ];
@@ -1011,7 +1049,8 @@ async fn test_lite_data_handle() {
     let mock_commitments = [
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1111_u32),
             status: CommitmentStatus::Included.into(),
             block_number: 1000_u64,
@@ -1026,7 +1065,8 @@ async fn test_lite_data_handle() {
         },
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1222_u32),
             status: CommitmentStatus::Queued.into(),
             block_number: 1700_u64,
@@ -1041,7 +1081,8 @@ async fn test_lite_data_handle() {
         },
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address1".to_string(),
+            contract_address: "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(1333_u32),
             status: CommitmentStatus::SrcSucceeded.into(),
             block_number: 1800_u64,
@@ -1056,7 +1097,8 @@ async fn test_lite_data_handle() {
         },
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address2".to_string(),
+            contract_address: "0x62121886c954d7e23077f52217b51c26ad26bE9e".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(4444_u32),
             status: CommitmentStatus::Unspecified.into(),
             block_number: 1500_u64,
@@ -1071,7 +1113,8 @@ async fn test_lite_data_handle() {
         },
         Commitment {
             chain_id: 1_u64,
-            contract_address: "address2".to_string(),
+            contract_address: "0x62121886c954d7e23077f52217b51c26ad26bE9e".to_string(),
+            bridge_type: 1_i32,
             commitment_hash: BigUint::from(21111_u32),
             status: CommitmentStatus::Unspecified.into(),
             block_number: 1600_u64,
@@ -1088,7 +1131,7 @@ async fn test_lite_data_handle() {
     collection.insert_batch(&mock_commitments).await.unwrap();
     let contracts_data = vec![
         ContractData::builder()
-            .address("address1")
+            .address("0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411")
             .start_block(2000_u64)
             .end_block(4000_u64)
             .data(
@@ -1138,7 +1181,7 @@ async fn test_lite_data_handle() {
             )
             .build(),
         ContractData::builder()
-            .address("address2")
+            .address("0x62121886c954d7e23077f52217b51c26ad26bE9e")
             .start_block(20000_u64)
             .end_block(40000_u64)
             .data(
@@ -1204,14 +1247,23 @@ async fn test_lite_data_handle() {
     let result = handle_result.unwrap();
     assert_eq!(result.chain_id, 1_u64);
     assert_eq!(result.contract_results.len(), 2);
-    assert_eq!(result.contract_results[0].address, "address1");
+    assert_eq!(
+        result.contract_results[0].address,
+        "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411"
+    );
     assert!(result.contract_results[0].result.is_ok());
-    assert_eq!(result.contract_results[1].address, "address2");
+    assert_eq!(
+        result.contract_results[1].address,
+        "0x62121886c954d7e23077f52217b51c26ad26bE9e"
+    );
     assert!(result.contract_results[1].result.is_ok());
     let address1_commitments: Vec<Document<Commitment>> = collection
         .find(Some(QueryFilter::from(vec![
             SubFilter::equal(Commitment::column_chain_id(), 1_u64),
-            SubFilter::equal(Commitment::column_contract_address(), "address1"),
+            SubFilter::equal(
+                Commitment::column_contract_address(),
+                "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+            ),
         ])))
         .await
         .unwrap();
@@ -1221,6 +1273,7 @@ async fn test_lite_data_handle() {
         .filter(|c| c.data.commitment_hash == BigUint::from(1222_u32))
         .collect::<Vec<Document<Commitment>>>();
     assert_eq!(commitment_1222.len(), 1);
+    assert_eq!(commitment_1222[0].data.bridge_type, 1_i32);
     assert_eq!(commitment_1222[0].data.commitment_hash, BigUint::from(1222_u32));
     assert_eq!(commitment_1222[0].data.src_chain_block_number, Some(1500_u64));
     assert_eq!(commitment_1222[0].data.included_block_number, Some(2011_u64));

@@ -11,6 +11,7 @@ use crate::handler::{
 use anyhow::Result;
 use async_trait::async_trait;
 use mystiko_config::{ChainConfig, MystikoConfig};
+use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::storage::v1::{Condition, ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, DocumentData, MigrationHistory, StatementFormatter, Storage};
@@ -413,6 +414,17 @@ where
     ) -> Result<(Vec<C>, Vec<Document<C>>)> {
         let mut insert_commitments: Vec<C> = Vec::new();
         let mut update_commitments: Vec<Document<C>> = Vec::new();
+        let bridge_type: BridgeType = self
+            .config
+            .find_chain(chain_id)
+            .ok_or(anyhow::anyhow!(DatabaseHandlerError::UnsupportedChainError(chain_id)))?
+            .find_contract_by_address(contract_address)
+            .ok_or(anyhow::anyhow!(DatabaseHandlerError::UnsupportedContractError(
+                chain_id,
+                contract_address.to_string()
+            )))?
+            .bridge_type()
+            .into();
         for commitment_chunk in commitments.chunks(self.handle_batch_size.unwrap_or(DEFAULT_HANDLE_BATCH_SIZE)) {
             let existing_commitments: Vec<Document<C>> = self
                 .collection
@@ -446,6 +458,7 @@ where
                         self.config.clone(),
                         chain_id,
                         contract_address,
+                        bridge_type as i32,
                         commitment_proto.clone(),
                     )?);
                 }

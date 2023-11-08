@@ -19,6 +19,7 @@ pub struct Commitment {
     pub chain_id: u64,
     #[column(length_limit = 64)]
     pub contract_address: String,
+    pub bridge_type: i32,
     #[column(length_limit = 128)]
     pub commitment_hash: BigUint,
     pub status: i32,
@@ -84,6 +85,10 @@ impl DatabaseCommitment for Commitment {
         CommitmentColumn::ContractAddress.to_string()
     }
 
+    fn column_bridge_type() -> String {
+        CommitmentColumn::BridgeType.to_string()
+    }
+
     fn column_commitment_hash() -> String {
         CommitmentColumn::CommitmentHash.to_string()
     }
@@ -128,10 +133,17 @@ impl DatabaseCommitment for Commitment {
         CommitmentColumn::SrcChainTransactionHash.to_string()
     }
 
-    fn from_proto(_config: Arc<MystikoConfig>, chain_id: u64, address: &str, proto: ProtoCommitment) -> Result<Self> {
+    fn from_proto(
+        _config: Arc<MystikoConfig>,
+        chain_id: u64,
+        address: &str,
+        bridge_type: i32,
+        proto: ProtoCommitment,
+    ) -> Result<Self> {
         Ok(Self {
             chain_id,
             contract_address: address.to_string(),
+            bridge_type,
             commitment_hash: bytes_to_biguint(&proto.commitment_hash),
             status: proto.status,
             block_number: proto.block_number,
@@ -152,6 +164,10 @@ impl DatabaseCommitment for Commitment {
 
     fn get_contract_address(&self) -> &String {
         &self.contract_address
+    }
+
+    fn get_bridge_type(&self) -> i32 {
+        self.bridge_type
     }
 
     fn get_commitment_hash(&self) -> &BigUint {
@@ -203,6 +219,7 @@ impl DatabaseCommitment for Commitment {
             config,
             self.chain_id,
             self.get_contract_address(),
+            self.get_bridge_type(),
             merge_commitments(self.clone().into_proto()?, proto.clone()),
         )?;
         self.status = data.status;

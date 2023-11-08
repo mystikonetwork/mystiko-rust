@@ -9,6 +9,7 @@ pub struct Commitment {
     pub chain_id: u64,
     #[column(length_limit = 64)]
     pub contract_address: String,
+    pub bridge_type: i32,
     #[column(length_limit = 128)]
     pub commitment_hash: BigUint,
     #[column(length_limit = 16)]
@@ -86,6 +87,10 @@ impl mystiko_dataloader::handler::document::DatabaseCommitment for Commitment {
         CommitmentColumn::ContractAddress.to_string()
     }
 
+    fn column_bridge_type() -> String {
+        CommitmentColumn::BridgeType.to_string()
+    }
+
     fn column_commitment_hash() -> String {
         CommitmentColumn::CommitmentHash.to_string()
     }
@@ -134,6 +139,7 @@ impl mystiko_dataloader::handler::document::DatabaseCommitment for Commitment {
         config: std::sync::Arc<mystiko_config::MystikoConfig>,
         chain_id: u64,
         address: &str,
+        bridge_type: i32,
         proto: mystiko_protos::data::v1::Commitment,
     ) -> anyhow::Result<Self> {
         if let Some(contract_config) = config.find_contract_by_address(chain_id, address) {
@@ -146,6 +152,7 @@ impl mystiko_dataloader::handler::document::DatabaseCommitment for Commitment {
             Ok(Self {
                 chain_id,
                 contract_address: address.to_string(),
+                bridge_type,
                 commitment_hash: mystiko_utils::convert::bytes_to_biguint(&proto.commitment_hash),
                 asset_symbol: asset.asset_symbol().to_string(),
                 asset_decimals: asset.asset_decimals(),
@@ -180,6 +187,10 @@ impl mystiko_dataloader::handler::document::DatabaseCommitment for Commitment {
 
     fn get_contract_address(&self) -> &String {
         &self.contract_address
+    }
+
+    fn get_bridge_type(&self) -> i32 {
+        self.bridge_type
     }
 
     fn get_commitment_hash(&self) -> &BigUint {

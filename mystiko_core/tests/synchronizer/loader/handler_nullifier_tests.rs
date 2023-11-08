@@ -82,6 +82,7 @@ async fn build_commitments() -> Vec<Commitment> {
     let cm = Commitment {
         chain_id: 5,
         contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
+        bridge_type: 1,
         commitment_hash: BigUint::from_str(
             "9709495941671889428395361755215352896616366060066411186055604144562505250548",
         )
