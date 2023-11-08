@@ -113,7 +113,7 @@ mod internal {
                         .loader_config(options.loader_config)
                         .build();
 
-                    let mystiko = match Mystiko::new(database, Some(mystiko_options)).await {
+                    let mystiko = match MystikoType::new(database, Some(mystiko_options)).await {
                         Ok(mystiko) => mystiko,
                         Err(err) => return ApiResponse::error(parse_mystiko_error(&err), err),
                     };

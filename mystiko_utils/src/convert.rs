@@ -46,6 +46,17 @@ pub fn u256_to_bytes(u: &U256) -> Vec<u8> {
     arr.to_vec()
 }
 
+pub fn u256_to_hex_string(u: &U256) -> String {
+    format!("0x{:x}", u)
+}
+
+pub fn hex_string_to_u256<S>(hex_string: S) -> Result<U256>
+where
+    S: AsRef<str>,
+{
+    Ok(U256::from_str(hex_string.as_ref())?)
+}
+
 pub fn biguint_to_u256(b: &BigUint) -> U256 {
     bytes_to_u256(biguint_to_bytes(b))
 }

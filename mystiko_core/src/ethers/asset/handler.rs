@@ -1,6 +1,6 @@
 use crate::{
-    BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssetHandler,
-    TransactionSigner, TransferOptions,
+    BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, FromContext, MystikoContext,
+    MystikoError, PublicAssetHandler, TransactionSigner, TransferOptions,
 };
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -8,6 +8,7 @@ use ethers_core::types::{TxHash, U256};
 use ethers_providers::Middleware;
 use mystiko_abi::erc20::ERC20;
 use mystiko_ethers::{Provider, Providers};
+use mystiko_storage::{StatementFormatter, Storage};
 use std::fmt::Debug;
 use std::ops::Sub;
 use std::sync::Arc;
@@ -152,5 +153,18 @@ where
             .send_transaction(options.chain_id, tx)
             .await
             .map_err(|err| PublicAssetsError::SignerError(format!("{:?}", err)))?)
+    }
+}
+
+#[async_trait]
+impl<F, S> FromContext<F, S> for PublicAssets<Box<dyn Providers>>
+where
+    F: StatementFormatter,
+    S: Storage,
+{
+    async fn from_context(context: &MystikoContext<F, S>) -> Result<Self, MystikoError> {
+        Ok(Self {
+            providers: context.providers.clone(),
+        })
     }
 }

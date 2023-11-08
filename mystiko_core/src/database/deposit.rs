@@ -46,8 +46,7 @@ pub struct Deposit {
     pub error_message: Option<String>,
     #[column(length_limit = 64)]
     pub wallet_id: String,
-    #[column(length_limit = 128)]
-    pub asset_approve_transaction_hash: Option<String>,
+    pub asset_approve_transaction_hash: Option<Vec<String>>,
     #[column(length_limit = 128)]
     pub src_chain_transaction_hash: Option<String>,
     #[column(length_limit = 128)]
@@ -73,7 +72,6 @@ fn indexes() -> Vec<IndexColumns> {
         vec![DepositColumn::DstChainId].into(),
         vec![DepositColumn::DstChainContractAddress].into(),
         vec![DepositColumn::ShieldedRecipientAddress].into(),
-        vec![DepositColumn::AssetApproveTransactionHash].into(),
         vec![DepositColumn::SrcChainTransactionHash].into(),
         vec![DepositColumn::QueuedTransactionHash].into(),
         vec![DepositColumn::IncludedTransactionHash].into(),
@@ -113,7 +111,8 @@ impl Deposit {
                 status: proto.status,
                 error_message: proto.error_message,
                 wallet_id: proto.wallet_id,
-                asset_approve_transaction_hash: proto.asset_approve_transaction_hash,
+                asset_approve_transaction_hash: (!proto.asset_approve_transaction_hash.is_empty())
+                    .then_some(proto.asset_approve_transaction_hash),
                 src_chain_transaction_hash: proto.src_chain_transaction_hash,
                 queued_transaction_hash: proto.queued_transaction_hash,
                 included_transaction_hash: proto.included_transaction_hash,
@@ -151,7 +150,7 @@ impl Deposit {
             .status(deposit.data.status)
             .error_message(deposit.data.error_message)
             .wallet_id(deposit.data.wallet_id)
-            .asset_approve_transaction_hash(deposit.data.asset_approve_transaction_hash)
+            .asset_approve_transaction_hash(deposit.data.asset_approve_transaction_hash.unwrap_or_default())
             .src_chain_transaction_hash(deposit.data.src_chain_transaction_hash)
             .queued_transaction_hash(deposit.data.queued_transaction_hash)
             .included_transaction_hash(deposit.data.included_transaction_hash)

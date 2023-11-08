@@ -1,4 +1,8 @@
-use crate::{Account, AccountColumn, Database, Wallet, WalletHandler, WalletHandlerError};
+use crate::{
+    Account, AccountColumn, AccountHandler, Database, FromContext, MystikoContext, MystikoError, Wallet, WalletHandler,
+    WalletHandlerV1, WalletHandlerV1Error,
+};
+use async_trait::async_trait;
 use bip32::XPrv;
 use futures::TryFutureExt;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
@@ -20,13 +24,13 @@ use thiserror::Error;
 pub const DEFAULT_KEY_DERIVE_PATH: &str = "m/44'/94085'/0'";
 
 #[derive(Debug)]
-pub struct AccountHandler<F: StatementFormatter, S: Storage> {
+pub struct AccountHandlerV1<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
-    wallets: WalletHandler<F, S>,
+    wallets: WalletHandlerV1<F, S>,
 }
 
 #[derive(Debug, Error)]
-pub enum AccountHandlerError {
+pub enum AccountHandlerV1Error {
     #[error(transparent)]
     StorageError(#[from] StorageError),
     #[error(transparent)]
@@ -36,26 +40,22 @@ pub enum AccountHandlerError {
     #[error(transparent)]
     HexStringError(#[from] rustc_hex::FromHexError),
     #[error(transparent)]
-    WalletHandlerError(#[from] WalletHandlerError),
+    WalletHandlerError(#[from] WalletHandlerV1Error),
     #[error("no such account where {0:?} = {1:?}")]
     NoSuchAccountError(String, String),
 }
 
-type Result<T> = std::result::Result<T, AccountHandlerError>;
+type Result<T> = std::result::Result<T, AccountHandlerV1Error>;
 
-impl<F, S> AccountHandler<F, S>
+#[async_trait]
+impl<F, S> AccountHandler<ProtoAccount, CreateAccountOptions, UpdateAccountOptions> for AccountHandlerV1<F, S>
 where
     F: StatementFormatter,
     S: Storage,
 {
-    pub fn new(db: Arc<Database<F, S>>) -> Self {
-        Self {
-            db: db.clone(),
-            wallets: WalletHandler::new(db),
-        }
-    }
+    type Error = AccountHandlerV1Error;
 
-    pub async fn create(&self, options: &CreateAccountOptions) -> Result<ProtoAccount> {
+    async fn create(&self, options: &CreateAccountOptions) -> Result<ProtoAccount> {
         let mut wallet = self.wallets.check_document_password(&options.wallet_password).await?;
         let (raw_account, account_nonce) = self.create_raw_account(&wallet, options).await?;
         let account = self.insert_raw_account(&mut wallet, raw_account, account_nonce).await?;
@@ -67,25 +67,10 @@ where
         Ok(account)
     }
 
-    pub async fn count<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<u64> {
-        let filter = self.wrap_filter(Some(filter)).await?;
-        self.db
-            .accounts
-            .count(filter)
-            .await
-            .map_err(AccountHandlerError::StorageError)
-    }
-
-    pub async fn count_all(&self) -> Result<u64> {
-        self.count(
-            QueryFilter::builder()
-                .conditions_operator(ConditionOperator::And)
-                .build(),
-        )
-        .await
-    }
-
-    pub async fn find<Q: Into<QueryFilter>>(&self, filter: Q) -> Result<Vec<ProtoAccount>> {
+    async fn find<Q>(&self, filter: Q) -> Result<Vec<ProtoAccount>>
+    where
+        Q: Into<QueryFilter> + Send + Sync,
+    {
         Ok(self
             .find_documents(filter)
             .await?
@@ -94,7 +79,7 @@ where
             .collect())
     }
 
-    pub async fn find_all(&self) -> Result<Vec<ProtoAccount>> {
+    async fn find_all(&self) -> Result<Vec<ProtoAccount>> {
         Ok(self
             .find_all_documents()
             .await?
@@ -103,24 +88,45 @@ where
             .collect())
     }
 
-    pub async fn find_by_id(&self, id: &str) -> Result<Option<ProtoAccount>> {
+    async fn find_by_id(&self, id: &str) -> Result<Option<ProtoAccount>> {
         self.find_one_by_identifier(id, DocumentColumn::Id).await
     }
 
-    pub async fn find_by_shielded_address(&self, shielded_address: &str) -> Result<Option<ProtoAccount>> {
+    async fn find_by_shielded_address(&self, shielded_address: &str) -> Result<Option<ProtoAccount>> {
         self.find_one_by_identifier(shielded_address, AccountColumn::ShieldedAddress)
             .await
     }
 
-    pub async fn find_by_public_key(&self, public_key: &str) -> Result<Option<ProtoAccount>> {
+    async fn find_by_public_key(&self, public_key: &str) -> Result<Option<ProtoAccount>> {
         self.find_one_by_identifier(public_key, AccountColumn::PublicKey).await
     }
 
-    pub async fn update_by_id(&self, id: &str, options: &UpdateAccountOptions) -> Result<ProtoAccount> {
+    async fn count<Q>(&self, filter: Q) -> Result<u64>
+    where
+        Q: Into<QueryFilter> + Send + Sync,
+    {
+        let filter = self.wrap_filter(Some(filter)).await?;
+        self.db
+            .accounts
+            .count(filter)
+            .await
+            .map_err(AccountHandlerV1Error::StorageError)
+    }
+
+    async fn count_all(&self) -> Result<u64> {
+        self.count(
+            QueryFilter::builder()
+                .conditions_operator(ConditionOperator::And)
+                .build(),
+        )
+        .await
+    }
+
+    async fn update_by_id(&self, id: &str, options: &UpdateAccountOptions) -> Result<ProtoAccount> {
         self.update_by_identifier(id, DocumentColumn::Id, options).await
     }
 
-    pub async fn update_by_shielded_address(
+    async fn update_by_shielded_address(
         &self,
         shielded_address: &str,
         options: &UpdateAccountOptions,
@@ -129,12 +135,12 @@ where
             .await
     }
 
-    pub async fn update_by_public_key(&self, public_key: &str, options: &UpdateAccountOptions) -> Result<ProtoAccount> {
+    async fn update_by_public_key(&self, public_key: &str, options: &UpdateAccountOptions) -> Result<ProtoAccount> {
         self.update_by_identifier(public_key, AccountColumn::PublicKey, options)
             .await
     }
 
-    pub async fn update_encryption(
+    async fn update_encryption(
         &self,
         old_wallet_password: &str,
         new_wallet_password: &str,
@@ -150,7 +156,7 @@ where
             .accounts
             .update_batch(&accounts)
             .await
-            .map_err(AccountHandlerError::StorageError)?;
+            .map_err(AccountHandlerV1Error::StorageError)?;
         log::info!(
             "successfully updated the encryption of all accounts from wallet(id = \"{}\")",
             &wallet.id
@@ -158,23 +164,47 @@ where
         Ok(accounts.into_iter().map(Account::document_into_proto).collect())
     }
 
-    pub async fn export_secret_key_by_id(&self, wallet_password: &str, id: &str) -> Result<String> {
+    async fn export_secret_key_by_id(&self, wallet_password: &str, id: &str) -> Result<String> {
         self.export_secret_key_by_identifier(wallet_password, id, DocumentColumn::Id)
             .await
     }
 
-    pub async fn export_secret_key_by_public_key(&self, wallet_password: &str, public_key: &str) -> Result<String> {
+    async fn export_secret_key_by_public_key(&self, wallet_password: &str, public_key: &str) -> Result<String> {
         self.export_secret_key_by_identifier(wallet_password, public_key, AccountColumn::PublicKey)
             .await
     }
 
-    pub async fn export_secret_key_by_shielded_address(
+    async fn export_secret_key_by_shielded_address(
         &self,
         wallet_password: &str,
         shielded_address: &str,
     ) -> Result<String> {
         self.export_secret_key_by_identifier(wallet_password, shielded_address, AccountColumn::ShieldedAddress)
             .await
+    }
+}
+
+#[async_trait]
+impl<F, S> FromContext<F, S> for AccountHandlerV1<F, S>
+where
+    F: StatementFormatter,
+    S: Storage,
+{
+    async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
+        Ok(Self::new(context.db.clone()))
+    }
+}
+
+impl<F, S> AccountHandlerV1<F, S>
+where
+    F: StatementFormatter,
+    S: Storage,
+{
+    pub fn new(db: Arc<Database<F, S>>) -> Self {
+        Self {
+            db: db.clone(),
+            wallets: WalletHandlerV1::new(db),
+        }
     }
 
     async fn wrap_filter<Q: Into<QueryFilter>>(&self, filter: Option<Q>) -> Result<QueryFilter> {
@@ -198,7 +228,7 @@ where
             .accounts
             .find(filter)
             .await
-            .map_err(AccountHandlerError::StorageError)?
+            .map_err(AccountHandlerV1Error::StorageError)?
             .into_iter()
             .collect())
     }
@@ -233,7 +263,7 @@ where
             .accounts
             .find_one(wrapped_filter)
             .await
-            .map_err(AccountHandlerError::StorageError)
+            .map_err(AccountHandlerV1Error::StorageError)
     }
 
     async fn update_by_identifier<T: ToString>(
@@ -257,7 +287,7 @@ where
                     .db
                     .accounts
                     .update(&account)
-                    .map_err(AccountHandlerError::StorageError)
+                    .map_err(AccountHandlerV1Error::StorageError)
                     .await?;
                 log::info!(
                     "successfully updated an account(id = \"{}\") with options: {:?}",
@@ -269,7 +299,7 @@ where
                 Ok(Account::document_into_proto(account))
             }
         } else {
-            Err(AccountHandlerError::NoSuchAccountError(
+            Err(AccountHandlerV1Error::NoSuchAccountError(
                 field_name_str,
                 identifier.to_string(),
             ))
@@ -287,7 +317,7 @@ where
         if let Some(account) = self.find_one_by_identifier(identifier, field_name).await? {
             Ok(decrypt_symmetric(wallet_password, &account.encrypted_secret_key)?)
         } else {
-            Err(AccountHandlerError::NoSuchAccountError(
+            Err(AccountHandlerV1Error::NoSuchAccountError(
                 field_name_str,
                 identifier.to_string(),
             ))
@@ -367,14 +397,14 @@ where
                     .wallets
                     .update(wallet)
                     .await
-                    .map_err(AccountHandlerError::StorageError)?;
+                    .map_err(AccountHandlerV1Error::StorageError)?;
             }
             Ok(Account::document_into_proto(
                 self.db
                     .accounts
                     .insert(&account)
                     .await
-                    .map_err(AccountHandlerError::StorageError)?,
+                    .map_err(AccountHandlerV1Error::StorageError)?,
             ))
         }
     }

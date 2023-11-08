@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use mystiko_core::{AccountHandlerError, MystikoError, SynchronizerError, WalletHandlerError};
+use mystiko_core::{AccountHandlerV1Error, MystikoError, SynchronizerError, WalletHandlerV1Error};
 use mystiko_crypto::error::CryptoError;
 use mystiko_dataloader::DataLoaderError;
 use mystiko_lib::error::{parse_account_error, parse_mystiko_error, parse_wallet_error};
@@ -22,14 +22,15 @@ fn test_parse_mystiko_error() {
 
 #[test]
 fn test_parse_account_error() {
-    let e1: AccountHandlerError = AccountHandlerError::StorageError(StorageError::MissingDataError("_".to_string()));
-    let e2: AccountHandlerError = AccountHandlerError::CryptoError(CryptoError::InternalError);
-    let e3: AccountHandlerError = AccountHandlerError::MnemonicError(bip32::Error::Decode);
-    let e4: AccountHandlerError = AccountHandlerError::HexStringError(rustc_hex::FromHexError::InvalidHexLength);
-    let e5: AccountHandlerError = AccountHandlerError::WalletHandlerError(WalletHandlerError::StorageError(
+    let e1: AccountHandlerV1Error =
+        AccountHandlerV1Error::StorageError(StorageError::MissingDataError("_".to_string()));
+    let e2: AccountHandlerV1Error = AccountHandlerV1Error::CryptoError(CryptoError::InternalError);
+    let e3: AccountHandlerV1Error = AccountHandlerV1Error::MnemonicError(bip32::Error::Decode);
+    let e4: AccountHandlerV1Error = AccountHandlerV1Error::HexStringError(rustc_hex::FromHexError::InvalidHexLength);
+    let e5: AccountHandlerV1Error = AccountHandlerV1Error::WalletHandlerError(WalletHandlerV1Error::StorageError(
         StorageError::MissingDataError("_".to_string()),
     ));
-    let e6: AccountHandlerError = AccountHandlerError::NoSuchAccountError("_".to_string(), "_".to_string());
+    let e6: AccountHandlerV1Error = AccountHandlerV1Error::NoSuchAccountError("_".to_string(), "_".to_string());
     assert_eq!(parse_account_error(&e1), StatusCode::StorageError);
     assert_eq!(parse_account_error(&e2), StatusCode::CryptoError);
     assert_eq!(parse_account_error(&e3), StatusCode::MnemonicError);
@@ -40,13 +41,13 @@ fn test_parse_account_error() {
 
 #[test]
 fn test_parse_wallet_error() {
-    let e1: WalletHandlerError = WalletHandlerError::StorageError(StorageError::MissingDataError("_".to_string()));
-    let e2: WalletHandlerError = WalletHandlerError::CryptoError(CryptoError::InternalError);
-    let e3: WalletHandlerError = WalletHandlerError::MnemonicError(bip32::Error::Decode);
-    let e4: WalletHandlerError = WalletHandlerError::HexStringError(rustc_hex::FromHexError::InvalidHexLength);
-    let e5: WalletHandlerError = WalletHandlerError::InvalidPasswordError("error".to_string());
-    let e6: WalletHandlerError = WalletHandlerError::MismatchedPasswordError;
-    let e7: WalletHandlerError = WalletHandlerError::NoExistingWalletError;
+    let e1: WalletHandlerV1Error = WalletHandlerV1Error::StorageError(StorageError::MissingDataError("_".to_string()));
+    let e2: WalletHandlerV1Error = WalletHandlerV1Error::CryptoError(CryptoError::InternalError);
+    let e3: WalletHandlerV1Error = WalletHandlerV1Error::MnemonicError(bip32::Error::Decode);
+    let e4: WalletHandlerV1Error = WalletHandlerV1Error::HexStringError(rustc_hex::FromHexError::InvalidHexLength);
+    let e5: WalletHandlerV1Error = WalletHandlerV1Error::InvalidPasswordError("error".to_string());
+    let e6: WalletHandlerV1Error = WalletHandlerV1Error::MismatchedPasswordError;
+    let e7: WalletHandlerV1Error = WalletHandlerV1Error::NoExistingWalletError;
     assert_eq!(parse_wallet_error(&e1), StatusCode::StorageError);
     assert_eq!(parse_wallet_error(&e2), StatusCode::CryptoError);
     assert_eq!(parse_wallet_error(&e3), StatusCode::MnemonicError);
