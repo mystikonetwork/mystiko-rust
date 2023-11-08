@@ -91,37 +91,38 @@ mod internal {
     use mystiko_storage_sqlite::SqliteStorageOptions;
 
     pub(crate) async fn initialize(options: ProtoMystikoOptions) -> ApiResponse {
-        if !is_initialized().await {
-            let mut mystiko_guard = MYSTIKO.write().await;
-            if !mystiko_guard.is_initialized() {
-                init_logger();
-                let storage_options = SqliteStorageOptions::builder().path(options.db_path).build();
-                match SqliteStorage::new(storage_options).await {
-                    Ok(storage) => {
-                        let database = Database::new(SqlStatementFormatter::sqlite(), storage);
-                        match Mystiko::new(
-                            database,
-                            Some(
-                                MystikoOptions::builder()
-                                    .config_options(options.config_options)
-                                    .loader_config(options.loader_config)
-                                    .build(),
-                            ),
-                        )
-                        .await
-                        {
-                            Ok(mystiko) => {
-                                mystiko_guard.initialize(mystiko);
-                                ApiResponse::success_with_empty()
-                            }
-                            Err(err) => ApiResponse::error(parse_mystiko_error(&err), err),
-                        }
-                    }
-                    Err(err) => ApiResponse::error(StatusCode::StorageError, err),
-                };
+        match is_initialized().await {
+            true => ApiResponse::success_with_empty(),
+            false => {
+                let mut mystiko_guard = MYSTIKO.write().await;
+
+                if mystiko_guard.is_initialized() {
+                    ApiResponse::success_with_empty()
+                } else {
+                    init_logger();
+
+                    let storage_options = SqliteStorageOptions::builder().path(options.db_path).build();
+                    let storage = match SqliteStorage::new(storage_options).await {
+                        Ok(storage) => storage,
+                        Err(err) => return ApiResponse::error(StatusCode::StorageError, err),
+                    };
+
+                    let database = Database::new(SqlStatementFormatter::sqlite(), storage);
+                    let mystiko_options = MystikoOptions::builder()
+                        .config_options(options.config_options)
+                        .loader_config(options.loader_config)
+                        .build();
+
+                    let mystiko = match Mystiko::new(database, Some(mystiko_options)).await {
+                        Ok(mystiko) => mystiko,
+                        Err(err) => return ApiResponse::error(parse_mystiko_error(&err), err),
+                    };
+
+                    mystiko_guard.initialize(mystiko);
+                    ApiResponse::success_with_empty()
+                }
             }
         }
-        ApiResponse::success_with_empty()
     }
 
     pub(crate) async fn is_initialized() -> bool {
