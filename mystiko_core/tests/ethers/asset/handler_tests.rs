@@ -1,4 +1,4 @@
-use crate::ethers::{MockProvider, MockProviders, MockTransactionSigner};
+use crate::common::{MockProvider, MockProviders, MockTransactionSigner};
 use ethers_core::abi::{AbiDecode, AbiEncode};
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{NameOrAddress, TransactionRequest, TxHash, U256};

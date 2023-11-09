@@ -36,6 +36,14 @@ where
     Ok(base.mul(multiplier))
 }
 
+pub fn number_to_u256_decimal<T>(number: T, num_decimals: Option<u32>) -> Result<U256>
+where
+    T: Display,
+{
+    let decimal = number_to_decimal(number, num_decimals)?;
+    Ok(U256::from_dec_str(&decimal.round().to_string())?)
+}
+
 pub fn u256_to_biguint(u: &U256) -> BigUint {
     bytes_to_biguint(u256_to_bytes(u))
 }

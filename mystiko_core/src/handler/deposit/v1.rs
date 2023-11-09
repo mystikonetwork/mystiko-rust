@@ -19,9 +19,8 @@ use mystiko_protos::core::handler::v1::{
 use mystiko_protos::core::v1::{DepositStatus, Transaction};
 use mystiko_storage::{Document, StatementFormatter, Storage, StorageError};
 use mystiko_utils::address::ethers_address_from_string;
-use mystiko_utils::convert::{bytes_to_biguint, decimal_to_number, number_to_decimal};
+use mystiko_utils::convert::{bytes_to_biguint, decimal_to_number, number_to_u256_decimal, u256_to_biguint};
 use mystiko_utils::hex::encode_hex_with_prefix;
-use num_bigint::BigUint;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -148,7 +147,9 @@ where
         let wallet = self.wallets.check_current().await?;
         let context = DepositContext::from_create_options(self.config.clone(), &options)?;
         let deposit = context.create_deposit(&options, &self.deposits, wallet.id).await?;
-        Ok(Deposit::document_into_proto(self.db.deposits.insert(&deposit).await?))
+        let deposit = self.db.deposits.insert(&deposit).await?;
+        log::info!("successfully created a deposit(id = {:?})", deposit.id);
+        Ok(Deposit::document_into_proto(deposit))
     }
 
     async fn send(&self, options: SendDepositOptions) -> Result<ProtoDeposit> {
@@ -437,14 +438,14 @@ impl DepositContext {
     pub(crate) async fn create_deposit<D>(
         &self,
         options: &CreateDepositOptions,
-        deposit: &D,
+        deposits: &D,
         wallet_id: String,
     ) -> Result<Deposit>
     where
         D: DepositContract,
         DepositHandlerV1Error: From<D::Error>,
     {
-        self.validate_amounts(options, deposit).await?;
+        self.validate_amounts(options, deposits).await?;
         let dst_chain_id = self.contract_config.peer_chain_id().unwrap_or(options.chain_id);
         let dst_chain_contract_address = self
             .contract_config
@@ -457,8 +458,8 @@ impl DepositContext {
             .map(|c| c.pool_contract_address())
             .unwrap_or(self.contract_config.pool_contract_address())
             .to_string();
-        let amount = number_to_decimal(options.amount, Some(self.contract_config.asset_decimals()))?;
-        let amount = BigUint::from_str(&amount.to_string())?;
+        let amount = number_to_u256_decimal(options.amount, Some(self.contract_config.asset_decimals()))?;
+        let amount = u256_to_biguint(&amount);
         let commitment = mystiko_protocol::commitment::Commitment::new(
             mystiko_protocol::address::ShieldedAddress::from_string(&options.shielded_address)?,
             Some(mystiko_protocol::commitment::Note::new(Some(amount), None)),
@@ -483,13 +484,15 @@ impl DepositContext {
             amount: options.amount,
             rollup_fee_amount: options.rollup_fee_amount,
             bridge_fee_amount: options.bridge_fee_amount,
-            bridge_fee_asset_address: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
-                .then_some(self.contract_config.bridge_fee_asset().asset_address().to_string()),
+            bridge_fee_asset_address: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop
+                && self.contract_config.bridge_fee_asset_address().is_some())
+            .then_some(self.contract_config.bridge_fee_asset().asset_address().to_string()),
             bridge_fee_asset_symbol: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
                 .then_some(self.contract_config.bridge_fee_asset().asset_symbol().to_string()),
             executor_fee_amount: options.executor_fee_amount,
-            executor_fee_asset_address: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
-                .then_some(self.contract_config.executor_fee_asset().asset_address().to_string()),
+            executor_fee_asset_address: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop
+                && self.contract_config.executor_fee_asset_address().is_some())
+            .then_some(self.contract_config.executor_fee_asset().asset_address().to_string()),
             executor_fee_asset_symbol: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
                 .then_some(self.contract_config.executor_fee_asset().asset_symbol().to_string()),
             shielded_recipient_address: options.shielded_address.clone(),
@@ -508,7 +511,11 @@ impl DepositContext {
         D: DepositContract,
         DepositHandlerV1Error: From<D::Error>,
     {
-        let quote = self.quote.clone().unwrap_or(self.quote(deposits).await?);
+        let quote = if let Some(quote) = self.quote.clone() {
+            quote
+        } else {
+            self.quote(deposits).await?
+        };
         if options.amount < quote.min_amount || options.amount > quote.max_amount {
             return Err(DepositHandlerV1Error::InvalidDepositAmountError(
                 options.amount,
@@ -590,9 +597,8 @@ impl DepositContext {
         let tx = transactions.create(transaction, self.chain_config.transaction_type())?;
         let contract_address = ethers_address_from_string(self.contract_config.address())?;
         let asset_decimals = Some(self.contract_config.asset_decimals());
-        let amount = U256::from_dec_str(&number_to_decimal(deposit.data.amount, asset_decimals)?.to_string())?;
-        let rollup_fee_amount =
-            U256::from_dec_str(&number_to_decimal(deposit.data.rollup_fee_amount, asset_decimals)?.to_string())?;
+        let amount = number_to_u256_decimal(deposit.data.amount, asset_decimals)?;
+        let rollup_fee_amount = number_to_u256_decimal(deposit.data.rollup_fee_amount, asset_decimals)?;
         let commitment = U256::from_dec_str(&deposit.data.commitment_hash)?;
         let hash_k = U256::from_dec_str(&deposit.data.hash_k)?;
         let random_s: u128 = U128::from_dec_str(&deposit.data.random_s)?.as_u128();
@@ -615,19 +621,13 @@ impl DepositContext {
             deposit.data.status = DepositStatus::SrcPending as i32;
             Ok(tx_hash)
         } else {
-            let bridge_fee_amount = U256::from_dec_str(
-                &number_to_decimal(
-                    deposit.data.bridge_fee_amount.unwrap_or_default(),
-                    Some(self.contract_config.bridge_fee_asset().asset_decimals()),
-                )?
-                .to_string(),
+            let bridge_fee_amount = number_to_u256_decimal(
+                deposit.data.bridge_fee_amount.unwrap_or_default(),
+                Some(self.contract_config.bridge_fee_asset().asset_decimals()),
             )?;
-            let executor_fee_amount = U256::from_dec_str(
-                &number_to_decimal(
-                    deposit.data.executor_fee_amount.unwrap_or_default(),
-                    Some(self.contract_config.executor_fee_asset().asset_decimals()),
-                )?
-                .to_string(),
+            let executor_fee_amount = number_to_u256_decimal(
+                deposit.data.executor_fee_amount.unwrap_or_default(),
+                Some(self.contract_config.executor_fee_asset().asset_decimals()),
             )?;
             let options = crate::CrossChainDepositOptions::<TypedTransaction, S>::builder()
                 .chain_id(self.chain_id)
@@ -758,8 +758,7 @@ impl DepositContext {
 
 impl AssetContext {
     pub(crate) fn new(chain_id: u64, asset_config: AssetConfig, amount: f64) -> Result<Self> {
-        let converted_amount = number_to_decimal(amount, Some(asset_config.asset_decimals()))?;
-        let converted_amount = U256::from_dec_str(&converted_amount.to_string())?;
+        let converted_amount = number_to_u256_decimal(amount, Some(asset_config.asset_decimals()))?;
         Ok(Self {
             chain_id,
             asset_config,
