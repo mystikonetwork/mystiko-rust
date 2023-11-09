@@ -1,19 +1,16 @@
-use crate::common::{
-    create_client, create_provider_pool, deploy_contract, mock_handshake_supported_server, mock_register_info_server,
-    register_relayer, relayer_config_json_string,
-};
+use crate::common::{create_provider_pool, deploy_contract, register_relayer, relayer_config_json_string};
+use crate::v2::{create_client, mock_handshake_supported_server, mock_register_info_server, CHAIN_ID};
 use ethers::signers::LocalWallet;
 use ethers_core::utils::Anvil;
 use log::LevelFilter;
 use mockito::Server;
-use mystiko_relayer_client::client::{RelayerClient, RelayerClientOptions};
 use mystiko_relayer_client::error::RelayerClientError;
+use mystiko_relayer_client::v2::client::{RelayerClientOptions, RelayerClientV2};
+use mystiko_relayer_client::RelayerClient;
 use mystiko_relayer_types::{RegisterInfoRequest, RegisterOptions};
 use mystiko_types::CircuitType;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-
-const CHAIN_ID: u64 = 31337;
 
 #[tokio::test]
 async fn test_all_register_info_successful() {
@@ -22,7 +19,7 @@ async fn test_all_register_info_successful() {
     // mock url
     let mock_url = mock_server.write().await.url();
 
-    // run anvil
+    // start anvil
     let anvil = Anvil::new().chain_id(CHAIN_ID).spawn();
     let wallet: LocalWallet = anvil.keys()[0].clone().into();
     let provider_url = anvil.endpoint();
@@ -77,7 +74,7 @@ async fn test_all_register_info_concurrent() {
     let mock_2 = mock_handshake_supported_server(mock_server_1.clone()).await;
     let mock_3 = mock_register_info_server(mock_server_1.clone(), CHAIN_ID).await;
 
-    // run anvil
+    // start anvil
     let anvil = Anvil::new().chain_id(CHAIN_ID).spawn();
     let wallet_0: LocalWallet = anvil.keys()[0].clone().into();
     let wallet_1: LocalWallet = anvil.keys()[1].clone().into();
@@ -137,7 +134,7 @@ async fn test_relayer_config_not_found() {
         .filter_module("mystiko_relayer_client", LevelFilter::Debug)
         .try_init();
 
-    let client = RelayerClient::new(
+    let client = RelayerClientV2::new(
         Arc::new(pool),
         Some(
             RelayerClientOptions::builder()

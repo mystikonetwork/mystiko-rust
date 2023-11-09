@@ -1,24 +1,22 @@
 use crate::error::RelayerClientError;
+use crate::request::{build_request_builder, get_data, post_data};
 use crate::types::register::RegisterInfo;
 use crate::types::result::Result;
+use crate::RelayerClient;
+use async_trait::async_trait;
 use ethers_core::types::Address;
 use futures::future::try_join_all;
 use log::debug;
 use mystiko_ethers::Providers;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_config::wrapper::relayer::{RelayerConfig, RemoteOptions};
-use mystiko_relayer_types::response::ApiResponse;
 use mystiko_relayer_types::{
     HandshakeResponse, RegisterInfoRequest, RegisterInfoResponse, RelayTransactRequest, RelayTransactResponse,
     RelayTransactStatusRequest, RelayTransactStatusResponse, TransactStatus, WaitingTransactionRequest,
 };
 use mystiko_types::NetworkType;
 use mystiko_utils::address::ethers_address_from_string;
-use reqwest::header::{HeaderValue, ACCEPT};
-use reqwest::{Client, RequestBuilder, Response};
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-use std::collections::HashMap;
+use reqwest::Client;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::{sleep, Instant};
@@ -31,8 +29,8 @@ pub const INFO_URL_PATH: &str = "api/v2/info";
 pub const TRANSACT_URL_PATH: &str = "api/v2/transact";
 pub const TRANSACTION_STATUS_URL_PATH: &str = "api/v2/transaction/status";
 
-pub struct RelayerClient<P: Providers = Box<dyn Providers>> {
-    pub reqwest_client: Client,
+pub struct RelayerClientV2<P: Providers = Box<dyn Providers>> {
+    pub reqwest_client: Arc<Client>,
     pub network_type: NetworkType,
     pub relayer_config: Arc<RelayerConfig>,
     pub providers: Arc<P>,
@@ -54,7 +52,7 @@ pub struct RelayerClientOptions {
     pub timeout: Duration,
 }
 
-impl<P> RelayerClient<P>
+impl<P> RelayerClientV2<P>
 where
     P: 'static + Providers,
 {
@@ -66,10 +64,12 @@ where
         } else {
             NetworkType::Mainnet
         };
-        let reqwest_client = Client::builder()
-            .timeout(relayer_options.timeout)
-            .build()
-            .map_err(RelayerClientError::ReqwestError)?;
+        let reqwest_client = Arc::new(
+            Client::builder()
+                .timeout(relayer_options.timeout)
+                .build()
+                .map_err(RelayerClientError::ReqwestError)?,
+        );
         Ok(Self {
             reqwest_client,
             network_type,
@@ -77,20 +77,26 @@ where
             providers,
         })
     }
+}
 
-    pub async fn all_register_info(self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>> {
+#[async_trait]
+impl<P> RelayerClient for RelayerClientV2<P>
+where
+    P: 'static + Providers,
+{
+    async fn all_register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>> {
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
         let chain_id = request.chain_id;
 
-        let provider = self
+        let provider = &self
             .providers
             .get_provider(chain_id)
             .await
             .map_err(|err| RelayerClientError::GetOrCreateProviderError(err.to_string()))?;
 
-        let chain_config_option = self.relayer_config.find_chain_config(chain_id);
+        let chain_config_option = &self.relayer_config.find_chain_config(chain_id);
         if chain_config_option.is_none() {
             return Err(RelayerClientError::RelayerConfigNotFoundError(chain_id));
         }
@@ -99,7 +105,7 @@ where
         let contract_address = ethers_address_from_string(chain_config.relayer_contract_address())
             .map_err(RelayerClientError::FromHexError)?;
 
-        let contract = MystikoGasRelayer::new(contract_address, provider);
+        let contract = MystikoGasRelayer::new(contract_address, provider.clone());
 
         let relayer_info = contract
             .get_all_relayer_info()
@@ -112,19 +118,18 @@ where
         let mut registers: Vec<RegisterInfo> = Vec::new();
         let mut handlers = Vec::new();
 
-        let self_arc = Arc::new(self);
         let request = Arc::new(request);
 
         for i in 0..urls.len() {
             let url = urls[i].clone();
             let name = names[i].clone();
             let relayer = relayers[i];
-            let self_clone = Arc::clone(&self_arc);
+            let reqwest_client = self.reqwest_client.clone();
             let request = Arc::clone(&request);
 
-            if self_clone.handshake(&url).await? {
+            if self.handshake(&url).await? {
                 let handler =
-                    tokio::spawn(async move { self_clone.register_info(&url, &name, &relayer, &request).await });
+                    tokio::spawn(async move { register_info(reqwest_client, &url, &name, &relayer, &request).await });
                 handlers.push(handler);
             }
         }
@@ -145,7 +150,7 @@ where
         Ok(registers)
     }
 
-    pub async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse> {
+    async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse> {
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -158,13 +163,13 @@ where
         let mut request_builder = self
             .reqwest_client
             .post(format!("{}/{}", request.relayer_url, TRANSACT_URL_PATH));
-        request_builder = self.build_request_builder(request_builder, None, &request.data);
-        let response = self.post_data::<RelayTransactResponse>(request_builder).await?;
+        request_builder = build_request_builder(request_builder, None, &request.data);
+        let response = post_data::<RelayTransactResponse>(request_builder).await?;
 
         Ok(response)
     }
 
-    pub async fn relay_transaction_status(
+    async fn relay_transaction_status(
         &self,
         request: RelayTransactStatusRequest,
     ) -> Result<RelayTransactStatusResponse> {
@@ -177,16 +182,18 @@ where
             ));
         }
 
-        let response = self
-            .get_data::<RelayTransactStatusResponse>(&format!(
+        let response = get_data::<RelayTransactStatusResponse>(
+            self.reqwest_client.clone(),
+            &format!(
                 "{}/{}/{}",
                 request.relayer_url, TRANSACTION_STATUS_URL_PATH, request.uuid
-            ))
-            .await?;
+            ),
+        )
+        .await?;
         Ok(response)
     }
 
-    pub async fn wait_transaction(&self, request: WaitingTransactionRequest) -> Result<RelayTransactStatusResponse> {
+    async fn wait_transaction(&self, request: WaitingTransactionRequest) -> Result<RelayTransactStatusResponse> {
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -244,116 +251,46 @@ where
     }
 
     async fn handshake(&self, url: &str) -> Result<bool> {
-        let response = self
-            .get_data::<HandshakeResponse>(&format!("{}/{}", url, HANDSHAKE_URL_PATH))
-            .await?;
+        let response =
+            get_data::<HandshakeResponse>(self.reqwest_client.clone(), &format!("{}/{}", url, HANDSHAKE_URL_PATH))
+                .await?;
         Ok(response
             .api_version
             .iter()
             .any(|version| version.to_lowercase() == SUPPORTED_API_VERSION.to_lowercase()))
     }
+}
 
-    async fn handle_response<T>(&self, response: Response) -> Result<T>
-    where
-        T: DeserializeOwned + Serialize,
-    {
-        let response = response.error_for_status()?;
-        let content_type = response
-            .headers()
-            .get("content-type")
-            .and_then(|value| value.to_str().ok());
-        if let Some(s) = content_type {
-            if s.contains("application/json") {
-                let parsed_resp = response.json::<ApiResponse<T>>().await?;
-                let handled_resp = match parsed_resp.code {
-                    0 => Ok(parsed_resp),
-                    _ => Err(RelayerClientError::ApiResponseError {
-                        code: parsed_resp.code,
-                        message: parsed_resp.message.unwrap_or_default(),
-                    }),
-                };
-                let res_body = handled_resp?;
-                return Ok(res_body.data.unwrap());
-            }
-        }
-        Err(RelayerClientError::UnsupportedContentTypeError(
-            content_type.unwrap_or("").to_string(),
-        ))
+async fn register_info(
+    reqwest_client: Arc<Client>,
+    url: &str,
+    name: &str,
+    relayer: &Address,
+    request: &RegisterInfoRequest,
+) -> Result<RegisterInfo> {
+    let mut request_builder = reqwest_client.post(format!("{}/{}", url, INFO_URL_PATH));
+    request_builder = build_request_builder(request_builder, None, &request);
+    let response = post_data::<RegisterInfoResponse>(request_builder).await?;
+
+    let mut register_info = RegisterInfo {
+        support: false,
+        available: false,
+        chain_id: 0,
+        url: url.to_string(),
+        name: name.to_string(),
+        relayer_address: relayer.to_string(),
+        relayer_contract_address: "".to_string(),
+        contracts: vec![],
+    };
+    register_info.chain_id = response.chain_id;
+    if response.support {
+        register_info.support = response.support;
+        register_info.available = response.available.unwrap_or(false);
+        register_info.relayer_contract_address = response.relayer_contract_address.unwrap_or_default();
+        register_info.contracts = response.contracts.unwrap_or_default();
     }
 
-    async fn get_data<T>(&self, url: &str) -> Result<T>
-    where
-        T: DeserializeOwned + Serialize,
-    {
-        let response = self
-            .reqwest_client
-            .get(url)
-            .header(ACCEPT, HeaderValue::from_static("application/json"))
-            .send()
-            .await?;
-        self.handle_response::<T>(response).await
-    }
-
-    async fn post_data<T>(&self, request_builder: RequestBuilder) -> Result<T>
-    where
-        T: DeserializeOwned + Serialize,
-    {
-        let response = request_builder.send().await?;
-        self.handle_response::<T>(response).await
-    }
-
-    fn build_request_builder<T>(
-        &self,
-        mut request_builder: RequestBuilder,
-        params: Option<HashMap<String, String>>,
-        body: &T,
-    ) -> RequestBuilder
-    where
-        T: Serialize,
-    {
-        match params {
-            None => {}
-            Some(params) => {
-                for (key, value) in params.iter() {
-                    request_builder = request_builder.query(&[(key, value)]);
-                }
-            }
-        }
-        request_builder = request_builder.json(body);
-        request_builder
-    }
-
-    async fn register_info(
-        &self,
-        url: &str,
-        name: &str,
-        relayer: &Address,
-        request: &RegisterInfoRequest,
-    ) -> Result<RegisterInfo> {
-        let mut request_builder = self.reqwest_client.post(format!("{}/{}", url, INFO_URL_PATH));
-        request_builder = self.build_request_builder(request_builder, None, &request);
-        let response = self.post_data::<RegisterInfoResponse>(request_builder).await?;
-
-        let mut register_info = RegisterInfo {
-            support: false,
-            available: false,
-            chain_id: 0,
-            url: url.to_string(),
-            name: name.to_string(),
-            relayer_address: relayer.to_string(),
-            relayer_contract_address: "".to_string(),
-            contracts: vec![],
-        };
-        register_info.chain_id = response.chain_id;
-        if response.support {
-            register_info.support = response.support;
-            register_info.available = response.available.unwrap_or(false);
-            register_info.relayer_contract_address = response.relayer_contract_address.unwrap_or_default();
-            register_info.contracts = response.contracts.unwrap_or_default();
-        }
-
-        Ok(register_info)
-    }
+    Ok(register_info)
 }
 
 async fn create_relayer_config(options: &RelayerClientOptions) -> Result<Arc<RelayerConfig>> {

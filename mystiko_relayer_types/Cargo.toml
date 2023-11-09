@@ -10,7 +10,7 @@ actix-web = { version = "4", default-features = false }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 mystiko_validator = { version = "0.1.0", path = "../mystiko_validator" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-core-v1"] }
 num-bigint = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }

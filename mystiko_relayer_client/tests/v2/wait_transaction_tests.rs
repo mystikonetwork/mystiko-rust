@@ -1,15 +1,14 @@
-use crate::common::{create_client, create_provider_pool, mock_handshake_supported_server};
+use crate::common::create_provider_pool;
+use crate::v2::{create_client, mock_handshake_supported_server, CHAIN_ID};
 use mockito::Server;
 use mystiko_protos::core::v1::SpendType;
-use mystiko_relayer_client::client::TRANSACTION_STATUS_URL_PATH;
 use mystiko_relayer_client::error::RelayerClientError;
+use mystiko_relayer_client::v2::client::TRANSACTION_STATUS_URL_PATH;
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{RelayTransactStatusResponse, TransactStatus, WaitingTransactionRequest};
 use serde_json::to_string;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-
-const CHAIN_ID: u64 = 31337;
 
 #[tokio::test]
 async fn wait_transaction_until_queued() {
@@ -53,6 +52,7 @@ async fn wait_transaction_until_queued() {
             interval: None,
         })
         .await;
+
     assert!(result.is_ok());
     let response = result.unwrap();
     assert_eq!(response.status, TransactStatus::Queued);
