@@ -37,6 +37,7 @@ validator = { version = "0.16.0", features = ["derive"] }
 async-trait = { version = "0.1.64" }
 env_logger = { version = "0.10.0" }
 ethers = { version = "2.0.4" }
+http = { version = "0.2.9" }
 mockall = { version = "0.11.4" }
 mockito = { version = "1.1.0" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }

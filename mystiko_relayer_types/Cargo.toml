@@ -8,10 +8,11 @@ edition = "2021"
 [dependencies]
 actix-web = { version = "4", default-features = false }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-core-v1"] }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 mystiko_validator = { version = "0.1.0", path = "../mystiko_validator" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-core-v1"] }
 num-bigint = { version = "0.4", features = ["serde"] }
+reqwest = { version = "0.11", default-features = false }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }
 typed-builder = { version = "0.15.2" }
