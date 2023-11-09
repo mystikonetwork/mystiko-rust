@@ -1,18 +1,19 @@
-use crate::ethers::{parse_call_args, MockProvider, MockProviders};
+use crate::ethers::{parse_call_args, MockProvider, MockProviders, MockTransactionSigner, TimeoutProvider};
 use ethers_core::abi::AbiDecode;
 use ethers_core::abi::AbiEncode;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::U256;
+use ethers_core::types::{Bytes, TxHash, U256};
 use ethers_providers::ProviderError;
 use mystiko_abi::commitment_pool::CommitmentPoolCalls;
 use mystiko_abi::mystiko_v2_bridge::MystikoV2BridgeCalls;
 use mystiko_abi::mystiko_v2_loop::MystikoV2LoopCalls;
 use mystiko_config::MystikoConfig;
-use mystiko_core::{DepositContract, DepositQuoteOptions, Deposits};
+use mystiko_core::{CrossChainDepositOptions, DepositContract, DepositOptions, DepositQuoteOptions, Deposits};
 use mystiko_ethers::{JsonRpcClientWrapper, Provider, ProviderWrapper};
 use mystiko_types::ContractType;
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::sync::Arc;
 
 #[tokio::test]
@@ -64,7 +65,7 @@ async fn test_loop_deposit_quote_remote_error() {
 
 #[tokio::test]
 async fn test_loop_deposit_quote_remote_timeout() {
-    let provider = crate::ethers::TimeoutProvider::builder().timeout_ms(2000_u64).build();
+    let provider = TimeoutProvider::builder().timeout_ms(2000_u64).build();
     let config = create_config().await;
     let deposits = setup(config, HashMap::from([(5_u64, provider)]));
     let quote_options = DepositQuoteOptions::builder()
@@ -156,8 +157,8 @@ async fn test_cross_chain_deposit_quote_remote_error() {
 
 #[tokio::test]
 async fn test_cross_chain_deposit_quote_remote_timeout() {
-    let provider1 = crate::ethers::TimeoutProvider::builder().timeout_ms(2000_u64).build();
-    let provider2 = crate::ethers::TimeoutProvider::builder().timeout_ms(2000_u64).build();
+    let provider1 = TimeoutProvider::builder().timeout_ms(2000_u64).build();
+    let provider2 = TimeoutProvider::builder().timeout_ms(2000_u64).build();
     let config = create_config().await;
     let deposits = setup(config, HashMap::from([(5_u64, provider1), (97_u64, provider2)]));
     let quote_options = DepositQuoteOptions::builder()
@@ -179,6 +180,262 @@ async fn test_cross_chain_deposit_quote_remote_timeout() {
     assert_eq!(
         quote.min_executor_fee_amount.unwrap(),
         U256::from_dec_str("30000000000000000").unwrap()
+    );
+}
+
+#[tokio::test]
+async fn test_main_token_loop_deposit() {
+    let contract_address = ethers_address_from_string("0x390d485F4D43212D4ae8Cdd967a711514ed5a54f").unwrap();
+    let amount = U256::from_dec_str("1000000000000000000").unwrap();
+    let rollup_fee = U256::from_dec_str("100000000000000000").unwrap();
+    let commitment = U256::from_dec_str("1234").unwrap();
+    let random_s = 2345_u128;
+    let hash_k = U256::from_dec_str("3456").unwrap();
+    let encrypted_notes = Bytes::from_str("0x1234").unwrap();
+    let encrypted_notes_clone = encrypted_notes.clone();
+    let expected_tx_hash =
+        TxHash::decode_hex("0x8cbbb491f260cb9a810f81ebf8b51ae1adf322466232181b2eb2bb105b45f0b9").unwrap();
+    let mut signer = MockTransactionSigner::new();
+    signer
+        .expect_send_transaction()
+        .withf(move |chain_id, tx| {
+            let calls = parse_loop_deposit_call(tx);
+            if let MystikoV2LoopCalls::Deposit(deposit) = calls {
+                let request = deposit.request;
+                request.commitment == commitment
+                    && request.random_s == random_s
+                    && request.hash_k == hash_k
+                    && request.encrypted_note == encrypted_notes_clone
+                    && request.rollup_fee == rollup_fee
+                    && request.amount == amount
+                    && *chain_id == 97_u64
+                    && *tx.to().unwrap().as_address().unwrap() == contract_address
+                    && *tx.value().unwrap() == amount + rollup_fee
+            } else {
+                false
+            }
+        })
+        .returning(move |_, _| Ok(expected_tx_hash));
+    let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
+        .chain_id(97_u64)
+        .contract_address(contract_address)
+        .amount(amount)
+        .rollup_fee(rollup_fee)
+        .commitment(commitment)
+        .random_s(random_s)
+        .hash_k(hash_k)
+        .encrypted_notes(encrypted_notes)
+        .signer(signer)
+        .build();
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(97_u64, MockProvider::new())]));
+    let tx_hash = deposits.deposit(deposit_options).await.unwrap();
+    assert_eq!(tx_hash, expected_tx_hash);
+}
+
+#[tokio::test]
+async fn test_erc20_token_loop_deposit() {
+    let contract_address = ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap();
+    let amount = U256::from_dec_str("1000000000000000000").unwrap();
+    let rollup_fee = U256::from_dec_str("100000000000000000").unwrap();
+    let commitment = U256::from_dec_str("1234").unwrap();
+    let random_s = 2345_u128;
+    let hash_k = U256::from_dec_str("3456").unwrap();
+    let encrypted_notes = Bytes::from_str("0x1234").unwrap();
+    let encrypted_notes_clone = encrypted_notes.clone();
+    let expected_tx_hash =
+        TxHash::decode_hex("0x8cbbb491f260cb9a810f81ebf8b51ae1adf322466232181b2eb2bb105b45f0b9").unwrap();
+    let mut signer = MockTransactionSigner::new();
+    signer
+        .expect_send_transaction()
+        .withf(move |chain_id, tx| {
+            let calls = parse_loop_deposit_call(tx);
+            if let MystikoV2LoopCalls::Deposit(deposit) = calls {
+                let request = deposit.request;
+                request.commitment == commitment
+                    && request.random_s == random_s
+                    && request.hash_k == hash_k
+                    && request.encrypted_note == encrypted_notes_clone
+                    && request.rollup_fee == rollup_fee
+                    && request.amount == amount
+                    && *chain_id == 5_u64
+                    && *tx.to().unwrap().as_address().unwrap() == contract_address
+                    && tx.value().is_none()
+            } else {
+                false
+            }
+        })
+        .returning(move |_, _| Ok(expected_tx_hash));
+    let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
+        .chain_id(5_u64)
+        .contract_address(contract_address)
+        .amount(amount)
+        .rollup_fee(rollup_fee)
+        .commitment(commitment)
+        .random_s(random_s)
+        .hash_k(hash_k)
+        .encrypted_notes(encrypted_notes)
+        .signer(signer)
+        .build();
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
+    let tx_hash = deposits.deposit(deposit_options).await.unwrap();
+    assert_eq!(tx_hash, expected_tx_hash);
+}
+
+#[tokio::test]
+async fn test_main_token_cross_chain_deposit() {
+    let contract_address = ethers_address_from_string("0xd99F0C90BFDeDd5Bde0193b887c271C5458355Cf").unwrap();
+    let amount = U256::from_dec_str("1000000000000000000").unwrap();
+    let rollup_fee = U256::from_dec_str("100000000000000000").unwrap();
+    let bridge_fee = U256::from_dec_str("200000000000000000").unwrap();
+    let executor_fee = U256::from_dec_str("300000000000000000").unwrap();
+    let commitment = U256::from_dec_str("1234").unwrap();
+    let random_s = 2345_u128;
+    let hash_k = U256::from_dec_str("3456").unwrap();
+    let encrypted_notes = Bytes::from_str("0x1234").unwrap();
+    let encrypted_notes_clone = encrypted_notes.clone();
+    let expected_tx_hash =
+        TxHash::decode_hex("0x8cbbb491f260cb9a810f81ebf8b51ae1adf322466232181b2eb2bb105b45f0b9").unwrap();
+    let mut signer = MockTransactionSigner::new();
+    signer
+        .expect_send_transaction()
+        .withf(move |chain_id, tx| {
+            let calls = parse_cross_chain_deposit_call(tx);
+            if let MystikoV2BridgeCalls::Deposit(deposit) = calls {
+                let request = deposit.request;
+                request.commitment == commitment
+                    && request.random_s == random_s
+                    && request.hash_k == hash_k
+                    && request.encrypted_note == encrypted_notes_clone
+                    && request.amount == amount
+                    && request.rollup_fee == rollup_fee
+                    && request.bridge_fee == bridge_fee
+                    && request.executor_fee == executor_fee
+                    && *chain_id == 97_u64
+                    && *tx.to().unwrap().as_address().unwrap() == contract_address
+                    && *tx.value().unwrap() == amount + rollup_fee + bridge_fee + executor_fee
+            } else {
+                false
+            }
+        })
+        .returning(move |_, _| Ok(expected_tx_hash));
+    let deposit_options = CrossChainDepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
+        .chain_id(97_u64)
+        .contract_address(contract_address)
+        .amount(amount)
+        .rollup_fee(rollup_fee)
+        .bridge_fee(bridge_fee)
+        .executor_fee(executor_fee)
+        .commitment(commitment)
+        .random_s(random_s)
+        .hash_k(hash_k)
+        .encrypted_notes(encrypted_notes)
+        .signer(signer)
+        .build();
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(97_u64, MockProvider::new())]));
+    let tx_hash = deposits.cross_chain_deposit(deposit_options).await.unwrap();
+    assert_eq!(tx_hash, expected_tx_hash);
+}
+
+#[tokio::test]
+async fn test_erc20_token_cross_chain_deposit() {
+    let contract_address = ethers_address_from_string("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2").unwrap();
+    let amount = U256::from_dec_str("1000000000000000000").unwrap();
+    let rollup_fee = U256::from_dec_str("100000000000000000").unwrap();
+    let bridge_fee = U256::from_dec_str("200000000000000000").unwrap();
+    let executor_fee = U256::from_dec_str("300000000000000000").unwrap();
+    let commitment = U256::from_dec_str("1234").unwrap();
+    let random_s = 2345_u128;
+    let hash_k = U256::from_dec_str("3456").unwrap();
+    let encrypted_notes = Bytes::from_str("0x1234").unwrap();
+    let encrypted_notes_clone = encrypted_notes.clone();
+    let expected_tx_hash =
+        TxHash::decode_hex("0x8cbbb491f260cb9a810f81ebf8b51ae1adf322466232181b2eb2bb105b45f0b9").unwrap();
+    let mut signer = MockTransactionSigner::new();
+    signer
+        .expect_send_transaction()
+        .withf(move |chain_id, tx| {
+            let calls = parse_cross_chain_deposit_call(tx);
+            if let MystikoV2BridgeCalls::Deposit(deposit) = calls {
+                let request = deposit.request;
+                request.commitment == commitment
+                    && request.random_s == random_s
+                    && request.hash_k == hash_k
+                    && request.encrypted_note == encrypted_notes_clone
+                    && request.amount == amount
+                    && request.rollup_fee == rollup_fee
+                    && request.bridge_fee == bridge_fee
+                    && request.executor_fee == executor_fee
+                    && *chain_id == 5_u64
+                    && *tx.to().unwrap().as_address().unwrap() == contract_address
+                    && tx.value().is_none()
+            } else {
+                false
+            }
+        })
+        .returning(move |_, _| Ok(expected_tx_hash));
+    let deposit_options = CrossChainDepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
+        .chain_id(5_u64)
+        .contract_address(contract_address)
+        .amount(amount)
+        .rollup_fee(rollup_fee)
+        .bridge_fee(bridge_fee)
+        .executor_fee(executor_fee)
+        .commitment(commitment)
+        .random_s(random_s)
+        .hash_k(hash_k)
+        .encrypted_notes(encrypted_notes)
+        .signer(signer)
+        .build();
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
+    let tx_hash = deposits.cross_chain_deposit(deposit_options).await.unwrap();
+    assert_eq!(tx_hash, expected_tx_hash);
+}
+
+#[tokio::test]
+async fn test_deposit_unsupported_chain() {
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
+    let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
+        .chain_id(10001_u64)
+        .contract_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
+        .amount(U256::from_dec_str("1000000000000000000").unwrap())
+        .rollup_fee(U256::from_dec_str("100000000000000000").unwrap())
+        .commitment(U256::from_dec_str("1234").unwrap())
+        .random_s(2345_u128)
+        .hash_k(U256::from_dec_str("3456").unwrap())
+        .encrypted_notes(Bytes::from_str("0x1234").unwrap())
+        .signer(MockTransactionSigner::new())
+        .build();
+    let tx_hash = deposits.deposit(deposit_options).await;
+    assert!(tx_hash.is_err());
+    assert_eq!(tx_hash.unwrap_err().to_string(), "unsupported chain_id=10001");
+}
+
+#[tokio::test]
+async fn test_deposit_unsupported_contract() {
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
+    let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
+        .chain_id(5_u64)
+        .contract_address(ethers_address_from_string("0x125E577F580857D7AF995D20104C6c7B96a3274d").unwrap())
+        .amount(U256::from_dec_str("1000000000000000000").unwrap())
+        .rollup_fee(U256::from_dec_str("100000000000000000").unwrap())
+        .commitment(U256::from_dec_str("1234").unwrap())
+        .random_s(2345_u128)
+        .hash_k(U256::from_dec_str("3456").unwrap())
+        .encrypted_notes(Bytes::from_str("0x1234").unwrap())
+        .signer(MockTransactionSigner::new())
+        .build();
+    let tx_hash = deposits.deposit(deposit_options).await;
+    assert!(tx_hash.is_err());
+    assert_eq!(
+        tx_hash.unwrap_err().to_string(),
+        "unsupported chain_id=5, \
+        contract_address=0x125E577F580857D7AF995D20104C6c7B96a3274d"
     );
 }
 
