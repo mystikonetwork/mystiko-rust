@@ -1,29 +1,18 @@
-pub mod relayer_tests;
-
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers::middleware::SignerMiddleware;
 use ethers::providers::Http;
 use ethers::signers::{LocalWallet, Signer};
 use ethers_core::types::Address;
-use log::LevelFilter;
 use mockall::mock;
-use mockito::{Mock, Server, ServerGuard};
+use mockito::{Mock, ServerGuard};
 use mystiko_ethers::{
     ChainProvidersOptions, DefaultProviderFactory, ProviderFactory, ProviderOptions, ProviderPool, Providers,
     ProvidersOptions,
 };
-use mystiko_protos::core::v1::SpendType;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
-use mystiko_relayer_client::client::{
-    RelayerClient, RelayerClientOptions, HANDSHAKE_URL_PATH, INFO_URL_PATH, SUPPORTED_API_VERSION,
-    TRANSACTION_STATUS_URL_PATH, TRANSACT_URL_PATH,
-};
-use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
 use mystiko_relayer_types::response::success;
-use mystiko_relayer_types::{
-    HandshakeResponse, RegisterInfoResponse, RelayTransactResponse, RelayTransactStatusResponse, TransactStatus,
-};
+use mystiko_relayer_types::HandshakeResponse;
 use serde_json::{json, to_string};
 use std::sync::Arc;
 use std::time::Duration;
@@ -37,45 +26,6 @@ mock! {
     impl ChainProvidersOptions for ChainConfig {
          async fn providers_options(&self, chain_id: u64) -> Result<Option<ProvidersOptions>>;
     }
-}
-
-const MOCK_CONTRACT_ADDRESS: &str = "0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc";
-
-pub async fn create_client(
-    provider_pool: ProviderPool<MockChainConfig>,
-    chain_id: Option<u64>,
-    contract_address: Option<Address>,
-) -> RelayerClient<ProviderPool<MockChainConfig>> {
-    let _ = env_logger::builder()
-        .filter_module("mystiko_relayer_client", LevelFilter::Debug)
-        .try_init();
-
-    let mut server = Server::new_async().await;
-    let mock = server
-        .mock("GET", "/relayer_config/production/testnet/latest.json")
-        .with_body(relayer_config_json_string())
-        .create_async()
-        .await;
-
-    let mut client = RelayerClient::new(
-        Arc::new(provider_pool),
-        Some(
-            RelayerClientOptions::builder()
-                .is_testnet(true)
-                .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
-                .build(),
-        ),
-    )
-    .await
-    .unwrap();
-    mock.assert_async().await;
-
-    if let (Some(chain), Some(address)) = (chain_id, contract_address) {
-        client.relayer_config =
-            Arc::new(RelayerConfig::from_json_str(create_relayer_config(chain, address).as_str()).unwrap());
-    }
-
-    client
 }
 
 pub async fn create_provider_pool(chain_id: u64, provider_url: Option<String>) -> ProviderPool<MockChainConfig> {
@@ -99,72 +49,16 @@ pub async fn mock_handshake_supported_server(server: Arc<RwLock<ServerGuard>>) -
     // mock handshake response
     let response = success(HandshakeResponse {
         package_version: "0.0.1".to_string(),
-        api_version: vec![SUPPORTED_API_VERSION.to_string()],
+        api_version: vec!["v1".to_string()],
     });
 
     server
         .write()
         .await
-        .mock("GET", format!("/{}", HANDSHAKE_URL_PATH).as_str())
+        .mock("GET", format!("/{}", "handshake").as_str())
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(to_string(&response).unwrap())
-        .create_async()
-        .await
-}
-
-pub async fn mock_register_info_server(server: Arc<RwLock<ServerGuard>>, chain_id: u64) -> Mock {
-    // mock info response
-    let response = success(RegisterInfoResponse {
-        chain_id,
-        support: true,
-        available: Some(true),
-        relayer_contract_address: Some(MOCK_CONTRACT_ADDRESS.to_string()),
-        contracts: Some(vec![]),
-    });
-    server
-        .write()
-        .await
-        .mock("POST", format!("/{}", INFO_URL_PATH).as_str())
-        .expect(1)
-        .with_status(200)
-        .with_body(to_string(&response).unwrap())
-        .with_header("content-type", "application/json")
-        .create_async()
-        .await
-}
-
-pub async fn mock_relay_transact_server(server: Arc<RwLock<ServerGuard>>) -> Mock {
-    let response = success(RelayTransactResponse {
-        uuid: "abcd123456".to_string(),
-    });
-    server
-        .write()
-        .await
-        .mock("POST", format!("/{}", TRANSACT_URL_PATH).as_str())
-        .with_status(200)
-        .with_body(to_string(&response).unwrap())
-        .with_header("content-type", "application/json")
-        .create_async()
-        .await
-}
-
-pub async fn mock_transaction_status(server: Arc<RwLock<ServerGuard>>) -> Mock {
-    let response = success(RelayTransactStatusResponse {
-        uuid: String::from("78d08829"),
-        chain_id: 31337,
-        spend_type: SpendType::Withdraw,
-        status: TransactStatus::Queued,
-        transaction_hash: None,
-        error_msg: None,
-    });
-    server
-        .write()
-        .await
-        .mock("GET", format!("/{}/78d08829", TRANSACTION_STATUS_URL_PATH).as_str())
-        .with_status(200)
-        .with_body(to_string(&response).unwrap())
-        .with_header("content-type", "application/json")
         .create_async()
         .await
 }
@@ -303,7 +197,7 @@ pub fn relayer_config_json_string() -> String {
     relayer_config.to_string()
 }
 
-fn create_relayer_config(chain_id: u64, address: Address) -> String {
+pub fn create_relayer_config(chain_id: u64, address: Address) -> String {
     json!(
         {
             "version": "0.1.0",

@@ -1,14 +1,15 @@
-use crate::common::{create_client, create_provider_pool, mock_handshake_supported_server, mock_transaction_status};
+use crate::common::create_provider_pool;
+use crate::v2::{
+    create_client, mock_handshake_supported_server, mock_transaction_status_server, CHAIN_ID, SUPPORTED_API_VERSION,
+};
 use mockito::Server;
-use mystiko_relayer_client::client::{HANDSHAKE_URL_PATH, SUPPORTED_API_VERSION};
 use mystiko_relayer_client::error::RelayerClientError;
+use mystiko_relayer_client::v2::client::HANDSHAKE_URL_PATH;
 use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{HandshakeResponse, RelayTransactStatusRequest};
 use serde_json::to_string;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-
-const CHAIN_ID: u64 = 31337;
 
 #[tokio::test]
 async fn test_relay_transaction_status() {
@@ -23,7 +24,7 @@ async fn test_relay_transaction_status() {
 
     // mock transaction status
     let mock_0 = mock_handshake_supported_server(mock_server.clone()).await;
-    let mock_1 = mock_transaction_status(mock_server.clone()).await;
+    let mock_1 = mock_transaction_status_server(mock_server.clone()).await;
     let result = client
         .relay_transaction_status(RelayTransactStatusRequest {
             relayer_url: mock_url,

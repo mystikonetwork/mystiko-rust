@@ -1,4 +1,0 @@
-mod all_register_info_tests;
-mod relay_transact_tests;
-mod relay_transaction_status_tests;
-mod wait_transaction_tests;

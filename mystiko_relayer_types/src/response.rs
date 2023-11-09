@@ -1,6 +1,7 @@
 use actix_web::body::BoxBody;
 use actix_web::http::header::ContentType;
 use actix_web::{HttpRequest, HttpResponse, Responder};
+use reqwest::Body;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -37,6 +38,15 @@ where
         let body = serde_json::to_string(&self).unwrap();
 
         HttpResponse::Ok().content_type(ContentType::json()).body(body)
+    }
+}
+
+impl<T> From<ApiResponse<T>> for Body
+where
+    T: Serialize,
+{
+    fn from(value: ApiResponse<T>) -> Self {
+        Self::from(serde_json::to_string(&value).unwrap())
     }
 }
 
