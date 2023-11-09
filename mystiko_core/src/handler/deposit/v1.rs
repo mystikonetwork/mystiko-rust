@@ -1,8 +1,8 @@
 use crate::{
-    convert_transaction, wait_transaction, BalanceOptions, Database, Deposit, DepositContract, DepositHandler,
-    Deposits, DepositsError, Erc20ApproveOptions, Erc20BalanceOptions, FromContext, MystikoContext, MystikoError,
-    PrivateKeySigner, PrivateKeySignerOptions, PublicAssetHandler, PublicAssets, PublicAssetsError, TransactionSigner,
-    WalletHandler, WalletHandlerV1, WalletHandlerV1Error,
+    BalanceOptions, Database, Deposit, DepositContract, DepositHandler, Deposits, DepositsError, Erc20ApproveOptions,
+    Erc20BalanceOptions, FromContext, MystikoContext, MystikoError, PrivateKeySigner, PrivateKeySignerOptions,
+    PublicAssetHandler, PublicAssets, PublicAssetsError, TransactionHandler, TransactionSigner, Transactions,
+    TransactionsError, WaitOptions, WalletHandler, WalletHandlerV1, WalletHandlerV1Error,
 };
 use async_trait::async_trait;
 use ethers_core::abi::AbiEncode;
@@ -36,14 +36,15 @@ pub struct DepositHandlerV1<
     P: Providers = Box<dyn Providers>,
     A: PublicAssetHandler = PublicAssets<P>,
     D: DepositContract = Deposits<P>,
+    T: TransactionHandler<Transaction> = Transactions<P>,
 > {
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
     wallets: WalletHandlerV1<F, S>,
-    providers: Arc<P>,
     signer_providers: Arc<P>,
     assets: A,
     deposits: D,
+    transactions: T,
 }
 
 #[derive(Debug, Error)]
@@ -62,6 +63,8 @@ pub enum DepositHandlerV1Error {
     PublicAssetsError(#[from] PublicAssetsError),
     #[error(transparent)]
     DepositsError(#[from] DepositsError),
+    #[error(transparent)]
+    TransactionsError(#[from] TransactionsError),
     #[error(transparent)]
     ProtocolError(#[from] ProtocolError),
     #[error(transparent)]
@@ -98,19 +101,20 @@ pub struct DepositHandlerV1Options<
     P: Providers,
     A: PublicAssetHandler,
     D: DepositContract,
+    T: TransactionHandler<Transaction>,
 > {
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
-    providers: Arc<P>,
     signer_providers: Arc<P>,
     assets: A,
     deposits: D,
+    transactions: T,
 }
 
 type Result<T> = std::result::Result<T, DepositHandlerV1Error>;
 
 #[async_trait]
-impl<F, S, P, A, D>
+impl<F, S, P, A, D, T>
     DepositHandler<
         ProtoDeposit,
         QuoteDepositOptions,
@@ -118,14 +122,15 @@ impl<F, S, P, A, D>
         CreateDepositOptions,
         DepositSummary,
         SendDepositOptions,
-    > for DepositHandlerV1<F, S, P, A, D>
+    > for DepositHandlerV1<F, S, P, A, D, T>
 where
     F: StatementFormatter,
     S: Storage,
     A: PublicAssetHandler,
     D: DepositContract,
+    T: TransactionHandler<Transaction>,
     P: Providers + 'static,
-    DepositHandlerV1Error: From<A::Error> + From<D::Error>,
+    DepositHandlerV1Error: From<A::Error> + From<D::Error> + From<T::Error>,
 {
     type Error = DepositHandlerV1Error;
 
@@ -183,46 +188,48 @@ where
 }
 
 #[async_trait]
-impl<F, S, A, D> FromContext<F, S> for DepositHandlerV1<F, S, Box<dyn Providers>, A, D>
+impl<F, S, A, D, T> FromContext<F, S> for DepositHandlerV1<F, S, Box<dyn Providers>, A, D, T>
 where
     F: StatementFormatter,
     S: Storage,
     A: PublicAssetHandler + FromContext<F, S>,
     D: DepositContract + FromContext<F, S>,
-    DepositHandlerV1Error: From<A::Error> + From<D::Error>,
+    T: TransactionHandler<Transaction> + FromContext<F, S>,
+    DepositHandlerV1Error: From<A::Error> + From<D::Error> + From<T::Error>,
 {
     async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
         let options = DepositHandlerV1Options::builder()
             .db(context.db.clone())
             .config(context.config.clone())
-            .providers(context.providers.clone())
             .signer_providers(context.signer_providers.clone())
             .assets(A::from_context(context).await?)
             .deposits(D::from_context(context).await?)
+            .transactions(T::from_context(context).await?)
             .build();
         Ok(Self::new(options))
     }
 }
 
-impl<F, S, P, A, D> DepositHandlerV1<F, S, P, A, D>
+impl<F, S, P, A, D, T> DepositHandlerV1<F, S, P, A, D, T>
 where
     F: StatementFormatter,
     S: Storage,
     A: PublicAssetHandler,
     D: DepositContract,
+    T: TransactionHandler<Transaction>,
     P: Providers + 'static,
-    DepositHandlerV1Error: From<A::Error> + From<D::Error>,
+    DepositHandlerV1Error: From<A::Error> + From<D::Error> + From<T::Error>,
 {
-    pub fn new(options: DepositHandlerV1Options<F, S, P, A, D>) -> Self {
+    pub fn new(options: DepositHandlerV1Options<F, S, P, A, D, T>) -> Self {
         let wallets = WalletHandlerV1::new(options.db.clone());
         Self::builder()
             .db(options.db)
             .config(options.config)
-            .providers(options.providers)
             .signer_providers(options.signer_providers)
             .wallets(wallets)
             .assets(options.assets)
             .deposits(options.deposits)
+            .transactions(options.transactions)
             .build()
     }
 
@@ -255,9 +262,13 @@ where
     {
         let owner = signer.address().await?;
         context.validate_balances(&owner, &self.assets).await?;
-        let provider = self.providers.get_provider(deposit.data.chain_id).await?;
         let asset_approve_tx_hashes = context
-            .send_assets_approve(&options.asset_approve_tx, &self.assets, signer.clone())
+            .send_assets_approve(
+                options.asset_approve_tx.clone(),
+                &self.assets,
+                &self.transactions,
+                signer.clone(),
+            )
             .await?;
         if !asset_approve_tx_hashes.is_empty() {
             deposit.data.asset_approve_transaction_hash = Some(
@@ -270,7 +281,12 @@ where
         deposit.data.status = DepositStatus::AssetApproving as i32;
         deposit = self.db.deposits.update(&deposit).await?;
         for tx_hash in asset_approve_tx_hashes.into_iter() {
-            wait_transaction(tx_hash, provider.clone(), options.asset_approve_confirmations).await?;
+            let wait_options = WaitOptions::builder()
+                .chain_id(deposit.data.chain_id)
+                .tx_hash(tx_hash)
+                .confirmations(options.asset_approve_confirmations)
+                .build();
+            self.transactions.wait(wait_options).await?;
         }
         deposit.data.status = DepositStatus::AssetApproved as i32;
         Ok(self.db.deposits.update(&deposit).await?)
@@ -286,12 +302,22 @@ where
     where
         Signer: TransactionSigner + 'static,
     {
-        let provider = self.providers.get_provider(deposit.data.chain_id).await?;
         let send_tx_hash = context
-            .send_deposit(&mut deposit, &options.deposit_tx, &self.deposits, signer.clone())
+            .send_deposit(
+                &mut deposit,
+                options.deposit_tx.clone(),
+                &self.deposits,
+                &self.transactions,
+                signer.clone(),
+            )
             .await?;
         self.db.deposits.update(&deposit).await?;
-        wait_transaction(send_tx_hash, provider.clone(), options.deposit_confirmations).await?;
+        let wait_options = WaitOptions::builder()
+            .chain_id(deposit.data.chain_id)
+            .tx_hash(send_tx_hash)
+            .confirmations(options.deposit_confirmations)
+            .build();
+        self.transactions.wait(wait_options).await?;
         if context.contract_config.bridge_type() == &mystiko_types::BridgeType::Loop {
             deposit.data.status = DepositStatus::SrcSucceeded as i32;
         } else {
@@ -515,16 +541,18 @@ impl DepositContext {
         Ok(())
     }
 
-    pub(crate) async fn send_assets_approve<A, S>(
+    pub(crate) async fn send_assets_approve<A, S, T>(
         &self,
-        transaction: &Option<Transaction>,
+        transaction: Option<Transaction>,
         assets: &A,
+        transactions: &T,
         signer: Arc<S>,
     ) -> Result<Vec<TxHash>>
     where
         A: PublicAssetHandler,
+        T: TransactionHandler<Transaction>,
         S: TransactionSigner + 'static,
-        DepositHandlerV1Error: From<A::Error>,
+        DepositHandlerV1Error: From<A::Error> + From<T::Error>,
     {
         let mut tx_hashes = vec![];
         for (_, asset_context) in self.assets.iter() {
@@ -532,8 +560,9 @@ impl DepositContext {
                 .approve(
                     &self.contract_config,
                     self.chain_config.transaction_type(),
-                    transaction,
+                    transaction.clone(),
                     assets,
+                    transactions,
                     signer.clone(),
                 )
                 .await?
@@ -544,19 +573,21 @@ impl DepositContext {
         Ok(tx_hashes)
     }
 
-    pub(crate) async fn send_deposit<D, S>(
+    pub(crate) async fn send_deposit<D, S, T>(
         &self,
         deposit: &mut Document<Deposit>,
-        transaction: &Option<Transaction>,
+        transaction: Option<Transaction>,
         deposits: &D,
+        transactions: &T,
         signer: Arc<S>,
     ) -> Result<TxHash>
     where
         D: DepositContract,
+        T: TransactionHandler<Transaction>,
         S: TransactionSigner + 'static,
-        DepositHandlerV1Error: From<D::Error>,
+        DepositHandlerV1Error: From<D::Error> + From<T::Error>,
     {
-        let tx = convert_transaction(self.chain_config.transaction_type(), transaction)?;
+        let tx = transactions.create(transaction, self.chain_config.transaction_type())?;
         let contract_address = ethers_address_from_string(self.contract_config.address())?;
         let asset_decimals = Some(self.contract_config.asset_decimals());
         let amount = U256::from_dec_str(&number_to_decimal(deposit.data.amount, asset_decimals)?.to_string())?;
@@ -737,18 +768,20 @@ impl AssetContext {
         })
     }
 
-    pub(crate) async fn approve<A, S>(
+    pub(crate) async fn approve<A, S, T>(
         &self,
         contract_config: &DepositContractConfig,
         transaction_type: &mystiko_types::TransactionType,
-        transaction: &Option<Transaction>,
+        transaction: Option<Transaction>,
         assets: &A,
+        transactions: &T,
         signer: Arc<S>,
     ) -> Result<Option<TxHash>>
     where
         A: PublicAssetHandler,
+        T: TransactionHandler<Transaction>,
         S: TransactionSigner + 'static,
-        DepositHandlerV1Error: From<A::Error>,
+        DepositHandlerV1Error: From<A::Error> + From<T::Error>,
     {
         if self.asset_config.asset_type() != &mystiko_types::AssetType::Main && self.converted_amount.gt(&U256::zero())
         {
@@ -761,7 +794,7 @@ impl AssetContext {
                 .recipient(contract_address)
                 .amount(self.converted_amount)
                 .signer(signer)
-                .tx(convert_transaction(transaction_type, transaction)?)
+                .tx(transactions.create(transaction, transaction_type)?)
                 .build();
             return Ok(assets.erc20_approve(options).await?);
         }

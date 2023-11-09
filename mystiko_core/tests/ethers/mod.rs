@@ -1,5 +1,6 @@
 mod asset;
 mod deposit;
+mod transaction;
 
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
