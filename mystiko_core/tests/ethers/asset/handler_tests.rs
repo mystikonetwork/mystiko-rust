@@ -1,8 +1,7 @@
-use async_trait::async_trait;
+use crate::ethers::{MockProvider, MockProviders, MockTransactionSigner};
 use ethers_core::abi::{AbiDecode, AbiEncode};
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{Address, NameOrAddress, TransactionRequest, TxHash, U256};
-use mockall::mock;
+use ethers_core::types::{NameOrAddress, TransactionRequest, TxHash, U256};
 use mystiko_core::{
     BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssetHandler, PublicAssets,
     PublicAssetsError, TransferOptions,
@@ -357,41 +356,4 @@ fn setup(chain_id: u64, provider: MockProvider) -> PublicAssets<MockProviders> {
         .withf(move |id| *id == chain_id)
         .returning(move |_| Ok(provider.clone()));
     PublicAssets::builder().providers(providers).build()
-}
-
-mock! {
-    #[derive(Debug)]
-    Provider {}
-
-    #[async_trait]
-    impl mystiko_ethers::JsonRpcClientWrapper for Provider {
-         async fn request(
-            &self,
-            method: &str,
-            params: mystiko_ethers::JsonRpcParams,
-        ) -> Result<serde_json::Value, ethers_providers::ProviderError>;
-    }
-}
-
-mock! {
-    #[derive(Debug)]
-    Providers {}
-
-    #[async_trait]
-    impl mystiko_ethers::Providers for Providers {
-        async fn get_provider(&self, chain_id: u64) -> anyhow::Result<Arc<Provider>>;
-        async fn has_provider(&self, chain_id: u64) -> bool;
-        async fn set_provider(&self, chain_id: u64, provider: Arc<Provider>) -> Option<Arc<Provider>>;
-        async fn delete_provider(&self, chain_id: u64) -> Option<Arc<Provider>>;
-    }
-}
-
-mock! {
-    TransactionSigner {}
-
-    #[async_trait]
-    impl mystiko_core::TransactionSigner for TransactionSigner {
-        async fn address(&self) -> anyhow::Result<Address>;
-        async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> anyhow::Result<TxHash>;
-    }
 }

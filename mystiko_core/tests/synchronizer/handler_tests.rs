@@ -130,8 +130,9 @@ async fn test_status_with_contract() {
     assert_eq!(result.chains.len(), 1);
     assert_eq!(result.chains[0].chain_id, 5);
     assert_eq!(result.chains[0].synced_block, 0);
-    assert_eq!(result.chains[0].contracts.len(), 1);
+    assert_eq!(result.chains[0].contracts.len(), 2);
     assert_eq!(result.chains[0].contracts[0].synced_block, 0);
+    assert_eq!(result.chains[0].contracts[1].synced_block, 0);
 
     let mut loader = MockSyncDataLoader::new();
     loader.expect_chain_loaded_block().returning(|_| Ok(Some(200)));
@@ -141,8 +142,9 @@ async fn test_status_with_contract() {
     assert_eq!(result.chains.len(), 1);
     assert_eq!(result.chains[0].chain_id, 5);
     assert_eq!(result.chains[0].synced_block, 200);
-    assert_eq!(result.chains[0].contracts.len(), 1);
+    assert_eq!(result.chains[0].contracts.len(), 2);
     assert_eq!(result.chains[0].contracts[0].synced_block, 300);
+    assert_eq!(result.chains[0].contracts[1].synced_block, 300);
 
     let mut loader = MockSyncDataLoader::new();
     loader.expect_chain_loaded_block().returning(|_| Ok(Some(200)));

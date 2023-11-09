@@ -226,10 +226,18 @@ where
                 get_min_executor_fee(provider, &options.contract_address, contract_config)
             }
         };
-        let timeout = Duration::from_millis(options.query_timeout_ms.unwrap_or(DEFAULT_QUERY_TIMEOUT_MS));
-        match tokio::time::timeout(timeout, get_remote_config_with_call(call, default_value)).await {
+        let timeout_ms = options.query_timeout_ms.unwrap_or(DEFAULT_QUERY_TIMEOUT_MS);
+        let timeout = Duration::from_millis(timeout_ms);
+        match tokio::time::timeout(timeout, get_remote_config_with_call(call, &config_type, default_value)).await {
             Ok(value) => Ok((config_type, value)),
-            Err(_) => Ok((config_type, default_value)),
+            Err(_) => {
+                log::warn!(
+                    "get_remote_config with config_type={:?} timed out after {} ms",
+                    config_type,
+                    timeout_ms
+                );
+                Ok((config_type, default_value))
+            }
         }
     }
 }
@@ -301,11 +309,19 @@ fn get_min_executor_fee(
     (default_value, call)
 }
 
-async fn get_remote_config_with_call(call: ContractCall<Provider, U256>, default_value: U256) -> U256 {
+async fn get_remote_config_with_call(
+    call: ContractCall<Provider, U256>,
+    config_type: &RemoteConfigType,
+    default_value: U256,
+) -> U256 {
     match call.await {
         Ok(value) => value,
         Err(err) => {
-            log::warn!("get_remote_config_with_call raised error: {:?}", err);
+            log::warn!(
+                "get_remote_config with config_type={:?} raised error: {}",
+                config_type,
+                err
+            );
             default_value
         }
     }
