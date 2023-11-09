@@ -4,6 +4,7 @@ use log::LevelFilter;
 use mockito::{Mock, Server, ServerGuard};
 use mystiko_ethers::ProviderPool;
 use mystiko_protos::core::v1::SpendType;
+use mystiko_relayer_client::error::RelayerClientError;
 use mystiko_relayer_client::v2::client::{
     RelayerClientOptions, RelayerClientV2, HANDSHAKE_URL_PATH, INFO_URL_PATH, TRANSACTION_STATUS_URL_PATH,
     TRANSACT_URL_PATH,
@@ -106,7 +107,7 @@ async fn create_client(
     provider_pool: ProviderPool<MockChainConfig>,
     chain_id: Option<u64>,
     contract_address: Option<Address>,
-) -> Box<dyn RelayerClient> {
+) -> Box<dyn RelayerClient<Error = RelayerClientError>> {
     let _ = env_logger::builder()
         .filter_module("mystiko_relayer_client", LevelFilter::Debug)
         .try_init();
@@ -136,7 +137,7 @@ async fn create_client(
             Arc::new(RelayerConfig::from_json_str(create_relayer_config(chain, address).as_str()).unwrap());
     }
 
-    Box::new(client) as Box<dyn RelayerClient>
+    Box::new(client) as Box<dyn RelayerClient<Error = RelayerClientError>>
 }
 
 #[tokio::test]

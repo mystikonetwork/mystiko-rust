@@ -1,7 +1,7 @@
 use crate::error::RelayerClientError;
 use crate::request::{build_request_builder, get_data, post_data};
 use crate::types::register::RegisterInfo;
-use crate::types::result::Result;
+use crate::types::result;
 use crate::RelayerClient;
 use async_trait::async_trait;
 use ethers_core::types::Address;
@@ -56,7 +56,7 @@ impl<P> RelayerClientV2<P>
 where
     P: 'static + Providers,
 {
-    pub async fn new(providers: Arc<P>, options: Option<RelayerClientOptions>) -> Result<Self> {
+    pub async fn new(providers: Arc<P>, options: Option<RelayerClientOptions>) -> result::Result<Self> {
         let relayer_options = options.unwrap_or(RelayerClientOptions::builder().build());
         let relayer_config = create_relayer_config(&relayer_options).await?;
         let network_type = if relayer_options.is_testnet {
@@ -84,7 +84,9 @@ impl<P> RelayerClient for RelayerClientV2<P>
 where
     P: 'static + Providers,
 {
-    async fn all_register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>> {
+    type Error = RelayerClientError;
+
+    async fn all_register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>, Self::Error> {
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -150,7 +152,7 @@ where
         Ok(registers)
     }
 
-    async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse> {
+    async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse, Self::Error> {
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -172,7 +174,7 @@ where
     async fn relay_transaction_status(
         &self,
         request: RelayTransactStatusRequest,
-    ) -> Result<RelayTransactStatusResponse> {
+    ) -> Result<RelayTransactStatusResponse, Self::Error> {
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -193,7 +195,10 @@ where
         Ok(response)
     }
 
-    async fn wait_transaction(&self, request: WaitingTransactionRequest) -> Result<RelayTransactStatusResponse> {
+    async fn wait_transaction(
+        &self,
+        request: WaitingTransactionRequest,
+    ) -> Result<RelayTransactStatusResponse, Self::Error> {
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
@@ -250,7 +255,7 @@ where
         }
     }
 
-    async fn handshake(&self, url: &str) -> Result<bool> {
+    async fn handshake(&self, url: &str) -> Result<bool, Self::Error> {
         let response =
             get_data::<HandshakeResponse>(self.reqwest_client.clone(), &format!("{}/{}", url, HANDSHAKE_URL_PATH))
                 .await?;
@@ -267,7 +272,7 @@ async fn register_info(
     name: &str,
     relayer: &Address,
     request: &RegisterInfoRequest,
-) -> Result<RegisterInfo> {
+) -> result::Result<RegisterInfo> {
     let mut request_builder = reqwest_client.post(format!("{}/{}", url, INFO_URL_PATH));
     request_builder = build_request_builder(request_builder, None, &request);
     let response = post_data::<RegisterInfoResponse>(request_builder).await?;
@@ -293,7 +298,7 @@ async fn register_info(
     Ok(register_info)
 }
 
-async fn create_relayer_config(options: &RelayerClientOptions) -> Result<Arc<RelayerConfig>> {
+async fn create_relayer_config(options: &RelayerClientOptions) -> result::Result<Arc<RelayerConfig>> {
     #[cfg(feature = "fs")]
     let result = if let Some(config_file_path) = &options.relayer_config_file_path {
         RelayerConfig::from_json_file(config_file_path).await

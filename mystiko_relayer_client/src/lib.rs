@@ -22,7 +22,6 @@ pub mod types;
 pub mod v2;
 
 use crate::types::register::RegisterInfo;
-use crate::types::result::Result;
 use async_trait::async_trait;
 use mystiko_relayer_types::{
     RegisterInfoRequest, RelayTransactRequest, RelayTransactResponse, RelayTransactStatusRequest,
@@ -31,15 +30,20 @@ use mystiko_relayer_types::{
 
 #[async_trait]
 pub trait RelayerClient: Send + Sync {
-    async fn all_register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>>;
+    type Error;
 
-    async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse>;
+    async fn all_register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>, Self::Error>;
+
+    async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse, Self::Error>;
 
     async fn relay_transaction_status(
         &self,
         request: RelayTransactStatusRequest,
-    ) -> Result<RelayTransactStatusResponse>;
+    ) -> Result<RelayTransactStatusResponse, Self::Error>;
 
-    async fn wait_transaction(&self, request: WaitingTransactionRequest) -> Result<RelayTransactStatusResponse>;
-    async fn handshake(&self, url: &str) -> Result<bool>;
+    async fn wait_transaction(
+        &self,
+        request: WaitingTransactionRequest,
+    ) -> Result<RelayTransactStatusResponse, Self::Error>;
+    async fn handshake(&self, url: &str) -> Result<bool, Self::Error>;
 }
