@@ -158,7 +158,7 @@ impl serde::Serialize for CreateDepositOptions {
         if self.executor_fee_amount.is_some() {
             len += 1;
         }
-        if self.query_remote_timeout_ms.is_some() {
+        if self.query_timeout_ms.is_some() {
             len += 1;
         }
         if self.deposit_quote.is_some() {
@@ -192,8 +192,8 @@ impl serde::Serialize for CreateDepositOptions {
         if let Some(v) = self.executor_fee_amount.as_ref() {
             struct_ser.serialize_field("executorFeeAmount", v)?;
         }
-        if let Some(v) = self.query_remote_timeout_ms.as_ref() {
-            struct_ser.serialize_field("queryRemoteTimeoutMs", ToString::to_string(&v).as_str())?;
+        if let Some(v) = self.query_timeout_ms.as_ref() {
+            struct_ser.serialize_field("queryTimeoutMs", ToString::to_string(&v).as_str())?;
         }
         if let Some(v) = self.deposit_quote.as_ref() {
             struct_ser.serialize_field("depositQuote", v)?;
@@ -228,8 +228,8 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
             "bridgeFeeAmount",
             "executor_fee_amount",
             "executorFeeAmount",
-            "query_remote_timeout_ms",
-            "queryRemoteTimeoutMs",
+            "query_timeout_ms",
+            "queryTimeoutMs",
             "deposit_quote",
             "depositQuote",
             "bridge_type",
@@ -246,7 +246,7 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
             DstChainId,
             BridgeFeeAmount,
             ExecutorFeeAmount,
-            QueryRemoteTimeoutMs,
+            QueryTimeoutMs,
             DepositQuote,
             BridgeType,
         }
@@ -278,7 +278,7 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
                             "dstChainId" | "dst_chain_id" => Ok(GeneratedField::DstChainId),
                             "bridgeFeeAmount" | "bridge_fee_amount" => Ok(GeneratedField::BridgeFeeAmount),
                             "executorFeeAmount" | "executor_fee_amount" => Ok(GeneratedField::ExecutorFeeAmount),
-                            "queryRemoteTimeoutMs" | "query_remote_timeout_ms" => Ok(GeneratedField::QueryRemoteTimeoutMs),
+                            "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
                             "depositQuote" | "deposit_quote" => Ok(GeneratedField::DepositQuote),
                             "bridgeType" | "bridge_type" => Ok(GeneratedField::BridgeType),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -308,7 +308,7 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
                 let mut dst_chain_id__ = None;
                 let mut bridge_fee_amount__ = None;
                 let mut executor_fee_amount__ = None;
-                let mut query_remote_timeout_ms__ = None;
+                let mut query_timeout_ms__ = None;
                 let mut deposit_quote__ = None;
                 let mut bridge_type__ = None;
                 while let Some(k) = map.next_key()? {
@@ -373,11 +373,11 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
-                        GeneratedField::QueryRemoteTimeoutMs => {
-                            if query_remote_timeout_ms__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("queryRemoteTimeoutMs"));
+                        GeneratedField::QueryTimeoutMs => {
+                            if query_timeout_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("queryTimeoutMs"));
                             }
-                            query_remote_timeout_ms__ = 
+                            query_timeout_ms__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
@@ -404,7 +404,7 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
                     dst_chain_id: dst_chain_id__,
                     bridge_fee_amount: bridge_fee_amount__,
                     executor_fee_amount: executor_fee_amount__,
-                    query_remote_timeout_ms: query_remote_timeout_ms__,
+                    query_timeout_ms: query_timeout_ms__,
                     deposit_quote: deposit_quote__,
                     bridge_type: bridge_type__,
                 })
@@ -1109,7 +1109,7 @@ impl serde::Serialize for QuoteDepositOptions {
         if !self.asset_symbol.is_empty() {
             len += 1;
         }
-        if self.query_remote_timeout_ms.is_some() {
+        if self.query_timeout_ms.is_some() {
             len += 1;
         }
         if self.dst_chain_id.is_some() {
@@ -1125,8 +1125,8 @@ impl serde::Serialize for QuoteDepositOptions {
         if !self.asset_symbol.is_empty() {
             struct_ser.serialize_field("assetSymbol", &self.asset_symbol)?;
         }
-        if let Some(v) = self.query_remote_timeout_ms.as_ref() {
-            struct_ser.serialize_field("queryRemoteTimeoutMs", ToString::to_string(&v).as_str())?;
+        if let Some(v) = self.query_timeout_ms.as_ref() {
+            struct_ser.serialize_field("queryTimeoutMs", ToString::to_string(&v).as_str())?;
         }
         if let Some(v) = self.dst_chain_id.as_ref() {
             struct_ser.serialize_field("dstChainId", ToString::to_string(&v).as_str())?;
@@ -1150,8 +1150,8 @@ impl<'de> serde::Deserialize<'de> for QuoteDepositOptions {
             "chainId",
             "asset_symbol",
             "assetSymbol",
-            "query_remote_timeout_ms",
-            "queryRemoteTimeoutMs",
+            "query_timeout_ms",
+            "queryTimeoutMs",
             "dst_chain_id",
             "dstChainId",
             "bridge_type",
@@ -1162,7 +1162,7 @@ impl<'de> serde::Deserialize<'de> for QuoteDepositOptions {
         enum GeneratedField {
             ChainId,
             AssetSymbol,
-            QueryRemoteTimeoutMs,
+            QueryTimeoutMs,
             DstChainId,
             BridgeType,
         }
@@ -1188,7 +1188,7 @@ impl<'de> serde::Deserialize<'de> for QuoteDepositOptions {
                         match value {
                             "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
                             "assetSymbol" | "asset_symbol" => Ok(GeneratedField::AssetSymbol),
-                            "queryRemoteTimeoutMs" | "query_remote_timeout_ms" => Ok(GeneratedField::QueryRemoteTimeoutMs),
+                            "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
                             "dstChainId" | "dst_chain_id" => Ok(GeneratedField::DstChainId),
                             "bridgeType" | "bridge_type" => Ok(GeneratedField::BridgeType),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1212,7 +1212,7 @@ impl<'de> serde::Deserialize<'de> for QuoteDepositOptions {
             {
                 let mut chain_id__ = None;
                 let mut asset_symbol__ = None;
-                let mut query_remote_timeout_ms__ = None;
+                let mut query_timeout_ms__ = None;
                 let mut dst_chain_id__ = None;
                 let mut bridge_type__ = None;
                 while let Some(k) = map.next_key()? {
@@ -1231,11 +1231,11 @@ impl<'de> serde::Deserialize<'de> for QuoteDepositOptions {
                             }
                             asset_symbol__ = Some(map.next_value()?);
                         }
-                        GeneratedField::QueryRemoteTimeoutMs => {
-                            if query_remote_timeout_ms__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("queryRemoteTimeoutMs"));
+                        GeneratedField::QueryTimeoutMs => {
+                            if query_timeout_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("queryTimeoutMs"));
                             }
-                            query_remote_timeout_ms__ = 
+                            query_timeout_ms__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
@@ -1258,7 +1258,7 @@ impl<'de> serde::Deserialize<'de> for QuoteDepositOptions {
                 Ok(QuoteDepositOptions {
                     chain_id: chain_id__.unwrap_or_default(),
                     asset_symbol: asset_symbol__.unwrap_or_default(),
-                    query_remote_timeout_ms: query_remote_timeout_ms__,
+                    query_timeout_ms: query_timeout_ms__,
                     dst_chain_id: dst_chain_id__,
                     bridge_type: bridge_type__,
                 })
@@ -1281,13 +1281,22 @@ impl serde::Serialize for SendDepositOptions {
         if self.private_key.is_some() {
             len += 1;
         }
-        if self.query_remote_timeout_ms.is_some() {
+        if self.query_timeout_ms.is_some() {
             len += 1;
         }
         if self.asset_approve_confirmations.is_some() {
             len += 1;
         }
         if self.deposit_confirmations.is_some() {
+            len += 1;
+        }
+        if self.tx_send_timeout_ms.is_some() {
+            len += 1;
+        }
+        if self.tx_wait_timeout_ms.is_some() {
+            len += 1;
+        }
+        if self.tx_wait_interval_ms.is_some() {
             len += 1;
         }
         if self.asset_approve_tx.is_some() {
@@ -1303,14 +1312,23 @@ impl serde::Serialize for SendDepositOptions {
         if let Some(v) = self.private_key.as_ref() {
             struct_ser.serialize_field("privateKey", v)?;
         }
-        if let Some(v) = self.query_remote_timeout_ms.as_ref() {
-            struct_ser.serialize_field("queryRemoteTimeoutMs", ToString::to_string(&v).as_str())?;
+        if let Some(v) = self.query_timeout_ms.as_ref() {
+            struct_ser.serialize_field("queryTimeoutMs", ToString::to_string(&v).as_str())?;
         }
         if let Some(v) = self.asset_approve_confirmations.as_ref() {
             struct_ser.serialize_field("assetApproveConfirmations", ToString::to_string(&v).as_str())?;
         }
         if let Some(v) = self.deposit_confirmations.as_ref() {
             struct_ser.serialize_field("depositConfirmations", ToString::to_string(&v).as_str())?;
+        }
+        if let Some(v) = self.tx_send_timeout_ms.as_ref() {
+            struct_ser.serialize_field("txSendTimeoutMs", ToString::to_string(&v).as_str())?;
+        }
+        if let Some(v) = self.tx_wait_timeout_ms.as_ref() {
+            struct_ser.serialize_field("txWaitTimeoutMs", ToString::to_string(&v).as_str())?;
+        }
+        if let Some(v) = self.tx_wait_interval_ms.as_ref() {
+            struct_ser.serialize_field("txWaitIntervalMs", ToString::to_string(&v).as_str())?;
         }
         if let Some(v) = self.asset_approve_tx.as_ref() {
             struct_ser.serialize_field("assetApproveTx", v)?;
@@ -1332,12 +1350,18 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
             "depositId",
             "private_key",
             "privateKey",
-            "query_remote_timeout_ms",
-            "queryRemoteTimeoutMs",
+            "query_timeout_ms",
+            "queryTimeoutMs",
             "asset_approve_confirmations",
             "assetApproveConfirmations",
             "deposit_confirmations",
             "depositConfirmations",
+            "tx_send_timeout_ms",
+            "txSendTimeoutMs",
+            "tx_wait_timeout_ms",
+            "txWaitTimeoutMs",
+            "tx_wait_interval_ms",
+            "txWaitIntervalMs",
             "asset_approve_tx",
             "assetApproveTx",
             "deposit_tx",
@@ -1348,9 +1372,12 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
         enum GeneratedField {
             DepositId,
             PrivateKey,
-            QueryRemoteTimeoutMs,
+            QueryTimeoutMs,
             AssetApproveConfirmations,
             DepositConfirmations,
+            TxSendTimeoutMs,
+            TxWaitTimeoutMs,
+            TxWaitIntervalMs,
             AssetApproveTx,
             DepositTx,
         }
@@ -1376,9 +1403,12 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                         match value {
                             "depositId" | "deposit_id" => Ok(GeneratedField::DepositId),
                             "privateKey" | "private_key" => Ok(GeneratedField::PrivateKey),
-                            "queryRemoteTimeoutMs" | "query_remote_timeout_ms" => Ok(GeneratedField::QueryRemoteTimeoutMs),
+                            "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
                             "assetApproveConfirmations" | "asset_approve_confirmations" => Ok(GeneratedField::AssetApproveConfirmations),
                             "depositConfirmations" | "deposit_confirmations" => Ok(GeneratedField::DepositConfirmations),
+                            "txSendTimeoutMs" | "tx_send_timeout_ms" => Ok(GeneratedField::TxSendTimeoutMs),
+                            "txWaitTimeoutMs" | "tx_wait_timeout_ms" => Ok(GeneratedField::TxWaitTimeoutMs),
+                            "txWaitIntervalMs" | "tx_wait_interval_ms" => Ok(GeneratedField::TxWaitIntervalMs),
                             "assetApproveTx" | "asset_approve_tx" => Ok(GeneratedField::AssetApproveTx),
                             "depositTx" | "deposit_tx" => Ok(GeneratedField::DepositTx),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1402,9 +1432,12 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
             {
                 let mut deposit_id__ = None;
                 let mut private_key__ = None;
-                let mut query_remote_timeout_ms__ = None;
+                let mut query_timeout_ms__ = None;
                 let mut asset_approve_confirmations__ = None;
                 let mut deposit_confirmations__ = None;
+                let mut tx_send_timeout_ms__ = None;
+                let mut tx_wait_timeout_ms__ = None;
+                let mut tx_wait_interval_ms__ = None;
                 let mut asset_approve_tx__ = None;
                 let mut deposit_tx__ = None;
                 while let Some(k) = map.next_key()? {
@@ -1421,11 +1454,11 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                             }
                             private_key__ = map.next_value()?;
                         }
-                        GeneratedField::QueryRemoteTimeoutMs => {
-                            if query_remote_timeout_ms__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("queryRemoteTimeoutMs"));
+                        GeneratedField::QueryTimeoutMs => {
+                            if query_timeout_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("queryTimeoutMs"));
                             }
-                            query_remote_timeout_ms__ = 
+                            query_timeout_ms__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
@@ -1442,6 +1475,30 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                                 return Err(serde::de::Error::duplicate_field("depositConfirmations"));
                             }
                             deposit_confirmations__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::TxSendTimeoutMs => {
+                            if tx_send_timeout_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("txSendTimeoutMs"));
+                            }
+                            tx_send_timeout_ms__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::TxWaitTimeoutMs => {
+                            if tx_wait_timeout_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("txWaitTimeoutMs"));
+                            }
+                            tx_wait_timeout_ms__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::TxWaitIntervalMs => {
+                            if tx_wait_interval_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("txWaitIntervalMs"));
+                            }
+                            tx_wait_interval_ms__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
@@ -1462,9 +1519,12 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                 Ok(SendDepositOptions {
                     deposit_id: deposit_id__.unwrap_or_default(),
                     private_key: private_key__,
-                    query_remote_timeout_ms: query_remote_timeout_ms__,
+                    query_timeout_ms: query_timeout_ms__,
                     asset_approve_confirmations: asset_approve_confirmations__,
                     deposit_confirmations: deposit_confirmations__,
+                    tx_send_timeout_ms: tx_send_timeout_ms__,
+                    tx_wait_timeout_ms: tx_wait_timeout_ms__,
+                    tx_wait_interval_ms: tx_wait_interval_ms__,
                     asset_approve_tx: asset_approve_tx__,
                     deposit_tx: deposit_tx__,
                 })

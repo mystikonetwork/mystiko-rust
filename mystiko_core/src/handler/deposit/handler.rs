@@ -18,7 +18,7 @@ use mystiko_protos::core::handler::v1::{
 };
 use mystiko_protos::core::v1::{DepositStatus, Transaction};
 use mystiko_storage::{Document, StatementFormatter, Storage, StorageError};
-use mystiko_utils::address::ethers_address_from_string;
+use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use mystiko_utils::convert::{bytes_to_biguint, decimal_to_number, number_to_u256_decimal, u256_to_biguint};
 use mystiko_utils::hex::encode_hex_with_prefix;
 use std::collections::HashMap;
@@ -37,13 +37,31 @@ pub struct Deposits<
     D: DepositContractHandler = DepositContracts<P>,
     T: TransactionHandler<Transaction> = Transactions<P>,
 > {
+    pub(crate) db: Arc<Database<F, S>>,
+    pub(crate) config: Arc<MystikoConfig>,
+    pub(crate) wallets: Wallets<F, S>,
+    pub(crate) signer_providers: Arc<P>,
+    pub(crate) assets: Arc<A>,
+    pub(crate) deposit_contracts: Arc<D>,
+    pub(crate) transactions: Arc<T>,
+}
+
+#[derive(Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct DepositsOptions<
+    F: StatementFormatter,
+    S: Storage,
+    P: Providers,
+    A: PublicAssetHandler,
+    D: DepositContractHandler,
+    T: TransactionHandler<Transaction>,
+> {
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
-    wallets: Wallets<F, S>,
     signer_providers: Arc<P>,
-    assets: A,
-    deposit_contracts: D,
-    transactions: T,
+    assets: Arc<A>,
+    deposit_contracts: Arc<D>,
+    transactions: Arc<T>,
 }
 
 #[derive(Debug, Error)]
@@ -92,24 +110,6 @@ pub enum DepositsError {
     MissingPrivateKeyError,
 }
 
-#[derive(Debug, TypedBuilder)]
-#[builder(field_defaults(setter(into)))]
-pub struct DepositsOptions<
-    F: StatementFormatter,
-    S: Storage,
-    P: Providers,
-    A: PublicAssetHandler,
-    D: DepositContractHandler,
-    T: TransactionHandler<Transaction>,
-> {
-    db: Arc<Database<F, S>>,
-    config: Arc<MystikoConfig>,
-    signer_providers: Arc<P>,
-    assets: A,
-    deposit_contracts: D,
-    transactions: T,
-}
-
 type Result<T> = std::result::Result<T, DepositsError>;
 
 #[async_trait]
@@ -134,21 +134,37 @@ where
     type Error = DepositsError;
 
     async fn quote(&self, options: QuoteDepositOptions) -> Result<DepositQuote> {
-        let context = DepositContext::from_quote_options(self.config.clone(), &options)?;
-        context.quote(&self.deposit_contracts).await
+        let context = DepositContext::from_quote_options(
+            self.config.clone(),
+            self.assets.clone(),
+            self.deposit_contracts.clone(),
+            self.transactions.clone(),
+            &options,
+        )?;
+        context.quote().await
     }
 
     async fn summary(&self, options: CreateDepositOptions) -> Result<DepositSummary> {
-        let context = DepositContext::from_create_options(self.config.clone(), &options)?;
-        context.summary(&options, &self.deposit_contracts).await
+        let context = DepositContext::from_create_options(
+            self.config.clone(),
+            self.assets.clone(),
+            self.deposit_contracts.clone(),
+            self.transactions.clone(),
+            &options,
+        )?;
+        context.summary(&options).await
     }
 
     async fn create(&self, options: CreateDepositOptions) -> Result<ProtoDeposit> {
         let wallet = self.wallets.check_current().await?;
-        let context = DepositContext::from_create_options(self.config.clone(), &options)?;
-        let deposit = context
-            .create_deposit(&options, &self.deposit_contracts, wallet.id)
-            .await?;
+        let context = DepositContext::from_create_options(
+            self.config.clone(),
+            self.assets.clone(),
+            self.deposit_contracts.clone(),
+            self.transactions.clone(),
+            &options,
+        )?;
+        let deposit = context.create_deposit(&options, wallet.id).await?;
         let deposit = self.db.deposits.insert(&deposit).await?;
         log::info!("successfully created a deposit(id = {:?})", deposit.id);
         Ok(Deposit::document_into_proto(deposit))
@@ -178,38 +194,31 @@ where
             .find_by_id(&options.deposit_id)
             .await?
             .ok_or_else(|| DepositsError::IdNotFoundError(options.deposit_id.clone()))?;
-        match self.send_transaction(&options, deposit.clone(), signer).await {
+        let owner = signer.address().await?;
+        let owner_address = ethers_address_to_string(&owner);
+        log::info!(
+            "sending deposit(id = {:?}) transaction with signer at address {}",
+            deposit.id,
+            owner_address
+        );
+        match self.send_transaction(&options, deposit.clone(), signer, owner).await {
             Err(err) => {
+                log::error!("failed to send deposit(id = {:?}) transaction: {}", deposit.id, err);
                 deposit.data.status = DepositStatus::Failed as i32;
                 deposit.data.error_message = Some(err.to_string());
                 self.db.deposits.update(&deposit).await?;
                 Err(err)
             }
-            Ok(deposit) => Ok(Deposit::document_into_proto(deposit)),
+            Ok(deposit) => {
+                let status = DepositStatus::from_i32(deposit.data.status).unwrap_or_default();
+                log::info!(
+                    "successfully sent deposit(id = {:?}, status = {:?}) transaction",
+                    deposit.id,
+                    status
+                );
+                Ok(Deposit::document_into_proto(deposit))
+            }
         }
-    }
-}
-
-#[async_trait]
-impl<F, S, A, D, T> FromContext<F, S> for Deposits<F, S, Box<dyn Providers>, A, D, T>
-where
-    F: StatementFormatter,
-    S: Storage,
-    A: PublicAssetHandler + FromContext<F, S>,
-    D: DepositContractHandler + FromContext<F, S>,
-    T: TransactionHandler<Transaction> + FromContext<F, S>,
-    DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
-{
-    async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
-        let options = DepositsOptions::builder()
-            .db(context.db.clone())
-            .config(context.config.clone())
-            .signer_providers(context.signer_providers.clone())
-            .assets(A::from_context(context).await?)
-            .deposit_contracts(D::from_context(context).await?)
-            .transactions(T::from_context(context).await?)
-            .build();
-        Ok(Self::new(options))
     }
 }
 
@@ -241,13 +250,21 @@ where
         options: &SendDepositOptions,
         deposit: Document<Deposit>,
         signer: Arc<Signer>,
+        owner: Address,
     ) -> Result<Document<Deposit>>
     where
         Signer: TransactionSigner + 'static,
     {
-        let context = DepositContext::from_send_options(self.config.clone(), &deposit, options)?;
+        let context = DepositContext::from_send_options(
+            self.config.clone(),
+            self.assets.clone(),
+            self.deposit_contracts.clone(),
+            self.transactions.clone(),
+            &deposit,
+            options,
+        )?;
         let deposit = self
-            .send_assets_approve(options, deposit, &context, signer.clone())
+            .send_assets_approve(options, deposit, &context, signer.clone(), owner)
             .await?;
         let deposit = self.send_deposit(options, deposit, &context, signer.clone()).await?;
         Ok(deposit)
@@ -257,39 +274,51 @@ where
         &self,
         options: &SendDepositOptions,
         mut deposit: Document<Deposit>,
-        context: &DepositContext,
+        context: &DepositContext<A, D, T>,
         signer: Arc<Signer>,
+        owner: Address,
     ) -> Result<Document<Deposit>>
     where
         Signer: TransactionSigner + 'static,
     {
-        let owner = signer.address().await?;
-        context.validate_balances(&owner, &self.assets).await?;
-        let asset_approve_tx_hashes = context
-            .send_assets_approve(
-                options.asset_approve_tx.clone(),
-                &self.assets,
-                &self.transactions,
-                signer.clone(),
-            )
-            .await?;
+        context.validate_balances(&owner).await?;
+        let asset_approve_tx_hashes = context.send_assets_approve(options, signer.clone(), owner).await?;
         if !asset_approve_tx_hashes.is_empty() {
             deposit.data.asset_approve_transaction_hash = Some(
                 asset_approve_tx_hashes
                     .iter()
-                    .map(|h| h.encode_hex())
+                    .map(|(asset_symbol, tx_hash)| {
+                        let tx_hash = tx_hash.encode_hex();
+                        log::info!(
+                            "successfully submitted {} approving transaction(chain_id = {}, hash = {:?}) \
+                            for deposit(id = {:?})",
+                            asset_symbol,
+                            deposit.data.chain_id,
+                            tx_hash,
+                            deposit.id,
+                        );
+                        tx_hash
+                    })
                     .collect::<Vec<_>>(),
             );
         }
         deposit.data.status = DepositStatus::AssetApproving as i32;
         deposit = self.db.deposits.update(&deposit).await?;
-        for tx_hash in asset_approve_tx_hashes.into_iter() {
+        for (asset_symbol, tx_hash) in asset_approve_tx_hashes.into_iter() {
             let wait_options = WaitOptions::builder()
                 .chain_id(deposit.data.chain_id)
                 .tx_hash(tx_hash)
                 .confirmations(options.asset_approve_confirmations)
+                .interval_ms(options.tx_wait_interval_ms)
                 .build();
             self.transactions.wait(wait_options).await?;
+            log::info!(
+                "{} approving transaction(chain_id = {}, hash = {:?}) for deposit(id = {:?}) is confirmed",
+                deposit.data.chain_id,
+                asset_symbol,
+                tx_hash,
+                deposit.id,
+            )
         }
         deposit.data.status = DepositStatus::AssetApproved as i32;
         Ok(self.db.deposits.update(&deposit).await?)
@@ -299,34 +328,62 @@ where
         &self,
         options: &SendDepositOptions,
         mut deposit: Document<Deposit>,
-        context: &DepositContext,
+        context: &DepositContext<A, D, T>,
         signer: Arc<Signer>,
     ) -> Result<Document<Deposit>>
     where
         Signer: TransactionSigner + 'static,
     {
-        let send_tx_hash = context
-            .send_deposit(
-                &mut deposit,
-                options.deposit_tx.clone(),
-                &self.deposit_contracts,
-                &self.transactions,
-                signer.clone(),
-            )
-            .await?;
+        let send_tx_hash = context.send_deposit(&mut deposit, options, signer.clone()).await?;
+        log::info!(
+            "successfully submitted deposit(id = {:?}) transaction(chain_id = {}, hash = {:?})",
+            deposit.id,
+            deposit.data.chain_id,
+            send_tx_hash.encode_hex()
+        );
         self.db.deposits.update(&deposit).await?;
         let wait_options = WaitOptions::builder()
             .chain_id(deposit.data.chain_id)
             .tx_hash(send_tx_hash)
             .confirmations(options.deposit_confirmations)
+            .interval_ms(options.tx_wait_interval_ms)
             .build();
         self.transactions.wait(wait_options).await?;
+        log::info!(
+            "deposit(id = {:?}) transaction(chain_id = {}, hash = {:?}) is confirmed",
+            deposit.id,
+            deposit.data.chain_id,
+            send_tx_hash.encode_hex()
+        );
         if context.contract_config.bridge_type() == &mystiko_types::BridgeType::Loop {
             deposit.data.status = DepositStatus::SrcSucceeded as i32;
         } else {
             deposit.data.status = DepositStatus::Queued as i32;
         }
         Ok(self.db.deposits.update(&deposit).await?)
+    }
+}
+
+#[async_trait]
+impl<F, S, A, D, T> FromContext<F, S> for Deposits<F, S, Box<dyn Providers>, A, D, T>
+where
+    F: StatementFormatter,
+    S: Storage,
+    A: PublicAssetHandler + FromContext<F, S>,
+    D: DepositContractHandler + FromContext<F, S>,
+    T: TransactionHandler<Transaction> + FromContext<F, S>,
+    DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
+{
+    async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
+        let options = DepositsOptions::builder()
+            .db(context.db.clone())
+            .config(context.config.clone())
+            .signer_providers(context.signer_providers.clone())
+            .assets(A::from_context(context).await?)
+            .deposit_contracts(D::from_context(context).await?)
+            .transactions(T::from_context(context).await?)
+            .build();
+        Ok(Self::new(options))
     }
 }
 
@@ -337,36 +394,42 @@ struct AssetContext {
     pub(crate) asset_config: AssetConfig,
     pub(crate) amount: f64,
     pub(crate) converted_amount: U256,
+    pub(crate) query_timeout_ms: Option<u64>,
 }
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-struct DepositContext {
+struct DepositContext<A: PublicAssetHandler, D: DepositContractHandler, T: TransactionHandler<Transaction>> {
     pub(crate) chain_id: u64,
     pub(crate) chain_config: ChainConfig,
     pub(crate) contract_config: DepositContractConfig,
+    pub(crate) assets: Arc<A>,
+    pub(crate) deposit_contracts: Arc<D>,
+    pub(crate) transactions: Arc<T>,
     #[builder(default)]
     pub(crate) peer_contract_config: Option<DepositContractConfig>,
     #[builder(default)]
     pub(crate) quote: Option<DepositQuote>,
     #[builder(default)]
-    pub(crate) query_remote_timeout_ms: Option<u64>,
+    pub(crate) query_timeout_ms: Option<u64>,
     #[builder(default)]
-    pub(crate) assets: HashMap<String, AssetContext>,
+    pub(crate) deposit_assets: HashMap<String, AssetContext>,
 }
 
-impl DepositContext {
-    pub(crate) async fn quote<D>(&self, deposit_contracts: &D) -> Result<DepositQuote>
-    where
-        D: DepositContractHandler,
-        DepositsError: From<D::Error>,
-    {
+impl<A, D, T> DepositContext<A, D, T>
+where
+    A: PublicAssetHandler,
+    D: DepositContractHandler,
+    T: TransactionHandler<Transaction>,
+    DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
+{
+    pub(crate) async fn quote(&self) -> Result<DepositQuote> {
         let quote_options = crate::DepositQuoteOptions::builder()
             .chain_id(self.chain_id)
             .contract_address(ethers_address_from_string(self.contract_config.address())?)
-            .query_timeout_ms(self.query_remote_timeout_ms)
+            .timeout_ms(self.query_timeout_ms)
             .build();
-        let quote = deposit_contracts.quote(quote_options).await?;
+        let quote = self.deposit_contracts.quote(quote_options).await?;
         let min_amount: f64 = decimal_to_number(&quote.min_amount, Some(self.contract_config.asset_decimals()))?;
         let max_amount: f64 = decimal_to_number(&quote.max_amount, Some(self.contract_config.asset_decimals()))?;
         let min_rollup_fee_amount: f64 = decimal_to_number(
@@ -400,22 +463,14 @@ impl DepositContext {
             .build())
     }
 
-    pub(crate) async fn summary<D>(
-        &self,
-        options: &CreateDepositOptions,
-        deposit_contracts: &D,
-    ) -> Result<DepositSummary>
-    where
-        D: DepositContractHandler,
-        DepositsError: From<D::Error>,
-    {
-        self.validate_amounts(options, deposit_contracts).await?;
+    pub(crate) async fn summary(&self, options: &CreateDepositOptions) -> Result<DepositSummary> {
+        self.validate_amounts(options).await?;
         let bridge_fee_asset_symbol = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
             .then_some(self.contract_config.bridge_fee_asset().asset_symbol().to_string());
         let executor_fee_asset_symbol = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
             .then_some(self.contract_config.executor_fee_asset().asset_symbol().to_string());
         let total_amounts = self
-            .assets
+            .deposit_assets
             .values()
             .map(|asset_context| {
                 (
@@ -441,17 +496,8 @@ impl DepositContext {
             .build())
     }
 
-    pub(crate) async fn create_deposit<D>(
-        &self,
-        options: &CreateDepositOptions,
-        deposit_contracts: &D,
-        wallet_id: String,
-    ) -> Result<Deposit>
-    where
-        D: DepositContractHandler,
-        DepositsError: From<D::Error>,
-    {
-        self.validate_amounts(options, deposit_contracts).await?;
+    pub(crate) async fn create_deposit(&self, options: &CreateDepositOptions, wallet_id: String) -> Result<Deposit> {
+        self.validate_amounts(options).await?;
         let dst_chain_id = self.contract_config.peer_chain_id().unwrap_or(options.chain_id);
         let dst_chain_contract_address = self
             .contract_config
@@ -512,7 +558,7 @@ impl DepositContext {
         })
     }
 
-    pub(crate) async fn validate_amounts<D>(&self, options: &CreateDepositOptions, deposit_contracts: &D) -> Result<()>
+    pub(crate) async fn validate_amounts(&self, options: &CreateDepositOptions) -> Result<()>
     where
         D: DepositContractHandler,
         DepositsError: From<D::Error>,
@@ -520,7 +566,7 @@ impl DepositContext {
         let quote = if let Some(quote) = self.quote.clone() {
             quote
         } else {
-            self.quote(deposit_contracts).await?
+            self.quote().await?
         };
         if options.amount < quote.min_amount || options.amount > quote.max_amount {
             return Err(DepositsError::InvalidDepositAmountError(
@@ -554,44 +600,28 @@ impl DepositContext {
         Ok(())
     }
 
-    pub(crate) async fn send_assets_approve<A, S, T>(
+    pub(crate) async fn send_assets_approve<S>(
         &self,
-        transaction: Option<Transaction>,
-        assets: &A,
-        transactions: &T,
+        options: &SendDepositOptions,
         signer: Arc<S>,
-    ) -> Result<Vec<TxHash>>
+        owner: Address,
+    ) -> Result<Vec<(String, TxHash)>>
     where
-        A: PublicAssetHandler,
-        T: TransactionHandler<Transaction>,
         S: TransactionSigner + 'static,
-        DepositsError: From<A::Error> + From<T::Error>,
     {
         let mut tx_hashes = vec![];
-        for (_, asset_context) in self.assets.iter() {
-            if let Some(tx_hash) = asset_context
-                .approve(
-                    &self.contract_config,
-                    self.chain_config.transaction_type(),
-                    transaction.clone(),
-                    assets,
-                    transactions,
-                    signer.clone(),
-                )
-                .await?
-            {
-                tx_hashes.push(tx_hash);
+        for (_, asset_context) in self.deposit_assets.iter() {
+            if let Some(tx_hash) = asset_context.approve(self, options, signer.clone(), owner).await? {
+                tx_hashes.push((asset_context.asset_config.asset_symbol().to_string(), tx_hash));
             }
         }
         Ok(tx_hashes)
     }
 
-    pub(crate) async fn send_deposit<D, S, T>(
+    pub(crate) async fn send_deposit<S>(
         &self,
         deposit: &mut Document<Deposit>,
-        transaction: Option<Transaction>,
-        deposit_contracts: &D,
-        transactions: &T,
+        options: &SendDepositOptions,
         signer: Arc<S>,
     ) -> Result<TxHash>
     where
@@ -600,7 +630,9 @@ impl DepositContext {
         S: TransactionSigner + 'static,
         DepositsError: From<D::Error> + From<T::Error>,
     {
-        let tx = transactions.create(transaction, self.chain_config.transaction_type())?;
+        let tx = self
+            .transactions
+            .create(options.deposit_tx.clone(), self.chain_config.transaction_type())?;
         let contract_address = ethers_address_from_string(self.contract_config.address())?;
         let asset_decimals = Some(self.contract_config.asset_decimals());
         let amount = number_to_u256_decimal(deposit.data.amount, asset_decimals)?;
@@ -621,8 +653,9 @@ impl DepositContext {
                 .rollup_fee(rollup_fee_amount)
                 .tx(tx)
                 .signer(signer)
+                .timeout_ms(options.tx_send_timeout_ms)
                 .build();
-            let tx_hash = deposit_contracts.deposit(options).await?;
+            let tx_hash = self.deposit_contracts.deposit(options).await?;
             deposit.data.queued_transaction_hash = Some(tx_hash.encode_hex());
             deposit.data.status = DepositStatus::SrcPending as i32;
             Ok(tx_hash)
@@ -649,28 +682,30 @@ impl DepositContext {
                 .tx(tx)
                 .signer(signer)
                 .build();
-            let tx_hash = deposit_contracts.cross_chain_deposit(options).await?;
+            let tx_hash = self.deposit_contracts.cross_chain_deposit(options).await?;
             deposit.data.src_chain_transaction_hash = Some(tx_hash.encode_hex());
             deposit.data.status = DepositStatus::SrcPending as i32;
             Ok(tx_hash)
         }
     }
 
-    pub(crate) async fn validate_balances<A>(&self, owner: &Address, assets: &A) -> Result<()>
-    where
-        A: PublicAssetHandler,
-        DepositsError: From<A::Error>,
-    {
+    pub(crate) async fn validate_balances(&self, owner: &Address) -> Result<()> {
         let validations = self
-            .assets
+            .deposit_assets
             .values()
-            .map(|asset_context| asset_context.validate_balance(owner, assets))
+            .map(|asset_context| asset_context.validate_balance(self, owner))
             .collect::<Vec<_>>();
         futures::future::try_join_all(validations).await?;
         Ok(())
     }
 
-    pub(crate) fn from_quote_options(config: Arc<MystikoConfig>, options: &QuoteDepositOptions) -> Result<Self> {
+    pub(crate) fn from_quote_options(
+        config: Arc<MystikoConfig>,
+        assets: Arc<A>,
+        deposit_contracts: Arc<D>,
+        transactions: Arc<T>,
+        options: &QuoteDepositOptions,
+    ) -> Result<Self> {
         let contract_config = find_deposit_config(
             config.clone(),
             options.chain_id,
@@ -678,12 +713,25 @@ impl DepositContext {
             options.dst_chain_id,
             options.bridge_type,
         )?;
-        let mut context = Self::from_contract_config(options.chain_id, config, contract_config)?;
-        context.query_remote_timeout_ms = options.query_remote_timeout_ms;
+        let mut context = Self::from_contract_config(
+            options.chain_id,
+            config,
+            contract_config,
+            assets,
+            deposit_contracts,
+            transactions,
+        )?;
+        context.query_timeout_ms = options.query_timeout_ms;
         Ok(context)
     }
 
-    pub(crate) fn from_create_options(config: Arc<MystikoConfig>, options: &CreateDepositOptions) -> Result<Self> {
+    pub(crate) fn from_create_options(
+        config: Arc<MystikoConfig>,
+        assets: Arc<A>,
+        deposit_contracts: Arc<D>,
+        transactions: Arc<T>,
+        options: &CreateDepositOptions,
+    ) -> Result<Self> {
         let contract_config = find_deposit_config(
             config.clone(),
             options.chain_id,
@@ -691,23 +739,34 @@ impl DepositContext {
             options.dst_chain_id,
             options.bridge_type,
         )?;
-        let assets = create_assets_map(
+        let deposit_assets = create_assets_map(
             options.chain_id,
             &contract_config,
             options.amount,
             options.rollup_fee_amount,
             options.bridge_fee_amount(),
             options.executor_fee_amount(),
+            options.query_timeout_ms,
         )?;
-        let mut context = Self::from_contract_config(options.chain_id, config, contract_config)?;
+        let mut context = Self::from_contract_config(
+            options.chain_id,
+            config,
+            contract_config,
+            assets,
+            deposit_contracts,
+            transactions,
+        )?;
         context.quote = options.deposit_quote.clone();
-        context.query_remote_timeout_ms = options.query_remote_timeout_ms;
-        context.assets = assets;
+        context.query_timeout_ms = options.query_timeout_ms;
+        context.deposit_assets = deposit_assets;
         Ok(context)
     }
 
     pub(crate) fn from_send_options(
         config: Arc<MystikoConfig>,
+        assets: Arc<A>,
+        deposit_contracts: Arc<D>,
+        transactions: Arc<T>,
         deposit: &Document<Deposit>,
         options: &SendDepositOptions,
     ) -> Result<Self> {
@@ -723,17 +782,25 @@ impl DepositContext {
                 bridge_type,
             ))?
             .clone();
-        let assets = create_assets_map(
+        let deposit_assets = create_assets_map(
             deposit.data.chain_id,
             &contract_config,
             deposit.data.amount,
             deposit.data.rollup_fee_amount,
             deposit.data.bridge_fee_amount.unwrap_or_default(),
             deposit.data.executor_fee_amount.unwrap_or_default(),
+            options.query_timeout_ms,
         )?;
-        let mut context = Self::from_contract_config(deposit.data.chain_id, config, contract_config)?;
-        context.assets = assets;
-        context.query_remote_timeout_ms = options.query_remote_timeout_ms;
+        let mut context = Self::from_contract_config(
+            deposit.data.chain_id,
+            config,
+            contract_config,
+            assets,
+            deposit_contracts,
+            transactions,
+        )?;
+        context.deposit_assets = deposit_assets;
+        context.query_timeout_ms = options.query_timeout_ms;
         Ok(context)
     }
 
@@ -741,6 +808,9 @@ impl DepositContext {
         chain_id: u64,
         config: Arc<MystikoConfig>,
         contract_config: DepositContractConfig,
+        assets: Arc<A>,
+        deposit_contracts: Arc<D>,
+        transactions: Arc<T>,
     ) -> Result<Self> {
         let chain_config = config
             .find_chain(chain_id)
@@ -758,71 +828,94 @@ impl DepositContext {
             .chain_config(chain_config)
             .contract_config(contract_config)
             .peer_contract_config(peer_contract_config.cloned())
+            .assets(assets)
+            .deposit_contracts(deposit_contracts)
+            .transactions(transactions)
             .build())
     }
 }
 
 impl AssetContext {
-    pub(crate) fn new(chain_id: u64, asset_config: AssetConfig, amount: f64) -> Result<Self> {
+    pub(crate) fn new(
+        chain_id: u64,
+        asset_config: AssetConfig,
+        amount: f64,
+        query_timeout_ms: Option<u64>,
+    ) -> Result<Self> {
         let converted_amount = number_to_u256_decimal(amount, Some(asset_config.asset_decimals()))?;
         Ok(Self {
             chain_id,
             asset_config,
             amount,
             converted_amount,
+            query_timeout_ms,
         })
     }
 
-    pub(crate) async fn approve<A, S, T>(
+    pub(crate) async fn approve<A, D, T, S>(
         &self,
-        contract_config: &DepositContractConfig,
-        transaction_type: &mystiko_types::TransactionType,
-        transaction: Option<Transaction>,
-        assets: &A,
-        transactions: &T,
+        context: &DepositContext<A, D, T>,
+        options: &SendDepositOptions,
         signer: Arc<S>,
+        owner: Address,
     ) -> Result<Option<TxHash>>
     where
+        D: DepositContractHandler,
         A: PublicAssetHandler,
         T: TransactionHandler<Transaction>,
         S: TransactionSigner + 'static,
-        DepositsError: From<A::Error> + From<T::Error>,
+        DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
     {
         if self.asset_config.asset_type() != &mystiko_types::AssetType::Main && self.converted_amount.gt(&U256::zero())
         {
             let asset_address = ethers_address_from_string(self.asset_config.asset_address())?;
-            let contract_address = ethers_address_from_string(contract_config.address())?;
+            let contract_address = ethers_address_from_string(context.contract_config.address())?;
             let options = Erc20ApproveOptions::<TypedTransaction, S>::builder()
                 .chain_id(self.chain_id)
                 .asset_address(asset_address)
-                .owner(signer.address().await?)
+                .owner(owner)
                 .recipient(contract_address)
                 .amount(self.converted_amount)
                 .signer(signer)
-                .tx(transactions.create(transaction, transaction_type)?)
+                .tx(context.transactions.create(
+                    options.asset_approve_tx.clone(),
+                    context.chain_config.transaction_type(),
+                )?)
+                .timeout_ms(options.tx_send_timeout_ms)
                 .build();
-            return Ok(assets.erc20_approve(options).await?);
+            return Ok(context.assets.erc20_approve(options).await?);
         }
         Ok(None)
     }
 
-    pub(crate) async fn validate_balance<A>(&self, owner: &Address, assets: &A) -> Result<()>
+    pub(crate) async fn validate_balance<A, D, T>(
+        &self,
+        context: &DepositContext<A, D, T>,
+        owner: &Address,
+    ) -> Result<()>
     where
+        D: DepositContractHandler,
         A: PublicAssetHandler,
-        DepositsError: From<A::Error>,
+        T: TransactionHandler<Transaction>,
+        DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
     {
         if self.converted_amount.gt(&U256::zero()) {
             let balance = if self.asset_config.asset_type() == &mystiko_types::AssetType::Main {
-                let options = BalanceOptions::builder().chain_id(self.chain_id).owner(*owner).build();
-                assets.balance_of(options).await?
+                let options = BalanceOptions::builder()
+                    .chain_id(self.chain_id)
+                    .owner(*owner)
+                    .timeout_ms(self.query_timeout_ms)
+                    .build();
+                context.assets.balance_of(options).await?
             } else {
                 let asset_address = ethers_address_from_string(self.asset_config.asset_address())?;
                 let options = Erc20BalanceOptions::builder()
                     .chain_id(self.chain_id)
                     .asset_address(asset_address)
                     .owner(*owner)
+                    .timeout_ms(self.query_timeout_ms)
                     .build();
-                assets.erc20_balance_of(options).await?
+                context.assets.erc20_balance_of(options).await?
             };
             if balance.lt(&self.converted_amount) {
                 return Err(DepositsError::InsufficientBalanceError(
@@ -866,10 +959,16 @@ fn create_assets_map(
     rollup_fee_amount: f64,
     bridge_fee_amount: f64,
     executor_fee_amount: f64,
+    query_timeout_ms: Option<u64>,
 ) -> Result<HashMap<String, AssetContext>> {
     let mut assets = HashMap::from([(
         contract_config.asset().asset_address().to_string(),
-        AssetContext::new(chain_id, contract_config.asset().clone(), amount + rollup_fee_amount)?,
+        AssetContext::new(
+            chain_id,
+            contract_config.asset().clone(),
+            amount + rollup_fee_amount,
+            query_timeout_ms,
+        )?,
     )]);
     if contract_config.bridge_type() != &mystiko_types::BridgeType::Loop {
         if bridge_fee_amount > 0_f64 {
@@ -879,7 +978,7 @@ fn create_assets_map(
             } else {
                 assets.insert(
                     bridge_fee_asset.asset_address().to_string(),
-                    AssetContext::new(chain_id, bridge_fee_asset, bridge_fee_amount)?,
+                    AssetContext::new(chain_id, bridge_fee_asset, bridge_fee_amount, query_timeout_ms)?,
                 );
             }
         }
@@ -890,7 +989,7 @@ fn create_assets_map(
             } else {
                 assets.insert(
                     executor_fee_asset.asset_address().to_string(),
-                    AssetContext::new(chain_id, executor_fee_asset, executor_fee_amount)?,
+                    AssetContext::new(chain_id, executor_fee_asset, executor_fee_amount, query_timeout_ms)?,
                 );
             }
         }

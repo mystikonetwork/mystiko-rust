@@ -15,7 +15,7 @@ pub struct DepositQuoteOptions {
     pub chain_id: u64,
     pub contract_address: Address,
     #[builder(default)]
-    pub query_timeout_ms: Option<u64>,
+    pub timeout_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -44,6 +44,8 @@ pub struct DepositOptions<
     pub rollup_fee: U256,
     pub signer: Arc<S>,
     #[builder(default)]
+    pub timeout_ms: Option<u64>,
+    #[builder(default)]
     pub tx: T,
 }
 
@@ -64,6 +66,8 @@ pub struct CrossChainDepositOptions<
     pub executor_fee: U256,
     pub bridge_fee: U256,
     pub signer: Arc<S>,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
     #[builder(default)]
     pub tx: T,
 }

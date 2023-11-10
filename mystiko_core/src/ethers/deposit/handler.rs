@@ -20,7 +20,7 @@ use std::time::Duration;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
-pub const DEFAULT_QUERY_TIMEOUT_MS: u64 = 2000;
+pub const DEFAULT_QUOTE_TIMEOUT_MS: u64 = 2000;
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
@@ -41,6 +41,10 @@ pub enum DepositContractsError {
     SignerError(String),
     #[error("mystiko_config raised error: {0}")]
     ConfigError(anyhow::Error),
+    #[error("sending deposit transaction timed out after {0} ms")]
+    DepositTimeoutError(u64),
+    #[error("sending cross_chain_deposit transaction timed out after {0} ms")]
+    CrossChainDepositTimeoutError(u64),
     #[error(transparent)]
     ContractError(#[from] ethers_contract::ContractError<Provider>),
     #[error(transparent)]
@@ -106,11 +110,23 @@ where
         if let Some(data) = contract.deposit(request).calldata() {
             tx.set_data(data);
         }
-        let tx_hash = options
-            .signer
-            .send_transaction(options.chain_id, tx)
+        let tx_hash = if let Some(timeout_ms) = options.timeout_ms {
+            match tokio::time::timeout(
+                Duration::from_millis(timeout_ms),
+                options.signer.send_transaction(options.chain_id, tx),
+            )
             .await
-            .map_err(|err| DepositContractsError::SignerError(format!("{:?}", err)))?;
+            {
+                Err(_) => return Err(DepositContractsError::DepositTimeoutError(timeout_ms)),
+                Ok(result) => result.map_err(|err| DepositContractsError::SignerError(format!("{:?}", err)))?,
+            }
+        } else {
+            options
+                .signer
+                .send_transaction(options.chain_id, tx)
+                .await
+                .map_err(|err| DepositContractsError::SignerError(format!("{:?}", err)))?
+        };
         Ok(tx_hash)
     }
 
@@ -154,11 +170,23 @@ where
         if let Some(data) = contract.deposit(request).calldata() {
             tx.set_data(data);
         }
-        let tx_hash = options
-            .signer
-            .send_transaction(options.chain_id, tx)
+        let tx_hash = if let Some(timeout_ms) = options.timeout_ms {
+            match tokio::time::timeout(
+                Duration::from_millis(timeout_ms),
+                options.signer.send_transaction(options.chain_id, tx),
+            )
             .await
-            .map_err(|err| DepositContractsError::SignerError(format!("{:?}", err)))?;
+            {
+                Err(_) => return Err(DepositContractsError::CrossChainDepositTimeoutError(timeout_ms)),
+                Ok(result) => result.map_err(|err| DepositContractsError::SignerError(format!("{:?}", err)))?,
+            }
+        } else {
+            options
+                .signer
+                .send_transaction(options.chain_id, tx)
+                .await
+                .map_err(|err| DepositContractsError::SignerError(format!("{:?}", err)))?
+        };
         Ok(tx_hash)
     }
 }
@@ -226,7 +254,7 @@ where
                 get_min_executor_fee(provider, &options.contract_address, contract_config)
             }
         };
-        let timeout_ms = options.query_timeout_ms.unwrap_or(DEFAULT_QUERY_TIMEOUT_MS);
+        let timeout_ms = options.timeout_ms.unwrap_or(DEFAULT_QUOTE_TIMEOUT_MS);
         let timeout = Duration::from_millis(timeout_ms);
         match tokio::time::timeout(timeout, get_remote_config_with_call(call, &config_type, default_value)).await {
             Ok(value) => Ok((config_type, value)),

@@ -14,6 +14,8 @@ use typed_builder::TypedBuilder;
 pub struct BalanceOptions {
     pub chain_id: u64,
     pub owner: Address,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -28,6 +30,8 @@ pub struct TransferOptions<
     pub amount: U256,
     pub signer: Arc<S>,
     #[builder(default)]
+    pub timeout_ms: Option<u64>,
+    #[builder(default)]
     pub tx: T,
 }
 
@@ -37,6 +41,8 @@ pub struct Erc20BalanceOptions {
     pub chain_id: u64,
     pub asset_address: Address,
     pub owner: Address,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -51,6 +57,8 @@ pub struct Erc20ApproveOptions<
     pub recipient: Address,
     pub amount: U256,
     pub signer: Arc<S>,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
     #[builder(default)]
     pub tx: T,
 }
@@ -67,6 +75,8 @@ pub struct Erc20TransferOptions<
     pub recipient: Address,
     pub amount: U256,
     pub signer: Arc<S>,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
     #[builder(default)]
     pub tx: T,
 }

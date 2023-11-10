@@ -12,6 +12,7 @@ use mystiko_storage::{StatementFormatter, Storage};
 use std::fmt::Debug;
 use std::ops::Sub;
 use std::sync::Arc;
+use std::time::Duration;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
@@ -35,6 +36,16 @@ pub enum PublicAssetsError {
     InsufficientAllowanceError(U256, U256),
     #[error("transaction signer raised error: {0}")]
     SignerError(String),
+    #[error("balance_of timed out after {0} ms")]
+    BalanceOfTimeoutError(u64),
+    #[error("transfer timed out after {0} ms")]
+    TransferTimeoutError(u64),
+    #[error("erc20_balance_of timed out after {0} ms")]
+    Erc20BalanceOfTimeoutError(u64),
+    #[error("erc20_approve timed out after {0} ms")]
+    Erc20ApproveTimeoutError(u64),
+    #[error("erc20_transfer timed out after {0} ms")]
+    Erc20TransferTimeoutError(u64),
 }
 
 #[async_trait]
@@ -50,7 +61,19 @@ where
             .get_provider(options.chain_id)
             .await
             .map_err(PublicAssetsError::ProviderPoolError)?;
-        Ok(provider.get_balance(options.owner, None).await?)
+        if let Some(timeout_ms) = options.timeout_ms {
+            match tokio::time::timeout(
+                Duration::from_millis(timeout_ms),
+                provider.get_balance(options.owner, None),
+            )
+            .await
+            {
+                Err(_) => Err(PublicAssetsError::BalanceOfTimeoutError(timeout_ms)),
+                Ok(result) => Ok(result?),
+            }
+        } else {
+            Ok(provider.get_balance(options.owner, None).await?)
+        }
     }
 
     async fn transfer<T, S>(&self, options: TransferOptions<T, S>) -> Result<TxHash, Self::Error>
@@ -73,11 +96,20 @@ where
         tx.set_from(options.owner);
         tx.set_to(options.recipient);
         tx.set_value(options.amount);
-        Ok(options
-            .signer
-            .send_transaction(options.chain_id, tx)
+        let result = if let Some(timeout_ms) = options.timeout_ms {
+            match tokio::time::timeout(
+                Duration::from_millis(timeout_ms),
+                options.signer.send_transaction(options.chain_id, tx),
+            )
             .await
-            .map_err(|err| PublicAssetsError::SignerError(format!("{:?}", err)))?)
+            {
+                Err(_) => return Err(PublicAssetsError::TransferTimeoutError(timeout_ms)),
+                Ok(result) => result,
+            }
+        } else {
+            options.signer.send_transaction(options.chain_id, tx).await
+        };
+        Ok(result.map_err(|err| PublicAssetsError::SignerError(format!("{:?}", err)))?)
     }
 
     async fn erc20_balance_of(&self, options: Erc20BalanceOptions) -> Result<U256, Self::Error> {
@@ -87,7 +119,18 @@ where
             .await
             .map_err(PublicAssetsError::ProviderPoolError)?;
         let contract = ERC20::new(options.asset_address, provider);
-        Ok(contract.balance_of(options.owner).await?)
+        if let Some(timeout_ms) = options.timeout_ms {
+            match tokio::time::timeout(Duration::from_millis(timeout_ms), async {
+                contract.balance_of(options.owner).await
+            })
+            .await
+            {
+                Err(_) => Err(PublicAssetsError::Erc20BalanceOfTimeoutError(timeout_ms)),
+                Ok(result) => Ok(result?),
+            }
+        } else {
+            Ok(contract.balance_of(options.owner).await?)
+        }
     }
 
     async fn erc20_approve<T, S>(&self, options: Erc20ApproveOptions<T, S>) -> Result<Option<TxHash>, Self::Error>
@@ -113,12 +156,22 @@ where
             if let Some(call_data) = contract.approve(options.recipient, allowance).calldata() {
                 tx.set_data(call_data);
             }
-            let tx_hash = options
-                .signer
-                .send_transaction(options.chain_id, tx)
+            let tx_hash = if let Some(timeout_ms) = options.timeout_ms {
+                match tokio::time::timeout(
+                    Duration::from_millis(timeout_ms),
+                    options.signer.send_transaction(options.chain_id, tx),
+                )
                 .await
-                .map_err(|err| PublicAssetsError::SignerError(format!("{:?}", err)))?;
-            Ok(Some(tx_hash))
+                {
+                    Err(_) => return Err(PublicAssetsError::Erc20ApproveTimeoutError(timeout_ms)),
+                    Ok(result) => result,
+                }
+            } else {
+                options.signer.send_transaction(options.chain_id, tx).await
+            };
+            Ok(Some(
+                tx_hash.map_err(|err| PublicAssetsError::SignerError(format!("{:?}", err)))?,
+            ))
         } else {
             Ok(None)
         }
@@ -148,11 +201,20 @@ where
         if let Some(call_data) = contract.transfer(options.recipient, options.amount).calldata() {
             tx.set_data(call_data);
         }
-        Ok(options
-            .signer
-            .send_transaction(options.chain_id, tx)
+        let result = if let Some(timeout_ms) = options.timeout_ms {
+            match tokio::time::timeout(
+                Duration::from_millis(timeout_ms),
+                options.signer.send_transaction(options.chain_id, tx),
+            )
             .await
-            .map_err(|err| PublicAssetsError::SignerError(format!("{:?}", err)))?)
+            {
+                Err(_) => return Err(PublicAssetsError::Erc20TransferTimeoutError(timeout_ms)),
+                Ok(result) => result,
+            }
+        } else {
+            options.signer.send_transaction(options.chain_id, tx).await
+        };
+        Ok(result.map_err(|err| PublicAssetsError::SignerError(format!("{:?}", err)))?)
     }
 }
 

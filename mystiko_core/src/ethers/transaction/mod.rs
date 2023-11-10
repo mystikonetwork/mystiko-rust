@@ -16,6 +16,8 @@ pub struct WaitOptions {
     #[builder(default)]
     confirmations: Option<u64>,
     #[builder(default)]
+    timeout_ms: Option<u64>,
+    #[builder(default)]
     interval_ms: Option<u64>,
 }
 

@@ -27,6 +27,8 @@ pub enum TransactionsError {
     AnyhowError(#[from] anyhow::Error),
     #[error(transparent)]
     ProviderError(#[from] ethers_providers::ProviderError),
+    #[error("wait transaction for confirmations timed out after {0} ms")]
+    WaitTimeoutError(u64),
 }
 
 #[async_trait]
@@ -83,8 +85,14 @@ where
         if let Some(interval_ms) = options.interval_ms {
             pending_tx = pending_tx.interval(Duration::from_millis(interval_ms));
         }
-        let receipt = pending_tx.await?;
-        Ok(receipt)
+        if let Some(timeout_ms) = options.timeout_ms {
+            match tokio::time::timeout(Duration::from_millis(timeout_ms), pending_tx).await {
+                Err(_) => Err(TransactionsError::WaitTimeoutError(timeout_ms)),
+                Ok(result) => Ok(result?),
+            }
+        } else {
+            Ok(pending_tx.await?)
+        }
     }
 }
 

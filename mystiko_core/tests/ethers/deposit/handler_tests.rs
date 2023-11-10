@@ -74,7 +74,7 @@ async fn test_loop_deposit_quote_remote_timeout() {
     let quote_options = DepositQuoteOptions::builder()
         .chain_id(5_u64)
         .contract_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
-        .query_timeout_ms(10_u64)
+        .timeout_ms(10_u64)
         .build();
     let quote = deposits.quote(quote_options).await.unwrap();
     assert_eq!(quote.min_amount, U256::from_dec_str("10000000000000000").unwrap());
@@ -167,7 +167,7 @@ async fn test_cross_chain_deposit_quote_remote_timeout() {
     let quote_options = DepositQuoteOptions::builder()
         .chain_id(5_u64)
         .contract_address(ethers_address_from_string("0x961F315A836542e603A3df2E0dd9d4ECd06ebC67").unwrap())
-        .query_timeout_ms(10_u64)
+        .timeout_ms(10_u64)
         .build();
     let quote = deposits.quote(quote_options).await.unwrap();
     assert_eq!(quote.min_amount, U256::from_dec_str("10000000000000000").unwrap());
