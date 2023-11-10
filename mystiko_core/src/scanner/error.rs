@@ -1,4 +1,5 @@
-use crate::{AccountHandlerError, WalletHandlerError};
+use crate::{AccountsError, WalletsError};
+use mystiko_crypto::error::CryptoError;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_storage::StorageError;
 use rustc_hex::FromHexError;
@@ -7,22 +8,16 @@ use tokio::task::JoinError;
 
 #[derive(Debug, Error)]
 pub enum ScannerError {
-    #[error("commitment={0} encrypted note is empty")]
-    CommitmentEncryptedNoteNoneError(String),
     #[error("no account found")]
     NoAccountFoundError,
-    #[error("chain config not found for chain id={0}")]
-    ChainConfigNotFoundError(u64),
-    #[error("asset config not found for chain id={0} and asset symbol={1}")]
-    AssetConfigNotFoundError(u64, String),
-    #[error("chain id={0} commitment id={1} missing amount error ")]
-    MissingAmountError(u64, String),
-    #[error("internal error: {0}")]
-    InternalError(String),
+    #[error("commitment is empty")]
+    CommitmentEmptyError,
     #[error(transparent)]
-    AccountHandlerError(#[from] AccountHandlerError),
+    AccountHandlerError(#[from] AccountsError),
     #[error(transparent)]
-    WalletHandlerError(#[from] WalletHandlerError),
+    WalletHandlerError(#[from] WalletsError),
+    #[error(transparent)]
+    CryptoError(#[from] CryptoError),
     #[error(transparent)]
     StorageError(#[from] StorageError),
     #[error(transparent)]

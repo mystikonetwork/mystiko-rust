@@ -3,10 +3,9 @@ mod scanner_reset_tests;
 mod scanner_scan_tests;
 
 use crate::common::create_database;
-use mystiko_config::MystikoConfig;
 use mystiko_core::{
-    AccountCollection, AccountHandler, Commitment, CommitmentCollection, Database, NullifierCollection, Scanner,
-    ScannerOptions, WalletCollection, WalletHandler,
+    AccountCollection, AccountHandler, Accounts, Commitment, CommitmentCollection, Database, NullifierCollection,
+    Scanner, ScannerOptions, WalletCollection, WalletHandler, Wallets,
 };
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::Commitment as ProtocolCommitment;
@@ -45,16 +44,10 @@ pub async fn create_scanner(
         .filter_module("mystiko_core", log::LevelFilter::Info)
         .is_test(true)
         .try_init();
-
-    let config = Arc::new(
-        MystikoConfig::from_json_file("tests/files/mystiko/config.json")
-            .await
-            .unwrap(),
-    );
     let db = Arc::new(create_database().await);
     let wallet = WalletCollection::new(db.collection());
     wallet.migrate().await.unwrap();
-    let wallet = WalletHandler::new(db.clone());
+    let wallet = Wallets::new(db.clone());
     let options = CreateWalletOptions::builder()
         .password(String::from(DEFAULT_WALLET_PASSWORD))
         .build();
@@ -62,7 +55,7 @@ pub async fn create_scanner(
 
     let account_db = AccountCollection::new(db.collection());
     account_db.migrate().await.unwrap();
-    let account_handler = AccountHandler::new(db.clone());
+    let account_handler = Accounts::new(db.clone());
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -89,7 +82,7 @@ pub async fn create_scanner(
     commitment.migrate().await.unwrap();
     let nullifier = NullifierCollection::new(db.collection());
     nullifier.migrate().await.unwrap();
-    let options = ScannerOptions::builder().config(config.clone()).db(db.clone()).build();
+    let options = ScannerOptions::builder().db(db.clone()).build();
     (Scanner::new(options), db, test_accounts)
 }
 
@@ -101,7 +94,7 @@ pub async fn insert_commitments(
     let mut insert_cms = vec![];
     let mut nullifiers = vec![];
     for index in 0..count {
-        let amount = BigUint::from(index as u64 + 100u64);
+        let amount = BigUint::from((index + 1) * 1000);
         let mut cm = default_commitment();
         match &test_account {
             Some(account) => {

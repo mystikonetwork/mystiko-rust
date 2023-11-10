@@ -7,9 +7,6 @@ use num_bigint::BigUint;
 
 #[tokio::test]
 async fn test_scan_pending_balance_default() {
-    let mtt_decimal = Some(16);
-    let eth_decimal = Some(18);
-
     let account_count = 3_usize;
     let commitment_count = 10_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
@@ -29,7 +26,7 @@ async fn test_scan_pending_balance_default() {
     db.commitments.update_batch(&cms).await.unwrap();
 
     let result = scanner.balance(option.clone()).await.unwrap();
-    let pending = decimal_to_number::<f64, BigUint>(&amount, mtt_decimal).unwrap();
+    let pending = decimal_to_number::<f64, BigUint>(&amount, Some(18)).unwrap();
     assert_eq!(result.balances.len(), 1);
     assert_eq!(result.balances[0].asset_symbol, "MTT");
     assert_eq!(result.balances[0].pending, pending);
@@ -57,8 +54,8 @@ async fn test_scan_pending_balance_default() {
     db.commitments.update_batch(&cms).await.unwrap();
 
     let mut result = scanner.balance(option).await.unwrap();
-    let pending_mtt = decimal_to_number::<f64, BigUint>(&amount_mtt, mtt_decimal).unwrap();
-    let pending_eth = decimal_to_number::<f64, BigUint>(&amount_eth, eth_decimal).unwrap();
+    let pending_mtt = decimal_to_number::<f64, BigUint>(&amount_mtt, Some(18)).unwrap();
+    let pending_eth = decimal_to_number::<f64, BigUint>(&amount_eth, Some(18)).unwrap();
     result.balances.sort_by_key(|b| b.asset_symbol.clone());
     assert_eq!(result.balances.len(), 2);
     assert_eq!(result.balances[0].asset_symbol, "ETH");
@@ -73,9 +70,6 @@ async fn test_scan_pending_balance_default() {
 
 #[tokio::test]
 async fn test_scan_options_with_spend() {
-    let mtt_decimal = Some(16);
-    let eth_decimal = Some(18);
-
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
@@ -106,8 +100,8 @@ async fn test_scan_options_with_spend() {
     db.commitments.update_batch(&cms).await.unwrap();
 
     let result = scanner.balance(option.clone()).await.unwrap();
-    let unspent = decimal_to_number::<f64, BigUint>(&amount, mtt_decimal).unwrap();
-    let spend = decimal_to_number::<f64, BigUint>(&spend_amount, mtt_decimal).unwrap();
+    let unspent = decimal_to_number::<f64, BigUint>(&amount, Some(18)).unwrap();
+    let spend = decimal_to_number::<f64, BigUint>(&spend_amount, Some(18)).unwrap();
     assert_eq!(result.balances.len(), 1);
     assert_eq!(result.balances[0].asset_symbol, "MTT");
     assert_eq!(result.balances[0].pending, 0.0);
@@ -133,8 +127,8 @@ async fn test_scan_options_with_spend() {
     db.commitments.update_batch(&cms).await.unwrap();
 
     let mut result = scanner.balance(option).await.unwrap();
-    let unspent_mtt = decimal_to_number::<f64, BigUint>(&amount_mtt, mtt_decimal).unwrap();
-    let unspent_eth = decimal_to_number::<f64, BigUint>(&amount_eth, eth_decimal).unwrap();
+    let unspent_mtt = decimal_to_number::<f64, BigUint>(&amount_mtt, Some(18)).unwrap();
+    let unspent_eth = decimal_to_number::<f64, BigUint>(&amount_eth, Some(18)).unwrap();
     assert_eq!(result.balances.len(), 2);
     result.balances.sort_by_key(|b| b.asset_symbol.clone());
     assert_eq!(result.balances[0].asset_symbol, "ETH");
@@ -149,8 +143,6 @@ async fn test_scan_options_with_spend() {
 
 #[tokio::test]
 async fn test_scan_options_with_asset() {
-    let mtt_decimal = Some(16);
-
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder().asset_symbols(vec!["MTT".to_string()]).build();
@@ -183,7 +175,7 @@ async fn test_scan_options_with_asset() {
     db.commitments.update_batch(&cms).await.unwrap();
 
     let result = scanner.balance(option).await.unwrap();
-    let unspent_mtt = decimal_to_number::<f64, BigUint>(&amount_mtt, mtt_decimal).unwrap();
+    let unspent_mtt = decimal_to_number::<f64, BigUint>(&amount_mtt, Some(18)).unwrap();
     assert_eq!(result.balances.len(), 1);
     assert_eq!(result.balances[0].asset_symbol, "MTT");
     assert_eq!(result.balances[0].pending, 0.0);

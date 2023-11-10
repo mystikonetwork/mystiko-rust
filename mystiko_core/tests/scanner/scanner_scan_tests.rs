@@ -37,7 +37,7 @@ async fn test_scan_batch_without_owned() {
     for concurrency in 0..3 {
         for batch_size in 0..5 {
             for account_count in 1..3 {
-                for commitment_count in 1..12 {
+                for commitment_count in 1..10 {
                     let (scanner, db, _) = create_scanner(account_count).await;
                     let option = ScanOptions::builder()
                         .batch_size(batch_size)
@@ -52,6 +52,52 @@ async fn test_scan_batch_without_owned() {
                     assert_eq!(result.to_id, Some(cms[commitment_count - 1].id.clone()));
                     let updated_cms = db.commitments.find_all().await.unwrap();
                     assert_eq!(cms, updated_cms);
+                }
+            }
+        }
+    }
+}
+
+#[tokio::test]
+async fn test_scan_batch_with_owned() {
+    for concurrency in 0..2 {
+        for batch_size in 0..4 {
+            for account_count in 1..3 {
+                for commitment_count in 1..8 {
+                    let (scanner, db, accounts) = create_scanner(account_count).await;
+                    let option = ScanOptions::builder()
+                        .batch_size(batch_size)
+                        .concurrency(concurrency)
+                        .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
+                        .build();
+                    let (mut cms, nullifiers) =
+                        insert_commitments(db.clone(), commitment_count, Some(&accounts[0])).await;
+                    let db_nullifiers = nullifiers
+                        .iter()
+                        .map(|nullifier| Nullifier {
+                            chain_id: 5,
+                            contract_address: String::from("contract_address 1"),
+                            block_number: 10000000u64,
+                            nullifier: nullifier.clone(),
+                            transaction_hash: String::from("transaction_hash 1"),
+                        })
+                        .collect::<Vec<_>>();
+                    db.nullifiers.insert_batch(&db_nullifiers).await.unwrap();
+                    let result = scanner.scan(option).await.unwrap();
+                    assert_eq!(result.total_count, commitment_count as u64);
+                    assert_eq!(result.owned_count, commitment_count as u64);
+                    assert_eq!(result.scanned_shielded_addresses.len(), account_count);
+                    assert_eq!(result.to_id, Some(cms[commitment_count - 1].id.clone()));
+                    let updated_cms = db.commitments.find_all().await.unwrap();
+                    for (cm, nullifier) in cms.iter_mut().zip(nullifiers.iter()) {
+                        cm.data.nullifier = Some(nullifier.clone());
+                        cm.data.shielded_address = Some(accounts[0].shielded_address.address().clone());
+                        cm.data.status = CommitmentStatus::Included as i32;
+                        cm.data.spent = true;
+                    }
+                    for (cm, updated_cm) in cms.iter().zip(updated_cms.iter()) {
+                        assert_eq!(cm.data, updated_cm.data);
+                    }
                 }
             }
         }

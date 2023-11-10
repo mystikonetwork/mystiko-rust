@@ -1,9 +1,9 @@
 use crate::{
-    Account, AccountHandler, Commitment, CommitmentColumn, Database, Nullifier, NullifierColumn, ScannerError,
-    ScannerHandler, WalletHandler,
+    Account, Accounts, Commitment, CommitmentColumn, Database, Nullifier, NullifierColumn, ScannerError,
+    ScannerHandler, WalletHandler, Wallets,
 };
 use async_trait::async_trait;
-use mystiko_config::MystikoConfig;
+use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment as ProtocolCommitment, EncryptedData, EncryptedNote};
 use mystiko_protocol::key::separate_secret_keys;
@@ -28,16 +28,14 @@ const DEFAULT_MAX_QUERY_FILTER_SIZE: u64 = 1000;
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct Scanner<F: StatementFormatter, S: Storage> {
-    config: Arc<MystikoConfig>,
     db: Arc<Database<F, S>>,
-    wallets: WalletHandler<F, S>,
-    accounts: AccountHandler<F, S>,
+    wallets: Wallets<F, S>,
+    accounts: Accounts<F, S>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct ScannerOptions<F: StatementFormatter, S: Storage> {
-    config: Arc<MystikoConfig>,
     db: Arc<Database<F, S>>,
 }
 
@@ -77,9 +75,8 @@ where
 {
     pub fn new(options: ScannerOptions<F, S>) -> Self {
         Scanner::<F, S>::builder()
-            .wallets(WalletHandler::<F, S>::new(options.db.clone()))
-            .accounts(AccountHandler::<F, S>::new(options.db.clone()))
-            .config(options.config)
+            .wallets(Wallets::<F, S>::new(options.db.clone()))
+            .accounts(Accounts::<F, S>::new(options.db.clone()))
             .db(options.db)
             .build()
     }
@@ -97,12 +94,12 @@ where
     async fn scan(&self, options: ScanOptions) -> Result<ScanResult, Self::Error> {
         self.wallets.check_password(&options.wallet_password).await?;
         let accounts = self.build_filter_accounts(&options.shielded_addresses).await?;
-        let from_id = accounts
+        let scanned_id = accounts
             .iter()
             .filter_map(|account| account.data.scanned_to_id.as_ref())
             .min()
             .cloned();
-        let cms_count = self.query_commitment_count(from_id.clone()).await?;
+        let cms_count = self.query_commitment_count(scanned_id.clone()).await?;
         if cms_count == 0 {
             return Ok(ScanResult::builder()
                 .scanned_shielded_addresses(
@@ -121,17 +118,17 @@ where
         let scan_batch_size = batch_size * (concurrency as u64);
         let total_round = (cms_count + scan_batch_size - 1) / scan_batch_size;
         let (mut total_scanned, mut total_owned) = (0, 0);
-        let mut current_id = from_id;
+        let mut current_scanned_id = scanned_id;
         for _ in 0..total_round {
             let params = ScanRoundParams::builder()
                 .concurrency(concurrency)
                 .scan_batch_size(scan_batch_size)
                 .max_query_filter_size(DEFAULT_MAX_QUERY_FILTER_SIZE)
-                .start_id(current_id.clone())
+                .start_id(current_scanned_id.clone())
                 .accounts(scan_accounts.clone())
                 .build();
             let result = self.scan_one_round(&params).await?;
-            current_id = Some(result.end_id);
+            current_scanned_id = Some(result.end_id);
             total_owned += result.owned;
             total_scanned += result.scanned;
         }
@@ -145,7 +142,7 @@ where
                     .map(|account| account.shielded_address.address())
                     .collect::<Vec<_>>(),
             )
-            .to_id(current_id)
+            .to_id(current_scanned_id)
             .build())
     }
 
@@ -219,11 +216,13 @@ where
             .iter()
             .map(|commitment| commitment.data.asset_symbol.clone())
             .collect::<HashSet<_>>();
-        let tasks = assets
-            .into_iter()
-            .map(|asset_symbol| self.calc_asset_balance(asset_symbol, &commitments, options.with_spent));
-        let results = futures::future::try_join_all(tasks).await?;
-        Ok(BalanceResult::builder().balances(results).build())
+
+        let mut balances = Vec::with_capacity(assets.len());
+        for asset_symbol in assets {
+            let balance = self.calc_balance_by_asset_symbol(&commitments, &asset_symbol, options.with_spent)?;
+            balances.push(balance);
+        }
+        Ok(BalanceResult::builder().balances(balances).build())
     }
 }
 
@@ -255,7 +254,7 @@ where
         let mut scan_accounts = Vec::new();
         for account in accounts {
             let shielded_address = ShieldedAddress::from_string(&account.data.shielded_address)?;
-            let secret_key = self.accounts.export_secret_key_by_id(password, &account.id).await?;
+            let secret_key = decrypt_symmetric(password, &account.data.encrypted_secret_key)?;
             let secret_key_bytes: FullSk = decode_hex_with_length(secret_key)?;
             let (v_sk, enc_sk) = separate_secret_keys(&secret_key_bytes);
             scan_accounts.push(
@@ -271,11 +270,7 @@ where
 
     async fn scan_one_round(&self, params: &ScanRoundParams) -> Result<ScanRoundResult, ScannerError> {
         let commitments = self.query_commitments(params).await?;
-        let end_id = commitments
-            .last()
-            .ok_or(ScannerError::InternalError("commitment is empty".to_string()))?
-            .id
-            .clone();
+        let end_id = commitments.last().ok_or(ScannerError::CommitmentEmptyError)?.id.clone();
         let chunk_size = std::cmp::max(1, commitments.len() / params.concurrency as usize);
         let tasks = commitments
             .chunks(chunk_size)
@@ -297,7 +292,7 @@ where
 
         let mut owned = 0;
         if !updated.is_empty() {
-            let status_updated = self.update_commitments_spend_status(updated, params).await?;
+            let status_updated = self.update_commitments_spent_status(updated, params).await?;
             owned = status_updated.len() as u64;
             self.db.commitments.update_batch(&status_updated).await?;
         }
@@ -308,7 +303,7 @@ where
             .build())
     }
 
-    async fn update_commitments_spend_status(
+    async fn update_commitments_spent_status(
         &self,
         commitments: Vec<Document<Commitment>>,
         params: &ScanRoundParams,
@@ -319,7 +314,7 @@ where
             .filter(|chunk| !chunk.is_empty())
             .map(|chunk| {
                 let chunk = chunk.to_owned();
-                self.update_batch_commitments_spend_status(chunk)
+                self.update_batch_commitments_spent_status(chunk)
             });
         let results = futures::future::try_join_all(tasks).await?;
         results.into_iter().try_fold(Vec::new(), |mut acc, result| {
@@ -328,7 +323,7 @@ where
         })
     }
 
-    async fn update_batch_commitments_spend_status(
+    async fn update_batch_commitments_spent_status(
         &self,
         mut commitments: Vec<Document<Commitment>>,
     ) -> Result<Vec<Document<Commitment>>, ScannerError> {
@@ -355,20 +350,15 @@ where
         Ok(commitments)
     }
 
-    async fn query_commitment_count(&self, from_id: Option<String>) -> Result<u64, ScannerError> {
-        let filter = if let Some(start) = from_id {
-            QueryFilter::builder()
-                .conditions(vec![Condition::from(SubFilter::greater(
-                    DocumentColumn::Id,
-                    start.clone(),
-                ))])
-                .conditions_operator(ConditionOperator::And as i32)
-                .build()
+    async fn query_commitment_count(&self, scanned_id: Option<String>) -> Result<u64, ScannerError> {
+        let total = if let Some(scanned) = scanned_id {
+            self.db
+                .commitments
+                .count(SubFilter::greater(DocumentColumn::Id, scanned.clone()))
+                .await?
         } else {
-            QueryFilter::builder().build()
+            self.db.commitments.count_all().await?
         };
-
-        let total = self.db.commitments.count(filter).await?;
         Ok(total)
     }
 
@@ -414,86 +404,39 @@ where
         }
     }
 
-    async fn calc_asset_balance(
+    fn calc_balance_by_asset_symbol(
         &self,
-        asset_symbol: String,
         commitments: &[Document<Commitment>],
+        asset_symbol: &str,
         with_spent: Option<bool>,
     ) -> Result<Balance, ScannerError> {
-        let filter_cms: Vec<&Document<Commitment>> = commitments
+        let default_amount = &BigUint::default();
+        let (pending, unspent, spent) = commitments
             .iter()
             .filter(|commitment| commitment.data.asset_symbol == asset_symbol)
-            .collect();
+            .try_fold(
+                (0f64, 0f64, 0f64),
+                |(mut pending, mut unspent, mut spent), commitment| {
+                    let amount = decimal_to_number::<f64, BigUint>(
+                        commitment.data.amount.as_ref().unwrap_or(default_amount),
+                        Some(commitment.data.asset_decimals),
+                    )?;
+                    match commitment.data {
+                        Commitment { spent: true, .. } => spent += amount,
+                        Commitment { status, .. } if status == CommitmentStatus::Included as i32 => unspent += amount,
+                        _ => pending += amount,
+                    };
+                    Ok::<(f64, f64, f64), ScannerError>((pending, unspent, spent))
+                },
+            )?;
 
-        let tasks: Vec<_> = filter_cms
-            .iter()
-            .map(|commitment| &commitment.data.chain_id)
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .map(|chain_id| self.calc_chain_asset_balance(chain_id, &asset_symbol, &filter_cms))
-            .collect();
-
-        let all_balances = futures::future::try_join_all(tasks).await?;
-        let (pending, unspent, spent) = all_balances
-            .into_iter()
-            .fold((0f64, 0f64, 0f64), |acc, (u, p, s)| (acc.0 + u, acc.1 + p, acc.2 + s));
-        let spend = if with_spent == Some(true) { Some(spent) } else { None };
+        let spent = with_spent.filter(|&b| b).map(|_| spent);
         Ok(Balance::builder()
-            .asset_symbol(asset_symbol)
+            .asset_symbol(asset_symbol.to_string())
             .pending(pending)
             .unspent(unspent)
-            .spent(spend)
+            .spent(spent)
             .build())
-    }
-
-    async fn calc_chain_asset_balance(
-        &self,
-        chain_id: &u64,
-        asset_symbol: &str,
-        commitments: &[&Document<Commitment>],
-    ) -> Result<(f64, f64, f64), ScannerError> {
-        let chain_config = self
-            .config
-            .find_chain(*chain_id)
-            .ok_or(ScannerError::ChainConfigNotFoundError(*chain_id))?;
-        let asset_decimals = if chain_config.asset_symbol() == asset_symbol {
-            chain_config.asset_decimals()
-        } else {
-            chain_config
-                .assets()
-                .iter()
-                .find(|asset| asset.asset_symbol() == asset_symbol)
-                .ok_or(ScannerError::AssetConfigNotFoundError(
-                    *chain_id,
-                    asset_symbol.to_string(),
-                ))?
-                .asset_decimals()
-        };
-
-        let (pending, unspent, spend) = commitments.iter().try_fold(
-            (BigUint::default(), BigUint::default(), BigUint::default()),
-            |(pending, unspent, spend), commitment| {
-                let amount =
-                    commitment.data.amount.as_ref().ok_or_else(|| {
-                        ScannerError::MissingAmountError(commitment.data.chain_id, commitment.id.clone())
-                    })?;
-                if commitment.data.spent {
-                    Ok::<(BigUint, BigUint, BigUint), ScannerError>((pending, unspent, spend + amount))
-                } else {
-                    match commitment.data.status {
-                        status if status == CommitmentStatus::Included as i32 => {
-                            Ok::<(BigUint, BigUint, BigUint), ScannerError>((pending, unspent + amount, spend))
-                        }
-                        _ => Ok::<(BigUint, BigUint, BigUint), ScannerError>((pending + amount, unspent, spend)),
-                    }
-                }
-            },
-        )?;
-
-        let pending = decimal_to_number::<f64, BigUint>(&pending, Some(asset_decimals))?;
-        let unspent = decimal_to_number::<f64, BigUint>(&unspent, Some(asset_decimals))?;
-        let spend = decimal_to_number::<f64, BigUint>(&spend, Some(asset_decimals))?;
-        Ok((pending, unspent, spend))
     }
 }
 
@@ -520,30 +463,27 @@ async fn scan_commitment_by_accounts(
     mut commitment: Document<Commitment>,
     accounts: &[ScanAccount],
 ) -> Result<Option<Document<Commitment>>, ScannerError> {
-    match &commitment.data.encrypted_note {
-        Some(encrypted_note) => {
-            let encrypted_note_bytes: EncryptedNote = decode_hex(encrypted_note)?;
-            for account in accounts {
-                let protocol_commitment = ProtocolCommitment::new(
-                    account.shielded_address.clone(),
-                    None,
-                    Some(EncryptedData {
-                        sk_enc: account.enc_sk,
-                        encrypted_note: encrypted_note_bytes.clone(),
-                    }),
-                );
-                if let Ok(pcm) = protocol_commitment {
-                    if pcm.commitment_hash == commitment.data.commitment_hash {
-                        let nullifier = compute_nullifier(&account.v_sk, &pcm.note.random_p);
-                        commitment.data.amount = Some(pcm.note.amount);
-                        commitment.data.nullifier = Some(nullifier);
-                        commitment.data.shielded_address = Some(account.shielded_address.address());
-                        return Ok(Some(commitment));
-                    }
+    if let Some(encrypted_note) = &commitment.data.encrypted_note {
+        let encrypted_note_bytes: EncryptedNote = decode_hex(encrypted_note)?;
+        for account in accounts {
+            let protocol_commitment = ProtocolCommitment::new(
+                account.shielded_address.clone(),
+                None,
+                Some(EncryptedData {
+                    sk_enc: account.enc_sk,
+                    encrypted_note: encrypted_note_bytes.clone(),
+                }),
+            );
+            if let Ok(pcm) = protocol_commitment {
+                if pcm.commitment_hash == commitment.data.commitment_hash {
+                    let nullifier = compute_nullifier(&account.v_sk, &pcm.note.random_p);
+                    commitment.data.amount = Some(pcm.note.amount);
+                    commitment.data.nullifier = Some(nullifier);
+                    commitment.data.shielded_address = Some(account.shielded_address.address());
+                    return Ok(Some(commitment));
                 }
             }
-            Ok(None)
         }
-        None => Err(ScannerError::CommitmentEncryptedNoteNoneError(commitment.id.clone())),
     }
+    Ok(None)
 }
