@@ -7,15 +7,15 @@ impl serde::Serialize for AccessListItem {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.address.is_some() {
+        if !self.address.is_empty() {
             len += 1;
         }
         if !self.storage_keys.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.AccessListItem", len)?;
-        if let Some(v) = self.address.as_ref() {
-            struct_ser.serialize_field("address", v)?;
+        if !self.address.is_empty() {
+            struct_ser.serialize_field("address", &self.address)?;
         }
         if !self.storage_keys.is_empty() {
             struct_ser.serialize_field("storageKeys", &self.storage_keys)?;
@@ -89,7 +89,7 @@ impl<'de> serde::Deserialize<'de> for AccessListItem {
                             if address__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("address"));
                             }
-                            address__ = map.next_value()?;
+                            address__ = Some(map.next_value()?);
                         }
                         GeneratedField::StorageKeys => {
                             if storage_keys__.is_some() {
@@ -100,7 +100,7 @@ impl<'de> serde::Deserialize<'de> for AccessListItem {
                     }
                 }
                 Ok(AccessListItem {
-                    address: address__,
+                    address: address__.unwrap_or_default(),
                     storage_keys: storage_keys__.unwrap_or_default(),
                 })
             }

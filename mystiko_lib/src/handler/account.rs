@@ -123,6 +123,7 @@ where
 mod internal {
     use crate::error::parse_account_error;
     use crate::instance;
+    use mystiko_core::AccountHandler;
     use mystiko_protos::api::handler::v1::find_account_by_identifier_request::Identifier;
     use mystiko_protos::api::handler::v1::find_account_request::Condition;
     use mystiko_protos::api::handler::v1::{

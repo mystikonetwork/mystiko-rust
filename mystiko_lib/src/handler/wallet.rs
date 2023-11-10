@@ -66,6 +66,7 @@ mod internal {
     use super::*;
     use crate::error::parse_wallet_error;
     use crate::instance;
+    use mystiko_core::WalletHandler;
     use mystiko_protos::api::handler::v1::{
         CheckCurrentResponse, CheckPasswordResponse, CreateWalletResponse, ExportMnemonicPhraseResponse,
         UpdatePasswordResponse,

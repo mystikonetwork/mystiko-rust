@@ -980,6 +980,9 @@ impl serde::Serialize for QueryFilter {
         if self.order_by.is_some() {
             len += 1;
         }
+        if self.additional_condition.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.storage.v1.QueryFilter", len)?;
         if !self.conditions.is_empty() {
             struct_ser.serialize_field("conditions", &self.conditions)?;
@@ -998,6 +1001,9 @@ impl serde::Serialize for QueryFilter {
         if let Some(v) = self.order_by.as_ref() {
             struct_ser.serialize_field("orderBy", v)?;
         }
+        if let Some(v) = self.additional_condition.as_ref() {
+            struct_ser.serialize_field("additionalCondition", v)?;
+        }
         struct_ser.end()
     }
 }
@@ -1015,6 +1021,8 @@ impl<'de> serde::Deserialize<'de> for QueryFilter {
             "offset",
             "order_by",
             "orderBy",
+            "additional_condition",
+            "additionalCondition",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -1024,6 +1032,7 @@ impl<'de> serde::Deserialize<'de> for QueryFilter {
             Limit,
             Offset,
             OrderBy,
+            AdditionalCondition,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1050,6 +1059,7 @@ impl<'de> serde::Deserialize<'de> for QueryFilter {
                             "limit" => Ok(GeneratedField::Limit),
                             "offset" => Ok(GeneratedField::Offset),
                             "orderBy" | "order_by" => Ok(GeneratedField::OrderBy),
+                            "additionalCondition" | "additional_condition" => Ok(GeneratedField::AdditionalCondition),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1074,6 +1084,7 @@ impl<'de> serde::Deserialize<'de> for QueryFilter {
                 let mut limit__ = None;
                 let mut offset__ = None;
                 let mut order_by__ = None;
+                let mut additional_condition__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Conditions => {
@@ -1110,6 +1121,12 @@ impl<'de> serde::Deserialize<'de> for QueryFilter {
                             }
                             order_by__ = map.next_value()?;
                         }
+                        GeneratedField::AdditionalCondition => {
+                            if additional_condition__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("additionalCondition"));
+                            }
+                            additional_condition__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(QueryFilter {
@@ -1118,6 +1135,7 @@ impl<'de> serde::Deserialize<'de> for QueryFilter {
                     limit: limit__,
                     offset: offset__,
                     order_by: order_by__,
+                    additional_condition: additional_condition__,
                 })
             }
         }

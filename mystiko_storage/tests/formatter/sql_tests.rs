@@ -1049,6 +1049,69 @@ fn test_format_query_filter() {
 }
 
 #[test]
+fn test_format_query_filter_with_additional_condition() {
+    let formatter = SqlStatementFormatter::sqlite();
+
+    let additional_condition: Condition = SubFilter::equal(TestDocumentColumn::Field1, true).into();
+    let mut filter = QueryFilter::builder()
+        .conditions_operator(ConditionOperator::And)
+        .additional_condition(additional_condition.clone())
+        .build();
+    let mut statement = formatter
+        .format_delete_by_filter::<TestDocument, _>(Some(filter))
+        .unwrap();
+    assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field1` = ?");
+    assert_eq!(
+        statement.column_values,
+        [ColumnValue::builder().value(Value::BoolValue(true)).build()]
+    );
+
+    let additional_condition: Condition = Condition::and(vec![]);
+    filter = QueryFilter::builder()
+        .conditions(vec![SubFilter::equal(TestDocumentColumn::Field5, 1_u8).into()])
+        .conditions_operator(ConditionOperator::And)
+        .additional_condition(additional_condition)
+        .build();
+    statement = formatter
+        .format_delete_by_filter::<TestDocument, _>(Some(filter))
+        .unwrap();
+    assert_eq!(statement.statement, "DELETE FROM `test_documents` WHERE `field5` = ?");
+    assert_eq!(
+        statement.column_values,
+        [ColumnValue::builder().value(Value::U8Value(1)).build()]
+    );
+
+    let additional_condition: Condition = Condition::and(vec![
+        SubFilter::equal(TestDocumentColumn::Field1, true),
+        SubFilter::equal(TestDocumentColumn::Field3, 'a'),
+    ]);
+    filter = QueryFilter::builder()
+        .conditions(vec![
+            SubFilter::equal(TestDocumentColumn::Field5, 1_u8).into(),
+            SubFilter::equal(TestDocumentColumn::Field7, 3_u16).into(),
+        ])
+        .conditions_operator(ConditionOperator::Or)
+        .additional_condition(additional_condition)
+        .build();
+    statement = formatter
+        .format_delete_by_filter::<TestDocument, _>(Some(filter))
+        .unwrap();
+    assert_eq!(
+        statement.statement,
+        "DELETE FROM `test_documents` WHERE (`field5` = ? OR `field7` = ?) AND (`field1` = ? AND `field3` = ?)"
+    );
+    assert_eq!(
+        statement.column_values,
+        [
+            ColumnValue::builder().value(Value::U8Value(1)).build(),
+            ColumnValue::builder().value(Value::U16Value(3)).build(),
+            ColumnValue::builder().value(Value::BoolValue(true)).build(),
+            ColumnValue::builder().value(Value::CharValue('a'.to_string())).build()
+        ]
+    );
+}
+
+#[test]
 fn test_format_non_existing_column() {
     let formatter = SqlStatementFormatter::sqlite();
     let sub_filter = SubFilter::equal("wrong column name", 1);

@@ -1,3 +1,4 @@
+mod context;
 mod database;
 mod error;
 mod ethers;
@@ -7,6 +8,7 @@ mod mystiko;
 mod signer;
 mod synchronizer;
 
+pub use context::*;
 pub use database::*;
 pub use error::*;
 pub use ethers::*;

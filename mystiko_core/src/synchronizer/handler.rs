@@ -1,4 +1,7 @@
-use crate::{Commitment, Contract, Database, Nullifier, SyncLoaderHandler, SynchronizerHandler};
+use crate::{
+    Commitment, Contract, Database, FromContext, MystikoContext, MystikoError, Nullifier, SyncLoaderHandler,
+    SynchronizerHandler,
+};
 use async_trait::async_trait;
 use mystiko_config::{ChainConfig, MystikoConfig};
 use mystiko_dataloader::data::FullData;
@@ -115,10 +118,29 @@ where
     }
 }
 
+#[async_trait]
+impl<F, S> FromContext<F, S> for Synchronizer<ChainDataLoader<FullData>>
+where
+    F: StatementFormatter + 'static,
+    S: Storage + 'static,
+{
+    async fn from_context(context: &MystikoContext<F, S>) -> Result<Self, MystikoError> {
+        let options = SynchronizerOptions::builder()
+            .mystiko_config(context.config.clone())
+            .providers(context.providers.clone())
+            .db(context.db.clone())
+            .loader_config(context.loader_config.clone())
+            .build();
+        Ok(Self::new(options).await?)
+    }
+}
+
 impl Synchronizer<ChainDataLoader<FullData>> {
-    pub async fn new<F: StatementFormatter + 'static, S: Storage + 'static>(
-        options: SynchronizerOptions<F, S>,
-    ) -> Result<Self, SynchronizerError> {
+    pub async fn new<F, S>(options: SynchronizerOptions<F, S>) -> Result<Self, SynchronizerError>
+    where
+        F: StatementFormatter + 'static,
+        S: Storage + 'static,
+    {
         let collection = options.db.collection();
         let loader_handle = DatabaseHandler::<FullData, F, S, Contract, Commitment, Nullifier>::builder()
             .config(options.mystiko_config.clone())

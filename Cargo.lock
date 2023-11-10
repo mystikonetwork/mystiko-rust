@@ -3351,6 +3351,7 @@ dependencies = [
  "mystiko_types",
  "mystiko_utils",
  "num-bigint 0.4.3",
+ "rand 0.8.5",
  "rand_core 0.6.4",
  "regex 1.9.3",
  "rustc-hex",

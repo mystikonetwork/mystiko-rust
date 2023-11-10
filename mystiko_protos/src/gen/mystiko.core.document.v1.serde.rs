@@ -320,9 +320,6 @@ impl serde::Serialize for Deposit {
         if self.executor_fee_asset_symbol.is_some() {
             len += 1;
         }
-        if self.asset_approve_transaction_hash.is_some() {
-            len += 1;
-        }
         if self.queued_transaction_hash.is_some() {
             len += 1;
         }
@@ -330,6 +327,9 @@ impl serde::Serialize for Deposit {
             len += 1;
         }
         if self.src_chain_transaction_hash.is_some() {
+            len += 1;
+        }
+        if !self.asset_approve_transaction_hash.is_empty() {
             len += 1;
         }
         if self.error_message.is_some() {
@@ -417,9 +417,6 @@ impl serde::Serialize for Deposit {
         if let Some(v) = self.executor_fee_asset_symbol.as_ref() {
             struct_ser.serialize_field("executorFeeAssetSymbol", v)?;
         }
-        if let Some(v) = self.asset_approve_transaction_hash.as_ref() {
-            struct_ser.serialize_field("assetApproveTransactionHash", v)?;
-        }
         if let Some(v) = self.queued_transaction_hash.as_ref() {
             struct_ser.serialize_field("queuedTransactionHash", v)?;
         }
@@ -428,6 +425,9 @@ impl serde::Serialize for Deposit {
         }
         if let Some(v) = self.src_chain_transaction_hash.as_ref() {
             struct_ser.serialize_field("srcChainTransactionHash", v)?;
+        }
+        if !self.asset_approve_transaction_hash.is_empty() {
+            struct_ser.serialize_field("assetApproveTransactionHash", &self.asset_approve_transaction_hash)?;
         }
         if let Some(v) = self.error_message.as_ref() {
             struct_ser.serialize_field("errorMessage", v)?;
@@ -500,14 +500,14 @@ impl<'de> serde::Deserialize<'de> for Deposit {
             "executorFeeAssetAddress",
             "executor_fee_asset_symbol",
             "executorFeeAssetSymbol",
-            "asset_approve_transaction_hash",
-            "assetApproveTransactionHash",
             "queued_transaction_hash",
             "queuedTransactionHash",
             "included_transaction_hash",
             "includedTransactionHash",
             "src_chain_transaction_hash",
             "srcChainTransactionHash",
+            "asset_approve_transaction_hash",
+            "assetApproveTransactionHash",
             "error_message",
             "errorMessage",
             "bridge_type",
@@ -542,10 +542,10 @@ impl<'de> serde::Deserialize<'de> for Deposit {
             BridgeFeeAssetSymbol,
             ExecutorFeeAssetAddress,
             ExecutorFeeAssetSymbol,
-            AssetApproveTransactionHash,
             QueuedTransactionHash,
             IncludedTransactionHash,
             SrcChainTransactionHash,
+            AssetApproveTransactionHash,
             ErrorMessage,
             BridgeType,
             Status,
@@ -595,10 +595,10 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                             "bridgeFeeAssetSymbol" | "bridge_fee_asset_symbol" => Ok(GeneratedField::BridgeFeeAssetSymbol),
                             "executorFeeAssetAddress" | "executor_fee_asset_address" => Ok(GeneratedField::ExecutorFeeAssetAddress),
                             "executorFeeAssetSymbol" | "executor_fee_asset_symbol" => Ok(GeneratedField::ExecutorFeeAssetSymbol),
-                            "assetApproveTransactionHash" | "asset_approve_transaction_hash" => Ok(GeneratedField::AssetApproveTransactionHash),
                             "queuedTransactionHash" | "queued_transaction_hash" => Ok(GeneratedField::QueuedTransactionHash),
                             "includedTransactionHash" | "included_transaction_hash" => Ok(GeneratedField::IncludedTransactionHash),
                             "srcChainTransactionHash" | "src_chain_transaction_hash" => Ok(GeneratedField::SrcChainTransactionHash),
+                            "assetApproveTransactionHash" | "asset_approve_transaction_hash" => Ok(GeneratedField::AssetApproveTransactionHash),
                             "errorMessage" | "error_message" => Ok(GeneratedField::ErrorMessage),
                             "bridgeType" | "bridge_type" => Ok(GeneratedField::BridgeType),
                             "status" => Ok(GeneratedField::Status),
@@ -646,10 +646,10 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                 let mut bridge_fee_asset_symbol__ = None;
                 let mut executor_fee_asset_address__ = None;
                 let mut executor_fee_asset_symbol__ = None;
-                let mut asset_approve_transaction_hash__ = None;
                 let mut queued_transaction_hash__ = None;
                 let mut included_transaction_hash__ = None;
                 let mut src_chain_transaction_hash__ = None;
+                let mut asset_approve_transaction_hash__ = None;
                 let mut error_message__ = None;
                 let mut bridge_type__ = None;
                 let mut status__ = None;
@@ -821,12 +821,6 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                             }
                             executor_fee_asset_symbol__ = map.next_value()?;
                         }
-                        GeneratedField::AssetApproveTransactionHash => {
-                            if asset_approve_transaction_hash__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("assetApproveTransactionHash"));
-                            }
-                            asset_approve_transaction_hash__ = map.next_value()?;
-                        }
                         GeneratedField::QueuedTransactionHash => {
                             if queued_transaction_hash__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("queuedTransactionHash"));
@@ -844,6 +838,12 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                                 return Err(serde::de::Error::duplicate_field("srcChainTransactionHash"));
                             }
                             src_chain_transaction_hash__ = map.next_value()?;
+                        }
+                        GeneratedField::AssetApproveTransactionHash => {
+                            if asset_approve_transaction_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("assetApproveTransactionHash"));
+                            }
+                            asset_approve_transaction_hash__ = Some(map.next_value()?);
                         }
                         GeneratedField::ErrorMessage => {
                             if error_message__.is_some() {
@@ -891,10 +891,10 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                     bridge_fee_asset_symbol: bridge_fee_asset_symbol__,
                     executor_fee_asset_address: executor_fee_asset_address__,
                     executor_fee_asset_symbol: executor_fee_asset_symbol__,
-                    asset_approve_transaction_hash: asset_approve_transaction_hash__,
                     queued_transaction_hash: queued_transaction_hash__,
                     included_transaction_hash: included_transaction_hash__,
                     src_chain_transaction_hash: src_chain_transaction_hash__,
+                    asset_approve_transaction_hash: asset_approve_transaction_hash__.unwrap_or_default(),
                     error_message: error_message__,
                     bridge_type: bridge_type__.unwrap_or_default(),
                     status: status__.unwrap_or_default(),
