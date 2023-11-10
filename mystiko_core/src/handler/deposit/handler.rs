@@ -32,18 +32,18 @@ use typed_builder::TypedBuilder;
 pub struct Deposits<
     F: StatementFormatter,
     S: Storage,
+    A: PublicAssetHandler = PublicAssets<Box<dyn Providers>>,
+    D: DepositContractHandler = DepositContracts<Box<dyn Providers>>,
+    T: TransactionHandler<Transaction> = Transactions<Box<dyn Providers>>,
     P: Providers = Box<dyn Providers>,
-    A: PublicAssetHandler = PublicAssets<P>,
-    D: DepositContractHandler = DepositContracts<P>,
-    T: TransactionHandler<Transaction> = Transactions<P>,
 > {
     pub(crate) db: Arc<Database<F, S>>,
     pub(crate) config: Arc<MystikoConfig>,
     pub(crate) wallets: Wallets<F, S>,
-    pub(crate) signer_providers: Arc<P>,
     pub(crate) assets: Arc<A>,
     pub(crate) deposit_contracts: Arc<D>,
     pub(crate) transactions: Arc<T>,
+    pub(crate) signer_providers: Arc<P>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -51,17 +51,17 @@ pub struct Deposits<
 pub struct DepositsOptions<
     F: StatementFormatter,
     S: Storage,
-    P: Providers,
     A: PublicAssetHandler,
     D: DepositContractHandler,
     T: TransactionHandler<Transaction>,
+    P: Providers,
 > {
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
-    signer_providers: Arc<P>,
     assets: Arc<A>,
     deposit_contracts: Arc<D>,
     transactions: Arc<T>,
+    signer_providers: Arc<P>,
 }
 
 #[derive(Debug, Error)]
@@ -113,7 +113,7 @@ pub enum DepositsError {
 type Result<T> = std::result::Result<T, DepositsError>;
 
 #[async_trait]
-impl<F, S, P, A, D, T>
+impl<F, S, A, D, T, P>
     DepositHandler<
         ProtoDeposit,
         QuoteDepositOptions,
@@ -121,7 +121,7 @@ impl<F, S, P, A, D, T>
         CreateDepositOptions,
         DepositSummary,
         SendDepositOptions,
-    > for Deposits<F, S, P, A, D, T>
+    > for Deposits<F, S, A, D, T, P>
 where
     F: StatementFormatter,
     S: Storage,
@@ -222,7 +222,7 @@ where
     }
 }
 
-impl<F, S, P, A, D, T> Deposits<F, S, P, A, D, T>
+impl<F, S, A, D, T, P> Deposits<F, S, A, D, T, P>
 where
     F: StatementFormatter,
     S: Storage,
@@ -232,7 +232,7 @@ where
     P: Providers + 'static,
     DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
 {
-    pub fn new(options: DepositsOptions<F, S, P, A, D, T>) -> Self {
+    pub fn new(options: DepositsOptions<F, S, A, D, T, P>) -> Self {
         let wallets = Wallets::new(options.db.clone());
         Self::builder()
             .db(options.db)
@@ -365,7 +365,7 @@ where
 }
 
 #[async_trait]
-impl<F, S, A, D, T> FromContext<F, S> for Deposits<F, S, Box<dyn Providers>, A, D, T>
+impl<F, S, A, D, T> FromContext<F, S> for Deposits<F, S, A, D, T>
 where
     F: StatementFormatter,
     S: Storage,

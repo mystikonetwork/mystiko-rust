@@ -510,18 +510,18 @@ struct MockOptions {
 type DepositHandlerV1OptionsType = DepositsOptions<
     SqlStatementFormatter,
     SqliteStorage,
-    MockProviders,
     MockPublicAssets,
     MockDepositContracts,
     MockTransactions,
+    MockProviders,
 >;
 type DepositHandlerV1Type = Deposits<
     SqlStatementFormatter,
     SqliteStorage,
-    MockProviders,
     MockPublicAssets,
     MockDepositContracts,
     MockTransactions,
+    MockProviders,
 >;
 type DatabaseType = Database<SqlStatementFormatter, SqliteStorage>;
 
