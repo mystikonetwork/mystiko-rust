@@ -37,13 +37,13 @@ pub struct Deposits<
     T: TransactionHandler<Transaction> = Transactions<Box<dyn Providers>>,
     P: Providers = Box<dyn Providers>,
 > {
-    pub(crate) db: Arc<Database<F, S>>,
-    pub(crate) config: Arc<MystikoConfig>,
-    pub(crate) wallets: Wallets<F, S>,
-    pub(crate) assets: Arc<A>,
-    pub(crate) deposit_contracts: Arc<D>,
-    pub(crate) transactions: Arc<T>,
-    pub(crate) signer_providers: Arc<P>,
+    db: Arc<Database<F, S>>,
+    config: Arc<MystikoConfig>,
+    wallets: Wallets<F, S>,
+    assets: Arc<A>,
+    deposit_contracts: Arc<D>,
+    transactions: Arc<T>,
+    signer_providers: Arc<P>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -51,10 +51,10 @@ pub struct Deposits<
 pub struct DepositsOptions<
     F: StatementFormatter,
     S: Storage,
-    A: PublicAssetHandler,
-    D: DepositContractHandler,
-    T: TransactionHandler<Transaction>,
-    P: Providers,
+    A: PublicAssetHandler = PublicAssets<Box<dyn Providers>>,
+    D: DepositContractHandler = DepositContracts<Box<dyn Providers>>,
+    T: TransactionHandler<Transaction> = Transactions<Box<dyn Providers>>,
+    P: Providers = Box<dyn Providers>,
 > {
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
