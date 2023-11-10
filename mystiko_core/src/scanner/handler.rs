@@ -242,7 +242,7 @@ where
         }
 
         if accounts.is_empty() {
-            return Err(ScannerError::NoAccountFound);
+            return Err(ScannerError::NoAccountFoundError);
         }
         Ok(accounts)
     }
@@ -356,11 +356,17 @@ where
     }
 
     async fn query_commitment_count(&self, from_id: Option<String>) -> Result<u64, ScannerError> {
-        let mut filter = QueryFilter::builder().build();
-        if let Some(start) = from_id {
-            let condition = Condition::from(SubFilter::greater(DocumentColumn::Id, start));
-            filter.conditions = vec![condition];
-        }
+        let filter = if let Some(start) = from_id {
+            QueryFilter::builder()
+                .conditions(vec![Condition::from(SubFilter::greater(
+                    DocumentColumn::Id,
+                    start.clone(),
+                ))])
+                .conditions_operator(ConditionOperator::And as i32)
+                .build()
+        } else {
+            QueryFilter::builder().build()
+        };
 
         let total = self.db.commitments.count(filter).await?;
         Ok(total)
@@ -538,6 +544,6 @@ async fn scan_commitment_by_accounts(
             }
             Ok(None)
         }
-        None => Err(ScannerError::CommitmentEncryptedNoteIsNone(commitment.id.clone())),
+        None => Err(ScannerError::CommitmentEncryptedNoteNoneError(commitment.id.clone())),
     }
 }

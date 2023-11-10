@@ -8,9 +8,9 @@ use tokio::task::JoinError;
 #[derive(Debug, Error)]
 pub enum ScannerError {
     #[error("commitment={0} encrypted note is empty")]
-    CommitmentEncryptedNoteIsNone(String),
+    CommitmentEncryptedNoteNoneError(String),
     #[error("no account found")]
-    NoAccountFound,
+    NoAccountFoundError,
     #[error("chain config not found for chain id={0}")]
     ChainConfigNotFoundError(u64),
     #[error("asset config not found for chain id={0} and asset symbol={1}")]

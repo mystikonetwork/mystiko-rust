@@ -29,7 +29,7 @@ async fn test_scan_default_options() {
         .shielded_addresses(vec!["wrong_shielded_address".to_string()])
         .build();
     let result = scanner.scan(option).await;
-    assert!(matches!(result.err().unwrap(), ScannerError::NoAccountFound));
+    assert!(matches!(result.err().unwrap(), ScannerError::NoAccountFoundError));
 }
 
 #[tokio::test]
@@ -56,6 +56,38 @@ async fn test_scan_batch_without_owned() {
             }
         }
     }
+}
+
+#[tokio::test]
+async fn test_scan_with_start() {
+    let account_count = 3_usize;
+    let commitment_count = 2_usize;
+    let (scanner, db, _) = create_scanner(account_count).await;
+    let mut accounts = db.accounts.find_all().await.unwrap();
+    let option = ScanOptions::builder()
+        .shielded_addresses(vec![accounts[0].data.shielded_address.clone()])
+        .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
+        .build();
+    let (cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
+    accounts.iter_mut().for_each(|account| {
+        account.data.scanned_to_id = Some(cms[commitment_count - 1].id.clone());
+    });
+    db.accounts.update_batch(&accounts).await.unwrap();
+    let result = scanner.scan(option.clone()).await.unwrap();
+    assert_eq!(result.total_count, 0);
+    assert_eq!(result.owned_count, 0);
+    assert_eq!(result.scanned_shielded_addresses.len(), 1);
+    assert_eq!(result.scanned_shielded_addresses[0], accounts[0].data.shielded_address);
+    assert_eq!(result.to_id, None);
+
+    accounts[0].data.scanned_to_id = Some(cms[commitment_count - 2].id.clone());
+    db.accounts.update_batch(&accounts).await.unwrap();
+    let result = scanner.scan(option).await.unwrap();
+    assert_eq!(result.total_count, 1);
+    assert_eq!(result.owned_count, 0);
+    assert_eq!(result.scanned_shielded_addresses.len(), 1);
+    assert_eq!(result.scanned_shielded_addresses[0], accounts[0].data.shielded_address);
+    assert_eq!(result.to_id, Some(cms[commitment_count - 1].id.clone()));
 }
 
 #[tokio::test]
