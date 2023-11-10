@@ -6,17 +6,18 @@ use ethers_core::types::{Address, Eip1559TransactionRequest, TransactionReceipt,
 use ethers_signers::{LocalWallet, Signer};
 use mystiko_config::MystikoConfig;
 use mystiko_core::{
-    AccountHandler, Accounts, Database, DepositHandler, DepositQuote, Deposits, DepositsOptions, PrivateKeySigner,
-    WalletHandler, Wallets,
+    AccountHandler, Accounts, Database, DepositColumn, DepositHandler, DepositQuote, Deposits, DepositsOptions,
+    PrivateKeySigner, WalletHandler, Wallets,
 };
 use mystiko_ethers::{Provider, ProviderWrapper};
 use mystiko_protos::common::v1::BridgeType;
-use mystiko_protos::core::document::v1::{Account, Wallet};
+use mystiko_protos::core::document::v1::{Account, Deposit, Wallet};
 use mystiko_protos::core::handler::v1::{
     CreateAccountOptions, CreateDepositOptions, CreateWalletOptions, QuoteDepositOptions, SendDepositOptions,
 };
 use mystiko_protos::core::v1::DepositStatus;
-use mystiko_storage::SqlStatementFormatter;
+use mystiko_protos::storage::v1::SubFilter;
+use mystiko_storage::{ColumnValues, DocumentColumn, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::address::ethers_address_from_string;
 use mystiko_utils::convert::number_to_u256_decimal;
@@ -1004,6 +1005,129 @@ async fn test_loop_deposit_insufficient_erc20_token() {
     );
 }
 
+#[tokio::test]
+async fn test_crud() {
+    let (db, handler) = setup(Default::default()).await;
+    let (_, account) = create_wallet(db.clone()).await;
+    let discarded_deposits = generate_deposits(account.shielded_address, &handler).await;
+    let (_, account) = create_wallet(db).await;
+    let mut deposits = generate_deposits(account.shielded_address, &handler).await;
+    deposits.sort_by_key(|deposit| deposit.id.clone());
+
+    let mut found_deposits = handler.find_all().await.unwrap();
+    found_deposits.sort_by_key(|deposit| deposit.id.clone());
+    assert_eq!(found_deposits, deposits);
+
+    found_deposits = handler
+        .find(SubFilter::equal(DocumentColumn::Id, deposits[0].id.clone()))
+        .await
+        .unwrap();
+    assert_eq!(found_deposits.len(), 1);
+    assert_eq!(found_deposits[0], deposits[0]);
+
+    found_deposits = handler
+        .find(SubFilter::equal(DocumentColumn::Id, discarded_deposits[0].id.clone()))
+        .await
+        .unwrap();
+    assert_eq!(found_deposits.len(), 0);
+
+    let mut found_deposit = handler
+        .find_one(SubFilter::equal(DocumentColumn::Id, deposits[0].id.clone()))
+        .await
+        .unwrap();
+    assert_eq!(found_deposit.unwrap(), deposits[0]);
+
+    found_deposit = handler
+        .find_one(SubFilter::equal(DocumentColumn::Id, discarded_deposits[0].id.clone()))
+        .await
+        .unwrap();
+    assert!(found_deposit.is_none());
+
+    found_deposit = handler.find_by_id(deposits[0].id.clone()).await.unwrap();
+    assert_eq!(found_deposit.unwrap(), deposits[0]);
+
+    assert_eq!(handler.count_all().await.unwrap(), 4);
+    assert_eq!(
+        handler
+            .count(SubFilter::in_list(
+                DocumentColumn::Id,
+                vec![deposits[0].id.clone(), deposits[1].id.clone()]
+            ))
+            .await
+            .unwrap(),
+        2
+    );
+    assert_eq!(
+        handler
+            .count(SubFilter::in_list(
+                DocumentColumn::Id,
+                vec![discarded_deposits[0].id.clone(), discarded_deposits[1].id.clone()]
+            ))
+            .await
+            .unwrap(),
+        0
+    );
+
+    deposits[0].status = DepositStatus::Queued as i32;
+    let updated_deposit = handler.update(deposits[0].clone()).await.unwrap();
+    assert_eq!(updated_deposit.status, DepositStatus::Queued as i32);
+
+    deposits[1].status = DepositStatus::SrcPending as i32;
+    deposits[2].status = DepositStatus::SrcSucceeded as i32;
+    let mut updated_deposits = handler
+        .update_batch(vec![deposits[1].clone(), deposits[2].clone()])
+        .await
+        .unwrap();
+    updated_deposits.sort_by_key(|deposit| deposit.id.clone());
+    assert_eq!(updated_deposits[0].status, DepositStatus::SrcPending as i32);
+    assert_eq!(updated_deposits[1].status, DepositStatus::SrcSucceeded as i32);
+
+    let column_values = ColumnValues::new().set_value(DepositColumn::Status, DepositStatus::Failed as i32);
+    handler
+        .update_by_filter(
+            column_values.clone(),
+            SubFilter::equal(DocumentColumn::Id, deposits[3].id.clone()),
+        )
+        .await
+        .unwrap();
+    found_deposit = handler.find_by_id(deposits[3].id.clone()).await.unwrap();
+    assert_eq!(found_deposit.unwrap().status, DepositStatus::Failed as i32);
+
+    handler
+        .update_by_filter(
+            column_values.clone(),
+            SubFilter::equal(DocumentColumn::Id, discarded_deposits[3].id.clone()),
+        )
+        .await
+        .unwrap();
+    found_deposit = handler.find_by_id(discarded_deposits[3].id.clone()).await.unwrap();
+    assert_eq!(found_deposit.unwrap().status, DepositStatus::Unspecified as i32);
+
+    handler.update_all(column_values).await.unwrap();
+    found_deposits = handler.find_all().await.unwrap();
+    found_deposits.iter().for_each(|deposit| {
+        assert_eq!(deposit.status, DepositStatus::Failed as i32);
+    });
+    discarded_deposits.iter().for_each(|deposit| {
+        assert_eq!(deposit.status, DepositStatus::Unspecified as i32);
+    });
+
+    handler.delete(deposits[0].clone()).await.unwrap();
+    assert_eq!(handler.count_all().await.unwrap(), 3);
+
+    handler.delete_batch(vec![deposits[1].clone()]).await.unwrap();
+    assert_eq!(handler.count_all().await.unwrap(), 2);
+
+    handler
+        .delete_by_filter(SubFilter::equal(DocumentColumn::Id, deposits[2].id.clone()))
+        .await
+        .unwrap();
+    assert_eq!(handler.count_all().await.unwrap(), 1);
+
+    handler.delete_all().await.unwrap();
+    assert_eq!(handler.count_all().await.unwrap(), 0);
+}
+
 #[derive(Debug, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 struct MockOptions {
@@ -1013,7 +1137,7 @@ struct MockOptions {
     providers: HashMap<u64, MockProvider>,
 }
 
-type DepositHandlerV1OptionsType = DepositsOptions<
+type DepositsOptionsType = DepositsOptions<
     SqlStatementFormatter,
     SqliteStorage,
     MockPublicAssets,
@@ -1021,7 +1145,7 @@ type DepositHandlerV1OptionsType = DepositsOptions<
     MockTransactions,
     MockProviders,
 >;
-type DepositHandlerV1Type = Deposits<
+type DepositsType = Deposits<
     SqlStatementFormatter,
     SqliteStorage,
     MockPublicAssets,
@@ -1031,7 +1155,7 @@ type DepositHandlerV1Type = Deposits<
 >;
 type DatabaseType = Database<SqlStatementFormatter, SqliteStorage>;
 
-async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositHandlerV1Type) {
+async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositsType) {
     let _ = env_logger::builder()
         .filter_module("mystiko_core", log::LevelFilter::Info)
         .try_init();
@@ -1056,8 +1180,8 @@ async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositHandlerV1Type
             .remove(&chain_id)
             .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
     });
-    let handler = DepositHandlerV1Type::new(
-        DepositHandlerV1OptionsType::builder()
+    let handler = DepositsType::new(
+        DepositsOptionsType::builder()
             .config(config)
             .db(database.clone())
             .signer_providers(providers)
@@ -1081,6 +1205,93 @@ async fn create_wallet(db: Arc<DatabaseType>) -> (Wallet, Account) {
         .await
         .unwrap();
     (wallet, account)
+}
+
+async fn generate_deposits(shielded_address: String, handler: &DepositsType) -> Vec<Deposit> {
+    let mut deposits = vec![];
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("BNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(97_u64)
+        .asset_symbol("BNB".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .shielded_address(shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .deposit_quote(quote)
+        .build();
+    deposits.push(handler.create(options).await.unwrap());
+
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("MTT".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(5_u64)
+        .asset_symbol("MTT".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .shielded_address(shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .deposit_quote(quote)
+        .build();
+    deposits.push(handler.create(options).await.unwrap());
+
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("BNB".to_string())
+        .min_bridge_fee_amount(0.00001_f64)
+        .bridge_fee_asset_symbol("BNB".to_string())
+        .min_executor_fee_amount(0.0001_f64)
+        .executor_fee_asset_symbol("BNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(97_u64)
+        .dst_chain_id(5_u64)
+        .asset_symbol("BNB".to_string())
+        .bridge_type(BridgeType::Tbridge as i32)
+        .shielded_address(shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .bridge_fee_amount(0.00001_f64)
+        .executor_fee_amount(0.0001_f64)
+        .deposit_quote(quote)
+        .build();
+    deposits.push(handler.create(options).await.unwrap());
+
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("mBNB".to_string())
+        .min_bridge_fee_amount(0.00001_f64)
+        .bridge_fee_asset_symbol("mBNB".to_string())
+        .min_executor_fee_amount(0.0001_f64)
+        .executor_fee_asset_symbol("mBNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(5_u64)
+        .dst_chain_id(97_u64)
+        .asset_symbol("mBNB".to_string())
+        .bridge_type(BridgeType::Tbridge as i32)
+        .shielded_address(shielded_address)
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .bridge_fee_amount(0.00001_f64)
+        .executor_fee_amount(0.0001_f64)
+        .deposit_quote(quote)
+        .build();
+    deposits.push(handler.create(options).await.unwrap());
+
+    deposits
 }
 
 fn generate_private_key() -> (Address, String) {

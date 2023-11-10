@@ -105,6 +105,12 @@ impl Condition {
     }
 }
 
+impl QueryFilter {
+    pub fn has_conditions(&self) -> bool {
+        !self.conditions.is_empty() || self.additional_condition.is_some()
+    }
+}
+
 impl From<SubFilter> for Condition {
     fn from(sub_filter: SubFilter) -> Self {
         Condition::filter(sub_filter)

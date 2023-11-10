@@ -108,7 +108,7 @@ impl StatementFormatter for SqlStatementFormatter {
         let statement = match filter_option {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
-                let no_condition = query_filter.conditions.is_empty();
+                let no_condition = !query_filter.has_conditions();
                 let filter_statement = self.format_query_filter::<T>(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(
@@ -166,7 +166,7 @@ impl StatementFormatter for SqlStatementFormatter {
         let statement = match filter_option {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
-                let no_condition = query_filter.conditions.is_empty();
+                let no_condition = !query_filter.has_conditions();
                 let filter_statement = self.format_query_filter::<T>(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(format!("DELETE FROM `{}`", T::collection_name()), Vec::new())
@@ -198,7 +198,7 @@ impl StatementFormatter for SqlStatementFormatter {
         let statement = match filter_option {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
-                let no_condition = query_filter.conditions.is_empty();
+                let no_condition = !query_filter.has_conditions();
                 let filter_statement = self.format_query_filter::<T>(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(
@@ -246,7 +246,7 @@ impl StatementFormatter for SqlStatementFormatter {
         let statement = match filter_option {
             Some(filter) => {
                 let query_filter: QueryFilter = filter.into();
-                let no_condition = query_filter.conditions.is_empty();
+                let no_condition = !query_filter.has_conditions();
                 let filter_statement = self.format_query_filter::<T>(query_filter)?;
                 if filter_statement.statement.is_empty() {
                     Statement::new(
@@ -335,6 +335,17 @@ impl SqlStatementFormatter {
             statements.push(condition_statements.join(format_condition_operator(
                 &ConditionOperator::from_i32(filter.conditions_operator).unwrap_or(ConditionOperator::Unspecified),
             )?));
+        }
+        if let Some(additional_condition) = filter.additional_condition {
+            if !additional_condition.sub_filters.is_empty() {
+                let condition_statement = self.format_condition::<T>(additional_condition)?;
+                if let Some(last_statement) = statements.pop() {
+                    statements.push(format!("({}) AND ({})", last_statement, condition_statement.statement));
+                } else {
+                    statements.push(condition_statement.statement);
+                }
+                column_values.extend(condition_statement.column_values);
+            }
         }
         if let Some(order_by) = &filter.order_by {
             if !order_by.columns.is_empty() {
