@@ -9,8 +9,8 @@ use ethers_core::types::{TransactionReceipt, TxHash, U256};
 use mockall::mock;
 use mystiko_core::{
     BalanceOptions, CrossChainDepositOptions, DepositContractHandler, DepositOptions, DepositQuote,
-    DepositQuoteOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssetHandler,
-    TransactionHandler, TransactionSigner, TransferOptions, WaitOptions,
+    DepositQuoteOptions, Erc20AllowanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions,
+    PublicAssetHandler, TransactionHandler, TransactionSigner, TransferOptions, WaitOptions,
 };
 use mystiko_protos::core::v1::Transaction;
 use mystiko_types::TransactionType;
@@ -28,6 +28,7 @@ mock! {
             S: TransactionSigner + 'static,
             T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static;
         async fn erc20_balance_of(&self, options: Erc20BalanceOptions) -> Result<U256>;
+        async fn erc20_allowance(&self, options: Erc20AllowanceOptions) -> Result<U256>;
         async fn erc20_approve<T, S>(&self, options: Erc20ApproveOptions<T, S>) -> Result<Option<TxHash>>
         where
             S: TransactionSigner + 'static,

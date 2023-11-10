@@ -310,6 +310,7 @@ where
                 .tx_hash(tx_hash)
                 .confirmations(options.asset_approve_confirmations)
                 .interval_ms(options.tx_wait_interval_ms)
+                .timeout_ms(options.tx_wait_timeout_ms)
                 .build();
             self.transactions.wait(wait_options).await?;
             log::info!(
@@ -347,6 +348,7 @@ where
             .tx_hash(send_tx_hash)
             .confirmations(options.deposit_confirmations)
             .interval_ms(options.tx_wait_interval_ms)
+            .timeout_ms(options.tx_wait_timeout_ms)
             .build();
         self.transactions.wait(wait_options).await?;
         log::info!(

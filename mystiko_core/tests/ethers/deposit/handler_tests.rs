@@ -287,6 +287,37 @@ async fn test_erc20_token_loop_deposit() {
 }
 
 #[tokio::test]
+async fn test_loop_deposit_timeout_error() {
+    let contract_address = ethers_address_from_string("0x390d485F4D43212D4ae8Cdd967a711514ed5a54f").unwrap();
+    let amount = U256::from_dec_str("1000000000000000000").unwrap();
+    let rollup_fee = U256::from_dec_str("100000000000000000").unwrap();
+    let commitment = U256::from_dec_str("1234").unwrap();
+    let random_s = 2345_u128;
+    let hash_k = U256::from_dec_str("3456").unwrap();
+    let encrypted_notes = Bytes::from_str("0x1234").unwrap();
+    let signer = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let deposit_options = DepositOptions::<TypedTransaction, TimeoutProvider>::builder()
+        .chain_id(97_u64)
+        .contract_address(contract_address)
+        .amount(amount)
+        .rollup_fee(rollup_fee)
+        .commitment(commitment)
+        .random_s(random_s)
+        .hash_k(hash_k)
+        .encrypted_notes(encrypted_notes)
+        .signer(signer)
+        .timeout_ms(1_u64)
+        .build();
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(97_u64, MockProvider::new())]));
+    let result = deposits.deposit(deposit_options).await;
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        "sending deposit transaction timed out after 1 ms"
+    );
+}
+
+#[tokio::test]
 async fn test_main_token_cross_chain_deposit() {
     let contract_address = ethers_address_from_string("0xd99F0C90BFDeDd5Bde0193b887c271C5458355Cf").unwrap();
     let amount = U256::from_dec_str("1000000000000000000").unwrap();
@@ -396,6 +427,41 @@ async fn test_erc20_token_cross_chain_deposit() {
     let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
     let tx_hash = deposits.cross_chain_deposit(deposit_options).await.unwrap();
     assert_eq!(tx_hash, expected_tx_hash);
+}
+
+#[tokio::test]
+async fn test_cross_chain_deposit_timeout_error() {
+    let contract_address = ethers_address_from_string("0xd99F0C90BFDeDd5Bde0193b887c271C5458355Cf").unwrap();
+    let amount = U256::from_dec_str("1000000000000000000").unwrap();
+    let rollup_fee = U256::from_dec_str("100000000000000000").unwrap();
+    let bridge_fee = U256::from_dec_str("200000000000000000").unwrap();
+    let executor_fee = U256::from_dec_str("300000000000000000").unwrap();
+    let commitment = U256::from_dec_str("1234").unwrap();
+    let random_s = 2345_u128;
+    let hash_k = U256::from_dec_str("3456").unwrap();
+    let encrypted_notes = Bytes::from_str("0x1234").unwrap();
+    let signer = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let deposit_options = CrossChainDepositOptions::<TypedTransaction, TimeoutProvider>::builder()
+        .chain_id(97_u64)
+        .contract_address(contract_address)
+        .amount(amount)
+        .rollup_fee(rollup_fee)
+        .bridge_fee(bridge_fee)
+        .executor_fee(executor_fee)
+        .commitment(commitment)
+        .random_s(random_s)
+        .hash_k(hash_k)
+        .encrypted_notes(encrypted_notes)
+        .signer(signer)
+        .timeout_ms(1_u64)
+        .build();
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(97_u64, MockProvider::new())]));
+    let result = deposits.cross_chain_deposit(deposit_options).await;
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        "sending cross_chain_deposit transaction timed out after 1 ms"
+    );
 }
 
 #[tokio::test]

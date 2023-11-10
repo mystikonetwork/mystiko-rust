@@ -1,4 +1,5 @@
 use crate::common::MockProviders;
+use crate::ethers::TimeoutProvider;
 use async_trait::async_trait;
 use ethers_core::abi::AbiDecode;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -156,6 +157,29 @@ async fn test_wait_transaction() {
 #[tokio::test]
 async fn test_wait_transaction_with_confirmations() {
     test_wait_transaction_inner(Some(10)).await
+}
+
+#[tokio::test]
+async fn test_wait_transaction_timeout_error() {
+    let provider = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
+    let mut providers = MockProviders::new();
+    providers
+        .expect_get_provider()
+        .withf(|chain_id| *chain_id == 97_u64)
+        .returning(move |_| Ok(provider.clone()));
+    let transactions = Transactions::<MockProviders>::builder().providers(providers).build();
+    let tx_hash = TxHash::decode_hex("0x0fe452459a23f379e4d40f154e1d8d58ab9b92d72b02939830dbfe3ecacc529d").unwrap();
+    let wait_options = WaitOptions::builder()
+        .chain_id(97_u64)
+        .tx_hash(tx_hash)
+        .timeout_ms(1_u64)
+        .build();
+    let result = transactions.wait(wait_options).await;
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        "wait transaction for confirmations timed out after 1 ms"
+    );
 }
 
 async fn test_wait_transaction_inner(confirmations: Option<u64>) {

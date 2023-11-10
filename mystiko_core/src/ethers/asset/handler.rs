@@ -1,10 +1,10 @@
 use crate::{
-    BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, FromContext, MystikoContext,
-    MystikoError, PublicAssetHandler, TransactionSigner, TransferOptions,
+    BalanceOptions, Erc20AllowanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, FromContext,
+    MystikoContext, MystikoError, PublicAssetHandler, TransactionSigner, TransferOptions,
 };
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{TxHash, U256};
+use ethers_core::types::{Address, TxHash, U256};
 use ethers_providers::Middleware;
 use mystiko_abi::erc20::ERC20;
 use mystiko_ethers::{Provider, Providers};
@@ -42,6 +42,8 @@ pub enum PublicAssetsError {
     TransferTimeoutError(u64),
     #[error("erc20_balance_of timed out after {0} ms")]
     Erc20BalanceOfTimeoutError(u64),
+    #[error("erc20_allowance timed out after {0} ms")]
+    Erc20AllowanceTimeoutError(u64),
     #[error("erc20_approve timed out after {0} ms")]
     Erc20ApproveTimeoutError(u64),
     #[error("erc20_transfer timed out after {0} ms")]
@@ -81,14 +83,12 @@ where
         S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
     {
-        let balance = self
-            .balance_of(
-                BalanceOptions::builder()
-                    .chain_id(options.chain_id)
-                    .owner(options.owner)
-                    .build(),
-            )
-            .await?;
+        let balance_options = BalanceOptions::builder()
+            .chain_id(options.chain_id)
+            .owner(options.owner)
+            .timeout_ms(options.timeout_ms)
+            .build();
+        let balance = self.balance_of(balance_options).await?;
         if balance < options.amount {
             return Err(PublicAssetsError::InsufficientBalanceError(balance, options.amount));
         }
@@ -119,18 +119,17 @@ where
             .await
             .map_err(PublicAssetsError::ProviderPoolError)?;
         let contract = ERC20::new(options.asset_address, provider);
-        if let Some(timeout_ms) = options.timeout_ms {
-            match tokio::time::timeout(Duration::from_millis(timeout_ms), async {
-                contract.balance_of(options.owner).await
-            })
+        erc20_balance_of(&contract, options.owner, options.timeout_ms).await
+    }
+
+    async fn erc20_allowance(&self, options: Erc20AllowanceOptions) -> Result<U256, Self::Error> {
+        let provider = self
+            .providers
+            .get_provider(options.chain_id)
             .await
-            {
-                Err(_) => Err(PublicAssetsError::Erc20BalanceOfTimeoutError(timeout_ms)),
-                Ok(result) => Ok(result?),
-            }
-        } else {
-            Ok(contract.balance_of(options.owner).await?)
-        }
+            .map_err(PublicAssetsError::ProviderPoolError)?;
+        let contract = ERC20::new(options.asset_address, provider);
+        erc20_allowance(&contract, options.owner, options.recipient, options.timeout_ms).await
     }
 
     async fn erc20_approve<T, S>(&self, options: Erc20ApproveOptions<T, S>) -> Result<Option<TxHash>, Self::Error>
@@ -144,11 +143,11 @@ where
             .await
             .map_err(PublicAssetsError::ProviderPoolError)?;
         let contract = ERC20::new(options.asset_address, provider);
-        let balance = contract.balance_of(options.owner).await?;
+        let balance = erc20_balance_of(&contract, options.owner, options.timeout_ms).await?;
         if balance < options.amount {
             return Err(PublicAssetsError::InsufficientBalanceError(balance, options.amount));
         }
-        let allowance = contract.allowance(options.owner, options.recipient).await?;
+        let allowance = erc20_allowance(&contract, options.owner, options.recipient, options.timeout_ms).await?;
         if allowance.le(&options.amount) {
             let mut tx = options.tx.into();
             tx.set_to(options.asset_address);
@@ -228,5 +227,44 @@ where
         Ok(Self {
             providers: context.providers.clone(),
         })
+    }
+}
+
+async fn erc20_balance_of(
+    contract: &ERC20<Provider>,
+    owner: Address,
+    timeout_ms: Option<u64>,
+) -> Result<U256, PublicAssetsError> {
+    if let Some(timeout_ms) = timeout_ms {
+        match tokio::time::timeout(Duration::from_millis(timeout_ms), async {
+            contract.balance_of(owner).await
+        })
+        .await
+        {
+            Err(_) => Err(PublicAssetsError::Erc20BalanceOfTimeoutError(timeout_ms)),
+            Ok(result) => Ok(result?),
+        }
+    } else {
+        Ok(contract.balance_of(owner).await?)
+    }
+}
+
+async fn erc20_allowance(
+    contract: &ERC20<Provider>,
+    owner: Address,
+    spender: Address,
+    timeout_ms: Option<u64>,
+) -> Result<U256, PublicAssetsError> {
+    if let Some(timeout_ms) = timeout_ms {
+        match tokio::time::timeout(Duration::from_millis(timeout_ms), async {
+            contract.allowance(owner, spender).await
+        })
+        .await
+        {
+            Err(_) => Err(PublicAssetsError::Erc20AllowanceTimeoutError(timeout_ms)),
+            Ok(result) => Ok(result?),
+        }
+    } else {
+        Ok(contract.allowance(owner, spender).await?)
     }
 }
