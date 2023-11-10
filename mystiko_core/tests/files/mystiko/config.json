@@ -21,6 +21,7 @@
         }
       ],
       "signerEndpoint": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      "transactionType": "legacy",
       "depositContracts": [
         {
           "version": 2,
@@ -138,6 +139,7 @@
         }
       ],
       "signerEndpoint": "https://data-seed-prebsc-2-s2.binance.org:8545",
+      "transactionType": "eip1559",
       "depositContracts": [
         {
           "version": 2,

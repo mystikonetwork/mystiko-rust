@@ -11,14 +11,14 @@ use typed_builder::TypedBuilder;
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct WaitOptions {
-    chain_id: u64,
-    tx_hash: TxHash,
+    pub chain_id: u64,
+    pub tx_hash: TxHash,
     #[builder(default)]
-    confirmations: Option<u64>,
+    pub confirmations: Option<u64>,
     #[builder(default)]
-    timeout_ms: Option<u64>,
+    pub timeout_ms: Option<u64>,
     #[builder(default)]
-    interval_ms: Option<u64>,
+    pub interval_ms: Option<u64>,
 }
 
 #[async_trait]

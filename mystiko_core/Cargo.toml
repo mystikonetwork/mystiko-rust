@@ -48,4 +48,5 @@ mockito = { version = "1.1.0" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["fs"] }
 mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc", features = ["server"] }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
+rand = { version = "0.8.5" }
 tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }

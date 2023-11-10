@@ -1,21 +1,28 @@
 use crate::common::{create_database, MockProvider, MockProviders};
 use crate::handler::{MockDepositContracts, MockPublicAssets, MockTransactions};
-use ethers_core::types::U256;
+use ethers_core::abi::{AbiDecode, AbiEncode};
+use ethers_core::types::transaction::eip2718::TypedTransaction;
+use ethers_core::types::{Address, Eip1559TransactionRequest, TransactionReceipt, TransactionRequest, TxHash, U256};
+use ethers_signers::{LocalWallet, Signer};
 use mystiko_config::MystikoConfig;
 use mystiko_core::{
-    AccountHandler, Accounts, Database, DepositHandler, DepositQuote, Deposits, DepositsOptions, WalletHandler, Wallets,
+    AccountHandler, Accounts, Database, DepositHandler, DepositQuote, Deposits, DepositsOptions, PrivateKeySigner,
+    WalletHandler, Wallets,
 };
 use mystiko_ethers::{Provider, ProviderWrapper};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::{Account, Wallet};
 use mystiko_protos::core::handler::v1::{
-    CreateAccountOptions, CreateDepositOptions, CreateWalletOptions, QuoteDepositOptions,
+    CreateAccountOptions, CreateDepositOptions, CreateWalletOptions, QuoteDepositOptions, SendDepositOptions,
 };
 use mystiko_protos::core::v1::DepositStatus;
 use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::address::ethers_address_from_string;
+use mystiko_utils::convert::number_to_u256_decimal;
+use mystiko_utils::hex::encode_hex;
 use std::collections::HashMap;
+use std::ops::Add;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -498,6 +505,410 @@ async fn test_cross_chain_deposit_erc20_token_create() {
     assert!(deposit.error_message.is_none());
 }
 
+#[tokio::test]
+async fn test_loop_deposit_main_token_send() {
+    let (owner, private_key) = generate_private_key();
+    let contract_address = ethers_address_from_string("0x390d485F4D43212D4ae8Cdd967a711514ed5a54f").unwrap();
+    let deposit_tx_hash =
+        TxHash::decode_hex("0xb56298dea53128b60ad2df8bf978c1a82d41798fa8272002f08e98fefdbc558f").unwrap();
+    let amount = number_to_u256_decimal(10_f64, Some(18)).unwrap();
+    let rollup_fee_amount = number_to_u256_decimal(0.01_f64, Some(18)).unwrap();
+    let mut assets = MockPublicAssets::new();
+    assets
+        .expect_balance_of()
+        .withf(move |options| {
+            options.chain_id == 97_u64 && options.owner == owner && options.timeout_ms == Some(100_u64)
+        })
+        .returning(|_| Ok(U256::from_dec_str("100000000000000000000").unwrap()));
+    let mut deposit_contracts = MockDepositContracts::new();
+    deposit_contracts
+        .expect_deposit::<TypedTransaction, PrivateKeySigner<MockProviders>>()
+        .withf(move |options| {
+            options.chain_id == 97_u64
+                && options.contract_address == contract_address
+                && options.timeout_ms == Some(1000_u64)
+                && options.amount == amount
+                && options.rollup_fee == rollup_fee_amount
+        })
+        .returning(move |_| Ok(deposit_tx_hash));
+    let mut transactions = MockTransactions::new();
+    transactions
+        .expect_create()
+        .withf(|_, tx_type| tx_type == &mystiko_types::TransactionType::Eip1559)
+        .returning(|_, _| Ok(TypedTransaction::Eip1559(Eip1559TransactionRequest::new())));
+    transactions
+        .expect_wait()
+        .withf(move |options| {
+            options.chain_id == 97_u64
+                && options.tx_hash == deposit_tx_hash
+                && options.confirmations == Some(10_u64)
+                && options.interval_ms == Some(10_u64)
+                && options.timeout_ms == Some(2000_u64)
+        })
+        .returning(move |_| {
+            Ok(Some(TransactionReceipt {
+                transaction_hash: deposit_tx_hash,
+                ..Default::default()
+            }))
+        });
+    let options = MockOptions::builder()
+        .assets(assets)
+        .deposit_contracts(deposit_contracts)
+        .transactions(transactions)
+        .build();
+    let (db, handler) = setup(options).await;
+    let (_, account) = create_wallet(db).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("BNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(97_u64)
+        .asset_symbol("BNB".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .deposit_quote(quote)
+        .build();
+    let deposit = handler.create(options).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .query_timeout_ms(100_u64)
+        .tx_send_timeout_ms(1000_u64)
+        .tx_wait_timeout_ms(2000_u64)
+        .tx_wait_interval_ms(10_u64)
+        .private_key(private_key)
+        .deposit_confirmations(10_u64)
+        .build();
+    let deposit = handler.send(options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Queued as i32);
+    assert_eq!(deposit.queued_transaction_hash(), deposit_tx_hash.encode_hex());
+    assert!(deposit.error_message.is_none());
+}
+
+#[tokio::test]
+async fn test_loop_deposit_erc20_token_send() {
+    let (owner, private_key) = generate_private_key();
+    let contract_address = ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap();
+    let asset_address = ethers_address_from_string("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap();
+    let asset_approve_tx_hash =
+        TxHash::decode_hex("0xf5079a68aa75c4b4f1cfd2ef50e23d60ef9211fb2f33481164ebc7e2cf536493").unwrap();
+    let deposit_tx_hash =
+        TxHash::decode_hex("0xb56298dea53128b60ad2df8bf978c1a82d41798fa8272002f08e98fefdbc558f").unwrap();
+    let amount = number_to_u256_decimal(10_f64, Some(16)).unwrap();
+    let rollup_fee_amount = number_to_u256_decimal(0.01_f64, Some(16)).unwrap();
+    let mut assets = MockPublicAssets::new();
+    assets
+        .expect_erc20_balance_of()
+        .withf(move |options| {
+            options.chain_id == 5_u64
+                && options.owner == owner
+                && options.timeout_ms == Some(100_u64)
+                && options.asset_address == asset_address
+        })
+        .returning(|_| Ok(U256::from_dec_str("100000000000000000000").unwrap()));
+    assets
+        .expect_erc20_approve::<TypedTransaction, PrivateKeySigner<MockProviders>>()
+        .withf(move |options| {
+            options.chain_id == 5_u64
+                && options.owner == owner
+                && options.timeout_ms == Some(1000_u64)
+                && options.asset_address == asset_address
+                && options.recipient == contract_address
+                && options.amount == amount.add(rollup_fee_amount)
+        })
+        .returning(move |_| Ok(Some(asset_approve_tx_hash)));
+    let mut deposit_contracts = MockDepositContracts::new();
+    deposit_contracts
+        .expect_deposit::<TypedTransaction, PrivateKeySigner<MockProviders>>()
+        .withf(move |options| {
+            options.chain_id == 5_u64
+                && options.contract_address == contract_address
+                && options.timeout_ms == Some(1000_u64)
+                && options.amount == amount
+                && options.rollup_fee == rollup_fee_amount
+        })
+        .returning(move |_| Ok(deposit_tx_hash));
+    let mut transactions = MockTransactions::new();
+    transactions
+        .expect_create()
+        .withf(|_, tx_type| tx_type == &mystiko_types::TransactionType::Legacy)
+        .returning(|_, _| Ok(TypedTransaction::Legacy(TransactionRequest::new())));
+    transactions
+        .expect_wait()
+        .withf(move |options| {
+            options.chain_id == 5_u64
+                && options.confirmations == Some(10_u64)
+                && options.interval_ms == Some(10_u64)
+                && options.timeout_ms == Some(2000_u64)
+        })
+        .returning(move |options| {
+            Ok(Some(TransactionReceipt {
+                transaction_hash: options.tx_hash,
+                ..Default::default()
+            }))
+        });
+    let options = MockOptions::builder()
+        .assets(assets)
+        .deposit_contracts(deposit_contracts)
+        .transactions(transactions)
+        .build();
+    let (db, handler) = setup(options).await;
+    let (_, account) = create_wallet(db).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("MTT".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(5_u64)
+        .asset_symbol("MTT".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .deposit_quote(quote)
+        .build();
+    let deposit = handler.create(options).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .query_timeout_ms(100_u64)
+        .tx_send_timeout_ms(1000_u64)
+        .tx_wait_timeout_ms(2000_u64)
+        .tx_wait_interval_ms(10_u64)
+        .private_key(private_key)
+        .asset_approve_confirmations(10_u64)
+        .deposit_confirmations(10_u64)
+        .build();
+    let deposit = handler.send(options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Queued as i32);
+    assert_eq!(
+        deposit.asset_approve_transaction_hash[0],
+        asset_approve_tx_hash.encode_hex()
+    );
+    assert_eq!(deposit.queued_transaction_hash(), deposit_tx_hash.encode_hex());
+    assert!(deposit.error_message.is_none());
+}
+
+#[tokio::test]
+async fn test_cross_chain_deposit_main_token_send() {
+    let (owner, private_key) = generate_private_key();
+    let contract_address = ethers_address_from_string("0xd99F0C90BFDeDd5Bde0193b887c271C5458355Cf").unwrap();
+    let deposit_tx_hash =
+        TxHash::decode_hex("0xb56298dea53128b60ad2df8bf978c1a82d41798fa8272002f08e98fefdbc558f").unwrap();
+    let amount = number_to_u256_decimal(10_f64, Some(18)).unwrap();
+    let rollup_fee_amount = number_to_u256_decimal(0.01_f64, Some(18)).unwrap();
+    let bridge_fee_amount = number_to_u256_decimal(0.00001_f64, Some(18)).unwrap();
+    let executor_fee_amount = number_to_u256_decimal(0.0001_f64, Some(18)).unwrap();
+    let mut assets = MockPublicAssets::new();
+    assets
+        .expect_balance_of()
+        .withf(move |options| {
+            options.chain_id == 97_u64 && options.owner == owner && options.timeout_ms == Some(100_u64)
+        })
+        .returning(|_| Ok(U256::from_dec_str("100000000000000000000").unwrap()));
+    let mut deposit_contracts = MockDepositContracts::new();
+    deposit_contracts
+        .expect_cross_chain_deposit::<TypedTransaction, PrivateKeySigner<MockProviders>>()
+        .withf(move |options| {
+            options.chain_id == 97_u64
+                && options.contract_address == contract_address
+                && options.timeout_ms == Some(1000_u64)
+                && options.amount == amount
+                && options.rollup_fee == rollup_fee_amount
+                && options.bridge_fee == bridge_fee_amount
+                && options.executor_fee == executor_fee_amount
+        })
+        .returning(move |_| Ok(deposit_tx_hash));
+    let mut transactions = MockTransactions::new();
+    transactions
+        .expect_create()
+        .withf(|_, tx_type| tx_type == &mystiko_types::TransactionType::Eip1559)
+        .returning(|_, _| Ok(TypedTransaction::Eip1559(Eip1559TransactionRequest::new())));
+    transactions
+        .expect_wait()
+        .withf(move |options| {
+            options.chain_id == 97_u64
+                && options.tx_hash == deposit_tx_hash
+                && options.confirmations == Some(10_u64)
+                && options.interval_ms == Some(10_u64)
+                && options.timeout_ms == Some(2000_u64)
+        })
+        .returning(move |_| {
+            Ok(Some(TransactionReceipt {
+                transaction_hash: deposit_tx_hash,
+                ..Default::default()
+            }))
+        });
+    let options = MockOptions::builder()
+        .assets(assets)
+        .deposit_contracts(deposit_contracts)
+        .transactions(transactions)
+        .build();
+    let (db, handler) = setup(options).await;
+    let (_, account) = create_wallet(db).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("BNB".to_string())
+        .min_bridge_fee_amount(0.00001_f64)
+        .bridge_fee_asset_symbol("BNB".to_string())
+        .min_executor_fee_amount(0.0001_f64)
+        .executor_fee_asset_symbol("BNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(97_u64)
+        .dst_chain_id(5_u64)
+        .asset_symbol("BNB".to_string())
+        .bridge_type(BridgeType::Tbridge as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .bridge_fee_amount(0.00001_f64)
+        .executor_fee_amount(0.0001_f64)
+        .deposit_quote(quote)
+        .build();
+    let deposit = handler.create(options).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .query_timeout_ms(100_u64)
+        .tx_send_timeout_ms(1000_u64)
+        .tx_wait_timeout_ms(2000_u64)
+        .tx_wait_interval_ms(10_u64)
+        .private_key(private_key)
+        .deposit_confirmations(10_u64)
+        .build();
+    let deposit = handler.send(options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::SrcSucceeded as i32);
+    assert_eq!(deposit.src_chain_transaction_hash(), deposit_tx_hash.encode_hex());
+    assert!(deposit.error_message.is_none());
+}
+
+#[tokio::test]
+async fn test_cross_chain_deposit_erc20_token_send() {
+    let (owner, private_key) = generate_private_key();
+    let contract_address = ethers_address_from_string("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2").unwrap();
+    let asset_address = ethers_address_from_string("0x388C818CA8B9251b393131C08a736A67ccB19297").unwrap();
+    let asset_approve_tx_hash =
+        TxHash::decode_hex("0xf5079a68aa75c4b4f1cfd2ef50e23d60ef9211fb2f33481164ebc7e2cf536493").unwrap();
+    let deposit_tx_hash =
+        TxHash::decode_hex("0xb56298dea53128b60ad2df8bf978c1a82d41798fa8272002f08e98fefdbc558f").unwrap();
+    let amount = number_to_u256_decimal(10_f64, Some(18)).unwrap();
+    let rollup_fee_amount = number_to_u256_decimal(0.01_f64, Some(18)).unwrap();
+    let bridge_fee_amount = number_to_u256_decimal(0.00001_f64, Some(18)).unwrap();
+    let executor_fee_amount = number_to_u256_decimal(0.0001_f64, Some(18)).unwrap();
+    let mut assets = MockPublicAssets::new();
+    assets
+        .expect_erc20_balance_of()
+        .withf(move |options| {
+            options.chain_id == 5_u64
+                && options.owner == owner
+                && options.timeout_ms == Some(100_u64)
+                && options.asset_address == asset_address
+        })
+        .returning(|_| Ok(U256::from_dec_str("100000000000000000000").unwrap()));
+    assets
+        .expect_erc20_approve::<TypedTransaction, PrivateKeySigner<MockProviders>>()
+        .withf(move |options| {
+            let total_amount = amount
+                .add(rollup_fee_amount)
+                .add(bridge_fee_amount)
+                .add(executor_fee_amount);
+            options.chain_id == 5_u64
+                && options.owner == owner
+                && options.timeout_ms == Some(1000_u64)
+                && options.asset_address == asset_address
+                && options.recipient == contract_address
+                && options.amount == total_amount
+        })
+        .returning(move |_| Ok(Some(asset_approve_tx_hash)));
+    let mut deposit_contracts = MockDepositContracts::new();
+    deposit_contracts
+        .expect_cross_chain_deposit::<TypedTransaction, PrivateKeySigner<MockProviders>>()
+        .withf(move |options| {
+            options.chain_id == 5_u64
+                && options.contract_address == contract_address
+                && options.timeout_ms == Some(1000_u64)
+                && options.amount == amount
+                && options.rollup_fee == rollup_fee_amount
+                && options.bridge_fee == bridge_fee_amount
+                && options.executor_fee == executor_fee_amount
+        })
+        .returning(move |_| Ok(deposit_tx_hash));
+    let mut transactions = MockTransactions::new();
+    transactions
+        .expect_create()
+        .withf(|_, tx_type| tx_type == &mystiko_types::TransactionType::Legacy)
+        .returning(|_, _| Ok(TypedTransaction::Legacy(TransactionRequest::new())));
+    transactions
+        .expect_wait()
+        .withf(move |options| {
+            options.chain_id == 5_u64
+                && options.confirmations == Some(10_u64)
+                && options.interval_ms == Some(10_u64)
+                && options.timeout_ms == Some(2000_u64)
+        })
+        .returning(move |options| {
+            Ok(Some(TransactionReceipt {
+                transaction_hash: options.tx_hash,
+                ..Default::default()
+            }))
+        });
+    let options = MockOptions::builder()
+        .assets(assets)
+        .deposit_contracts(deposit_contracts)
+        .transactions(transactions)
+        .build();
+    let (db, handler) = setup(options).await;
+    let (_, account) = create_wallet(db).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("mBNB".to_string())
+        .min_bridge_fee_amount(0.00001_f64)
+        .bridge_fee_asset_symbol("mBNB".to_string())
+        .min_executor_fee_amount(0.0001_f64)
+        .executor_fee_asset_symbol("mBNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(5_u64)
+        .dst_chain_id(97_u64)
+        .asset_symbol("mBNB".to_string())
+        .bridge_type(BridgeType::Tbridge as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .bridge_fee_amount(0.00001_f64)
+        .executor_fee_amount(0.0001_f64)
+        .deposit_quote(quote)
+        .build();
+    let deposit = handler.create(options).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .query_timeout_ms(100_u64)
+        .tx_send_timeout_ms(1000_u64)
+        .tx_wait_timeout_ms(2000_u64)
+        .tx_wait_interval_ms(10_u64)
+        .private_key(private_key)
+        .asset_approve_confirmations(10_u64)
+        .deposit_confirmations(10_u64)
+        .build();
+    let deposit = handler.send(options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::SrcSucceeded as i32);
+    assert_eq!(
+        deposit.asset_approve_transaction_hash[0],
+        asset_approve_tx_hash.encode_hex()
+    );
+    assert_eq!(deposit.src_chain_transaction_hash(), deposit_tx_hash.encode_hex());
+    assert!(deposit.error_message.is_none());
+}
+
 #[derive(Debug, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 struct MockOptions {
@@ -575,4 +986,11 @@ async fn create_wallet(db: Arc<DatabaseType>) -> (Wallet, Account) {
         .await
         .unwrap();
     (wallet, account)
+}
+
+fn generate_private_key() -> (Address, String) {
+    let local_wallet = LocalWallet::new(&mut rand::thread_rng());
+    let address = local_wallet.address();
+    let key = local_wallet.signer().to_bytes();
+    (address, encode_hex(key))
 }

@@ -84,8 +84,8 @@ where
 
     async fn deposit<T, S>(&self, options: DepositOptions<T, S>) -> Result<TxHash, Self::Error>
     where
-        S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
+        S: TransactionSigner + 'static,
     {
         let contract_config = self.get_config(options.chain_id, &options.contract_address)?;
         let provider = self
@@ -132,8 +132,8 @@ where
 
     async fn cross_chain_deposit<T, S>(&self, options: CrossChainDepositOptions<T, S>) -> Result<TxHash, Self::Error>
     where
-        S: TransactionSigner + 'static,
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
+        S: TransactionSigner + 'static,
     {
         let contract_config = self.get_config(options.chain_id, &options.contract_address)?;
         let provider = self

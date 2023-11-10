@@ -80,11 +80,11 @@ pub trait DepositContractHandler: Send + Sync {
 
     async fn deposit<T, S>(&self, options: DepositOptions<T, S>) -> Result<TxHash, Self::Error>
     where
-        S: TransactionSigner + 'static,
-        T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static;
+        T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
+        S: TransactionSigner + 'static;
 
     async fn cross_chain_deposit<T, S>(&self, options: CrossChainDepositOptions<T, S>) -> Result<TxHash, Self::Error>
     where
-        S: TransactionSigner + 'static,
-        T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static;
+        T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
+        S: TransactionSigner + 'static;
 }

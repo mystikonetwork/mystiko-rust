@@ -166,7 +166,7 @@ where
         )?;
         let deposit = context.create_deposit(&options, wallet.id).await?;
         let deposit = self.db.deposits.insert(&deposit).await?;
-        log::info!("successfully created a deposit(id = {:?})", deposit.id);
+        log::info!("successfully created a {}", format_deposit_log(&deposit));
         Ok(Deposit::document_into_proto(deposit))
     }
 
@@ -197,25 +197,20 @@ where
         let owner = signer.address().await?;
         let owner_address = ethers_address_to_string(&owner);
         log::info!(
-            "sending deposit(id = {:?}) transaction with signer at address {}",
-            deposit.id,
+            "sending {} with signer at address {}",
+            format_deposit_log(&deposit),
             owner_address
         );
         match self.send_transaction(&options, deposit.clone(), signer, owner).await {
             Err(err) => {
-                log::error!("failed to send deposit(id = {:?}) transaction: {}", deposit.id, err);
+                log::error!("failed to send {}: {}", format_deposit_log(&deposit), err);
                 deposit.data.status = DepositStatus::Failed as i32;
                 deposit.data.error_message = Some(err.to_string());
                 self.db.deposits.update(&deposit).await?;
                 Err(err)
             }
             Ok(deposit) => {
-                let status = DepositStatus::from_i32(deposit.data.status).unwrap_or_default();
-                log::info!(
-                    "successfully sent deposit(id = {:?}, status = {:?}) transaction",
-                    deposit.id,
-                    status
-                );
+                log::info!("successfully sent {}", format_deposit_log(&deposit));
                 Ok(Deposit::document_into_proto(deposit))
             }
         }
@@ -290,12 +285,11 @@ where
                     .map(|(asset_symbol, tx_hash)| {
                         let tx_hash = tx_hash.encode_hex();
                         log::info!(
-                            "successfully submitted {} approving transaction(chain_id = {}, hash = {:?}) \
-                            for deposit(id = {:?})",
+                            "successfully submitted {} approving transaction(chain_id={}, hash={:?}) for {}",
                             asset_symbol,
                             deposit.data.chain_id,
                             tx_hash,
-                            deposit.id,
+                            format_deposit_log(&deposit),
                         );
                         tx_hash
                     })
@@ -314,11 +308,11 @@ where
                 .build();
             self.transactions.wait(wait_options).await?;
             log::info!(
-                "{} approving transaction(chain_id = {}, hash = {:?}) for deposit(id = {:?}) is confirmed",
-                deposit.data.chain_id,
+                "successfully confirmed {} approving transaction(chain_id={}, hash={:?}) for {}",
                 asset_symbol,
-                tx_hash,
-                deposit.id,
+                deposit.data.chain_id,
+                tx_hash.encode_hex(),
+                format_deposit_log(&deposit),
             )
         }
         deposit.data.status = DepositStatus::AssetApproved as i32;
@@ -337,10 +331,10 @@ where
     {
         let send_tx_hash = context.send_deposit(&mut deposit, options, signer.clone()).await?;
         log::info!(
-            "successfully submitted deposit(id = {:?}) transaction(chain_id = {}, hash = {:?})",
-            deposit.id,
+            "successfully submitted transaction(chain_id={}, hash={:?}) for {}",
             deposit.data.chain_id,
-            send_tx_hash.encode_hex()
+            send_tx_hash.encode_hex(),
+            format_deposit_log(&deposit),
         );
         self.db.deposits.update(&deposit).await?;
         let wait_options = WaitOptions::builder()
@@ -352,12 +346,12 @@ where
             .build();
         self.transactions.wait(wait_options).await?;
         log::info!(
-            "deposit(id = {:?}) transaction(chain_id = {}, hash = {:?}) is confirmed",
-            deposit.id,
+            "successfully confirmed transaction(chain_id={}, hash={:?}) for {}",
             deposit.data.chain_id,
-            send_tx_hash.encode_hex()
+            send_tx_hash.encode_hex(),
+            format_deposit_log(&deposit),
         );
-        if context.contract_config.bridge_type() == &mystiko_types::BridgeType::Loop {
+        if context.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop {
             deposit.data.status = DepositStatus::SrcSucceeded as i32;
         } else {
             deposit.data.status = DepositStatus::Queued as i32;
@@ -377,7 +371,7 @@ where
     DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
 {
     async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
-        let options = DepositsOptions::builder()
+        let options = DepositsOptions::<F, S, A, D, T>::builder()
             .db(context.db.clone())
             .config(context.config.clone())
             .signer_providers(context.signer_providers.clone())
@@ -683,6 +677,7 @@ where
                 .rollup_fee(rollup_fee_amount)
                 .tx(tx)
                 .signer(signer)
+                .timeout_ms(options.tx_send_timeout_ms)
                 .build();
             let tx_hash = self.deposit_contracts.cross_chain_deposit(options).await?;
             deposit.data.src_chain_transaction_hash = Some(tx_hash.encode_hex());
@@ -975,26 +970,72 @@ fn create_assets_map(
     if contract_config.bridge_type() != &mystiko_types::BridgeType::Loop {
         if bridge_fee_amount > 0_f64 {
             let bridge_fee_asset = contract_config.bridge_fee_asset().clone();
-            if let Some(asset_context) = assets.get_mut(bridge_fee_asset.asset_address()) {
-                asset_context.amount += bridge_fee_amount;
-            } else {
-                assets.insert(
-                    bridge_fee_asset.asset_address().to_string(),
-                    AssetContext::new(chain_id, bridge_fee_asset, bridge_fee_amount, query_timeout_ms)?,
-                );
-            }
+            update_assets_map(
+                &mut assets,
+                chain_id,
+                bridge_fee_asset,
+                bridge_fee_amount,
+                query_timeout_ms,
+            )
         }
         if executor_fee_amount > 0_f64 {
             let executor_fee_asset = contract_config.executor_fee_asset().clone();
-            if let Some(asset_context) = assets.get_mut(executor_fee_asset.asset_address()) {
-                asset_context.amount += executor_fee_amount;
-            } else {
-                assets.insert(
-                    executor_fee_asset.asset_address().to_string(),
-                    AssetContext::new(chain_id, executor_fee_asset, executor_fee_amount, query_timeout_ms)?,
-                );
-            }
+            update_assets_map(
+                &mut assets,
+                chain_id,
+                executor_fee_asset,
+                executor_fee_amount,
+                query_timeout_ms,
+            )
         }
     }
     Ok(assets)
+}
+
+fn update_assets_map(
+    assets: &mut HashMap<String, AssetContext>,
+    chain_id: u64,
+    asset_config: AssetConfig,
+    amount: f64,
+    query_timeout_ms: Option<u64>,
+) {
+    if let Some(asset_context) = assets.get_mut(asset_config.asset_address()) {
+        asset_context.amount += amount;
+        asset_context.converted_amount =
+            number_to_u256_decimal(asset_context.amount, Some(asset_config.asset_decimals())).unwrap();
+    } else {
+        assets.insert(
+            asset_config.asset_address().to_string(),
+            AssetContext::new(chain_id, asset_config, amount, query_timeout_ms).unwrap(),
+        );
+    }
+}
+
+fn format_deposit_log(deposit: &Document<Deposit>) -> String {
+    if deposit.data.bridge_type == BridgeType::Loop as i32 {
+        format!(
+            "deposit(id={:?}, chain_id={}, asset_symbol={}, amount={}, rollup_fee_amount={}, status={:?})",
+            deposit.id,
+            deposit.data.chain_id,
+            deposit.data.asset_symbol,
+            deposit.data.amount,
+            deposit.data.rollup_fee_amount,
+            DepositStatus::from_i32(deposit.data.status).unwrap_or_default()
+        )
+    } else {
+        format!(
+            "deposit(id={:?}, chain_id={}, dst_chain_id={}, bridge_type={:?}, asset_symbol={}, \
+            amount={}, rollup_fee_amount={}, bridge_fee_amount={}, executor_fee_amount={}, status={:?})",
+            deposit.id,
+            deposit.data.chain_id,
+            deposit.data.dst_chain_id,
+            BridgeType::from_i32(deposit.data.bridge_type).unwrap_or_default(),
+            deposit.data.asset_symbol,
+            deposit.data.amount,
+            deposit.data.rollup_fee_amount,
+            deposit.data.bridge_fee_amount.unwrap_or_default(),
+            deposit.data.executor_fee_amount.unwrap_or_default(),
+            DepositStatus::from_i32(deposit.data.status).unwrap_or_default()
+        )
+    }
 }
