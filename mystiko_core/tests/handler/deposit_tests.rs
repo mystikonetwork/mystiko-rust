@@ -1,10 +1,9 @@
 use crate::common::{create_database, MockProvider, MockProviders};
-use crate::handler::{MockDeposits, MockPublicAssets, MockTransactions};
+use crate::handler::{MockDepositContracts, MockPublicAssets, MockTransactions};
 use ethers_core::types::U256;
 use mystiko_config::MystikoConfig;
 use mystiko_core::{
-    AccountHandler, AccountHandlerV1, Database, DepositHandler, DepositHandlerV1, DepositHandlerV1Options,
-    DepositQuote, WalletHandler, WalletHandlerV1,
+    AccountHandler, Accounts, Database, DepositHandler, DepositQuote, Deposits, DepositsOptions, WalletHandler, Wallets,
 };
 use mystiko_ethers::{Provider, ProviderWrapper};
 use mystiko_protos::common::v1::BridgeType;
@@ -23,8 +22,8 @@ use typed_builder::TypedBuilder;
 #[tokio::test]
 async fn test_loop_deposit_quote() {
     let address = ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap();
-    let mut deposits = MockDeposits::new();
-    deposits
+    let mut deposit_contracts = MockDepositContracts::new();
+    deposit_contracts
         .expect_quote()
         .withf(move |options| options.chain_id == 5_u64 && options.contract_address == address)
         .returning(|_| {
@@ -34,7 +33,7 @@ async fn test_loop_deposit_quote() {
                 .min_rollup_fee_amount(U256::from_dec_str("100000000000000").unwrap())
                 .build())
         });
-    let options = MockOptions::builder().deposits(deposits).build();
+    let options = MockOptions::builder().deposit_contracts(deposit_contracts).build();
     let (_, handler) = setup(options).await;
     let quote_options = QuoteDepositOptions::builder()
         .chain_id(5_u64)
@@ -56,8 +55,8 @@ async fn test_loop_deposit_quote() {
 #[tokio::test]
 async fn test_cross_chain_deposit_quote() {
     let address = ethers_address_from_string("0x961F315A836542e603A3df2E0dd9d4ECd06ebC67").unwrap();
-    let mut deposits = MockDeposits::new();
-    deposits
+    let mut deposit_contracts = MockDepositContracts::new();
+    deposit_contracts
         .expect_quote()
         .withf(move |options| options.chain_id == 5_u64 && options.contract_address == address)
         .returning(|_| {
@@ -69,7 +68,7 @@ async fn test_cross_chain_deposit_quote() {
                 .min_executor_fee_amount(U256::from_dec_str("1000000000000").unwrap())
                 .build())
         });
-    let options = MockOptions::builder().deposits(deposits).build();
+    let options = MockOptions::builder().deposit_contracts(deposit_contracts).build();
     let (_, handler) = setup(options).await;
     let quote_options = QuoteDepositOptions::builder()
         .chain_id(5_u64)
@@ -170,8 +169,8 @@ async fn test_cross_chain_deposit_summary() {
 #[tokio::test]
 async fn test_deposit_summary_without_quote() {
     let address = ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap();
-    let mut deposits = MockDeposits::new();
-    deposits
+    let mut deposit_contracts = MockDepositContracts::new();
+    deposit_contracts
         .expect_quote()
         .withf(move |options| options.chain_id == 5_u64 && options.contract_address == address)
         .returning(|_| {
@@ -181,7 +180,7 @@ async fn test_deposit_summary_without_quote() {
                 .min_rollup_fee_amount(U256::from_dec_str("100000000000000").unwrap())
                 .build())
         });
-    let options = MockOptions::builder().deposits(deposits).build();
+    let options = MockOptions::builder().deposit_contracts(deposit_contracts).build();
     let (_, handler) = setup(options).await;
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -502,26 +501,26 @@ async fn test_cross_chain_deposit_erc20_token_create() {
 #[derive(Debug, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 struct MockOptions {
-    deposits: MockDeposits,
+    deposit_contracts: MockDepositContracts,
     assets: MockPublicAssets,
     transactions: MockTransactions,
     providers: HashMap<u64, MockProvider>,
 }
 
-type DepositHandlerV1OptionsType = DepositHandlerV1Options<
+type DepositHandlerV1OptionsType = DepositsOptions<
     SqlStatementFormatter,
     SqliteStorage,
     MockProviders,
     MockPublicAssets,
-    MockDeposits,
+    MockDepositContracts,
     MockTransactions,
 >;
-type DepositHandlerV1Type = DepositHandlerV1<
+type DepositHandlerV1Type = Deposits<
     SqlStatementFormatter,
     SqliteStorage,
     MockProviders,
     MockPublicAssets,
-    MockDeposits,
+    MockDepositContracts,
     MockTransactions,
 >;
 type DatabaseType = Database<SqlStatementFormatter, SqliteStorage>;
@@ -557,7 +556,7 @@ async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositHandlerV1Type
             .db(database.clone())
             .signer_providers(providers)
             .assets(options.assets)
-            .deposits(options.deposits)
+            .deposit_contracts(options.deposit_contracts)
             .transactions(options.transactions)
             .build(),
     );
@@ -565,8 +564,8 @@ async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositHandlerV1Type
 }
 
 async fn create_wallet(db: Arc<DatabaseType>) -> (Wallet, Account) {
-    let wallets = WalletHandlerV1::new(db.clone());
-    let accounts = AccountHandlerV1::new(db);
+    let wallets = Wallets::new(db.clone());
+    let accounts = Accounts::new(db);
     let wallet = wallets
         .create(&CreateWalletOptions::builder().password("P@ssw0rd").build())
         .await

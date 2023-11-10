@@ -1,7 +1,7 @@
 use crate::common::create_database;
 use mystiko_core::WalletHandler;
 use mystiko_core::{AccountColumn, Database};
-use mystiko_core::{AccountHandler, AccountHandlerV1, WalletHandlerV1};
+use mystiko_core::{AccountHandler, Accounts, Wallets};
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::full_public_key;
@@ -14,15 +14,15 @@ use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use std::sync::Arc;
 
 type TypedDatabase = Database<SqlStatementFormatter, SqliteStorage>;
-type TypedWalletHandler = WalletHandlerV1<SqlStatementFormatter, SqliteStorage>;
-type TypedAccountHandler = AccountHandlerV1<SqlStatementFormatter, SqliteStorage>;
+type TypedWalletHandler = Wallets<SqlStatementFormatter, SqliteStorage>;
+type TypedAccountHandler = Accounts<SqlStatementFormatter, SqliteStorage>;
 
 const DEFAULT_WALLET_PASSWORD: &str = "P@ssw0rd";
 
 async fn setup() -> (TypedAccountHandler, TypedWalletHandler, Arc<TypedDatabase>) {
     let database = Arc::new(create_database().await);
     database.migrate().await.unwrap();
-    let wallet_handler = WalletHandlerV1::new(database.clone());
+    let wallet_handler = Wallets::new(database.clone());
     wallet_handler
         .create(
             &CreateWalletOptions::builder()
@@ -31,7 +31,7 @@ async fn setup() -> (TypedAccountHandler, TypedWalletHandler, Arc<TypedDatabase>
         )
         .await
         .unwrap();
-    (AccountHandlerV1::new(database.clone()), wallet_handler, database)
+    (Accounts::new(database.clone()), wallet_handler, database)
 }
 
 #[tokio::test]

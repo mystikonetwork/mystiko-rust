@@ -8,9 +8,9 @@ use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{TransactionReceipt, TxHash, U256};
 use mockall::mock;
 use mystiko_core::{
-    BalanceOptions, CrossChainDepositOptions, DepositContract, DepositOptions, DepositQuote, DepositQuoteOptions,
-    Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssetHandler, TransactionHandler,
-    TransactionSigner, TransferOptions, WaitOptions,
+    BalanceOptions, CrossChainDepositOptions, DepositContractHandler, DepositOptions, DepositQuote,
+    DepositQuoteOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssetHandler,
+    TransactionHandler, TransactionSigner, TransferOptions, WaitOptions,
 };
 use mystiko_protos::core::v1::Transaction;
 use mystiko_types::TransactionType;
@@ -41,10 +41,10 @@ mock! {
 
 mock! {
     #[derive(Debug, Default)]
-    Deposits {}
+    DepositContracts {}
 
     #[async_trait]
-    impl DepositContract for Deposits {
+    impl DepositContractHandler for DepositContracts {
         type Error = anyhow::Error;
         async fn quote(&self, options: DepositQuoteOptions) -> Result<DepositQuote>;
 

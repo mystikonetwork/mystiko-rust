@@ -9,7 +9,9 @@ use mystiko_abi::commitment_pool::CommitmentPoolCalls;
 use mystiko_abi::mystiko_v2_bridge::MystikoV2BridgeCalls;
 use mystiko_abi::mystiko_v2_loop::MystikoV2LoopCalls;
 use mystiko_config::MystikoConfig;
-use mystiko_core::{CrossChainDepositOptions, DepositContract, DepositOptions, DepositQuoteOptions, Deposits};
+use mystiko_core::{
+    CrossChainDepositOptions, DepositContractHandler, DepositContracts, DepositOptions, DepositQuoteOptions,
+};
 use mystiko_ethers::{JsonRpcClientWrapper, Provider, ProviderWrapper};
 use mystiko_types::ContractType;
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
@@ -528,7 +530,7 @@ fn mock_quote_provider(
     provider
 }
 
-fn setup<P>(config: Arc<MystikoConfig>, providers: HashMap<u64, P>) -> Deposits<MockProviders>
+fn setup<P>(config: Arc<MystikoConfig>, providers: HashMap<u64, P>) -> DepositContracts<MockProviders>
 where
     P: JsonRpcClientWrapper + 'static,
 {
@@ -549,7 +551,7 @@ where
             .cloned()
             .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
     });
-    Deposits::builder().providers(providers).config(config).build()
+    DepositContracts::builder().providers(providers).config(config).build()
 }
 
 async fn create_config() -> Arc<MystikoConfig> {

@@ -1,8 +1,8 @@
 use crate::{
-    BalanceOptions, Database, Deposit, DepositContract, DepositHandler, Deposits, DepositsError, Erc20ApproveOptions,
-    Erc20BalanceOptions, FromContext, MystikoContext, MystikoError, PrivateKeySigner, PrivateKeySignerOptions,
-    PublicAssetHandler, PublicAssets, PublicAssetsError, TransactionHandler, TransactionSigner, Transactions,
-    TransactionsError, WaitOptions, WalletHandler, WalletHandlerV1, WalletHandlerV1Error,
+    BalanceOptions, Database, Deposit, DepositContractHandler, DepositContracts, DepositContractsError, DepositHandler,
+    Erc20ApproveOptions, Erc20BalanceOptions, FromContext, MystikoContext, MystikoError, PrivateKeySigner,
+    PrivateKeySignerOptions, PublicAssetHandler, PublicAssets, PublicAssetsError, TransactionHandler,
+    TransactionSigner, Transactions, TransactionsError, WaitOptions, WalletHandler, Wallets, WalletsError,
 };
 use async_trait::async_trait;
 use ethers_core::abi::AbiEncode;
@@ -29,25 +29,25 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct DepositHandlerV1<
+pub struct Deposits<
     F: StatementFormatter,
     S: Storage,
     P: Providers = Box<dyn Providers>,
     A: PublicAssetHandler = PublicAssets<P>,
-    D: DepositContract = Deposits<P>,
+    D: DepositContractHandler = DepositContracts<P>,
     T: TransactionHandler<Transaction> = Transactions<P>,
 > {
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
-    wallets: WalletHandlerV1<F, S>,
+    wallets: Wallets<F, S>,
     signer_providers: Arc<P>,
     assets: A,
-    deposits: D,
+    deposit_contracts: D,
     transactions: T,
 }
 
 #[derive(Debug, Error)]
-pub enum DepositHandlerV1Error {
+pub enum DepositsError {
     #[error(transparent)]
     HexStringError(#[from] rustc_hex::FromHexError),
     #[error(transparent)]
@@ -61,7 +61,7 @@ pub enum DepositHandlerV1Error {
     #[error(transparent)]
     PublicAssetsError(#[from] PublicAssetsError),
     #[error(transparent)]
-    DepositsError(#[from] DepositsError),
+    DepositContractsError(#[from] DepositContractsError),
     #[error(transparent)]
     TransactionsError(#[from] TransactionsError),
     #[error(transparent)]
@@ -69,7 +69,7 @@ pub enum DepositHandlerV1Error {
     #[error(transparent)]
     StorageError(#[from] StorageError),
     #[error(transparent)]
-    WalletHandlerError(#[from] WalletHandlerV1Error),
+    WalletsError(#[from] WalletsError),
     #[error(transparent)]
     ParseBigIntError(#[from] num_bigint::ParseBigIntError),
     #[error("unsupported chain_id={0}")]
@@ -94,23 +94,23 @@ pub enum DepositHandlerV1Error {
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct DepositHandlerV1Options<
+pub struct DepositsOptions<
     F: StatementFormatter,
     S: Storage,
     P: Providers,
     A: PublicAssetHandler,
-    D: DepositContract,
+    D: DepositContractHandler,
     T: TransactionHandler<Transaction>,
 > {
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
     signer_providers: Arc<P>,
     assets: A,
-    deposits: D,
+    deposit_contracts: D,
     transactions: T,
 }
 
-type Result<T> = std::result::Result<T, DepositHandlerV1Error>;
+type Result<T> = std::result::Result<T, DepositsError>;
 
 #[async_trait]
 impl<F, S, P, A, D, T>
@@ -121,32 +121,34 @@ impl<F, S, P, A, D, T>
         CreateDepositOptions,
         DepositSummary,
         SendDepositOptions,
-    > for DepositHandlerV1<F, S, P, A, D, T>
+    > for Deposits<F, S, P, A, D, T>
 where
     F: StatementFormatter,
     S: Storage,
     A: PublicAssetHandler,
-    D: DepositContract,
+    D: DepositContractHandler,
     T: TransactionHandler<Transaction>,
     P: Providers + 'static,
-    DepositHandlerV1Error: From<A::Error> + From<D::Error> + From<T::Error>,
+    DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
 {
-    type Error = DepositHandlerV1Error;
+    type Error = DepositsError;
 
     async fn quote(&self, options: QuoteDepositOptions) -> Result<DepositQuote> {
         let context = DepositContext::from_quote_options(self.config.clone(), &options)?;
-        context.quote(&self.deposits).await
+        context.quote(&self.deposit_contracts).await
     }
 
     async fn summary(&self, options: CreateDepositOptions) -> Result<DepositSummary> {
         let context = DepositContext::from_create_options(self.config.clone(), &options)?;
-        context.summary(&options, &self.deposits).await
+        context.summary(&options, &self.deposit_contracts).await
     }
 
     async fn create(&self, options: CreateDepositOptions) -> Result<ProtoDeposit> {
         let wallet = self.wallets.check_current().await?;
         let context = DepositContext::from_create_options(self.config.clone(), &options)?;
-        let deposit = context.create_deposit(&options, &self.deposits, wallet.id).await?;
+        let deposit = context
+            .create_deposit(&options, &self.deposit_contracts, wallet.id)
+            .await?;
         let deposit = self.db.deposits.insert(&deposit).await?;
         log::info!("successfully created a deposit(id = {:?})", deposit.id);
         Ok(Deposit::document_into_proto(deposit))
@@ -156,7 +158,7 @@ where
         let private_key = options
             .private_key
             .clone()
-            .ok_or(DepositHandlerV1Error::MissingPrivateKeyError)?;
+            .ok_or(DepositsError::MissingPrivateKeyError)?;
         let signer = PrivateKeySigner::<P>::new(
             PrivateKeySignerOptions::builder()
                 .private_key(private_key)
@@ -175,7 +177,7 @@ where
             .deposits
             .find_by_id(&options.deposit_id)
             .await?
-            .ok_or_else(|| DepositHandlerV1Error::IdNotFoundError(options.deposit_id.clone()))?;
+            .ok_or_else(|| DepositsError::IdNotFoundError(options.deposit_id.clone()))?;
         match self.send_transaction(&options, deposit.clone(), signer).await {
             Err(err) => {
                 deposit.data.status = DepositStatus::Failed as i32;
@@ -189,47 +191,47 @@ where
 }
 
 #[async_trait]
-impl<F, S, A, D, T> FromContext<F, S> for DepositHandlerV1<F, S, Box<dyn Providers>, A, D, T>
+impl<F, S, A, D, T> FromContext<F, S> for Deposits<F, S, Box<dyn Providers>, A, D, T>
 where
     F: StatementFormatter,
     S: Storage,
     A: PublicAssetHandler + FromContext<F, S>,
-    D: DepositContract + FromContext<F, S>,
+    D: DepositContractHandler + FromContext<F, S>,
     T: TransactionHandler<Transaction> + FromContext<F, S>,
-    DepositHandlerV1Error: From<A::Error> + From<D::Error> + From<T::Error>,
+    DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
 {
     async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
-        let options = DepositHandlerV1Options::builder()
+        let options = DepositsOptions::builder()
             .db(context.db.clone())
             .config(context.config.clone())
             .signer_providers(context.signer_providers.clone())
             .assets(A::from_context(context).await?)
-            .deposits(D::from_context(context).await?)
+            .deposit_contracts(D::from_context(context).await?)
             .transactions(T::from_context(context).await?)
             .build();
         Ok(Self::new(options))
     }
 }
 
-impl<F, S, P, A, D, T> DepositHandlerV1<F, S, P, A, D, T>
+impl<F, S, P, A, D, T> Deposits<F, S, P, A, D, T>
 where
     F: StatementFormatter,
     S: Storage,
     A: PublicAssetHandler,
-    D: DepositContract,
+    D: DepositContractHandler,
     T: TransactionHandler<Transaction>,
     P: Providers + 'static,
-    DepositHandlerV1Error: From<A::Error> + From<D::Error> + From<T::Error>,
+    DepositsError: From<A::Error> + From<D::Error> + From<T::Error>,
 {
-    pub fn new(options: DepositHandlerV1Options<F, S, P, A, D, T>) -> Self {
-        let wallets = WalletHandlerV1::new(options.db.clone());
+    pub fn new(options: DepositsOptions<F, S, P, A, D, T>) -> Self {
+        let wallets = Wallets::new(options.db.clone());
         Self::builder()
             .db(options.db)
             .config(options.config)
             .signer_providers(options.signer_providers)
             .wallets(wallets)
             .assets(options.assets)
-            .deposits(options.deposits)
+            .deposit_contracts(options.deposit_contracts)
             .transactions(options.transactions)
             .build()
     }
@@ -307,7 +309,7 @@ where
             .send_deposit(
                 &mut deposit,
                 options.deposit_tx.clone(),
-                &self.deposits,
+                &self.deposit_contracts,
                 &self.transactions,
                 signer.clone(),
             )
@@ -354,17 +356,17 @@ struct DepositContext {
 }
 
 impl DepositContext {
-    pub(crate) async fn quote<D>(&self, deposits: &D) -> Result<DepositQuote>
+    pub(crate) async fn quote<D>(&self, deposit_contracts: &D) -> Result<DepositQuote>
     where
-        D: DepositContract,
-        DepositHandlerV1Error: From<D::Error>,
+        D: DepositContractHandler,
+        DepositsError: From<D::Error>,
     {
         let quote_options = crate::DepositQuoteOptions::builder()
             .chain_id(self.chain_id)
             .contract_address(ethers_address_from_string(self.contract_config.address())?)
             .query_timeout_ms(self.query_remote_timeout_ms)
             .build();
-        let quote = deposits.quote(quote_options).await?;
+        let quote = deposit_contracts.quote(quote_options).await?;
         let min_amount: f64 = decimal_to_number(&quote.min_amount, Some(self.contract_config.asset_decimals()))?;
         let max_amount: f64 = decimal_to_number(&quote.max_amount, Some(self.contract_config.asset_decimals()))?;
         let min_rollup_fee_amount: f64 = decimal_to_number(
@@ -398,12 +400,16 @@ impl DepositContext {
             .build())
     }
 
-    pub(crate) async fn summary<D>(&self, options: &CreateDepositOptions, deposits: &D) -> Result<DepositSummary>
+    pub(crate) async fn summary<D>(
+        &self,
+        options: &CreateDepositOptions,
+        deposit_contracts: &D,
+    ) -> Result<DepositSummary>
     where
-        D: DepositContract,
-        DepositHandlerV1Error: From<D::Error>,
+        D: DepositContractHandler,
+        DepositsError: From<D::Error>,
     {
-        self.validate_amounts(options, deposits).await?;
+        self.validate_amounts(options, deposit_contracts).await?;
         let bridge_fee_asset_symbol = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
             .then_some(self.contract_config.bridge_fee_asset().asset_symbol().to_string());
         let executor_fee_asset_symbol = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
@@ -438,14 +444,14 @@ impl DepositContext {
     pub(crate) async fn create_deposit<D>(
         &self,
         options: &CreateDepositOptions,
-        deposits: &D,
+        deposit_contracts: &D,
         wallet_id: String,
     ) -> Result<Deposit>
     where
-        D: DepositContract,
-        DepositHandlerV1Error: From<D::Error>,
+        D: DepositContractHandler,
+        DepositsError: From<D::Error>,
     {
-        self.validate_amounts(options, deposits).await?;
+        self.validate_amounts(options, deposit_contracts).await?;
         let dst_chain_id = self.contract_config.peer_chain_id().unwrap_or(options.chain_id);
         let dst_chain_contract_address = self
             .contract_config
@@ -506,32 +512,32 @@ impl DepositContext {
         })
     }
 
-    pub(crate) async fn validate_amounts<D>(&self, options: &CreateDepositOptions, deposits: &D) -> Result<()>
+    pub(crate) async fn validate_amounts<D>(&self, options: &CreateDepositOptions, deposit_contracts: &D) -> Result<()>
     where
-        D: DepositContract,
-        DepositHandlerV1Error: From<D::Error>,
+        D: DepositContractHandler,
+        DepositsError: From<D::Error>,
     {
         let quote = if let Some(quote) = self.quote.clone() {
             quote
         } else {
-            self.quote(deposits).await?
+            self.quote(deposit_contracts).await?
         };
         if options.amount < quote.min_amount || options.amount > quote.max_amount {
-            return Err(DepositHandlerV1Error::InvalidDepositAmountError(
+            return Err(DepositsError::InvalidDepositAmountError(
                 options.amount,
                 quote.min_amount,
                 quote.max_amount,
             ));
         }
         if options.rollup_fee_amount < quote.min_rollup_fee_amount {
-            return Err(DepositHandlerV1Error::InvalidRollupFeeAmountError(
+            return Err(DepositsError::InvalidRollupFeeAmountError(
                 options.rollup_fee_amount,
                 quote.min_rollup_fee_amount,
             ));
         }
         if let Some(min_bridge_fee_amount) = quote.min_bridge_fee_amount {
             if options.bridge_fee_amount() < min_bridge_fee_amount {
-                return Err(DepositHandlerV1Error::InvalidBridgeFeeAmountError(
+                return Err(DepositsError::InvalidBridgeFeeAmountError(
                     options.bridge_fee_amount(),
                     min_bridge_fee_amount,
                 ));
@@ -539,7 +545,7 @@ impl DepositContext {
         }
         if let Some(min_executor_fee_amount) = quote.min_executor_fee_amount {
             if options.executor_fee_amount() < min_executor_fee_amount {
-                return Err(DepositHandlerV1Error::InvalidExecutorFeeAmountError(
+                return Err(DepositsError::InvalidExecutorFeeAmountError(
                     options.executor_fee_amount(),
                     min_executor_fee_amount,
                 ));
@@ -559,7 +565,7 @@ impl DepositContext {
         A: PublicAssetHandler,
         T: TransactionHandler<Transaction>,
         S: TransactionSigner + 'static,
-        DepositHandlerV1Error: From<A::Error> + From<T::Error>,
+        DepositsError: From<A::Error> + From<T::Error>,
     {
         let mut tx_hashes = vec![];
         for (_, asset_context) in self.assets.iter() {
@@ -584,15 +590,15 @@ impl DepositContext {
         &self,
         deposit: &mut Document<Deposit>,
         transaction: Option<Transaction>,
-        deposits: &D,
+        deposit_contracts: &D,
         transactions: &T,
         signer: Arc<S>,
     ) -> Result<TxHash>
     where
-        D: DepositContract,
+        D: DepositContractHandler,
         T: TransactionHandler<Transaction>,
         S: TransactionSigner + 'static,
-        DepositHandlerV1Error: From<D::Error> + From<T::Error>,
+        DepositsError: From<D::Error> + From<T::Error>,
     {
         let tx = transactions.create(transaction, self.chain_config.transaction_type())?;
         let contract_address = ethers_address_from_string(self.contract_config.address())?;
@@ -616,7 +622,7 @@ impl DepositContext {
                 .tx(tx)
                 .signer(signer)
                 .build();
-            let tx_hash = deposits.deposit(options).await?;
+            let tx_hash = deposit_contracts.deposit(options).await?;
             deposit.data.queued_transaction_hash = Some(tx_hash.encode_hex());
             deposit.data.status = DepositStatus::SrcPending as i32;
             Ok(tx_hash)
@@ -643,7 +649,7 @@ impl DepositContext {
                 .tx(tx)
                 .signer(signer)
                 .build();
-            let tx_hash = deposits.cross_chain_deposit(options).await?;
+            let tx_hash = deposit_contracts.cross_chain_deposit(options).await?;
             deposit.data.src_chain_transaction_hash = Some(tx_hash.encode_hex());
             deposit.data.status = DepositStatus::SrcPending as i32;
             Ok(tx_hash)
@@ -653,7 +659,7 @@ impl DepositContext {
     pub(crate) async fn validate_balances<A>(&self, owner: &Address, assets: &A) -> Result<()>
     where
         A: PublicAssetHandler,
-        DepositHandlerV1Error: From<A::Error>,
+        DepositsError: From<A::Error>,
     {
         let validations = self
             .assets
@@ -710,7 +716,7 @@ impl DepositContext {
             .into();
         let contract_config = config
             .find_deposit_contract_by_address(deposit.data.chain_id, &deposit.data.contract_address)
-            .ok_or(DepositHandlerV1Error::NoDepositContractFoundError(
+            .ok_or(DepositsError::NoDepositContractFoundError(
                 deposit.data.chain_id,
                 deposit.data.contract_address.clone(),
                 deposit.data.dst_chain_id,
@@ -738,7 +744,7 @@ impl DepositContext {
     ) -> Result<Self> {
         let chain_config = config
             .find_chain(chain_id)
-            .ok_or(DepositHandlerV1Error::UnsupportedChainIdError(chain_id))?
+            .ok_or(DepositsError::UnsupportedChainIdError(chain_id))?
             .clone();
         let peer_contract_config = if let (Some(peer_chain_id), Some(peer_contract_address)) =
             (contract_config.peer_chain_id(), contract_config.peer_contract_address())
@@ -780,7 +786,7 @@ impl AssetContext {
         A: PublicAssetHandler,
         T: TransactionHandler<Transaction>,
         S: TransactionSigner + 'static,
-        DepositHandlerV1Error: From<A::Error> + From<T::Error>,
+        DepositsError: From<A::Error> + From<T::Error>,
     {
         if self.asset_config.asset_type() != &mystiko_types::AssetType::Main && self.converted_amount.gt(&U256::zero())
         {
@@ -803,7 +809,7 @@ impl AssetContext {
     pub(crate) async fn validate_balance<A>(&self, owner: &Address, assets: &A) -> Result<()>
     where
         A: PublicAssetHandler,
-        DepositHandlerV1Error: From<A::Error>,
+        DepositsError: From<A::Error>,
     {
         if self.converted_amount.gt(&U256::zero()) {
             let balance = if self.asset_config.asset_type() == &mystiko_types::AssetType::Main {
@@ -819,7 +825,7 @@ impl AssetContext {
                 assets.erc20_balance_of(options).await?
             };
             if balance.lt(&self.converted_amount) {
-                return Err(DepositHandlerV1Error::InsufficientBalanceError(
+                return Err(DepositsError::InsufficientBalanceError(
                     self.asset_config.asset_symbol().to_string(),
                     self.amount,
                 ));
@@ -844,7 +850,7 @@ fn find_deposit_config(
     if let Some(contract_config) = config.find_deposit_contract(chain_id, dst_chain_id, asset_symbol, &bridge_type) {
         Ok(contract_config.clone())
     } else {
-        Err(DepositHandlerV1Error::NoDepositContractFoundError(
+        Err(DepositsError::NoDepositContractFoundError(
             chain_id,
             asset_symbol.to_string(),
             dst_chain_id,

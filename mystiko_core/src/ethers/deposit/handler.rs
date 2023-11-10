@@ -1,5 +1,5 @@
 use crate::{
-    CrossChainDepositOptions, DepositContract, DepositOptions, DepositQuote, DepositQuoteOptions, FromContext,
+    CrossChainDepositOptions, DepositContractHandler, DepositOptions, DepositQuote, DepositQuoteOptions, FromContext,
     MystikoContext, MystikoError, TransactionSigner,
 };
 use async_trait::async_trait;
@@ -24,13 +24,13 @@ pub const DEFAULT_QUERY_TIMEOUT_MS: u64 = 2000;
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct Deposits<P: Providers> {
+pub struct DepositContracts<P: Providers> {
     providers: Arc<P>,
     config: Arc<MystikoConfig>,
 }
 
 #[derive(Debug, Error)]
-pub enum DepositsError {
+pub enum DepositContractsError {
     #[error("unsupported chain_id={0}")]
     UnsupportedChainError(u64),
     #[error("unsupported chain_id={0}, contract_address={1}")]
@@ -48,11 +48,11 @@ pub enum DepositsError {
 }
 
 #[async_trait]
-impl<P> DepositContract for Deposits<P>
+impl<P> DepositContractHandler for DepositContracts<P>
 where
     P: Providers,
 {
-    type Error = DepositsError;
+    type Error = DepositContractsError;
 
     async fn quote(&self, options: DepositQuoteOptions) -> Result<DepositQuote, Self::Error> {
         let contract_config = self.get_config(options.chain_id, &options.contract_address)?;
@@ -88,7 +88,7 @@ where
             .providers
             .get_provider(options.chain_id)
             .await
-            .map_err(DepositsError::ProviderPoolError)?;
+            .map_err(DepositContractsError::ProviderPoolError)?;
         let contract = mystiko_abi::mystiko_v2_loop::MystikoV2Loop::new(options.contract_address, provider);
         let mut tx = options.tx.into();
         tx.set_to(options.contract_address);
@@ -110,7 +110,7 @@ where
             .signer
             .send_transaction(options.chain_id, tx)
             .await
-            .map_err(|err| DepositsError::SignerError(format!("{:?}", err)))?;
+            .map_err(|err| DepositContractsError::SignerError(format!("{:?}", err)))?;
         Ok(tx_hash)
     }
 
@@ -124,7 +124,7 @@ where
             .providers
             .get_provider(options.chain_id)
             .await
-            .map_err(DepositsError::ProviderPoolError)?;
+            .map_err(DepositContractsError::ProviderPoolError)?;
         let contract = mystiko_abi::mystiko_v2_bridge::MystikoV2Bridge::new(options.contract_address, provider);
         let mut tx = options.tx.into();
         tx.set_to(options.contract_address);
@@ -158,13 +158,13 @@ where
             .signer
             .send_transaction(options.chain_id, tx)
             .await
-            .map_err(|err| DepositsError::SignerError(format!("{:?}", err)))?;
+            .map_err(|err| DepositContractsError::SignerError(format!("{:?}", err)))?;
         Ok(tx_hash)
     }
 }
 
 #[async_trait]
-impl<F, S> FromContext<F, S> for Deposits<Box<dyn Providers>>
+impl<F, S> FromContext<F, S> for DepositContracts<Box<dyn Providers>>
 where
     F: StatementFormatter,
     S: Storage,
@@ -177,19 +177,19 @@ where
     }
 }
 
-impl<P> Deposits<P>
+impl<P> DepositContracts<P>
 where
     P: Providers,
 {
-    fn get_config(&self, chain_id: u64, address: &Address) -> Result<&DepositContractConfig, DepositsError> {
+    fn get_config(&self, chain_id: u64, address: &Address) -> Result<&DepositContractConfig, DepositContractsError> {
         if let Some(chain_config) = self.config.find_chain(chain_id) {
             let address = ethers_address_to_string(address);
             if let Some(contract_config) = chain_config.find_deposit_contract_by_address(&address) {
                 return Ok(contract_config);
             }
-            return Err(DepositsError::UnsupportedContractError(chain_id, address));
+            return Err(DepositContractsError::UnsupportedContractError(chain_id, address));
         }
-        Err(DepositsError::UnsupportedChainError(chain_id))
+        Err(DepositContractsError::UnsupportedChainError(chain_id))
     }
 
     async fn get_remote_config(
@@ -197,12 +197,12 @@ where
         options: &DepositQuoteOptions,
         contract_config: &DepositContractConfig,
         config_type: RemoteConfigType,
-    ) -> Result<(RemoteConfigType, U256), DepositsError> {
+    ) -> Result<(RemoteConfigType, U256), DepositContractsError> {
         let provider = self
             .providers
             .get_provider(options.chain_id)
             .await
-            .map_err(DepositsError::ProviderPoolError)?;
+            .map_err(DepositContractsError::ProviderPoolError)?;
         let (pool_contract_config, peer_provider) = if let (Some(peer_chain_id), Some(peer_contract_address)) =
             (contract_config.peer_chain_id(), contract_config.peer_contract_address())
         {
@@ -212,7 +212,7 @@ where
                 .providers
                 .get_provider(*peer_chain_id)
                 .await
-                .map_err(DepositsError::ProviderPoolError)?;
+                .map_err(DepositContractsError::ProviderPoolError)?;
             (peer_contract_config.pool_contract(), peer_provider)
         } else {
             (contract_config.pool_contract(), provider.clone())
@@ -282,7 +282,7 @@ fn get_max_amount(
 fn get_min_rollup_fee(
     provider: Arc<Provider>,
     contract_config: &PoolContractConfig,
-) -> Result<(U256, ContractCall<Provider, U256>), DepositsError> {
+) -> Result<(U256, ContractCall<Provider, U256>), DepositContractsError> {
     let address = ethers_address_from_string(contract_config.address())?;
     let default_value = biguint_to_u256(&contract_config.min_rollup_fee().unwrap_or_default());
     let call = mystiko_abi::commitment_pool::CommitmentPool::new(address, provider).get_min_rollup_fee();

@@ -69,7 +69,7 @@ pub struct CrossChainDepositOptions<
 }
 
 #[async_trait]
-pub trait DepositContract: Send + Sync {
+pub trait DepositContractHandler: Send + Sync {
     type Error;
 
     async fn quote(&self, options: DepositQuoteOptions) -> Result<DepositQuote, Self::Error>;

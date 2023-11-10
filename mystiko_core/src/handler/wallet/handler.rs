@@ -31,12 +31,12 @@ const PASSWORD_HINT: &str = "\
     and the length should be as least 8";
 
 #[derive(Debug)]
-pub struct WalletHandlerV1<F: StatementFormatter, S: Storage> {
+pub struct Wallets<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
 }
 
 #[derive(Debug, Error)]
-pub enum WalletHandlerV1Error {
+pub enum WalletsError {
     #[error(transparent)]
     StorageError(#[from] StorageError),
     #[error(transparent)]
@@ -53,15 +53,15 @@ pub enum WalletHandlerV1Error {
     NoExistingWalletError,
 }
 
-type Result<T> = std::result::Result<T, WalletHandlerV1Error>;
+type Result<T> = std::result::Result<T, WalletsError>;
 
 #[async_trait]
-impl<F, S> WalletHandler<ProtoWallet, CreateWalletOptions> for WalletHandlerV1<F, S>
+impl<F, S> WalletHandler<ProtoWallet, CreateWalletOptions> for Wallets<F, S>
 where
     F: StatementFormatter,
     S: Storage,
 {
-    type Error = WalletHandlerV1Error;
+    type Error = WalletsError;
 
     async fn current(&self) -> Result<Option<ProtoWallet>> {
         self.current_document()
@@ -92,7 +92,7 @@ where
             .wallets
             .insert(&wallet)
             .await
-            .map_err(WalletHandlerV1Error::StorageError)?;
+            .map_err(WalletsError::StorageError)?;
         log::info!("successfully created a wallet(id = \"{}\")", wallet.id);
         Ok(Wallet::document_into_proto(wallet))
     }
@@ -114,7 +114,7 @@ where
             .wallets
             .update(&wallet)
             .await
-            .map_err(WalletHandlerV1Error::StorageError)?;
+            .map_err(WalletsError::StorageError)?;
         log::info!(
             "successfully updated the password of the wallet(id = \"{}\")",
             wallet.id
@@ -135,7 +135,7 @@ where
 }
 
 #[async_trait]
-impl<F, S> FromContext<F, S> for WalletHandlerV1<F, S>
+impl<F, S> FromContext<F, S> for Wallets<F, S>
 where
     F: StatementFormatter,
     S: Storage,
@@ -145,7 +145,7 @@ where
     }
 }
 
-impl<F, S> WalletHandlerV1<F, S>
+impl<F, S> Wallets<F, S>
 where
     F: StatementFormatter,
     S: Storage,
@@ -167,14 +167,14 @@ where
             .wallets
             .find_one(filter)
             .await
-            .map_err(WalletHandlerV1Error::StorageError)
+            .map_err(WalletsError::StorageError)
     }
 
     pub(crate) async fn check_document_current(&self) -> Result<Document<Wallet>> {
         if let Some(wallet) = self.current_document().await? {
             Ok(wallet)
         } else {
-            Err(WalletHandlerV1Error::NoExistingWalletError)
+            Err(WalletsError::NoExistingWalletError)
         }
     }
 
@@ -184,7 +184,7 @@ where
         if wallet.data.hashed_password == hashed_password {
             Ok(wallet)
         } else {
-            Err(WalletHandlerV1Error::MismatchedPasswordError)
+            Err(WalletsError::MismatchedPasswordError)
         }
     }
 }
@@ -198,6 +198,6 @@ fn validate_password(password: &str) -> Result<()> {
     {
         Ok(())
     } else {
-        Err(WalletHandlerV1Error::InvalidPasswordError(PASSWORD_HINT.to_string()))
+        Err(WalletsError::InvalidPasswordError(PASSWORD_HINT.to_string()))
     }
 }

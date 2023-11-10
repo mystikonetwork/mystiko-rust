@@ -1,6 +1,6 @@
 use crate::{
-    AccountHandler, AccountHandlerV1, Database, DepositHandler, DepositHandlerV1, FromContext, MystikoContext,
-    MystikoError, MystikoOptions, Synchronizer, SynchronizerHandler, WalletHandler, WalletHandlerV1,
+    AccountHandler, Accounts, Database, DepositHandler, Deposits, FromContext, MystikoContext, MystikoError,
+    MystikoOptions, Synchronizer, SynchronizerHandler, WalletHandler, Wallets,
 };
 use anyhow::Result;
 use mystiko_config::MystikoConfig;
@@ -18,8 +18,8 @@ use std::sync::Arc;
 pub struct Mystiko<
     F: StatementFormatter,
     S: Storage,
-    W: WalletHandler<Wallet, CreateWalletOptions> = WalletHandlerV1<F, S>,
-    A: AccountHandler<Account, CreateAccountOptions, UpdateAccountOptions> = AccountHandlerV1<F, S>,
+    W: WalletHandler<Wallet, CreateWalletOptions> = Wallets<F, S>,
+    A: AccountHandler<Account, CreateAccountOptions, UpdateAccountOptions> = Accounts<F, S>,
     D: DepositHandler<
         Deposit,
         QuoteDepositOptions,
@@ -27,7 +27,7 @@ pub struct Mystiko<
         CreateDepositOptions,
         DepositSummary,
         SendDepositOptions,
-    > = DepositHandlerV1<F, S>,
+    > = Deposits<F, S>,
     Y: SynchronizerHandler<SyncOptions, SynchronizerStatus> = Synchronizer<ChainDataLoader<FullData>>,
 > {
     pub db: Arc<Database<F, S>>,
