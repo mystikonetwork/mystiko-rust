@@ -49,7 +49,7 @@ async fn test_deposits_crud() {
                 dst_chain_id: 11,
                 dst_chain_contract_address: String::from("dst_chain_contract_address 1"),
                 dst_pool_address: String::from("dst_pool_address 1"),
-                asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
+                asset_approve_transaction_hash: Some(vec![String::from("asset_approve_transaction_hash 1")]),
                 src_chain_transaction_hash: Some(String::from("transaction_hash 1")),
                 queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
                 included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
@@ -86,7 +86,7 @@ async fn test_deposits_crud() {
                     dst_chain_id: 22,
                     dst_chain_contract_address: String::from("dst_chain_contract_address 2"),
                     dst_pool_address: String::from("dst_pool_address 2"),
-                    asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 2")),
+                    asset_approve_transaction_hash: Some(vec![String::from("asset_approve_transaction_hash 2")]),
                     src_chain_transaction_hash: Some(String::from("transaction_hash 2")),
                     queued_transaction_hash: Some(String::from("relay_transaction_hash 2")),
                     included_transaction_hash: Some(String::from("rollup_transaction_hash 2")),
@@ -117,7 +117,7 @@ async fn test_deposits_crud() {
                     dst_chain_id: 33,
                     dst_chain_contract_address: String::from("dst_chain_contract_address 3"),
                     dst_pool_address: String::from("dst_pool_address 3"),
-                    asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 3")),
+                    asset_approve_transaction_hash: Some(vec![String::from("asset_approve_transaction_hash 3")]),
                     src_chain_transaction_hash: Some(String::from("transaction_hash 3")),
                     queued_transaction_hash: Some(String::from("relay_transaction_hash 3")),
                     included_transaction_hash: Some(String::from("rollup_transaction_hash 3")),
@@ -235,7 +235,7 @@ async fn test_deposit_serde() {
             dst_chain_id: 11,
             dst_chain_contract_address: String::from("dst_chain_contract_address 1"),
             dst_pool_address: String::from("dst_pool_address 1"),
-            asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
+            asset_approve_transaction_hash: Some(vec![String::from("asset_approve_transaction_hash 1")]),
             src_chain_transaction_hash: Some(String::from("transaction_hash 1")),
             queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
             included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
@@ -279,7 +279,7 @@ fn test_from_proto() {
         .dst_chain_id(11_u64)
         .dst_chain_contract_address(String::from("dst_chain_contract_address 1"))
         .dst_pool_address(String::from("dst_pool_address 1"))
-        .asset_approve_transaction_hash(String::from("asset_approve_transaction_hash 1"))
+        .asset_approve_transaction_hash(vec![String::from("asset_approve_transaction_hash 1")])
         .src_chain_transaction_hash(String::from("transaction_hash 1"))
         .queued_transaction_hash(String::from("relay_transaction_hash 1"))
         .included_transaction_hash(String::from("rollup_transaction_hash 1"))
@@ -327,7 +327,7 @@ fn test_from_proto() {
     assert_eq!(deposit.data.dst_pool_address, String::from("dst_pool_address 1"));
     assert_eq!(
         deposit.data.asset_approve_transaction_hash,
-        Some(String::from("asset_approve_transaction_hash 1"))
+        Some(vec![String::from("asset_approve_transaction_hash 1")])
     );
     assert_eq!(
         deposit.data.src_chain_transaction_hash,
@@ -375,7 +375,7 @@ fn test_into_proto() {
             dst_chain_id: 11,
             dst_chain_contract_address: String::from("dst_chain_contract_address 1"),
             dst_pool_address: String::from("dst_pool_address 1"),
-            asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
+            asset_approve_transaction_hash: Some(vec![String::from("asset_approve_transaction_hash 1")]),
             src_chain_transaction_hash: Some(String::from("transaction_hash 1")),
             queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
             included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),
@@ -424,7 +424,7 @@ fn test_into_proto() {
     assert_eq!(proto.dst_pool_address, String::from("dst_pool_address 1"));
     assert_eq!(
         proto.asset_approve_transaction_hash,
-        Some(String::from("asset_approve_transaction_hash 1"))
+        vec![String::from("asset_approve_transaction_hash 1")]
     );
     assert_eq!(
         proto.src_chain_transaction_hash,

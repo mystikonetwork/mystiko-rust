@@ -1,4 +1,4 @@
-use mystiko_core::{AccountHandlerError, MystikoError, WalletHandlerError};
+use mystiko_core::{AccountsError, MystikoError, WalletsError};
 use mystiko_protos::api::v1::StatusCode;
 
 pub fn parse_mystiko_error(err: &MystikoError) -> StatusCode {
@@ -11,25 +11,25 @@ pub fn parse_mystiko_error(err: &MystikoError) -> StatusCode {
     }
 }
 
-pub fn parse_account_error(err: &AccountHandlerError) -> StatusCode {
+pub fn parse_account_error(err: &AccountsError) -> StatusCode {
     match err {
-        AccountHandlerError::StorageError(_) => StatusCode::StorageError,
-        AccountHandlerError::CryptoError(_) => StatusCode::CryptoError,
-        AccountHandlerError::MnemonicError(_) => StatusCode::MnemonicError,
-        AccountHandlerError::HexStringError(_) => StatusCode::HexStringError,
-        AccountHandlerError::WalletHandlerError(err) => parse_wallet_error(err),
-        AccountHandlerError::NoSuchAccountError(_, _) => StatusCode::NoSuchAccountError,
+        AccountsError::StorageError(_) => StatusCode::StorageError,
+        AccountsError::CryptoError(_) => StatusCode::CryptoError,
+        AccountsError::MnemonicError(_) => StatusCode::MnemonicError,
+        AccountsError::HexStringError(_) => StatusCode::HexStringError,
+        AccountsError::WalletsError(err) => parse_wallet_error(err),
+        AccountsError::NoSuchAccountError(_, _) => StatusCode::NoSuchAccountError,
     }
 }
 
-pub fn parse_wallet_error(err: &WalletHandlerError) -> StatusCode {
+pub fn parse_wallet_error(err: &WalletsError) -> StatusCode {
     match err {
-        WalletHandlerError::StorageError(_) => StatusCode::StorageError,
-        WalletHandlerError::CryptoError(_) => StatusCode::CryptoError,
-        WalletHandlerError::HexStringError(_) => StatusCode::HexStringError,
-        WalletHandlerError::MnemonicError(_) => StatusCode::MnemonicError,
-        WalletHandlerError::InvalidPasswordError(_) => StatusCode::InvalidPasswordError,
-        WalletHandlerError::MismatchedPasswordError => StatusCode::MismatchedPasswordError,
-        WalletHandlerError::NoExistingWalletError => StatusCode::NoExistingWalletError,
+        WalletsError::StorageError(_) => StatusCode::StorageError,
+        WalletsError::CryptoError(_) => StatusCode::CryptoError,
+        WalletsError::HexStringError(_) => StatusCode::HexStringError,
+        WalletsError::MnemonicError(_) => StatusCode::MnemonicError,
+        WalletsError::InvalidPasswordError(_) => StatusCode::InvalidPasswordError,
+        WalletsError::MismatchedPasswordError => StatusCode::MismatchedPasswordError,
+        WalletsError::NoExistingWalletError => StatusCode::NoExistingWalletError,
     }
 }

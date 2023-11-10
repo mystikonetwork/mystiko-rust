@@ -80,7 +80,7 @@ pub fn build_deposits(deposit_status: i32, dst_chain_id: u64, count: usize) -> V
             dst_chain_id,
             dst_chain_contract_address: String::from("dst chain contract address 1"),
             dst_pool_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
-            asset_approve_transaction_hash: Some(String::from("asset_approve_transaction_hash 1")),
+            asset_approve_transaction_hash: Some(vec![String::from("asset_approve_transaction_hash 1")]),
             src_chain_transaction_hash: Some(String::from("transaction_hash 1")),
             queued_transaction_hash: Some(String::from("relay_transaction_hash 1")),
             included_transaction_hash: Some(String::from("rollup_transaction_hash 1")),

@@ -1,7 +1,7 @@
 use ethers_core::types::U256;
 use mystiko_utils::convert::{
-    biguint_str_to_bytes, bytes_to_i128, bytes_to_u128, decimal_to_number, i128_to_bytes, number_to_decimal,
-    u128_to_bytes,
+    biguint_str_to_bytes, bytes_to_i128, bytes_to_u128, decimal_to_number, hex_string_to_u256, i128_to_bytes,
+    number_to_decimal, number_to_u256_decimal, u128_to_bytes, u256_to_hex_string,
 };
 use num_bigint::BigUint;
 use num_traits::ToPrimitive;
@@ -36,11 +36,31 @@ fn test_number_to_decimal() {
 }
 
 #[test]
+fn test_number_to_u256_decimal() {
+    assert_eq!(number_to_u256_decimal(102, Some(2)).unwrap(), U256::from(10200_u32));
+    assert_eq!(number_to_u256_decimal(1.0001, Some(2)).unwrap(), U256::from(100_u32));
+}
+
+#[test]
 fn test_u256_to_big_int() {
     assert_eq!(
         mystiko_utils::convert::u256_to_biguint(&U256::from_dec_str("123456789").unwrap()),
         BigUint::from(123456789u32)
     );
+}
+
+#[test]
+fn test_u256_to_hex_string() {
+    assert_eq!(
+        u256_to_hex_string(&U256::from_dec_str("123456789").unwrap()),
+        "0x75bcd15"
+    );
+}
+
+#[test]
+fn test_hex_string_to_u256() {
+    let number = hex_string_to_u256("0x75bcd15").unwrap();
+    assert_eq!(number, U256::from_dec_str("123456789").unwrap());
 }
 
 #[test]

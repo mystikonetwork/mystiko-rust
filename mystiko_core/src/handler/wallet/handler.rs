@@ -1,4 +1,5 @@
-use crate::{Database, Wallet};
+use crate::{Database, FromContext, MystikoContext, MystikoError, Wallet, WalletHandler};
+use async_trait::async_trait;
 use bip32::{Language, Mnemonic, KEY_SIZE};
 use lazy_static::lazy_static;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
@@ -30,12 +31,12 @@ const PASSWORD_HINT: &str = "\
     and the length should be as least 8";
 
 #[derive(Debug)]
-pub struct WalletHandler<F: StatementFormatter, S: Storage> {
+pub struct Wallets<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
 }
 
 #[derive(Debug, Error)]
-pub enum WalletHandlerError {
+pub enum WalletsError {
     #[error(transparent)]
     StorageError(#[from] StorageError),
     #[error(transparent)]
@@ -52,24 +53,27 @@ pub enum WalletHandlerError {
     NoExistingWalletError,
 }
 
-type Result<T> = std::result::Result<T, WalletHandlerError>;
+type Result<T> = std::result::Result<T, WalletsError>;
 
-impl<F, S> WalletHandler<F, S>
+#[async_trait]
+impl<F, S> WalletHandler<ProtoWallet, CreateWalletOptions> for Wallets<F, S>
 where
     F: StatementFormatter,
     S: Storage,
 {
-    pub fn new(db: Arc<Database<F, S>>) -> Self {
-        Self { db }
-    }
+    type Error = WalletsError;
 
-    pub async fn current(&self) -> Result<Option<ProtoWallet>> {
+    async fn current(&self) -> Result<Option<ProtoWallet>> {
         self.current_document()
             .await
             .map(|doc| doc.map(Wallet::document_into_proto))
     }
 
-    pub async fn create(&self, options: &CreateWalletOptions) -> Result<ProtoWallet> {
+    async fn check_current(&self) -> Result<ProtoWallet> {
+        self.check_document_current().await.map(Wallet::document_into_proto)
+    }
+
+    async fn create(&self, options: &CreateWalletOptions) -> Result<ProtoWallet> {
         validate_password(&options.password)?;
         let mnemonic = if let Some(mnemonic_words) = &options.mnemonic_phrase {
             Mnemonic::new(mnemonic_words, Language::English)?
@@ -88,22 +92,18 @@ where
             .wallets
             .insert(&wallet)
             .await
-            .map_err(WalletHandlerError::StorageError)?;
+            .map_err(WalletsError::StorageError)?;
         log::info!("successfully created a wallet(id = \"{}\")", wallet.id);
         Ok(Wallet::document_into_proto(wallet))
     }
 
-    pub async fn check_current(&self) -> Result<ProtoWallet> {
-        self.check_document_current().await.map(Wallet::document_into_proto)
-    }
-
-    pub async fn check_password(&self, password: &str) -> Result<ProtoWallet> {
+    async fn check_password(&self, password: &str) -> Result<ProtoWallet> {
         self.check_document_password(password)
             .await
             .map(Wallet::document_into_proto)
     }
 
-    pub async fn update_password(&self, old_password: &str, new_password: &str) -> Result<ProtoWallet> {
+    async fn update_password(&self, old_password: &str, new_password: &str) -> Result<ProtoWallet> {
         let mut wallet = self.check_document_password(old_password).await?;
         validate_password(new_password)?;
         let entropy_string = decrypt_symmetric(old_password, &wallet.data.encrypted_entropy)?;
@@ -114,7 +114,7 @@ where
             .wallets
             .update(&wallet)
             .await
-            .map_err(WalletHandlerError::StorageError)?;
+            .map_err(WalletsError::StorageError)?;
         log::info!(
             "successfully updated the password of the wallet(id = \"{}\")",
             wallet.id
@@ -122,17 +122,37 @@ where
         Ok(Wallet::document_into_proto(wallet))
     }
 
-    pub async fn export_mnemonic(&self, password: &str) -> Result<Mnemonic> {
+    async fn export_mnemonic(&self, password: &str) -> Result<Mnemonic> {
         let wallet = self.check_password(password).await?;
         let entropy_string = decrypt_symmetric(password, &wallet.encrypted_entropy)?;
         let entropy: [u8; KEY_SIZE] = decode_hex_with_length(entropy_string)?;
         Ok(Mnemonic::from_entropy(entropy, Language::English))
     }
 
-    pub async fn export_mnemonic_phrase(&self, password: &str) -> Result<String> {
+    async fn export_mnemonic_phrase(&self, password: &str) -> Result<String> {
         Ok(self.export_mnemonic(password).await?.phrase().to_string())
     }
+}
 
+#[async_trait]
+impl<F, S> FromContext<F, S> for Wallets<F, S>
+where
+    F: StatementFormatter,
+    S: Storage,
+{
+    async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
+        Ok(Self::new(context.db.clone()))
+    }
+}
+
+impl<F, S> Wallets<F, S>
+where
+    F: StatementFormatter,
+    S: Storage,
+{
+    pub fn new(db: Arc<Database<F, S>>) -> Self {
+        Self { db }
+    }
     pub(crate) async fn current_document(&self) -> Result<Option<Document<Wallet>>> {
         let filter = QueryFilter::builder()
             .conditions_operator(ConditionOperator::And)
@@ -147,14 +167,14 @@ where
             .wallets
             .find_one(filter)
             .await
-            .map_err(WalletHandlerError::StorageError)
+            .map_err(WalletsError::StorageError)
     }
 
     pub(crate) async fn check_document_current(&self) -> Result<Document<Wallet>> {
         if let Some(wallet) = self.current_document().await? {
             Ok(wallet)
         } else {
-            Err(WalletHandlerError::NoExistingWalletError)
+            Err(WalletsError::NoExistingWalletError)
         }
     }
 
@@ -164,7 +184,7 @@ where
         if wallet.data.hashed_password == hashed_password {
             Ok(wallet)
         } else {
-            Err(WalletHandlerError::MismatchedPasswordError)
+            Err(WalletsError::MismatchedPasswordError)
         }
     }
 }
@@ -178,6 +198,6 @@ fn validate_password(password: &str) -> Result<()> {
     {
         Ok(())
     } else {
-        Err(WalletHandlerError::InvalidPasswordError(PASSWORD_HINT.to_string()))
+        Err(WalletsError::InvalidPasswordError(PASSWORD_HINT.to_string()))
     }
 }

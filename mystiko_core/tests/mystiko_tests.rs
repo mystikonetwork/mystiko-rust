@@ -1,10 +1,14 @@
 use crate::common::create_database;
 use mockito::Server;
-use mystiko_core::{Mystiko, MystikoOptions};
+use mystiko_core::MystikoOptions;
 use mystiko_ethers::{DefaultProviderFactory, ProviderFactory};
 use mystiko_protos::common::v1::ConfigOptions;
+use mystiko_storage::SqlStatementFormatter;
+use mystiko_storage_sqlite::SqliteStorage;
 
 mod common;
+
+type Mystiko = mystiko_core::Mystiko<SqlStatementFormatter, SqliteStorage>;
 
 #[tokio::test]
 async fn test_create_with_config_file() {

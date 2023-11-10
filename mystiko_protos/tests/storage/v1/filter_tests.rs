@@ -201,3 +201,14 @@ fn test_condition_to_query_filter() {
     assert!(query_filter.offset.is_none());
     assert!(query_filter.order_by.is_none());
 }
+
+#[test]
+fn test_has_conditions() {
+    let query_filter = QueryFilter::builder().build();
+    assert!(!query_filter.has_conditions());
+    let condition: Condition = SubFilter::equal("column1", 123i32).into();
+    let query_filter = QueryFilter::builder().conditions(vec![condition.clone()]).build();
+    assert!(query_filter.has_conditions());
+    let query_filter = QueryFilter::builder().additional_condition(condition).build();
+    assert!(query_filter.has_conditions());
+}

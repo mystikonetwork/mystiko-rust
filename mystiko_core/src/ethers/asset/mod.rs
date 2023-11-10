@@ -14,6 +14,8 @@ use typed_builder::TypedBuilder;
 pub struct BalanceOptions {
     pub chain_id: u64,
     pub owner: Address,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -28,6 +30,8 @@ pub struct TransferOptions<
     pub amount: U256,
     pub signer: Arc<S>,
     #[builder(default)]
+    pub timeout_ms: Option<u64>,
+    #[builder(default)]
     pub tx: T,
 }
 
@@ -37,6 +41,19 @@ pub struct Erc20BalanceOptions {
     pub chain_id: u64,
     pub asset_address: Address,
     pub owner: Address,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
+}
+
+#[derive(Debug, Clone, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct Erc20AllowanceOptions {
+    pub chain_id: u64,
+    pub asset_address: Address,
+    pub owner: Address,
+    pub recipient: Address,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -51,6 +68,8 @@ pub struct Erc20ApproveOptions<
     pub recipient: Address,
     pub amount: U256,
     pub signer: Arc<S>,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
     #[builder(default)]
     pub tx: T,
 }
@@ -68,6 +87,8 @@ pub struct Erc20TransferOptions<
     pub amount: U256,
     pub signer: Arc<S>,
     #[builder(default)]
+    pub timeout_ms: Option<u64>,
+    #[builder(default)]
     pub tx: T,
 }
 
@@ -83,6 +104,8 @@ pub trait PublicAssetHandler: Send + Sync {
         T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static;
 
     async fn erc20_balance_of(&self, options: Erc20BalanceOptions) -> Result<U256, Self::Error>;
+
+    async fn erc20_allowance(&self, options: Erc20AllowanceOptions) -> Result<U256, Self::Error>;
 
     async fn erc20_approve<T, S>(&self, options: Erc20ApproveOptions<T, S>) -> Result<Option<TxHash>, Self::Error>
     where

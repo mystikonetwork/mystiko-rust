@@ -36,6 +36,14 @@ where
     Ok(base.mul(multiplier))
 }
 
+pub fn number_to_u256_decimal<T>(number: T, num_decimals: Option<u32>) -> Result<U256>
+where
+    T: Display,
+{
+    let decimal = number_to_decimal(number, num_decimals)?;
+    Ok(U256::from_dec_str(&decimal.round().to_string())?)
+}
+
 pub fn u256_to_biguint(u: &U256) -> BigUint {
     bytes_to_biguint(u256_to_bytes(u))
 }
@@ -44,6 +52,17 @@ pub fn u256_to_bytes(u: &U256) -> Vec<u8> {
     let mut arr = [0u8; 32];
     u.to_little_endian(&mut arr[..]);
     arr.to_vec()
+}
+
+pub fn u256_to_hex_string(u: &U256) -> String {
+    format!("0x{:x}", u)
+}
+
+pub fn hex_string_to_u256<S>(hex_string: S) -> Result<U256>
+where
+    S: AsRef<str>,
+{
+    Ok(U256::from_str(hex_string.as_ref())?)
 }
 
 pub fn biguint_to_u256(b: &BigUint) -> U256 {

@@ -467,9 +467,9 @@ async fn test_loader_database_commitment() {
 
     commitment.chain_id = 97;
     commitment.contract_address = String::from("0xd791049D0a154bC7860804e1A18ACD148Eb0afD9");
-    commitment.asset_address = None;
-    commitment.asset_symbol = String::from("BNB");
-    commitment.asset_decimals = 18;
+    commitment.asset_address = Some(String::from("0xBB3AFDe35eB9f5FeB5377485a3bD18a3EB0FE248"));
+    commitment.asset_symbol = String::from("MTT");
+    commitment.asset_decimals = 16;
     let converted_commitment = Commitment::from_proto(
         config.clone(),
         commitment.chain_id,

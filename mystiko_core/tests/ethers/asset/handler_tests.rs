@@ -1,13 +1,13 @@
-use async_trait::async_trait;
+use crate::common::{MockProvider, MockProviders, MockTransactionSigner};
+use crate::ethers::TimeoutProvider;
 use ethers_core::abi::{AbiDecode, AbiEncode};
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{Address, NameOrAddress, TransactionRequest, TxHash, U256};
-use mockall::mock;
+use ethers_core::types::{NameOrAddress, TransactionRequest, TxHash, U256};
 use mystiko_core::{
-    BalanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, PublicAssetHandler, PublicAssets,
-    PublicAssetsError, TransferOptions,
+    BalanceOptions, Erc20AllowanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions,
+    PublicAssetHandler, PublicAssets, PublicAssetsError, TransferOptions,
 };
-use mystiko_ethers::{JsonRpcParams, Provider, ProviderWrapper};
+use mystiko_ethers::{JsonRpcClientWrapper, JsonRpcParams, Provider, ProviderWrapper};
 use mystiko_utils::address::ethers_address_from_string;
 use std::sync::Arc;
 
@@ -29,6 +29,22 @@ async fn test_balance_of() {
         .await
         .unwrap();
     assert_eq!(balance.as_u64(), 0xdeadbeef);
+}
+
+#[tokio::test]
+async fn test_balance_of_timeout_error() {
+    let provider = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let assets = setup(1, provider);
+    let balance = assets
+        .balance_of(
+            BalanceOptions::builder()
+                .chain_id(1_u64)
+                .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
+                .timeout_ms(1_u64)
+                .build(),
+        )
+        .await;
+    assert_eq!(balance.unwrap_err().to_string(), "balance_of timed out after 1 ms");
 }
 
 #[tokio::test]
@@ -102,6 +118,30 @@ async fn test_transfer_with_insufficient_balance() {
 }
 
 #[tokio::test]
+async fn test_transfer_timeout_error() {
+    let mut provider = MockProvider::new();
+    provider
+        .expect_request()
+        .withf(move |method, _| method == "eth_getBalance")
+        .returning(|_, _| Ok(serde_json::json!("0xdeadbeef")));
+    let signer = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let assets = setup(1_u64, provider);
+    let result = assets
+        .transfer(
+            TransferOptions::<TransactionRequest, TimeoutProvider>::builder()
+                .chain_id(1_u64)
+                .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
+                .recipient(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
+                .amount(0x10_u64)
+                .signer(signer)
+                .timeout_ms(1_u64)
+                .build(),
+        )
+        .await;
+    assert_eq!(result.unwrap_err().to_string(), "transfer timed out after 1 ms");
+}
+
+#[tokio::test]
 async fn test_erc20_balance_of() {
     let mut provider = MockProvider::new();
     provider
@@ -120,6 +160,63 @@ async fn test_erc20_balance_of() {
         .await
         .unwrap();
     assert_eq!(balance.as_u64(), 0xdeadbeef_u64);
+}
+
+#[tokio::test]
+async fn test_erc20_balance_of_timeout_error() {
+    let provider = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let assets = setup(1, provider);
+    let result = assets
+        .erc20_balance_of(
+            Erc20BalanceOptions::builder()
+                .chain_id(1_u64)
+                .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
+                .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
+                .timeout_ms(1_u64)
+                .build(),
+        )
+        .await;
+    assert_eq!(result.unwrap_err().to_string(), "erc20_balance_of timed out after 1 ms");
+}
+
+#[tokio::test]
+async fn test_erc20_allowance() {
+    let mut provider = MockProvider::new();
+    provider
+        .expect_request()
+        .withf(|method, _| method == "eth_call")
+        .returning(|_, _| Ok(serde_json::json!(U256::from(0xdeadbeef_u64).encode_hex())));
+    let assets = setup(1, provider);
+    let balance = assets
+        .erc20_allowance(
+            Erc20AllowanceOptions::builder()
+                .chain_id(1_u64)
+                .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
+                .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
+                .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
+                .build(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(balance.as_u64(), 0xdeadbeef_u64);
+}
+
+#[tokio::test]
+async fn test_erc20_allowance_timeout_error() {
+    let provider = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let assets = setup(1, provider);
+    let result = assets
+        .erc20_allowance(
+            Erc20AllowanceOptions::builder()
+                .chain_id(1_u64)
+                .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
+                .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
+                .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
+                .timeout_ms(1_u64)
+                .build(),
+        )
+        .await;
+    assert_eq!(result.unwrap_err().to_string(), "erc20_allowance timed out after 1 ms");
 }
 
 #[tokio::test]
@@ -246,6 +343,55 @@ async fn test_erc20_approve_with_insufficient_balance() {
 }
 
 #[tokio::test]
+async fn test_erc20_approve_timeout_error() {
+    let mut provider = MockProvider::new();
+    provider
+        .expect_request()
+        .withf(|method, params| {
+            if method != "eth_call" {
+                return false;
+            }
+            match params {
+                JsonRpcParams::Value(value) => {
+                    let params = serde_json::to_string(value).unwrap();
+                    // the balanceOf and allowance method signatures
+                    params.contains("0x70a08231") || params.contains("0xdd62ed3e")
+                }
+                _ => false,
+            }
+        })
+        .returning(|_, params| match params {
+            JsonRpcParams::Value(params) => {
+                let params = serde_json::to_string(&params).unwrap();
+                if params.contains("0xdd62ed3e") {
+                    Ok(serde_json::json!(U256::from(0x0_u64).encode_hex()))
+                } else {
+                    Ok(serde_json::json!(U256::from(0xdeadbeef_u64).encode_hex()))
+                }
+            }
+            _ => Err(ethers_providers::ProviderError::CustomError(
+                "unexpected params".to_string(),
+            )),
+        });
+    let signer = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let assets = setup(1, provider);
+    let result = assets
+        .erc20_approve(
+            Erc20ApproveOptions::<TransactionRequest, TimeoutProvider>::builder()
+                .chain_id(1_u64)
+                .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
+                .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
+                .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
+                .amount(0x10_u64)
+                .signer(signer)
+                .timeout_ms(1_u64)
+                .build(),
+        )
+        .await;
+    assert_eq!(result.unwrap_err().to_string(), "erc20_approve timed out after 1 ms");
+}
+
+#[tokio::test]
 async fn test_erc20_transfer() {
     let mut provider = MockProvider::new();
     provider
@@ -349,7 +495,35 @@ async fn test_erc20_transfer_with_insufficient_allowance() {
     }
 }
 
-fn setup(chain_id: u64, provider: MockProvider) -> PublicAssets<MockProviders> {
+#[tokio::test]
+async fn test_erc20_transfer_timeout_error() {
+    let mut provider = MockProvider::new();
+    provider
+        .expect_request()
+        .withf(|method, _| method == "eth_call")
+        .returning(|_, _| Ok(serde_json::json!(U256::from(0xdeadbeef_u64).encode_hex())));
+    let signer = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let assets = setup(1, provider);
+    let result = assets
+        .erc20_transfer(
+            Erc20TransferOptions::<TransactionRequest, TimeoutProvider>::builder()
+                .chain_id(1_u64)
+                .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
+                .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
+                .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
+                .amount(0x10_u64)
+                .signer(signer)
+                .timeout_ms(1_u64)
+                .build(),
+        )
+        .await;
+    assert_eq!(result.unwrap_err().to_string(), "erc20_transfer timed out after 1 ms");
+}
+
+fn setup<P>(chain_id: u64, provider: P) -> PublicAssets<MockProviders>
+where
+    P: JsonRpcClientWrapper + 'static,
+{
     let provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
     let mut providers = MockProviders::new();
     providers
@@ -357,41 +531,4 @@ fn setup(chain_id: u64, provider: MockProvider) -> PublicAssets<MockProviders> {
         .withf(move |id| *id == chain_id)
         .returning(move |_| Ok(provider.clone()));
     PublicAssets::builder().providers(providers).build()
-}
-
-mock! {
-    #[derive(Debug)]
-    Provider {}
-
-    #[async_trait]
-    impl mystiko_ethers::JsonRpcClientWrapper for Provider {
-         async fn request(
-            &self,
-            method: &str,
-            params: mystiko_ethers::JsonRpcParams,
-        ) -> Result<serde_json::Value, ethers_providers::ProviderError>;
-    }
-}
-
-mock! {
-    #[derive(Debug)]
-    Providers {}
-
-    #[async_trait]
-    impl mystiko_ethers::Providers for Providers {
-        async fn get_provider(&self, chain_id: u64) -> anyhow::Result<Arc<Provider>>;
-        async fn has_provider(&self, chain_id: u64) -> bool;
-        async fn set_provider(&self, chain_id: u64, provider: Arc<Provider>) -> Option<Arc<Provider>>;
-        async fn delete_provider(&self, chain_id: u64) -> Option<Arc<Provider>>;
-    }
-}
-
-mock! {
-    TransactionSigner {}
-
-    #[async_trait]
-    impl mystiko_core::TransactionSigner for TransactionSigner {
-        async fn address(&self) -> anyhow::Result<Address>;
-        async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> anyhow::Result<TxHash>;
-    }
 }
