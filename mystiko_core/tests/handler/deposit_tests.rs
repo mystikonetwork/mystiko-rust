@@ -909,6 +909,101 @@ async fn test_cross_chain_deposit_erc20_token_send() {
     assert!(deposit.error_message.is_none());
 }
 
+#[tokio::test]
+async fn test_loop_deposit_insufficient_main_token() {
+    let (owner, private_key) = generate_private_key();
+    let mut assets = MockPublicAssets::new();
+    assets
+        .expect_balance_of()
+        .withf(move |options| {
+            options.chain_id == 97_u64 && options.owner == owner && options.timeout_ms == Some(100_u64)
+        })
+        .returning(|_| Ok(U256::from_dec_str("100000000000000").unwrap()));
+    let options = MockOptions::builder().assets(assets).build();
+    let (db, handler) = setup(options).await;
+    let (_, account) = create_wallet(db).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("BNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(97_u64)
+        .asset_symbol("BNB".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .deposit_quote(quote)
+        .build();
+    let deposit = handler.create(options).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .query_timeout_ms(100_u64)
+        .tx_send_timeout_ms(1000_u64)
+        .tx_wait_timeout_ms(2000_u64)
+        .tx_wait_interval_ms(10_u64)
+        .private_key(private_key)
+        .deposit_confirmations(10_u64)
+        .build();
+    let result = handler.send(options).await;
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        "insufficient balance for asset BNB amount 10.01"
+    );
+}
+
+#[tokio::test]
+async fn test_loop_deposit_insufficient_erc20_token() {
+    let (owner, private_key) = generate_private_key();
+    let asset_address = ethers_address_from_string("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap();
+    let mut assets = MockPublicAssets::new();
+    assets
+        .expect_erc20_balance_of()
+        .withf(move |options| {
+            options.chain_id == 5_u64
+                && options.owner == owner
+                && options.timeout_ms == Some(100_u64)
+                && options.asset_address == asset_address
+        })
+        .returning(|_| Ok(U256::from_dec_str("10000000000000").unwrap()));
+    let options = MockOptions::builder().assets(assets).build();
+    let (db, handler) = setup(options).await;
+    let (_, account) = create_wallet(db).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("MTT".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(5_u64)
+        .asset_symbol("MTT".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .deposit_quote(quote)
+        .build();
+    let deposit = handler.create(options).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .query_timeout_ms(100_u64)
+        .tx_send_timeout_ms(1000_u64)
+        .tx_wait_timeout_ms(2000_u64)
+        .tx_wait_interval_ms(10_u64)
+        .private_key(private_key)
+        .asset_approve_confirmations(10_u64)
+        .deposit_confirmations(10_u64)
+        .build();
+    let result = handler.send(options).await;
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        "insufficient balance for asset MTT amount 10.01"
+    );
+}
+
 #[derive(Debug, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
 struct MockOptions {

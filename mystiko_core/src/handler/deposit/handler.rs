@@ -1,7 +1,7 @@
 use crate::{
-    BalanceOptions, Database, Deposit, DepositContractHandler, DepositContracts, DepositContractsError, DepositHandler,
-    Erc20ApproveOptions, Erc20BalanceOptions, FromContext, MystikoContext, MystikoError, PrivateKeySigner,
-    PrivateKeySignerOptions, PublicAssetHandler, PublicAssets, PublicAssetsError, TransactionHandler,
+    BalanceOptions, Database, Deposit, DepositColumn, DepositContractHandler, DepositContracts, DepositContractsError,
+    DepositHandler, Erc20ApproveOptions, Erc20BalanceOptions, FromContext, MystikoContext, MystikoError,
+    PrivateKeySigner, PrivateKeySignerOptions, PublicAssetHandler, PublicAssets, PublicAssetsError, TransactionHandler,
     TransactionSigner, Transactions, TransactionsError, WaitOptions, WalletHandler, Wallets, WalletsError,
 };
 use async_trait::async_trait;
@@ -12,12 +12,13 @@ use mystiko_config::{AssetConfig, ChainConfig, DepositContractConfig, MystikoCon
 use mystiko_ethers::Providers;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_protos::common::v1::BridgeType;
-use mystiko_protos::core::document::v1::Deposit as ProtoDeposit;
+use mystiko_protos::core::document::v1::{Deposit as ProtoDeposit, Wallet};
 use mystiko_protos::core::handler::v1::{
     CreateDepositOptions, DepositQuote, DepositSummary, QuoteDepositOptions, SendDepositOptions,
 };
 use mystiko_protos::core::v1::{DepositStatus, Transaction};
-use mystiko_storage::{Document, StatementFormatter, Storage, StorageError};
+use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
+use mystiko_storage::{ColumnValues, Document, StatementFormatter, Storage, StorageError};
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use mystiko_utils::convert::{bytes_to_biguint, decimal_to_number, number_to_u256_decimal, u256_to_biguint};
 use mystiko_utils::hex::encode_hex_with_prefix;
@@ -214,6 +215,143 @@ where
                 Ok(Deposit::document_into_proto(deposit))
             }
         }
+    }
+
+    async fn find<Filter>(&self, filter: Filter) -> Result<Vec<ProtoDeposit>>
+    where
+        Filter: Into<QueryFilter> + Send + Sync,
+    {
+        let wallet = self.wallets.check_current().await?;
+        Ok(self
+            .db
+            .deposits
+            .find(wrap_filter::<Filter>(filter, &wallet))
+            .await?
+            .into_iter()
+            .map(Deposit::document_into_proto)
+            .collect::<Vec<_>>())
+    }
+
+    async fn find_all(&self) -> Result<Vec<ProtoDeposit>> {
+        let wallet = self.wallets.check_current().await?;
+        let filter = SubFilter::equal(DepositColumn::WalletId, wallet.id);
+        Ok(self
+            .db
+            .deposits
+            .find(filter)
+            .await?
+            .into_iter()
+            .map(Deposit::document_into_proto)
+            .collect::<Vec<_>>())
+    }
+
+    async fn find_one<Filter>(&self, filter: Filter) -> Result<Option<ProtoDeposit>>
+    where
+        Filter: Into<QueryFilter> + Send + Sync,
+    {
+        let wallet = self.wallets.check_current().await?;
+        Ok(self
+            .db
+            .deposits
+            .find_one(wrap_filter::<Filter>(filter, &wallet))
+            .await?
+            .map(Deposit::document_into_proto))
+    }
+
+    async fn find_by_id(&self, id: String) -> Result<Option<ProtoDeposit>> {
+        Ok(self
+            .db
+            .deposits
+            .find_by_id(&id)
+            .await?
+            .map(Deposit::document_into_proto))
+    }
+
+    async fn count<Filter>(&self, filter: Filter) -> Result<u64>
+    where
+        Filter: Into<QueryFilter> + Send + Sync,
+    {
+        let wallet = self.wallets.check_current().await?;
+        Ok(self.db.deposits.count(wrap_filter::<Filter>(filter, &wallet)).await?)
+    }
+
+    async fn count_all(&self) -> Result<u64> {
+        let wallet = self.wallets.check_current().await?;
+        let filter = SubFilter::equal(DepositColumn::WalletId, wallet.id);
+        Ok(self.db.deposits.count(filter).await?)
+    }
+
+    async fn update(&self, deposit: ProtoDeposit) -> Result<ProtoDeposit> {
+        Ok(self
+            .db
+            .deposits
+            .update(&Deposit::document_from_proto(deposit))
+            .await
+            .map(Deposit::document_into_proto)?)
+    }
+
+    async fn update_batch(&self, deposits: Vec<ProtoDeposit>) -> Result<Vec<ProtoDeposit>> {
+        let deposits = deposits
+            .into_iter()
+            .map(Deposit::document_from_proto)
+            .collect::<Vec<_>>();
+        let deposits = self.db.deposits.update_batch(&deposits).await?;
+        Ok(deposits
+            .into_iter()
+            .map(Deposit::document_into_proto)
+            .collect::<Vec<_>>())
+    }
+
+    async fn update_by_filter<Filter, Values>(&self, column_values: Values, filter: Filter) -> Result<()>
+    where
+        Filter: Into<QueryFilter> + Send + Sync,
+        Values: Into<ColumnValues> + Send + Sync,
+    {
+        let wallet = self.wallets.check_current().await?;
+        Ok(self
+            .db
+            .deposits
+            .update_by_filter(column_values, wrap_filter::<Filter>(filter, &wallet))
+            .await?)
+    }
+
+    async fn update_all<Values>(&self, column_values: Values) -> Result<()>
+    where
+        Values: Into<ColumnValues> + Send + Sync,
+    {
+        let wallet = self.wallets.check_current().await?;
+        let filter = SubFilter::equal(DepositColumn::WalletId, wallet.id);
+        Ok(self.db.deposits.update_by_filter(column_values, filter).await?)
+    }
+
+    async fn delete(&self, deposit: ProtoDeposit) -> Result<()> {
+        Ok(self.db.deposits.delete(&Deposit::document_from_proto(deposit)).await?)
+    }
+
+    async fn delete_batch(&self, deposits: Vec<ProtoDeposit>) -> Result<()> {
+        let deposits = deposits
+            .into_iter()
+            .map(Deposit::document_from_proto)
+            .collect::<Vec<_>>();
+        Ok(self.db.deposits.delete_batch(&deposits).await?)
+    }
+
+    async fn delete_by_filter<Filter>(&self, filter: Filter) -> Result<()>
+    where
+        Filter: Into<QueryFilter> + Send + Sync,
+    {
+        let wallet = self.wallets.check_current().await?;
+        Ok(self
+            .db
+            .deposits
+            .delete_by_filter(wrap_filter::<Filter>(filter, &wallet))
+            .await?)
+    }
+
+    async fn delete_all(&self) -> Result<()> {
+        let wallet = self.wallets.check_current().await?;
+        let filter = SubFilter::equal(DepositColumn::WalletId, wallet.id);
+        Ok(self.db.deposits.delete_by_filter(filter).await?)
     }
 }
 
@@ -1038,4 +1176,14 @@ fn format_deposit_log(deposit: &Document<Deposit>) -> String {
             DepositStatus::from_i32(deposit.data.status).unwrap_or_default()
         )
     }
+}
+
+fn wrap_filter<F>(filter: F, wallet: &Wallet) -> QueryFilter
+where
+    F: Into<QueryFilter> + Send + Sync,
+{
+    let mut filter = filter.into();
+    let sub_filter = SubFilter::equal(DepositColumn::WalletId, wallet.id.clone());
+    filter.additional_condition = Some(sub_filter.into());
+    filter
 }
