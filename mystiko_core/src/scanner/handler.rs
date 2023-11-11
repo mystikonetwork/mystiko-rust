@@ -327,10 +327,12 @@ where
         &self,
         mut commitments: Vec<Document<Commitment>>,
     ) -> Result<Vec<Document<Commitment>>, ScannerError> {
-        let filter_nullifiers = commitments
+        let filter_nullifiers: Vec<_> = commitments
             .iter()
-            .filter_map(|commitment| commitment.data.nullifier.clone())
-            .collect::<Vec<_>>();
+            .filter_map(|commitment| commitment.data.nullifier.as_ref())
+            .cloned()
+            .collect();
+
         let nullifiers = self.query_nullifiers(filter_nullifiers).await?;
         if !nullifiers.is_empty() {
             for commitment in commitments.iter_mut() {
@@ -430,12 +432,12 @@ where
                 },
             )?;
 
-        let spent = with_spent.filter(|&b| b).map(|_| spent);
+        let spent_option = with_spent.filter(|&b| b).map(|_| spent);
         Ok(Balance::builder()
             .asset_symbol(asset_symbol.to_string())
             .pending(pending)
             .unspent(unspent)
-            .spent(spent)
+            .spent(spent_option)
             .build())
     }
 }
@@ -466,15 +468,14 @@ async fn scan_commitment_by_accounts(
     if let Some(encrypted_note) = &commitment.data.encrypted_note {
         let encrypted_note_bytes: EncryptedNote = decode_hex(encrypted_note)?;
         for account in accounts {
-            let protocol_commitment = ProtocolCommitment::new(
+            if let Ok(pcm) = ProtocolCommitment::new(
                 account.shielded_address.clone(),
                 None,
                 Some(EncryptedData {
                     sk_enc: account.enc_sk,
                     encrypted_note: encrypted_note_bytes.clone(),
                 }),
-            );
-            if let Ok(pcm) = protocol_commitment {
+            ) {
                 if pcm.commitment_hash == commitment.data.commitment_hash {
                     let nullifier = compute_nullifier(&account.v_sk, &pcm.note.random_p);
                     commitment.data.amount = Some(pcm.note.amount);
