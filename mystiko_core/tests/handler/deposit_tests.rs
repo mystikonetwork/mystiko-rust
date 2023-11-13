@@ -1267,7 +1267,7 @@ async fn test_crud() {
 #[builder(field_defaults(default, setter(into)))]
 struct MockOptions {
     deposit_contracts: MockDepositContracts,
-    commitment_pool_contracts: MockCommitmentPoolContracts,
+    commitment_pool_contracts: Option<MockCommitmentPoolContracts>,
     assets: MockPublicAssets,
     transactions: MockTransactions,
     providers: HashMap<u64, MockProvider>,
@@ -1318,6 +1318,15 @@ async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositsType) {
             .remove(&chain_id)
             .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
     });
+    let commitment_pool_contracts = if let Some(commitment_pool_contracts) = options.commitment_pool_contracts {
+        commitment_pool_contracts
+    } else {
+        let mut commitment_pool_contracts = MockCommitmentPoolContracts::new();
+        commitment_pool_contracts
+            .expect_is_historic_commitment()
+            .returning(|_| Ok(false));
+        commitment_pool_contracts
+    };
     let handler = DepositsType::new(
         DepositsOptionsType::builder()
             .config(config)
@@ -1325,7 +1334,7 @@ async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositsType) {
             .signer_providers(providers)
             .assets(options.assets)
             .deposit_contracts(options.deposit_contracts)
-            .commitment_pool_contracts(options.commitment_pool_contracts)
+            .commitment_pool_contracts(commitment_pool_contracts)
             .transactions(options.transactions)
             .build(),
     );

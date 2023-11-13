@@ -436,44 +436,42 @@ where
         context.validate_balances(&owner).await?;
         let asset_approve_tx_hashes = context.send_assets_approve(options, signer.clone(), owner).await?;
         if !asset_approve_tx_hashes.is_empty() {
+            deposit.data.status = DepositStatus::AssetApproving as i32;
             deposit.data.asset_approve_transaction_hash = Some(
                 asset_approve_tx_hashes
                     .iter()
-                    .map(|(asset_symbol, tx_hash)| {
-                        let tx_hash = tx_hash.encode_hex();
-                        log::info!(
-                            "successfully submitted {} approving transaction(chain_id={}, hash={:?}) for {}",
-                            asset_symbol,
-                            deposit.data.chain_id,
-                            tx_hash,
-                            format_deposit_log(&deposit),
-                        );
-                        tx_hash
-                    })
+                    .map(|(_, tx_hash)| tx_hash.encode_hex())
                     .collect::<Vec<_>>(),
             );
+            deposit = self.db.deposits.update(&deposit).await?;
         }
-        deposit.data.status = DepositStatus::AssetApproving as i32;
-        deposit = self.db.deposits.update(&deposit).await?;
-        for (asset_symbol, tx_hash) in asset_approve_tx_hashes.into_iter() {
+        for (asset_symbol, tx_hash) in asset_approve_tx_hashes.iter() {
+            log::info!(
+                "successfully submitted {} approving {} for {}",
+                asset_symbol,
+                format_tx(self.config.clone(), deposit.data.chain_id, tx_hash)?,
+                format_deposit_log(&deposit),
+            );
             let wait_options = WaitOptions::builder()
                 .chain_id(deposit.data.chain_id)
-                .tx_hash(tx_hash)
+                .tx_hash(*tx_hash)
                 .confirmations(options.asset_approve_confirmations)
                 .interval_ms(options.tx_wait_interval_ms)
                 .timeout_ms(options.tx_wait_timeout_ms)
                 .build();
             self.transactions.wait(wait_options).await?;
+        }
+        deposit.data.status = DepositStatus::AssetApproved as i32;
+        let deposit = self.db.deposits.update(&deposit).await?;
+        for (asset_symbol, tx_hash) in asset_approve_tx_hashes.iter() {
             log::info!(
-                "successfully confirmed {} approving transaction(chain_id={}, hash={:?}) for {}",
+                "successfully confirmed {} approving {} for {}",
                 asset_symbol,
-                deposit.data.chain_id,
-                tx_hash.encode_hex(),
+                format_tx(self.config.clone(), deposit.data.chain_id, tx_hash)?,
                 format_deposit_log(&deposit),
             )
         }
-        deposit.data.status = DepositStatus::AssetApproved as i32;
-        Ok(self.db.deposits.update(&deposit).await?)
+        Ok(deposit)
     }
 
     async fn send_deposit<Signer>(
@@ -487,13 +485,13 @@ where
         Signer: TransactionSigner + 'static,
     {
         let send_tx_hash = context.send_deposit(&mut deposit, options, signer.clone()).await?;
+        let send_tx_url = format_tx(self.config.clone(), deposit.data.chain_id, &send_tx_hash)?;
+        deposit = self.db.deposits.update(&deposit).await?;
         log::info!(
-            "successfully submitted transaction(chain_id={}, hash={:?}) for {}",
-            deposit.data.chain_id,
-            send_tx_hash.encode_hex(),
+            "successfully submitted {} for {}",
+            send_tx_url,
             format_deposit_log(&deposit),
         );
-        self.db.deposits.update(&deposit).await?;
         let wait_options = WaitOptions::builder()
             .chain_id(deposit.data.chain_id)
             .tx_hash(send_tx_hash)
@@ -502,18 +500,18 @@ where
             .timeout_ms(options.tx_wait_timeout_ms)
             .build();
         self.transactions.wait(wait_options).await?;
-        log::info!(
-            "successfully confirmed transaction(chain_id={}, hash={:?}) for {}",
-            deposit.data.chain_id,
-            send_tx_hash.encode_hex(),
-            format_deposit_log(&deposit),
-        );
         if context.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop {
             deposit.data.status = DepositStatus::SrcSucceeded as i32;
         } else {
             deposit.data.status = DepositStatus::Queued as i32;
         }
-        Ok(self.db.deposits.update(&deposit).await?)
+        deposit = self.db.deposits.update(&deposit).await?;
+        log::info!(
+            "successfully confirmed {} for {}",
+            send_tx_url,
+            format_deposit_log(&deposit),
+        );
+        Ok(deposit)
     }
 }
 
@@ -1261,4 +1259,11 @@ where
     let sub_filter = SubFilter::equal(DepositColumn::WalletId, wallet.id.clone());
     filter.additional_condition = Some(sub_filter.into());
     filter
+}
+
+fn format_tx(config: Arc<MystikoConfig>, chain_id: u64, tx_hash: &TxHash) -> Result<String> {
+    let tx_url = config
+        .transaction_url(chain_id, &tx_hash.encode_hex())
+        .ok_or(DepositsError::UnsupportedChainIdError(chain_id))?;
+    Ok(format!("tx({})", tx_url))
 }
