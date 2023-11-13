@@ -4,6 +4,7 @@ use mystiko_protos::api::v1::StatusCode;
 pub fn parse_mystiko_error(err: &MystikoError) -> StatusCode {
     match err {
         MystikoError::SynchronizerError(_) => StatusCode::SynchronizerError,
+        MystikoError::ScannerError(_) => StatusCode::ScannerError,
         MystikoError::DataLoaderError(_) => StatusCode::DataLoaderError,
         MystikoError::ConfigError(_) => StatusCode::ConfigError,
         MystikoError::DatabaseMigrationError(_) => StatusCode::DatabaseMigrationError,

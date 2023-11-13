@@ -149,6 +149,7 @@ impl serde::Serialize for StatusCode {
             Self::InvalidProviderUrlError => "STATUS_CODE_INVALID_PROVIDER_URL_ERROR",
             Self::DataLoaderError => "STATUS_CODE_DATA_LOADER_ERROR",
             Self::SynchronizerError => "STATUS_CODE_SYNCHRONIZER_ERROR",
+            Self::ScannerError => "STATUS_CODE_SCANNER_ERROR",
             Self::GetMystikoGuardError => "STATUS_CODE_GET_MYSTIKO_GUARD_ERROR",
             Self::DeserializeMessageError => "STATUS_CODE_DESERIALIZE_MESSAGE_ERROR",
         };
@@ -178,6 +179,7 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
             "STATUS_CODE_INVALID_PROVIDER_URL_ERROR",
             "STATUS_CODE_DATA_LOADER_ERROR",
             "STATUS_CODE_SYNCHRONIZER_ERROR",
+            "STATUS_CODE_SCANNER_ERROR",
             "STATUS_CODE_GET_MYSTIKO_GUARD_ERROR",
             "STATUS_CODE_DESERIALIZE_MESSAGE_ERROR",
         ];
@@ -238,6 +240,7 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
                     "STATUS_CODE_INVALID_PROVIDER_URL_ERROR" => Ok(StatusCode::InvalidProviderUrlError),
                     "STATUS_CODE_DATA_LOADER_ERROR" => Ok(StatusCode::DataLoaderError),
                     "STATUS_CODE_SYNCHRONIZER_ERROR" => Ok(StatusCode::SynchronizerError),
+                    "STATUS_CODE_SCANNER_ERROR" => Ok(StatusCode::ScannerError),
                     "STATUS_CODE_GET_MYSTIKO_GUARD_ERROR" => Ok(StatusCode::GetMystikoGuardError),
                     "STATUS_CODE_DESERIALIZE_MESSAGE_ERROR" => Ok(StatusCode::DeserializeMessageError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
