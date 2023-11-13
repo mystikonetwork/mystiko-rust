@@ -234,7 +234,7 @@ where
 
     async fn find<Filter>(&self, filter: Filter) -> Result<Vec<ProtoDeposit>>
     where
-        Filter: Into<QueryFilter> + Send + Sync,
+        Filter: Into<QueryFilter> + Send + Sync + 'static,
     {
         let wallet = self.wallets.check_current().await?;
         Ok(self
@@ -262,7 +262,7 @@ where
 
     async fn find_one<Filter>(&self, filter: Filter) -> Result<Option<ProtoDeposit>>
     where
-        Filter: Into<QueryFilter> + Send + Sync,
+        Filter: Into<QueryFilter> + Send + Sync + 'static,
     {
         let wallet = self.wallets.check_current().await?;
         Ok(self
@@ -284,7 +284,7 @@ where
 
     async fn count<Filter>(&self, filter: Filter) -> Result<u64>
     where
-        Filter: Into<QueryFilter> + Send + Sync,
+        Filter: Into<QueryFilter> + Send + Sync + 'static,
     {
         let wallet = self.wallets.check_current().await?;
         Ok(self.db.deposits.count(wrap_filter::<Filter>(filter, &wallet)).await?)
@@ -319,8 +319,8 @@ where
 
     async fn update_by_filter<Filter, Values>(&self, column_values: Values, filter: Filter) -> Result<()>
     where
-        Filter: Into<QueryFilter> + Send + Sync,
-        Values: Into<ColumnValues> + Send + Sync,
+        Filter: Into<QueryFilter> + Send + Sync + 'static,
+        Values: Into<ColumnValues> + Send + Sync + 'static,
     {
         let wallet = self.wallets.check_current().await?;
         Ok(self
@@ -332,7 +332,7 @@ where
 
     async fn update_all<Values>(&self, column_values: Values) -> Result<()>
     where
-        Values: Into<ColumnValues> + Send + Sync,
+        Values: Into<ColumnValues> + Send + Sync + 'static,
     {
         let wallet = self.wallets.check_current().await?;
         let filter = SubFilter::equal(DepositColumn::WalletId, wallet.id);
@@ -353,7 +353,7 @@ where
 
     async fn delete_by_filter<Filter>(&self, filter: Filter) -> Result<()>
     where
-        Filter: Into<QueryFilter> + Send + Sync,
+        Filter: Into<QueryFilter> + Send + Sync + 'static,
     {
         let wallet = self.wallets.check_current().await?;
         Ok(self
