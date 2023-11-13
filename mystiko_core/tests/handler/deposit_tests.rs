@@ -1,5 +1,5 @@
 use crate::common::{create_database, MockProvider, MockProviders};
-use crate::handler::{MockDepositContracts, MockPublicAssets, MockTransactions};
+use crate::handler::{MockCommitmentPoolContracts, MockDepositContracts, MockPublicAssets, MockTransactions};
 use ethers_core::abi::{AbiDecode, AbiEncode};
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, Eip1559TransactionRequest, TransactionReceipt, TransactionRequest, TxHash, U256};
@@ -19,7 +19,7 @@ use mystiko_protos::core::v1::DepositStatus;
 use mystiko_protos::storage::v1::SubFilter;
 use mystiko_storage::{ColumnValues, DocumentColumn, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
-use mystiko_utils::address::ethers_address_from_string;
+use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use mystiko_utils::convert::number_to_u256_decimal;
 use mystiko_utils::hex::encode_hex;
 use std::collections::HashMap;
@@ -1006,6 +1006,141 @@ async fn test_loop_deposit_insufficient_erc20_token() {
 }
 
 #[tokio::test]
+async fn test_loop_deposit_send_with_wrong_status() {
+    let (_, private_key) = generate_private_key();
+    let (db, handler) = setup(Default::default()).await;
+    let (_, account) = create_wallet(db.clone()).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("BNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(97_u64)
+        .asset_symbol("BNB".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .deposit_quote(quote)
+        .build();
+    let mut deposit = mystiko_core::Deposit::document_from_proto(handler.create(options).await.unwrap());
+    deposit.data.status = DepositStatus::SrcSucceeded as i32;
+    db.deposits.update(&deposit).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .private_key(private_key)
+        .build();
+    let result = handler.send(options).await;
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        "cannot send deposit with status=SrcSucceeded"
+    );
+}
+
+#[tokio::test]
+async fn test_loop_deposit_send_with_duplicate_commitment() {
+    let pool_address = ethers_address_from_string("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2").unwrap();
+    let mut commitment_pool_contracts = MockCommitmentPoolContracts::new();
+    commitment_pool_contracts
+        .expect_is_historic_commitment()
+        .withf(move |options| options.chain_id == 97_u64 && options.contract_address == pool_address)
+        .returning(|_| Ok(true));
+    let (_, private_key) = generate_private_key();
+    let (db, handler) = setup(
+        MockOptions::builder()
+            .commitment_pool_contracts(commitment_pool_contracts)
+            .build(),
+    )
+    .await;
+    let (_, account) = create_wallet(db).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("BNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(97_u64)
+        .asset_symbol("BNB".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .deposit_quote(quote)
+        .build();
+    let deposit = handler.create(options).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .private_key(private_key)
+        .build();
+    let result = handler.send(options).await;
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        format!(
+            "duplicate commitment={} in chain_id=97 contract_address={}",
+            deposit.commitment_hash,
+            ethers_address_to_string(&pool_address)
+        )
+    );
+}
+
+#[tokio::test]
+async fn test_cross_chain_deposit_send_with_duplicate_commitment() {
+    let pool_address = ethers_address_from_string("0x5050F69a9786F081509234F1a7F4684b5E5b76C9").unwrap();
+    let mut commitment_pool_contracts = MockCommitmentPoolContracts::new();
+    commitment_pool_contracts
+        .expect_is_historic_commitment()
+        .withf(move |options| options.chain_id == 5_u64 && options.contract_address == pool_address)
+        .returning(|_| Ok(true));
+    let (_, private_key) = generate_private_key();
+    let (db, handler) = setup(
+        MockOptions::builder()
+            .commitment_pool_contracts(commitment_pool_contracts)
+            .build(),
+    )
+    .await;
+    let (_, account) = create_wallet(db).await;
+    let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .min_amount(1_f64)
+        .max_amount(10000_f64)
+        .min_rollup_fee_amount(0.01_f64)
+        .rollup_fee_asset_symbol("BNB".to_string())
+        .min_bridge_fee_amount(0.00001_f64)
+        .bridge_fee_asset_symbol("BNB".to_string())
+        .min_executor_fee_amount(0.0001_f64)
+        .executor_fee_asset_symbol("BNB".to_string())
+        .build();
+    let options = CreateDepositOptions::builder()
+        .chain_id(97_u64)
+        .dst_chain_id(5_u64)
+        .asset_symbol("BNB".to_string())
+        .bridge_type(BridgeType::Tbridge as i32)
+        .shielded_address(account.shielded_address.clone())
+        .amount(10_f64)
+        .rollup_fee_amount(0.01_f64)
+        .bridge_fee_amount(0.00001_f64)
+        .executor_fee_amount(0.0001_f64)
+        .deposit_quote(quote)
+        .build();
+    let deposit = handler.create(options).await.unwrap();
+    let options = SendDepositOptions::builder()
+        .deposit_id(deposit.id)
+        .private_key(private_key)
+        .build();
+    let result = handler.send(options).await;
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        format!(
+            "duplicate commitment={} in chain_id=5 contract_address={}",
+            deposit.commitment_hash,
+            ethers_address_to_string(&pool_address)
+        )
+    );
+}
+
+#[tokio::test]
 async fn test_crud() {
     let (db, handler) = setup(Default::default()).await;
     let (_, account) = create_wallet(db.clone()).await;
@@ -1132,6 +1267,7 @@ async fn test_crud() {
 #[builder(field_defaults(default, setter(into)))]
 struct MockOptions {
     deposit_contracts: MockDepositContracts,
+    commitment_pool_contracts: MockCommitmentPoolContracts,
     assets: MockPublicAssets,
     transactions: MockTransactions,
     providers: HashMap<u64, MockProvider>,
@@ -1142,6 +1278,7 @@ type DepositsOptionsType = DepositsOptions<
     SqliteStorage,
     MockPublicAssets,
     MockDepositContracts,
+    MockCommitmentPoolContracts,
     MockTransactions,
     MockProviders,
 >;
@@ -1150,6 +1287,7 @@ type DepositsType = Deposits<
     SqliteStorage,
     MockPublicAssets,
     MockDepositContracts,
+    MockCommitmentPoolContracts,
     MockTransactions,
     MockProviders,
 >;
@@ -1187,6 +1325,7 @@ async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositsType) {
             .signer_providers(providers)
             .assets(options.assets)
             .deposit_contracts(options.deposit_contracts)
+            .commitment_pool_contracts(options.commitment_pool_contracts)
             .transactions(options.transactions)
             .build(),
     );

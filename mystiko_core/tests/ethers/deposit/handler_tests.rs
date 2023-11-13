@@ -1,5 +1,5 @@
 use crate::common::{MockProvider, MockProviders, MockTransactionSigner};
-use crate::ethers::{parse_call_args, TimeoutProvider};
+use crate::ethers::{mock_providers, parse_call_args, TimeoutProvider};
 use ethers_core::abi::AbiDecode;
 use ethers_core::abi::AbiEncode;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -12,7 +12,7 @@ use mystiko_config::MystikoConfig;
 use mystiko_core::{
     CrossChainDepositOptions, DepositContractHandler, DepositContracts, DepositOptions, DepositQuoteOptions,
 };
-use mystiko_ethers::{JsonRpcClientWrapper, Provider, ProviderWrapper};
+use mystiko_ethers::JsonRpcClientWrapper;
 use mystiko_types::ContractType;
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use std::collections::HashMap;
@@ -603,20 +603,7 @@ where
     let _ = env_logger::builder()
         .filter_module("mystiko_core", log::LevelFilter::Info)
         .try_init();
-    let raw_providers = providers
-        .into_iter()
-        .map(|(chain_id, provider)| {
-            let provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
-            (chain_id, provider)
-        })
-        .collect::<HashMap<_, _>>();
-    let mut providers = MockProviders::new();
-    providers.expect_get_provider().returning(move |chain_id| {
-        raw_providers
-            .get(&chain_id)
-            .cloned()
-            .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
-    });
+    let providers = mock_providers::<P>(providers);
     DepositContracts::builder().providers(providers).config(config).build()
 }
 

@@ -1,14 +1,18 @@
 mod asset;
 mod deposit;
+mod pool;
 mod provider_tests;
 mod transaction;
 
+use crate::common::MockProviders;
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, TxHash};
 use ethers_providers::ProviderError;
 use mystiko_core::TransactionSigner;
-use mystiko_ethers::{JsonRpcClientWrapper, JsonRpcParams};
+use mystiko_ethers::{JsonRpcClientWrapper, JsonRpcParams, Provider, ProviderWrapper};
+use std::collections::HashMap;
+use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -46,4 +50,25 @@ fn parse_call_args(params: &JsonRpcParams) -> TypedTransaction {
     } else {
         panic!("Invalid params");
     }
+}
+
+fn mock_providers<P>(providers: HashMap<u64, P>) -> MockProviders
+where
+    P: JsonRpcClientWrapper + 'static,
+{
+    let raw_providers = providers
+        .into_iter()
+        .map(|(chain_id, provider)| {
+            let provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
+            (chain_id, provider)
+        })
+        .collect::<HashMap<_, _>>();
+    let mut providers = MockProviders::new();
+    providers.expect_get_provider().returning(move |chain_id| {
+        raw_providers
+            .get(&chain_id)
+            .cloned()
+            .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
+    });
+    providers
 }
