@@ -1,4 +1,5 @@
 use crate::scanner::{create_scanner, insert_commitments};
+use mystiko_core::ScannerError;
 use mystiko_core::ScannerHandler;
 use mystiko_protos::core::scanner::v1::BalanceOptions;
 use mystiko_protos::data::v1::CommitmentStatus;
@@ -6,7 +7,7 @@ use mystiko_utils::convert::decimal_to_number;
 use num_bigint::BigUint;
 
 #[tokio::test]
-async fn test_scan_pending_balance_default() {
+async fn test_pending_balance_default() {
     let account_count = 3_usize;
     let commitment_count = 10_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
@@ -69,7 +70,7 @@ async fn test_scan_pending_balance_default() {
 }
 
 #[tokio::test]
-async fn test_scan_options_with_spend() {
+async fn test_options_with_spend() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
@@ -142,7 +143,7 @@ async fn test_scan_options_with_spend() {
 }
 
 #[tokio::test]
-async fn test_scan_options_with_asset() {
+async fn test_options_with_asset() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder().asset_symbols(vec!["MTT".to_string()]).build();
@@ -184,7 +185,7 @@ async fn test_scan_options_with_asset() {
 }
 
 #[tokio::test]
-async fn test_scan_options_with_chain_id() {
+async fn test_options_with_chain_id() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder().chain_ids(vec![12345_u64]).build();
@@ -220,7 +221,7 @@ async fn test_scan_options_with_chain_id() {
 }
 
 #[tokio::test]
-async fn test_scan_options_with_contract_address() {
+async fn test_options_with_contract_address() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder()
@@ -258,7 +259,7 @@ async fn test_scan_options_with_contract_address() {
 }
 
 #[tokio::test]
-async fn test_scan_options_with_bridge_type() {
+async fn test_options_with_bridge_type() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder().bridge_types(vec![123456]).build();
@@ -294,16 +295,18 @@ async fn test_scan_options_with_bridge_type() {
 }
 
 #[tokio::test]
-async fn test_scan_options_with_shielded_address() {
+async fn test_options_with_shielded_address() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder()
         .shielded_addresses(vec!["wrong address".to_string()])
         .build();
     let (scanner, db, _) = create_scanner(account_count).await;
+    let result = scanner.balance(option).await;
+    assert!(matches!(result.err().unwrap(), ScannerError::NoSuchAccountError));
+
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
-
     let mut amount_mtt = BigUint::default();
     let mut amount_eth = BigUint::default();
     for i in 0..account_count {
@@ -318,7 +321,7 @@ async fn test_scan_options_with_shielded_address() {
         });
         cms.iter_mut().skip(account_count + i).take(1).for_each(|cm| {
             cm.data.nullifier = Some(BigUint::from(8_u8));
-            cm.data.shielded_address = Some(accounts[0].data.shielded_address.clone());
+            cm.data.shielded_address = Some(accounts[1].data.shielded_address.clone());
             cm.data.status = CommitmentStatus::Included as i32;
             cm.data.asset_symbol = "ETH".to_string();
             if let Some(cm_amount) = cm.data.amount.as_ref() {
@@ -327,6 +330,28 @@ async fn test_scan_options_with_shielded_address() {
         });
     }
     db.commitments.update_batch(&cms).await.unwrap();
+
+    let option = BalanceOptions::builder().build();
+    let result = scanner.balance(option).await.unwrap();
+    assert_eq!(result.balances.len(), 2);
+
+    let option = BalanceOptions::builder()
+        .shielded_addresses(vec![accounts[0].data.shielded_address.clone()])
+        .build();
+    let result = scanner.balance(option).await.unwrap();
+    assert_eq!(result.balances.len(), 1);
+    assert_eq!(result.balances[0].asset_symbol, "MTT");
+
+    let option = BalanceOptions::builder()
+        .shielded_addresses(vec![accounts[1].data.shielded_address.clone()])
+        .build();
+    let result = scanner.balance(option).await.unwrap();
+    assert_eq!(result.balances.len(), 1);
+    assert_eq!(result.balances[0].asset_symbol, "ETH");
+
+    let account_count = 0_usize;
+    let option = BalanceOptions::builder().build();
+    let (scanner, _, _) = create_scanner(account_count).await;
     let result = scanner.balance(option).await.unwrap();
     assert!(result.balances.is_empty());
 }

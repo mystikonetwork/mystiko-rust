@@ -8,8 +8,8 @@ use tokio::task::JoinError;
 
 #[derive(Debug, Error)]
 pub enum ScannerError {
-    #[error("no account found")]
-    NoAccountFoundError,
+    #[error("no such accounts")]
+    NoSuchAccountError,
     #[error("commitment is empty")]
     CommitmentEmptyError,
     #[error(transparent)]

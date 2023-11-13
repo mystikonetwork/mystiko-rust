@@ -1,12 +1,12 @@
 use crate::scanner::{create_scanner, insert_commitments, DEFAULT_WALLET_PASSWORD};
 use mystiko_core::{Nullifier, ScannerError, ScannerHandler};
-use mystiko_protos::core::scanner::v1::ScanOptions;
+use mystiko_protos::core::scanner::v1::{ScanOptions, ScanResult};
 use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
 async fn test_scan_default_options() {
     let account_count = 1_usize;
-    let (scanner, _, _) = create_scanner(account_count).await;
+    let (scanner, _, test_accounts) = create_scanner(account_count).await;
     let option = ScanOptions::builder().build();
     let result = scanner.scan(option).await;
     assert!(matches!(result.err().unwrap(), ScannerError::WalletHandlerError(_)));
@@ -29,7 +29,32 @@ async fn test_scan_default_options() {
         .shielded_addresses(vec!["wrong_shielded_address".to_string()])
         .build();
     let result = scanner.scan(option).await;
-    assert!(matches!(result.err().unwrap(), ScannerError::NoAccountFoundError));
+    assert!(matches!(result.err().unwrap(), ScannerError::NoSuchAccountError));
+
+    let option = ScanOptions::builder()
+        .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
+        .shielded_addresses(vec![
+            "wrong_shielded_address".to_string(),
+            test_accounts[0].shielded_address.address().clone(),
+        ])
+        .build();
+    let result = scanner.scan(option).await.unwrap();
+    assert_eq!(result.total_count, 0);
+    assert_eq!(result.owned_count, 0);
+    assert_eq!(result.scanned_shielded_addresses.len(), 1);
+    assert_eq!(
+        result.scanned_shielded_addresses[0],
+        test_accounts[0].shielded_address.address()
+    );
+    assert_eq!(result.to_id, None);
+
+    let account_count = 0_usize;
+    let (scanner, _, _) = create_scanner(account_count).await;
+    let option = ScanOptions::builder()
+        .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
+        .build();
+    let result = scanner.scan(option).await.unwrap();
+    assert_eq!(result, ScanResult::builder().build());
 }
 
 #[tokio::test]
