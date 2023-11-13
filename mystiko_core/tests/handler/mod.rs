@@ -8,9 +8,10 @@ use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{TransactionReceipt, TxHash, U256};
 use mockall::mock;
 use mystiko_core::{
-    BalanceOptions, CrossChainDepositOptions, DepositContractHandler, DepositOptions, DepositQuote,
-    DepositQuoteOptions, Erc20AllowanceOptions, Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions,
-    PublicAssetHandler, TransactionHandler, TransactionSigner, TransferOptions, WaitOptions,
+    BalanceOptions, CommitmentPoolContractHandler, CrossChainDepositOptions, DepositContractHandler, DepositOptions,
+    DepositQuote, DepositQuoteOptions, Erc20AllowanceOptions, Erc20ApproveOptions, Erc20BalanceOptions,
+    Erc20TransferOptions, IsHistoricCommitmentOptions, IsKnownRootOptions, IsSpentNullifierOptions, PublicAssetHandler,
+    TransactionHandler, TransactionSigner, TransferOptions, WaitOptions,
 };
 use mystiko_protos::core::v1::Transaction;
 use mystiko_types::TransactionType;
@@ -58,6 +59,19 @@ mock! {
         where
             S: TransactionSigner + 'static,
             T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static;
+    }
+}
+
+mock! {
+    #[derive(Debug, Default)]
+    CommitmentPoolContracts {}
+
+    #[async_trait]
+    impl CommitmentPoolContractHandler for CommitmentPoolContracts {
+        type Error = anyhow::Error;
+        async fn is_historic_commitment(&self, options: IsHistoricCommitmentOptions) -> Result<bool>;
+        async fn is_spent_nullifier(&self, options: IsSpentNullifierOptions) -> Result<bool>;
+        async fn is_known_root(&self, options: IsKnownRootOptions) -> Result<bool>;
     }
 }
 
