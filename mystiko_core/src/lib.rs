@@ -4,7 +4,7 @@ mod error;
 mod ethers;
 mod handler;
 mod mystiko;
-
+mod scanner;
 mod signer;
 mod synchronizer;
 
@@ -14,5 +14,6 @@ pub use error::*;
 pub use ethers::*;
 pub use handler::*;
 pub use mystiko::*;
+pub use scanner::*;
 pub use signer::*;
 pub use synchronizer::*;

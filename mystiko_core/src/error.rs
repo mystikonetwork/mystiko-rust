@@ -1,4 +1,4 @@
-use crate::SynchronizerError;
+use crate::{ScannerError, SynchronizerError};
 use mystiko_dataloader::DataLoaderError;
 use thiserror::Error;
 
@@ -6,6 +6,8 @@ use thiserror::Error;
 pub enum MystikoError {
     #[error(transparent)]
     SynchronizerError(#[from] SynchronizerError),
+    #[error(transparent)]
+    ScannerError(#[from] ScannerError),
     #[error(transparent)]
     DataLoaderError(#[from] DataLoaderError),
     #[error("config raised error: {0:?}")]

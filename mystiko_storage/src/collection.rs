@@ -29,9 +29,15 @@ impl<F: StatementFormatter, S: Storage> Collection<F, S> {
         } else {
             let mut documents: Vec<Document<D>> = Vec::new();
             let now = current_timestamp();
-            for doc in data.iter() {
-                let document: Document<D> = Document::new(self.storage.uuid().await?, now, now, doc.clone());
-                documents.push(document);
+
+            let mut ids = vec![];
+            for _ in 0..data.len() {
+                ids.push(self.storage.uuid().await?);
+            }
+            ids.sort();
+
+            for (id, doc) in ids.into_iter().zip(data.iter()) {
+                documents.push(Document::new(id, now, now, doc.clone()));
             }
             self.storage
                 .execute_batch(self.formatter.format_insert_batch(&documents))

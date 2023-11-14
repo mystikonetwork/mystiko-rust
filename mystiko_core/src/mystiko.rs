@@ -1,6 +1,6 @@
 use crate::{
     AccountHandler, Accounts, Database, DepositHandler, Deposits, FromContext, MystikoContext, MystikoError,
-    MystikoOptions, Synchronizer, SynchronizerHandler, WalletHandler, Wallets,
+    MystikoOptions, Scanner, ScannerHandler, Synchronizer, SynchronizerHandler, WalletHandler, Wallets,
 };
 use anyhow::Result;
 use mystiko_config::MystikoConfig;
@@ -10,6 +10,9 @@ use mystiko_protos::core::document::v1::{Account, Deposit, Wallet};
 use mystiko_protos::core::handler::v1::{
     CreateAccountOptions, CreateDepositOptions, CreateWalletOptions, DepositQuote, DepositSummary, QuoteDepositOptions,
     SendDepositOptions, UpdateAccountOptions,
+};
+use mystiko_protos::core::scanner::v1::{
+    BalanceOptions, BalanceResult, ResetOptions, ResetResult, ScanOptions, ScanResult,
 };
 use mystiko_protos::core::synchronizer::v1::{SyncOptions, SynchronizerStatus};
 use mystiko_storage::{StatementFormatter, Storage};
@@ -29,6 +32,7 @@ pub struct Mystiko<
         SendDepositOptions,
     > = Deposits<F, S>,
     Y: SynchronizerHandler<SyncOptions, SynchronizerStatus> = Synchronizer<ChainDataLoader<FullData>>,
+    R: ScannerHandler<ScanOptions, ScanResult, ResetOptions, ResetResult, BalanceOptions, BalanceResult> = Scanner<F,S>,
 > {
     pub db: Arc<Database<F, S>>,
     pub config: Arc<MystikoConfig>,
@@ -36,9 +40,10 @@ pub struct Mystiko<
     pub accounts: A,
     pub deposits: D,
     pub synchronizer: Y,
+    pub scanner: R,
 }
 
-impl<F, S, W, A, D, Y> Mystiko<F, S, W, A, D, Y>
+impl<F, S, W, A, D, Y, R> Mystiko<F, S, W, A, D, Y, R>
 where
     F: StatementFormatter + 'static,
     S: Storage + 'static,
@@ -54,6 +59,9 @@ where
             SendDepositOptions,
         > + 'static,
     Y: FromContext<F, S> + SynchronizerHandler<SyncOptions, SynchronizerStatus> + 'static,
+    R: FromContext<F, S>
+        + ScannerHandler<ScanOptions, ScanResult, ResetOptions, ResetResult, BalanceOptions, BalanceResult>
+        + 'static,
 {
     pub async fn new(database: Database<F, S>, options: Option<MystikoOptions>) -> Result<Self, MystikoError> {
         database.migrate().await.map_err(MystikoError::DatabaseMigrationError)?;
@@ -65,6 +73,7 @@ where
             wallets: W::from_context(&context).await?,
             deposits: D::from_context(&context).await?,
             synchronizer: Y::from_context(&context).await?,
+            scanner: R::from_context(&context).await?,
         };
         log::info!(
             "mystiko on {} has been initialized, config git revision {}",

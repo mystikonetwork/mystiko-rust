@@ -208,8 +208,6 @@ async fn test_chain_synced_with_checker_disabled_options() {
 }
 
 fn load_options_compare(a: &LoadOption, b: &LoadOption) -> bool {
-    println!("a: {:?}", a);
-    println!("b: {:?}", b);
     a == b
 }
 
