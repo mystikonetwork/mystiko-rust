@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment as ProtocolCommitment, EncryptedData, EncryptedNote};
-use mystiko_protocol::key::separate_secret_keys;
+use mystiko_protocol::key::{separate_secret_keys, verification_secret_key};
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::core::scanner::v1::{
@@ -115,6 +115,16 @@ where
             account.data.scanned_to_id = options.reset_to_id.clone();
         });
         self.db.accounts.update_batch(&accounts).await?;
+        let shielded_addresses = accounts
+            .iter()
+            .map(|account| account.data.shielded_address.clone())
+            .collect::<Vec<_>>();
+        log::info!(
+            "successfully reset scanner to commitment id={:?} \
+            for shielded_addresses={:?}",
+            options.reset_to_id,
+            shielded_addresses
+        );
         Ok(ResetResult::default())
     }
 
@@ -151,7 +161,7 @@ impl ScanningAccount {
         Ok(ScanningAccount::builder()
             .shielded_address(shielded_address)
             .sk_enc(sk_enc)
-            .sk_verify(sk_verify)
+            .sk_verify(verification_secret_key(&sk_verify))
             .build())
     }
 }
@@ -225,6 +235,12 @@ where
         let commitments = self.query_commitments(round_options).await?;
         let end_id = commitments.last().ok_or(ScannerError::CommitmentEmptyError)?.id.clone();
         let chunk_size = std::cmp::max(1, commitments.len() / round_options.concurrency as usize);
+        log::info!(
+            "scanning commitments from {:?} to {:?} with concurrency={}",
+            round_options.start_id,
+            end_id,
+            round_options.concurrency
+        );
         let tasks = commitments
             .chunks(chunk_size)
             .filter(|chunk| !chunk.is_empty())
@@ -251,6 +267,13 @@ where
             owned_count = status_updated.len() as u64;
             self.db.commitments.update_batch(&status_updated).await?;
         }
+        log::info!(
+            "scanned commitments from {:?} to {:?}, scanned_count={}, owned_count={}",
+            round_options.start_id,
+            end_id,
+            scanned_count,
+            owned_count
+        );
         Ok(ScanRoundResult::builder()
             .scanned_count(scanned_count)
             .owned_count(owned_count)
