@@ -4,10 +4,8 @@ mod error;
 mod ethers;
 mod handler;
 mod mystiko;
-
-mod signer;
-
 mod scanner;
+mod signer;
 mod synchronizer;
 
 pub use context::*;
