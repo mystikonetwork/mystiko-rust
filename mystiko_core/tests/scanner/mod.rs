@@ -10,7 +10,7 @@ use mystiko_core::{
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::Commitment as ProtocolCommitment;
 use mystiko_protocol::commitment::Note;
-use mystiko_protocol::key::separate_secret_keys;
+use mystiko_protocol::key::{separate_secret_keys, verification_secret_key};
 use mystiko_protocol::types::{FullSk, VerifySk};
 use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::common::v1::BridgeType;
@@ -72,7 +72,7 @@ pub async fn create_scanner(
         test_accounts.push(
             TestAccount::builder()
                 .shielded_address(shielded_address)
-                .v_sk(v_sk)
+                .v_sk(verification_secret_key(&v_sk))
                 .build(),
         );
     }
