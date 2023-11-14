@@ -456,7 +456,6 @@ where
             .into_iter()
             .map(|account| account.data.shielded_address)
             .collect::<Vec<_>>();
-        println!("shielded_addresses: {:?}", shielded_addresses);
         let mut filters = vec![
             SubFilter::is_not_null(CommitmentColumn::Amount),
             SubFilter::is_not_null(CommitmentColumn::Nullifier),
