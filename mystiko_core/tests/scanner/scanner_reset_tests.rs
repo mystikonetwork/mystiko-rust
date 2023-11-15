@@ -4,6 +4,9 @@ use mystiko_protos::core::scanner::v1::ResetOptions;
 
 #[tokio::test]
 async fn test_scan_reset_default_option() {
+    let _ = env_logger::builder()
+        .filter_module("mystiko_core", log::LevelFilter::Info)
+        .try_init();
     let account_count = 3_usize;
     let (scanner, db, test_accounts) = create_scanner(account_count).await;
 
@@ -44,6 +47,9 @@ async fn test_scan_reset_default_option() {
 
 #[tokio::test]
 async fn test_scan_reset_to_id() {
+    let _ = env_logger::builder()
+        .filter_module("mystiko_core", log::LevelFilter::Info)
+        .try_init();
     let account_count = 3_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
 
@@ -64,6 +70,9 @@ async fn test_scan_reset_to_id() {
 
 #[tokio::test]
 async fn test_scan_reset_some_account() {
+    let _ = env_logger::builder()
+        .filter_module("mystiko_core", log::LevelFilter::Info)
+        .try_init();
     let account_count = 3_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
 
