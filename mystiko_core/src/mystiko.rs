@@ -12,7 +12,7 @@ use mystiko_protos::core::handler::v1::{
     SendDepositOptions, UpdateAccountOptions,
 };
 use mystiko_protos::core::scanner::v1::{
-    BalanceOptions, BalanceResult, ResetOptions, ResetResult, ScanOptions, ScanResult,
+    AssetsOptions, BalanceOptions, BalanceResult, ChainAssetsResult, ResetOptions, ResetResult, ScanOptions, ScanResult,
 };
 use mystiko_protos::core::synchronizer::v1::{SyncOptions, SynchronizerStatus};
 use mystiko_storage::{StatementFormatter, Storage};
@@ -32,7 +32,7 @@ pub struct Mystiko<
         SendDepositOptions,
     > = Deposits<F, S>,
     Y: SynchronizerHandler<SyncOptions, SynchronizerStatus> = Synchronizer<ChainDataLoader<FullData>>,
-    R: ScannerHandler<ScanOptions, ScanResult, ResetOptions, ResetResult, BalanceOptions, BalanceResult> = Scanner<F,S>,
+    R: ScannerHandler<ScanOptions, ScanResult, ResetOptions, ResetResult, BalanceOptions, BalanceResult,AssetsOptions,ChainAssetsResult> = Scanner<F,S>,
 > {
     pub db: Arc<Database<F, S>>,
     pub config: Arc<MystikoConfig>,
@@ -60,8 +60,16 @@ where
         > + 'static,
     Y: FromContext<F, S> + SynchronizerHandler<SyncOptions, SynchronizerStatus> + 'static,
     R: FromContext<F, S>
-        + ScannerHandler<ScanOptions, ScanResult, ResetOptions, ResetResult, BalanceOptions, BalanceResult>
-        + 'static,
+        + ScannerHandler<
+            ScanOptions,
+            ScanResult,
+            ResetOptions,
+            ResetResult,
+            BalanceOptions,
+            BalanceResult,
+            AssetsOptions,
+            ChainAssetsResult,
+        > + 'static,
 {
     pub async fn new(database: Database<F, S>, options: Option<MystikoOptions>) -> Result<Self, MystikoError> {
         database.migrate().await.map_err(MystikoError::DatabaseMigrationError)?;

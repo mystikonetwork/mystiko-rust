@@ -1,4 +1,96 @@
 // @generated
+impl serde::Serialize for AssetsOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.shielded_addresses.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.AssetsOptions", len)?;
+        if !self.shielded_addresses.is_empty() {
+            struct_ser.serialize_field("shieldedAddresses", &self.shielded_addresses)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for AssetsOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "shielded_addresses",
+            "shieldedAddresses",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ShieldedAddresses,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "shieldedAddresses" | "shielded_addresses" => Ok(GeneratedField::ShieldedAddresses),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = AssetsOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.AssetsOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<AssetsOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut shielded_addresses__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ShieldedAddresses => {
+                            if shielded_addresses__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("shieldedAddresses"));
+                            }
+                            shielded_addresses__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(AssetsOptions {
+                    shielded_addresses: shielded_addresses__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.AssetsOptions", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for Balance {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -426,6 +518,228 @@ impl<'de> serde::Deserialize<'de> for BalanceResult {
             }
         }
         deserializer.deserialize_struct("mystiko.core.scanner.v1.BalanceResult", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for BridgeAssets {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.bridge_type != 0 {
+            len += 1;
+        }
+        if !self.balances.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.BridgeAssets", len)?;
+        if self.bridge_type != 0 {
+            let v = super::super::super::common::v1::BridgeType::from_i32(self.bridge_type)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.bridge_type)))?;
+            struct_ser.serialize_field("bridgeType", &v)?;
+        }
+        if !self.balances.is_empty() {
+            struct_ser.serialize_field("balances", &self.balances)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for BridgeAssets {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "bridge_type",
+            "bridgeType",
+            "balances",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            BridgeType,
+            Balances,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "bridgeType" | "bridge_type" => Ok(GeneratedField::BridgeType),
+                            "balances" => Ok(GeneratedField::Balances),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = BridgeAssets;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.BridgeAssets")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<BridgeAssets, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut bridge_type__ = None;
+                let mut balances__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::BridgeType => {
+                            if bridge_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("bridgeType"));
+                            }
+                            bridge_type__ = Some(map.next_value::<super::super::super::common::v1::BridgeType>()? as i32);
+                        }
+                        GeneratedField::Balances => {
+                            if balances__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("balances"));
+                            }
+                            balances__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(BridgeAssets {
+                    bridge_type: bridge_type__.unwrap_or_default(),
+                    balances: balances__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.BridgeAssets", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ChainAssetsResult {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.chain_id != 0 {
+            len += 1;
+        }
+        if !self.bridges.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ChainAssetsResult", len)?;
+        if self.chain_id != 0 {
+            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
+        }
+        if !self.bridges.is_empty() {
+            struct_ser.serialize_field("bridges", &self.bridges)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ChainAssetsResult {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chain_id",
+            "chainId",
+            "bridges",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ChainId,
+            Bridges,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "bridges" => Ok(GeneratedField::Bridges),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ChainAssetsResult;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.ChainAssetsResult")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ChainAssetsResult, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chain_id__ = None;
+                let mut bridges__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::Bridges => {
+                            if bridges__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("bridges"));
+                            }
+                            bridges__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(ChainAssetsResult {
+                    chain_id: chain_id__.unwrap_or_default(),
+                    bridges: bridges__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.ChainAssetsResult", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for ResetOptions {

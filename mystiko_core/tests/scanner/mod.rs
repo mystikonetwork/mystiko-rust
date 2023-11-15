@@ -1,3 +1,4 @@
+mod scanner_assets_tests;
 mod scanner_balance_tests;
 mod scanner_reset_tests;
 mod scanner_scan_tests;

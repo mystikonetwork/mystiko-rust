@@ -242,6 +242,229 @@ impl<'de> serde::Deserialize<'de> for ContractStatus {
         deserializer.deserialize_struct("mystiko.core.synchronizer.v1.ContractStatus", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for ResetChainOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.chain_id != 0 {
+            len += 1;
+        }
+        if !self.contract_addresses.is_empty() {
+            len += 1;
+        }
+        if self.block_number.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.synchronizer.v1.ResetChainOptions", len)?;
+        if self.chain_id != 0 {
+            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
+        }
+        if !self.contract_addresses.is_empty() {
+            struct_ser.serialize_field("contractAddresses", &self.contract_addresses)?;
+        }
+        if let Some(v) = self.block_number.as_ref() {
+            struct_ser.serialize_field("blockNumber", ToString::to_string(&v).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ResetChainOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chain_id",
+            "chainId",
+            "contract_addresses",
+            "contractAddresses",
+            "block_number",
+            "blockNumber",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ChainId,
+            ContractAddresses,
+            BlockNumber,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "contractAddresses" | "contract_addresses" => Ok(GeneratedField::ContractAddresses),
+                            "blockNumber" | "block_number" => Ok(GeneratedField::BlockNumber),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ResetChainOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.synchronizer.v1.ResetChainOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ResetChainOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chain_id__ = None;
+                let mut contract_addresses__ = None;
+                let mut block_number__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::ContractAddresses => {
+                            if contract_addresses__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("contractAddresses"));
+                            }
+                            contract_addresses__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::BlockNumber => {
+                            if block_number__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("blockNumber"));
+                            }
+                            block_number__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(ResetChainOptions {
+                    chain_id: chain_id__.unwrap_or_default(),
+                    contract_addresses: contract_addresses__.unwrap_or_default(),
+                    block_number: block_number__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.synchronizer.v1.ResetChainOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ResetOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.chains.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.synchronizer.v1.ResetOptions", len)?;
+        if !self.chains.is_empty() {
+            struct_ser.serialize_field("chains", &self.chains)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ResetOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chains",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Chains,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chains" => Ok(GeneratedField::Chains),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ResetOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.synchronizer.v1.ResetOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ResetOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chains__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Chains => {
+                            if chains__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chains"));
+                            }
+                            chains__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(ResetOptions {
+                    chains: chains__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.synchronizer.v1.ResetOptions", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for SyncOptions {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
