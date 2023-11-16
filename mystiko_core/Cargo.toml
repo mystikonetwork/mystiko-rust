@@ -15,6 +15,7 @@ ethers-middleware = { version = "2.0.4" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
 ethers-signers = { version = "2.0.4" }
 futures = { version = "0.3.26" }
+itertools =  { version = "0.10.5" }
 lazy_static = { version = "1.4.0" }
 log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }

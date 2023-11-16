@@ -9,7 +9,7 @@ async fn test_scan_default_options() {
         .filter_module("mystiko_core", log::LevelFilter::Info)
         .try_init();
     let account_count = 1_usize;
-    let (scanner, _, test_accounts) = create_scanner(account_count).await;
+    let (scanner, db, test_accounts) = create_scanner(account_count).await;
     let option = ScanOptions::builder().build();
     let result = scanner.scan(option).await;
     assert!(matches!(result.err().unwrap(), ScannerError::WalletHandlerError(_)));
@@ -26,6 +26,10 @@ async fn test_scan_default_options() {
     assert_eq!(result.owned_count, 0);
     assert_eq!(result.scanned_shielded_addresses.len(), account_count);
     assert_eq!(result.to_id, None);
+    let accounts = db.accounts.find_all().await.unwrap();
+    for account in accounts {
+        assert_eq!(account.data.scanned_to_id, None);
+    }
 
     let option = ScanOptions::builder()
         .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
@@ -50,6 +54,10 @@ async fn test_scan_default_options() {
         test_accounts[0].shielded_address.address()
     );
     assert_eq!(result.to_id, None);
+    let accounts = db.accounts.find_all().await.unwrap();
+    for account in accounts {
+        assert_eq!(account.data.scanned_to_id, None);
+    }
 
     let account_count = 0_usize;
     let (scanner, _, _) = create_scanner(account_count).await;
@@ -83,6 +91,10 @@ async fn test_scan_batch_without_owned() {
                     assert_eq!(result.to_id, Some(cms[commitment_count - 1].id.clone()));
                     let updated_cms = db.commitments.find_all().await.unwrap();
                     assert_eq!(cms, updated_cms);
+                    let accounts = db.accounts.find_all().await.unwrap();
+                    for account in accounts {
+                        assert_eq!(account.data.scanned_to_id, Some(cms[commitment_count - 1].id.clone()));
+                    }
                 }
             }
         }
@@ -132,6 +144,10 @@ async fn test_scan_batch_with_owned() {
                     for (cm, updated_cm) in cms.iter().zip(updated_cms.iter()) {
                         assert_eq!(cm.data, updated_cm.data);
                     }
+                    let accounts = db.accounts.find_all().await.unwrap();
+                    for account in accounts {
+                        assert_eq!(account.data.scanned_to_id, Some(cms[commitment_count - 1].id.clone()));
+                    }
                 }
             }
         }
@@ -152,8 +168,9 @@ async fn test_scan_with_start() {
         .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
         .build();
     let (cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
+    let scan_to_id1 = cms[commitment_count - 1].id.clone();
     accounts.iter_mut().for_each(|account| {
-        account.data.scanned_to_id = Some(cms[commitment_count - 1].id.clone());
+        account.data.scanned_to_id = Some(scan_to_id1.clone());
     });
     db.accounts.update_batch(&accounts).await.unwrap();
     let result = scanner.scan(option.clone()).await.unwrap();
@@ -161,16 +178,25 @@ async fn test_scan_with_start() {
     assert_eq!(result.owned_count, 0);
     assert_eq!(result.scanned_shielded_addresses.len(), 1);
     assert_eq!(result.scanned_shielded_addresses[0], accounts[0].data.shielded_address);
-    assert_eq!(result.to_id, None);
+    assert_eq!(result.to_id, Some(scan_to_id1.clone()));
+    let updated_accounts = db.accounts.find_all().await.unwrap();
+    for account in updated_accounts {
+        assert_eq!(account.data.scanned_to_id, Some(scan_to_id1.clone()));
+    }
 
-    accounts[0].data.scanned_to_id = Some(cms[commitment_count - 2].id.clone());
+    let scan_to_id2 = cms[commitment_count - 2].id.clone();
+    accounts[0].data.scanned_to_id = Some(scan_to_id2.clone());
     db.accounts.update_batch(&accounts).await.unwrap();
     let result = scanner.scan(option).await.unwrap();
     assert_eq!(result.total_count, 1);
     assert_eq!(result.owned_count, 0);
     assert_eq!(result.scanned_shielded_addresses.len(), 1);
     assert_eq!(result.scanned_shielded_addresses[0], accounts[0].data.shielded_address);
-    assert_eq!(result.to_id, Some(cms[commitment_count - 1].id.clone()));
+    assert_eq!(result.to_id, Some(scan_to_id1.clone()));
+    let updated_accounts = db.accounts.find_all().await.unwrap();
+    for account in updated_accounts {
+        assert_eq!(account.data.scanned_to_id, Some(scan_to_id1.clone()));
+    }
 }
 
 #[tokio::test]
@@ -179,20 +205,65 @@ async fn test_scan_with_shield_address() {
         .filter_module("mystiko_core", log::LevelFilter::Info)
         .try_init();
     let account_count = 3_usize;
-    let commitment_count = 2_usize;
+    let commitment_count = 4_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
     let accounts = db.accounts.find_all().await.unwrap();
+
     let option = ScanOptions::builder()
         .shielded_addresses(vec![accounts[0].data.shielded_address.clone()])
         .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
         .build();
-    let (cms, _) = insert_commitments(db, commitment_count, None).await;
+    let (cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
     let result = scanner.scan(option).await.unwrap();
     assert_eq!(result.total_count, commitment_count as u64);
     assert_eq!(result.owned_count, 0);
     assert_eq!(result.scanned_shielded_addresses.len(), 1);
     assert_eq!(result.scanned_shielded_addresses[0], accounts[0].data.shielded_address);
     assert_eq!(result.to_id, Some(cms[commitment_count - 1].id.clone()));
+    let accounts = db.accounts.find_all().await.unwrap();
+    assert_eq!(
+        accounts[0].data.scanned_to_id,
+        Some(cms[commitment_count - 1].id.clone())
+    );
+    assert_eq!(accounts[1].data.scanned_to_id, None);
+    assert_eq!(accounts[2].data.scanned_to_id, None);
+
+    let option = ScanOptions::builder()
+        .shielded_addresses(vec![accounts[1].data.shielded_address.clone()])
+        .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
+        .build();
+    let result = scanner.scan(option).await.unwrap();
+    assert_eq!(result.total_count, commitment_count as u64);
+    assert_eq!(result.owned_count, 0);
+    assert_eq!(result.scanned_shielded_addresses.len(), 1);
+    assert_eq!(result.scanned_shielded_addresses[0], accounts[1].data.shielded_address);
+    assert_eq!(result.to_id, Some(cms[commitment_count - 1].id.clone()));
+    let accounts = db.accounts.find_all().await.unwrap();
+    assert_eq!(
+        accounts[0].data.scanned_to_id,
+        Some(cms[commitment_count - 1].id.clone())
+    );
+    assert_eq!(
+        accounts[1].data.scanned_to_id,
+        Some(cms[commitment_count - 1].id.clone())
+    );
+    assert_eq!(accounts[2].data.scanned_to_id, None);
+
+    let option = ScanOptions::builder()
+        .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
+        .build();
+    let result = scanner.scan(option).await.unwrap();
+    assert_eq!(result.total_count, commitment_count as u64);
+    assert_eq!(result.owned_count, 0);
+    assert_eq!(result.scanned_shielded_addresses.len(), 3);
+    assert_eq!(result.scanned_shielded_addresses[0], accounts[0].data.shielded_address);
+    assert_eq!(result.scanned_shielded_addresses[1], accounts[1].data.shielded_address);
+    assert_eq!(result.scanned_shielded_addresses[2], accounts[2].data.shielded_address);
+    assert_eq!(result.to_id, Some(cms[commitment_count - 1].id.clone()));
+    let accounts = db.accounts.find_all().await.unwrap();
+    for account in accounts {
+        assert_eq!(account.data.scanned_to_id, Some(cms[commitment_count - 1].id.clone()));
+    }
 }
 
 #[tokio::test]
@@ -221,6 +292,10 @@ async fn test_scan_batch_with_owned_without_nullifier() {
     }
     for (cm, updated_cm) in cms.iter().zip(updated_cms.iter()) {
         assert_eq!(cm.data, updated_cm.data);
+    }
+    let accounts = db.accounts.find_all().await.unwrap();
+    for account in accounts {
+        assert_eq!(account.data.scanned_to_id, Some(cms[commitment_count - 1].id.clone()));
     }
 }
 
@@ -263,5 +338,9 @@ async fn test_scan_batch_with_owned_with_nullifier() {
     }
     for (cm, updated_cm) in cms.iter().zip(updated_cms.iter()) {
         assert_eq!(cm.data, updated_cm.data);
+    }
+    let accounts = db.accounts.find_all().await.unwrap();
+    for account in accounts {
+        assert_eq!(account.data.scanned_to_id, Some(cms[commitment_count - 1].id.clone()));
     }
 }

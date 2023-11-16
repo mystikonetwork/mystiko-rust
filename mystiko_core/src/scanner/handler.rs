@@ -3,6 +3,7 @@ use crate::{
     NullifierColumn, ScannerError, ScannerHandler, WalletHandler, Wallets,
 };
 use async_trait::async_trait;
+use itertools::Itertools;
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment as ProtocolCommitment, EncryptedData, EncryptedNote};
@@ -10,7 +11,8 @@ use mystiko_protocol::key::{separate_secret_keys, verification_secret_key};
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::core::scanner::v1::{
-    Balance, BalanceOptions, BalanceResult, ResetOptions, ResetResult, ScanOptions, ScanResult,
+    AssetsOptions, Balance, BalanceOptions, BalanceResult, BridgeAssets, ChainAssetsResult, ResetOptions, ResetResult,
+    ScanOptions, ScanResult,
 };
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
@@ -18,7 +20,7 @@ use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage};
 use mystiko_utils::convert::decimal_to_number;
 use mystiko_utils::hex::{decode_hex, decode_hex_with_length};
 use num_bigint::BigUint;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -55,8 +57,17 @@ where
 }
 
 #[async_trait]
-impl<F, S> ScannerHandler<ScanOptions, ScanResult, ResetOptions, ResetResult, BalanceOptions, BalanceResult>
-    for Scanner<F, S>
+impl<F, S>
+    ScannerHandler<
+        ScanOptions,
+        ScanResult,
+        ResetOptions,
+        ResetResult,
+        BalanceOptions,
+        BalanceResult,
+        AssetsOptions,
+        ChainAssetsResult,
+    > for Scanner<F, S>
 where
     F: StatementFormatter,
     S: Storage,
@@ -65,19 +76,20 @@ where
 
     async fn scan(&self, options: ScanOptions) -> Result<ScanResult, Self::Error> {
         self.wallets.check_password(&options.wallet_password).await?;
-        let accounts = self.build_filter_accounts(&options.shielded_addresses).await?;
+        let mut accounts = self.build_filter_accounts(&options.shielded_addresses).await?;
         if accounts.is_empty() {
-            return Ok(self.build_default_scan_result(&[]));
+            return Ok(self.build_default_scan_result(&[], None));
         }
 
         let scanned_id = accounts
             .iter()
-            .filter_map(|account| account.data.scanned_to_id.as_ref())
+            .map(|accounts| accounts.data.scanned_to_id.clone())
             .min()
-            .cloned();
+            .flatten();
+
         let cms_count = self.query_commitment_count(scanned_id.clone()).await?;
         if cms_count == 0 {
-            return Ok(self.build_default_scan_result(&accounts));
+            return Ok(self.build_default_scan_result(&accounts, scanned_id));
         }
 
         let scan_accounts = Arc::new(self.build_scan_accounts(&accounts, &options.wallet_password).await?);
@@ -87,6 +99,8 @@ where
         for mut round in rounds.into_iter() {
             round.start_id = current_scanned_id;
             let result = self.scan_one_round(&round).await?;
+            self.update_accounts_scanned_to_id(&mut accounts, &result.end_id)
+                .await?;
             current_scanned_id = Some(result.end_id);
             total_owned += result.owned_count;
             total_scanned += result.scanned_count;
@@ -131,17 +145,32 @@ where
     async fn balance(&self, options: BalanceOptions) -> Result<BalanceResult, Self::Error> {
         let condition = self.build_balance_filter(&options).await?;
         let commitments = self.db.commitments.find(condition).await?;
-        let assets = commitments
+        let balances = commitments
             .iter()
             .map(|commitment| commitment.data.asset_symbol.clone())
-            .collect::<HashSet<_>>();
+            .unique()
+            .map(|asset_symbol| calc_balance_by_asset_symbol(commitments.as_slice(), &asset_symbol, options.with_spent))
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(BalanceResult::builder().balances(balances).build())
+    }
 
-        let balances: Result<Vec<_>, _> = assets
+    async fn assets(&self, options: AssetsOptions) -> Result<Vec<ChainAssetsResult>, Self::Error> {
+        let balance_options = BalanceOptions::builder()
+            .shielded_addresses(options.shielded_addresses)
+            .build();
+        self.assets_balance(balance_options).await
+    }
+
+    async fn chain_assets(&self, chain_id: u64, options: AssetsOptions) -> Result<ChainAssetsResult, Self::Error> {
+        let balance_options = BalanceOptions::builder()
+            .chain_ids(vec![chain_id])
+            .shielded_addresses(options.shielded_addresses)
+            .build();
+        let result = self.assets_balance(balance_options).await?;
+        Ok(result
             .into_iter()
-            .map(|asset_symbol| self.calc_balance_by_asset_symbol(&commitments, &asset_symbol, options.with_spent))
-            .collect();
-
-        Ok(BalanceResult::builder().balances(balances?).build())
+            .next()
+            .unwrap_or_else(|| ChainAssetsResult::builder().chain_id(chain_id).build()))
     }
 }
 
@@ -281,6 +310,18 @@ where
             .build())
     }
 
+    async fn update_accounts_scanned_to_id(
+        &self,
+        accounts: &mut [Document<Account>],
+        scanned_to_id: &str,
+    ) -> Result<(), ScannerError> {
+        accounts.iter_mut().for_each(|account| {
+            account.data.scanned_to_id = Some(scanned_to_id.to_string());
+        });
+        self.db.accounts.update_batch(accounts).await?;
+        Ok(())
+    }
+
     async fn build_filter_accounts(
         &self,
         shielded_addresses: &[String],
@@ -313,7 +354,7 @@ where
             .collect()
     }
 
-    fn build_default_scan_result(&self, accounts: &[Document<Account>]) -> ScanResult {
+    fn build_default_scan_result(&self, accounts: &[Document<Account>], scanned_id: Option<String>) -> ScanResult {
         ScanResult::builder()
             .scanned_shielded_addresses(
                 accounts
@@ -321,6 +362,7 @@ where
                     .map(|account| account.data.shielded_address.clone())
                     .collect::<Vec<_>>(),
             )
+            .to_id(scanned_id)
             .build()
     }
 
@@ -379,7 +421,7 @@ where
         let total = if let Some(id) = scanned_id {
             self.db
                 .commitments
-                .count(SubFilter::greater(DocumentColumn::Id, id.clone()))
+                .count(SubFilter::greater(DocumentColumn::Id, id))
                 .await?
         } else {
             self.db.commitments.count_all().await?
@@ -436,42 +478,6 @@ where
         }
     }
 
-    fn calc_balance_by_asset_symbol(
-        &self,
-        commitments: &[Document<Commitment>],
-        asset_symbol: &str,
-        with_spent: Option<bool>,
-    ) -> Result<Balance, ScannerError> {
-        let (pending, unspent, spent) = commitments
-            .iter()
-            .filter(|commitment| commitment.data.asset_symbol == asset_symbol)
-            .try_fold(
-                (0f64, 0f64, 0f64),
-                |(mut pending_amount, mut unspent_amount, mut spent_aount), commitment| {
-                    let amount = decimal_to_number::<f64, BigUint>(
-                        commitment.data.amount.as_ref().unwrap_or(&BigUint::default()),
-                        Some(commitment.data.asset_decimals),
-                    )?;
-                    match commitment.data {
-                        Commitment { spent: true, .. } => spent_aount += amount,
-                        Commitment { status, .. } if status == CommitmentStatus::Included as i32 => {
-                            unspent_amount += amount
-                        }
-                        _ => pending_amount += amount,
-                    };
-                    Ok::<(f64, f64, f64), ScannerError>((pending_amount, unspent_amount, spent_aount))
-                },
-            )?;
-
-        let spent_amount = with_spent.filter(|&b| b).map(|_| spent);
-        Ok(Balance::builder()
-            .asset_symbol(asset_symbol.to_string())
-            .pending(pending)
-            .unspent(unspent)
-            .spent(spent_amount)
-            .build())
-    }
-
     async fn build_balance_filter(&self, options: &BalanceOptions) -> Result<Condition, ScannerError> {
         let shielded_addresses = self
             .build_filter_accounts(&options.shielded_addresses)
@@ -525,6 +531,12 @@ where
 
         Ok(Condition::from(filters))
     }
+
+    async fn assets_balance(&self, balance_options: BalanceOptions) -> Result<Vec<ChainAssetsResult>, ScannerError> {
+        let condition = self.build_balance_filter(&balance_options).await?;
+        let commitments = self.db.commitments.find(condition).await?;
+        commitments_group_by_chain(commitments)
+    }
 }
 
 fn scan_commitments(
@@ -532,13 +544,13 @@ fn scan_commitments(
     accounts: Arc<Vec<ScanningAccount>>,
 ) -> Result<ScanBatchResult, ScannerError> {
     let scanned_count = commitments.len() as u64;
-    let updated_commitments: Result<Vec<_>, _> = commitments
+    let updated_commitments = commitments
         .into_iter()
         .filter_map(|commitment| scan_commitment_by_accounts(commitment, &accounts).transpose())
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(ScanBatchResult::builder()
         .scanned_count(scanned_count)
-        .updated_commitments(updated_commitments?)
+        .updated_commitments(updated_commitments)
         .build())
 }
 
@@ -568,4 +580,83 @@ fn scan_commitment_by_accounts(
         }
     }
     Ok(None)
+}
+
+fn commitments_group_by_chain(commitments: Vec<Document<Commitment>>) -> Result<Vec<ChainAssetsResult>, ScannerError> {
+    let assets = commitments
+        .into_iter()
+        .group_by(|commitment| commitment.data.chain_id)
+        .into_iter()
+        .map(|(chain, group)| {
+            commitments_group_by_bridge_type(group.collect::<Vec<_>>()).map(|bridge_assets| {
+                ChainAssetsResult::builder()
+                    .chain_id(chain)
+                    .bridges(bridge_assets)
+                    .build()
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(assets)
+}
+
+fn commitments_group_by_bridge_type(commitments: Vec<Document<Commitment>>) -> Result<Vec<BridgeAssets>, ScannerError> {
+    let bridge_assets = commitments
+        .into_iter()
+        .group_by(|commitment| commitment.data.bridge_type)
+        .into_iter()
+        .map(|(bridge, bridge_group)| {
+            let bridge_commitments: Vec<Document<Commitment>> = bridge_group.collect();
+            let asset_balances = bridge_commitments
+                .iter()
+                .map(|commitment| &commitment.data.asset_symbol)
+                .unique()
+                .map(|asset_symbol| calc_balance_by_asset_symbol(&bridge_commitments, asset_symbol, None))
+                .collect::<Result<Vec<_>, _>>()?;
+
+            Ok::<BridgeAssets, ScannerError>(
+                BridgeAssets::builder()
+                    .bridge_type(bridge)
+                    .balances(asset_balances)
+                    .build(),
+            )
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(bridge_assets)
+}
+
+fn calc_balance_by_asset_symbol(
+    commitments: &[Document<Commitment>],
+    asset_symbol: &str,
+    with_spent: Option<bool>,
+) -> Result<Balance, ScannerError> {
+    let (pending, unspent, spent) = commitments
+        .iter()
+        .filter(|commitment| commitment.data.asset_symbol == asset_symbol)
+        .try_fold(
+            (0f64, 0f64, 0f64),
+            |(mut pending_amount, mut unspent_amount, mut spent_amount), commitment| {
+                let amount = decimal_to_number::<f64, BigUint>(
+                    commitment.data.amount.as_ref().unwrap_or(&BigUint::default()),
+                    Some(commitment.data.asset_decimals),
+                )?;
+                match commitment.data {
+                    Commitment { spent: true, .. } => spent_amount += amount,
+                    Commitment { status, .. } if status == CommitmentStatus::Included as i32 => {
+                        unspent_amount += amount
+                    }
+                    _ => pending_amount += amount,
+                };
+                Ok::<(f64, f64, f64), ScannerError>((pending_amount, unspent_amount, spent_amount))
+            },
+        )?;
+
+    let spent_amount = with_spent.filter(|&b| b).map(|_| spent);
+    Ok(Balance::builder()
+        .asset_symbol(asset_symbol.to_string())
+        .pending(pending)
+        .unspent(unspent)
+        .spent(spent_amount)
+        .build())
 }

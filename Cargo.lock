@@ -3332,6 +3332,7 @@ dependencies = [
  "ethers-providers",
  "ethers-signers",
  "futures",
+ "itertools 0.10.5",
  "lazy_static",
  "log",
  "mockall",
