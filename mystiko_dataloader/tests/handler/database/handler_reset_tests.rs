@@ -23,11 +23,11 @@ async fn test_reset_default_option() {
 #[tokio::test]
 async fn test_reset_chain_id_not_exist() {
     let (database_handler, collection, _config) = setup::<FullData>().await.unwrap();
-    insert_test_data(collection.clone(), 12345678_u64).await;
+    insert_test_data(collection.clone(), 12345_u64).await;
     let options = ResetOptions::builder().chain_id(1_u64).build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(1_u64, collection.clone(), 3, &[2000_u64, 3000_u64, 1000_u64], 5, 2).await;
+    check_db(12345_u64, collection.clone(), 3, &[2000_u64, 3000_u64, 1000_u64], 5, 2).await;
 }
 
 #[tokio::test]
