@@ -8,6 +8,7 @@ use mystiko_dataloader::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
     Result as HandlerErrorResult,
 };
+use mystiko_dataloader::loader::ResetOptions;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -256,5 +257,9 @@ where
                 Err(_) => Err(anyhow::Error::msg("handle error".to_string()).into()),
             }
         }
+    }
+
+    async fn reset(&self, _options: &ResetOptions) -> HandlerErrorResult<()> {
+        Ok(())
     }
 }

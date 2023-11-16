@@ -3,7 +3,7 @@ use mockall::mock;
 use mystiko_config::MystikoConfig;
 use mystiko_core::Synchronizer;
 use mystiko_dataloader::loader::LoadOption;
-use mystiko_dataloader::loader::{DataLoader, DataLoaderResult};
+use mystiko_dataloader::loader::{DataLoader, DataLoaderResult, ResetOptions};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -19,6 +19,7 @@ mock! {
         async fn load<O>(&self, options: O) -> DataLoaderResult<()>
         where
             O: Into<LoadOption> + Send + Sync + 'static;
+        async fn reset(&self, options: ResetOptions) -> DataLoaderResult<()>;
     }
 }
 

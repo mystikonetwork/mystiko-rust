@@ -15,9 +15,11 @@ use mystiko_dataloader::validator::rule::{
     RULE_COUNTER_CHECKER_NAME, RULE_INTEGRITY_CHECKER_NAME, RULE_MERKLE_TREE_CHECKER_NAME, RULE_SEQUENCE_CHECKER_NAME,
     RULE_VALIDATOR_NAME,
 };
-use mystiko_dataloader::DataLoaderError;
+use mystiko_dataloader::{loader::ResetOptions as DataLoaderResetOptions, DataLoaderError};
 use mystiko_ethers::Providers;
-use mystiko_protos::core::synchronizer::v1::{ChainStatus, ContractStatus, SyncOptions, SynchronizerStatus};
+use mystiko_protos::core::synchronizer::v1::{
+    ChainStatus, ContractStatus, ResetOptions, SyncOptions, SynchronizerStatus,
+};
 use mystiko_protos::loader::v1::{
     FetcherConfig, LoaderConfig, PackerFetcherConfig, ProviderFetcherChainConfig, ProviderFetcherConfig,
     RuleValidatorCheckerType, RuleValidatorConfig, SequencerFetcherConfig, ValidatorConfig,
@@ -114,6 +116,34 @@ where
             })
             .collect();
         let _ = futures::future::join_all(loader_tasks).await;
+        Ok(())
+    }
+
+    async fn reset(&self, reset_options: ResetOptions) -> Result<(), Self::Error> {
+        let loaders = self
+            .loaders
+            .iter()
+            .filter_map(|(chain_id, loader)| {
+                reset_options
+                    .chains
+                    .iter()
+                    .find(|chain| chain.chain_id == *chain_id)
+                    .map(|options| (loader, options))
+            })
+            .collect::<Vec<_>>();
+        if loaders.is_empty() {
+            return Ok(());
+        }
+
+        let tasks = loaders.iter().map(|(loader, options)| {
+            let reset_options = DataLoaderResetOptions::builder()
+                .chain_id(options.chain_id)
+                .contract_addresses(options.contract_addresses.clone())
+                .block_number(options.block_number)
+                .build();
+            loader.reset(reset_options)
+        });
+        let _ = futures::future::try_join_all(tasks).await?;
         Ok(())
     }
 }

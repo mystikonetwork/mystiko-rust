@@ -5,6 +5,7 @@ pub use handler::*;
 pub use loader::*;
 
 use async_trait::async_trait;
+use mystiko_protos::core::synchronizer::v1::ResetOptions;
 
 #[async_trait]
 pub trait SynchronizerHandler<O, S>: Send + Sync {
@@ -17,4 +18,6 @@ pub trait SynchronizerHandler<O, S>: Send + Sync {
     async fn status(&self, with_contracts: bool) -> Result<S, Self::Error>;
 
     async fn sync(&self, sync_option: O) -> Result<(), Self::Error>;
+
+    async fn reset(&self, reset_options: ResetOptions) -> Result<(), Self::Error>;
 }

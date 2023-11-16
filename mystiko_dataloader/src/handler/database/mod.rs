@@ -8,6 +8,7 @@ use crate::handler::document::{DatabaseCommitment, DatabaseContract, DatabaseNul
 use crate::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, HandlerError, NullifierQueryOption, QueryResult,
 };
+use crate::loader::ResetOptions;
 use anyhow::Result;
 use async_trait::async_trait;
 use mystiko_config::{ChainConfig, MystikoConfig};
@@ -202,6 +203,14 @@ where
             .chain_id(data.chain_id)
             .contract_results(results)
             .build())
+    }
+
+    async fn reset(&self, options: &ResetOptions) -> Result<(), HandlerError> {
+        let loaded_block = self.build_reset_loaded_block(options).await?;
+        let _ = self.reset_contract_loaded_block(options, loaded_block).await?;
+        let _ = self.delete_commitments_by_loaded_block(options, loaded_block).await?;
+        let _ = self.delete_nullifiers_by_loaded_block(options, loaded_block).await?;
+        Ok(())
     }
 }
 
@@ -562,6 +571,58 @@ where
             .unwrap_or(chain_config.start_block());
         Ok(std::cmp::min(contract_loaded_block, end_block))
     }
+
+    async fn build_reset_loaded_block(&self, options: &ResetOptions) -> Result<u64> {
+        let block_number = match options.block_number {
+            Some(block_number) => block_number,
+            None => self
+                .config
+                .find_chain(options.chain_id)
+                .ok_or_else(|| {
+                    HandlerError::AnyhowError(DatabaseHandlerError::UnsupportedChainError(options.chain_id).into())
+                })?
+                .start_block(),
+        };
+        Ok(block_number)
+    }
+
+    async fn reset_contract_loaded_block(&self, options: &ResetOptions, loaded_block: u64) -> Result<()> {
+        let condition = build_reset_condition(
+            options,
+            loaded_block,
+            X::column_chain_id(),
+            X::column_contract_address(),
+            X::column_loaded_block(),
+        );
+        self.collection
+            .update_by_filter::<X, _, _>((X::column_loaded_block(), loaded_block), Some(condition))
+            .await?;
+        Ok(())
+    }
+
+    async fn delete_commitments_by_loaded_block(&self, options: &ResetOptions, loaded_block: u64) -> Result<()> {
+        let condition = build_remove_condition(
+            options,
+            loaded_block,
+            C::column_chain_id(),
+            C::column_contract_address(),
+            C::column_block_number(),
+        );
+        self.collection.delete_by_filter::<C, _>(Some(condition)).await?;
+        Ok(())
+    }
+
+    async fn delete_nullifiers_by_loaded_block(&self, options: &ResetOptions, loaded_block: u64) -> Result<()> {
+        let condition = build_remove_condition(
+            options,
+            loaded_block,
+            N::column_chain_id(),
+            N::column_contract_address(),
+            N::column_block_number(),
+        );
+        self.collection.delete_by_filter::<N, _>(Some(condition)).await?;
+        Ok(())
+    }
 }
 
 fn recover_commitments_status(
@@ -583,4 +644,43 @@ fn recover_commitments_status(
     } else {
         commitments
     }
+}
+
+fn build_reset_condition(
+    options: &ResetOptions,
+    loaded_block: u64,
+    chain_id_column: String,
+    contract_address_column: String,
+    loaded_block_column: String,
+) -> Condition {
+    let mut sub_filters = build_reset_filters(options, chain_id_column, contract_address_column);
+    sub_filters.push(SubFilter::greater(loaded_block_column, loaded_block));
+    Condition::and(sub_filters)
+}
+
+fn build_remove_condition(
+    options: &ResetOptions,
+    loaded_block: u64,
+    chain_id_column: String,
+    contract_address_column: String,
+    block_number_column: String,
+) -> Condition {
+    let mut sub_filters = build_reset_filters(options, chain_id_column, contract_address_column);
+    sub_filters.push(SubFilter::greater(block_number_column, loaded_block));
+    Condition::and(sub_filters)
+}
+
+fn build_reset_filters(
+    options: &ResetOptions,
+    chain_id_column: String,
+    contract_address_column: String,
+) -> Vec<SubFilter> {
+    let mut sub_filters = vec![SubFilter::equal(chain_id_column, options.chain_id)];
+    if !options.contract_addresses.is_empty() {
+        sub_filters.push(SubFilter::in_list(
+            contract_address_column,
+            options.contract_addresses.clone(),
+        ));
+    }
+    sub_filters
 }

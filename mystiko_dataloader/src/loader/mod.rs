@@ -77,6 +77,18 @@ impl Default for LoadOption {
     }
 }
 
+#[derive(Debug, Clone, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct ResetOptions {
+    pub chain_id: u64,
+    #[builder(default)]
+    pub contract_addresses: Vec<String>,
+    #[builder(default)]
+    pub block_number: Option<u64>,
+}
+
+impl ResetOptions {}
+
 pub type DataLoaderResult<T> = anyhow::Result<T, DataLoaderError>;
 
 #[async_trait]
@@ -93,4 +105,6 @@ pub trait DataLoader: Send + Sync {
     async fn load<O>(&self, options: O) -> DataLoaderResult<()>
     where
         O: Into<LoadOption> + Send + Sync + 'static;
+
+    async fn reset(&self, options: ResetOptions) -> DataLoaderResult<()>;
 }

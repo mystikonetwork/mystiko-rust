@@ -6,6 +6,7 @@ use mystiko_dataloader::handler::{
     CommitmentQueryOption, DataHandler, HandleOption, HandleResult, NullifierQueryOption, QueryResult,
     Result as HandlerErrorResult,
 };
+use mystiko_dataloader::loader::ResetOptions;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
 use std::collections::HashSet;
@@ -133,5 +134,9 @@ where
 
     async fn handle(&self, _data: &ChainData<R>, _option: &HandleOption) -> HandleResult {
         Err(anyhow::Error::msg("handle error".to_string()).into())
+    }
+
+    async fn reset(&self, _options: &ResetOptions) -> HandlerErrorResult<()> {
+        Ok(())
     }
 }

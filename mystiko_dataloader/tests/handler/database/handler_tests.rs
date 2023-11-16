@@ -1313,7 +1313,7 @@ async fn test_initialize() {
     );
 }
 
-async fn setup<R: LoadedData>() -> Result<(
+pub async fn setup<R: LoadedData>() -> Result<(
     DatabaseHandler<R, SqlStatementFormatter, SqliteStorage>,
     Arc<Collection<SqlStatementFormatter, SqliteStorage>>,
     Arc<MystikoConfig>,

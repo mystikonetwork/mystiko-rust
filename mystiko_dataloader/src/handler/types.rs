@@ -2,6 +2,7 @@ use crate::data::ChainData;
 use crate::data::ChainResult;
 use crate::data::LoadedData;
 use crate::handler::HandlerError;
+use crate::loader::ResetOptions;
 use async_trait::async_trait;
 use mystiko_config::{ContractConfig, MystikoConfig};
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
@@ -71,6 +72,7 @@ pub trait DataHandler<R: LoadedData>: Send + Sync {
     async fn query_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<Vec<Nullifier>>>;
     async fn count_nullifiers(&self, option: &NullifierQueryOption) -> Result<QueryResult<u64>>;
     async fn handle(&self, data: &ChainData<R>, option: &HandleOption) -> HandleResult;
+    async fn reset(&self, options: &ResetOptions) -> Result<()>;
 }
 
 #[async_trait]
@@ -118,5 +120,9 @@ where
 
     async fn handle(&self, data: &ChainData<R>, option: &HandleOption) -> HandleResult {
         self.as_ref().handle(data, option).await
+    }
+
+    async fn reset(&self, options: &ResetOptions) -> Result<()> {
+        self.as_ref().reset(options).await
     }
 }

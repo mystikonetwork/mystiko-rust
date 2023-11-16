@@ -6,7 +6,7 @@ use crate::fetcher::{ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher,
 use crate::handler::{DataHandler, HandleOption};
 use crate::loader::{
     DataLoader, DataLoaderConfigResult, DataLoaderResult, FromConfig, LoadFetcherOption, LoadOption,
-    LoadValidatorOption, LoaderConfigOptions,
+    LoadValidatorOption, LoaderConfigOptions, ResetOptions,
 };
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
@@ -86,6 +86,11 @@ where
         let params = ChainLoadParams::builder().cfg(&chain_cfg).option(&options).build();
 
         self.try_load(&params).await
+    }
+
+    async fn reset(&self, options: ResetOptions) -> DataLoaderResult<()> {
+        let _ = self.handler.reset(&options).await?;
+        Ok(())
     }
 }
 
