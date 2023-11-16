@@ -3,6 +3,7 @@ use crate::{
     NullifierColumn, ScannerError, ScannerHandler, WalletHandler, Wallets,
 };
 use async_trait::async_trait;
+use itertools::Itertools;
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment as ProtocolCommitment, EncryptedData, EncryptedNote};
@@ -19,7 +20,7 @@ use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage};
 use mystiko_utils::convert::decimal_to_number;
 use mystiko_utils::hex::{decode_hex, decode_hex_with_length};
 use num_bigint::BigUint;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -75,19 +76,25 @@ where
 
     async fn scan(&self, options: ScanOptions) -> Result<ScanResult, Self::Error> {
         self.wallets.check_password(&options.wallet_password).await?;
-        let accounts = self.build_filter_accounts(&options.shielded_addresses).await?;
+        let mut accounts = self.build_filter_accounts(&options.shielded_addresses).await?;
         if accounts.is_empty() {
-            return Ok(self.build_default_scan_result(&[]));
+            return Ok(self.build_default_scan_result(&[], None));
         }
 
-        let scanned_id = accounts
-            .iter()
-            .filter_map(|account| account.data.scanned_to_id.as_ref())
-            .min()
-            .cloned();
+        let have_scanned_id_none = accounts.iter().any(|account| account.data.scanned_to_id.is_none());
+        let scanned_id = if have_scanned_id_none {
+            None
+        } else {
+            accounts
+                .iter()
+                .filter_map(|account| account.data.scanned_to_id.as_ref())
+                .min()
+                .cloned()
+        };
+
         let cms_count = self.query_commitment_count(scanned_id.clone()).await?;
         if cms_count == 0 {
-            return Ok(self.build_default_scan_result(&accounts));
+            return Ok(self.build_default_scan_result(&accounts, scanned_id));
         }
 
         let scan_accounts = Arc::new(self.build_scan_accounts(&accounts, &options.wallet_password).await?);
@@ -97,6 +104,8 @@ where
         for mut round in rounds.into_iter() {
             round.start_id = current_scanned_id;
             let result = self.scan_one_round(&round).await?;
+            self.update_accounts_scanned_to_id(&mut accounts, &result.end_id)
+                .await?;
             current_scanned_id = Some(result.end_id);
             total_owned += result.owned_count;
             total_scanned += result.scanned_count;
@@ -141,16 +150,14 @@ where
     async fn balance(&self, options: BalanceOptions) -> Result<BalanceResult, Self::Error> {
         let condition = self.build_balance_filter(&options).await?;
         let commitments = self.db.commitments.find(condition).await?;
-        let assets = commitments
+        let balances = commitments
             .iter()
             .map(|commitment| commitment.data.asset_symbol.clone())
-            .collect::<HashSet<_>>();
-
-        let balances = assets
-            .into_iter()
-            .map(|asset_symbol| self.calc_balance_by_asset_symbol(&commitments, &asset_symbol, options.with_spent))
+            .unique()
+            .map(|asset_symbol| {
+                self.calc_balance_by_asset_symbol(commitments.as_slice(), &asset_symbol, options.with_spent)
+            })
             .collect::<Result<Vec<_>, _>>()?;
-
         Ok(BalanceResult::builder().balances(balances).build())
     }
 
@@ -158,58 +165,7 @@ where
         let balance_options = BalanceOptions::builder()
             .shielded_addresses(options.shielded_addresses)
             .build();
-        let condition = self.build_balance_filter(&balance_options).await?;
-        let commitments = self.db.commitments.find(condition).await?;
-        let chains = commitments
-            .iter()
-            .map(|commitment| commitment.data.chain_id)
-            .collect::<HashSet<_>>();
-        let assets = chains
-            .iter()
-            .map(|chain| {
-                let chain_commitments = commitments
-                    .iter()
-                    .filter(|commitment| commitment.data.chain_id == *chain)
-                    .cloned()
-                    .collect::<Vec<_>>();
-                let bridges = chain_commitments
-                    .iter()
-                    .map(|commitment| commitment.data.bridge_type)
-                    .collect::<HashSet<_>>();
-                let bridge_assets = bridges
-                    .into_iter()
-                    .map(|bridge| {
-                        let bridge_commitments: Vec<_> = chain_commitments
-                            .iter()
-                            .filter(|commitment| commitment.data.bridge_type == bridge)
-                            .cloned()
-                            .collect();
-                        let assets = bridge_commitments
-                            .iter()
-                            .map(|commitment| commitment.data.asset_symbol.clone())
-                            .collect::<HashSet<_>>();
-                        let balances = assets
-                            .iter()
-                            .map(|asset_symbol| {
-                                self.calc_balance_by_asset_symbol(&bridge_commitments, asset_symbol, None)
-                            })
-                            .collect::<Result<Vec<_>, _>>()?;
-                        Ok::<BridgeAssets, ScannerError>(
-                            BridgeAssets::builder().bridge_type(bridge).balances(balances).build(),
-                        )
-                    })
-                    .collect::<Result<Vec<_>, _>>()?;
-
-                Ok::<ChainAssetsResult, ScannerError>(
-                    ChainAssetsResult::builder()
-                        .chain_id(*chain)
-                        .bridges(bridge_assets)
-                        .build(),
-                )
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
-        Ok(assets)
+        self.assets_balance(balance_options).await
     }
 
     async fn chain_assets(&self, chain_id: u64, options: AssetsOptions) -> Result<ChainAssetsResult, Self::Error> {
@@ -217,36 +173,11 @@ where
             .chain_ids(vec![chain_id])
             .shielded_addresses(options.shielded_addresses)
             .build();
-        let condition = self.build_balance_filter(&balance_options).await?;
-        let commitments = self.db.commitments.find(condition).await?;
-        let bridges = commitments
-            .iter()
-            .map(|commitment| commitment.data.bridge_type)
-            .collect::<HashSet<_>>();
-        let bridge_assets = bridges
+        let result = self.assets_balance(balance_options).await?;
+        Ok(result
             .into_iter()
-            .map(|bridge| {
-                let filter_commitments: Vec<_> = commitments
-                    .iter()
-                    .filter(|commitment| commitment.data.bridge_type == bridge)
-                    .cloned()
-                    .collect();
-                let assets = filter_commitments
-                    .iter()
-                    .map(|commitment| commitment.data.asset_symbol.clone())
-                    .collect::<HashSet<_>>();
-                let balances = assets
-                    .iter()
-                    .map(|asset_symbol| self.calc_balance_by_asset_symbol(&filter_commitments, asset_symbol, None))
-                    .collect::<Result<Vec<_>, _>>()?;
-                Ok::<BridgeAssets, ScannerError>(BridgeAssets::builder().bridge_type(bridge).balances(balances).build())
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
-        Ok(ChainAssetsResult::builder()
-            .chain_id(chain_id)
-            .bridges(bridge_assets)
-            .build())
+            .next()
+            .unwrap_or_else(|| ChainAssetsResult::builder().chain_id(chain_id).build()))
     }
 }
 
@@ -386,6 +317,18 @@ where
             .build())
     }
 
+    async fn update_accounts_scanned_to_id(
+        &self,
+        accounts: &mut [Document<Account>],
+        scanned_to_id: &str,
+    ) -> Result<(), ScannerError> {
+        accounts.iter_mut().for_each(|account| {
+            account.data.scanned_to_id = Some(scanned_to_id.to_string());
+        });
+        self.db.accounts.update_batch(accounts).await?;
+        Ok(())
+    }
+
     async fn build_filter_accounts(
         &self,
         shielded_addresses: &[String],
@@ -418,7 +361,7 @@ where
             .collect()
     }
 
-    fn build_default_scan_result(&self, accounts: &[Document<Account>]) -> ScanResult {
+    fn build_default_scan_result(&self, accounts: &[Document<Account>], scanned_id: Option<String>) -> ScanResult {
         ScanResult::builder()
             .scanned_shielded_addresses(
                 accounts
@@ -426,6 +369,7 @@ where
                     .map(|account| account.data.shielded_address.clone())
                     .collect::<Vec<_>>(),
             )
+            .to_id(scanned_id)
             .build()
     }
 
@@ -630,6 +574,52 @@ where
 
         Ok(Condition::from(filters))
     }
+
+    async fn assets_balance(&self, balance_options: BalanceOptions) -> Result<Vec<ChainAssetsResult>, ScannerError> {
+        let condition = self.build_balance_filter(&balance_options).await?;
+        let commitments = self.db.commitments.find(condition).await?;
+
+        let assets = commitments
+            .into_iter()
+            .group_by(|commitment| commitment.data.chain_id)
+            .into_iter()
+            .map(|(chain, group)| {
+                let chain_commitments: Vec<_> = group.collect();
+                let bridge_assets = chain_commitments
+                    .into_iter()
+                    .group_by(|commitment| commitment.data.bridge_type)
+                    .into_iter()
+                    .map(|(bridge, bridge_group)| {
+                        let bridge_commitments: Vec<Document<Commitment>> = bridge_group.collect();
+                        let asset_balances = bridge_commitments
+                            .iter()
+                            .map(|commitment| &commitment.data.asset_symbol)
+                            .unique()
+                            .map(|asset_symbol| {
+                                self.calc_balance_by_asset_symbol(&bridge_commitments, asset_symbol, None)
+                            })
+                            .collect::<Result<Vec<_>, _>>()?;
+
+                        Ok::<BridgeAssets, ScannerError>(
+                            BridgeAssets::builder()
+                                .bridge_type(bridge)
+                                .balances(asset_balances)
+                                .build(),
+                        )
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                Ok::<ChainAssetsResult, ScannerError>(
+                    ChainAssetsResult::builder()
+                        .chain_id(chain)
+                        .bridges(bridge_assets)
+                        .build(),
+                )
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(assets)
+    }
 }
 
 fn scan_commitments(
@@ -637,13 +627,13 @@ fn scan_commitments(
     accounts: Arc<Vec<ScanningAccount>>,
 ) -> Result<ScanBatchResult, ScannerError> {
     let scanned_count = commitments.len() as u64;
-    let updated_commitments: Result<Vec<_>, _> = commitments
+    let updated_commitments = commitments
         .into_iter()
         .filter_map(|commitment| scan_commitment_by_accounts(commitment, &accounts).transpose())
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(ScanBatchResult::builder()
         .scanned_count(scanned_count)
-        .updated_commitments(updated_commitments?)
+        .updated_commitments(updated_commitments)
         .build())
 }
 
