@@ -1,7 +1,7 @@
 use crate::loader::create_loader;
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
-use mystiko_dataloader::loader::{DataLoader, LoadOption};
+use mystiko_dataloader::loader::{DataLoader, LoadOption, ResetOptions};
 use mystiko_dataloader::DataLoaderError;
 use std::collections::HashSet;
 use std::vec;
@@ -11,6 +11,14 @@ async fn test_loader_success() {
     let (_, loader, fetchers, _, _) = create_loader(1, 1, 1, false).await;
     fetchers[0].set_loaded_block(Some(100)).await;
     let result = loader.load(Some(LoadOption::default())).await;
+    assert!(result.is_ok());
+}
+
+#[tokio::test]
+async fn test_reset_success() {
+    let (_, loader, _, _, _) = create_loader(1, 1, 1, false).await;
+    let options = ResetOptions::builder().chain_id(1_u64).build();
+    let result = loader.reset(options).await;
     assert!(result.is_ok());
 }
 

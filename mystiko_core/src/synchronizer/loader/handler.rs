@@ -6,6 +6,7 @@ use mystiko_dataloader::handler::{
     dedup_commitments, CommitmentQueryOption, DataHandler, HandleOption, NullifierQueryOption, QueryResult,
 };
 use mystiko_dataloader::handler::{HandlerError, Result as handlerResult};
+use mystiko_dataloader::loader::ResetOptions;
 use mystiko_protos::core::v1::DepositStatus;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::storage::v1::{Condition, SubFilter};
@@ -84,6 +85,10 @@ where
             return Err(HandlerError::from(anyhow::Error::from(e)));
         }
         self.raw.handle(data, option).await
+    }
+
+    async fn reset(&self, options: &ResetOptions) -> handlerResult<()> {
+        self.raw.reset(options).await
     }
 }
 
