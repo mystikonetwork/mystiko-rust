@@ -63,7 +63,7 @@ pub enum SynchronizerError {
 }
 
 #[async_trait]
-impl<L> SynchronizerHandler<SyncOptions, SynchronizerStatus> for Synchronizer<L>
+impl<L> SynchronizerHandler<SyncOptions, SynchronizerStatus, ResetOptions> for Synchronizer<L>
 where
     L: DataLoader,
 {
@@ -131,9 +131,6 @@ where
                     .map(|options| (loader, options))
             })
             .collect::<Vec<_>>();
-        if loaders.is_empty() {
-            return Ok(());
-        }
 
         let tasks = loaders.iter().map(|(loader, options)| {
             let reset_options = DataLoaderResetOptions::builder()

@@ -207,9 +207,9 @@ where
 
     async fn reset(&self, options: &ResetOptions) -> Result<(), HandlerError> {
         let loaded_block = self.build_reset_loaded_block(options).await?;
-        let _ = self.reset_contract_loaded_block(options, loaded_block).await?;
-        let _ = self.delete_commitments_by_loaded_block(options, loaded_block).await?;
-        let _ = self.delete_nullifiers_by_loaded_block(options, loaded_block).await?;
+        self.reset_contract_loaded_block(options, loaded_block).await?;
+        self.delete_commitments_by_loaded_block(options, loaded_block).await?;
+        self.delete_nullifiers_by_loaded_block(options, loaded_block).await?;
         Ok(())
     }
 }
