@@ -573,16 +573,16 @@ where
     }
 
     async fn build_reset_loaded_block(&self, options: &ResetOptions) -> Result<u64> {
-        let block_number = match options.block_number {
-            Some(block_number) => block_number,
-            None => self
-                .config
-                .find_chain(options.chain_id)
-                .ok_or_else(|| {
-                    HandlerError::AnyhowError(DatabaseHandlerError::UnsupportedChainError(options.chain_id).into())
-                })?
-                .start_block(),
-        };
+        let start_block = self
+            .config
+            .find_chain(options.chain_id)
+            .ok_or_else(|| {
+                HandlerError::AnyhowError(DatabaseHandlerError::UnsupportedChainError(options.chain_id).into())
+            })?
+            .start_block();
+        let block_number = options
+            .block_number
+            .map_or_else(|| start_block, |block| std::cmp::max(block, start_block));
         Ok(block_number)
     }
 

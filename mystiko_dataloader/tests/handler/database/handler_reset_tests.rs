@@ -17,7 +17,15 @@ async fn test_reset_default_option() {
     let options = ResetOptions::builder().chain_id(1_u64).build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(1_u64, collection.clone(), 3, &[2000_u64, 3000_u64, 1000_u64], 5, 2).await;
+    check_db(
+        1_u64,
+        collection.clone(),
+        3,
+        &[16_690_439_u64, 16_690_439_u64, 16_690_439_u64],
+        0,
+        0,
+    )
+    .await;
 }
 
 #[tokio::test]
@@ -27,37 +35,96 @@ async fn test_reset_chain_id_not_exist() {
     let options = ResetOptions::builder().chain_id(1_u64).build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(12345_u64, collection.clone(), 3, &[2000_u64, 3000_u64, 1000_u64], 5, 2).await;
+    check_db(
+        12345_u64,
+        collection.clone(),
+        3,
+        &[2_000_000_000_u64, 3_000_000_000_u64, 1_000_000_000_u64],
+        5,
+        2,
+    )
+    .await;
 }
 
 #[tokio::test]
-async fn test_reset_with_loaded_block_1500() {
+async fn test_reset_with_loaded_block_block_number1() {
     let (database_handler, collection, _config) = setup::<FullData>().await.unwrap();
     insert_test_data(collection.clone(), 1_u64).await;
-    let options = ResetOptions::builder().chain_id(1_u64).block_number(1500).build();
+    let options = ResetOptions::builder()
+        .chain_id(1_u64)
+        .block_number(1_500_000_000_u64)
+        .build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(1_u64, collection.clone(), 3, &[1500_u64, 1500_u64, 1000_u64], 4, 1).await;
+    check_db(
+        1_u64,
+        collection.clone(),
+        3,
+        &[1_500_000_000_u64, 1_500_000_000_u64, 1_000_000_000_u64],
+        4,
+        1,
+    )
+    .await;
 }
 
 #[tokio::test]
-async fn test_reset_with_loaded_block_900() {
+async fn test_reset_with_loaded_block_block_number2() {
     let (database_handler, collection, _config) = setup::<FullData>().await.unwrap();
     insert_test_data(collection.clone(), 1_u64).await;
-    let options = ResetOptions::builder().chain_id(1_u64).block_number(900).build();
+    let options = ResetOptions::builder()
+        .chain_id(1_u64)
+        .block_number(900_000_000_u64)
+        .build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(1_u64, collection.clone(), 3, &[900_u64, 900_u64, 900_u64], 0, 0).await;
+    check_db(
+        1_u64,
+        collection.clone(),
+        3,
+        &[900_000_000_u64, 900_000_000_u64, 900_000_000_u64],
+        0,
+        0,
+    )
+    .await;
 }
 
 #[tokio::test]
-async fn test_reset_with_loaded_block_4000() {
+async fn test_reset_with_loaded_block_block_number3() {
     let (database_handler, collection, _config) = setup::<FullData>().await.unwrap();
     insert_test_data(collection.clone(), 1_u64).await;
-    let options = ResetOptions::builder().chain_id(1_u64).block_number(4000).build();
+    let options = ResetOptions::builder()
+        .chain_id(1_u64)
+        .block_number(4_000_000_000_u64)
+        .build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(1_u64, collection.clone(), 3, &[2000_u64, 3000_u64, 1000_u64], 5, 2).await;
+    check_db(
+        1_u64,
+        collection.clone(),
+        3,
+        &[2_000_000_000_u64, 3_000_000_000_u64, 1_000_000_000_u64],
+        5,
+        2,
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn test_reset_with_loaded_block_block_number_small_than_start() {
+    let (database_handler, collection, _config) = setup::<FullData>().await.unwrap();
+    insert_test_data(collection.clone(), 1_u64).await;
+    let options = ResetOptions::builder().chain_id(1_u64).block_number(4_000_u64).build();
+    let result = database_handler.reset(&options).await;
+    assert!(result.is_ok());
+    check_db(
+        1_u64,
+        collection.clone(),
+        3,
+        &[16_690_439_u64, 16_690_439_u64, 16_690_439_u64],
+        0,
+        0,
+    )
+    .await;
 }
 
 #[tokio::test]
@@ -67,37 +134,77 @@ async fn test_reset_with_contracts() {
     let options = ResetOptions::builder()
         .chain_id(1_u64)
         .contract_addresses(vec!["address1".to_string()])
-        .block_number(900)
+        .block_number(900_000_000_u64)
         .build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(1_u64, collection.clone(), 3, &[900_u64, 3000_u64, 1000_u64], 2, 1).await;
+    check_db(
+        1_u64,
+        collection.clone(),
+        3,
+        &[900_000_000_u64, 3_000_000_000_u64, 1_000_000_000_u64],
+        2,
+        1,
+    )
+    .await;
 }
 
 #[tokio::test]
 async fn test_reset_with_two_chain_data() {
     let (database_handler, collection, _config) = setup::<FullData>().await.unwrap();
     insert_test_data(collection.clone(), 1_u64).await;
-    insert_test_data(collection.clone(), 2_u64).await;
+    insert_test_data(collection.clone(), 56_u64).await;
     let options = ResetOptions::builder()
         .chain_id(1_u64)
         .contract_addresses(vec!["address1".to_string()])
-        .block_number(900)
+        .block_number(900_000_000_u64)
         .build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(1_u64, collection.clone(), 3, &[900_u64, 3000_u64, 1000_u64], 2, 1).await;
-    check_db(2_u64, collection.clone(), 3, &[2000_u64, 3000_u64, 1000_u64], 5, 2).await;
+    check_db(
+        1_u64,
+        collection.clone(),
+        3,
+        &[900_000_000_u64, 3_000_000_000_u64, 1_000_000_000_u64],
+        2,
+        1,
+    )
+    .await;
+    check_db(
+        56_u64,
+        collection.clone(),
+        3,
+        &[2_000_000_000_u64, 3_000_000_000_u64, 1_000_000_000_u64],
+        5,
+        2,
+    )
+    .await;
 
     let options = ResetOptions::builder()
-        .chain_id(2_u64)
+        .chain_id(56_u64)
         .contract_addresses(vec!["address2".to_string()])
-        .block_number(1599)
+        .block_number(1_599_000_000_u64)
         .build();
     let result = database_handler.reset(&options).await;
     assert!(result.is_ok());
-    check_db(1_u64, collection.clone(), 3, &[900_u64, 3000_u64, 1000_u64], 2, 1).await;
-    check_db(2_u64, collection.clone(), 3, &[2000_u64, 1599_u64, 1000_u64], 4, 1).await;
+    check_db(
+        1_u64,
+        collection.clone(),
+        3,
+        &[900_000_000_u64, 3_000_000_000_u64, 1_000_000_000_u64],
+        2,
+        1,
+    )
+    .await;
+    check_db(
+        56_u64,
+        collection.clone(),
+        3,
+        &[2_000_000_000_u64, 1_599_000_000_u64, 1_000_000_000_u64],
+        4,
+        1,
+    )
+    .await;
 }
 
 async fn check_db(
@@ -135,17 +242,17 @@ async fn insert_test_data(collection: Arc<Collection<SqlStatementFormatter, Sqli
         Contract {
             chain_id,
             contract_address: "address1".to_string(),
-            loaded_block: 2000_u64,
+            loaded_block: 2_000_000_000_u64,
         },
         Contract {
             chain_id,
             contract_address: "address2".to_string(),
-            loaded_block: 3000_u64,
+            loaded_block: 3_000_000_000_u64,
         },
         Contract {
             chain_id,
             contract_address: "address3".to_string(),
-            loaded_block: 1000_u64,
+            loaded_block: 1_000_000_000_u64,
         },
     ];
     collection.insert_batch(&mock_contracts).await.unwrap();
@@ -155,9 +262,9 @@ async fn insert_test_data(collection: Arc<Collection<SqlStatementFormatter, Sqli
             contract_address: "address1".to_string(),
             commitment_hash: BigUint::from(1111_u32),
             status: CommitmentStatus::Included.into(),
-            block_number: 1000_u64,
+            block_number: 1_000_000_000_u64,
             src_chain_block_number: None,
-            included_block_number: Some(900_u64),
+            included_block_number: Some(9_000_000_000_u64),
             leaf_index: Some(1_u64),
             rollup_fee: None,
             encrypted_notes: None,
@@ -170,8 +277,8 @@ async fn insert_test_data(collection: Arc<Collection<SqlStatementFormatter, Sqli
             contract_address: "address1".to_string(),
             commitment_hash: BigUint::from(1222_u32),
             status: CommitmentStatus::Queued.into(),
-            block_number: 1200_u64,
-            src_chain_block_number: Some(1500_u64),
+            block_number: 1_200_000_000_u64,
+            src_chain_block_number: Some(1_500_000_000_u64),
             included_block_number: None,
             leaf_index: Some(2_u64),
             rollup_fee: Some(BigUint::from(200_u32)),
@@ -185,8 +292,8 @@ async fn insert_test_data(collection: Arc<Collection<SqlStatementFormatter, Sqli
             contract_address: "address1".to_string(),
             commitment_hash: BigUint::from(1333_u32),
             status: CommitmentStatus::SrcSucceeded.into(),
-            block_number: 1300_u64,
-            src_chain_block_number: Some(1800_u64),
+            block_number: 1_300_000_000_u64,
+            src_chain_block_number: Some(1_800_000_000_u64),
             included_block_number: None,
             leaf_index: None,
             rollup_fee: None,
@@ -200,8 +307,8 @@ async fn insert_test_data(collection: Arc<Collection<SqlStatementFormatter, Sqli
             contract_address: "address2".to_string(),
             commitment_hash: BigUint::from(4444_u32),
             status: CommitmentStatus::Unspecified.into(),
-            block_number: 1500_u64,
-            src_chain_block_number: Some(1500_u64),
+            block_number: 1_500_000_000_u64,
+            src_chain_block_number: Some(1_500_000_000_u64),
             included_block_number: None,
             leaf_index: None,
             rollup_fee: None,
@@ -215,8 +322,8 @@ async fn insert_test_data(collection: Arc<Collection<SqlStatementFormatter, Sqli
             contract_address: "address2".to_string(),
             commitment_hash: BigUint::from(21111_u32),
             status: CommitmentStatus::Unspecified.into(),
-            block_number: 1600_u64,
-            src_chain_block_number: Some(1600_u64),
+            block_number: 1_600_000_000_u64,
+            src_chain_block_number: Some(1_600_000_000_u64),
             included_block_number: None,
             leaf_index: None,
             rollup_fee: None,
@@ -232,14 +339,14 @@ async fn insert_test_data(collection: Arc<Collection<SqlStatementFormatter, Sqli
             chain_id,
             contract_address: "address1".to_string(),
             nullifier: BigUint::from(1111_u32),
-            block_number: 1000_u64,
+            block_number: 1_000_000_000_u64,
             transaction_hash: "0x1111".to_string(),
         },
         Nullifier {
             chain_id,
             contract_address: "address2".to_string(),
             nullifier: BigUint::from(11111_u32),
-            block_number: 1800_u64,
+            block_number: 1_800_000_000_u64,
             transaction_hash: "0x11111".to_string(),
         },
     ];
