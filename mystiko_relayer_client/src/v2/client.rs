@@ -93,14 +93,14 @@ where
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
         // get provider by chain id
-        let provider = &self
+        let provider = self
             .providers
             .get_provider(chain_id)
             .await
             .map_err(|err| RelayerClientError::GetOrCreateProviderError(err.to_string()))?;
 
         // found chain config
-        return if let Some(chain_config) = &self.relayer_config.find_chain_config(chain_id) {
+        if let Some(chain_config) = self.relayer_config.find_chain_config(chain_id) {
             let contract_address = ethers_address_from_string(chain_config.relayer_contract_address())
                 .map_err(RelayerClientError::FromHexError)?;
             let contract = MystikoGasRelayer::new(contract_address, provider.clone());
@@ -129,7 +129,7 @@ where
                     }
                 } else {
                     return Err(RelayerClientError::RelayerNameNotFoundError(name.clone()));
-                };
+                }
             } else {
                 for i in 0..urls.len() {
                     let url = urls[i].clone();
@@ -147,10 +147,7 @@ where
 
                 let all_response = try_join_all(handlers).await.map_err(RelayerClientError::JoinError)?;
 
-                for result in all_response {
-                    let response = result?;
-                    registers.push(response);
-                }
+                registers.extend(all_response.into_iter().filter_map(Result::ok));
             }
 
             if let Some(options) = request.options.as_ref() {
@@ -162,7 +159,7 @@ where
             Ok(registers)
         } else {
             Err(RelayerClientError::RelayerConfigNotFoundError(chain_id))
-        };
+        }
     }
 
     async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse, Self::Error> {
