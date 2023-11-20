@@ -19,7 +19,7 @@ use serde_json::to_string;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-mod all_register_info_tests;
+mod register_info_tests;
 mod relay_transact_tests;
 mod relay_transaction_status_tests;
 mod wait_transaction_tests;
@@ -29,7 +29,7 @@ const SUPPORTED_API_VERSION: &str = "v2";
 const MOCK_CONTRACT_ADDRESS: &str = "0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc";
 const RELAYER_CONFIG_FILE_PATH: &str = "tests/files/relayer/config.json";
 
-async fn mock_handshake_supported_server(server: Arc<RwLock<ServerGuard>>) -> Mock {
+async fn mock_handshake_supported_server(server: Arc<RwLock<ServerGuard>>, hits: usize) -> Mock {
     // mock handshake response
     let response = success(HandshakeResponse {
         package_version: "0.0.1".to_string(),
@@ -43,11 +43,12 @@ async fn mock_handshake_supported_server(server: Arc<RwLock<ServerGuard>>) -> Mo
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(to_string(&response).unwrap())
+        .expect(hits)
         .create_async()
         .await
 }
 
-async fn mock_register_info_server(server: Arc<RwLock<ServerGuard>>, chain_id: u64) -> Mock {
+async fn mock_register_info_server(server: Arc<RwLock<ServerGuard>>, chain_id: u64, hits: usize) -> Mock {
     // mock info response
     let response = success(RegisterInfoResponse {
         chain_id,
@@ -64,6 +65,7 @@ async fn mock_register_info_server(server: Arc<RwLock<ServerGuard>>, chain_id: u
         .with_status(200)
         .with_body(to_string(&response).unwrap())
         .with_header("content-type", "application/json")
+        .expect(hits)
         .create_async()
         .await
 }

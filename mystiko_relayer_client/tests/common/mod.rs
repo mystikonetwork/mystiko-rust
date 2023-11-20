@@ -79,15 +79,21 @@ pub async fn register_relayer(
     provider_url: &str,
     contract_address: Address,
     relayer_url: &str,
+    relayer_name: Option<&str>,
 ) {
     let provider = ethers::providers::Provider::<Http>::try_from(provider_url)
         .unwrap()
         .interval(Duration::from_millis(10u64));
     let client = Arc::new(SignerMiddleware::new(provider, wallet.with_chain_id(chain_id)));
     let contract = MystikoGasRelayer::new(contract_address, client);
+    let name = if let Some(name) = relayer_name {
+        name.to_string()
+    } else {
+        format!("test_{}", relayer_url)
+    };
 
     contract
-        .register_relayer(relayer_url.to_string(), format!("test_{}", relayer_url), vec![])
+        .register_relayer(relayer_url.to_string(), name, vec![])
         .send()
         .await
         .unwrap()

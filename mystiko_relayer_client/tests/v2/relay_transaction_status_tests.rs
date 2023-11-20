@@ -23,7 +23,7 @@ async fn test_relay_transaction_status() {
     let client = create_client(pool, None, None).await;
 
     // mock transaction status
-    let mock_0 = mock_handshake_supported_server(mock_server.clone()).await;
+    let mock_0 = mock_handshake_supported_server(mock_server.clone(), 1).await;
     let mock_1 = mock_transaction_status_server(mock_server.clone()).await;
     let result = client
         .relay_transaction_status(RelayTransactStatusRequest {

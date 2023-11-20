@@ -22,7 +22,7 @@ async fn wait_transaction_until_queued() {
     let client = create_client(pool, None, None).await;
 
     // mock transact
-    let mock_0 = mock_handshake_supported_server(mock_server.clone()).await;
+    let mock_0 = mock_handshake_supported_server(mock_server.clone(), 1).await;
     let mock_1 = mock_server
         .write()
         .await
@@ -73,7 +73,7 @@ async fn wait_transaction_until_pending() {
     let client = create_client(pool, None, None).await;
 
     // mock transact
-    let mock_0 = mock_handshake_supported_server(mock_server.clone()).await;
+    let mock_0 = mock_handshake_supported_server(mock_server.clone(), 1).await;
     let mock_1 = mock_server
         .write()
         .await
@@ -123,7 +123,7 @@ async fn wait_transaction_until_succeeded() {
     let client = create_client(pool, None, None).await;
 
     // mock transact
-    let mock_0 = mock_handshake_supported_server(mock_server.clone()).await;
+    let mock_0 = mock_handshake_supported_server(mock_server.clone(), 1).await;
     let mock_1 = mock_server
         .write()
         .await
@@ -173,7 +173,7 @@ async fn wait_transaction_until_confirmed_timeout() {
     let client = create_client(pool, None, None).await;
 
     // mock transact
-    let mock_0 = mock_handshake_supported_server(mock_server.clone()).await;
+    let mock_0 = mock_handshake_supported_server(mock_server.clone(), 1).await;
     let mock_1 = mock_server
         .write()
         .await
@@ -225,7 +225,7 @@ async fn wait_transaction_until_confirmed_failed() {
     let client = create_client(pool, None, None).await;
 
     // mock transact
-    let mock_0 = mock_handshake_supported_server(mock_server.clone()).await;
+    let mock_0 = mock_handshake_supported_server(mock_server.clone(), 1).await;
     let mock_1 = mock_server
         .write()
         .await
