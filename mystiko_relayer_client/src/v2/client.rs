@@ -86,70 +86,80 @@ where
 {
     type Error = RelayerClientError;
 
-    async fn all_register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>, Self::Error> {
+    async fn register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>, Self::Error> {
+        let chain_id = request.chain_id;
+
         // validate request
         request.validate().map_err(RelayerClientError::ValidationErrors)?;
 
-        let chain_id = request.chain_id;
-
-        let provider = &self
+        // get provider by chain id
+        let provider = self
             .providers
             .get_provider(chain_id)
             .await
             .map_err(|err| RelayerClientError::GetOrCreateProviderError(err.to_string()))?;
 
-        let chain_config_option = &self.relayer_config.find_chain_config(chain_id);
-        if chain_config_option.is_none() {
-            return Err(RelayerClientError::RelayerConfigNotFoundError(chain_id));
-        }
-        let chain_config = chain_config_option.unwrap();
+        // found chain config
+        if let Some(chain_config) = self.relayer_config.find_chain_config(chain_id) {
+            let contract_address = ethers_address_from_string(chain_config.relayer_contract_address())
+                .map_err(RelayerClientError::FromHexError)?;
+            let contract = MystikoGasRelayer::new(contract_address, provider.clone());
+            let relayer_info = contract
+                .get_all_relayer_info()
+                .await
+                .map_err(|err| RelayerClientError::CallRelayerContractError(err.to_string()))?;
 
-        let contract_address = ethers_address_from_string(chain_config.relayer_contract_address())
-            .map_err(RelayerClientError::FromHexError)?;
+            let urls = Arc::new(relayer_info.0);
+            let names = Arc::new(relayer_info.1);
+            let relayers = Arc::new(relayer_info.2);
 
-        let contract = MystikoGasRelayer::new(contract_address, provider.clone());
+            let request = Arc::new(request);
+            let mut registers: Vec<RegisterInfo> = Vec::new();
+            let mut handlers = Vec::new();
 
-        let relayer_info = contract
-            .get_all_relayer_info()
-            .await
-            .map_err(|err| RelayerClientError::CallRelayerContractError(err.to_string()))?;
-        let urls = Arc::new(relayer_info.0);
-        let names = Arc::new(relayer_info.1);
-        let relayers = Arc::new(relayer_info.2);
+            if let Some(name) = &request.name {
+                if let Some(index) = names.iter().position(|x| x == name) {
+                    let url = urls[index].clone();
+                    let name = names[index].clone();
+                    let relayer = relayers[index];
+                    let request = Arc::clone(&request);
+                    let reqwest_client = self.reqwest_client.clone();
+                    if self.handshake(&url).await? {
+                        registers.push(get_register_info(reqwest_client, &url, &name, &relayer, &request).await?);
+                    }
+                } else {
+                    return Err(RelayerClientError::RelayerNameNotFoundError(name.clone()));
+                }
+            } else {
+                for i in 0..urls.len() {
+                    let url = urls[i].clone();
+                    let name = names[i].clone();
+                    let relayer = relayers[i];
+                    let reqwest_client = self.reqwest_client.clone();
+                    let request = Arc::clone(&request);
+                    if self.handshake(&url).await? {
+                        let handler = tokio::spawn(async move {
+                            get_register_info(reqwest_client, &url, &name, &relayer, &request).await
+                        });
+                        handlers.push(handler);
+                    }
+                }
 
-        let mut registers: Vec<RegisterInfo> = Vec::new();
-        let mut handlers = Vec::new();
+                let all_response = try_join_all(handlers).await.map_err(RelayerClientError::JoinError)?;
 
-        let request = Arc::new(request);
-
-        for i in 0..urls.len() {
-            let url = urls[i].clone();
-            let name = names[i].clone();
-            let relayer = relayers[i];
-            let reqwest_client = self.reqwest_client.clone();
-            let request = Arc::clone(&request);
-
-            if self.handshake(&url).await? {
-                let handler =
-                    tokio::spawn(async move { register_info(reqwest_client, &url, &name, &relayer, &request).await });
-                handlers.push(handler);
+                registers.extend(all_response.into_iter().filter_map(Result::ok));
             }
-        }
 
-        let all_response = try_join_all(handlers).await.map_err(RelayerClientError::JoinError)?;
-
-        for result in all_response {
-            let response = result?;
-            registers.push(response);
-        }
-
-        if let Some(options) = request.options.as_ref() {
-            if !options.show_unavailable {
-                registers.retain(|register| register.available);
+            if let Some(options) = request.options.as_ref() {
+                if !options.show_unavailable {
+                    registers.retain(|register| register.available);
+                }
             }
-        }
 
-        Ok(registers)
+            Ok(registers)
+        } else {
+            Err(RelayerClientError::RelayerConfigNotFoundError(chain_id))
+        }
     }
 
     async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse, Self::Error> {
@@ -266,7 +276,7 @@ where
     }
 }
 
-async fn register_info(
+async fn get_register_info(
     reqwest_client: Arc<Client>,
     url: &str,
     name: &str,

@@ -7,6 +7,8 @@ use validator::ValidationErrors;
 pub enum RelayerClientError {
     #[error("chainId {0} relayer config not found")]
     RelayerConfigNotFoundError(u64),
+    #[error("No relayer named {0} found")]
+    RelayerNameNotFoundError(String),
     #[error("api response with exception (result_code: {code:?}, err_message: {message:?})")]
     ApiResponseError { code: i32, message: String },
     #[error("response content-type is not supported: {0}")]

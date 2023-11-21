@@ -90,6 +90,9 @@ pub struct WaitingTransactionRequest {
 pub struct RegisterInfoRequest {
     #[validate(range(min = 1))]
     pub chain_id: u64,
+    #[serde(default)]
+    #[builder(default)]
+    pub name: Option<String>,
     #[validate]
     #[serde(default)]
     #[builder(default)]

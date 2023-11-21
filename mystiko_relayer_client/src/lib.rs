@@ -32,7 +32,7 @@ use mystiko_relayer_types::{
 pub trait RelayerClient: Send + Sync {
     type Error;
 
-    async fn all_register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>, Self::Error>;
+    async fn register_info(&self, request: RegisterInfoRequest) -> Result<Vec<RegisterInfo>, Self::Error>;
 
     async fn relay_transact(&self, request: RelayTransactRequest) -> Result<RelayTransactResponse, Self::Error>;
 
