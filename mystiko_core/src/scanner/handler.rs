@@ -4,6 +4,7 @@ use crate::{
 };
 use async_trait::async_trait;
 use itertools::Itertools;
+use mystiko_config::MystikoConfig;
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment as ProtocolCommitment, EncryptedData, EncryptedNote};
@@ -11,8 +12,8 @@ use mystiko_protocol::key::{separate_secret_keys, verification_secret_key};
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::core::scanner::v1::{
-    AssetsOptions, Balance, BalanceOptions, BalanceResult, BridgeAssets, ChainAssetsResult, ResetOptions, ResetResult,
-    ScanOptions, ScanResult,
+    AssetsByBridge, AssetsByChain, AssetsBySymbol, AssetsByVersion, AssetsOptions, Balance, BalanceOptions,
+    BalanceResult, ResetOptions, ResetResult, ScanOptions, ScanResult,
 };
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
@@ -30,6 +31,7 @@ const DEFAULT_MAX_QUERY_FILTER_SIZE: u64 = 1000;
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct Scanner<F: StatementFormatter, S: Storage> {
+    config: Arc<MystikoConfig>,
     db: Arc<Database<F, S>>,
     wallets: Wallets<F, S>,
     accounts: Accounts<F, S>,
@@ -49,6 +51,7 @@ where
 {
     async fn from_context(context: &MystikoContext<F, S>) -> Result<Self, MystikoError> {
         Ok(Scanner::<F, S>::builder()
+            .config(context.config.clone())
             .wallets(Wallets::<F, S>::new(context.db.clone()))
             .accounts(Accounts::<F, S>::new(context.db.clone()))
             .db(context.db.clone())
@@ -66,7 +69,7 @@ impl<F, S>
         BalanceOptions,
         BalanceResult,
         AssetsOptions,
-        ChainAssetsResult,
+        AssetsByChain,
     > for Scanner<F, S>
 where
     F: StatementFormatter,
@@ -143,34 +146,31 @@ where
     }
 
     async fn balance(&self, options: BalanceOptions) -> Result<BalanceResult, Self::Error> {
-        let condition = self.build_balance_filter(&options).await?;
+        let condition = self.build_balance_filter(&options, None).await?;
         let commitments = self.db.commitments.find(condition).await?;
         let balances = commitments
             .iter()
             .map(|commitment| commitment.data.asset_symbol.clone())
             .unique()
-            .map(|asset_symbol| calc_balance_by_asset_symbol(commitments.as_slice(), &asset_symbol, options.with_spent))
+            .map(|asset_symbol| calc_balance_details(commitments.as_slice(), &asset_symbol, options.with_spent))
             .collect::<Result<Vec<_>, _>>()?;
         Ok(BalanceResult::builder().balances(balances).build())
     }
 
-    async fn assets(&self, options: AssetsOptions) -> Result<Vec<ChainAssetsResult>, Self::Error> {
+    async fn assets(&self, options: AssetsOptions) -> Result<Vec<AssetsByChain>, Self::Error> {
         let balance_options = BalanceOptions::builder()
             .shielded_addresses(options.shielded_addresses)
             .build();
         self.assets_balance(balance_options).await
     }
 
-    async fn chain_assets(&self, chain_id: u64, options: AssetsOptions) -> Result<ChainAssetsResult, Self::Error> {
+    async fn chain_assets(&self, chain_id: u64, options: AssetsOptions) -> Result<Option<AssetsByChain>, Self::Error> {
         let balance_options = BalanceOptions::builder()
             .chain_ids(vec![chain_id])
             .shielded_addresses(options.shielded_addresses)
             .build();
         let result = self.assets_balance(balance_options).await?;
-        Ok(result
-            .into_iter()
-            .next()
-            .unwrap_or_else(|| ChainAssetsResult::builder().chain_id(chain_id).build()))
+        Ok(result.into_iter().next())
     }
 }
 
@@ -247,13 +247,21 @@ struct NullifierCompositeKey {
     nullifier: BigUint,
 }
 
+#[derive(Debug, Clone, TypedBuilder)]
+struct CommitmentWithPoolVersion {
+    commitment: Document<Commitment>,
+    pool_version: u32,
+    pool_name: String,
+}
+
 impl<F, S> Scanner<F, S>
 where
     F: StatementFormatter,
     S: Storage,
 {
-    pub fn new(options: ScannerOptions<F, S>) -> Self {
+    pub fn new(config: Arc<MystikoConfig>, options: ScannerOptions<F, S>) -> Self {
         Scanner::<F, S>::builder()
+            .config(config)
             .wallets(Wallets::<F, S>::new(options.db.clone()))
             .accounts(Accounts::<F, S>::new(options.db.clone()))
             .db(options.db)
@@ -478,7 +486,11 @@ where
         }
     }
 
-    async fn build_balance_filter(&self, options: &BalanceOptions) -> Result<Condition, ScannerError> {
+    async fn build_balance_filter(
+        &self,
+        options: &BalanceOptions,
+        filter_status: Option<CommitmentStatus>,
+    ) -> Result<Condition, ScannerError> {
         let shielded_addresses = self
             .build_filter_accounts(&options.shielded_addresses)
             .await?
@@ -529,13 +541,111 @@ where
             filters.push(sub_filter);
         }
 
+        if let Some(status) = filter_status {
+            let sub_filter = SubFilter::equal(CommitmentColumn::Status, status as i32);
+            filters.push(sub_filter);
+        }
+
         Ok(Condition::from(filters))
     }
 
-    async fn assets_balance(&self, balance_options: BalanceOptions) -> Result<Vec<ChainAssetsResult>, ScannerError> {
-        let condition = self.build_balance_filter(&balance_options).await?;
+    async fn assets_balance(&self, balance_options: BalanceOptions) -> Result<Vec<AssetsByChain>, ScannerError> {
+        let condition = self
+            .build_balance_filter(&balance_options, Some(CommitmentStatus::Included))
+            .await?;
         let commitments = self.db.commitments.find(condition).await?;
-        commitments_group_by_chain(commitments)
+        self.commitments_group_by_chain(commitments)
+    }
+
+    fn commitments_group_by_chain(
+        &self,
+        commitments: Vec<Document<Commitment>>,
+    ) -> Result<Vec<AssetsByChain>, ScannerError> {
+        let chain_assets = commitments
+            .into_iter()
+            .group_by(|commitment| commitment.data.chain_id)
+            .into_iter()
+            .map(|(chain, group)| {
+                self.commitments_group_by_bridge_type(group.collect::<Vec<_>>())
+                    .map(|assets| AssetsByChain::builder().chain_id(chain).bridges(assets).build())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(chain_assets)
+    }
+
+    fn commitments_group_by_bridge_type(
+        &self,
+        commitments: Vec<Document<Commitment>>,
+    ) -> Result<Vec<AssetsByBridge>, ScannerError> {
+        let bridge_assets = commitments
+            .into_iter()
+            .group_by(|commitment| commitment.data.bridge_type)
+            .into_iter()
+            .map(|(bridge, group)| {
+                self.commitments_group_by_asset_symbol(group.collect::<Vec<_>>())
+                    .map(|assets| AssetsByBridge::builder().bridge_type(bridge).symbols(assets).build())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(bridge_assets)
+    }
+
+    fn commitments_group_by_asset_symbol(
+        &self,
+        commitments: Vec<Document<Commitment>>,
+    ) -> Result<Vec<AssetsBySymbol>, ScannerError> {
+        let symbol_assets = commitments
+            .into_iter()
+            .group_by(|commitment| commitment.data.asset_symbol.clone())
+            .into_iter()
+            .map(|(symbol, group)| {
+                self.commitments_group_by_pool_version(group.collect::<Vec<_>>())
+                    .map(|assets| AssetsBySymbol::builder().asset_symbol(symbol).versions(assets).build())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(symbol_assets)
+    }
+    fn commitments_group_by_pool_version(
+        &self,
+        commitments: Vec<Document<Commitment>>,
+    ) -> Result<Vec<AssetsByVersion>, ScannerError> {
+        let included_commitments = commitments
+            .into_iter()
+            .map(|commitment| {
+                self.config
+                    .find_pool_contract_by_address(commitment.data.chain_id, &commitment.data.contract_address)
+                    .ok_or(ScannerError::NoSuchContractConfigError(
+                        commitment.data.chain_id,
+                        commitment.data.contract_address.clone(),
+                    ))
+                    .map(|contract_config| {
+                        CommitmentWithPoolVersion::builder()
+                            .commitment(commitment)
+                            .pool_version(contract_config.version())
+                            .pool_name(contract_config.pool_name().to_string())
+                            .build()
+                    })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let pool_version_assets = included_commitments
+            .into_iter()
+            .group_by(|commitment| (commitment.pool_version, commitment.pool_name.clone()))
+            .into_iter()
+            .map(|((pool_version, pool_name), group)| {
+                calc_asset_total_balance(&group.collect::<Vec<_>>()).map(|balance| {
+                    AssetsByVersion::builder()
+                        .pool_version(pool_version)
+                        .pool_name(pool_name)
+                        .balance(balance)
+                        .build()
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(pool_version_assets)
     }
 }
 
@@ -582,51 +692,7 @@ fn scan_commitment_by_accounts(
     Ok(None)
 }
 
-fn commitments_group_by_chain(commitments: Vec<Document<Commitment>>) -> Result<Vec<ChainAssetsResult>, ScannerError> {
-    let assets = commitments
-        .into_iter()
-        .group_by(|commitment| commitment.data.chain_id)
-        .into_iter()
-        .map(|(chain, group)| {
-            commitments_group_by_bridge_type(group.collect::<Vec<_>>()).map(|bridge_assets| {
-                ChainAssetsResult::builder()
-                    .chain_id(chain)
-                    .bridges(bridge_assets)
-                    .build()
-            })
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-
-    Ok(assets)
-}
-
-fn commitments_group_by_bridge_type(commitments: Vec<Document<Commitment>>) -> Result<Vec<BridgeAssets>, ScannerError> {
-    let bridge_assets = commitments
-        .into_iter()
-        .group_by(|commitment| commitment.data.bridge_type)
-        .into_iter()
-        .map(|(bridge, bridge_group)| {
-            let bridge_commitments: Vec<Document<Commitment>> = bridge_group.collect();
-            let asset_balances = bridge_commitments
-                .iter()
-                .map(|commitment| &commitment.data.asset_symbol)
-                .unique()
-                .map(|asset_symbol| calc_balance_by_asset_symbol(&bridge_commitments, asset_symbol, None))
-                .collect::<Result<Vec<_>, _>>()?;
-
-            Ok::<BridgeAssets, ScannerError>(
-                BridgeAssets::builder()
-                    .bridge_type(bridge)
-                    .balances(asset_balances)
-                    .build(),
-            )
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-
-    Ok(bridge_assets)
-}
-
-fn calc_balance_by_asset_symbol(
+fn calc_balance_details(
     commitments: &[Document<Commitment>],
     asset_symbol: &str,
     with_spent: Option<bool>,
@@ -659,4 +725,15 @@ fn calc_balance_by_asset_symbol(
         .unspent(unspent)
         .spent(spent_amount)
         .build())
+}
+
+fn calc_asset_total_balance(commitments: &[CommitmentWithPoolVersion]) -> Result<f64, ScannerError> {
+    commitments.iter().try_fold(0f64, |mut total_balance, cm| {
+        let amount = decimal_to_number::<f64, BigUint>(
+            cm.commitment.data.amount.as_ref().unwrap_or(&BigUint::default()),
+            Some(cm.commitment.data.asset_decimals),
+        )?;
+        total_balance += amount;
+        Ok::<f64, ScannerError>(total_balance)
+    })
 }

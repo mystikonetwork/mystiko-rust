@@ -69,7 +69,7 @@
       ],
       "poolContracts": [
         {
-          "version": 2,
+          "version": 1,
           "name": "CommitmentPool",
           "poolName": "A Pool(since 07/20/2022)",
           "bridgeType": "tbridge",

@@ -4,6 +4,7 @@ mod scanner_reset_tests;
 mod scanner_scan_tests;
 
 use crate::common::create_database;
+use mystiko_config::MystikoConfig;
 use mystiko_core::{
     AccountCollection, AccountHandler, Accounts, Commitment, CommitmentCollection, Database, NullifierCollection,
     Scanner, ScannerOptions, WalletCollection, WalletHandler, Wallets,
@@ -45,6 +46,12 @@ pub async fn create_scanner(
         .filter_module("mystiko_core", log::LevelFilter::Info)
         .is_test(true)
         .try_init();
+    let config = Arc::new(
+        MystikoConfig::from_json_file("tests/files/mystiko/config.json")
+            .await
+            .unwrap(),
+    );
+
     let db = Arc::new(create_database().await);
     let wallet = WalletCollection::new(db.collection());
     wallet.migrate().await.unwrap();
@@ -84,7 +91,7 @@ pub async fn create_scanner(
     let nullifier = NullifierCollection::new(db.collection());
     nullifier.migrate().await.unwrap();
     let options = ScannerOptions::builder().db(db.clone()).build();
-    (Scanner::new(options), db, test_accounts)
+    (Scanner::new(config, options), db, test_accounts)
 }
 
 pub async fn insert_commitments(

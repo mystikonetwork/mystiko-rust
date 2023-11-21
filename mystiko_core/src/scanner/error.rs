@@ -10,6 +10,8 @@ use tokio::task::JoinError;
 pub enum ScannerError {
     #[error("no such accounts")]
     NoSuchAccountError,
+    #[error("no such chain={0} contract={1} config")]
+    NoSuchContractConfigError(u64, String),
     #[error("commitment is empty")]
     CommitmentEmptyError,
     #[error(transparent)]

@@ -18,5 +18,5 @@ pub trait ScannerHandler<SO, SR, RO, RR, BO, BR, AO, AR>: Send + Sync {
 
     async fn assets(&self, options: AO) -> Result<Vec<AR>, Self::Error>;
 
-    async fn chain_assets(&self, chain_id: u64, options: AO) -> Result<AR, Self::Error>;
+    async fn chain_assets(&self, chain_id: u64, options: AO) -> Result<Option<AR>, Self::Error>;
 }
