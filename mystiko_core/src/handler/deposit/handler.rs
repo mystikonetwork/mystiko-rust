@@ -1,14 +1,15 @@
 use crate::{
-    BalanceOptions, CommitmentPoolContractHandler, CommitmentPoolContracts, CommitmentPoolContractsError, Database,
-    Deposit, DepositColumn, DepositContractHandler, DepositContracts, DepositContractsError, DepositHandler,
-    Erc20ApproveOptions, Erc20BalanceOptions, FromContext, IsHistoricCommitmentOptions, MystikoContext, MystikoError,
-    PrivateKeySigner, PrivateKeySignerOptions, PublicAssetHandler, PublicAssets, PublicAssetsError, TransactionHandler,
-    TransactionSigner, Transactions, TransactionsError, WaitOptions, WalletHandler, Wallets, WalletsError,
+    AccountHandler, Accounts, AccountsError, BalanceOptions, Commitment, CommitmentPoolContractHandler,
+    CommitmentPoolContracts, CommitmentPoolContractsError, Database, Deposit, DepositColumn, DepositContractHandler,
+    DepositContracts, DepositContractsError, DepositHandler, Erc20ApproveOptions, Erc20BalanceOptions, FromContext,
+    IsHistoricCommitmentOptions, MystikoContext, MystikoError, PrivateKeySigner, PrivateKeySignerOptions,
+    PublicAssetHandler, PublicAssets, PublicAssetsError, TransactionHandler, TransactionSigner, Transactions,
+    TransactionsError, WaitOptions, WalletHandler, Wallets, WalletsError,
 };
 use async_trait::async_trait;
 use ethers_core::abi::AbiEncode;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{Address, Bytes, TxHash, U128, U256};
+use ethers_core::types::{Address, Bytes, TxHash, U256};
 use mystiko_config::{AssetConfig, ChainConfig, DepositContractConfig, MystikoConfig};
 use mystiko_ethers::Providers;
 use mystiko_protocol::error::ProtocolError;
@@ -18,10 +19,14 @@ use mystiko_protos::core::handler::v1::{
     CreateDepositOptions, DepositQuote, DepositSummary, QuoteDepositOptions, SendDepositOptions,
 };
 use mystiko_protos::core::v1::{DepositStatus, Transaction};
+use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use mystiko_storage::{ColumnValues, Document, StatementFormatter, Storage, StorageError};
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
-use mystiko_utils::convert::{bytes_to_biguint, decimal_to_number, number_to_u256_decimal, u256_to_biguint};
+use mystiko_utils::convert::{
+    biguint_to_u128, biguint_to_u256, bytes_to_biguint, decimal_to_number, number_to_biguint_decimal,
+    number_to_u256_decimal,
+};
 use mystiko_utils::hex::encode_hex_with_prefix;
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -43,6 +48,7 @@ pub struct Deposits<
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
     wallets: Wallets<F, S>,
+    accounts: Accounts<F, S>,
     assets: Arc<A>,
     deposit_contracts: Arc<D>,
     commitment_pool_contracts: Arc<C>,
@@ -96,6 +102,8 @@ pub enum DepositsError {
     StorageError(#[from] StorageError),
     #[error(transparent)]
     WalletsError(#[from] WalletsError),
+    #[error(transparent)]
+    AccountsError(#[from] AccountsError),
     #[error(transparent)]
     ParseBigIntError(#[from] num_bigint::ParseBigIntError),
     #[error("unsupported chain_id={0}")]
@@ -300,7 +308,7 @@ where
         Ok(self
             .db
             .deposits
-            .update(&Deposit::document_from_proto(deposit))
+            .update(&Deposit::document_from_proto(deposit)?)
             .await
             .map(Deposit::document_into_proto)?)
     }
@@ -309,7 +317,7 @@ where
         let deposits = deposits
             .into_iter()
             .map(Deposit::document_from_proto)
-            .collect::<Vec<_>>();
+            .collect::<core::result::Result<Vec<_>, _>>()?;
         let deposits = self.db.deposits.update_batch(&deposits).await?;
         Ok(deposits
             .into_iter()
@@ -340,14 +348,14 @@ where
     }
 
     async fn delete(&self, deposit: ProtoDeposit) -> Result<()> {
-        Ok(self.db.deposits.delete(&Deposit::document_from_proto(deposit)).await?)
+        Ok(self.db.deposits.delete(&Deposit::document_from_proto(deposit)?).await?)
     }
 
     async fn delete_batch(&self, deposits: Vec<ProtoDeposit>) -> Result<()> {
         let deposits = deposits
             .into_iter()
             .map(Deposit::document_from_proto)
-            .collect::<Vec<_>>();
+            .collect::<core::result::Result<Vec<_>, _>>()?;
         Ok(self.db.deposits.delete_batch(&deposits).await?)
     }
 
@@ -383,11 +391,13 @@ where
 {
     pub fn new(options: DepositsOptions<F, S, A, D, C, T, P>) -> Self {
         let wallets = Wallets::new(options.db.clone());
+        let accounts = Accounts::new(options.db.clone());
         Self::builder()
             .db(options.db)
             .config(options.config)
             .signer_providers(options.signer_providers)
             .wallets(wallets)
+            .accounts(accounts)
             .assets(options.assets)
             .deposit_contracts(options.deposit_contracts)
             .commitment_pool_contracts(options.commitment_pool_contracts)
@@ -499,7 +509,7 @@ where
             .interval_ms(options.tx_wait_interval_ms)
             .timeout_ms(options.tx_wait_timeout_ms)
             .build();
-        self.transactions.wait(wait_options).await?;
+        let tx_receipt = self.transactions.wait(wait_options).await?;
         if context.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop {
             deposit.data.status = DepositStatus::SrcSucceeded as i32;
         } else {
@@ -511,7 +521,31 @@ where
             send_tx_url,
             format_deposit_log(&deposit),
         );
+        if let Some(tx_receipt) = tx_receipt {
+            if let Some(block_number) = tx_receipt.block_number {
+                self.create_commitment(context, block_number.as_u64(), &deposit).await?;
+            }
+        }
         Ok(deposit)
+    }
+
+    async fn create_commitment(
+        &self,
+        context: &DepositContext<A, D, C, T>,
+        block_number: u64,
+        deposit: &Document<Deposit>,
+    ) -> Result<Option<Document<Commitment>>> {
+        let account = self
+            .accounts
+            .find_by_shielded_address(&deposit.data.shielded_address)
+            .await?;
+        if account.is_some() {
+            let commitment = context.create_commitment(block_number, deposit)?;
+            let commitment = self.db.commitments.insert(&commitment).await?;
+            log::info!("successfully inserted a new commitment(id={})", commitment.id);
+            return Ok(Some(commitment));
+        }
+        Ok(None)
     }
 }
 
@@ -670,11 +704,22 @@ where
             .map(|c| c.pool_contract_address())
             .unwrap_or(self.contract_config.pool_contract_address())
             .to_string();
-        let amount = number_to_u256_decimal(options.amount, Some(self.contract_config.asset_decimals()))?;
-        let amount = u256_to_biguint(&amount);
+        let asset_decimals = self.contract_config.asset_decimals();
+        let bridge_fee_asset_decimals = self.contract_config.bridge_fee_asset().asset_decimals();
+        let executor_fee_asset_decimals = self.contract_config.executor_fee_asset().asset_decimals();
+        let amount = number_to_biguint_decimal(options.amount, Some(asset_decimals))?;
+        let rollup_fee_amount = number_to_biguint_decimal(options.rollup_fee_amount, Some(asset_decimals))?;
+        let bridge_fee_amount = options
+            .bridge_fee_amount
+            .map(|v| number_to_biguint_decimal(v, Some(bridge_fee_asset_decimals)))
+            .transpose()?;
+        let executor_fee_amount = options
+            .executor_fee_amount
+            .map(|v| number_to_biguint_decimal(v, Some(executor_fee_asset_decimals)))
+            .transpose()?;
         let commitment = mystiko_protocol::commitment::Commitment::new(
             mystiko_protocol::address::ShieldedAddress::from_string(&options.shielded_address)?,
-            Some(mystiko_protocol::commitment::Note::new(Some(amount), None)),
+            Some(mystiko_protocol::commitment::Note::new(Some(amount.clone()), None)),
             None,
         )?;
         let bridge_type: BridgeType = self.contract_config.bridge_type().into();
@@ -685,29 +730,38 @@ where
             dst_chain_id,
             dst_chain_contract_address,
             dst_pool_address,
-            commitment_hash: commitment.commitment_hash.to_string(),
-            hash_k: commitment.k.to_string(),
-            random_s: bytes_to_biguint(commitment.note.random_s).to_string(),
+            commitment_hash: commitment.commitment_hash,
+            hash_k: commitment.k,
+            random_s: bytes_to_biguint(commitment.note.random_s),
             encrypted_note: encode_hex_with_prefix(commitment.encrypted_note),
             asset_symbol: self.contract_config.asset_symbol().to_string(),
+            asset_decimals,
             asset_address: (self.contract_config.asset_type() == &mystiko_types::AssetType::Erc20)
                 .then_some(self.contract_config.asset().asset_address().to_string()),
             bridge_type: bridge_type as i32,
             amount: options.amount,
+            decimal_amount: amount,
             rollup_fee_amount: options.rollup_fee_amount,
+            rollup_fee_decimal_amount: rollup_fee_amount,
             bridge_fee_amount: options.bridge_fee_amount,
+            bridge_fee_decimal_amount: bridge_fee_amount,
             bridge_fee_asset_address: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop
                 && self.contract_config.bridge_fee_asset_address().is_some())
             .then_some(self.contract_config.bridge_fee_asset().asset_address().to_string()),
             bridge_fee_asset_symbol: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
                 .then_some(self.contract_config.bridge_fee_asset().asset_symbol().to_string()),
+            bridge_fee_asset_decimals: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
+                .then_some(bridge_fee_asset_decimals),
             executor_fee_amount: options.executor_fee_amount,
+            executor_fee_decimal_amount: executor_fee_amount,
             executor_fee_asset_address: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop
                 && self.contract_config.executor_fee_asset_address().is_some())
             .then_some(self.contract_config.executor_fee_asset().asset_address().to_string()),
             executor_fee_asset_symbol: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
                 .then_some(self.contract_config.executor_fee_asset().asset_symbol().to_string()),
-            shielded_recipient_address: options.shielded_address.clone(),
+            executor_fee_asset_decimals: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
+                .then_some(executor_fee_asset_decimals),
+            shielded_address: options.shielded_address.clone(),
             status: DepositStatus::Unspecified as i32,
             error_message: None,
             wallet_id,
@@ -797,9 +851,9 @@ where
         let asset_decimals = Some(self.contract_config.asset_decimals());
         let amount = number_to_u256_decimal(deposit.data.amount, asset_decimals)?;
         let rollup_fee_amount = number_to_u256_decimal(deposit.data.rollup_fee_amount, asset_decimals)?;
-        let commitment = U256::from_dec_str(&deposit.data.commitment_hash)?;
-        let hash_k = U256::from_dec_str(&deposit.data.hash_k)?;
-        let random_s: u128 = U128::from_dec_str(&deposit.data.random_s)?.as_u128();
+        let commitment = biguint_to_u256(&deposit.data.commitment_hash);
+        let hash_k = biguint_to_u256(&deposit.data.hash_k);
+        let random_s = biguint_to_u128(&deposit.data.random_s);
         let encrypted_notes = Bytes::from_str(&deposit.data.encrypted_note)?;
         if self.contract_config.bridge_type() == &mystiko_types::BridgeType::Loop {
             let options = crate::DepositOptions::<TypedTransaction, S>::builder()
@@ -850,6 +904,42 @@ where
         }
     }
 
+    pub(crate) fn create_commitment(&self, block_number: u64, deposit: &Document<Deposit>) -> Result<Commitment> {
+        let (contract_address, status, src_chain_block_number) = if deposit.data.bridge_type == BridgeType::Loop as i32
+        {
+            (deposit.data.pool_address.clone(), CommitmentStatus::Queued as i32, None)
+        } else {
+            (
+                deposit.data.contract_address.clone(),
+                CommitmentStatus::SrcSucceeded as i32,
+                Some(block_number),
+            )
+        };
+        Ok(Commitment {
+            chain_id: deposit.data.chain_id,
+            contract_address,
+            bridge_type: deposit.data.bridge_type,
+            commitment_hash: deposit.data.commitment_hash.clone(),
+            asset_symbol: deposit.data.asset_symbol.clone(),
+            asset_decimals: deposit.data.asset_decimals,
+            asset_address: deposit.data.asset_address.clone(),
+            status,
+            spent: false,
+            block_number,
+            src_chain_block_number,
+            included_block_number: None,
+            rollup_fee_amount: Some(deposit.data.rollup_fee_decimal_amount.clone()),
+            encrypted_note: Some(deposit.data.encrypted_note.clone()),
+            leaf_index: None,
+            amount: Some(deposit.data.decimal_amount.clone()),
+            nullifier: None,
+            shielded_address: Some(deposit.data.shielded_address.clone()),
+            queued_transaction_hash: deposit.data.queued_transaction_hash.clone(),
+            included_transaction_hash: None,
+            src_chain_transaction_hash: deposit.data.src_chain_transaction_hash.clone(),
+        })
+    }
+
     pub(crate) async fn validate_deposit(
         &self,
         deposit: &Document<Deposit>,
@@ -870,7 +960,7 @@ where
         let is_historic_commitment_options = IsHistoricCommitmentOptions::builder()
             .chain_id(chain_id)
             .contract_address(contract_address)
-            .commitment_hash(U256::from_dec_str(&deposit.data.commitment_hash)?)
+            .commitment_hash(biguint_to_u256(&deposit.data.commitment_hash))
             .timeout_ms(options.query_timeout_ms)
             .build();
         if self
@@ -879,7 +969,7 @@ where
             .await?
         {
             return Err(DepositsError::DuplicateCommitmentError(
-                deposit.data.commitment_hash.clone(),
+                deposit.data.commitment_hash.to_string(),
                 chain_id,
                 pool_contract_address.to_string(),
             ));
