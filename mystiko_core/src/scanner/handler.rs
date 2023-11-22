@@ -499,7 +499,6 @@ where
             .collect::<Vec<_>>();
         let mut filters = vec![
             SubFilter::is_not_null(CommitmentColumn::Amount),
-            SubFilter::is_not_null(CommitmentColumn::Nullifier),
             SubFilter::in_list(CommitmentColumn::ShieldedAddress, shielded_addresses),
         ];
 
