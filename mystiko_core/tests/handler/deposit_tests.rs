@@ -2,12 +2,14 @@ use crate::common::{create_database, MockProvider, MockProviders};
 use crate::handler::{MockCommitmentPoolContracts, MockDepositContracts, MockPublicAssets, MockTransactions};
 use ethers_core::abi::{AbiDecode, AbiEncode};
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{Address, Eip1559TransactionRequest, TransactionReceipt, TransactionRequest, TxHash, U256};
+use ethers_core::types::{
+    Address, Eip1559TransactionRequest, TransactionReceipt, TransactionRequest, TxHash, U256, U64,
+};
 use ethers_signers::{LocalWallet, Signer};
 use mystiko_config::MystikoConfig;
 use mystiko_core::{
-    AccountHandler, Accounts, Database, DepositColumn, DepositHandler, DepositQuote, Deposits, DepositsOptions,
-    PrivateKeySigner, WalletHandler, Wallets,
+    AccountHandler, Accounts, CommitmentColumn, Database, DepositColumn, DepositHandler, DepositQuote, Deposits,
+    DepositsOptions, PrivateKeySigner, WalletHandler, Wallets,
 };
 use mystiko_ethers::{Provider, ProviderWrapper};
 use mystiko_protos::common::v1::BridgeType;
@@ -16,14 +18,17 @@ use mystiko_protos::core::handler::v1::{
     CreateAccountOptions, CreateDepositOptions, CreateWalletOptions, QuoteDepositOptions, SendDepositOptions,
 };
 use mystiko_protos::core::v1::DepositStatus;
+use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::SubFilter;
 use mystiko_storage::{ColumnValues, DocumentColumn, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use mystiko_utils::convert::number_to_u256_decimal;
 use mystiko_utils::hex::encode_hex;
+use num_bigint::BigUint;
 use std::collections::HashMap;
 use std::ops::Add;
+use std::str::FromStr;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -314,19 +319,26 @@ async fn test_loop_deposit_main_token_create() {
     );
     assert_eq!(deposit.dst_pool_address, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2");
     assert_eq!(deposit.asset_symbol, "BNB");
+    assert_eq!(deposit.asset_decimals, 18_u32);
     assert_eq!(deposit.amount, 10_f64);
+    assert_eq!(deposit.decimal_amount, "10000000000000000000");
     assert_eq!(deposit.rollup_fee_amount, 0.01_f64);
-    assert_eq!(deposit.shielded_recipient_address, account.shielded_address);
+    assert_eq!(deposit.rollup_fee_decimal_amount, "10000000000000000");
+    assert_eq!(deposit.shielded_address, account.shielded_address);
     assert_eq!(deposit.wallet_id, wallet.id);
     assert_eq!(deposit.status, DepositStatus::Unspecified as i32);
     assert_eq!(deposit.bridge_type, BridgeType::Loop as i32);
     assert!(deposit.asset_address.is_none());
     assert!(deposit.bridge_fee_amount.is_none());
+    assert!(deposit.bridge_fee_decimal_amount.is_none());
     assert!(deposit.bridge_fee_asset_symbol.is_none());
     assert!(deposit.bridge_fee_asset_address.is_none());
+    assert!(deposit.bridge_fee_asset_decimals.is_none());
     assert!(deposit.executor_fee_amount.is_none());
+    assert!(deposit.executor_fee_decimal_amount.is_none());
     assert!(deposit.executor_fee_asset_symbol.is_none());
     assert!(deposit.executor_fee_asset_address.is_none());
+    assert!(deposit.executor_fee_asset_decimals.is_none());
     assert!(deposit.src_chain_transaction_hash.is_none());
     assert!(deposit.queued_transaction_hash.is_none());
     assert!(deposit.included_transaction_hash.is_none());
@@ -363,9 +375,12 @@ async fn test_loop_deposit_erc20_token_create() {
     );
     assert_eq!(deposit.dst_pool_address, "0x223903804Ee95e264F74C88B4F8583429524593c");
     assert_eq!(deposit.asset_symbol, "MTT");
+    assert_eq!(deposit.asset_decimals, 16_u32);
     assert_eq!(deposit.amount, 10_f64);
+    assert_eq!(deposit.decimal_amount, "100000000000000000");
     assert_eq!(deposit.rollup_fee_amount, 0.01_f64);
-    assert_eq!(deposit.shielded_recipient_address, account.shielded_address);
+    assert_eq!(deposit.rollup_fee_decimal_amount, "100000000000000");
+    assert_eq!(deposit.shielded_address, account.shielded_address);
     assert_eq!(deposit.wallet_id, wallet.id);
     assert_eq!(deposit.status, DepositStatus::Unspecified as i32);
     assert_eq!(deposit.bridge_type, BridgeType::Loop as i32);
@@ -374,11 +389,15 @@ async fn test_loop_deposit_erc20_token_create() {
         "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"
     );
     assert!(deposit.bridge_fee_amount.is_none());
+    assert!(deposit.bridge_fee_decimal_amount.is_none());
     assert!(deposit.bridge_fee_asset_symbol.is_none());
     assert!(deposit.bridge_fee_asset_address.is_none());
+    assert!(deposit.bridge_fee_asset_decimals.is_none());
     assert!(deposit.executor_fee_amount.is_none());
+    assert!(deposit.executor_fee_decimal_amount.is_none());
     assert!(deposit.executor_fee_asset_symbol.is_none());
     assert!(deposit.executor_fee_asset_address.is_none());
+    assert!(deposit.executor_fee_asset_decimals.is_none());
     assert!(deposit.src_chain_transaction_hash.is_none());
     assert!(deposit.queued_transaction_hash.is_none());
     assert!(deposit.included_transaction_hash.is_none());
@@ -422,18 +441,25 @@ async fn test_cross_chain_deposit_main_token_create() {
     );
     assert_eq!(deposit.dst_pool_address, "0x5050F69a9786F081509234F1a7F4684b5E5b76C9");
     assert_eq!(deposit.asset_symbol, "BNB");
+    assert_eq!(deposit.asset_decimals, 18_u32);
     assert_eq!(deposit.amount, 10_f64);
+    assert_eq!(deposit.decimal_amount, "10000000000000000000");
     assert_eq!(deposit.rollup_fee_amount, 0.01_f64);
-    assert_eq!(deposit.shielded_recipient_address, account.shielded_address);
+    assert_eq!(deposit.rollup_fee_decimal_amount, "10000000000000000");
+    assert_eq!(deposit.shielded_address, account.shielded_address);
     assert_eq!(deposit.wallet_id, wallet.id);
     assert_eq!(deposit.status, DepositStatus::Unspecified as i32);
     assert_eq!(deposit.bridge_type, BridgeType::Tbridge as i32);
     assert!(deposit.asset_address.is_none());
     assert_eq!(deposit.bridge_fee_amount.unwrap(), 0.00001_f64);
+    assert_eq!(deposit.bridge_fee_decimal_amount.unwrap(), "10000000000000");
     assert_eq!(deposit.bridge_fee_asset_symbol.unwrap(), "BNB");
+    assert_eq!(deposit.bridge_fee_asset_decimals.unwrap(), 18_u32);
     assert!(deposit.bridge_fee_asset_address.is_none());
     assert_eq!(deposit.executor_fee_amount, Some(0.0001_f64));
+    assert_eq!(deposit.executor_fee_decimal_amount.unwrap(), "100000000000000");
     assert_eq!(deposit.executor_fee_asset_symbol.unwrap(), "BNB");
+    assert_eq!(deposit.executor_fee_asset_decimals.unwrap(), 18_u32);
     assert!(deposit.executor_fee_asset_address.is_none());
     assert!(deposit.src_chain_transaction_hash.is_none());
     assert!(deposit.queued_transaction_hash.is_none());
@@ -478,9 +504,12 @@ async fn test_cross_chain_deposit_erc20_token_create() {
     );
     assert_eq!(deposit.dst_pool_address, "0xF85679316f1C3998C6387F6F707b31AeEB3a9aBe");
     assert_eq!(deposit.asset_symbol, "mBNB");
+    assert_eq!(deposit.asset_decimals, 18_u32);
     assert_eq!(deposit.amount, 10_f64);
+    assert_eq!(deposit.decimal_amount, "10000000000000000000");
     assert_eq!(deposit.rollup_fee_amount, 0.01_f64);
-    assert_eq!(deposit.shielded_recipient_address, account.shielded_address);
+    assert_eq!(deposit.rollup_fee_decimal_amount, "10000000000000000");
+    assert_eq!(deposit.shielded_address, account.shielded_address);
     assert_eq!(deposit.wallet_id, wallet.id);
     assert_eq!(deposit.status, DepositStatus::Unspecified as i32);
     assert_eq!(deposit.bridge_type, BridgeType::Tbridge as i32);
@@ -489,13 +518,17 @@ async fn test_cross_chain_deposit_erc20_token_create() {
         "0x388C818CA8B9251b393131C08a736A67ccB19297"
     );
     assert_eq!(deposit.bridge_fee_amount.unwrap(), 0.00001_f64);
+    assert_eq!(deposit.bridge_fee_decimal_amount.unwrap(), "10000000000000");
     assert_eq!(deposit.bridge_fee_asset_symbol.unwrap(), "mBNB");
+    assert_eq!(deposit.bridge_fee_asset_decimals.unwrap(), 18_u32);
     assert_eq!(
         deposit.bridge_fee_asset_address.unwrap(),
         "0x388C818CA8B9251b393131C08a736A67ccB19297"
     );
     assert_eq!(deposit.executor_fee_amount, Some(0.0001_f64));
+    assert_eq!(deposit.executor_fee_decimal_amount.unwrap(), "100000000000000");
     assert_eq!(deposit.executor_fee_asset_symbol.unwrap(), "mBNB");
+    assert_eq!(deposit.executor_fee_asset_decimals.unwrap(), 18_u32);
     assert_eq!(
         deposit.executor_fee_asset_address.unwrap(),
         "0x388C818CA8B9251b393131C08a736A67ccB19297"
@@ -549,6 +582,7 @@ async fn test_loop_deposit_main_token_send() {
         .returning(move |_| {
             Ok(Some(TransactionReceipt {
                 transaction_hash: deposit_tx_hash,
+                block_number: Some(U64::from(200010000_u64)),
                 ..Default::default()
             }))
         });
@@ -558,14 +592,14 @@ async fn test_loop_deposit_main_token_send() {
         .transactions(transactions)
         .build();
     let (db, handler) = setup(options).await;
-    let (_, account) = create_wallet(db).await;
+    let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
         .min_amount(1_f64)
         .max_amount(10000_f64)
         .min_rollup_fee_amount(0.01_f64)
         .rollup_fee_asset_symbol("BNB".to_string())
         .build();
-    let options = CreateDepositOptions::builder()
+    let create_options = CreateDepositOptions::builder()
         .chain_id(97_u64)
         .asset_symbol("BNB".to_string())
         .bridge_type(BridgeType::Loop as i32)
@@ -574,8 +608,8 @@ async fn test_loop_deposit_main_token_send() {
         .rollup_fee_amount(0.01_f64)
         .deposit_quote(quote)
         .build();
-    let deposit = handler.create(options).await.unwrap();
-    let options = SendDepositOptions::builder()
+    let deposit = handler.create(create_options.clone()).await.unwrap();
+    let mut options = SendDepositOptions::builder()
         .deposit_id(deposit.id)
         .query_timeout_ms(100_u64)
         .tx_send_timeout_ms(1000_u64)
@@ -584,10 +618,17 @@ async fn test_loop_deposit_main_token_send() {
         .private_key(private_key)
         .deposit_confirmations(10_u64)
         .build();
-    let deposit = handler.send(options).await.unwrap();
+    let deposit = handler.send(options.clone()).await.unwrap();
     assert_eq!(deposit.status, DepositStatus::Queued as i32);
     assert_eq!(deposit.queued_transaction_hash(), deposit_tx_hash.encode_hex());
     assert!(deposit.error_message.is_none());
+    check_commitment(&deposit, db.clone(), 200010000_u64, true, false).await;
+
+    db.accounts.delete_all().await.unwrap();
+    let deposit = handler.create(create_options).await.unwrap();
+    options.deposit_id = deposit.id;
+    let deposit = handler.send(options).await.unwrap();
+    check_commitment(&deposit, db, 200010000_u64, false, false).await;
 }
 
 #[tokio::test]
@@ -649,6 +690,7 @@ async fn test_loop_deposit_erc20_token_send() {
         .returning(move |options| {
             Ok(Some(TransactionReceipt {
                 transaction_hash: options.tx_hash,
+                block_number: Some(U64::from(200010000_u64)),
                 ..Default::default()
             }))
         });
@@ -658,7 +700,7 @@ async fn test_loop_deposit_erc20_token_send() {
         .transactions(transactions)
         .build();
     let (db, handler) = setup(options).await;
-    let (_, account) = create_wallet(db).await;
+    let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
         .min_amount(1_f64)
         .max_amount(10000_f64)
@@ -693,6 +735,7 @@ async fn test_loop_deposit_erc20_token_send() {
     );
     assert_eq!(deposit.queued_transaction_hash(), deposit_tx_hash.encode_hex());
     assert!(deposit.error_message.is_none());
+    check_commitment(&deposit, db, 200010000_u64, true, false).await;
 }
 
 #[tokio::test]
@@ -742,6 +785,7 @@ async fn test_cross_chain_deposit_main_token_send() {
         .returning(move |_| {
             Ok(Some(TransactionReceipt {
                 transaction_hash: deposit_tx_hash,
+                block_number: Some(U64::from(200010000_u64)),
                 ..Default::default()
             }))
         });
@@ -751,7 +795,7 @@ async fn test_cross_chain_deposit_main_token_send() {
         .transactions(transactions)
         .build();
     let (db, handler) = setup(options).await;
-    let (_, account) = create_wallet(db).await;
+    let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
         .min_amount(1_f64)
         .max_amount(10000_f64)
@@ -788,6 +832,7 @@ async fn test_cross_chain_deposit_main_token_send() {
     assert_eq!(deposit.status, DepositStatus::SrcSucceeded as i32);
     assert_eq!(deposit.src_chain_transaction_hash(), deposit_tx_hash.encode_hex());
     assert!(deposit.error_message.is_none());
+    check_commitment(&deposit, db, 200010000_u64, true, true).await;
 }
 
 #[tokio::test]
@@ -857,6 +902,7 @@ async fn test_cross_chain_deposit_erc20_token_send() {
         .returning(move |options| {
             Ok(Some(TransactionReceipt {
                 transaction_hash: options.tx_hash,
+                block_number: Some(U64::from(200010000_u64)),
                 ..Default::default()
             }))
         });
@@ -866,7 +912,7 @@ async fn test_cross_chain_deposit_erc20_token_send() {
         .transactions(transactions)
         .build();
     let (db, handler) = setup(options).await;
-    let (_, account) = create_wallet(db).await;
+    let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
         .min_amount(1_f64)
         .max_amount(10000_f64)
@@ -908,6 +954,7 @@ async fn test_cross_chain_deposit_erc20_token_send() {
     );
     assert_eq!(deposit.src_chain_transaction_hash(), deposit_tx_hash.encode_hex());
     assert!(deposit.error_message.is_none());
+    check_commitment(&deposit, db, 200010000_u64, true, true).await;
 }
 
 #[tokio::test]
@@ -1025,7 +1072,7 @@ async fn test_loop_deposit_send_with_wrong_status() {
         .rollup_fee_amount(0.01_f64)
         .deposit_quote(quote)
         .build();
-    let mut deposit = mystiko_core::Deposit::document_from_proto(handler.create(options).await.unwrap());
+    let mut deposit = mystiko_core::Deposit::document_from_proto(handler.create(options).await.unwrap()).unwrap();
     deposit.data.status = DepositStatus::SrcSucceeded as i32;
     db.deposits.update(&deposit).await.unwrap();
     let options = SendDepositOptions::builder()
@@ -1447,4 +1494,68 @@ fn generate_private_key() -> (Address, String) {
     let address = local_wallet.address();
     let key = local_wallet.signer().to_bytes();
     (address, encode_hex(key))
+}
+
+async fn check_commitment(
+    deposit: &Deposit,
+    db: Arc<DatabaseType>,
+    block_number: u64,
+    should_exist: bool,
+    cross_chain: bool,
+) {
+    let commitment_hash = BigUint::from_str(&deposit.commitment_hash).unwrap();
+    let commitment = db
+        .commitments
+        .find_one(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            commitment_hash.clone(),
+        ))
+        .await
+        .unwrap();
+    if should_exist {
+        let commitment = commitment.unwrap();
+        assert_eq!(commitment.data.chain_id, deposit.chain_id);
+        assert_eq!(commitment.data.bridge_type, deposit.bridge_type);
+        assert_eq!(commitment.data.block_number, block_number);
+        assert_eq!(commitment.data.asset_symbol, deposit.asset_symbol);
+        assert_eq!(commitment.data.asset_decimals, deposit.asset_decimals);
+        assert_eq!(commitment.data.asset_address, deposit.asset_address);
+        assert_eq!(commitment.data.commitment_hash, commitment_hash);
+        assert_eq!(
+            commitment.data.amount,
+            Some(deposit.decimal_amount_as_biguint().unwrap())
+        );
+        assert_eq!(
+            commitment.data.rollup_fee_amount,
+            Some(deposit.rollup_fee_decimal_amount_as_biguint().unwrap())
+        );
+        assert_eq!(commitment.data.encrypted_note.unwrap(), deposit.encrypted_note);
+        assert_eq!(commitment.data.shielded_address.unwrap(), deposit.shielded_address);
+        assert_eq!(commitment.data.queued_transaction_hash, deposit.queued_transaction_hash);
+        assert_eq!(
+            commitment.data.src_chain_transaction_hash,
+            deposit.src_chain_transaction_hash
+        );
+        assert_eq!(
+            commitment.data.included_transaction_hash,
+            deposit.included_transaction_hash
+        );
+        assert!(!commitment.data.spent);
+        assert!(commitment.data.leaf_index.is_none());
+        assert!(commitment.data.nullifier.is_none());
+        if cross_chain {
+            assert_eq!(commitment.data.contract_address, deposit.contract_address);
+            assert_eq!(commitment.data.status, CommitmentStatus::SrcSucceeded as i32);
+            assert_eq!(
+                commitment.data.src_chain_block_number.unwrap(),
+                commitment.data.block_number
+            );
+        } else {
+            assert_eq!(commitment.data.contract_address, deposit.pool_address);
+            assert_eq!(commitment.data.status, CommitmentStatus::Queued as i32);
+            assert!(commitment.data.src_chain_block_number.is_none());
+        }
+    } else {
+        assert!(commitment.is_none());
+    }
 }

@@ -5,6 +5,7 @@ use mystiko_protos::core::v1::DepositStatus;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
+use num_bigint::BigUint;
 use std::sync::Arc;
 
 async fn create_deposits() -> DepositCollection<SqlStatementFormatter, SqliteStorage> {
@@ -27,22 +28,29 @@ async fn test_deposits_crud() {
                 chain_id: 1,
                 contract_address: String::from("contract_address 1"),
                 pool_address: String::from("pool_address 1"),
-                commitment_hash: String::from("1"),
-                hash_k: String::from("11"),
-                random_s: String::from("111"),
+                commitment_hash: BigUint::from(1_u64),
+                hash_k: BigUint::from(11_u64),
+                random_s: BigUint::from(111_u64),
                 encrypted_note: String::from("encrypted_note 1"),
                 asset_symbol: String::from("asset_symbol 1"),
+                asset_decimals: 18,
                 asset_address: Some(String::from("asset_address 1")),
                 bridge_type: BridgeType::Axelar as i32,
                 amount: 101_f64,
+                decimal_amount: BigUint::from(1010000_u64),
                 rollup_fee_amount: 102_f64,
+                rollup_fee_decimal_amount: BigUint::from(1020000_u64),
                 bridge_fee_amount: Some(103_f64),
+                bridge_fee_decimal_amount: Some(BigUint::from(1030000_u64)),
                 bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 1")),
                 bridge_fee_asset_symbol: Some(String::from("MTT")),
+                bridge_fee_asset_decimals: Some(18),
                 executor_fee_amount: Some(104_f64),
+                executor_fee_decimal_amount: Some(BigUint::from(1040000_u64)),
                 executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
                 executor_fee_asset_symbol: Some(String::from("STT")),
-                shielded_recipient_address: String::from("shielded_recipient_address 1"),
+                executor_fee_asset_decimals: Some(18),
+                shielded_address: String::from("shielded_address 1"),
                 status: DepositStatus::Unspecified as i32,
                 error_message: Some(String::from("error_message 1")),
                 wallet_id: String::from("wallet_id 1"),
@@ -64,22 +72,29 @@ async fn test_deposits_crud() {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
                     pool_address: String::from("pool_address 2"),
-                    commitment_hash: String::from("2"),
-                    hash_k: String::from("22"),
-                    random_s: String::from("222"),
+                    commitment_hash: BigUint::from(2_u64),
+                    hash_k: BigUint::from(22_u64),
+                    random_s: BigUint::from(222_u64),
                     encrypted_note: String::from("encrypted_note 2"),
                     asset_symbol: String::from("asset_symbol 2"),
+                    asset_decimals: 18,
                     asset_address: Some(String::from("asset_address 2")),
                     bridge_type: BridgeType::Celer as i32,
                     amount: 201_f64,
+                    decimal_amount: BigUint::from(2010000_u64),
                     rollup_fee_amount: 202_f64,
+                    rollup_fee_decimal_amount: BigUint::from(2020000_u64),
                     bridge_fee_amount: Some(203_f64),
+                    bridge_fee_decimal_amount: Some(BigUint::from(2030000_u64)),
                     bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 2")),
                     bridge_fee_asset_symbol: Some(String::from("MTT")),
+                    bridge_fee_asset_decimals: Some(18),
                     executor_fee_amount: Some(204_f64),
+                    executor_fee_decimal_amount: Some(BigUint::from(2040000_u64)),
                     executor_fee_asset_address: Some(String::from("executor_fee_asset_address 2")),
                     executor_fee_asset_symbol: Some(String::from("STT")),
-                    shielded_recipient_address: String::from("shielded_recipient_address 2"),
+                    executor_fee_asset_decimals: Some(18),
+                    shielded_address: String::from("shielded_address 2"),
                     status: DepositStatus::Included as i32,
                     error_message: Some(String::from("error_message 2")),
                     wallet_id: String::from("wallet_id 2"),
@@ -95,22 +110,29 @@ async fn test_deposits_crud() {
                     chain_id: 3,
                     contract_address: String::from("contract_address 3"),
                     pool_address: String::from("pool_address 3"),
-                    commitment_hash: String::from("3"),
-                    hash_k: String::from("33"),
-                    random_s: String::from("333"),
+                    commitment_hash: BigUint::from(3_u64),
+                    hash_k: BigUint::from(33_u64),
+                    random_s: BigUint::from(333_u64),
                     encrypted_note: String::from("encrypted_note 3"),
                     asset_symbol: String::from("asset_symbol 3"),
+                    asset_decimals: 18,
                     asset_address: Some(String::from("asset_address 3")),
                     bridge_type: BridgeType::LayerZero as i32,
                     amount: 301_f64,
+                    decimal_amount: BigUint::from(3010000_u64),
                     rollup_fee_amount: 302_f64,
+                    rollup_fee_decimal_amount: BigUint::from(3020000_u64),
                     bridge_fee_amount: Some(303_f64),
+                    bridge_fee_decimal_amount: Some(BigUint::from(3030000_u64)),
                     bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 3")),
                     bridge_fee_asset_symbol: Some(String::from("MTT")),
+                    bridge_fee_asset_decimals: Some(18),
                     executor_fee_amount: Some(304_f64),
+                    executor_fee_decimal_amount: Some(BigUint::from(3040000_u64)),
                     executor_fee_asset_address: Some(String::from("executor_fee_asset_address 3")),
                     executor_fee_asset_symbol: Some(String::from("STT")),
-                    shielded_recipient_address: String::from("shielded_recipient_address 3"),
+                    executor_fee_asset_decimals: Some(18),
+                    shielded_address: String::from("shielded_address 3"),
                     status: DepositStatus::Queued as i32,
                     error_message: Some(String::from("error_message 3")),
                     wallet_id: String::from("wallet_id 3"),
@@ -131,7 +153,7 @@ async fn test_deposits_crud() {
     assert_eq!(deposits.count_all().await.unwrap(), 3);
     assert_eq!(
         deposits
-            .count(SubFilter::equal(DepositColumn::HashK, "22"))
+            .count(SubFilter::equal(DepositColumn::HashK, BigUint::from(22_u64)))
             .await
             .unwrap(),
         1
@@ -163,7 +185,7 @@ async fn test_deposits_crud() {
         .unwrap();
     assert_eq!(found_deposits, inserted_deposits[1..]);
     let mut found_deposit = deposits
-        .find_one(SubFilter::equal(DepositColumn::RandomS, "222"))
+        .find_one(SubFilter::equal(DepositColumn::RandomS, BigUint::from(222_u64)))
         .await
         .unwrap()
         .unwrap();
@@ -194,10 +216,7 @@ async fn test_deposits_crud() {
     deposits.insert(&inserted_deposits[0].data).await.unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 2);
     deposits
-        .delete_by_filter(SubFilter::equal(
-            DepositColumn::ShieldedRecipientAddress,
-            "shielded_recipient_address 1",
-        ))
+        .delete_by_filter(SubFilter::equal(DepositColumn::ShieldedAddress, "shielded_address 1"))
         .await
         .unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 1);
@@ -213,22 +232,29 @@ async fn test_deposit_serde() {
             chain_id: 1,
             contract_address: String::from("contract_address 1"),
             pool_address: String::from("pool_address 1"),
-            commitment_hash: String::from("1"),
-            hash_k: String::from("11"),
-            random_s: String::from("111"),
+            commitment_hash: BigUint::from(1_u64),
+            hash_k: BigUint::from(11_u64),
+            random_s: BigUint::from(111_u64),
             encrypted_note: String::from("encrypted_note 1"),
             asset_symbol: String::from("asset_symbol 1"),
+            asset_decimals: 18,
             asset_address: Some(String::from("asset_address 1")),
             bridge_type: BridgeType::Axelar as i32,
             amount: 101_f64,
+            decimal_amount: BigUint::from(1010000_u64),
             rollup_fee_amount: 102_f64,
+            rollup_fee_decimal_amount: BigUint::from(1020000_u64),
             bridge_fee_amount: Some(103_f64),
+            bridge_fee_decimal_amount: Some(BigUint::from(1030000_u64)),
             bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 1")),
             bridge_fee_asset_symbol: Some(String::from("MTT")),
+            bridge_fee_asset_decimals: Some(18),
             executor_fee_amount: Some(104_f64),
+            executor_fee_decimal_amount: Some(BigUint::from(1040000_u64)),
             executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
             executor_fee_asset_symbol: Some(String::from("STT")),
-            shielded_recipient_address: String::from("shielded_recipient_address 1"),
+            executor_fee_asset_decimals: Some(18),
+            shielded_address: String::from("shielded_address 1"),
             status: DepositStatus::Unspecified as i32,
             error_message: Some(String::from("error_message 1")),
             wallet_id: String::from("wallet_id 1"),
@@ -262,17 +288,24 @@ fn test_from_proto() {
         .random_s(String::from("111"))
         .encrypted_note(String::from("encrypted_note 1"))
         .asset_symbol(String::from("asset_symbol 1"))
+        .asset_decimals(18_u32)
         .asset_address(String::from("asset_address 1"))
         .bridge_type(BridgeType::Axelar as i32)
         .amount(101_f64)
+        .decimal_amount(String::from("1010000"))
         .rollup_fee_amount(102_f64)
+        .rollup_fee_decimal_amount(String::from("1020000"))
         .bridge_fee_amount(103_f64)
+        .bridge_fee_decimal_amount(String::from("1030000"))
         .bridge_fee_asset_address(String::from("bridge_fee_asset_address 1"))
         .bridge_fee_asset_symbol(String::from("MTT"))
+        .bridge_fee_asset_decimals(18_u32)
         .executor_fee_amount(104_f64)
+        .executor_fee_decimal_amount(String::from("1040000"))
         .executor_fee_asset_address(String::from("executor_fee_asset_address 1"))
         .executor_fee_asset_symbol(String::from("STT"))
-        .shielded_recipient_address(String::from("shielded_recipient_address 1"))
+        .executor_fee_asset_decimals(18_u32)
+        .shielded_address(String::from("shielded_address 1"))
         .status(DepositStatus::Unspecified as i32)
         .error_message(String::from("error_message 1"))
         .wallet_id(String::from("wallet_id 1"))
@@ -284,38 +317,45 @@ fn test_from_proto() {
         .queued_transaction_hash(String::from("relay_transaction_hash 1"))
         .included_transaction_hash(String::from("rollup_transaction_hash 1"))
         .build();
-    let deposit = Deposit::document_from_proto(proto);
+    let deposit = Deposit::document_from_proto(proto).unwrap();
     assert_eq!(deposit.id, String::from("1234"));
     assert_eq!(deposit.created_at, 1234567890_u64);
     assert_eq!(deposit.updated_at, 1234567891_u64);
     assert_eq!(deposit.data.chain_id, 1);
     assert_eq!(deposit.data.contract_address, String::from("contract_address 1"));
     assert_eq!(deposit.data.pool_address, String::from("pool_address 1"));
-    assert_eq!(deposit.data.commitment_hash, String::from("1"));
-    assert_eq!(deposit.data.hash_k, String::from("11"));
-    assert_eq!(deposit.data.random_s, String::from("111"));
+    assert_eq!(deposit.data.commitment_hash, BigUint::from(1_u64));
+    assert_eq!(deposit.data.hash_k, BigUint::from(11_u64));
+    assert_eq!(deposit.data.random_s, BigUint::from(111_u64));
     assert_eq!(deposit.data.encrypted_note, String::from("encrypted_note 1"));
     assert_eq!(deposit.data.asset_symbol, String::from("asset_symbol 1"));
+    assert_eq!(deposit.data.asset_decimals, 18);
     assert_eq!(deposit.data.asset_address, Some(String::from("asset_address 1")));
     assert_eq!(deposit.data.bridge_type, BridgeType::Axelar as i32);
     assert_eq!(deposit.data.amount, 101_f64);
+    assert_eq!(deposit.data.decimal_amount, BigUint::from(1010000_u64));
     assert_eq!(deposit.data.rollup_fee_amount, 102_f64);
+    assert_eq!(deposit.data.rollup_fee_decimal_amount, BigUint::from(1020000_u64));
     assert_eq!(deposit.data.bridge_fee_amount, Some(103_f64));
+    assert_eq!(deposit.data.bridge_fee_decimal_amount, Some(BigUint::from(1030000_u64)));
     assert_eq!(
         deposit.data.bridge_fee_asset_address,
         Some(String::from("bridge_fee_asset_address 1"))
     );
     assert_eq!(deposit.data.bridge_fee_asset_symbol, Some(String::from("MTT")));
+    assert_eq!(deposit.data.bridge_fee_asset_decimals, Some(18));
     assert_eq!(deposit.data.executor_fee_amount, Some(104_f64));
+    assert_eq!(
+        deposit.data.executor_fee_decimal_amount,
+        Some(BigUint::from(1040000_u64))
+    );
     assert_eq!(
         deposit.data.executor_fee_asset_address,
         Some(String::from("executor_fee_asset_address 1"))
     );
     assert_eq!(deposit.data.executor_fee_asset_symbol, Some(String::from("STT")));
-    assert_eq!(
-        deposit.data.shielded_recipient_address,
-        String::from("shielded_recipient_address 1")
-    );
+    assert_eq!(deposit.data.executor_fee_asset_decimals, Some(18));
+    assert_eq!(deposit.data.shielded_address, String::from("shielded_address 1"));
     assert_eq!(deposit.data.status, DepositStatus::Unspecified as i32);
     assert_eq!(deposit.data.error_message, Some(String::from("error_message 1")));
     assert_eq!(deposit.data.wallet_id, String::from("wallet_id 1"));
@@ -353,22 +393,29 @@ fn test_into_proto() {
             chain_id: 1,
             contract_address: String::from("contract_address 1"),
             pool_address: String::from("pool_address 1"),
-            commitment_hash: String::from("1"),
-            hash_k: String::from("11"),
-            random_s: String::from("111"),
+            commitment_hash: BigUint::from(1_u64),
+            hash_k: BigUint::from(11_u64),
+            random_s: BigUint::from(111_u64),
             encrypted_note: String::from("encrypted_note 1"),
             asset_symbol: String::from("asset_symbol 1"),
+            asset_decimals: 18,
             asset_address: Some(String::from("asset_address 1")),
             bridge_type: BridgeType::Axelar as i32,
             amount: 101_f64,
+            decimal_amount: BigUint::from(1010000_u64),
             rollup_fee_amount: 102_f64,
+            rollup_fee_decimal_amount: BigUint::from(1020000_u64),
             bridge_fee_amount: Some(103_f64),
+            bridge_fee_decimal_amount: Some(BigUint::from(1030000_u64)),
             bridge_fee_asset_address: Some(String::from("bridge_fee_asset_address 1")),
             bridge_fee_asset_symbol: Some(String::from("MTT")),
+            bridge_fee_asset_decimals: Some(18),
             executor_fee_amount: Some(104_f64),
+            executor_fee_decimal_amount: Some(BigUint::from(1040000_u64)),
             executor_fee_asset_address: Some(String::from("executor_fee_asset_address 1")),
             executor_fee_asset_symbol: Some(String::from("STT")),
-            shielded_recipient_address: String::from("shielded_recipient_address 1"),
+            executor_fee_asset_decimals: Some(18),
+            shielded_address: String::from("shielded_address 1"),
             status: DepositStatus::Unspecified as i32,
             error_message: Some(String::from("error_message 1")),
             wallet_id: String::from("wallet_id 1"),
@@ -393,26 +440,30 @@ fn test_into_proto() {
     assert_eq!(proto.random_s, String::from("111"));
     assert_eq!(proto.encrypted_note, String::from("encrypted_note 1"));
     assert_eq!(proto.asset_symbol, String::from("asset_symbol 1"));
+    assert_eq!(proto.asset_decimals, 18_u32);
     assert_eq!(proto.asset_address, Some(String::from("asset_address 1")));
     assert_eq!(proto.bridge_type, BridgeType::Axelar as i32);
     assert_eq!(proto.amount, 101_f64);
+    assert_eq!(proto.decimal_amount, String::from("1010000"));
     assert_eq!(proto.rollup_fee_amount, 102_f64);
+    assert_eq!(proto.rollup_fee_decimal_amount, String::from("1020000"));
     assert_eq!(proto.bridge_fee_amount, Some(103_f64));
+    assert_eq!(proto.bridge_fee_decimal_amount, Some(String::from("1030000")));
     assert_eq!(
         proto.bridge_fee_asset_address,
         Some(String::from("bridge_fee_asset_address 1"))
     );
     assert_eq!(proto.bridge_fee_asset_symbol, Some(String::from("MTT")));
+    assert_eq!(proto.bridge_fee_asset_decimals, Some(18_u32));
     assert_eq!(proto.executor_fee_amount, Some(104_f64));
+    assert_eq!(proto.executor_fee_decimal_amount, Some(String::from("1040000")));
     assert_eq!(
         proto.executor_fee_asset_address,
         Some(String::from("executor_fee_asset_address 1"))
     );
     assert_eq!(proto.executor_fee_asset_symbol, Some(String::from("STT")));
-    assert_eq!(
-        proto.shielded_recipient_address,
-        String::from("shielded_recipient_address 1")
-    );
+    assert_eq!(proto.executor_fee_asset_decimals, Some(18_u32));
+    assert_eq!(proto.shielded_address, String::from("shielded_address 1"));
     assert_eq!(proto.status, DepositStatus::Unspecified as i32);
     assert_eq!(proto.error_message, Some(String::from("error_message 1")));
     assert_eq!(proto.wallet_id, String::from("wallet_id 1"));

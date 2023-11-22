@@ -1,5 +1,5 @@
 use anyhow::Result;
-use ethers_core::types::U256;
+use ethers_core::types::{U128, U256};
 use num_bigint::BigUint;
 use num_traits::{zero, FromBytes, NumCast, Zero};
 use rust_decimal::Decimal;
@@ -44,6 +44,14 @@ where
     Ok(U256::from_dec_str(&decimal.round().to_string())?)
 }
 
+pub fn number_to_biguint_decimal<T>(number: T, num_decimals: Option<u32>) -> Result<BigUint>
+where
+    T: Display,
+{
+    let decimal = number_to_decimal(number, num_decimals)?;
+    Ok(BigUint::from_str(&decimal.round().to_string())?)
+}
+
 pub fn u256_to_biguint(u: &U256) -> BigUint {
     bytes_to_biguint(u256_to_bytes(u))
 }
@@ -67,6 +75,10 @@ where
 
 pub fn biguint_to_u256(b: &BigUint) -> U256 {
     bytes_to_u256(biguint_to_bytes(b))
+}
+
+pub fn biguint_to_u128(b: &BigUint) -> u128 {
+    U128::from_little_endian(&biguint_to_bytes(b)).as_u128()
 }
 
 pub fn biguint_to_bytes(b: &BigUint) -> Vec<u8> {

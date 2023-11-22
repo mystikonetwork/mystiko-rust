@@ -190,7 +190,7 @@ where
         let cms = dedup_cms
             .iter()
             .filter(|cm| cm.status == cm_status as i32)
-            .map(|cm| (bytes_to_biguint(&cm.commitment_hash).to_string(), cm))
+            .map(|cm| (bytes_to_biguint(&cm.commitment_hash), cm))
             .collect::<HashMap<_, _>>();
         if !cms.is_empty() {
             let condition = build_filter_by_commitment_status(chain_id, address, cm_status)?;

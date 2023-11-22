@@ -4,6 +4,7 @@ use mystiko_protos::core::v1::{SpendStatus, SpendType};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
+use num_bigint::BigUint;
 use std::sync::Arc;
 
 async fn create_spends() -> SpendCollection<SqlStatementFormatter, SqliteStorage> {
@@ -26,24 +27,26 @@ async fn test_spend_crud() {
                 chain_id: 1,
                 contract_address: String::from("contract_address 1"),
                 asset_symbol: String::from("asset_symbol 1"),
+                asset_decimals: 18_u32,
                 asset_address: Some(String::from("asset_address 1")),
                 proof: Some(String::from("proof 1")),
-                root_hash: String::from("1"),
-                input_commitments: vec![String::from("11"), String::from("12")],
-                output_commitments: Some(vec![String::from("111"), String::from("112")]),
-                nullifiers: Some(vec![String::from("1111"), String::from("1112")]),
+                root_hash: BigUint::from(1_u64),
+                input_commitments: vec![BigUint::from(11_u64), BigUint::from(22_u64)],
+                output_commitments: Some(vec![BigUint::from(111_u64), BigUint::from(112_u64)]),
+                nullifiers: Some(vec![BigUint::from(1111_u64), BigUint::from(1112_u64)]),
                 signature_public_key: Some(String::from("signature_public_key 1")),
-                signature_public_key_hashes: Some(vec![String::from("spkh1"), String::from("spkh2")]),
+                signature_public_key_hashes: Some(vec![BigUint::from(11111_u64), BigUint::from(11112_u64)]),
                 amount: 101_f64,
-                public_amount: 102_f64,
+                decimal_amount: BigUint::from(1010000_u64),
                 rollup_fee_amount: Some(103_f64),
+                rollup_fee_decimal_amount: Some(BigUint::from(1030000_u64)),
                 gas_relayer_fee_amount: Some(104_f64),
-                shielded_address: Some(String::from("shielded_address 1")),
-                public_address: Some(String::from("public_address 1")),
+                gas_relayer_fee_decimal_amount: Some(BigUint::from(1040000_u64)),
+                recipient: String::from("recipient 1"),
                 gas_relayer_address: Some(String::from("gas_relayer_address 1")),
                 signature: Some(String::from("signature 1")),
-                random_auditing_public_key: Some(String::from("11111")),
-                encrypted_auditor_notes: Some(vec![String::from("ean1"), String::from("ean2")]),
+                random_auditing_public_key: Some(BigUint::from(111111_u64)),
+                encrypted_auditor_notes: Some(vec![BigUint::from(1111111_u64), BigUint::from(1111112_u64)]),
                 spend_type: SpendType::Transfer as i32,
                 status: SpendStatus::Unspecified as i32,
                 error_message: Some(String::from("error_message 1")),
@@ -60,23 +63,25 @@ async fn test_spend_crud() {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
                     asset_symbol: String::from("asset_symbol 2"),
+                    asset_decimals: 18_u32,
                     asset_address: Some(String::from("asset_address 2")),
                     proof: Some(String::from("proof 2")),
-                    root_hash: String::from("2"),
-                    input_commitments: vec![String::from("21"), String::from("22")],
+                    root_hash: BigUint::from(2_u64),
+                    input_commitments: vec![BigUint::from(21_u64), BigUint::from(22_u64)],
                     output_commitments: None,
                     nullifiers: None,
                     signature_public_key: Some(String::from("signature_public_key 2")),
                     signature_public_key_hashes: None,
                     amount: 201_f64,
-                    public_amount: 202_f64,
+                    decimal_amount: BigUint::from(2010000_u64),
                     rollup_fee_amount: Some(203_f64),
+                    rollup_fee_decimal_amount: Some(BigUint::from(2030000_u64)),
                     gas_relayer_fee_amount: Some(204_f64),
-                    shielded_address: Some(String::from("shielded_address 2")),
-                    public_address: Some(String::from("public_address 2")),
+                    gas_relayer_fee_decimal_amount: Some(BigUint::from(2040000_u64)),
+                    recipient: String::from("recipient 2"),
                     gas_relayer_address: Some(String::from("gas_relayer_address 2")),
                     signature: Some(String::from("signature 2")),
-                    random_auditing_public_key: Some(String::from("22222")),
+                    random_auditing_public_key: Some(BigUint::from(222222_u64)),
                     encrypted_auditor_notes: None,
                     spend_type: SpendType::Withdraw as i32,
                     status: SpendStatus::Pending as i32,
@@ -88,23 +93,25 @@ async fn test_spend_crud() {
                     chain_id: 3,
                     contract_address: String::from("contract_address 3"),
                     asset_symbol: String::from("asset_symbol 3"),
+                    asset_decimals: 18_u32,
                     asset_address: Some(String::from("asset_address 3")),
                     proof: Some(String::from("proof 3")),
-                    root_hash: String::from("3"),
-                    input_commitments: vec![String::from("31"), String::from("32")],
+                    root_hash: BigUint::from(3_u64),
+                    input_commitments: vec![BigUint::from(31_u64), BigUint::from(32_u64)],
                     output_commitments: Some(vec![]),
                     nullifiers: Some(vec![]),
                     signature_public_key: Some(String::from("signature_public_key 3")),
                     signature_public_key_hashes: Some(vec![]),
                     amount: 301_f64,
-                    public_amount: 302_f64,
+                    decimal_amount: BigUint::from(3010000_u64),
                     rollup_fee_amount: Some(303_f64),
+                    rollup_fee_decimal_amount: Some(BigUint::from(3030000_u64)),
                     gas_relayer_fee_amount: Some(304_f64),
-                    shielded_address: Some(String::from("shielded_address 3")),
-                    public_address: Some(String::from("public_address 3")),
+                    gas_relayer_fee_decimal_amount: Some(BigUint::from(3040000_u64)),
+                    recipient: String::from("recipient 3"),
                     gas_relayer_address: Some(String::from("gas_relayer_address 3")),
                     signature: Some(String::from("signature 3")),
-                    random_auditing_public_key: Some(String::from("33333")),
+                    random_auditing_public_key: Some(BigUint::from(333333_u64)),
                     encrypted_auditor_notes: Some(vec![]),
                     spend_type: SpendType::Withdraw as i32,
                     status: SpendStatus::Failed as i32,
@@ -184,7 +191,7 @@ async fn test_spend_crud() {
     spends.insert(&inserted_spends[0].data).await.unwrap();
     assert_eq!(spends.count_all().await.unwrap(), 2);
     spends
-        .delete_by_filter(SubFilter::equal(SpendColumn::ShieldedAddress, "shielded_address 1"))
+        .delete_by_filter(SubFilter::equal(SpendColumn::Recipient, "recipient 1"))
         .await
         .unwrap();
     assert_eq!(spends.count_all().await.unwrap(), 1);
@@ -200,24 +207,26 @@ async fn test_spend_serde() {
             chain_id: 1,
             contract_address: String::from("contract_address 1"),
             asset_symbol: String::from("asset_symbol 1"),
+            asset_decimals: 18_u32,
             asset_address: Some(String::from("asset_address 1")),
             proof: Some(String::from("proof 1")),
-            root_hash: String::from("1"),
-            input_commitments: vec![String::from("11"), String::from("12")],
-            output_commitments: Some(vec![String::from("111"), String::from("112")]),
-            nullifiers: Some(vec![String::from("1111"), String::from("1112")]),
+            root_hash: BigUint::from(1_u64),
+            input_commitments: vec![BigUint::from(11_u64), BigUint::from(22_u64)],
+            output_commitments: Some(vec![BigUint::from(111_u64), BigUint::from(112_u64)]),
+            nullifiers: Some(vec![BigUint::from(1111_u64), BigUint::from(1112_u64)]),
             signature_public_key: Some(String::from("signature_public_key 1")),
-            signature_public_key_hashes: Some(vec![String::from("spkh1"), String::from("spkh2")]),
+            signature_public_key_hashes: Some(vec![BigUint::from(11111_u64), BigUint::from(11112_u64)]),
             amount: 101_f64,
-            public_amount: 102_f64,
+            decimal_amount: BigUint::from(1010000_u64),
             rollup_fee_amount: Some(103_f64),
+            rollup_fee_decimal_amount: Some(BigUint::from(1030000_u64)),
             gas_relayer_fee_amount: Some(104_f64),
-            shielded_address: Some(String::from("shielded_address 1")),
-            public_address: Some(String::from("public_address 1")),
+            gas_relayer_fee_decimal_amount: Some(BigUint::from(1040000_u64)),
+            recipient: String::from("recipient 1"),
             gas_relayer_address: Some(String::from("gas_relayer_address 1")),
             signature: Some(String::from("signature 1")),
-            random_auditing_public_key: Some(String::from("11111")),
-            encrypted_auditor_notes: Some(vec![String::from("ean1"), String::from("ean2")]),
+            random_auditing_public_key: Some(BigUint::from(111111_u64)),
+            encrypted_auditor_notes: Some(vec![BigUint::from(1111111_u64), BigUint::from(1111112_u64)]),
             spend_type: SpendType::Transfer as i32,
             status: SpendStatus::Unspecified as i32,
             error_message: Some(String::from("error_message 1")),
@@ -241,6 +250,7 @@ fn test_from_proto() {
         .chain_id(1_u64)
         .contract_address(String::from("contract_address 1"))
         .asset_symbol(String::from("asset_symbol 1"))
+        .asset_decimals(18_u32)
         .asset_address(String::from("asset_address 1"))
         .proof(String::from("proof 1"))
         .root_hash(String::from("1"))
@@ -248,44 +258,46 @@ fn test_from_proto() {
         .output_commitments(vec![String::from("111"), String::from("112")])
         .nullifiers(vec![String::from("1111"), String::from("1112")])
         .signature_public_key(String::from("signature_public_key 1"))
-        .signature_public_key_hashes(vec![String::from("spkh1"), String::from("spkh2")])
+        .signature_public_key_hashes(vec![String::from("11111"), String::from("11112")])
         .amount(101_f64)
-        .public_amount(102_f64)
+        .decimal_amount(String::from("1010000"))
         .rollup_fee_amount(103_f64)
+        .rollup_fee_decimal_amount(String::from("1030000"))
         .gas_relayer_fee_amount(104_f64)
-        .shielded_address(String::from("shielded_address 1"))
-        .public_address(String::from("public_address 1"))
+        .gas_relayer_fee_decimal_amount(String::from("1040000"))
+        .recipient(String::from("recipient 1"))
         .gas_relayer_address(String::from("gas_relayer_address 1"))
         .signature(String::from("signature 1"))
-        .random_auditing_public_key(String::from("11111"))
-        .encrypted_auditor_notes(vec![String::from("ean1"), String::from("ean2")])
+        .random_auditing_public_key(String::from("111111"))
+        .encrypted_auditor_notes(vec![String::from("1111111"), String::from("1111112")])
         .spend_type(SpendType::Transfer as i32)
         .status(SpendStatus::Unspecified as i32)
         .error_message(String::from("error_message 1"))
         .transaction_hash(String::from("transaction_hash 1"))
         .wallet_id(String::from("wallet_id 1"))
         .build();
-    let spend = Spend::document_from_proto(proto);
+    let spend = Spend::document_from_proto(proto).unwrap();
     assert_eq!(spend.id, String::from("1234"));
     assert_eq!(spend.created_at, 1234567890u64);
     assert_eq!(spend.updated_at, 1234567891u64);
     assert_eq!(spend.data.chain_id, 1_u64);
     assert_eq!(spend.data.contract_address, String::from("contract_address 1"));
     assert_eq!(spend.data.asset_symbol, String::from("asset_symbol 1"));
+    assert_eq!(spend.data.asset_decimals, 18_u32);
     assert_eq!(spend.data.asset_address, Some(String::from("asset_address 1")));
     assert_eq!(spend.data.proof, Some(String::from("proof 1")));
-    assert_eq!(spend.data.root_hash, String::from("1"));
+    assert_eq!(spend.data.root_hash, BigUint::from(1_u64));
     assert_eq!(
         spend.data.input_commitments,
-        vec![String::from("11"), String::from("12")]
+        vec![BigUint::from(11_u64), BigUint::from(12_u64)]
     );
     assert_eq!(
         spend.data.output_commitments,
-        Some(vec![String::from("111"), String::from("112")])
+        Some(vec![BigUint::from(111_u64), BigUint::from(112_u64)])
     );
     assert_eq!(
         spend.data.nullifiers,
-        Some(vec![String::from("1111"), String::from("1112")])
+        Some(vec![BigUint::from(1111_u64), BigUint::from(1112_u64)])
     );
     assert_eq!(
         spend.data.signature_public_key,
@@ -293,23 +305,27 @@ fn test_from_proto() {
     );
     assert_eq!(
         spend.data.signature_public_key_hashes,
-        Some(vec![String::from("spkh1"), String::from("spkh2")])
+        Some(vec![BigUint::from(11111_u64), BigUint::from(11112_u64)])
     );
     assert_eq!(spend.data.amount, 101_f64);
-    assert_eq!(spend.data.public_amount, 102_f64);
+    assert_eq!(spend.data.decimal_amount, BigUint::from(1010000_u64));
     assert_eq!(spend.data.rollup_fee_amount, Some(103_f64));
+    assert_eq!(spend.data.rollup_fee_decimal_amount, Some(BigUint::from(1030000_u64)));
     assert_eq!(spend.data.gas_relayer_fee_amount, Some(104_f64));
-    assert_eq!(spend.data.shielded_address, Some(String::from("shielded_address 1")));
-    assert_eq!(spend.data.public_address, Some(String::from("public_address 1")));
+    assert_eq!(
+        spend.data.gas_relayer_fee_decimal_amount,
+        Some(BigUint::from(1040000_u64))
+    );
+    assert_eq!(spend.data.recipient, String::from("recipient 1"));
     assert_eq!(
         spend.data.gas_relayer_address,
         Some(String::from("gas_relayer_address 1"))
     );
     assert_eq!(spend.data.signature, Some(String::from("signature 1")));
-    assert_eq!(spend.data.random_auditing_public_key, Some(String::from("11111")));
+    assert_eq!(spend.data.random_auditing_public_key, Some(BigUint::from(111111_u64)));
     assert_eq!(
         spend.data.encrypted_auditor_notes,
-        Some(vec![String::from("ean1"), String::from("ean2")])
+        Some(vec![BigUint::from(1111111_u64), BigUint::from(1111112_u64)])
     );
     assert_eq!(spend.data.spend_type, SpendType::Transfer as i32);
     assert_eq!(spend.data.status, SpendStatus::Unspecified as i32);
@@ -328,24 +344,26 @@ fn test_into_proto() {
             chain_id: 1,
             contract_address: String::from("contract_address 1"),
             asset_symbol: String::from("asset_symbol 1"),
+            asset_decimals: 18_u32,
             asset_address: Some(String::from("asset_address 1")),
             proof: Some(String::from("proof 1")),
-            root_hash: String::from("1"),
-            input_commitments: vec![String::from("11"), String::from("12")],
-            output_commitments: Some(vec![String::from("111"), String::from("112")]),
-            nullifiers: Some(vec![String::from("1111"), String::from("1112")]),
+            root_hash: BigUint::from(1_u64),
+            input_commitments: vec![BigUint::from(11_u64), BigUint::from(12_u64)],
+            output_commitments: Some(vec![BigUint::from(111_u64), BigUint::from(112_u64)]),
+            nullifiers: Some(vec![BigUint::from(1111_u64), BigUint::from(1112_u64)]),
             signature_public_key: Some(String::from("signature_public_key 1")),
-            signature_public_key_hashes: Some(vec![String::from("spkh1"), String::from("spkh2")]),
+            signature_public_key_hashes: Some(vec![BigUint::from(11111_u64), BigUint::from(11112_u64)]),
             amount: 101_f64,
-            public_amount: 102_f64,
+            decimal_amount: BigUint::from(1010000_u64),
             rollup_fee_amount: Some(103_f64),
+            rollup_fee_decimal_amount: Some(BigUint::from(1030000_u64)),
             gas_relayer_fee_amount: Some(104_f64),
-            shielded_address: Some(String::from("shielded_address 1")),
-            public_address: Some(String::from("public_address 1")),
+            gas_relayer_fee_decimal_amount: Some(BigUint::from(1040000_u64)),
+            recipient: String::from("recipient 1"),
             gas_relayer_address: Some(String::from("gas_relayer_address 1")),
             signature: Some(String::from("signature 1")),
-            random_auditing_public_key: Some(String::from("11111")),
-            encrypted_auditor_notes: Some(vec![String::from("ean1"), String::from("ean2")]),
+            random_auditing_public_key: Some(BigUint::from(111111_u64)),
+            encrypted_auditor_notes: Some(vec![BigUint::from(1111111_u64), BigUint::from(1111112_u64)]),
             spend_type: SpendType::Transfer as i32,
             status: SpendStatus::Unspecified as i32,
             error_message: Some(String::from("error_message 1")),
@@ -360,6 +378,7 @@ fn test_into_proto() {
     assert_eq!(proto.chain_id, 1_u64);
     assert_eq!(proto.contract_address, String::from("contract_address 1"));
     assert_eq!(proto.asset_symbol, String::from("asset_symbol 1"));
+    assert_eq!(proto.asset_decimals, 18_u32);
     assert_eq!(proto.asset_address.unwrap(), String::from("asset_address 1"));
     assert_eq!(proto.proof.unwrap(), String::from("proof 1"));
     assert_eq!(proto.root_hash, String::from("1"));
@@ -372,23 +391,24 @@ fn test_into_proto() {
     );
     assert_eq!(
         proto.signature_public_key_hashes,
-        vec![String::from("spkh1"), String::from("spkh2")]
+        vec![String::from("11111"), String::from("11112")]
     );
     assert_eq!(proto.amount, 101_f64);
-    assert_eq!(proto.public_amount, 102_f64);
+    assert_eq!(proto.decimal_amount, String::from("1010000"));
     assert_eq!(proto.rollup_fee_amount.unwrap(), 103_f64);
+    assert_eq!(proto.rollup_fee_decimal_amount.unwrap(), String::from("1030000"));
     assert_eq!(proto.gas_relayer_fee_amount.unwrap(), 104_f64);
-    assert_eq!(proto.shielded_address.unwrap(), String::from("shielded_address 1"));
-    assert_eq!(proto.public_address.unwrap(), String::from("public_address 1"));
+    assert_eq!(proto.gas_relayer_fee_decimal_amount.unwrap(), String::from("1040000"));
+    assert_eq!(proto.recipient, String::from("recipient 1"));
     assert_eq!(
         proto.gas_relayer_address.unwrap(),
         String::from("gas_relayer_address 1")
     );
     assert_eq!(proto.signature.unwrap(), String::from("signature 1"));
-    assert_eq!(proto.random_auditing_public_key.unwrap(), String::from("11111"));
+    assert_eq!(proto.random_auditing_public_key.unwrap(), String::from("111111"));
     assert_eq!(
         proto.encrypted_auditor_notes,
-        vec![String::from("ean1"), String::from("ean2")]
+        vec![String::from("1111111"), String::from("1111112")]
     );
     assert_eq!(proto.spend_type, SpendType::Transfer as i32);
     assert_eq!(proto.status, SpendStatus::Unspecified as i32);

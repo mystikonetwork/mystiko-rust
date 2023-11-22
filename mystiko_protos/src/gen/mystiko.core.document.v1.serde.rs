@@ -287,25 +287,40 @@ impl serde::Serialize for Deposit {
         if !self.asset_symbol.is_empty() {
             len += 1;
         }
+        if self.asset_decimals != 0 {
+            len += 1;
+        }
         if self.amount != 0. {
+            len += 1;
+        }
+        if !self.decimal_amount.is_empty() {
             len += 1;
         }
         if self.rollup_fee_amount != 0. {
             len += 1;
         }
-        if !self.shielded_recipient_address.is_empty() {
+        if !self.rollup_fee_decimal_amount.is_empty() {
+            len += 1;
+        }
+        if !self.shielded_address.is_empty() {
             len += 1;
         }
         if !self.wallet_id.is_empty() {
             len += 1;
         }
+        if self.asset_address.is_some() {
+            len += 1;
+        }
         if self.bridge_fee_amount.is_some() {
+            len += 1;
+        }
+        if self.bridge_fee_decimal_amount.is_some() {
             len += 1;
         }
         if self.executor_fee_amount.is_some() {
             len += 1;
         }
-        if self.asset_address.is_some() {
+        if self.executor_fee_decimal_amount.is_some() {
             len += 1;
         }
         if self.bridge_fee_asset_address.is_some() {
@@ -314,10 +329,16 @@ impl serde::Serialize for Deposit {
         if self.bridge_fee_asset_symbol.is_some() {
             len += 1;
         }
+        if self.bridge_fee_asset_decimals.is_some() {
+            len += 1;
+        }
         if self.executor_fee_asset_address.is_some() {
             len += 1;
         }
         if self.executor_fee_asset_symbol.is_some() {
+            len += 1;
+        }
+        if self.executor_fee_asset_decimals.is_some() {
             len += 1;
         }
         if self.queued_transaction_hash.is_some() {
@@ -384,26 +405,41 @@ impl serde::Serialize for Deposit {
         if !self.asset_symbol.is_empty() {
             struct_ser.serialize_field("assetSymbol", &self.asset_symbol)?;
         }
+        if self.asset_decimals != 0 {
+            struct_ser.serialize_field("assetDecimals", &self.asset_decimals)?;
+        }
         if self.amount != 0. {
             struct_ser.serialize_field("amount", &self.amount)?;
+        }
+        if !self.decimal_amount.is_empty() {
+            struct_ser.serialize_field("decimalAmount", &self.decimal_amount)?;
         }
         if self.rollup_fee_amount != 0. {
             struct_ser.serialize_field("rollupFeeAmount", &self.rollup_fee_amount)?;
         }
-        if !self.shielded_recipient_address.is_empty() {
-            struct_ser.serialize_field("shieldedRecipientAddress", &self.shielded_recipient_address)?;
+        if !self.rollup_fee_decimal_amount.is_empty() {
+            struct_ser.serialize_field("rollupFeeDecimalAmount", &self.rollup_fee_decimal_amount)?;
+        }
+        if !self.shielded_address.is_empty() {
+            struct_ser.serialize_field("shieldedAddress", &self.shielded_address)?;
         }
         if !self.wallet_id.is_empty() {
             struct_ser.serialize_field("walletId", &self.wallet_id)?;
         }
+        if let Some(v) = self.asset_address.as_ref() {
+            struct_ser.serialize_field("assetAddress", v)?;
+        }
         if let Some(v) = self.bridge_fee_amount.as_ref() {
             struct_ser.serialize_field("bridgeFeeAmount", v)?;
+        }
+        if let Some(v) = self.bridge_fee_decimal_amount.as_ref() {
+            struct_ser.serialize_field("bridgeFeeDecimalAmount", v)?;
         }
         if let Some(v) = self.executor_fee_amount.as_ref() {
             struct_ser.serialize_field("executorFeeAmount", v)?;
         }
-        if let Some(v) = self.asset_address.as_ref() {
-            struct_ser.serialize_field("assetAddress", v)?;
+        if let Some(v) = self.executor_fee_decimal_amount.as_ref() {
+            struct_ser.serialize_field("executorFeeDecimalAmount", v)?;
         }
         if let Some(v) = self.bridge_fee_asset_address.as_ref() {
             struct_ser.serialize_field("bridgeFeeAssetAddress", v)?;
@@ -411,11 +447,17 @@ impl serde::Serialize for Deposit {
         if let Some(v) = self.bridge_fee_asset_symbol.as_ref() {
             struct_ser.serialize_field("bridgeFeeAssetSymbol", v)?;
         }
+        if let Some(v) = self.bridge_fee_asset_decimals.as_ref() {
+            struct_ser.serialize_field("bridgeFeeAssetDecimals", v)?;
+        }
         if let Some(v) = self.executor_fee_asset_address.as_ref() {
             struct_ser.serialize_field("executorFeeAssetAddress", v)?;
         }
         if let Some(v) = self.executor_fee_asset_symbol.as_ref() {
             struct_ser.serialize_field("executorFeeAssetSymbol", v)?;
+        }
+        if let Some(v) = self.executor_fee_asset_decimals.as_ref() {
+            struct_ser.serialize_field("executorFeeAssetDecimals", v)?;
         }
         if let Some(v) = self.queued_transaction_hash.as_ref() {
             struct_ser.serialize_field("queuedTransactionHash", v)?;
@@ -479,27 +521,41 @@ impl<'de> serde::Deserialize<'de> for Deposit {
             "encryptedNote",
             "asset_symbol",
             "assetSymbol",
+            "asset_decimals",
+            "assetDecimals",
             "amount",
+            "decimal_amount",
+            "decimalAmount",
             "rollup_fee_amount",
             "rollupFeeAmount",
-            "shielded_recipient_address",
-            "shieldedRecipientAddress",
+            "rollup_fee_decimal_amount",
+            "rollupFeeDecimalAmount",
+            "shielded_address",
+            "shieldedAddress",
             "wallet_id",
             "walletId",
-            "bridge_fee_amount",
-            "bridgeFeeAmount",
-            "executor_fee_amount",
-            "executorFeeAmount",
             "asset_address",
             "assetAddress",
+            "bridge_fee_amount",
+            "bridgeFeeAmount",
+            "bridge_fee_decimal_amount",
+            "bridgeFeeDecimalAmount",
+            "executor_fee_amount",
+            "executorFeeAmount",
+            "executor_fee_decimal_amount",
+            "executorFeeDecimalAmount",
             "bridge_fee_asset_address",
             "bridgeFeeAssetAddress",
             "bridge_fee_asset_symbol",
             "bridgeFeeAssetSymbol",
+            "bridge_fee_asset_decimals",
+            "bridgeFeeAssetDecimals",
             "executor_fee_asset_address",
             "executorFeeAssetAddress",
             "executor_fee_asset_symbol",
             "executorFeeAssetSymbol",
+            "executor_fee_asset_decimals",
+            "executorFeeAssetDecimals",
             "queued_transaction_hash",
             "queuedTransactionHash",
             "included_transaction_hash",
@@ -531,17 +587,24 @@ impl<'de> serde::Deserialize<'de> for Deposit {
             RandomS,
             EncryptedNote,
             AssetSymbol,
+            AssetDecimals,
             Amount,
+            DecimalAmount,
             RollupFeeAmount,
-            ShieldedRecipientAddress,
+            RollupFeeDecimalAmount,
+            ShieldedAddress,
             WalletId,
-            BridgeFeeAmount,
-            ExecutorFeeAmount,
             AssetAddress,
+            BridgeFeeAmount,
+            BridgeFeeDecimalAmount,
+            ExecutorFeeAmount,
+            ExecutorFeeDecimalAmount,
             BridgeFeeAssetAddress,
             BridgeFeeAssetSymbol,
+            BridgeFeeAssetDecimals,
             ExecutorFeeAssetAddress,
             ExecutorFeeAssetSymbol,
+            ExecutorFeeAssetDecimals,
             QueuedTransactionHash,
             IncludedTransactionHash,
             SrcChainTransactionHash,
@@ -584,17 +647,24 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                             "randomS" | "random_s" => Ok(GeneratedField::RandomS),
                             "encryptedNote" | "encrypted_note" => Ok(GeneratedField::EncryptedNote),
                             "assetSymbol" | "asset_symbol" => Ok(GeneratedField::AssetSymbol),
+                            "assetDecimals" | "asset_decimals" => Ok(GeneratedField::AssetDecimals),
                             "amount" => Ok(GeneratedField::Amount),
+                            "decimalAmount" | "decimal_amount" => Ok(GeneratedField::DecimalAmount),
                             "rollupFeeAmount" | "rollup_fee_amount" => Ok(GeneratedField::RollupFeeAmount),
-                            "shieldedRecipientAddress" | "shielded_recipient_address" => Ok(GeneratedField::ShieldedRecipientAddress),
+                            "rollupFeeDecimalAmount" | "rollup_fee_decimal_amount" => Ok(GeneratedField::RollupFeeDecimalAmount),
+                            "shieldedAddress" | "shielded_address" => Ok(GeneratedField::ShieldedAddress),
                             "walletId" | "wallet_id" => Ok(GeneratedField::WalletId),
-                            "bridgeFeeAmount" | "bridge_fee_amount" => Ok(GeneratedField::BridgeFeeAmount),
-                            "executorFeeAmount" | "executor_fee_amount" => Ok(GeneratedField::ExecutorFeeAmount),
                             "assetAddress" | "asset_address" => Ok(GeneratedField::AssetAddress),
+                            "bridgeFeeAmount" | "bridge_fee_amount" => Ok(GeneratedField::BridgeFeeAmount),
+                            "bridgeFeeDecimalAmount" | "bridge_fee_decimal_amount" => Ok(GeneratedField::BridgeFeeDecimalAmount),
+                            "executorFeeAmount" | "executor_fee_amount" => Ok(GeneratedField::ExecutorFeeAmount),
+                            "executorFeeDecimalAmount" | "executor_fee_decimal_amount" => Ok(GeneratedField::ExecutorFeeDecimalAmount),
                             "bridgeFeeAssetAddress" | "bridge_fee_asset_address" => Ok(GeneratedField::BridgeFeeAssetAddress),
                             "bridgeFeeAssetSymbol" | "bridge_fee_asset_symbol" => Ok(GeneratedField::BridgeFeeAssetSymbol),
+                            "bridgeFeeAssetDecimals" | "bridge_fee_asset_decimals" => Ok(GeneratedField::BridgeFeeAssetDecimals),
                             "executorFeeAssetAddress" | "executor_fee_asset_address" => Ok(GeneratedField::ExecutorFeeAssetAddress),
                             "executorFeeAssetSymbol" | "executor_fee_asset_symbol" => Ok(GeneratedField::ExecutorFeeAssetSymbol),
+                            "executorFeeAssetDecimals" | "executor_fee_asset_decimals" => Ok(GeneratedField::ExecutorFeeAssetDecimals),
                             "queuedTransactionHash" | "queued_transaction_hash" => Ok(GeneratedField::QueuedTransactionHash),
                             "includedTransactionHash" | "included_transaction_hash" => Ok(GeneratedField::IncludedTransactionHash),
                             "srcChainTransactionHash" | "src_chain_transaction_hash" => Ok(GeneratedField::SrcChainTransactionHash),
@@ -635,17 +705,24 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                 let mut random_s__ = None;
                 let mut encrypted_note__ = None;
                 let mut asset_symbol__ = None;
+                let mut asset_decimals__ = None;
                 let mut amount__ = None;
+                let mut decimal_amount__ = None;
                 let mut rollup_fee_amount__ = None;
-                let mut shielded_recipient_address__ = None;
+                let mut rollup_fee_decimal_amount__ = None;
+                let mut shielded_address__ = None;
                 let mut wallet_id__ = None;
-                let mut bridge_fee_amount__ = None;
-                let mut executor_fee_amount__ = None;
                 let mut asset_address__ = None;
+                let mut bridge_fee_amount__ = None;
+                let mut bridge_fee_decimal_amount__ = None;
+                let mut executor_fee_amount__ = None;
+                let mut executor_fee_decimal_amount__ = None;
                 let mut bridge_fee_asset_address__ = None;
                 let mut bridge_fee_asset_symbol__ = None;
+                let mut bridge_fee_asset_decimals__ = None;
                 let mut executor_fee_asset_address__ = None;
                 let mut executor_fee_asset_symbol__ = None;
+                let mut executor_fee_asset_decimals__ = None;
                 let mut queued_transaction_hash__ = None;
                 let mut included_transaction_hash__ = None;
                 let mut src_chain_transaction_hash__ = None;
@@ -747,6 +824,14 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                             }
                             asset_symbol__ = Some(map.next_value()?);
                         }
+                        GeneratedField::AssetDecimals => {
+                            if asset_decimals__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("assetDecimals"));
+                            }
+                            asset_decimals__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                         GeneratedField::Amount => {
                             if amount__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("amount"));
@@ -754,6 +839,12 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                             amount__ = 
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
+                        }
+                        GeneratedField::DecimalAmount => {
+                            if decimal_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("decimalAmount"));
+                            }
+                            decimal_amount__ = Some(map.next_value()?);
                         }
                         GeneratedField::RollupFeeAmount => {
                             if rollup_fee_amount__.is_some() {
@@ -763,17 +854,29 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::ShieldedRecipientAddress => {
-                            if shielded_recipient_address__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("shieldedRecipientAddress"));
+                        GeneratedField::RollupFeeDecimalAmount => {
+                            if rollup_fee_decimal_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rollupFeeDecimalAmount"));
                             }
-                            shielded_recipient_address__ = Some(map.next_value()?);
+                            rollup_fee_decimal_amount__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::ShieldedAddress => {
+                            if shielded_address__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("shieldedAddress"));
+                            }
+                            shielded_address__ = Some(map.next_value()?);
                         }
                         GeneratedField::WalletId => {
                             if wallet_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("walletId"));
                             }
                             wallet_id__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::AssetAddress => {
+                            if asset_address__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("assetAddress"));
+                            }
+                            asset_address__ = map.next_value()?;
                         }
                         GeneratedField::BridgeFeeAmount => {
                             if bridge_fee_amount__.is_some() {
@@ -783,6 +886,12 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
+                        GeneratedField::BridgeFeeDecimalAmount => {
+                            if bridge_fee_decimal_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("bridgeFeeDecimalAmount"));
+                            }
+                            bridge_fee_decimal_amount__ = map.next_value()?;
+                        }
                         GeneratedField::ExecutorFeeAmount => {
                             if executor_fee_amount__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("executorFeeAmount"));
@@ -791,11 +900,11 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
-                        GeneratedField::AssetAddress => {
-                            if asset_address__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("assetAddress"));
+                        GeneratedField::ExecutorFeeDecimalAmount => {
+                            if executor_fee_decimal_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("executorFeeDecimalAmount"));
                             }
-                            asset_address__ = map.next_value()?;
+                            executor_fee_decimal_amount__ = map.next_value()?;
                         }
                         GeneratedField::BridgeFeeAssetAddress => {
                             if bridge_fee_asset_address__.is_some() {
@@ -809,6 +918,14 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                             }
                             bridge_fee_asset_symbol__ = map.next_value()?;
                         }
+                        GeneratedField::BridgeFeeAssetDecimals => {
+                            if bridge_fee_asset_decimals__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("bridgeFeeAssetDecimals"));
+                            }
+                            bridge_fee_asset_decimals__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                         GeneratedField::ExecutorFeeAssetAddress => {
                             if executor_fee_asset_address__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("executorFeeAssetAddress"));
@@ -820,6 +937,14 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                                 return Err(serde::de::Error::duplicate_field("executorFeeAssetSymbol"));
                             }
                             executor_fee_asset_symbol__ = map.next_value()?;
+                        }
+                        GeneratedField::ExecutorFeeAssetDecimals => {
+                            if executor_fee_asset_decimals__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("executorFeeAssetDecimals"));
+                            }
+                            executor_fee_asset_decimals__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
                         }
                         GeneratedField::QueuedTransactionHash => {
                             if queued_transaction_hash__.is_some() {
@@ -880,17 +1005,24 @@ impl<'de> serde::Deserialize<'de> for Deposit {
                     random_s: random_s__.unwrap_or_default(),
                     encrypted_note: encrypted_note__.unwrap_or_default(),
                     asset_symbol: asset_symbol__.unwrap_or_default(),
+                    asset_decimals: asset_decimals__.unwrap_or_default(),
                     amount: amount__.unwrap_or_default(),
+                    decimal_amount: decimal_amount__.unwrap_or_default(),
                     rollup_fee_amount: rollup_fee_amount__.unwrap_or_default(),
-                    shielded_recipient_address: shielded_recipient_address__.unwrap_or_default(),
+                    rollup_fee_decimal_amount: rollup_fee_decimal_amount__.unwrap_or_default(),
+                    shielded_address: shielded_address__.unwrap_or_default(),
                     wallet_id: wallet_id__.unwrap_or_default(),
-                    bridge_fee_amount: bridge_fee_amount__,
-                    executor_fee_amount: executor_fee_amount__,
                     asset_address: asset_address__,
+                    bridge_fee_amount: bridge_fee_amount__,
+                    bridge_fee_decimal_amount: bridge_fee_decimal_amount__,
+                    executor_fee_amount: executor_fee_amount__,
+                    executor_fee_decimal_amount: executor_fee_decimal_amount__,
                     bridge_fee_asset_address: bridge_fee_asset_address__,
                     bridge_fee_asset_symbol: bridge_fee_asset_symbol__,
+                    bridge_fee_asset_decimals: bridge_fee_asset_decimals__,
                     executor_fee_asset_address: executor_fee_asset_address__,
                     executor_fee_asset_symbol: executor_fee_asset_symbol__,
+                    executor_fee_asset_decimals: executor_fee_asset_decimals__,
                     queued_transaction_hash: queued_transaction_hash__,
                     included_transaction_hash: included_transaction_hash__,
                     src_chain_transaction_hash: src_chain_transaction_hash__,
@@ -930,13 +1062,19 @@ impl serde::Serialize for Spend {
         if !self.asset_symbol.is_empty() {
             len += 1;
         }
+        if self.asset_decimals != 0 {
+            len += 1;
+        }
         if !self.root_hash.is_empty() {
             len += 1;
         }
         if self.amount != 0. {
             len += 1;
         }
-        if self.public_amount != 0. {
+        if !self.decimal_amount.is_empty() {
+            len += 1;
+        }
+        if !self.recipient.is_empty() {
             len += 1;
         }
         if !self.wallet_id.is_empty() {
@@ -960,7 +1098,13 @@ impl serde::Serialize for Spend {
         if self.rollup_fee_amount.is_some() {
             len += 1;
         }
+        if self.rollup_fee_decimal_amount.is_some() {
+            len += 1;
+        }
         if self.gas_relayer_fee_amount.is_some() {
+            len += 1;
+        }
+        if self.gas_relayer_fee_decimal_amount.is_some() {
             len += 1;
         }
         if self.signature_public_key.is_some() {
@@ -970,12 +1114,6 @@ impl serde::Serialize for Spend {
             len += 1;
         }
         if self.proof.is_some() {
-            len += 1;
-        }
-        if self.shielded_address.is_some() {
-            len += 1;
-        }
-        if self.public_address.is_some() {
             len += 1;
         }
         if self.gas_relayer_address.is_some() {
@@ -1018,14 +1156,20 @@ impl serde::Serialize for Spend {
         if !self.asset_symbol.is_empty() {
             struct_ser.serialize_field("assetSymbol", &self.asset_symbol)?;
         }
+        if self.asset_decimals != 0 {
+            struct_ser.serialize_field("assetDecimals", &self.asset_decimals)?;
+        }
         if !self.root_hash.is_empty() {
             struct_ser.serialize_field("rootHash", &self.root_hash)?;
         }
         if self.amount != 0. {
             struct_ser.serialize_field("amount", &self.amount)?;
         }
-        if self.public_amount != 0. {
-            struct_ser.serialize_field("publicAmount", &self.public_amount)?;
+        if !self.decimal_amount.is_empty() {
+            struct_ser.serialize_field("decimalAmount", &self.decimal_amount)?;
+        }
+        if !self.recipient.is_empty() {
+            struct_ser.serialize_field("recipient", &self.recipient)?;
         }
         if !self.wallet_id.is_empty() {
             struct_ser.serialize_field("walletId", &self.wallet_id)?;
@@ -1048,8 +1192,14 @@ impl serde::Serialize for Spend {
         if let Some(v) = self.rollup_fee_amount.as_ref() {
             struct_ser.serialize_field("rollupFeeAmount", v)?;
         }
+        if let Some(v) = self.rollup_fee_decimal_amount.as_ref() {
+            struct_ser.serialize_field("rollupFeeDecimalAmount", v)?;
+        }
         if let Some(v) = self.gas_relayer_fee_amount.as_ref() {
             struct_ser.serialize_field("gasRelayerFeeAmount", v)?;
+        }
+        if let Some(v) = self.gas_relayer_fee_decimal_amount.as_ref() {
+            struct_ser.serialize_field("gasRelayerFeeDecimalAmount", v)?;
         }
         if let Some(v) = self.signature_public_key.as_ref() {
             struct_ser.serialize_field("signaturePublicKey", v)?;
@@ -1059,12 +1209,6 @@ impl serde::Serialize for Spend {
         }
         if let Some(v) = self.proof.as_ref() {
             struct_ser.serialize_field("proof", v)?;
-        }
-        if let Some(v) = self.shielded_address.as_ref() {
-            struct_ser.serialize_field("shieldedAddress", v)?;
-        }
-        if let Some(v) = self.public_address.as_ref() {
-            struct_ser.serialize_field("publicAddress", v)?;
         }
         if let Some(v) = self.gas_relayer_address.as_ref() {
             struct_ser.serialize_field("gasRelayerAddress", v)?;
@@ -1112,11 +1256,14 @@ impl<'de> serde::Deserialize<'de> for Spend {
             "contractAddress",
             "asset_symbol",
             "assetSymbol",
+            "asset_decimals",
+            "assetDecimals",
             "root_hash",
             "rootHash",
             "amount",
-            "public_amount",
-            "publicAmount",
+            "decimal_amount",
+            "decimalAmount",
+            "recipient",
             "wallet_id",
             "walletId",
             "input_commitments",
@@ -1130,17 +1277,17 @@ impl<'de> serde::Deserialize<'de> for Spend {
             "encryptedAuditorNotes",
             "rollup_fee_amount",
             "rollupFeeAmount",
+            "rollup_fee_decimal_amount",
+            "rollupFeeDecimalAmount",
             "gas_relayer_fee_amount",
             "gasRelayerFeeAmount",
+            "gas_relayer_fee_decimal_amount",
+            "gasRelayerFeeDecimalAmount",
             "signature_public_key",
             "signaturePublicKey",
             "asset_address",
             "assetAddress",
             "proof",
-            "shielded_address",
-            "shieldedAddress",
-            "public_address",
-            "publicAddress",
             "gas_relayer_address",
             "gasRelayerAddress",
             "signature",
@@ -1163,9 +1310,11 @@ impl<'de> serde::Deserialize<'de> for Spend {
             ChainId,
             ContractAddress,
             AssetSymbol,
+            AssetDecimals,
             RootHash,
             Amount,
-            PublicAmount,
+            DecimalAmount,
+            Recipient,
             WalletId,
             InputCommitments,
             OutputCommitments,
@@ -1173,12 +1322,12 @@ impl<'de> serde::Deserialize<'de> for Spend {
             SignaturePublicKeyHashes,
             EncryptedAuditorNotes,
             RollupFeeAmount,
+            RollupFeeDecimalAmount,
             GasRelayerFeeAmount,
+            GasRelayerFeeDecimalAmount,
             SignaturePublicKey,
             AssetAddress,
             Proof,
-            ShieldedAddress,
-            PublicAddress,
             GasRelayerAddress,
             Signature,
             RandomAuditingPublicKey,
@@ -1213,9 +1362,11 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
                             "contractAddress" | "contract_address" => Ok(GeneratedField::ContractAddress),
                             "assetSymbol" | "asset_symbol" => Ok(GeneratedField::AssetSymbol),
+                            "assetDecimals" | "asset_decimals" => Ok(GeneratedField::AssetDecimals),
                             "rootHash" | "root_hash" => Ok(GeneratedField::RootHash),
                             "amount" => Ok(GeneratedField::Amount),
-                            "publicAmount" | "public_amount" => Ok(GeneratedField::PublicAmount),
+                            "decimalAmount" | "decimal_amount" => Ok(GeneratedField::DecimalAmount),
+                            "recipient" => Ok(GeneratedField::Recipient),
                             "walletId" | "wallet_id" => Ok(GeneratedField::WalletId),
                             "inputCommitments" | "input_commitments" => Ok(GeneratedField::InputCommitments),
                             "outputCommitments" | "output_commitments" => Ok(GeneratedField::OutputCommitments),
@@ -1223,12 +1374,12 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             "signaturePublicKeyHashes" | "signature_public_key_hashes" => Ok(GeneratedField::SignaturePublicKeyHashes),
                             "encryptedAuditorNotes" | "encrypted_auditor_notes" => Ok(GeneratedField::EncryptedAuditorNotes),
                             "rollupFeeAmount" | "rollup_fee_amount" => Ok(GeneratedField::RollupFeeAmount),
+                            "rollupFeeDecimalAmount" | "rollup_fee_decimal_amount" => Ok(GeneratedField::RollupFeeDecimalAmount),
                             "gasRelayerFeeAmount" | "gas_relayer_fee_amount" => Ok(GeneratedField::GasRelayerFeeAmount),
+                            "gasRelayerFeeDecimalAmount" | "gas_relayer_fee_decimal_amount" => Ok(GeneratedField::GasRelayerFeeDecimalAmount),
                             "signaturePublicKey" | "signature_public_key" => Ok(GeneratedField::SignaturePublicKey),
                             "assetAddress" | "asset_address" => Ok(GeneratedField::AssetAddress),
                             "proof" => Ok(GeneratedField::Proof),
-                            "shieldedAddress" | "shielded_address" => Ok(GeneratedField::ShieldedAddress),
-                            "publicAddress" | "public_address" => Ok(GeneratedField::PublicAddress),
                             "gasRelayerAddress" | "gas_relayer_address" => Ok(GeneratedField::GasRelayerAddress),
                             "signature" => Ok(GeneratedField::Signature),
                             "randomAuditingPublicKey" | "random_auditing_public_key" => Ok(GeneratedField::RandomAuditingPublicKey),
@@ -1261,9 +1412,11 @@ impl<'de> serde::Deserialize<'de> for Spend {
                 let mut chain_id__ = None;
                 let mut contract_address__ = None;
                 let mut asset_symbol__ = None;
+                let mut asset_decimals__ = None;
                 let mut root_hash__ = None;
                 let mut amount__ = None;
-                let mut public_amount__ = None;
+                let mut decimal_amount__ = None;
+                let mut recipient__ = None;
                 let mut wallet_id__ = None;
                 let mut input_commitments__ = None;
                 let mut output_commitments__ = None;
@@ -1271,12 +1424,12 @@ impl<'de> serde::Deserialize<'de> for Spend {
                 let mut signature_public_key_hashes__ = None;
                 let mut encrypted_auditor_notes__ = None;
                 let mut rollup_fee_amount__ = None;
+                let mut rollup_fee_decimal_amount__ = None;
                 let mut gas_relayer_fee_amount__ = None;
+                let mut gas_relayer_fee_decimal_amount__ = None;
                 let mut signature_public_key__ = None;
                 let mut asset_address__ = None;
                 let mut proof__ = None;
-                let mut shielded_address__ = None;
-                let mut public_address__ = None;
                 let mut gas_relayer_address__ = None;
                 let mut signature__ = None;
                 let mut random_auditing_public_key__ = None;
@@ -1328,6 +1481,14 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             }
                             asset_symbol__ = Some(map.next_value()?);
                         }
+                        GeneratedField::AssetDecimals => {
+                            if asset_decimals__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("assetDecimals"));
+                            }
+                            asset_decimals__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                         GeneratedField::RootHash => {
                             if root_hash__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("rootHash"));
@@ -1342,13 +1503,17 @@ impl<'de> serde::Deserialize<'de> for Spend {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
-                        GeneratedField::PublicAmount => {
-                            if public_amount__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("publicAmount"));
+                        GeneratedField::DecimalAmount => {
+                            if decimal_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("decimalAmount"));
                             }
-                            public_amount__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
+                            decimal_amount__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::Recipient => {
+                            if recipient__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("recipient"));
+                            }
+                            recipient__ = Some(map.next_value()?);
                         }
                         GeneratedField::WalletId => {
                             if wallet_id__.is_some() {
@@ -1394,6 +1559,12 @@ impl<'de> serde::Deserialize<'de> for Spend {
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
+                        GeneratedField::RollupFeeDecimalAmount => {
+                            if rollup_fee_decimal_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rollupFeeDecimalAmount"));
+                            }
+                            rollup_fee_decimal_amount__ = map.next_value()?;
+                        }
                         GeneratedField::GasRelayerFeeAmount => {
                             if gas_relayer_fee_amount__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("gasRelayerFeeAmount"));
@@ -1401,6 +1572,12 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             gas_relayer_fee_amount__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
+                        }
+                        GeneratedField::GasRelayerFeeDecimalAmount => {
+                            if gas_relayer_fee_decimal_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("gasRelayerFeeDecimalAmount"));
+                            }
+                            gas_relayer_fee_decimal_amount__ = map.next_value()?;
                         }
                         GeneratedField::SignaturePublicKey => {
                             if signature_public_key__.is_some() {
@@ -1419,18 +1596,6 @@ impl<'de> serde::Deserialize<'de> for Spend {
                                 return Err(serde::de::Error::duplicate_field("proof"));
                             }
                             proof__ = map.next_value()?;
-                        }
-                        GeneratedField::ShieldedAddress => {
-                            if shielded_address__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("shieldedAddress"));
-                            }
-                            shielded_address__ = map.next_value()?;
-                        }
-                        GeneratedField::PublicAddress => {
-                            if public_address__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("publicAddress"));
-                            }
-                            public_address__ = map.next_value()?;
                         }
                         GeneratedField::GasRelayerAddress => {
                             if gas_relayer_address__.is_some() {
@@ -1483,9 +1648,11 @@ impl<'de> serde::Deserialize<'de> for Spend {
                     chain_id: chain_id__.unwrap_or_default(),
                     contract_address: contract_address__.unwrap_or_default(),
                     asset_symbol: asset_symbol__.unwrap_or_default(),
+                    asset_decimals: asset_decimals__.unwrap_or_default(),
                     root_hash: root_hash__.unwrap_or_default(),
                     amount: amount__.unwrap_or_default(),
-                    public_amount: public_amount__.unwrap_or_default(),
+                    decimal_amount: decimal_amount__.unwrap_or_default(),
+                    recipient: recipient__.unwrap_or_default(),
                     wallet_id: wallet_id__.unwrap_or_default(),
                     input_commitments: input_commitments__.unwrap_or_default(),
                     output_commitments: output_commitments__.unwrap_or_default(),
@@ -1493,12 +1660,12 @@ impl<'de> serde::Deserialize<'de> for Spend {
                     signature_public_key_hashes: signature_public_key_hashes__.unwrap_or_default(),
                     encrypted_auditor_notes: encrypted_auditor_notes__.unwrap_or_default(),
                     rollup_fee_amount: rollup_fee_amount__,
+                    rollup_fee_decimal_amount: rollup_fee_decimal_amount__,
                     gas_relayer_fee_amount: gas_relayer_fee_amount__,
+                    gas_relayer_fee_decimal_amount: gas_relayer_fee_decimal_amount__,
                     signature_public_key: signature_public_key__,
                     asset_address: asset_address__,
                     proof: proof__,
-                    shielded_address: shielded_address__,
-                    public_address: public_address__,
                     gas_relayer_address: gas_relayer_address__,
                     signature: signature__,
                     random_auditing_public_key: random_auditing_public_key__,
