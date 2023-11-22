@@ -9,7 +9,7 @@ use num_bigint::BigUint;
 #[tokio::test]
 async fn test_assets_balance_with_default_option() {
     let account_count = 3_usize;
-    let commitment_count = 10_usize;
+    let commitment_count = 20_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
@@ -17,10 +17,10 @@ async fn test_assets_balance_with_default_option() {
     let result = scanner.assets(option.clone()).await.unwrap();
     assert!(result.is_empty());
 
-    for i in 0..account_count {
+    for (i, account) in accounts.iter().enumerate() {
         cms.iter_mut().skip(i * 2).take(2).for_each(|cm| {
             cm.data.nullifier = Some(BigUint::from(8_u8));
-            cm.data.shielded_address = Some(accounts[0].data.shielded_address.clone());
+            cm.data.shielded_address = Some(account.data.shielded_address.clone());
         });
     }
     db.commitments.update_batch(&cms).await.unwrap();
@@ -31,12 +31,12 @@ async fn test_assets_balance_with_default_option() {
 
     let mut amount_mtt = BigUint::default();
     let mut amount_eth = BigUint::default();
-    for i in 0..account_count {
+    for (i, account) in accounts.iter().enumerate() {
         cms.iter_mut().skip(i).take(1).for_each(|cm| {
             cm.data.status = CommitmentStatus::Included as i32;
             cm.data.contract_address = "0x5050F69a9786F081509234F1a7F4684b5E5b76C9".to_string();
             cm.data.asset_symbol = "MTT".to_string();
-            cm.data.shielded_address = Some(accounts[1].data.shielded_address.clone());
+            cm.data.shielded_address = Some(account.data.shielded_address.clone());
             if let Some(cm_amount) = cm.data.amount.as_ref() {
                 amount_mtt += cm_amount.clone();
             }
@@ -45,10 +45,17 @@ async fn test_assets_balance_with_default_option() {
             cm.data.status = CommitmentStatus::Included as i32;
             cm.data.contract_address = "0x223903804Ee95e264F74C88B4F8583429524593c".to_string();
             cm.data.asset_symbol = "ETH".to_string();
-            cm.data.shielded_address = Some(accounts[2].data.shielded_address.clone());
+            cm.data.shielded_address = Some(account.data.shielded_address.clone());
             if let Some(cm_amount) = cm.data.amount.as_ref() {
                 amount_eth += cm_amount.clone();
             }
+        });
+        cms.iter_mut().skip(account_count * 2 + i).take(1).for_each(|cm| {
+            cm.data.status = CommitmentStatus::SrcSucceeded as i32;
+            cm.data.contract_address = "0x223903804Ee95e264F74C88B4F8583429524593c".to_string();
+            cm.data.asset_symbol = "ETH".to_string();
+            cm.data.shielded_address = Some(account.data.shielded_address.clone());
+            cm.data.spent = false;
         });
     }
     db.commitments.update_batch(&cms).await.unwrap();
@@ -127,6 +134,12 @@ async fn test_assets_balance_with_option() {
             if let Some(cm_amount) = cm.data.amount.as_ref() {
                 amount_eth += cm_amount.clone();
             }
+        });
+        cms.iter_mut().skip(account_count * 2 + i).take(1).for_each(|cm| {
+            cm.data.status = CommitmentStatus::SrcSucceeded as i32;
+            cm.data.contract_address = "0x223903804Ee95e264F74C88B4F8583429524593c".to_string();
+            cm.data.asset_symbol = "ETH".to_string();
+            cm.data.shielded_address = Some(accounts[1].data.shielded_address.clone());
         });
     }
     db.commitments.update_batch(&cms).await.unwrap();

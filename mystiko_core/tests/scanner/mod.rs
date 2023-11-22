@@ -1,6 +1,7 @@
 mod scanner_assets_tests;
 mod scanner_balance_tests;
 mod scanner_reset_tests;
+mod scanner_scan_bridge_tests;
 mod scanner_scan_tests;
 
 use crate::common::create_database;
@@ -138,7 +139,7 @@ fn default_commitment() -> Commitment {
         asset_symbol: String::from("MTT"),
         asset_decimals: 18,
         asset_address: Some("asset_address 1".to_string()),
-        status: CommitmentStatus::Unspecified as i32,
+        status: CommitmentStatus::Queued as i32,
         spent: false,
         block_number: 10000000u64,
         src_chain_block_number: Some(10000000u64),

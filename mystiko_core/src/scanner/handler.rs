@@ -11,6 +11,7 @@ use mystiko_protocol::commitment::{Commitment as ProtocolCommitment, EncryptedDa
 use mystiko_protocol::key::{separate_secret_keys, verification_secret_key};
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protocol::utils::compute_nullifier;
+use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::scanner::v1::{
     AssetsByBridge, AssetsByChain, AssetsBySymbol, AssetsByVersion, AssetsOptions, Balance, BalanceOptions,
     BalanceResult, ResetOptions, ResetResult, ScanOptions, ScanResult,
@@ -21,7 +22,7 @@ use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage};
 use mystiko_utils::convert::decimal_to_number;
 use mystiko_utils::hex::{decode_hex, decode_hex_with_length};
 use num_bigint::BigUint;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -146,8 +147,8 @@ where
     }
 
     async fn balance(&self, options: BalanceOptions) -> Result<BalanceResult, Self::Error> {
-        let condition = self.build_balance_filter(&options, None).await?;
-        let commitments = self.db.commitments.find(condition).await?;
+        let filter = self.build_balance_filter(&options).await?;
+        let commitments = self.db.commitments.find(filter).await?;
         let balances = commitments
             .iter()
             .map(|commitment| commitment.data.asset_symbol.clone())
@@ -158,18 +159,11 @@ where
     }
 
     async fn assets(&self, options: AssetsOptions) -> Result<Vec<AssetsByChain>, Self::Error> {
-        let balance_options = BalanceOptions::builder()
-            .shielded_addresses(options.shielded_addresses)
-            .build();
-        self.assets_balance(balance_options).await
+        self.assets_balance(&options, None).await
     }
 
     async fn chain_assets(&self, chain_id: u64, options: AssetsOptions) -> Result<Option<AssetsByChain>, Self::Error> {
-        let balance_options = BalanceOptions::builder()
-            .chain_ids(vec![chain_id])
-            .shielded_addresses(options.shielded_addresses)
-            .build();
-        let result = self.assets_balance(balance_options).await?;
+        let result = self.assets_balance(&options, Some(chain_id)).await?;
         Ok(result.into_iter().next())
     }
 }
@@ -254,6 +248,13 @@ struct CommitmentWithPoolVersion {
     pool_name: String,
 }
 
+#[derive(Debug, Clone, TypedBuilder, Hash, Eq, PartialEq)]
+struct CommitmentWithPeerContract {
+    peer_chain_id: u64,
+    pool_contract: String,
+    commitment_hash: BigUint,
+}
+
 impl<F, S> Scanner<F, S>
 where
     F: StatementFormatter,
@@ -298,8 +299,10 @@ where
 
         let mut owned_count = 0;
         if !updated_commitments.is_empty() {
+            self.update_src_succeeded_commitments_spent_status(&updated_commitments)
+                .await?;
             let status_updated = self
-                .update_commitments_spent_status(updated_commitments, round_options)
+                .update_commitments_spent_status_by_nullifier(updated_commitments, round_options)
                 .await?;
             owned_count = status_updated.len() as u64;
             self.db.commitments.update_batch(&status_updated).await?;
@@ -374,7 +377,7 @@ where
             .build()
     }
 
-    async fn update_commitments_spent_status(
+    async fn update_commitments_spent_status_by_nullifier(
         &self,
         commitments: Vec<Document<Commitment>>,
         round_options: &ScanRoundOptions,
@@ -425,39 +428,95 @@ where
         Ok(commitments)
     }
 
+    async fn update_src_succeeded_commitments_spent_status(
+        &self,
+        commitments: &[Document<Commitment>],
+    ) -> Result<(), ScannerError> {
+        let commitments_with_peer: HashSet<_> = commitments
+            .iter()
+            .filter(|commitment| commitment.data.bridge_type != BridgeType::Loop as i32)
+            .flat_map(|commitment| {
+                self.get_peer_deposit_contracts(commitment.data.chain_id, &commitment.data.contract_address)
+                    .into_iter()
+                    .map(|(peer_chain, peer_contract)| {
+                        CommitmentWithPeerContract::builder()
+                            .commitment_hash(commitment.data.commitment_hash.clone())
+                            .peer_chain_id(peer_chain)
+                            .pool_contract(peer_contract)
+                            .build()
+                    })
+            })
+            .collect();
+        let src_succeeded_commitments = self.query_src_succeeded_unspent_commitments().await?;
+        let to_updated_commitments = src_succeeded_commitments
+            .into_iter()
+            .filter(|commitment| {
+                commitments_with_peer.contains(
+                    &CommitmentWithPeerContract::builder()
+                        .commitment_hash(commitment.data.commitment_hash.clone())
+                        .peer_chain_id(commitment.data.chain_id)
+                        .pool_contract(commitment.data.contract_address.clone())
+                        .build(),
+                )
+            })
+            .map(|mut commitment| {
+                commitment.data.spent = true;
+                commitment
+            })
+            .collect::<Vec<_>>();
+        if !to_updated_commitments.is_empty() {
+            self.db.commitments.update_batch(&to_updated_commitments).await?;
+        }
+        Ok(())
+    }
+
     async fn query_commitment_count(&self, scanned_id: Option<String>) -> Result<u64, ScannerError> {
-        let total = if let Some(id) = scanned_id {
-            self.db
-                .commitments
-                .count(SubFilter::greater(DocumentColumn::Id, id))
-                .await?
-        } else {
-            self.db.commitments.count_all().await?
-        };
-        Ok(total)
+        let mut filters = vec![
+            SubFilter::not_equal(CommitmentColumn::Status, CommitmentStatus::SrcSucceeded as i32),
+            SubFilter::is_not_null(CommitmentColumn::EncryptedNote),
+        ];
+
+        if let Some(id) = scanned_id {
+            filters.push(SubFilter::greater(DocumentColumn::Id, id));
+        }
+
+        let count = self.db.commitments.count(Condition::from(filters)).await?;
+        Ok(count)
     }
 
     async fn query_commitments(&self, options: &ScanRoundOptions) -> Result<Vec<Document<Commitment>>, ScannerError> {
+        let mut sub_filters = vec![
+            SubFilter::not_equal(CommitmentColumn::Status, CommitmentStatus::SrcSucceeded as i32),
+            SubFilter::is_not_null(CommitmentColumn::EncryptedNote),
+        ];
+
+        if let Some(start) = &options.start_id {
+            sub_filters.push(SubFilter::greater(DocumentColumn::Id, start.clone()));
+        }
+
         let order = OrderBy::builder()
             .columns(vec![DocumentColumn::Id.to_string()])
             .order(Order::Asc)
             .build();
 
-        let filter = if let Some(start) = &options.start_id {
-            let condition: Condition = SubFilter::greater(DocumentColumn::Id, start.clone()).into();
-            QueryFilter::builder()
-                .limit(options.scan_batch_size)
-                .order_by(order)
-                .conditions(vec![condition])
-                .conditions_operator(ConditionOperator::And as i32)
-                .build()
-        } else {
-            QueryFilter::builder()
-                .limit(options.scan_batch_size)
-                .order_by(order)
-                .build()
-        };
+        let filter = QueryFilter::builder()
+            .limit(options.scan_batch_size)
+            .order_by(order)
+            .conditions(vec![Condition::from(sub_filters)])
+            .conditions_operator(ConditionOperator::And as i32)
+            .build();
         let commitments = self.db.commitments.find(filter).await?;
+        Ok(commitments)
+    }
+
+    async fn query_src_succeeded_unspent_commitments(&self) -> Result<Vec<Document<Commitment>>, ScannerError> {
+        let sub_filters = vec![
+            SubFilter::equal(CommitmentColumn::Status, CommitmentStatus::SrcSucceeded as i32),
+            SubFilter::is_not_null(CommitmentColumn::ShieldedAddress),
+            SubFilter::equal(CommitmentColumn::Spent, false),
+        ];
+
+        let commitments = self.db.commitments.find(Condition::from(sub_filters)).await?;
         Ok(commitments)
     }
 
@@ -486,11 +545,7 @@ where
         }
     }
 
-    async fn build_balance_filter(
-        &self,
-        options: &BalanceOptions,
-        filter_status: Option<CommitmentStatus>,
-    ) -> Result<Condition, ScannerError> {
+    async fn build_balance_filter(&self, options: &BalanceOptions) -> Result<QueryFilter, ScannerError> {
         let shielded_addresses = self
             .build_filter_accounts(&options.shielded_addresses)
             .await?
@@ -501,10 +556,6 @@ where
             SubFilter::is_not_null(CommitmentColumn::Amount),
             SubFilter::in_list(CommitmentColumn::ShieldedAddress, shielded_addresses),
         ];
-
-        if options.with_spent != Some(true) {
-            filters.push(SubFilter::equal(CommitmentColumn::Spent, false));
-        }
 
         if !options.chain_ids.is_empty() {
             let sub_filter = SubFilter::in_list(CommitmentColumn::ChainId, options.chain_ids.to_vec());
@@ -540,19 +591,61 @@ where
             filters.push(sub_filter);
         }
 
-        if let Some(status) = filter_status {
-            let sub_filter = SubFilter::equal(CommitmentColumn::Status, status as i32);
+        if options.with_spent == Some(true) {
+            let mut status_filter = filters.clone();
+            let sub_filter = SubFilter::in_list(
+                CommitmentColumn::Status,
+                vec![CommitmentStatus::Queued as i32, CommitmentStatus::Included as i32],
+            );
+            status_filter.push(sub_filter);
+            let condition1 = Condition::from(status_filter);
+
+            let sub_filter = SubFilter::equal(CommitmentColumn::Status, CommitmentStatus::SrcSucceeded as i32);
             filters.push(sub_filter);
+            let sub_filter = SubFilter::equal(CommitmentColumn::Spent, false);
+            filters.push(sub_filter);
+            let condition2 = Condition::from(filters);
+            Ok(QueryFilter::from((vec![condition1, condition2], ConditionOperator::Or)))
+        } else {
+            let sub_filter = SubFilter::equal(CommitmentColumn::Spent, false);
+            filters.push(sub_filter);
+            Ok(Condition::from(filters).into())
+        }
+    }
+
+    async fn build_assets_filter(
+        &self,
+        options: &AssetsOptions,
+        chain_id: Option<u64>,
+    ) -> Result<Condition, ScannerError> {
+        let filter_addresses = self
+            .build_filter_accounts(&options.shielded_addresses)
+            .await?
+            .into_iter()
+            .map(|account| account.data.shielded_address)
+            .collect::<Vec<_>>();
+        let mut filters = vec![
+            SubFilter::is_not_null(CommitmentColumn::Amount),
+            SubFilter::in_list(CommitmentColumn::ShieldedAddress, filter_addresses),
+            SubFilter::equal(CommitmentColumn::Spent, false),
+            SubFilter::equal(CommitmentColumn::Status, CommitmentStatus::Included as i32),
+        ];
+
+        if let Some(chain) = chain_id {
+            filters.push(SubFilter::equal(CommitmentColumn::ChainId, chain));
         }
 
         Ok(Condition::from(filters))
     }
 
-    async fn assets_balance(&self, balance_options: BalanceOptions) -> Result<Vec<AssetsByChain>, ScannerError> {
-        let condition = self
-            .build_balance_filter(&balance_options, Some(CommitmentStatus::Included))
-            .await?;
+    async fn assets_balance(
+        &self,
+        options: &AssetsOptions,
+        chain_id: Option<u64>,
+    ) -> Result<Vec<AssetsByChain>, ScannerError> {
+        let condition = self.build_assets_filter(options, chain_id).await?;
         let commitments = self.db.commitments.find(condition).await?;
+        println!("commitments: {:?}", commitments);
         self.commitments_group_by_chain(commitments)
     }
 
@@ -645,6 +738,26 @@ where
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(pool_version_assets)
+    }
+
+    fn get_peer_deposit_contracts(&self, chain_id: u64, contract_address: &str) -> Vec<(u64, String)> {
+        self.config.find_chain(chain_id).map_or_else(Vec::new, |chain| {
+            chain
+                .deposit_contracts()
+                .iter()
+                .filter_map(|deposit| {
+                    if deposit.pool_contract_address() == contract_address {
+                        deposit.peer_chain_id().and_then(|peer_chain| {
+                            deposit
+                                .peer_contract_address()
+                                .map(|peer_contract| (peer_chain, peer_contract.to_string()))
+                        })
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        })
     }
 }
 
