@@ -110,3 +110,9 @@ impl mystiko_dataloader::handler::document::DatabaseNullifier for Nullifier {
             .build())
     }
 }
+
+impl Nullifier {
+    pub fn composite_key(&self) -> String {
+        format!("{}-{}-{}", self.chain_id, self.contract_address, self.nullifier)
+    }
+}

@@ -233,13 +233,6 @@ struct ScanBatchResult {
     updated_commitments: Vec<Document<Commitment>>,
 }
 
-#[derive(Debug, Clone, Hash, Eq, PartialEq, TypedBuilder)]
-struct NullifierCompositeKey {
-    chain_id: u64,
-    contract_address: String,
-    nullifier: BigUint,
-}
-
 #[derive(Debug, Clone, TypedBuilder)]
 struct CommitmentWithPoolVersion {
     commitment: Document<Commitment>,
@@ -403,13 +396,8 @@ where
         let nullifiers = self.query_nullifiers(filter_nullifiers).await?;
         if !nullifiers.is_empty() {
             commitments.iter_mut().for_each(|commitment| {
-                if let Some(data_nullifier) = &commitment.data.nullifier {
-                    let key = NullifierCompositeKey::builder()
-                        .chain_id(commitment.data.chain_id)
-                        .contract_address(commitment.data.contract_address.clone())
-                        .nullifier(data_nullifier.clone())
-                        .build();
-                    if let Some(db_nullifier) = nullifiers.get(&key) {
+                if let Some(key) = &commitment.data.nullifier_composite_key() {
+                    if let Some(db_nullifier) = nullifiers.get(key) {
                         if db_nullifier.data.chain_id == commitment.data.chain_id
                             && db_nullifier.data.contract_address == commitment.data.contract_address
                         {
@@ -427,38 +415,31 @@ where
         &self,
         commitments: &[Document<Commitment>],
     ) -> Result<(), ScannerError> {
-        let commitments_with_peer: HashSet<_> = commitments
+        let src_succeeded_commitments = self.query_src_succeeded_unspent_commitments().await?;
+        if src_succeeded_commitments.is_empty() {
+            return Ok(());
+        }
+        let peer_pool_commitments: HashSet<String> = commitments
             .iter()
             .filter(|commitment| commitment.data.bridge_type != BridgeType::Loop as i32)
-            .flat_map(|commitment| {
-                self.get_peer_deposit_contracts(commitment.data.chain_id, &commitment.data.contract_address)
-                    .into_iter()
-                    .map(|(peer_chain, peer_contract)| {
-                        CommitmentWithPeerContract::builder()
-                            .commitment_hash(commitment.data.commitment_hash.clone())
-                            .peer_chain_id(peer_chain)
-                            .pool_contract(peer_contract)
-                            .build()
+            .map(|commitment| commitment.data.commitment_composite_key())
+            .collect();
+        let to_update_commitments: Vec<_> = src_succeeded_commitments
+            .into_iter()
+            .filter_map(|mut commitment| {
+                commitment
+                    .data
+                    .commitment_peer_chain_composite_key(&self.config)
+                    .and_then(|composite_key| {
+                        if peer_pool_commitments.contains(&composite_key) {
+                            commitment.data.spent = true;
+                            Some(commitment)
+                        } else {
+                            None
+                        }
                     })
             })
             .collect();
-        let src_succeeded_commitments = self.query_src_succeeded_unspent_commitments().await?;
-        let to_update_commitments = src_succeeded_commitments
-            .into_iter()
-            .filter(|commitment| {
-                commitments_with_peer.contains(
-                    &CommitmentWithPeerContract::builder()
-                        .commitment_hash(commitment.data.commitment_hash.clone())
-                        .peer_chain_id(commitment.data.chain_id)
-                        .pool_contract(commitment.data.contract_address.clone())
-                        .build(),
-                )
-            })
-            .map(|mut commitment| {
-                commitment.data.spent = true;
-                commitment
-            })
-            .collect::<Vec<_>>();
         if !to_update_commitments.is_empty() {
             self.db.commitments.update_batch(&to_update_commitments).await?;
         }
@@ -512,22 +493,13 @@ where
     async fn query_nullifiers(
         &self,
         filter_nullifiers: Vec<BigUint>,
-    ) -> Result<HashMap<NullifierCompositeKey, Document<Nullifier>>, ScannerError> {
+    ) -> Result<HashMap<String, Document<Nullifier>>, ScannerError> {
         if !filter_nullifiers.is_empty() {
             let filter = SubFilter::in_list(NullifierColumn::Nullifier, filter_nullifiers);
             let nullifiers = self.db.nullifiers.find(filter).await?;
             Ok(nullifiers
                 .into_iter()
-                .map(|nullifier| {
-                    (
-                        NullifierCompositeKey::builder()
-                            .chain_id(nullifier.data.chain_id)
-                            .contract_address(nullifier.data.contract_address.clone())
-                            .nullifier(nullifier.data.nullifier.clone())
-                            .build(),
-                        nullifier,
-                    )
-                })
+                .map(|nullifier| (nullifier.data.composite_key(), nullifier))
                 .collect::<HashMap<_, _>>())
         } else {
             Ok(HashMap::new())
@@ -721,26 +693,6 @@ where
             })
             .collect::<Result<Vec<_>, _>>()?;
         Ok(pool_version_assets)
-    }
-
-    fn get_peer_deposit_contracts(&self, chain_id: u64, contract_address: &str) -> Vec<(u64, String)> {
-        self.config.find_chain(chain_id).map_or_else(Vec::new, |chain| {
-            chain
-                .deposit_contracts()
-                .iter()
-                .filter_map(|deposit| {
-                    if deposit.pool_contract_address() == contract_address {
-                        deposit.peer_chain_id().and_then(|peer_chain| {
-                            deposit
-                                .peer_contract_address()
-                                .map(|peer_contract| (peer_chain, peer_contract.to_string()))
-                        })
-                    } else {
-                        None
-                    }
-                })
-                .collect()
-        })
     }
 }
 
