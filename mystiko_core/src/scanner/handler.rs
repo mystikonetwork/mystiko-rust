@@ -90,7 +90,6 @@ where
             .map(|accounts| accounts.data.scanned_to_id.clone())
             .min()
             .flatten();
-
         let cms_count = self.query_commitment_count(scanned_id.clone()).await?;
         if cms_count == 0 {
             return Ok(self.build_default_scan_result(&accounts, scanned_id));
@@ -346,11 +345,9 @@ where
                 shielded_addresses.is_empty() || shielded_addresses.contains(&account.data.shielded_address)
             })
             .collect::<Vec<_>>();
-
         if !shielded_addresses.is_empty() && accounts.is_empty() {
             return Err(ScannerError::NoSuchAccountError);
         }
-
         Ok(accounts)
     }
 
@@ -403,7 +400,6 @@ where
             .filter_map(|commitment| commitment.data.nullifier.as_ref())
             .cloned()
             .collect();
-
         let nullifiers = self.query_nullifiers(filter_nullifiers).await?;
         if !nullifiers.is_empty() {
             commitments.iter_mut().for_each(|commitment| {
@@ -424,7 +420,6 @@ where
                 }
             });
         }
-
         Ok(commitments)
     }
 
@@ -448,7 +443,7 @@ where
             })
             .collect();
         let src_succeeded_commitments = self.query_src_succeeded_unspent_commitments().await?;
-        let to_updated_commitments = src_succeeded_commitments
+        let to_update_commitments = src_succeeded_commitments
             .into_iter()
             .filter(|commitment| {
                 commitments_with_peer.contains(
@@ -464,8 +459,8 @@ where
                 commitment
             })
             .collect::<Vec<_>>();
-        if !to_updated_commitments.is_empty() {
-            self.db.commitments.update_batch(&to_updated_commitments).await?;
+        if !to_update_commitments.is_empty() {
+            self.db.commitments.update_batch(&to_update_commitments).await?;
         }
         Ok(())
     }
@@ -475,11 +470,9 @@ where
             SubFilter::not_equal(CommitmentColumn::Status, CommitmentStatus::SrcSucceeded as i32),
             SubFilter::is_not_null(CommitmentColumn::EncryptedNote),
         ];
-
         if let Some(id) = scanned_id {
             filters.push(SubFilter::greater(DocumentColumn::Id, id));
         }
-
         let count = self.db.commitments.count(Condition::from(filters)).await?;
         Ok(count)
     }
@@ -489,16 +482,13 @@ where
             SubFilter::not_equal(CommitmentColumn::Status, CommitmentStatus::SrcSucceeded as i32),
             SubFilter::is_not_null(CommitmentColumn::EncryptedNote),
         ];
-
         if let Some(start) = &options.start_id {
             sub_filters.push(SubFilter::greater(DocumentColumn::Id, start.clone()));
         }
-
         let order = OrderBy::builder()
             .columns(vec![DocumentColumn::Id.to_string()])
             .order(Order::Asc)
             .build();
-
         let filter = QueryFilter::builder()
             .limit(options.scan_batch_size)
             .order_by(order)
@@ -515,7 +505,6 @@ where
             SubFilter::is_not_null(CommitmentColumn::ShieldedAddress),
             SubFilter::equal(CommitmentColumn::Spent, false),
         ];
-
         let commitments = self.db.commitments.find(Condition::from(sub_filters)).await?;
         Ok(commitments)
     }
@@ -630,11 +619,9 @@ where
             SubFilter::equal(CommitmentColumn::Spent, false),
             SubFilter::equal(CommitmentColumn::Status, CommitmentStatus::Included as i32),
         ];
-
         if let Some(chain) = chain_id {
             filters.push(SubFilter::equal(CommitmentColumn::ChainId, chain));
         }
-
         Ok(Condition::from(filters))
     }
 
@@ -662,7 +649,6 @@ where
                     .map(|assets| AssetsByChain::builder().chain_id(chain).bridges(assets).build())
             })
             .collect::<Result<Vec<_>, _>>()?;
-
         Ok(chain_assets)
     }
 
@@ -679,7 +665,6 @@ where
                     .map(|assets| AssetsByBridge::builder().bridge_type(bridge).symbols(assets).build())
             })
             .collect::<Result<Vec<_>, _>>()?;
-
         Ok(bridge_assets)
     }
 
@@ -696,7 +681,6 @@ where
                     .map(|assets| AssetsBySymbol::builder().asset_symbol(symbol).versions(assets).build())
             })
             .collect::<Result<Vec<_>, _>>()?;
-
         Ok(symbol_assets)
     }
     fn commitments_group_by_pool_version(
@@ -736,7 +720,6 @@ where
                 })
             })
             .collect::<Result<Vec<_>, _>>()?;
-
         Ok(pool_version_assets)
     }
 
