@@ -1,8 +1,10 @@
+use mystiko_config::MystikoConfig;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
 #[collection(uniques = uniques(), indexes = indexes())]
@@ -297,5 +299,36 @@ impl mystiko_dataloader::handler::document::DatabaseCommitment for Commitment {
                     .transpose()?,
             )
             .build())
+    }
+}
+
+impl Commitment {
+    pub fn commitment_composite_key(&self) -> String {
+        format!("{}-{}-{}", self.chain_id, self.contract_address, self.commitment_hash)
+    }
+
+    pub fn commitment_peer_chain_composite_key(&self, config: &Arc<MystikoConfig>) -> Option<String> {
+        config
+            .find_deposit_contract_by_address(self.chain_id, &self.contract_address)
+            .and_then(|deposit| deposit.peer_chain_id().zip(deposit.peer_contract_address()))
+            .and_then(|(peer_chain_id, peer_contract_address)| {
+                config
+                    .find_deposit_contract_by_address(peer_chain_id, peer_contract_address)
+                    .map(|peer_deposit| (peer_chain_id, peer_deposit))
+            })
+            .map(|(peer_chain_id, peer_deposit)| {
+                format!(
+                    "{}-{}-{}",
+                    peer_chain_id,
+                    peer_deposit.pool_contract_address(),
+                    self.commitment_hash
+                )
+            })
+    }
+
+    pub fn nullifier_composite_key(&self) -> Option<String> {
+        self.nullifier
+            .as_ref()
+            .map(|data_nullifier| format!("{}-{}-{}", self.chain_id, self.contract_address, data_nullifier))
     }
 }

@@ -200,7 +200,6 @@ impl Synchronizer<ChainDataLoader<FullData>> {
         });
         let results = futures::future::try_join_all(tasks).await?;
         let loaders = results.into_iter().collect::<HashMap<_, _>>();
-
         Ok(Self::builder()
             .mystiko_config(options.mystiko_config)
             .loaders(loaders)
@@ -236,7 +235,6 @@ where
             let contracts = futures::future::try_join_all(tasks).await?;
             chain_status.contracts = contracts;
         }
-
         Ok(chain_status)
     }
 
@@ -279,12 +277,10 @@ where
             .skip_fetch(sync_option.disable_datapacker_fetcher)
             .skip_validation(sync_option.enable_datapacker_fetcher_validate.map(|enabled| !enabled))
             .build();
-
         let sequencer_fetcher_option = LoadFetcherSkipOption::builder()
             .skip_fetch(sync_option.disable_sequencer_fetcher)
             .skip_validation(sync_option.enable_sequencer_fetcher_validate.map(|enabled| !enabled))
             .build();
-
         let provider_fetcher_option = LoadFetcherSkipOption::builder()
             .skip_fetch(sync_option.disable_provider_fetcher)
             .skip_validation(sync_option.disable_provider_fetcher_validate)

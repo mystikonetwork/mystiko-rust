@@ -5,9 +5,6 @@ use mystiko_protos::data::v1::CommitmentStatus;
 
 #[tokio::test]
 async fn test_scan_default_options() {
-    let _ = env_logger::builder()
-        .filter_module("mystiko_core", log::LevelFilter::Info)
-        .try_init();
     let account_count = 1_usize;
     let (scanner, db, test_accounts) = create_scanner(account_count).await;
     let option = ScanOptions::builder().build();
@@ -70,9 +67,6 @@ async fn test_scan_default_options() {
 
 #[tokio::test]
 async fn test_scan_batch_without_owned() {
-    let _ = env_logger::builder()
-        .filter_module("mystiko_core", log::LevelFilter::Info)
-        .try_init();
     for concurrency in 0..3 {
         for batch_size in 0..5 {
             for account_count in 1..3 {
@@ -103,9 +97,6 @@ async fn test_scan_batch_without_owned() {
 
 #[tokio::test]
 async fn test_scan_batch_with_owned() {
-    let _ = env_logger::builder()
-        .filter_module("mystiko_core", log::LevelFilter::Info)
-        .try_init();
     for concurrency in 0..2 {
         for batch_size in 0..4 {
             for account_count in 1..3 {
@@ -156,9 +147,6 @@ async fn test_scan_batch_with_owned() {
 
 #[tokio::test]
 async fn test_scan_with_start() {
-    let _ = env_logger::builder()
-        .filter_module("mystiko_core", log::LevelFilter::Info)
-        .try_init();
     let account_count = 3_usize;
     let commitment_count = 2_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
@@ -201,9 +189,6 @@ async fn test_scan_with_start() {
 
 #[tokio::test]
 async fn test_scan_with_shield_address() {
-    let _ = env_logger::builder()
-        .filter_module("mystiko_core", log::LevelFilter::Info)
-        .try_init();
     let account_count = 3_usize;
     let commitment_count = 4_usize;
     let (scanner, db, _) = create_scanner(account_count).await;
@@ -268,9 +253,6 @@ async fn test_scan_with_shield_address() {
 
 #[tokio::test]
 async fn test_scan_batch_with_owned_without_nullifier() {
-    let _ = env_logger::builder()
-        .filter_module("mystiko_core", log::LevelFilter::Info)
-        .try_init();
     let (scanner, db, test_accounts) = create_scanner(1).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let commitment_count = 10_usize;
@@ -301,9 +283,6 @@ async fn test_scan_batch_with_owned_without_nullifier() {
 
 #[tokio::test]
 async fn test_scan_batch_with_owned_with_nullifier() {
-    let _ = env_logger::builder()
-        .filter_module("mystiko_core", log::LevelFilter::Info)
-        .try_init();
     let (scanner, db, test_accounts) = create_scanner(1).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let commitment_count = 8_usize;
