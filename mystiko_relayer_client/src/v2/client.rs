@@ -8,6 +8,7 @@ use ethers_core::types::Address;
 use futures::future::try_join_all;
 use log::debug;
 use mystiko_ethers::Providers;
+use mystiko_protos::relayer::v1::RelayerClientOptions;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
 use mystiko_relayer_config::wrapper::relayer::{RelayerConfig, RemoteOptions};
 use mystiko_relayer_types::{
@@ -20,7 +21,6 @@ use reqwest::Client;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::{sleep, Instant};
-use typed_builder::TypedBuilder;
 use validator::Validate;
 
 pub const SUPPORTED_API_VERSION: &str = "v2";
@@ -29,6 +29,8 @@ pub const INFO_URL_PATH: &str = "api/v2/info";
 pub const TRANSACT_URL_PATH: &str = "api/v2/transact";
 pub const TRANSACTION_STATUS_URL_PATH: &str = "api/v2/transaction/status";
 
+const DEFAULT_TIME_OUT_MS: u64 = 60000;
+
 pub struct RelayerClientV2<P: Providers = Box<dyn Providers>> {
     pub reqwest_client: Arc<Client>,
     pub network_type: NetworkType,
@@ -36,37 +38,28 @@ pub struct RelayerClientV2<P: Providers = Box<dyn Providers>> {
     pub providers: Arc<P>,
 }
 
-#[derive(TypedBuilder, Debug)]
-pub struct RelayerClientOptions {
-    #[builder(default, setter(strip_option))]
-    pub relayer_config_file_path: Option<String>,
-    #[builder(default, setter(strip_option))]
-    pub relayer_config_remote_base_url: Option<String>,
-    #[builder(default, setter(strip_option))]
-    pub relayer_config_git_revision: Option<String>,
-    #[builder(default = false)]
-    pub is_testnet: bool,
-    #[builder(default = false)]
-    pub is_staging: bool,
-    #[builder(default = Duration::from_millis(60000))]
-    pub timeout: Duration,
-}
-
 impl<P> RelayerClientV2<P>
 where
     P: 'static + Providers,
 {
-    pub async fn new(providers: Arc<P>, options: Option<RelayerClientOptions>) -> result::Result<Self> {
-        let relayer_options = options.unwrap_or(RelayerClientOptions::builder().build());
-        let relayer_config = create_relayer_config(&relayer_options).await?;
-        let network_type = if relayer_options.is_testnet {
-            NetworkType::Testnet
-        } else {
-            NetworkType::Mainnet
-        };
+    pub async fn new<O: Into<RelayerClientOptions>>(providers: Arc<P>, options: O) -> result::Result<Self> {
+        let options: RelayerClientOptions = options.into();
+        let relayer_config = create_relayer_config(&options).await?;
+        let network_type = options.is_testnet.map_or(NetworkType::Testnet, |is_testnet| {
+            if is_testnet {
+                NetworkType::Testnet
+            } else {
+                NetworkType::Mainnet
+            }
+        });
+        let timeout = options
+            .timeout_ms
+            .map_or(Duration::from_millis(DEFAULT_TIME_OUT_MS), |timeout_ms| {
+                Duration::from_millis(timeout_ms)
+            });
         let reqwest_client = Arc::new(
             Client::builder()
-                .timeout(relayer_options.timeout)
+                .timeout(timeout)
                 .build()
                 .map_err(RelayerClientError::ReqwestError)?,
         );
@@ -325,9 +318,11 @@ async fn create_relayer_config(options: &RelayerClientOptions) -> result::Result
 }
 
 async fn create_relayer_config_from_remote(options: &RelayerClientOptions) -> anyhow::Result<RelayerConfig> {
+    let is_testnet = options.is_testnet.unwrap_or(false);
+    let is_staging = options.is_staging.unwrap_or(false);
     let mut remote_options = RemoteOptions::builder()
-        .is_testnet(options.is_testnet)
-        .is_staging(options.is_staging)
+        .is_testnet(is_testnet)
+        .is_staging(is_staging)
         .build();
     remote_options.base_url = options.relayer_config_remote_base_url.clone();
     remote_options.git_revision = options.relayer_config_git_revision.clone();

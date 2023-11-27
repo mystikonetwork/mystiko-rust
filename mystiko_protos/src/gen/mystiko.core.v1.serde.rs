@@ -945,6 +945,9 @@ impl serde::Serialize for MystikoOptions {
         if self.config_options.is_some() {
             len += 1;
         }
+        if self.relayer_client_options.is_some() {
+            len += 1;
+        }
         if self.loader_config.is_some() {
             len += 1;
         }
@@ -954,6 +957,9 @@ impl serde::Serialize for MystikoOptions {
         let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.MystikoOptions", len)?;
         if let Some(v) = self.config_options.as_ref() {
             struct_ser.serialize_field("configOptions", v)?;
+        }
+        if let Some(v) = self.relayer_client_options.as_ref() {
+            struct_ser.serialize_field("relayerClientOptions", v)?;
         }
         if let Some(v) = self.loader_config.as_ref() {
             struct_ser.serialize_field("loaderConfig", v)?;
@@ -973,6 +979,8 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
         const FIELDS: &[&str] = &[
             "config_options",
             "configOptions",
+            "relayer_client_options",
+            "relayerClientOptions",
             "loader_config",
             "loaderConfig",
             "db_path",
@@ -982,6 +990,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             ConfigOptions,
+            RelayerClientOptions,
             LoaderConfig,
             DbPath,
         }
@@ -1006,6 +1015,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                     {
                         match value {
                             "configOptions" | "config_options" => Ok(GeneratedField::ConfigOptions),
+                            "relayerClientOptions" | "relayer_client_options" => Ok(GeneratedField::RelayerClientOptions),
                             "loaderConfig" | "loader_config" => Ok(GeneratedField::LoaderConfig),
                             "dbPath" | "db_path" => Ok(GeneratedField::DbPath),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1028,6 +1038,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut config_options__ = None;
+                let mut relayer_client_options__ = None;
                 let mut loader_config__ = None;
                 let mut db_path__ = None;
                 while let Some(k) = map.next_key()? {
@@ -1037,6 +1048,12 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                                 return Err(serde::de::Error::duplicate_field("configOptions"));
                             }
                             config_options__ = map.next_value()?;
+                        }
+                        GeneratedField::RelayerClientOptions => {
+                            if relayer_client_options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("relayerClientOptions"));
+                            }
+                            relayer_client_options__ = map.next_value()?;
                         }
                         GeneratedField::LoaderConfig => {
                             if loader_config__.is_some() {
@@ -1054,6 +1071,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                 }
                 Ok(MystikoOptions {
                     config_options: config_options__,
+                    relayer_client_options: relayer_client_options__,
                     loader_config: loader_config__,
                     db_path: db_path__,
                 })
