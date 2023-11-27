@@ -4,10 +4,10 @@ use log::LevelFilter;
 use mockito::{Mock, Server, ServerGuard};
 use mystiko_ethers::ProviderPool;
 use mystiko_protos::core::v1::SpendType;
+use mystiko_protos::relayer::v1::RelayerClientOptions;
 use mystiko_relayer_client::error::RelayerClientError;
 use mystiko_relayer_client::v2::client::{
-    RelayerClientOptions, RelayerClientV2, HANDSHAKE_URL_PATH, INFO_URL_PATH, TRANSACTION_STATUS_URL_PATH,
-    TRANSACT_URL_PATH,
+    RelayerClientV2, HANDSHAKE_URL_PATH, INFO_URL_PATH, TRANSACTION_STATUS_URL_PATH, TRANSACT_URL_PATH,
 };
 use mystiko_relayer_client::RelayerClient;
 use mystiko_relayer_config::wrapper::relayer::RelayerConfig;
@@ -123,12 +123,10 @@ async fn create_client(
 
     let mut client = RelayerClientV2::new(
         Arc::new(provider_pool),
-        Some(
-            RelayerClientOptions::builder()
-                .is_testnet(true)
-                .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
-                .build(),
-        ),
+        RelayerClientOptions::builder()
+            .is_testnet(true)
+            .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
+            .build(),
     )
     .await
     .unwrap();
@@ -151,7 +149,7 @@ async fn test_create_with_config_file() {
     let pool = ProviderPool::<MockChainConfig>::builder()
         .chain_providers_options(mock_chain_config)
         .build();
-    let client = RelayerClientV2::new(Arc::new(pool), Some(relayer_options)).await;
+    let client = RelayerClientV2::new(Arc::new(pool), relayer_options).await;
     assert!(client.is_ok());
     assert_eq!(client.unwrap().relayer_config.version(), "0.1.0");
 }

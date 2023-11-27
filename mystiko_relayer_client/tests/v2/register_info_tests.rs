@@ -4,8 +4,9 @@ use ethers::signers::LocalWallet;
 use ethers_core::utils::Anvil;
 use log::LevelFilter;
 use mockito::Server;
+use mystiko_protos::relayer::v1::RelayerClientOptions;
 use mystiko_relayer_client::error::RelayerClientError;
-use mystiko_relayer_client::v2::client::{RelayerClientOptions, RelayerClientV2};
+use mystiko_relayer_client::v2::client::RelayerClientV2;
 use mystiko_relayer_client::RelayerClient;
 use mystiko_relayer_types::{RegisterInfoRequest, RegisterOptions};
 use mystiko_types::CircuitType;
@@ -138,12 +139,10 @@ async fn test_relayer_config_not_found() {
 
     let client = RelayerClientV2::new(
         Arc::new(pool),
-        Some(
-            RelayerClientOptions::builder()
-                .is_testnet(true)
-                .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
-                .build(),
-        ),
+        RelayerClientOptions::builder()
+            .is_testnet(true)
+            .relayer_config_remote_base_url(format!("{}/relayer_config", server.url()))
+            .build(),
     )
     .await
     .unwrap();
