@@ -1,5 +1,5 @@
 use mystiko_lib::{destroy, initialize, is_initialized};
-use mystiko_protos::api::v1::{api_response, StatusCode};
+use mystiko_protos::api::v1::api_response;
 use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_protos::core::v1::MystikoOptions;
 use serial_test::serial;
@@ -21,7 +21,7 @@ pub fn setup(full_config: bool) {
         .config_options(ConfigOptions::builder().file_path(file_path).is_testnet(true).build())
         .build();
     let response = initialize(options);
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
 }
 
 pub fn extract_data(result: api_response::Result) -> Vec<u8> {
@@ -54,5 +54,7 @@ fn test_initialize_with_error_config() {
         )
         .build();
     let response = initialize(options);
-    assert_ne!(response.code(), StatusCode::Success);
+    let status_code = response.code.unwrap();
+    assert!(!status_code.success);
+    assert!(status_code.error.is_some());
 }

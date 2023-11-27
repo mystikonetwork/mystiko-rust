@@ -6,7 +6,7 @@ use mystiko_protos::api::handler::v1::{
     CheckCurrentRequest, CheckCurrentResponse, CheckPasswordRequest, CreateWalletRequest, CreateWalletResponse,
     ExportMnemonicPhraseRequest, ExportMnemonicPhraseResponse, UpdatePasswordRequest,
 };
-use mystiko_protos::api::v1::StatusCode;
+use mystiko_protos::api::v1::WalletError;
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
 use serial_test::serial;
 
@@ -16,7 +16,7 @@ fn test_create() {
     setup(false);
     let options = CreateWalletOptions::builder().password("P@ssw0rd".to_string()).build();
     let response = create(CreateWalletRequest::builder().options(options).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let wallet = CreateWalletResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .wallet
@@ -40,7 +40,7 @@ fn test_create_with_mnemonic() {
         .mnemonic_phrase(mnemonic.phrase().to_string())
         .build();
     let response = create(CreateWalletRequest::builder().options(options).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
 }
 
 #[test]
@@ -52,7 +52,8 @@ fn test_create_with_invalid_password() {
             .options(CreateWalletOptions::builder().password("AAAAAAAA".to_string()).build())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::InvalidPasswordError);
+    // assert_eq!(response.code.unwrap().error.unwrap(), Error::Wallet(WalletError::InvalidPasswordError as i32));
+    assert_eq!(response.code.unwrap(), WalletError::InvalidPasswordError.into());
 }
 
 #[test]
@@ -60,21 +61,21 @@ fn test_create_with_invalid_password() {
 fn test_check_password() {
     setup(false);
     let response = check_password(CheckPasswordRequest::builder().password("P@ssw0rd".to_string()).build());
-    assert_eq!(response.code(), StatusCode::NoExistingWalletError);
+    assert_eq!(response.code.unwrap(), WalletError::NoExistingWalletError.into());
     let response = create(
         CreateWalletRequest::builder()
             .options(CreateWalletOptions::builder().password("P@ssw0rd".to_string()).build())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let response = check_password(CheckPasswordRequest::builder().password("P@ssw0rd".to_string()).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let response = check_password(
         CheckPasswordRequest::builder()
             .password("wrong_password".to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::MismatchedPasswordError);
+    assert_eq!(response.code.unwrap(), WalletError::MismatchedPasswordError.into());
 }
 
 #[test]
@@ -87,19 +88,19 @@ fn test_update_password() {
             .new_password("P@ssw0rd2".to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::NoExistingWalletError);
+    assert_eq!(response.code.unwrap(), WalletError::NoExistingWalletError.into());
     let response = create(
         CreateWalletRequest::builder()
             .options(CreateWalletOptions::builder().password("P@ssw0rd".to_string()).build())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let response = export_mnemonic_phrase(
         ExportMnemonicPhraseRequest::builder()
             .password("P@ssw0rd".to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let mnemonic_words = ExportMnemonicPhraseResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .mnemonic_phrase;
@@ -109,33 +110,33 @@ fn test_update_password() {
             .new_password("P@ssw0rd2".to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::MismatchedPasswordError);
+    assert_eq!(response.code.unwrap(), WalletError::MismatchedPasswordError.into());
     let response = update_password(
         UpdatePasswordRequest::builder()
             .old_password("P@ssw0rd".to_string())
             .new_password("invalid_password".to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::InvalidPasswordError);
+    assert_eq!(response.code.unwrap(), WalletError::InvalidPasswordError.into());
     let response = update_password(
         UpdatePasswordRequest::builder()
             .old_password("P@ssw0rd".to_string())
             .new_password("newP@ssw0rd".to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let response = check_password(
         CheckPasswordRequest::builder()
             .password("newP@ssw0rd".to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let response = export_mnemonic_phrase(
         ExportMnemonicPhraseRequest::builder()
             .password("newP@ssw0rd".to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let new_mnemonic_phrase = ExportMnemonicPhraseResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .mnemonic_phrase;

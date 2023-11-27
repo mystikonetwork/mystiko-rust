@@ -87,7 +87,7 @@ mod internal {
     use super::*;
     use crate::error::parse_mystiko_error;
     use mystiko_core::{Database, MystikoOptions};
-    use mystiko_protos::api::v1::StatusCode;
+    use mystiko_protos::api::v1::MystikoLibError;
     use mystiko_storage_sqlite::SqliteStorageOptions;
 
     pub(crate) async fn initialize(options: ProtoMystikoOptions) -> ApiResponse {
@@ -104,7 +104,7 @@ mod internal {
                     let storage_options = SqliteStorageOptions::builder().path(options.db_path).build();
                     let storage = match SqliteStorage::new(storage_options).await {
                         Ok(storage) => storage,
-                        Err(err) => return ApiResponse::error(StatusCode::StorageError, err),
+                        Err(err) => return ApiResponse::error(MystikoLibError::StorageError.into(), err),
                     };
 
                     let database = Database::new(SqlStatementFormatter::sqlite(), storage);

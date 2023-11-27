@@ -14,7 +14,7 @@ use mystiko_protos::api::config::v1::{
     FindPoolContractsResponse, GetConfigRequest, GetConfigResponse, GetTransactionUrlRequest,
     GetTransactionUrlResponse,
 };
-use mystiko_protos::api::v1::{api_response, StatusCode};
+use mystiko_protos::api::v1::api_response;
 use mystiko_protos::common::v1::{BridgeType, CircuitType};
 use serial_test::serial;
 
@@ -23,7 +23,7 @@ use serial_test::serial;
 fn test_with_valid_config() {
     setup(false);
     let response = get(GetConfigRequest::builder().build());
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -82,7 +82,7 @@ fn test_with_valid_config() {
             .circuit_type(CircuitType::Rollup1)
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -107,7 +107,7 @@ fn test_with_valid_config() {
             .circuit_name("zokrates-1.0-transaction1x0")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -131,7 +131,7 @@ fn test_with_valid_config() {
     }
 
     let response = find_chain(FindChainRequest::builder().chain_id(5u64).build());
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -161,7 +161,7 @@ fn test_with_valid_config() {
     }
 
     let response = find_bridge(FindBridgeRequest::builder().bridge_type(BridgeType::Axelar).build());
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -182,7 +182,7 @@ fn test_with_valid_config() {
             .tx_hash("0xbce8d733536ee3b769456cf91bebae1e9e5be6cb89bb7490c6225384e1bc5e3e")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -204,7 +204,7 @@ fn test_with_valid_config() {
             .tx_hash("xxx")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -223,7 +223,7 @@ fn test_with_full_config() {
     setup(true);
 
     let response = find_peer_chains(FindPeerChainsRequest::builder().chain_id(5u64).build());
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -244,7 +244,7 @@ fn test_with_full_config() {
             .peer_chain_id(5u64)
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -262,7 +262,7 @@ fn test_with_full_config() {
             .peer_chain_id(97u64)
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -280,7 +280,7 @@ fn test_with_full_config() {
             .peer_chain_id(97u64)
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -299,7 +299,7 @@ fn test_with_full_config() {
             .asset_symbol("MTT")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -329,7 +329,7 @@ fn test_with_full_config() {
             .asset_symbol("MTT")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -351,7 +351,7 @@ fn test_with_full_config() {
             .asset_symbol("MTT")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -373,7 +373,7 @@ fn test_with_full_config() {
             .asset_symbol("MTT")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -394,7 +394,7 @@ fn test_with_full_config() {
             .asset_symbol("MTT")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -415,7 +415,7 @@ fn test_with_full_config() {
             .asset_symbol("ETH")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -436,7 +436,7 @@ fn test_with_full_config() {
             .asset_symbol("MTT")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -455,7 +455,7 @@ fn test_with_full_config() {
             .bridge_type(BridgeType::Celer)
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -475,7 +475,7 @@ fn test_with_full_config() {
             .address("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -493,7 +493,7 @@ fn test_with_full_config() {
             .address("0xBe2C9c8a00951662dF3a978b25F448968F0595AE")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -511,7 +511,7 @@ fn test_with_full_config() {
             .address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -529,7 +529,7 @@ fn test_with_full_config() {
             .address("0xd791049D0a154bC7860804e1A18ACD148Eb0afD9")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -547,7 +547,7 @@ fn test_with_full_config() {
             .address("0x9C33eaCc2F50E39940D3AfaF2c7B8246B681A374")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -567,7 +567,7 @@ fn test_with_full_config() {
             .version(2u32)
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -590,7 +590,7 @@ fn test_with_full_config() {
             .version(2u32)
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -611,7 +611,7 @@ fn test_with_full_config() {
             .address("0x9C33eaCc2F50E39940D3AfaF2c7B8246B681A374")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -629,7 +629,7 @@ fn test_with_full_config() {
             .address("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
@@ -647,7 +647,7 @@ fn test_with_full_config() {
             .address("0xd791049D0a154bC7860804e1A18ACD148Eb0afD9")
             .build(),
     );
-    assert_eq!(response.code, StatusCode::Success as i32);
+    assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
         api_response::Result::Data(data) => {
