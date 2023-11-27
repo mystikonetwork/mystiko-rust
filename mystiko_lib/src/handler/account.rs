@@ -3,7 +3,7 @@ use mystiko_protos::api::handler::v1::{
     CountAccountRequest, CreateAccountRequest, ExportSecretKeyRequest, FindAccountByIdentifierRequest,
     FindAccountRequest, UpdateAccountRequest, UpdateEncryptionRequest,
 };
-use mystiko_protos::api::v1::{ApiResponse, StatusCode};
+use mystiko_protos::api::v1::{ApiResponse, MystikoLibError};
 
 pub fn create<M>(message: M) -> ApiResponse
 where
@@ -17,7 +17,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(StatusCode::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
     }
 }
 
@@ -33,7 +33,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(StatusCode::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
     }
 }
 
@@ -49,7 +49,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(StatusCode::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
     }
 }
 
@@ -65,7 +65,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(StatusCode::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
     }
 }
 
@@ -84,7 +84,7 @@ where
                 return ApiResponse::unknown_error("unexpected message");
             }
         }
-        Err(err) => return ApiResponse::error(StatusCode::DeserializeMessageError, err),
+        Err(err) => return ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
     }
 
     ApiResponse::unknown_error("unexpected message")
@@ -100,7 +100,7 @@ where
             message.old_wallet_password,
             message.new_wallet_password,
         )),
-        Err(err) => ApiResponse::error(StatusCode::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
     }
 }
 
@@ -116,7 +116,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(StatusCode::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
     }
 }
 
@@ -131,7 +131,7 @@ mod internal {
         ExportSecretKeyResponse, FindAccountByIdentifierResponse, FindAccountResponse, UpdateAccountResponse,
         UpdateEncryptionResponse,
     };
-    use mystiko_protos::api::v1::{ApiResponse, StatusCode};
+    use mystiko_protos::api::v1::{ApiResponse, MystikoLibError};
     use mystiko_protos::core::handler::v1::{CreateAccountOptions, UpdateAccountOptions};
     use mystiko_protos::storage::v1::QueryFilter;
 
@@ -145,7 +145,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(StatusCode::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
         }
     }
 
@@ -159,7 +159,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(StatusCode::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
         }
     }
 
@@ -178,7 +178,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(StatusCode::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
         }
     }
 
@@ -200,7 +200,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(StatusCode::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
         }
     }
 
@@ -225,7 +225,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(StatusCode::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
         }
     }
 
@@ -242,7 +242,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(StatusCode::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
         }
     }
 
@@ -275,7 +275,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(StatusCode::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
         }
     }
 }

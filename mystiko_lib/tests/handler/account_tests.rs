@@ -13,7 +13,6 @@ use mystiko_protos::api::handler::v1::{
     ExportSecretKeyResponse, FindAccountByIdentifierRequest, FindAccountRequest, FindAccountResponse,
     UpdateAccountRequest, UpdateAccountResponse, UpdateEncryptionRequest, UpdatePasswordRequest,
 };
-use mystiko_protos::api::v1::StatusCode;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions, UpdateAccountOptions};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter};
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
@@ -28,7 +27,7 @@ fn account_setup(full_config: bool) {
         .password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let response = wallet::create(CreateWalletRequest::builder().options(options).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
 }
 
 #[test]
@@ -44,7 +43,7 @@ fn test_create_default() {
             )
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -73,7 +72,7 @@ fn test_count() {
             )
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let response = count(
         CountAccountRequest::builder()
             .filter(
@@ -83,7 +82,7 @@ fn test_count() {
             )
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let count = CountAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .count;
@@ -103,7 +102,7 @@ fn test_find() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let accounts = FindAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account;
@@ -117,7 +116,7 @@ fn test_find() {
             )
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -131,7 +130,7 @@ fn test_find() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let accounts = FindAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account;
@@ -141,7 +140,7 @@ fn test_find() {
             .condition(Condition::FindAll(true))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let accounts = FindAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account;
@@ -156,13 +155,13 @@ fn test_find_by_id() {
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let response = create(CreateAccountRequest::builder().options(options.clone()).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account1 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
         .unwrap();
     let response = create(CreateAccountRequest::builder().options(options.clone()).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account2 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -172,7 +171,7 @@ fn test_find_by_id() {
             .identifier(find_account_by_identifier_request::Identifier::Id(account1.id.clone()))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account3 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -183,7 +182,7 @@ fn test_find_by_id() {
             .identifier(find_account_by_identifier_request::Identifier::Id(account2.id.clone()))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account4 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -199,13 +198,13 @@ fn test_find_by_public_key() {
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let response = create(CreateAccountRequest::builder().options(options.clone()).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account1 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
         .unwrap();
     let response = create(CreateAccountRequest::builder().options(options.clone()).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account2 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -217,7 +216,7 @@ fn test_find_by_public_key() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account3 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -230,7 +229,7 @@ fn test_find_by_public_key() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account4 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -246,13 +245,13 @@ fn test_find_by_shielded_address() {
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let response = create(CreateAccountRequest::builder().options(options.clone()).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account1 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
         .unwrap();
     let response = create(CreateAccountRequest::builder().options(options.clone()).build());
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account2 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -264,7 +263,7 @@ fn test_find_by_shielded_address() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account3 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -277,7 +276,7 @@ fn test_find_by_shielded_address() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account4 = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -298,7 +297,7 @@ fn test_update() {
             )
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -313,7 +312,7 @@ fn test_update() {
             .identifier(update_account_request::Identifier::PublicKey(account.public_key))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let mut updated_account = UpdateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -329,7 +328,7 @@ fn test_update() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     updated_account = UpdateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -345,13 +344,13 @@ fn test_update_encryption() {
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let response1 = create(CreateAccountRequest::builder().options(options.clone()).build());
-    assert_eq!(response1.code(), StatusCode::Success);
+    assert!(response1.code.unwrap().success);
     let account1 = CreateAccountResponse::try_from(extract_data(response1.result.unwrap()))
         .unwrap()
         .account
         .unwrap();
     let response2 = create(CreateAccountRequest::builder().options(options.clone()).build());
-    assert_eq!(response2.code(), StatusCode::Success);
+    assert!(response2.code.unwrap().success);
     let account2 = CreateAccountResponse::try_from(extract_data(response2.result.unwrap()))
         .unwrap()
         .account
@@ -362,7 +361,7 @@ fn test_update_encryption() {
             .identifier(export_secret_key_request::Identifier::Id(account1.id.clone()))
             .build(),
     );
-    assert_eq!(sk1_response.code(), StatusCode::Success);
+    assert!(sk1_response.code.unwrap().success);
     let sk1 = ExportSecretKeyResponse::try_from(extract_data(sk1_response.result.unwrap()))
         .unwrap()
         .secret_key;
@@ -372,7 +371,7 @@ fn test_update_encryption() {
             .identifier(export_secret_key_request::Identifier::Id(account2.id.clone()))
             .build(),
     );
-    assert_eq!(sk2_response.code(), StatusCode::Success);
+    assert!(sk2_response.code.unwrap().success);
     let sk2 = ExportSecretKeyResponse::try_from(extract_data(sk2_response.result.unwrap()))
         .unwrap()
         .secret_key;
@@ -383,21 +382,21 @@ fn test_update_encryption() {
             .new_wallet_password(new_wallet_password.to_string())
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let response = update_password(
         UpdatePasswordRequest::builder()
             .old_password(DEFAULT_WALLET_PASSWORD)
             .new_password(new_wallet_password)
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let sk3_response = export_secret_key(
         ExportSecretKeyRequest::builder()
             .wallet_password(new_wallet_password)
             .identifier(export_secret_key_request::Identifier::Id(account1.id))
             .build(),
     );
-    assert_eq!(sk3_response.code(), StatusCode::Success);
+    assert!(sk3_response.code.unwrap().success);
     let sk3 = ExportSecretKeyResponse::try_from(extract_data(sk3_response.result.unwrap()))
         .unwrap()
         .secret_key;
@@ -407,7 +406,7 @@ fn test_update_encryption() {
             .identifier(export_secret_key_request::Identifier::Id(account2.id))
             .build(),
     );
-    assert_eq!(sk4_response.code(), StatusCode::Success);
+    assert!(sk4_response.code.unwrap().success);
     let sk4 = ExportSecretKeyResponse::try_from(extract_data(sk4_response.result.unwrap()))
         .unwrap()
         .secret_key;
@@ -428,7 +427,7 @@ fn test_export_secret_key_by_id() {
             )
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -440,7 +439,7 @@ fn test_export_secret_key_by_id() {
             .identifier(export_secret_key_request::Identifier::Id(account.id))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let secret_key_str = ExportSecretKeyResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .secret_key;
@@ -466,7 +465,7 @@ fn test_export_secret_key_by_public_key() {
             )
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -480,7 +479,7 @@ fn test_export_secret_key_by_public_key() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let secret_key_str = ExportSecretKeyResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .secret_key;
@@ -506,7 +505,7 @@ fn test_export_secret_key_by_shielded_address() {
             )
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let account = CreateAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .account
@@ -520,7 +519,7 @@ fn test_export_secret_key_by_shielded_address() {
             ))
             .build(),
     );
-    assert_eq!(response.code(), StatusCode::Success);
+    assert!(response.code.unwrap().success);
     let secret_key_str = ExportSecretKeyResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .secret_key;
