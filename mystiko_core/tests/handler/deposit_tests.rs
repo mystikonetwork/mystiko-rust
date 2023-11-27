@@ -54,15 +54,29 @@ async fn test_loop_deposit_quote() {
         .bridge_type(BridgeType::Loop as i32)
         .build();
     let quote = handler.quote(quote_options).await.unwrap();
+    assert_eq!(quote.asset_symbol, "MTT");
+    assert_eq!(quote.asset_decimals, 16_u32);
     assert_eq!(quote.min_amount, 1_f64);
+    assert_eq!(quote.min_decimal_amount, "10000000000000000");
     assert_eq!(quote.max_amount, 10000_f64);
+    assert_eq!(quote.max_decimal_amount, "100000000000000000000");
     assert_eq!(quote.min_rollup_fee_amount, 0.01_f64);
+    assert_eq!(quote.min_rollup_fee_decimal_amount, "100000000000000");
     assert_eq!(quote.rollup_fee_asset_symbol, "MTT");
+    assert_eq!(quote.rollup_fee_asset_decimals, 16_u32);
     assert!(quote.min_bridge_fee_amount.is_none());
+    assert!(quote.min_bridge_fee_decimal_amount.is_none());
     assert!(quote.bridge_fee_asset_symbol.is_none());
+    assert!(quote.bridge_fee_asset_decimals.is_none());
     assert!(quote.min_executor_fee_amount.is_none());
+    assert!(quote.min_executor_fee_decimal_amount.is_none());
     assert!(quote.executor_fee_asset_symbol.is_none());
+    assert!(quote.executor_fee_asset_decimals.is_none());
     assert_eq!(quote.recommended_amounts, [1_f64, 10_f64]);
+    assert_eq!(
+        quote.recommended_decimal_amounts,
+        ["10000000000000000", "100000000000000000"]
+    );
 }
 
 #[tokio::test]
@@ -90,25 +104,44 @@ async fn test_cross_chain_deposit_quote() {
         .bridge_type(BridgeType::Tbridge as i32)
         .build();
     let quote = handler.quote(quote_options).await.unwrap();
+    assert_eq!(quote.asset_symbol, "MTT");
+    assert_eq!(quote.asset_decimals, 16_u32);
     assert_eq!(quote.min_amount, 1_f64);
+    assert_eq!(quote.min_decimal_amount, "10000000000000000");
     assert_eq!(quote.max_amount, 10000_f64);
+    assert_eq!(quote.max_decimal_amount, "100000000000000000000");
     assert_eq!(quote.min_rollup_fee_amount, 0.01_f64);
+    assert_eq!(quote.min_rollup_fee_decimal_amount, "100000000000000");
     assert_eq!(quote.rollup_fee_asset_symbol, "MTT");
+    assert_eq!(quote.rollup_fee_asset_decimals, 16_u32);
     assert_eq!(quote.min_bridge_fee_amount.unwrap(), 0.00001_f64);
+    assert_eq!(quote.min_bridge_fee_decimal_amount.unwrap(), "10000000000000");
     assert_eq!(quote.bridge_fee_asset_symbol.unwrap(), "ETH");
+    assert_eq!(quote.bridge_fee_asset_decimals.unwrap(), 18_u32);
     assert_eq!(quote.min_executor_fee_amount.unwrap(), 0.0001_f64);
+    assert_eq!(quote.min_executor_fee_decimal_amount.unwrap(), "1000000000000");
     assert_eq!(quote.executor_fee_asset_symbol.unwrap(), "MTT");
+    assert_eq!(quote.executor_fee_asset_decimals.unwrap(), 16_u32);
     assert_eq!(quote.recommended_amounts, [1_f64, 10_f64]);
+    assert_eq!(
+        quote.recommended_decimal_amounts,
+        ["10000000000000000", "100000000000000000"]
+    );
 }
 
 #[tokio::test]
 async fn test_loop_deposit_summary() {
     let (_, handler) = setup(Default::default()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(16_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("10000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("100000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("100000000000000".to_string())
         .rollup_fee_asset_symbol("MTT".to_string())
+        .rollup_fee_asset_decimals(16_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -122,31 +155,52 @@ async fn test_loop_deposit_summary() {
     let summary = handler.summary(options).await.unwrap();
     assert_eq!(summary.chain_id, 5_u64);
     assert_eq!(summary.asset_symbol, "MTT");
+    assert_eq!(summary.asset_decimals, 16_u32);
     assert_eq!(summary.shielded_address, "secret address");
     assert_eq!(summary.amount, 10_f64);
+    assert_eq!(summary.decimal_amount, "100000000000000000");
     assert_eq!(summary.rollup_fee_amount, 0.01_f64);
+    assert_eq!(summary.rollup_fee_decimal_amount, "100000000000000");
     assert_eq!(summary.rollup_fee_asset_symbol, "MTT");
+    assert_eq!(summary.rollup_fee_asset_decimals, 16_u32);
     assert_eq!(summary.bridge_type.unwrap(), BridgeType::Loop as i32);
     assert_eq!(summary.total_amounts, HashMap::from([("MTT".to_string(), 10.01_f64)]));
+    assert_eq!(
+        summary.total_decimal_amounts,
+        HashMap::from([("MTT".to_string(), "100100000000000000".to_string())])
+    );
     assert!(summary.dst_chain_id.is_none());
     assert!(summary.bridge_fee_amount.is_none());
+    assert!(summary.bridge_fee_decimal_amount.is_none());
     assert!(summary.bridge_fee_asset_symbol.is_none());
+    assert!(summary.bridge_fee_asset_decimals.is_none());
     assert!(summary.executor_fee_amount.is_none());
+    assert!(summary.executor_fee_decimal_amount.is_none());
     assert!(summary.executor_fee_asset_symbol.is_none());
+    assert!(summary.executor_fee_asset_decimals.is_none());
 }
 
 #[tokio::test]
 async fn test_cross_chain_deposit_summary() {
     let (_, handler) = setup(Default::default()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(16_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("10000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("100000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("100000000000000".to_string())
         .rollup_fee_asset_symbol("MTT".to_string())
+        .rollup_fee_asset_decimals(16_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("ETH".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("1000000000000".to_string())
         .executor_fee_asset_symbol("MTT".to_string())
+        .executor_fee_asset_decimals(16_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -163,19 +217,34 @@ async fn test_cross_chain_deposit_summary() {
     let summary = handler.summary(options).await.unwrap();
     assert_eq!(summary.chain_id, 5_u64);
     assert_eq!(summary.asset_symbol, "MTT");
+    assert_eq!(summary.asset_decimals, 16_u32);
     assert_eq!(summary.shielded_address, "secret address");
     assert_eq!(summary.amount, 10_f64);
+    assert_eq!(summary.decimal_amount, "100000000000000000");
     assert_eq!(summary.rollup_fee_amount, 0.01_f64);
+    assert_eq!(summary.rollup_fee_decimal_amount, "100000000000000");
     assert_eq!(summary.rollup_fee_asset_symbol, "MTT");
+    assert_eq!(summary.rollup_fee_asset_decimals, 16_u32);
     assert_eq!(summary.dst_chain_id.unwrap(), 97_u64);
     assert_eq!(summary.bridge_fee_amount.unwrap(), 0.00001_f64);
+    assert_eq!(summary.bridge_fee_decimal_amount.unwrap(), "10000000000000");
     assert_eq!(summary.bridge_fee_asset_symbol.unwrap(), "ETH");
+    assert_eq!(summary.bridge_fee_asset_decimals.unwrap(), 18_u32);
     assert_eq!(summary.executor_fee_amount.unwrap(), 0.0001_f64);
+    assert_eq!(summary.executor_fee_decimal_amount.unwrap(), "1000000000000");
     assert_eq!(summary.executor_fee_asset_symbol.unwrap(), "MTT");
+    assert_eq!(summary.executor_fee_asset_decimals.unwrap(), 16_u32);
     assert_eq!(summary.bridge_type.unwrap(), BridgeType::Tbridge as i32);
     assert_eq!(
         summary.total_amounts,
         HashMap::from([("MTT".to_string(), 10.0101_f64), ("ETH".to_string(), 0.00001_f64),])
+    );
+    assert_eq!(
+        summary.total_decimal_amounts,
+        HashMap::from([
+            ("MTT".to_string(), "100101000000000000".to_string()),
+            ("ETH".to_string(), "10000000000000".to_string()),
+        ])
     );
 }
 
@@ -206,31 +275,52 @@ async fn test_deposit_summary_without_quote() {
     let summary = handler.summary(options).await.unwrap();
     assert_eq!(summary.chain_id, 5_u64);
     assert_eq!(summary.asset_symbol, "MTT");
+    assert_eq!(summary.asset_decimals, 16_u32);
     assert_eq!(summary.shielded_address, "secret address");
     assert_eq!(summary.amount, 10_f64);
+    assert_eq!(summary.decimal_amount, "100000000000000000");
     assert_eq!(summary.rollup_fee_amount, 0.01_f64);
+    assert_eq!(summary.rollup_fee_decimal_amount, "100000000000000");
     assert_eq!(summary.rollup_fee_asset_symbol, "MTT");
+    assert_eq!(summary.rollup_fee_asset_decimals, 16_u32);
     assert_eq!(summary.bridge_type.unwrap(), BridgeType::Loop as i32);
     assert_eq!(summary.total_amounts, HashMap::from([("MTT".to_string(), 10.01_f64)]));
+    assert_eq!(
+        summary.total_decimal_amounts,
+        HashMap::from([("MTT".to_string(), "100100000000000000".to_string())])
+    );
     assert!(summary.dst_chain_id.is_none());
     assert!(summary.bridge_fee_amount.is_none());
+    assert!(summary.bridge_fee_decimal_amount.is_none());
     assert!(summary.bridge_fee_asset_symbol.is_none());
+    assert!(summary.bridge_fee_asset_decimals.is_none());
     assert!(summary.executor_fee_amount.is_none());
+    assert!(summary.executor_fee_decimal_amount.is_none());
     assert!(summary.executor_fee_asset_symbol.is_none());
+    assert!(summary.executor_fee_asset_decimals.is_none());
 }
 
 #[tokio::test]
 async fn test_deposit_summary_with_errors() {
     let (_, handler) = setup(Default::default()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(16_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("10000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("100000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("100000000000000".to_string())
         .rollup_fee_asset_symbol("MTT".to_string())
+        .rollup_fee_asset_decimals(16_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("ETH".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("1000000000000".to_string())
         .executor_fee_asset_symbol("MTT".to_string())
+        .executor_fee_asset_decimals(16_u32)
         .build();
     let mut options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -294,10 +384,15 @@ async fn test_loop_deposit_main_token_create() {
     let (db, handler) = setup(Default::default()).await;
     let (wallet, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -350,10 +445,15 @@ async fn test_loop_deposit_erc20_token_create() {
     let (db, handler) = setup(Default::default()).await;
     let (wallet, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(16_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("10000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("100000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("100000000000000".to_string())
         .rollup_fee_asset_symbol("MTT".to_string())
+        .rollup_fee_asset_decimals(16_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -409,14 +509,23 @@ async fn test_cross_chain_deposit_main_token_create() {
     let (db, handler) = setup(Default::default()).await;
     let (wallet, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("BNB".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("100000000000000".to_string())
         .executor_fee_asset_symbol("BNB".to_string())
+        .executor_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -472,14 +581,24 @@ async fn test_cross_chain_deposit_erc20_token_create() {
     let (db, handler) = setup(Default::default()).await;
     let (wallet, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_symbol("mBNB".to_string())
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("mBNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("mBNB".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("100000000000000".to_string())
         .executor_fee_asset_symbol("mBNB".to_string())
+        .executor_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -594,10 +713,15 @@ async fn test_loop_deposit_main_token_send() {
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .build();
     let create_options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -702,10 +826,15 @@ async fn test_loop_deposit_erc20_token_send() {
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(16_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("10000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("100000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("100000000000000".to_string())
         .rollup_fee_asset_symbol("MTT".to_string())
+        .rollup_fee_asset_decimals(16_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -797,14 +926,23 @@ async fn test_cross_chain_deposit_main_token_send() {
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("BNB".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("100000000000000".to_string())
         .executor_fee_asset_symbol("BNB".to_string())
+        .executor_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -914,14 +1052,23 @@ async fn test_cross_chain_deposit_erc20_token_send() {
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("mBNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("mBNB".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("100000000000000".to_string())
         .executor_fee_asset_symbol("mBNB".to_string())
+        .executor_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -971,10 +1118,15 @@ async fn test_loop_deposit_insufficient_main_token() {
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -1020,10 +1172,15 @@ async fn test_loop_deposit_insufficient_erc20_token() {
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(16_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("10000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("100000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("100000000000000".to_string())
         .rollup_fee_asset_symbol("MTT".to_string())
+        .rollup_fee_asset_decimals(16_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -1058,10 +1215,15 @@ async fn test_loop_deposit_send_with_wrong_status() {
     let (db, handler) = setup(Default::default()).await;
     let (_, account) = create_wallet(db.clone()).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -1103,10 +1265,15 @@ async fn test_loop_deposit_send_with_duplicate_commitment() {
     .await;
     let (_, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -1150,14 +1317,23 @@ async fn test_cross_chain_deposit_send_with_duplicate_commitment() {
     .await;
     let (_, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("BNB".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("100000000000000".to_string())
         .executor_fee_asset_symbol("BNB".to_string())
+        .executor_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -1405,10 +1581,15 @@ async fn create_wallet(db: Arc<DatabaseType>) -> (Wallet, Account) {
 async fn generate_deposits(shielded_address: String, handler: &DepositsType) -> Vec<Deposit> {
     let mut deposits = vec![];
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -1422,10 +1603,15 @@ async fn generate_deposits(shielded_address: String, handler: &DepositsType) -> 
     deposits.push(handler.create(options).await.unwrap());
 
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(16_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("10000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("100000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("100000000000000".to_string())
         .rollup_fee_asset_symbol("MTT".to_string())
+        .rollup_fee_asset_decimals(16_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)
@@ -1439,14 +1625,23 @@ async fn generate_deposits(shielded_address: String, handler: &DepositsType) -> 
     deposits.push(handler.create(options).await.unwrap());
 
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("BNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("BNB".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("100000000000000".to_string())
         .executor_fee_asset_symbol("BNB".to_string())
+        .executor_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(97_u64)
@@ -1463,14 +1658,23 @@ async fn generate_deposits(shielded_address: String, handler: &DepositsType) -> 
     deposits.push(handler.create(options).await.unwrap());
 
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()
+        .asset_decimals(18_u32)
         .min_amount(1_f64)
+        .min_decimal_amount("1000000000000000000".to_string())
         .max_amount(10000_f64)
+        .max_decimal_amount("10000000000000000000000".to_string())
         .min_rollup_fee_amount(0.01_f64)
+        .min_rollup_fee_decimal_amount("10000000000000000".to_string())
         .rollup_fee_asset_symbol("mBNB".to_string())
+        .rollup_fee_asset_decimals(18_u32)
         .min_bridge_fee_amount(0.00001_f64)
+        .min_bridge_fee_decimal_amount("10000000000000".to_string())
         .bridge_fee_asset_symbol("mBNB".to_string())
+        .bridge_fee_asset_decimals(18_u32)
         .min_executor_fee_amount(0.0001_f64)
+        .min_executor_fee_decimal_amount("100000000000000".to_string())
         .executor_fee_asset_symbol("mBNB".to_string())
+        .executor_fee_asset_decimals(18_u32)
         .build();
     let options = CreateDepositOptions::builder()
         .chain_id(5_u64)

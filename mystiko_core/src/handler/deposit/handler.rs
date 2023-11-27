@@ -618,14 +618,15 @@ where
     DepositsError: From<A::Error> + From<D::Error> + From<C::Error> + From<T::Error>,
 {
     pub(crate) async fn quote(&self) -> Result<DepositQuote> {
+        let asset_decimals = self.contract_config.asset_decimals();
         let quote_options = crate::DepositQuoteOptions::builder()
             .chain_id(self.chain_id)
             .contract_address(ethers_address_from_string(self.contract_config.address())?)
             .timeout_ms(self.query_timeout_ms)
             .build();
         let quote = self.deposit_contracts.quote(quote_options).await?;
-        let min_amount: f64 = decimal_to_number(&quote.min_amount, Some(self.contract_config.asset_decimals()))?;
-        let max_amount: f64 = decimal_to_number(&quote.max_amount, Some(self.contract_config.asset_decimals()))?;
+        let min_amount: f64 = decimal_to_number(&quote.min_amount, Some(asset_decimals))?;
+        let max_amount: f64 = decimal_to_number(&quote.max_amount, Some(asset_decimals))?;
         let min_rollup_fee_amount: f64 = decimal_to_number(
             &quote.min_rollup_fee_amount,
             Some(self.contract_config.asset_decimals()),
@@ -641,24 +642,45 @@ where
         let rollup_fee_asset_symbol = self.contract_config.asset_symbol().to_string();
         let bridge_fee_asset_symbol = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
             .then_some(self.contract_config.bridge_fee_asset().asset_symbol().to_string());
+        let bridge_fee_asset_decimals = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
+            .then_some(self.contract_config.bridge_fee_asset().asset_decimals());
         let executor_fee_asset_symbol = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
             .then_some(self.contract_config.executor_fee_asset().asset_symbol().to_string());
+        let executor_fee_asset_decimals = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
+            .then_some(self.contract_config.executor_fee_asset().asset_decimals());
         let recommended_amounts = self.contract_config.recommended_amounts_number::<f64>()?;
+        let recommended_decimal_amounts = self
+            .contract_config
+            .recommended_amounts()?
+            .into_iter()
+            .map(|v| v.to_string())
+            .collect::<Vec<_>>();
         Ok(DepositQuote::builder()
+            .asset_symbol(self.contract_config.asset_symbol().to_string())
+            .asset_decimals(asset_decimals)
             .min_amount(min_amount)
+            .min_decimal_amount(quote.min_amount.to_string())
             .max_amount(max_amount)
+            .max_decimal_amount(quote.max_amount.to_string())
             .min_rollup_fee_amount(min_rollup_fee_amount)
+            .min_rollup_fee_decimal_amount(quote.min_rollup_fee_amount.to_string())
             .min_bridge_fee_amount(min_bridge_fee_amount)
+            .min_bridge_fee_decimal_amount(quote.min_bridge_fee_amount.map(|v| v.to_string()))
             .min_executor_fee_amount(min_executor_fee_amount)
+            .min_executor_fee_decimal_amount(quote.min_executor_fee_amount.map(|v| v.to_string()))
             .rollup_fee_asset_symbol(rollup_fee_asset_symbol)
+            .rollup_fee_asset_decimals(asset_decimals)
             .bridge_fee_asset_symbol(bridge_fee_asset_symbol)
+            .bridge_fee_asset_decimals(bridge_fee_asset_decimals)
             .executor_fee_asset_symbol(executor_fee_asset_symbol)
+            .executor_fee_asset_decimals(executor_fee_asset_decimals)
             .recommended_amounts(recommended_amounts)
+            .recommended_decimal_amounts(recommended_decimal_amounts)
             .build())
     }
 
     pub(crate) async fn summary(&self, options: &CreateDepositOptions) -> Result<DepositSummary> {
-        self.validate_amounts(options).await?;
+        let quote = self.validate_amounts(options).await?;
         let bridge_fee_asset_symbol = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
             .then_some(self.contract_config.bridge_fee_asset().asset_symbol().to_string());
         let executor_fee_asset_symbol = (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
@@ -673,25 +695,57 @@ where
                 )
             })
             .collect::<HashMap<_, _>>();
+        let total_decimal_amounts = self
+            .deposit_assets
+            .values()
+            .map(|asset_context| {
+                (
+                    asset_context.asset_config.asset_symbol().to_string(),
+                    asset_context.converted_amount.to_string(),
+                )
+            })
+            .collect::<HashMap<_, _>>();
+        let decimal_amount = number_to_biguint_decimal(options.amount, Some(quote.asset_decimals))?.to_string();
+        let rollup_fee_decimal_amount =
+            number_to_biguint_decimal(options.rollup_fee_amount, Some(quote.rollup_fee_asset_decimals))?.to_string();
+        let bridge_fee_decimal_amount = options
+            .bridge_fee_amount
+            .map(|v| number_to_biguint_decimal(v, quote.bridge_fee_asset_decimals))
+            .transpose()?
+            .map(|v| v.to_string());
+        let executor_fee_decimal_amount = options
+            .executor_fee_amount
+            .map(|v| number_to_biguint_decimal(v, quote.executor_fee_asset_decimals))
+            .transpose()?
+            .map(|v| v.to_string());
         Ok(DepositSummary::builder()
             .chain_id(options.chain_id)
             .asset_symbol(options.asset_symbol.clone())
+            .asset_decimals(quote.asset_decimals)
             .amount(options.amount)
+            .decimal_amount(decimal_amount)
             .shielded_address(options.shielded_address.clone())
             .rollup_fee_amount(options.rollup_fee_amount)
+            .rollup_fee_decimal_amount(rollup_fee_decimal_amount)
             .rollup_fee_asset_symbol(self.contract_config.asset_symbol().to_string())
+            .rollup_fee_asset_decimals(quote.rollup_fee_asset_decimals)
             .dst_chain_id(options.dst_chain_id)
             .bridge_fee_amount(options.bridge_fee_amount)
+            .bridge_fee_decimal_amount(bridge_fee_decimal_amount)
             .bridge_fee_asset_symbol(bridge_fee_asset_symbol)
+            .bridge_fee_asset_decimals(quote.bridge_fee_asset_decimals)
             .executor_fee_amount(options.executor_fee_amount)
+            .executor_fee_decimal_amount(executor_fee_decimal_amount)
             .executor_fee_asset_symbol(executor_fee_asset_symbol)
+            .executor_fee_asset_decimals(quote.executor_fee_asset_decimals)
             .bridge_type(options.bridge_type)
             .total_amounts(total_amounts)
+            .total_decimal_amounts(total_decimal_amounts)
             .build())
     }
 
     pub(crate) async fn create_deposit(&self, options: &CreateDepositOptions, wallet_id: String) -> Result<Deposit> {
-        self.validate_amounts(options).await?;
+        let summary = self.summary(options).await?;
         let dst_chain_id = self.contract_config.peer_chain_id().unwrap_or(options.chain_id);
         let dst_chain_contract_address = self
             .contract_config
@@ -704,22 +758,12 @@ where
             .map(|c| c.pool_contract_address())
             .unwrap_or(self.contract_config.pool_contract_address())
             .to_string();
-        let asset_decimals = self.contract_config.asset_decimals();
-        let bridge_fee_asset_decimals = self.contract_config.bridge_fee_asset().asset_decimals();
-        let executor_fee_asset_decimals = self.contract_config.executor_fee_asset().asset_decimals();
-        let amount = number_to_biguint_decimal(options.amount, Some(asset_decimals))?;
-        let rollup_fee_amount = number_to_biguint_decimal(options.rollup_fee_amount, Some(asset_decimals))?;
-        let bridge_fee_amount = options
-            .bridge_fee_amount
-            .map(|v| number_to_biguint_decimal(v, Some(bridge_fee_asset_decimals)))
-            .transpose()?;
-        let executor_fee_amount = options
-            .executor_fee_amount
-            .map(|v| number_to_biguint_decimal(v, Some(executor_fee_asset_decimals)))
-            .transpose()?;
         let commitment = mystiko_protocol::commitment::Commitment::new(
             mystiko_protocol::address::ShieldedAddress::from_string(&options.shielded_address)?,
-            Some(mystiko_protocol::commitment::Note::new(Some(amount.clone()), None)),
+            Some(mystiko_protocol::commitment::Note::new(
+                Some(summary.decimal_amount_as_biguint()?),
+                None,
+            )),
             None,
         )?;
         let bridge_type: BridgeType = self.contract_config.bridge_type().into();
@@ -735,32 +779,28 @@ where
             random_s: bytes_to_biguint(commitment.note.random_s),
             encrypted_note: encode_hex_with_prefix(commitment.encrypted_note),
             asset_symbol: self.contract_config.asset_symbol().to_string(),
-            asset_decimals,
+            asset_decimals: summary.asset_decimals,
             asset_address: (self.contract_config.asset_type() == &mystiko_types::AssetType::Erc20)
                 .then_some(self.contract_config.asset().asset_address().to_string()),
             bridge_type: bridge_type as i32,
             amount: options.amount,
-            decimal_amount: amount,
+            decimal_amount: summary.decimal_amount_as_biguint()?,
             rollup_fee_amount: options.rollup_fee_amount,
-            rollup_fee_decimal_amount: rollup_fee_amount,
+            rollup_fee_decimal_amount: summary.rollup_fee_decimal_amount_as_biguint()?,
             bridge_fee_amount: options.bridge_fee_amount,
-            bridge_fee_decimal_amount: bridge_fee_amount,
+            bridge_fee_decimal_amount: summary.bridge_fee_decimal_amount_as_biguint()?,
             bridge_fee_asset_address: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop
                 && self.contract_config.bridge_fee_asset_address().is_some())
             .then_some(self.contract_config.bridge_fee_asset().asset_address().to_string()),
-            bridge_fee_asset_symbol: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
-                .then_some(self.contract_config.bridge_fee_asset().asset_symbol().to_string()),
-            bridge_fee_asset_decimals: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
-                .then_some(bridge_fee_asset_decimals),
+            bridge_fee_asset_symbol: summary.bridge_fee_asset_symbol.clone(),
+            bridge_fee_asset_decimals: summary.bridge_fee_asset_decimals,
             executor_fee_amount: options.executor_fee_amount,
-            executor_fee_decimal_amount: executor_fee_amount,
+            executor_fee_decimal_amount: summary.executor_fee_decimal_amount_as_biguint()?,
             executor_fee_asset_address: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop
                 && self.contract_config.executor_fee_asset_address().is_some())
             .then_some(self.contract_config.executor_fee_asset().asset_address().to_string()),
-            executor_fee_asset_symbol: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
-                .then_some(self.contract_config.executor_fee_asset().asset_symbol().to_string()),
-            executor_fee_asset_decimals: (self.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
-                .then_some(executor_fee_asset_decimals),
+            executor_fee_asset_symbol: summary.executor_fee_asset_symbol.clone(),
+            executor_fee_asset_decimals: summary.executor_fee_asset_decimals,
             shielded_address: options.shielded_address.clone(),
             status: DepositStatus::Unspecified as i32,
             error_message: None,
@@ -772,7 +812,7 @@ where
         })
     }
 
-    pub(crate) async fn validate_amounts(&self, options: &CreateDepositOptions) -> Result<()>
+    pub(crate) async fn validate_amounts(&self, options: &CreateDepositOptions) -> Result<DepositQuote>
     where
         D: DepositContractHandler,
         DepositsError: From<D::Error>,
@@ -782,36 +822,46 @@ where
         } else {
             self.quote().await?
         };
-        if options.amount < quote.min_amount || options.amount > quote.max_amount {
+        let amount = number_to_biguint_decimal(options.amount, Some(quote.asset_decimals))?;
+        let rollup_fee_amount = number_to_biguint_decimal(options.rollup_fee_amount, Some(quote.asset_decimals))?;
+        if amount.lt(&quote.min_decimal_amount_as_biguint()?) || amount.gt(&quote.max_decimal_amount_as_biguint()?) {
             return Err(DepositsError::InvalidDepositAmountError(
                 options.amount,
                 quote.min_amount,
                 quote.max_amount,
             ));
         }
-        if options.rollup_fee_amount < quote.min_rollup_fee_amount {
+        if rollup_fee_amount.lt(&quote.min_rollup_fee_decimal_amount_as_biguint()?) {
             return Err(DepositsError::InvalidRollupFeeAmountError(
                 options.rollup_fee_amount,
                 quote.min_rollup_fee_amount,
             ));
         }
-        if let Some(min_bridge_fee_amount) = quote.min_bridge_fee_amount {
-            if options.bridge_fee_amount() < min_bridge_fee_amount {
+        if let Some(min_bridge_fee_amount) = quote.min_bridge_fee_decimal_amount_as_biguint()? {
+            let bridge_fee_amount = number_to_biguint_decimal(
+                options.bridge_fee_amount.unwrap_or_default(),
+                Some(quote.bridge_fee_asset_decimals()),
+            )?;
+            if bridge_fee_amount.lt(&min_bridge_fee_amount) {
                 return Err(DepositsError::InvalidBridgeFeeAmountError(
                     options.bridge_fee_amount(),
-                    min_bridge_fee_amount,
+                    quote.min_bridge_fee_amount(),
                 ));
             }
         }
-        if let Some(min_executor_fee_amount) = quote.min_executor_fee_amount {
-            if options.executor_fee_amount() < min_executor_fee_amount {
+        if let Some(min_executor_fee_amount) = quote.min_executor_fee_decimal_amount_as_biguint()? {
+            let executor_fee_amount = number_to_biguint_decimal(
+                options.executor_fee_amount.unwrap_or_default(),
+                Some(quote.executor_fee_asset_decimals()),
+            )?;
+            if executor_fee_amount.lt(&min_executor_fee_amount) {
                 return Err(DepositsError::InvalidExecutorFeeAmountError(
                     options.executor_fee_amount(),
-                    min_executor_fee_amount,
+                    quote.min_executor_fee_amount(),
                 ));
             }
         }
-        Ok(())
+        Ok(quote)
     }
 
     pub(crate) async fn send_assets_approve<S>(
