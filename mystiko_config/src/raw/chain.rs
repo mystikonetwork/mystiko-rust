@@ -136,7 +136,7 @@ fn default_transaction_type() -> TransactionType {
 }
 
 fn default_quorum_percentage() -> u8 {
-    50
+    75
 }
 
 fn default_asset_decimals() -> u32 {
