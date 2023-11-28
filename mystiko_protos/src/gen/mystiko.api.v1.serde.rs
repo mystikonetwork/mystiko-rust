@@ -12,6 +12,7 @@ impl serde::Serialize for AccountError {
             Self::MnemonicError => "ACCOUNT_ERROR_MNEMONIC_ERROR",
             Self::HexStringError => "ACCOUNT_ERROR_HEX_STRING_ERROR",
             Self::NoSuchAccountError => "ACCOUNT_ERROR_NO_SUCH_ACCOUNT_ERROR",
+            Self::WalletsError => "ACCOUNT_ERROR_WALLETS_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -29,6 +30,7 @@ impl<'de> serde::Deserialize<'de> for AccountError {
             "ACCOUNT_ERROR_MNEMONIC_ERROR",
             "ACCOUNT_ERROR_HEX_STRING_ERROR",
             "ACCOUNT_ERROR_NO_SUCH_ACCOUNT_ERROR",
+            "ACCOUNT_ERROR_WALLETS_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -77,6 +79,7 @@ impl<'de> serde::Deserialize<'de> for AccountError {
                     "ACCOUNT_ERROR_MNEMONIC_ERROR" => Ok(AccountError::MnemonicError),
                     "ACCOUNT_ERROR_HEX_STRING_ERROR" => Ok(AccountError::HexStringError),
                     "ACCOUNT_ERROR_NO_SUCH_ACCOUNT_ERROR" => Ok(AccountError::NoSuchAccountError),
+                    "ACCOUNT_ERROR_WALLETS_ERROR" => Ok(AccountError::WalletsError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
@@ -240,6 +243,8 @@ impl serde::Serialize for DepositError {
             Self::MissingPrivateKeyError => "DEPOSIT_ERROR_MISSING_PRIVATE_KEY_ERROR",
             Self::DepositStatusError => "DEPOSIT_ERROR_DEPOSIT_STATUS_ERROR",
             Self::DuplicateCommitmentError => "DEPOSIT_ERROR_DUPLICATE_COMMITMENT_ERROR",
+            Self::WalletsError => "DEPOSIT_ERROR_WALLETS_ERROR",
+            Self::AccountsError => "DEPOSIT_ERROR_ACCOUNTS_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -275,6 +280,8 @@ impl<'de> serde::Deserialize<'de> for DepositError {
             "DEPOSIT_ERROR_MISSING_PRIVATE_KEY_ERROR",
             "DEPOSIT_ERROR_DEPOSIT_STATUS_ERROR",
             "DEPOSIT_ERROR_DUPLICATE_COMMITMENT_ERROR",
+            "DEPOSIT_ERROR_WALLETS_ERROR",
+            "DEPOSIT_ERROR_ACCOUNTS_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -341,6 +348,8 @@ impl<'de> serde::Deserialize<'de> for DepositError {
                     "DEPOSIT_ERROR_MISSING_PRIVATE_KEY_ERROR" => Ok(DepositError::MissingPrivateKeyError),
                     "DEPOSIT_ERROR_DEPOSIT_STATUS_ERROR" => Ok(DepositError::DepositStatusError),
                     "DEPOSIT_ERROR_DUPLICATE_COMMITMENT_ERROR" => Ok(DepositError::DuplicateCommitmentError),
+                    "DEPOSIT_ERROR_WALLETS_ERROR" => Ok(DepositError::WalletsError),
+                    "DEPOSIT_ERROR_ACCOUNTS_ERROR" => Ok(DepositError::AccountsError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
@@ -532,6 +541,8 @@ impl serde::Serialize for ScannerError {
             Self::ProtocolError => "SCANNER_ERROR_PROTOCOL_ERROR",
             Self::FromHexError => "SCANNER_ERROR_FROM_HEX_ERROR",
             Self::AnyhowError => "SCANNER_ERROR_ANYHOW_ERROR",
+            Self::AccountHandlerError => "SCANNER_ERROR_ACCOUNT_HANDLER_ERROR",
+            Self::WalletHandlerError => "SCANNER_ERROR_WALLET_HANDLER_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -553,6 +564,8 @@ impl<'de> serde::Deserialize<'de> for ScannerError {
             "SCANNER_ERROR_PROTOCOL_ERROR",
             "SCANNER_ERROR_FROM_HEX_ERROR",
             "SCANNER_ERROR_ANYHOW_ERROR",
+            "SCANNER_ERROR_ACCOUNT_HANDLER_ERROR",
+            "SCANNER_ERROR_WALLET_HANDLER_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -605,6 +618,8 @@ impl<'de> serde::Deserialize<'de> for ScannerError {
                     "SCANNER_ERROR_PROTOCOL_ERROR" => Ok(ScannerError::ProtocolError),
                     "SCANNER_ERROR_FROM_HEX_ERROR" => Ok(ScannerError::FromHexError),
                     "SCANNER_ERROR_ANYHOW_ERROR" => Ok(ScannerError::AnyhowError),
+                    "SCANNER_ERROR_ACCOUNT_HANDLER_ERROR" => Ok(ScannerError::AccountHandlerError),
+                    "SCANNER_ERROR_WALLET_HANDLER_ERROR" => Ok(ScannerError::WalletHandlerError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
