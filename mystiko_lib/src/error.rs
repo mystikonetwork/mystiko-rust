@@ -7,8 +7,8 @@ use mystiko_protos::api::v1::{
 
 pub fn parse_mystiko_error(err: &MystikoError) -> StatusCode {
     match err {
-        MystikoError::SynchronizerError(err) => parse_synchronizer_error(err),
-        MystikoError::ScannerError(err) => parse_scanner_error(err),
+        MystikoError::SynchronizerError(_) => ProtoMystikoError::SynchronizerError.into(),
+        MystikoError::ScannerError(_) => ProtoMystikoError::ScannerError.into(),
         MystikoError::DataLoaderError(_) => ProtoMystikoError::DataloaderError.into(),
         MystikoError::ConfigError(_) => ProtoMystikoError::ConfigError.into(),
         MystikoError::DatabaseMigrationError(_) => ProtoMystikoError::DatabaseMigrationError.into(),
@@ -22,7 +22,7 @@ pub fn parse_account_error(err: &AccountsError) -> StatusCode {
         AccountsError::CryptoError(_) => ProtoAccountError::CryptoError.into(),
         AccountsError::MnemonicError(_) => ProtoAccountError::MnemonicError.into(),
         AccountsError::HexStringError(_) => ProtoAccountError::HexStringError.into(),
-        AccountsError::WalletsError(err) => parse_wallet_error(err),
+        AccountsError::WalletsError(_) => ProtoAccountError::WalletsError.into(),
         AccountsError::NoSuchAccountError(_, _) => ProtoAccountError::NoSuchAccountError.into(),
     }
 }
@@ -52,8 +52,8 @@ pub fn parse_deposit_error(err: &DepositsError) -> StatusCode {
         DepositsError::TransactionsError(_) => ProtoDepositError::TransactionsError.into(),
         DepositsError::ProtocolError(_) => ProtoDepositError::ProtocolError.into(),
         DepositsError::StorageError(_) => ProtoDepositError::StorageError.into(),
-        DepositsError::WalletsError(err) => parse_wallet_error(err),
-        DepositsError::AccountsError(err) => parse_account_error(err),
+        DepositsError::WalletsError(_) => ProtoDepositError::WalletsError.into(),
+        DepositsError::AccountsError(_) => ProtoDepositError::AccountsError.into(),
         DepositsError::ParseBigIntError(_) => ProtoDepositError::ParseBigIntError.into(),
         DepositsError::UnsupportedChainIdError(_) => ProtoDepositError::UnsupportedChainIdError.into(),
         DepositsError::NoDepositContractFoundError(_, _, _, _) => ProtoDepositError::NoDepositContractFoundError.into(),
@@ -83,8 +83,8 @@ pub fn parse_scanner_error(err: &ScannerError) -> StatusCode {
         ScannerError::NoSuchAccountError => ProtoScannerError::NoSuchAccountError.into(),
         ScannerError::NoSuchContractConfigError(_, _) => ProtoScannerError::NoSuchContractConfigError.into(),
         ScannerError::CommitmentEmptyError => ProtoScannerError::CommitmentEmptyError.into(),
-        ScannerError::AccountHandlerError(err) => parse_account_error(err),
-        ScannerError::WalletHandlerError(err) => parse_wallet_error(err),
+        ScannerError::AccountHandlerError(_) => ProtoScannerError::AccountHandlerError.into(),
+        ScannerError::WalletHandlerError(_) => ProtoScannerError::WalletHandlerError.into(),
         ScannerError::CryptoError(_) => ProtoScannerError::CryptoError.into(),
         ScannerError::StorageError(_) => ProtoScannerError::StorageError.into(),
         ScannerError::JoinError(_) => ProtoScannerError::JoinError.into(),

@@ -112,6 +112,14 @@ pub mod mystiko {
             // @@protoc_insertion_point(mystiko.loader.v1)
         }
     }
+    pub mod relayer {
+        #[cfg(feature = "mystiko-relayer-v1")]
+        // @@protoc_insertion_point(attribute:mystiko.relayer.v1)
+        pub mod v1 {
+            include!("mystiko.relayer.v1.rs");
+            // @@protoc_insertion_point(mystiko.relayer.v1)
+        }
+    }
     pub mod sequencer {
         #[cfg(feature = "mystiko-sequencer-v1")]
         // @@protoc_insertion_point(attribute:mystiko.sequencer.v1)

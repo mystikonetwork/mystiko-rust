@@ -29,11 +29,8 @@ fn test_parse_mystiko_error() {
     let e5: MystikoError = MystikoError::DatabaseMigrationError(anyhow!("error"));
     let e6: MystikoError = MystikoError::InvalidProviderUrlError("_".to_string());
 
-    assert_eq!(
-        parse_mystiko_error(&e1),
-        ProtoSynchronizeError::UnsupportedChainError.into()
-    );
-    assert_eq!(parse_mystiko_error(&e2), ProtoScannerError::NoSuchAccountError.into());
+    assert_eq!(parse_mystiko_error(&e1), ProtoMystikoError::SynchronizerError.into(),);
+    assert_eq!(parse_mystiko_error(&e2), ProtoMystikoError::ScannerError.into());
     assert_eq!(parse_mystiko_error(&e3), ProtoMystikoError::DataloaderError.into());
     assert_eq!(parse_mystiko_error(&e4), ProtoMystikoError::ConfigError.into());
     assert_eq!(
@@ -60,7 +57,7 @@ fn test_parse_account_error() {
     assert_eq!(parse_account_error(&e2), ProtoAccountError::CryptoError.into());
     assert_eq!(parse_account_error(&e3), ProtoAccountError::MnemonicError.into());
     assert_eq!(parse_account_error(&e4), ProtoAccountError::HexStringError.into());
-    assert_eq!(parse_account_error(&e5), ProtoWalletError::StorageError.into());
+    assert_eq!(parse_account_error(&e5), ProtoAccountError::WalletsError.into());
     assert_eq!(parse_account_error(&e6), ProtoAccountError::NoSuchAccountError.into());
 }
 
@@ -128,11 +125,8 @@ fn test_parse_deposit_error() {
     assert_eq!(parse_deposit_error(&e8), ProtoDepositError::TransactionsError.into());
     assert_eq!(parse_deposit_error(&e9), ProtoDepositError::ProtocolError.into());
     assert_eq!(parse_deposit_error(&e10), ProtoDepositError::StorageError.into());
-    assert_eq!(
-        parse_deposit_error(&e11),
-        ProtoWalletError::MismatchedPasswordError.into()
-    );
-    assert_eq!(parse_deposit_error(&e12), ProtoAccountError::CryptoError.into());
+    assert_eq!(parse_deposit_error(&e11), ProtoDepositError::WalletsError.into());
+    assert_eq!(parse_deposit_error(&e12), ProtoDepositError::AccountsError.into());
     assert_eq!(
         parse_deposit_error(&e13),
         ProtoDepositError::UnsupportedChainIdError.into()
@@ -213,11 +207,8 @@ fn test_parse_scanner_error() {
         ProtoScannerError::NoSuchContractConfigError.into()
     );
     assert_eq!(parse_scanner_error(&e3), ProtoScannerError::CommitmentEmptyError.into());
-    assert_eq!(parse_scanner_error(&e4), ProtoAccountError::CryptoError.into());
-    assert_eq!(
-        parse_scanner_error(&e5),
-        ProtoWalletError::MismatchedPasswordError.into()
-    );
+    assert_eq!(parse_scanner_error(&e4), ProtoScannerError::AccountHandlerError.into());
+    assert_eq!(parse_scanner_error(&e5), ProtoScannerError::WalletHandlerError.into());
     assert_eq!(parse_scanner_error(&e6), ProtoScannerError::CryptoError.into());
     assert_eq!(parse_scanner_error(&e7), ProtoScannerError::StorageError.into());
     assert_eq!(parse_scanner_error(&e8), ProtoScannerError::ProtocolError.into());
