@@ -1,0 +1,28 @@
+[package]
+name = "mystiko_static_cache"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+fs = ["blake2", "hex", "log", "reqwest", "thiserror", "tokio"]
+gzip = ["async-compression", "tokio/io-util"]
+
+[dependencies]
+anyhow = { version = "1.0.69" }
+async-compression = { version = "0.4.1", default-features = false, optional = true, features = ["gzip", "tokio"] }
+async-trait = { version = "0.1.64" }
+blake2 = { version = "0.10.6", optional = true }
+log = { version = "0.4.17", optional = true }
+reqwest = { version = "0.11.14", default-features = false, optional = true, features = ["stream", "rustls-tls"] }
+hex = { version = "0.4.3", optional = true }
+thiserror = { version = "1.0", default-features = false, optional = true }
+tokio = { version = "1.26.0", default-features = false, optional = true, features = ["fs", "io-std"] }
+typed-builder = { version = "0.15.2" }
+
+[dev-dependencies]
+env_logger = { version = "0.10.0" }
+mockall = { version = "0.11.4" }
+mockito = { version = "1.1.0" }
+mystiko_static_cache = { path = ".", version = "*", features = ["fs", "gzip"] }
+tempfile = { version = "3.4.0" }
+tokio = { version = "1.26.0", features = ["test-util"] }
