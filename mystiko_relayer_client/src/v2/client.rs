@@ -250,10 +250,12 @@ where
                 response.uuid, response.status
             );
 
-            if start_time.elapsed() > request.timeout {
+            let timeout = request.timeout.unwrap_or(Duration::from_secs(120));
+            let interval = request.interval.unwrap_or(Duration::from_millis(500));
+
+            if start_time.elapsed() > timeout {
                 return Err(RelayerClientError::WaitTransactionTimeout(request.uuid));
             }
-            let interval = request.interval.unwrap_or(Duration::from_millis(500));
             sleep(interval).await;
         }
     }
