@@ -90,8 +90,8 @@ pub struct WaitingTransactionRequest {
     pub uuid: String,
     #[builder(default)]
     pub waiting_status: TransactStatus,
-    #[builder(default = default_timeout())]
-    pub timeout: Duration,
+    #[builder(default)]
+    pub timeout: Option<Duration>,
     #[builder(default)]
     pub interval: Option<Duration>,
 }
@@ -162,8 +162,4 @@ fn is_valid_circuit_type(value: &CircuitType) -> Result<(), ValidationError> {
     } else {
         Err(ValidationError::new("invalid circuit type"))
     }
-}
-
-fn default_timeout() -> Duration {
-    Duration::from_secs(120)
 }
