@@ -20,6 +20,7 @@ use typed_builder::TypedBuilder;
 use validator::{Validate, ValidationError};
 
 #[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug)]
+#[builder(field_defaults(setter(into)))]
 pub struct RelayTransactRequest {
     #[validate(url)]
     pub relayer_url: String,
@@ -28,6 +29,7 @@ pub struct RelayTransactRequest {
 }
 
 #[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug, Clone)]
+#[builder(field_defaults(setter(into)))]
 pub struct TransactRequestData {
     pub contract_param: TransactRequest,
     pub spend_type: SpendType,
@@ -44,11 +46,13 @@ pub struct TransactRequestData {
 }
 
 #[derive(TypedBuilder, Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[builder(field_defaults(setter(into)))]
 pub struct RelayTransactResponse {
     pub uuid: String,
 }
 
 #[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug)]
+#[builder(field_defaults(setter(into)))]
 pub struct RelayTransactStatusRequest {
     #[validate(url)]
     pub relayer_url: String,
@@ -57,6 +61,7 @@ pub struct RelayTransactStatusRequest {
 }
 
 #[derive(TypedBuilder, Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[builder(field_defaults(setter(into)))]
 pub struct RelayTransactStatusResponse {
     pub uuid: String,
     pub chain_id: u64,
@@ -66,27 +71,33 @@ pub struct RelayTransactStatusResponse {
     pub error_msg: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum TransactStatus {
     Queued,
     Pending,
+    #[default]
     Succeeded,
     Failed,
 }
 
 #[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug)]
+#[builder(field_defaults(setter(into)))]
 pub struct WaitingTransactionRequest {
     #[validate(url)]
     pub relayer_url: String,
     #[validate(length(min = 1))]
     pub uuid: String,
+    #[builder(default)]
     pub waiting_status: TransactStatus,
+    #[builder(default = default_timeout())]
     pub timeout: Duration,
+    #[builder(default)]
     pub interval: Option<Duration>,
 }
 
 #[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug, Clone)]
+#[builder(field_defaults(setter(into)))]
 pub struct RegisterInfoRequest {
     #[validate(range(min = 1))]
     pub chain_id: u64,
@@ -100,6 +111,7 @@ pub struct RegisterInfoRequest {
 }
 
 #[derive(Validate, TypedBuilder, Serialize, Deserialize, Debug, Clone)]
+#[builder(field_defaults(setter(into)))]
 pub struct RegisterOptions {
     #[validate(length(min = 1))]
     pub asset_symbol: String,
@@ -109,6 +121,7 @@ pub struct RegisterOptions {
 }
 
 #[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[builder(field_defaults(setter(into)))]
 pub struct RegisterInfoResponse {
     pub chain_id: u64,
     pub support: bool,
@@ -121,12 +134,14 @@ pub struct RegisterInfoResponse {
 }
 
 #[derive(TypedBuilder, Serialize, Deserialize, Debug)]
+#[builder(field_defaults(setter(into)))]
 pub struct HandshakeResponse {
     pub package_version: String,
     pub api_version: Vec<String>,
 }
 
 #[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[builder(field_defaults(setter(into)))]
 pub struct ContractInfo {
     pub asset_symbol: String,
     pub relayer_fee_of_ten_thousandth: u32,
@@ -147,4 +162,8 @@ fn is_valid_circuit_type(value: &CircuitType) -> Result<(), ValidationError> {
     } else {
         Err(ValidationError::new("invalid circuit type"))
     }
+}
+
+fn default_timeout() -> Duration {
+    Duration::from_secs(120)
 }
