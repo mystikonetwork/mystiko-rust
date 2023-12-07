@@ -81,7 +81,9 @@ pub struct WaitingTransactionRequest {
     pub relayer_url: String,
     #[validate(length(min = 1))]
     pub uuid: String,
+    // Option<TransactStatus>
     pub waiting_status: TransactStatus,
+    // Option<Duration>
     pub timeout: Duration,
     pub interval: Option<Duration>,
 }

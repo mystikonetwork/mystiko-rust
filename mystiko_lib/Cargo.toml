@@ -21,12 +21,15 @@ tokio = { version = "1.27.0", features = ["rt", "rt-multi-thread", "sync"] }
 typed-builder = { version = "0.14.0" }
 
 [dev-dependencies]
+async-trait = { version = "0.1.64" }
 bip32 = { version = "0.5.0" }
 ethers-core = { version = "2.0.4" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
+mockall = { version = "0.11.4" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["proto", "fs"] }
 mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "93fbd08" }
 mystiko_dataloader = { version = "0.1.0", path = "../mystiko_dataloader" }
+mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
 mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
 mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "93fbd08" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }

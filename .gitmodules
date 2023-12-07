@@ -1,3 +1,4 @@
 [submodule "mystiko_protos/schema"]
 	path = mystiko_protos/schema
 	url = git@github.com:mystikonetwork/mystiko-protos.git
+	branch = marco-dev
