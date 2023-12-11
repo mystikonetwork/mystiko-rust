@@ -1,6 +1,8 @@
 use crate::{extract_data, setup};
 use mystiko_crypto::crypto::decrypt_symmetric;
-use mystiko_lib::account::{count, create, export_secret_key, find, find_by_identifier, update, update_encryption};
+use mystiko_lib::account::{
+    count, count_all, create, export_secret_key, find, find_by_identifier, update, update_encryption,
+};
 use mystiko_lib::wallet;
 use mystiko_lib::wallet::update_password;
 use mystiko_protocol::address::ShieldedAddress;
@@ -20,8 +22,8 @@ use serial_test::serial;
 
 const DEFAULT_WALLET_PASSWORD: &str = "P@ssw0rd";
 
-fn account_setup(full_config: bool) {
-    setup(full_config);
+fn account_setup() {
+    setup(None);
     // create default wallet
     let options = CreateWalletOptions::builder()
         .password(DEFAULT_WALLET_PASSWORD.to_string())
@@ -33,7 +35,7 @@ fn account_setup(full_config: bool) {
 #[test]
 #[serial]
 fn test_create_default() {
-    account_setup(false);
+    account_setup();
     let response = create(
         CreateAccountRequest::builder()
             .options(
@@ -62,7 +64,7 @@ fn test_create_default() {
 #[test]
 #[serial]
 fn test_count() {
-    account_setup(false);
+    account_setup();
     let response = create(
         CreateAccountRequest::builder()
             .options(
@@ -91,8 +93,30 @@ fn test_count() {
 
 #[test]
 #[serial]
+fn test_count_all() {
+    account_setup();
+    let response = create(
+        CreateAccountRequest::builder()
+            .options(
+                CreateAccountOptions::builder()
+                    .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+                    .build(),
+            )
+            .build(),
+    );
+    assert!(response.code.unwrap().success);
+    let response = count_all();
+    assert!(response.code.unwrap().success);
+    let count = CountAccountResponse::try_from(extract_data(response.result.unwrap()))
+        .unwrap()
+        .count;
+    assert_eq!(count, 1);
+}
+
+#[test]
+#[serial]
 fn test_find() {
-    account_setup(false);
+    account_setup();
     let response = find(
         FindAccountRequest::builder()
             .condition(Condition::Filter(
@@ -150,7 +174,7 @@ fn test_find() {
 #[test]
 #[serial]
 fn test_find_by_id() {
-    account_setup(false);
+    account_setup();
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -193,7 +217,7 @@ fn test_find_by_id() {
 #[test]
 #[serial]
 fn test_find_by_public_key() {
-    account_setup(false);
+    account_setup();
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -240,7 +264,7 @@ fn test_find_by_public_key() {
 #[test]
 #[serial]
 fn test_find_by_shielded_address() {
-    account_setup(false);
+    account_setup();
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -287,7 +311,7 @@ fn test_find_by_shielded_address() {
 #[test]
 #[serial]
 fn test_update() {
-    account_setup(false);
+    account_setup();
     let response = create(
         CreateAccountRequest::builder()
             .options(
@@ -339,7 +363,7 @@ fn test_update() {
 #[test]
 #[serial]
 fn test_update_encryption() {
-    account_setup(false);
+    account_setup();
     let options = CreateAccountOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
@@ -417,7 +441,7 @@ fn test_update_encryption() {
 #[test]
 #[serial]
 fn test_export_secret_key_by_id() {
-    account_setup(false);
+    account_setup();
     let response = create(
         CreateAccountRequest::builder()
             .options(
@@ -455,7 +479,7 @@ fn test_export_secret_key_by_id() {
 #[test]
 #[serial]
 fn test_export_secret_key_by_public_key() {
-    account_setup(false);
+    account_setup();
     let response = create(
         CreateAccountRequest::builder()
             .options(
@@ -495,7 +519,7 @@ fn test_export_secret_key_by_public_key() {
 #[test]
 #[serial]
 fn test_export_secret_key_by_shielded_address() {
-    account_setup(false);
+    account_setup();
     let response = create(
         CreateAccountRequest::builder()
             .options(

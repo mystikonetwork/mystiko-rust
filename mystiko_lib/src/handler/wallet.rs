@@ -2,7 +2,7 @@ use crate::runtime;
 use mystiko_protos::api::handler::v1::{
     CheckCurrentRequest, CheckPasswordRequest, CreateWalletRequest, ExportMnemonicPhraseRequest, UpdatePasswordRequest,
 };
-use mystiko_protos::api::v1::{ApiResponse, MystikoLibError};
+use mystiko_protos::api::v1::{ApiResponse, WalletError};
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
 
 pub fn create<M>(message: M) -> ApiResponse
@@ -17,7 +17,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(WalletError::DeserializeMessageError, err),
     }
 }
 
@@ -36,7 +36,7 @@ where
 {
     match message.try_into() {
         Ok(message) => runtime().block_on(internal::check_password(message.password)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(WalletError::DeserializeMessageError, err),
     }
 }
 
@@ -47,7 +47,7 @@ where
 {
     match message.try_into() {
         Ok(message) => runtime().block_on(internal::update_password(message.old_password, message.new_password)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(WalletError::DeserializeMessageError, err),
     }
 }
 
@@ -58,7 +58,7 @@ where
 {
     match message.try_into() {
         Ok(message) => runtime().block_on(internal::export_mnemonic_phrase(message.password)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(WalletError::DeserializeMessageError, err),
     }
 }
 
@@ -71,7 +71,6 @@ mod internal {
         CheckCurrentResponse, CheckPasswordResponse, CreateWalletResponse, ExportMnemonicPhraseResponse,
         UpdatePasswordResponse,
     };
-    use mystiko_protos::api::v1::MystikoLibError;
 
     pub(crate) async fn create(options: CreateWalletOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;
@@ -85,7 +84,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_wallet_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(WalletError::GetMystikoGuardError, err),
         }
     }
 
@@ -100,7 +99,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_wallet_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(WalletError::GetMystikoGuardError, err),
         }
     }
 
@@ -114,7 +113,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_wallet_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(WalletError::GetMystikoGuardError, err),
         }
     }
 
@@ -128,7 +127,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_wallet_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(WalletError::GetMystikoGuardError, err),
         }
     }
 
@@ -146,7 +145,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_wallet_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(WalletError::GetMystikoGuardError, err),
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::setup;
+use crate::{setup, FULL_CONFIG_FILE};
 use mystiko_lib::config::{
     find_asset_symbols, find_bridge, find_bridges, find_chain, find_circuit, find_contract_by_address,
     find_default_circuit, find_deposit_contract, find_deposit_contract_by_address, find_peer_chains,
@@ -21,7 +21,7 @@ use serial_test::serial;
 #[test]
 #[serial]
 fn test_with_valid_config() {
-    setup(false);
+    setup(None);
     let response = get(GetConfigRequest::builder().build());
     assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
@@ -220,7 +220,7 @@ fn test_with_valid_config() {
 #[test]
 #[serial]
 fn test_with_full_config() {
-    setup(true);
+    setup(Some(FULL_CONFIG_FILE.to_string()));
 
     let response = find_peer_chains(FindPeerChainsRequest::builder().chain_id(5u64).build());
     assert!(response.code.unwrap().success);

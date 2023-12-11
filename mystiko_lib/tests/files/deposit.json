@@ -1,0 +1,372 @@
+{
+  "version": "0.1.0",
+  "gitRevision": "b6b5b5b",
+  "chains": [
+    {
+      "chainId": 5,
+      "name": "Ethereum Goerli",
+      "assetSymbol": "ETH",
+      "assetDecimals": 18,
+      "explorerUrl": "https://goerli.etherscan.io",
+      "explorerApiUrl": "https://api-goerli.etherscan.io",
+      "explorerPrefix": "/tx/%tx%",
+      "providers": [
+        {
+          "url": "wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+          "timeoutMs": 5000,
+          "maxTryCount": 2
+        },
+        {
+          "url": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+        }
+      ],
+      "signerEndpoint": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      "transactionType": "legacy",
+      "depositContracts": [
+        {
+          "version": 2,
+          "name": "MystikoWithTbridgeERC20",
+          "address": "0x961F315A836542e603A3df2E0dd9d4ECd06ebC67",
+          "type": "deposit",
+          "startBlock": 1000000,
+          "bridgeType": "tbridge",
+          "poolAddress": "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d",
+          "peerChainId": 97,
+          "peerContractAddress": "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9",
+          "minAmount": "10000000000000000",
+          "maxAmount": "100000000000000000",
+          "minBridgeFee": "20000000000000000",
+          "minExecutorFee": "30000000000000000"
+        },
+        {
+          "version": 2,
+          "name": "MystikoV2Loop",
+          "address": "0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5",
+          "type": "deposit",
+          "startBlock": 1000000,
+          "bridgeType": "loop",
+          "poolAddress": "0x223903804Ee95e264F74C88B4F8583429524593c",
+          "minAmount": "10000000000000000",
+          "maxAmount": "10000000000000000000"
+        },
+        {
+          "version": 2,
+          "name": "MystikoWithTbridgeERC20",
+          "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "type": "deposit",
+          "startBlock": 1000000,
+          "bridgeType": "tbridge",
+          "poolAddress": "0x5050F69a9786F081509234F1a7F4684b5E5b76C9",
+          "peerChainId": 97,
+          "peerContractAddress": "0xd99F0C90BFDeDd5Bde0193b887c271C5458355Cf",
+          "bridgeFeeAssetAddress": "0x388C818CA8B9251b393131C08a736A67ccB19297",
+          "executorFeeAssetAddress": "0x388C818CA8B9251b393131C08a736A67ccB19297",
+          "minAmount": "10000000000000000",
+          "maxAmount": "100000000000000000",
+          "minBridgeFee": "20000000000000000",
+          "minExecutorFee": "30000000000000000"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 1,
+          "name": "CommitmentPool",
+          "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "tbridge",
+          "address": "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d",
+          "type": "pool",
+          "startBlock": 1000000,
+          "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+          "minRollupFee": "40000000000000000"
+        },
+        {
+          "version": 2,
+          "name": "CommitmentPool",
+          "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "loop",
+          "address": "0x223903804Ee95e264F74C88B4F8583429524593c",
+          "type": "pool",
+          "startBlock": 1000000,
+          "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+          "minRollupFee": "40000000000000000"
+        },
+        {
+          "version": 2,
+          "name": "CommitmentPool",
+          "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "tbridge",
+          "address": "0x5050F69a9786F081509234F1a7F4684b5E5b76C9",
+          "type": "pool",
+          "startBlock": 1000000,
+          "assetAddress": "0x388C818CA8B9251b393131C08a736A67ccB19297",
+          "minRollupFee": "40000000000000000"
+        }
+      ],
+      "assets": [
+        {
+          "assetType": "erc20",
+          "assetSymbol": "MTT",
+          "assetDecimals": 16,
+          "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+          "recommendedAmounts": ["10000000000000000", "100000000000000000"]
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "mBNB",
+          "assetDecimals": 18,
+          "assetAddress": "0x388C818CA8B9251b393131C08a736A67ccB19297",
+          "recommendedAmounts": ["10000000000000000", "100000000000000000"]
+        }
+      ],
+      "packerGranularities": [2000, 4000, 8000, 16000]
+    },
+    {
+      "chainId": 97,
+      "name": "BSC Testnet",
+      "assetSymbol": "BNB",
+      "assetDecimals": 18,
+      "explorerUrl": "https://testnet.bscscan.com",
+      "explorerApiUrl": "https://api-testnet.bscscan.com",
+      "explorerPrefix": "/tx/%tx%",
+      "providers": [
+        {
+          "url": "wss://bsc.getblock.io/testnet/?api_key=71722c7c-f748-4ea3-bacd-6edc2900c4f0",
+          "timeoutMs": 5000,
+          "maxTryCount": 2
+        },
+        {
+          "url": "https://bsc.getblock.io/testnet/?api_key=71722c7c-f748-4ea3-bacd-6edc2900c4f0"
+        }
+      ],
+      "signerEndpoint": "https://data-seed-prebsc-2-s2.binance.org:8545",
+      "transactionType": "eip1559",
+      "depositContracts": [
+        {
+          "version": 2,
+          "name": "MystikoWithTbridgeERC20",
+          "address": "0xd791049D0a154bC7860804e1A18ACD148Eb0afD9",
+          "type": "deposit",
+          "startBlock": 1000000,
+          "bridgeType": "tbridge",
+          "poolAddress": "0xBe2C9c8a00951662dF3a978b25F448968F0595AE",
+          "peerChainId": 5,
+          "peerContractAddress": "0x961F315A836542e603A3df2E0dd9d4ECd06ebC67",
+          "minAmount": "10000000000000000",
+          "maxAmount": "100000000000000000",
+          "minBridgeFee": "20000000000000000",
+          "minExecutorFee": "30000000000000000"
+        },
+        {
+          "version": 2,
+          "name": "MystikoV2Loop",
+          "address": "0x390d485F4D43212D4ae8Cdd967a711514ed5a54f",
+          "type": "deposit",
+          "startBlock": 1000000,
+          "bridgeType": "loop",
+          "poolAddress": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "minAmount": "10000000000000000",
+          "maxAmount": "10000000000000000000"
+        },
+        {
+          "version": 2,
+          "name": "MystikoWithTbridgeERC20",
+          "address": "0xd99F0C90BFDeDd5Bde0193b887c271C5458355Cf",
+          "type": "deposit",
+          "startBlock": 1000000,
+          "bridgeType": "tbridge",
+          "poolAddress": "0xF85679316f1C3998C6387F6F707b31AeEB3a9aBe",
+          "peerChainId": 5,
+          "peerContractAddress": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "minAmount": "10000000000000000",
+          "maxAmount": "100000000000000000",
+          "minBridgeFee": "20000000000000000",
+          "minExecutorFee": "30000000000000000"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 2,
+          "name": "CommitmentPool",
+          "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "tbridge",
+          "address": "0xBe2C9c8a00951662dF3a978b25F448968F0595AE",
+          "assetAddress": "0xBB3AFDe35eB9f5FeB5377485a3bD18a3EB0FE248",
+          "type": "pool",
+          "startBlock": 1000000,
+          "minRollupFee": "60000000000000000"
+        },
+        {
+          "version": 2,
+          "name": "CommitmentPool",
+          "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "loop",
+          "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          "type": "pool",
+          "startBlock": 1000000,
+          "minRollupFee": "40000000000000000"
+        },
+        {
+          "version": 2,
+          "name": "CommitmentPool",
+          "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "tbridge",
+          "address": "0xF85679316f1C3998C6387F6F707b31AeEB3a9aBe",
+          "type": "pool",
+          "startBlock": 1000000,
+          "minRollupFee": "40000000000000000"
+        }
+      ],
+      "assets": [{
+        "assetType": "erc20",
+        "assetSymbol": "MTT",
+        "assetDecimals": 16,
+        "assetAddress": "0xBB3AFDe35eB9f5FeB5377485a3bD18a3EB0FE248",
+        "recommendedAmounts": ["10000000000000000", "100000000000000000"]
+      }],
+      "packerGranularities": [2000, 4000, 8000, 16000, 32000]
+    }
+  ],
+  "bridges": [
+    {
+      "name": "Poly Bridge",
+      "type": "poly",
+      "explorerUrl": "https://explorer.poly.network",
+      "explorerPrefix": "/testnet/tx/%tx%",
+      "apiUrl": "https://explorer.poly.network",
+      "apiPrefix": "/testnet/api/v1/getcrosstx?txhash=%tx%"
+    },
+    {
+      "name": "Mystiko Testnet Bridge",
+      "type": "tbridge"
+    },
+    {
+      "name": "Celer Network",
+      "type": "celer"
+    },
+    {
+      "name": "LayerZero Bridge",
+      "type": "layerZero"
+    },
+    {
+      "name": "Axelar Network",
+      "type": "axelar"
+    }
+  ],
+  "circuits": [
+    {
+      "name": "zokrates-1.0-rollup1",
+      "type": "rollup1",
+      "isDefault": true,
+      "programFile": ["./Rollup1.program.gz"],
+      "abiFile": ["./Rollup1.abi.json"],
+      "provingKeyFile": ["./Rollup1.pkey.gz"],
+      "verifyingKeyFile": ["./Rollup1.vkey.gz"]
+    },
+    {
+      "name": "zokrates-2.0-rollup1",
+      "type": "rollup1",
+      "programFile": ["./v2/Rollup1.program.gz"],
+      "abiFile": ["./v2/Rollup1.abi.json"],
+      "provingKeyFile": ["./v2/Rollup1.pkey.gz"],
+      "verifyingKeyFile": ["./v2/Rollup1.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-rollup2",
+      "type": "rollup2",
+      "isDefault": true,
+      "programFile": ["./Rollup2.program.gz"],
+      "abiFile": ["./Rollup2.abi.json"],
+      "provingKeyFile": ["./Rollup2.pkey.gz"],
+      "verifyingKeyFile": ["./Rollup2.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-rollup4",
+      "type": "rollup4",
+      "isDefault": true,
+      "programFile": ["./Rollup4.program.gz"],
+      "abiFile": ["./Rollup4.abi.json"],
+      "provingKeyFile": ["./Rollup4.pkey.gz"],
+      "verifyingKeyFile": ["./Rollup4.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-rollup8",
+      "type": "rollup8",
+      "isDefault": true,
+      "programFile": ["./Rollup8.program.gz"],
+      "abiFile": ["./Rollup8.abi.json"],
+      "provingKeyFile": ["./Rollup8.pkey.gz"],
+      "verifyingKeyFile": ["./Rollup8.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-rollup16",
+      "type": "rollup16",
+      "isDefault": true,
+      "programFile": ["./Rollup16.program.gz"],
+      "abiFile": ["./Rollup16.abi.json"],
+      "provingKeyFile": ["./Rollup16.pkey.gz"],
+      "verifyingKeyFile": ["./Rollup16.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-transaction1x0",
+      "type": "transaction1x0",
+      "isDefault": true,
+      "programFile": ["./Transaction1x0.program.gz"],
+      "abiFile": ["./Transaction1x0.abi.json"],
+      "provingKeyFile": ["./Transaction1x0.pkey.gz"],
+      "verifyingKeyFile": ["./Transaction1x0.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-transaction1x1",
+      "type": "transaction1x1",
+      "isDefault": true,
+      "programFile": ["./Transaction1x1.program.gz"],
+      "abiFile": ["./Transaction1x1.abi.json"],
+      "provingKeyFile": ["./Transaction1x1.pkey.gz"],
+      "verifyingKeyFile": ["./Transaction1x1.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-transaction1x2",
+      "type": "transaction1x2",
+      "isDefault": true,
+      "programFile": ["./Transaction1x2.program.gz"],
+      "abiFile": ["./Transaction1x2.abi.json"],
+      "provingKeyFile": ["./Transaction1x2.pkey.gz"],
+      "verifyingKeyFile": ["./Transaction1x2.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-transaction2x0",
+      "type": "transaction2x0",
+      "isDefault": true,
+      "programFile": ["./Transaction2x0.program.gz"],
+      "abiFile": ["./Transaction2x0.abi.json"],
+      "provingKeyFile": ["./Transaction2x0.pkey.gz"],
+      "verifyingKeyFile": ["./Transaction2x0.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-transaction2x1",
+      "type": "transaction2x1",
+      "isDefault": true,
+      "programFile": ["./Transaction2x1.program.gz"],
+      "abiFile": ["./Transaction2x1.abi.json"],
+      "provingKeyFile": ["./Transaction2x1.pkey.gz"],
+      "verifyingKeyFile": ["./Transaction2x1.vkey.gz"]
+    },
+    {
+      "name": "zokrates-1.0-transaction2x2",
+      "type": "transaction2x2",
+      "isDefault": true,
+      "programFile": ["./Transaction2x2.program.gz"],
+      "abiFile": ["./Transaction2x2.abi.json"],
+      "provingKeyFile": ["./Transaction2x2.pkey.gz"],
+      "verifyingKeyFile": ["./Transaction2x2.vkey.gz"]
+    }
+  ],
+  "packer": {
+    "url": "https://static.mystiko.network/packer/v1"
+  },
+  "sequencer": {
+    "host": "sequencer.auditablezk.mystiko.network",
+    "isSsl": true
+  },
+  "countryBlacklist": ["US", "CN"]
+}

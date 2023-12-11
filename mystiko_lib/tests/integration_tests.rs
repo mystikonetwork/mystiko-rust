@@ -9,16 +9,16 @@ mod handler;
 
 const VALID_CONFIG_FILE: &str = "tests/files/valid.json";
 const FULL_CONFIG_FILE: &str = "tests/files/full.json";
+const DEPOSIT_CONFIG_FILE: &str = "tests/files/deposit.json";
 
-pub fn setup(full_config: bool) {
+pub fn setup(config_path: Option<String>) {
     destroy();
-    let file_path = if full_config {
-        FULL_CONFIG_FILE.to_string()
-    } else {
-        VALID_CONFIG_FILE.to_string()
+    let config_path = match config_path {
+        None => VALID_CONFIG_FILE.to_string(),
+        Some(s) => s,
     };
     let options = MystikoOptions::builder()
-        .config_options(ConfigOptions::builder().file_path(file_path).is_testnet(true).build())
+        .config_options(ConfigOptions::builder().file_path(config_path).is_testnet(true).build())
         .build();
     let response = initialize(options);
     assert!(response.code.unwrap().success);
@@ -36,7 +36,7 @@ pub fn extract_data(result: api_response::Result) -> Vec<u8> {
 #[test]
 #[serial]
 fn test_initialize() {
-    setup(false);
+    setup(None);
     assert!(is_initialized());
 }
 

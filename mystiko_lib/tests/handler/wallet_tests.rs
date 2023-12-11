@@ -13,7 +13,7 @@ use serial_test::serial;
 #[test]
 #[serial]
 fn test_create() {
-    setup(false);
+    setup(None);
     let options = CreateWalletOptions::builder().password("P@ssw0rd".to_string()).build();
     let response = create(CreateWalletRequest::builder().options(options).build());
     assert!(response.code.unwrap().success);
@@ -33,7 +33,7 @@ fn test_create() {
 #[test]
 #[serial]
 fn test_create_with_mnemonic() {
-    setup(false);
+    setup(None);
     let mnemonic = Mnemonic::random(OsRng, Language::English);
     let options = CreateWalletOptions::builder()
         .password("P@ssw0rd".to_string())
@@ -46,7 +46,7 @@ fn test_create_with_mnemonic() {
 #[test]
 #[serial]
 fn test_create_with_invalid_password() {
-    setup(false);
+    setup(None);
     let response = create(
         CreateWalletRequest::builder()
             .options(CreateWalletOptions::builder().password("AAAAAAAA".to_string()).build())
@@ -59,7 +59,7 @@ fn test_create_with_invalid_password() {
 #[test]
 #[serial]
 fn test_check_password() {
-    setup(false);
+    setup(None);
     let response = check_password(CheckPasswordRequest::builder().password("P@ssw0rd".to_string()).build());
     assert_eq!(response.code.unwrap(), WalletError::NoExistingWalletError.into());
     let response = create(
@@ -81,7 +81,7 @@ fn test_check_password() {
 #[test]
 #[serial]
 fn test_update_password() {
-    setup(false);
+    setup(None);
     let response = update_password(
         UpdatePasswordRequest::builder()
             .old_password("P@ssw0rd".to_string())
