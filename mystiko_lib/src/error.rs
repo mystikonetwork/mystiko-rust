@@ -13,6 +13,7 @@ pub fn parse_mystiko_error(err: &MystikoError) -> StatusCode {
         MystikoError::ConfigError(_) => ProtoMystikoError::ConfigError.into(),
         MystikoError::DatabaseMigrationError(_) => ProtoMystikoError::DatabaseMigrationError.into(),
         MystikoError::InvalidProviderUrlError(_) => ProtoMystikoError::InvalidProviderUrlError.into(),
+        MystikoError::RelayerClientError(_) => ProtoMystikoError::RelayerClientError.into(),
     }
 }
 
@@ -24,6 +25,7 @@ pub fn parse_account_error(err: &AccountsError) -> StatusCode {
         AccountsError::HexStringError(_) => ProtoAccountError::HexStringError.into(),
         AccountsError::WalletsError(_) => ProtoAccountError::WalletsError.into(),
         AccountsError::NoSuchAccountError(_, _) => ProtoAccountError::NoSuchAccountError.into(),
+        AccountsError::ProtocolKeyError(_) => ProtoAccountError::ProtocolKeyError.into(),
     }
 }
 
@@ -66,6 +68,7 @@ pub fn parse_deposit_error(err: &DepositsError) -> StatusCode {
         DepositsError::MissingPrivateKeyError => ProtoDepositError::MissingPrivateKeyError.into(),
         DepositsError::DepositStatusError(_) => ProtoDepositError::DepositStatusError.into(),
         DepositsError::DuplicateCommitmentError(_, _, _) => ProtoDepositError::DuplicateCommitmentError.into(),
+        DepositsError::ProtocolKeyError(_) => ProtoDepositError::ProtocolKeyError.into(),
     }
 }
 
@@ -91,5 +94,6 @@ pub fn parse_scanner_error(err: &ScannerError) -> StatusCode {
         ScannerError::ProtocolError(_) => ProtoScannerError::ProtocolError.into(),
         ScannerError::FromHexError(_) => ProtoScannerError::FromHexError.into(),
         ScannerError::AnyhowError(_) => ProtoScannerError::AnyhowError.into(),
+        ScannerError::ProtocolKeyError(_) => ProtoScannerError::ProtocolKeyError.into(),
     }
 }

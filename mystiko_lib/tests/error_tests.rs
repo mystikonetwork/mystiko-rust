@@ -93,7 +93,7 @@ fn test_parse_deposit_error() {
     let e7: DepositsError =
         DepositsError::CommitmentPoolContractsError(CommitmentPoolContractsError::IsSpentNullifierTimeoutError(1));
     let e8: DepositsError = DepositsError::TransactionsError(TransactionsError::AnyhowError(anyhow!("error")));
-    let e9: DepositsError = DepositsError::ProtocolError(ProtocolError::InvalidNoteSize);
+    let e9: DepositsError = DepositsError::ProtocolError(ProtocolError::InvalidNoteSizeError);
     let e10: DepositsError = DepositsError::StorageError(StorageError::MissingDataError("_".to_string()));
     let e11: DepositsError = DepositsError::WalletsError(WalletsError::MismatchedPasswordError);
     let e12: DepositsError = DepositsError::AccountsError(AccountsError::CryptoError(CryptoError::InternalError));
@@ -198,7 +198,7 @@ fn test_parse_scanner_error() {
     let e5: ScannerError = ScannerError::WalletHandlerError(WalletsError::MismatchedPasswordError);
     let e6: ScannerError = ScannerError::CryptoError(CryptoError::InternalError);
     let e7: ScannerError = ScannerError::StorageError(StorageError::MissingDataError("_".to_string()));
-    let e8: ScannerError = ScannerError::ProtocolError(ProtocolError::InvalidNoteSize);
+    let e8: ScannerError = ScannerError::ProtocolError(ProtocolError::InvalidNoteSizeError);
     let e9: ScannerError = ScannerError::FromHexError(rustc_hex::FromHexError::InvalidHexLength);
     let e10: ScannerError = ScannerError::AnyhowError(anyhow!("error"));
     assert_eq!(parse_scanner_error(&e1), ProtoScannerError::NoSuchAccountError.into());

@@ -2,7 +2,7 @@ use mystiko_relayer_types::ContractInfo;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-#[derive(TypedBuilder, Serialize, Deserialize, Debug)]
+#[derive(TypedBuilder, Serialize, Deserialize, Debug, Clone)]
 pub struct RegisterInfo {
     pub support: bool,
     pub available: bool,

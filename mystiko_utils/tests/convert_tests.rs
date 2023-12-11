@@ -1,7 +1,8 @@
 use ethers_core::types::U256;
 use mystiko_utils::convert::{
     biguint_str_to_bytes, bytes_to_i128, bytes_to_u128, decimal_to_number, hex_string_to_u256, i128_to_bytes,
-    number_to_biguint_decimal, number_to_decimal, number_to_u256_decimal, u128_to_bytes, u256_to_hex_string,
+    number_to_biguint_decimal, number_to_decimal, number_to_u256_decimal, u128_to_bytes, u256_to_fixed_bytes,
+    u256_to_hex_string,
 };
 use num_bigint::BigUint;
 use num_traits::ToPrimitive;
@@ -67,6 +68,14 @@ fn test_u256_to_hex_string() {
         u256_to_hex_string(&U256::from_dec_str("123456789").unwrap()),
         "0x75bcd15"
     );
+}
+
+#[test]
+fn test_u256_to_fixed_bytes() {
+    assert_eq!(
+        u256_to_fixed_bytes::<32>(&U256::from_dec_str("3735928559").unwrap()),
+        [0xef, 0xbe, 0xad, 0xde, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    )
 }
 
 #[test]

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-fs = ["blake2", "hex", "log", "reqwest", "thiserror", "tokio"]
+fs = ["blake2", "hex", "tokio"]
 gzip = ["async-compression", "tokio/io-util"]
 
 [dependencies]
@@ -12,10 +12,10 @@ anyhow = { version = "1.0.69" }
 async-compression = { version = "0.4.1", default-features = false, optional = true, features = ["gzip", "tokio"] }
 async-trait = { version = "0.1.64" }
 blake2 = { version = "0.10.6", optional = true }
-log = { version = "0.4.17", optional = true }
-reqwest = { version = "0.11.14", default-features = false, optional = true, features = ["stream", "rustls-tls"] }
+log = { version = "0.4.17" }
+reqwest = { version = "0.11.14", default-features = false, features = ["rustls-tls"] }
 hex = { version = "0.4.3", optional = true }
-thiserror = { version = "1.0", default-features = false, optional = true }
+thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.26.0", default-features = false, optional = true, features = ["fs", "io-std"] }
 typed-builder = { version = "0.15.2" }
 

@@ -4,6 +4,8 @@ use mystiko_config::MystikoConfig;
 use mystiko_ethers::{ChainConfigProvidersOptions, ProviderFactory, ProviderPool, Providers};
 use mystiko_protos::common::v1::{ConfigOptions, ConfigOptionsOption};
 use mystiko_protos::loader::v1::LoaderConfig;
+use mystiko_protos::relayer::v1::RelayerClientOptions;
+use mystiko_static_cache::{SkipStaticCache, StaticCache};
 use mystiko_storage::{StatementFormatter, Storage};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
@@ -12,9 +14,11 @@ use typed_builder::TypedBuilder;
 #[builder(field_defaults(default, setter(into)))]
 pub struct MystikoOptions {
     pub config_options: Option<ConfigOptions>,
+    pub relayer_client_options: Option<RelayerClientOptions>,
     pub loader_config: Option<LoaderConfig>,
     pub provider_factory: Option<Box<dyn ProviderFactory>>,
     pub signer_provider_factory: Option<Box<dyn ProviderFactory>>,
+    pub static_cache: Option<Box<dyn StaticCache>>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -22,9 +26,12 @@ pub struct MystikoOptions {
 pub struct MystikoContext<F: StatementFormatter, S: Storage> {
     pub network: String,
     pub db: Arc<Database<F, S>>,
+    pub static_cache: Arc<Box<dyn StaticCache>>,
     pub config: Arc<MystikoConfig>,
     pub providers: Arc<Box<dyn Providers>>,
     pub signer_providers: Arc<Box<dyn Providers>>,
+    pub config_options: ConfigOptions,
+    pub relayer_client_options: RelayerClientOptions,
     pub loader_config: Option<LoaderConfig>,
 }
 
@@ -45,8 +52,15 @@ where
     pub async fn new(db: Database<F, S>, options: Option<MystikoOptions>) -> Result<Self, MystikoError> {
         let db = Arc::new(db);
         let mystiko_options = options.unwrap_or(MystikoOptions::builder().build());
+        let static_cache = SkipStaticCache::default();
+        let static_cache = mystiko_options
+            .static_cache
+            .unwrap_or(Box::new(static_cache) as Box<dyn StaticCache>);
         let network = mystiko_options.config_options.get_network();
-        let config = create_mystiko_config(&mystiko_options).await?;
+        let config_options = mystiko_options.config_options.unwrap_or_default();
+        let mut relayer_client_options = mystiko_options.relayer_client_options.unwrap_or_default();
+        relayer_client_options.is_testnet = config_options.is_testnet;
+        let config = create_mystiko_config(config_options.clone()).await?;
         let providers: ProviderPool<ChainConfigProvidersOptions> =
             if let Some(provider_factory) = mystiko_options.provider_factory {
                 ProviderPool::builder()
@@ -65,16 +79,19 @@ where
         Ok(Self {
             network,
             db,
+            static_cache: Arc::new(static_cache),
             config,
             providers,
             signer_providers,
+            config_options,
+            relayer_client_options,
             loader_config: mystiko_options.loader_config,
         })
     }
 }
 
-async fn create_mystiko_config(mystiko_options: &MystikoOptions) -> Result<Arc<MystikoConfig>, MystikoError> {
-    let config = MystikoConfig::from_options(mystiko_options.config_options.clone())
+async fn create_mystiko_config(config_options: ConfigOptions) -> Result<Arc<MystikoConfig>, MystikoError> {
+    let config = MystikoConfig::from_options(config_options)
         .await
         .map_err(MystikoError::ConfigError)?;
     Ok(Arc::new(config))

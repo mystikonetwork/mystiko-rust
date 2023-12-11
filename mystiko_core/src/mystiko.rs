@@ -1,6 +1,6 @@
 use crate::{
-    Accounts, Database, Deposits, FromContext, MystikoContext, MystikoError, MystikoOptions, Scanner, Synchronizer,
-    Wallets,
+    Accounts, Database, Deposits, FromContext, MystikoContext, MystikoError, MystikoOptions, Scanner, Spends,
+    Synchronizer, Wallets,
 };
 use anyhow::Result;
 use mystiko_config::MystikoConfig;
@@ -15,6 +15,7 @@ pub struct Mystiko<
     W = Wallets<F, S>,
     A = Accounts<F, S>,
     D = Deposits<F, S>,
+    X = Spends<F, S>,
     Y = Synchronizer<ChainDataLoader<FullData>>,
     R = Scanner<F, S>,
 > {
@@ -23,17 +24,19 @@ pub struct Mystiko<
     pub wallets: W,
     pub accounts: A,
     pub deposits: D,
+    pub spends: X,
     pub synchronizer: Y,
     pub scanner: R,
 }
 
-impl<F, S, W, A, D, Y, R> Mystiko<F, S, W, A, D, Y, R>
+impl<F, S, W, A, D, X, Y, R> Mystiko<F, S, W, A, D, X, Y, R>
 where
     F: StatementFormatter + 'static,
     S: Storage + 'static,
     W: FromContext<F, S> + 'static,
     A: FromContext<F, S> + 'static,
     D: FromContext<F, S> + 'static,
+    X: FromContext<F, S> + 'static,
     Y: FromContext<F, S> + 'static,
     R: FromContext<F, S> + 'static,
 {
@@ -46,6 +49,7 @@ where
             accounts: A::from_context(&context).await?,
             wallets: W::from_context(&context).await?,
             deposits: D::from_context(&context).await?,
+            spends: X::from_context(&context).await?,
             synchronizer: Y::from_context(&context).await?,
             scanner: R::from_context(&context).await?,
         };

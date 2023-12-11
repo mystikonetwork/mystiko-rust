@@ -77,11 +77,11 @@ pub async fn create_scanner(
             .await
             .unwrap();
         let secret_key_bytes: FullSk = decode_hex_with_length(secret_key).unwrap();
-        let (v_sk, _) = separate_secret_keys(&secret_key_bytes);
+        let (v_sk, _) = separate_secret_keys(&secret_key_bytes).unwrap();
         test_accounts.push(
             TestAccount::builder()
                 .shielded_address(shielded_address)
-                .v_sk(verification_secret_key(&v_sk))
+                .v_sk(verification_secret_key(&v_sk).unwrap())
                 .build(),
         );
     }
@@ -107,7 +107,7 @@ pub async fn insert_commitments(
         let mut cm = default_commitment();
         match &test_account {
             Some(account) => {
-                let note = Note::new(Some(amount.clone()), None);
+                let note = Note::new(Some(amount.clone()), None).unwrap();
                 let pcm = ProtocolCommitment::new(account.shielded_address.clone(), Some(note.clone()), None).unwrap();
                 cm.commitment_hash = pcm.commitment_hash.clone();
                 cm.encrypted_note = Some(encode_hex(pcm.encrypted_note));

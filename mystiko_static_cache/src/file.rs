@@ -1,4 +1,4 @@
-use crate::{GetOptions, StaticCache};
+use crate::{GetOptions, SkipStaticCache, StaticCache};
 use anyhow::Result;
 use async_trait::async_trait;
 use blake2::digest::Digest;
@@ -12,15 +12,11 @@ use typed_builder::TypedBuilder;
 pub struct FileStaticCache {
     cache_folder: PathBuf,
     #[builder(default)]
-    http_client: reqwest::Client,
+    inner: SkipStaticCache,
 }
 
 #[derive(Debug, Error)]
 pub enum FileStaticCacheError {
-    #[error(transparent)]
-    HttpClientError(#[from] reqwest::Error),
-    #[error("http resource {0} returned status code {1}")]
-    HttpError(String, u16),
     #[error("exhausted all urls")]
     FailoverUrlExhaustedError,
 }
@@ -36,19 +32,6 @@ impl FileStaticCache {
         }
         Ok(Self::builder().cache_folder(cache_folder).build())
     }
-
-    async fn get_remote(&self, url: &str) -> Result<Vec<u8>, FileStaticCacheError> {
-        let response = self.http_client.get(url).send().await?;
-        if response.status().is_success() {
-            let data = response.bytes().await?;
-            Ok(data.to_vec())
-        } else {
-            Err(FileStaticCacheError::HttpError(
-                url.to_string(),
-                response.status().as_u16(),
-            ))
-        }
-    }
 }
 
 #[async_trait]
@@ -57,11 +40,11 @@ impl StaticCache for FileStaticCache {
         let options = options.unwrap_or_default();
         let cached_file = self.cache_folder.join(calc_url_hash(url));
         let data = if options.skip_cache {
-            self.get_remote(url).await?
+            self.inner.get(url, None).await?
         } else if tokio::fs::try_exists(&cached_file).await? {
             return Ok(tokio::fs::read(&cached_file).await?);
         } else {
-            self.get_remote(url).await?
+            self.inner.get(url, None).await?
         };
         tokio::fs::write(&cached_file, &data).await?;
         Ok(data)

@@ -1,4 +1,5 @@
 use crate::core::document::v1::Spend;
+use crate::core::handler::v1::GasRelayer;
 use num_bigint::{BigUint, ParseBigIntError};
 use std::str::FromStr;
 
@@ -14,6 +15,13 @@ impl Spend {
             .transpose()
     }
 
+    pub fn rollup_fee_total_decimal_amount_as_biguint(&self) -> Result<Option<BigUint>, ParseBigIntError> {
+        self.rollup_fee_total_decimal_amount
+            .as_ref()
+            .map(|s| BigUint::from_str(s))
+            .transpose()
+    }
+
     pub fn gas_relayer_fee_decimal_amount_as_biguint(&self) -> Result<Option<BigUint>, ParseBigIntError> {
         self.gas_relayer_fee_decimal_amount
             .as_ref()
@@ -21,8 +29,8 @@ impl Spend {
             .transpose()
     }
 
-    pub fn root_hash_as_biguint(&self) -> Result<BigUint, ParseBigIntError> {
-        BigUint::from_str(&self.root_hash)
+    pub fn root_hash_as_biguint(&self) -> Result<Option<BigUint>, ParseBigIntError> {
+        self.root_hash.as_ref().map(|n| BigUint::from_str(n)).transpose()
     }
 
     pub fn input_commitments_as_biguint(&self) -> Result<Vec<BigUint>, ParseBigIntError> {
@@ -89,5 +97,11 @@ impl Spend {
                     .collect::<Result<_, _>>()?,
             ))
         }
+    }
+}
+
+impl GasRelayer {
+    pub fn minimum_gas_fee_as_biguint(&self) -> Result<BigUint, ParseBigIntError> {
+        BigUint::from_str(&self.min_gas_fee_decimal)
     }
 }

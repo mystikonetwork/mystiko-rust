@@ -97,17 +97,9 @@ where
         let mut tx = options.tx.into();
         tx.set_to(options.contract_address);
         if contract_config.asset_type() == &AssetType::Main {
-            tx.set_value(options.amount.add(options.rollup_fee));
+            tx.set_value(options.request.amount.add(options.request.rollup_fee));
         }
-        let request = mystiko_abi::mystiko_v2_loop::DepositRequest {
-            amount: options.amount,
-            commitment: options.commitment,
-            hash_k: options.hash_k,
-            random_s: options.random_s,
-            encrypted_note: options.encrypted_notes,
-            rollup_fee: options.rollup_fee,
-        };
-        if let Some(data) = contract.deposit(request).calldata() {
+        if let Some(data) = contract.deposit(options.request).calldata() {
             tx.set_data(data);
         }
         let tx_hash = if let Some(timeout_ms) = options.timeout_ms {
@@ -146,28 +138,18 @@ where
         tx.set_to(options.contract_address);
         let mut value = U256::zero();
         if contract_config.asset_type() == &AssetType::Main {
-            value = value.add(options.amount).add(options.rollup_fee);
+            value = value.add(options.request.amount).add(options.request.rollup_fee);
         }
         if contract_config.executor_fee_asset().asset_type() == &AssetType::Main {
-            value = value.add(options.executor_fee);
+            value = value.add(options.request.executor_fee);
         }
         if contract_config.bridge_fee_asset().asset_type() == &AssetType::Main {
-            value = value.add(options.bridge_fee);
+            value = value.add(options.request.bridge_fee);
         }
         if value.gt(&U256::zero()) {
             tx.set_value(value);
         }
-        let request = mystiko_abi::mystiko_v2_bridge::DepositRequest {
-            amount: options.amount,
-            commitment: options.commitment,
-            hash_k: options.hash_k,
-            random_s: options.random_s,
-            encrypted_note: options.encrypted_notes,
-            rollup_fee: options.rollup_fee,
-            executor_fee: options.executor_fee,
-            bridge_fee: options.bridge_fee,
-        };
-        if let Some(data) = contract.deposit(request).calldata() {
+        if let Some(data) = contract.deposit(options.request).calldata() {
             tx.set_data(data);
         }
         let tx_hash = if let Some(timeout_ms) = options.timeout_ms {
