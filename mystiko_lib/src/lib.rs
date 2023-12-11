@@ -88,7 +88,6 @@ mod internal {
     use crate::error::parse_mystiko_error;
     use mystiko_core::{Database, MystikoOptions};
     use mystiko_protos::api::v1::MystikoError;
-    use mystiko_protos::api::v1::MystikoLibError;
     use mystiko_static_cache::{FileStaticCache, StaticCache};
     use mystiko_storage_sqlite::SqliteStorageOptions;
 
@@ -113,7 +112,7 @@ mod internal {
                     let static_cache = if let Some(static_cache_path) = options.static_cache_path {
                         match FileStaticCache::new(static_cache_path).await {
                             Ok(static_cache) => Some(Box::new(static_cache) as Box<dyn StaticCache>),
-                            Err(err) => return ApiResponse::error(MystikoLibError::FileStaticCacheError.into(), err),
+                            Err(err) => return ApiResponse::error(MystikoError::FileStaticCacheError, err),
                         }
                     } else {
                         None

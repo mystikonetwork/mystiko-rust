@@ -467,6 +467,7 @@ impl serde::Serialize for MystikoError {
             Self::InvalidProviderUrlError => "MYSTIKO_ERROR_INVALID_PROVIDER_URL_ERROR",
             Self::StorageError => "MYSTIKO_ERROR_STORAGE_ERROR",
             Self::RelayerClientError => "MYSTIKO_ERROR_RELAYER_CLIENT_ERROR",
+            Self::FileStaticCacheError => "MYSTIKO_ERROR_FILE_STATIC_CACHE_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -487,6 +488,7 @@ impl<'de> serde::Deserialize<'de> for MystikoError {
             "MYSTIKO_ERROR_INVALID_PROVIDER_URL_ERROR",
             "MYSTIKO_ERROR_STORAGE_ERROR",
             "MYSTIKO_ERROR_RELAYER_CLIENT_ERROR",
+            "MYSTIKO_ERROR_FILE_STATIC_CACHE_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -538,6 +540,7 @@ impl<'de> serde::Deserialize<'de> for MystikoError {
                     "MYSTIKO_ERROR_INVALID_PROVIDER_URL_ERROR" => Ok(MystikoError::InvalidProviderUrlError),
                     "MYSTIKO_ERROR_STORAGE_ERROR" => Ok(MystikoError::StorageError),
                     "MYSTIKO_ERROR_RELAYER_CLIENT_ERROR" => Ok(MystikoError::RelayerClientError),
+                    "MYSTIKO_ERROR_FILE_STATIC_CACHE_ERROR" => Ok(MystikoError::FileStaticCacheError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
@@ -556,7 +559,6 @@ impl serde::Serialize for MystikoLibError {
             Self::GetMystikoGuardError => "MYSTIKO_LIB_ERROR_GET_MYSTIKO_GUARD_ERROR",
             Self::DeserializeMessageError => "MYSTIKO_LIB_ERROR_DESERIALIZE_MESSAGE_ERROR",
             Self::StorageError => "MYSTIKO_LIB_ERROR_STORAGE_ERROR",
-            Self::FileStaticCacheError => "MYSTIKO_LIB_ERROR_FILE_STATIC_CACHE_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -572,7 +574,6 @@ impl<'de> serde::Deserialize<'de> for MystikoLibError {
             "MYSTIKO_LIB_ERROR_GET_MYSTIKO_GUARD_ERROR",
             "MYSTIKO_LIB_ERROR_DESERIALIZE_MESSAGE_ERROR",
             "MYSTIKO_LIB_ERROR_STORAGE_ERROR",
-            "MYSTIKO_LIB_ERROR_FILE_STATIC_CACHE_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -619,7 +620,6 @@ impl<'de> serde::Deserialize<'de> for MystikoLibError {
                     "MYSTIKO_LIB_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(MystikoLibError::GetMystikoGuardError),
                     "MYSTIKO_LIB_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(MystikoLibError::DeserializeMessageError),
                     "MYSTIKO_LIB_ERROR_STORAGE_ERROR" => Ok(MystikoLibError::StorageError),
-                    "MYSTIKO_LIB_ERROR_FILE_STATIC_CACHE_ERROR" => Ok(MystikoLibError::FileStaticCacheError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
