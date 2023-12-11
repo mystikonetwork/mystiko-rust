@@ -179,11 +179,11 @@ impl ScanningAccount {
         let shielded_address = ShieldedAddress::from_string(&account.data.shielded_address)?;
         let secret_key = decrypt_symmetric(wallet_password, &account.data.encrypted_secret_key)?;
         let secret_key_bytes: FullSk = decode_hex_with_length(secret_key)?;
-        let (sk_verify, sk_enc) = separate_secret_keys(&secret_key_bytes);
+        let (sk_verify, sk_enc) = separate_secret_keys(&secret_key_bytes)?;
         Ok(ScanningAccount::builder()
             .shielded_address(shielded_address)
             .sk_enc(sk_enc)
-            .sk_verify(verification_secret_key(&sk_verify))
+            .sk_verify(verification_secret_key(&sk_verify)?)
             .build())
     }
 }

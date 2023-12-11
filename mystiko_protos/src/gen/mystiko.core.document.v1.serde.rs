@@ -1065,9 +1065,6 @@ impl serde::Serialize for Spend {
         if self.asset_decimals != 0 {
             len += 1;
         }
-        if !self.root_hash.is_empty() {
-            len += 1;
-        }
         if self.amount != 0. {
             len += 1;
         }
@@ -1101,6 +1098,12 @@ impl serde::Serialize for Spend {
         if self.rollup_fee_decimal_amount.is_some() {
             len += 1;
         }
+        if self.rollup_fee_total_amount.is_some() {
+            len += 1;
+        }
+        if self.rollup_fee_total_decimal_amount.is_some() {
+            len += 1;
+        }
         if self.gas_relayer_fee_amount.is_some() {
             len += 1;
         }
@@ -1116,7 +1119,13 @@ impl serde::Serialize for Spend {
         if self.proof.is_some() {
             len += 1;
         }
+        if self.root_hash.is_some() {
+            len += 1;
+        }
         if self.gas_relayer_address.is_some() {
+            len += 1;
+        }
+        if self.gas_relayer_url.is_some() {
             len += 1;
         }
         if self.signature.is_some() {
@@ -1129,6 +1138,9 @@ impl serde::Serialize for Spend {
             len += 1;
         }
         if self.transaction_hash.is_some() {
+            len += 1;
+        }
+        if self.bridge_type != 0 {
             len += 1;
         }
         if self.spend_type != 0 {
@@ -1158,9 +1170,6 @@ impl serde::Serialize for Spend {
         }
         if self.asset_decimals != 0 {
             struct_ser.serialize_field("assetDecimals", &self.asset_decimals)?;
-        }
-        if !self.root_hash.is_empty() {
-            struct_ser.serialize_field("rootHash", &self.root_hash)?;
         }
         if self.amount != 0. {
             struct_ser.serialize_field("amount", &self.amount)?;
@@ -1195,6 +1204,12 @@ impl serde::Serialize for Spend {
         if let Some(v) = self.rollup_fee_decimal_amount.as_ref() {
             struct_ser.serialize_field("rollupFeeDecimalAmount", v)?;
         }
+        if let Some(v) = self.rollup_fee_total_amount.as_ref() {
+            struct_ser.serialize_field("rollupFeeTotalAmount", v)?;
+        }
+        if let Some(v) = self.rollup_fee_total_decimal_amount.as_ref() {
+            struct_ser.serialize_field("rollupFeeTotalDecimalAmount", v)?;
+        }
         if let Some(v) = self.gas_relayer_fee_amount.as_ref() {
             struct_ser.serialize_field("gasRelayerFeeAmount", v)?;
         }
@@ -1210,8 +1225,14 @@ impl serde::Serialize for Spend {
         if let Some(v) = self.proof.as_ref() {
             struct_ser.serialize_field("proof", v)?;
         }
+        if let Some(v) = self.root_hash.as_ref() {
+            struct_ser.serialize_field("rootHash", v)?;
+        }
         if let Some(v) = self.gas_relayer_address.as_ref() {
             struct_ser.serialize_field("gasRelayerAddress", v)?;
+        }
+        if let Some(v) = self.gas_relayer_url.as_ref() {
+            struct_ser.serialize_field("gasRelayerUrl", v)?;
         }
         if let Some(v) = self.signature.as_ref() {
             struct_ser.serialize_field("signature", v)?;
@@ -1224,6 +1245,11 @@ impl serde::Serialize for Spend {
         }
         if let Some(v) = self.transaction_hash.as_ref() {
             struct_ser.serialize_field("transactionHash", v)?;
+        }
+        if self.bridge_type != 0 {
+            let v = super::super::super::common::v1::BridgeType::from_i32(self.bridge_type)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.bridge_type)))?;
+            struct_ser.serialize_field("bridgeType", &v)?;
         }
         if self.spend_type != 0 {
             let v = super::super::v1::SpendType::from_i32(self.spend_type)
@@ -1258,8 +1284,6 @@ impl<'de> serde::Deserialize<'de> for Spend {
             "assetSymbol",
             "asset_decimals",
             "assetDecimals",
-            "root_hash",
-            "rootHash",
             "amount",
             "decimal_amount",
             "decimalAmount",
@@ -1279,6 +1303,10 @@ impl<'de> serde::Deserialize<'de> for Spend {
             "rollupFeeAmount",
             "rollup_fee_decimal_amount",
             "rollupFeeDecimalAmount",
+            "rollup_fee_total_amount",
+            "rollupFeeTotalAmount",
+            "rollup_fee_total_decimal_amount",
+            "rollupFeeTotalDecimalAmount",
             "gas_relayer_fee_amount",
             "gasRelayerFeeAmount",
             "gas_relayer_fee_decimal_amount",
@@ -1288,8 +1316,12 @@ impl<'de> serde::Deserialize<'de> for Spend {
             "asset_address",
             "assetAddress",
             "proof",
+            "root_hash",
+            "rootHash",
             "gas_relayer_address",
             "gasRelayerAddress",
+            "gas_relayer_url",
+            "gasRelayerUrl",
             "signature",
             "random_auditing_public_key",
             "randomAuditingPublicKey",
@@ -1297,6 +1329,8 @@ impl<'de> serde::Deserialize<'de> for Spend {
             "errorMessage",
             "transaction_hash",
             "transactionHash",
+            "bridge_type",
+            "bridgeType",
             "spend_type",
             "spendType",
             "status",
@@ -1311,7 +1345,6 @@ impl<'de> serde::Deserialize<'de> for Spend {
             ContractAddress,
             AssetSymbol,
             AssetDecimals,
-            RootHash,
             Amount,
             DecimalAmount,
             Recipient,
@@ -1323,16 +1356,21 @@ impl<'de> serde::Deserialize<'de> for Spend {
             EncryptedAuditorNotes,
             RollupFeeAmount,
             RollupFeeDecimalAmount,
+            RollupFeeTotalAmount,
+            RollupFeeTotalDecimalAmount,
             GasRelayerFeeAmount,
             GasRelayerFeeDecimalAmount,
             SignaturePublicKey,
             AssetAddress,
             Proof,
+            RootHash,
             GasRelayerAddress,
+            GasRelayerUrl,
             Signature,
             RandomAuditingPublicKey,
             ErrorMessage,
             TransactionHash,
+            BridgeType,
             SpendType,
             Status,
         }
@@ -1363,7 +1401,6 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             "contractAddress" | "contract_address" => Ok(GeneratedField::ContractAddress),
                             "assetSymbol" | "asset_symbol" => Ok(GeneratedField::AssetSymbol),
                             "assetDecimals" | "asset_decimals" => Ok(GeneratedField::AssetDecimals),
-                            "rootHash" | "root_hash" => Ok(GeneratedField::RootHash),
                             "amount" => Ok(GeneratedField::Amount),
                             "decimalAmount" | "decimal_amount" => Ok(GeneratedField::DecimalAmount),
                             "recipient" => Ok(GeneratedField::Recipient),
@@ -1375,16 +1412,21 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             "encryptedAuditorNotes" | "encrypted_auditor_notes" => Ok(GeneratedField::EncryptedAuditorNotes),
                             "rollupFeeAmount" | "rollup_fee_amount" => Ok(GeneratedField::RollupFeeAmount),
                             "rollupFeeDecimalAmount" | "rollup_fee_decimal_amount" => Ok(GeneratedField::RollupFeeDecimalAmount),
+                            "rollupFeeTotalAmount" | "rollup_fee_total_amount" => Ok(GeneratedField::RollupFeeTotalAmount),
+                            "rollupFeeTotalDecimalAmount" | "rollup_fee_total_decimal_amount" => Ok(GeneratedField::RollupFeeTotalDecimalAmount),
                             "gasRelayerFeeAmount" | "gas_relayer_fee_amount" => Ok(GeneratedField::GasRelayerFeeAmount),
                             "gasRelayerFeeDecimalAmount" | "gas_relayer_fee_decimal_amount" => Ok(GeneratedField::GasRelayerFeeDecimalAmount),
                             "signaturePublicKey" | "signature_public_key" => Ok(GeneratedField::SignaturePublicKey),
                             "assetAddress" | "asset_address" => Ok(GeneratedField::AssetAddress),
                             "proof" => Ok(GeneratedField::Proof),
+                            "rootHash" | "root_hash" => Ok(GeneratedField::RootHash),
                             "gasRelayerAddress" | "gas_relayer_address" => Ok(GeneratedField::GasRelayerAddress),
+                            "gasRelayerUrl" | "gas_relayer_url" => Ok(GeneratedField::GasRelayerUrl),
                             "signature" => Ok(GeneratedField::Signature),
                             "randomAuditingPublicKey" | "random_auditing_public_key" => Ok(GeneratedField::RandomAuditingPublicKey),
                             "errorMessage" | "error_message" => Ok(GeneratedField::ErrorMessage),
                             "transactionHash" | "transaction_hash" => Ok(GeneratedField::TransactionHash),
+                            "bridgeType" | "bridge_type" => Ok(GeneratedField::BridgeType),
                             "spendType" | "spend_type" => Ok(GeneratedField::SpendType),
                             "status" => Ok(GeneratedField::Status),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -1413,7 +1455,6 @@ impl<'de> serde::Deserialize<'de> for Spend {
                 let mut contract_address__ = None;
                 let mut asset_symbol__ = None;
                 let mut asset_decimals__ = None;
-                let mut root_hash__ = None;
                 let mut amount__ = None;
                 let mut decimal_amount__ = None;
                 let mut recipient__ = None;
@@ -1425,16 +1466,21 @@ impl<'de> serde::Deserialize<'de> for Spend {
                 let mut encrypted_auditor_notes__ = None;
                 let mut rollup_fee_amount__ = None;
                 let mut rollup_fee_decimal_amount__ = None;
+                let mut rollup_fee_total_amount__ = None;
+                let mut rollup_fee_total_decimal_amount__ = None;
                 let mut gas_relayer_fee_amount__ = None;
                 let mut gas_relayer_fee_decimal_amount__ = None;
                 let mut signature_public_key__ = None;
                 let mut asset_address__ = None;
                 let mut proof__ = None;
+                let mut root_hash__ = None;
                 let mut gas_relayer_address__ = None;
+                let mut gas_relayer_url__ = None;
                 let mut signature__ = None;
                 let mut random_auditing_public_key__ = None;
                 let mut error_message__ = None;
                 let mut transaction_hash__ = None;
+                let mut bridge_type__ = None;
                 let mut spend_type__ = None;
                 let mut status__ = None;
                 while let Some(k) = map.next_key()? {
@@ -1488,12 +1534,6 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             asset_decimals__ = 
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
-                        }
-                        GeneratedField::RootHash => {
-                            if root_hash__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("rootHash"));
-                            }
-                            root_hash__ = Some(map.next_value()?);
                         }
                         GeneratedField::Amount => {
                             if amount__.is_some() {
@@ -1565,6 +1605,20 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             }
                             rollup_fee_decimal_amount__ = map.next_value()?;
                         }
+                        GeneratedField::RollupFeeTotalAmount => {
+                            if rollup_fee_total_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rollupFeeTotalAmount"));
+                            }
+                            rollup_fee_total_amount__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::RollupFeeTotalDecimalAmount => {
+                            if rollup_fee_total_decimal_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rollupFeeTotalDecimalAmount"));
+                            }
+                            rollup_fee_total_decimal_amount__ = map.next_value()?;
+                        }
                         GeneratedField::GasRelayerFeeAmount => {
                             if gas_relayer_fee_amount__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("gasRelayerFeeAmount"));
@@ -1597,11 +1651,23 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             }
                             proof__ = map.next_value()?;
                         }
+                        GeneratedField::RootHash => {
+                            if root_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rootHash"));
+                            }
+                            root_hash__ = map.next_value()?;
+                        }
                         GeneratedField::GasRelayerAddress => {
                             if gas_relayer_address__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("gasRelayerAddress"));
                             }
                             gas_relayer_address__ = map.next_value()?;
+                        }
+                        GeneratedField::GasRelayerUrl => {
+                            if gas_relayer_url__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("gasRelayerUrl"));
+                            }
+                            gas_relayer_url__ = map.next_value()?;
                         }
                         GeneratedField::Signature => {
                             if signature__.is_some() {
@@ -1627,6 +1693,12 @@ impl<'de> serde::Deserialize<'de> for Spend {
                             }
                             transaction_hash__ = map.next_value()?;
                         }
+                        GeneratedField::BridgeType => {
+                            if bridge_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("bridgeType"));
+                            }
+                            bridge_type__ = Some(map.next_value::<super::super::super::common::v1::BridgeType>()? as i32);
+                        }
                         GeneratedField::SpendType => {
                             if spend_type__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("spendType"));
@@ -1649,7 +1721,6 @@ impl<'de> serde::Deserialize<'de> for Spend {
                     contract_address: contract_address__.unwrap_or_default(),
                     asset_symbol: asset_symbol__.unwrap_or_default(),
                     asset_decimals: asset_decimals__.unwrap_or_default(),
-                    root_hash: root_hash__.unwrap_or_default(),
                     amount: amount__.unwrap_or_default(),
                     decimal_amount: decimal_amount__.unwrap_or_default(),
                     recipient: recipient__.unwrap_or_default(),
@@ -1661,16 +1732,21 @@ impl<'de> serde::Deserialize<'de> for Spend {
                     encrypted_auditor_notes: encrypted_auditor_notes__.unwrap_or_default(),
                     rollup_fee_amount: rollup_fee_amount__,
                     rollup_fee_decimal_amount: rollup_fee_decimal_amount__,
+                    rollup_fee_total_amount: rollup_fee_total_amount__,
+                    rollup_fee_total_decimal_amount: rollup_fee_total_decimal_amount__,
                     gas_relayer_fee_amount: gas_relayer_fee_amount__,
                     gas_relayer_fee_decimal_amount: gas_relayer_fee_decimal_amount__,
                     signature_public_key: signature_public_key__,
                     asset_address: asset_address__,
                     proof: proof__,
+                    root_hash: root_hash__,
                     gas_relayer_address: gas_relayer_address__,
+                    gas_relayer_url: gas_relayer_url__,
                     signature: signature__,
                     random_auditing_public_key: random_auditing_public_key__,
                     error_message: error_message__,
                     transaction_hash: transaction_hash__,
+                    bridge_type: bridge_type__.unwrap_or_default(),
                     spend_type: spend_type__.unwrap_or_default(),
                     status: status__.unwrap_or_default(),
                 })

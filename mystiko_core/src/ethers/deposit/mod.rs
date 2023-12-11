@@ -5,7 +5,9 @@ pub use handler::*;
 use crate::TransactionSigner;
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{Address, Bytes, TxHash, U256};
+use ethers_core::types::{Address, TxHash, U256};
+use mystiko_abi::mystiko_v2_bridge::DepositRequest as CrossChainDepositRequest;
+use mystiko_abi::mystiko_v2_loop::DepositRequest;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -36,12 +38,7 @@ pub struct DepositOptions<
 > {
     pub chain_id: u64,
     pub contract_address: Address,
-    pub amount: U256,
-    pub commitment: U256,
-    pub hash_k: U256,
-    pub random_s: u128,
-    pub encrypted_notes: Bytes,
-    pub rollup_fee: U256,
+    pub request: DepositRequest,
     pub signer: Arc<S>,
     #[builder(default)]
     pub timeout_ms: Option<u64>,
@@ -57,14 +54,7 @@ pub struct CrossChainDepositOptions<
 > {
     pub chain_id: u64,
     pub contract_address: Address,
-    pub amount: U256,
-    pub commitment: U256,
-    pub hash_k: U256,
-    pub random_s: u128,
-    pub encrypted_notes: Bytes,
-    pub rollup_fee: U256,
-    pub executor_fee: U256,
-    pub bridge_fee: U256,
+    pub request: CrossChainDepositRequest,
     pub signer: Arc<S>,
     #[builder(default)]
     pub timeout_ms: Option<u64>,

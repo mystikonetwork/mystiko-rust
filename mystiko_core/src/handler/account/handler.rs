@@ -41,6 +41,8 @@ pub enum AccountsError {
     HexStringError(#[from] rustc_hex::FromHexError),
     #[error(transparent)]
     WalletsError(#[from] WalletsError),
+    #[error(transparent)]
+    ProtocolKeyError(#[from] mystiko_protocol::error::ProtocolKeyError),
     #[error("no such account where {0:?} = {1:?}")]
     NoSuchAccountError(String, String),
 }
@@ -350,13 +352,13 @@ where
     ) -> Result<(Account, u32)> {
         let (sk_verify, sk_enc, account_nonce) = if let Some(secret_key) = &options.secret_key {
             let secret_key_bytes: FullSk = decode_hex_with_length(secret_key)?;
-            let (verify_sk, enc_sk) = separate_secret_keys(&secret_key_bytes);
+            let (verify_sk, enc_sk) = separate_secret_keys(&secret_key_bytes)?;
             (verify_sk, enc_sk, wallet.data.account_nonce)
         } else {
             self.generate_secret_key(wallet, &options.wallet_password).await?
         };
-        let pk_verify = verification_public_key(&sk_verify);
-        let pk_enc = encryption_public_key(&sk_enc);
+        let pk_verify = verification_public_key(&sk_verify)?;
+        let pk_enc = encryption_public_key(&sk_enc)?;
         let full_pk = combined_public_key(&pk_verify, &pk_enc);
         let full_sk = combined_secret_key(&sk_verify, &sk_enc);
         let full_sk_str = encode_hex(full_sk);

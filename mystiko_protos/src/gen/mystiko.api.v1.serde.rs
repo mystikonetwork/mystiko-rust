@@ -15,6 +15,7 @@ impl serde::Serialize for AccountError {
             Self::WalletsError => "ACCOUNT_ERROR_WALLETS_ERROR",
             Self::GetMystikoGuardError => "ACCOUNT_ERROR_GET_MYSTIKO_GUARD_ERROR",
             Self::DeserializeMessageError => "ACCOUNT_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            Self::ProtocolKeyError => "ACCOUNT_ERROR_PROTOCOL_KEY_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -35,6 +36,7 @@ impl<'de> serde::Deserialize<'de> for AccountError {
             "ACCOUNT_ERROR_WALLETS_ERROR",
             "ACCOUNT_ERROR_GET_MYSTIKO_GUARD_ERROR",
             "ACCOUNT_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            "ACCOUNT_ERROR_PROTOCOL_KEY_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -86,6 +88,7 @@ impl<'de> serde::Deserialize<'de> for AccountError {
                     "ACCOUNT_ERROR_WALLETS_ERROR" => Ok(AccountError::WalletsError),
                     "ACCOUNT_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(AccountError::GetMystikoGuardError),
                     "ACCOUNT_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(AccountError::DeserializeMessageError),
+                    "ACCOUNT_ERROR_PROTOCOL_KEY_ERROR" => Ok(AccountError::ProtocolKeyError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
@@ -329,6 +332,7 @@ impl serde::Serialize for DepositError {
             Self::AccountsError => "DEPOSIT_ERROR_ACCOUNTS_ERROR",
             Self::GetMystikoGuardError => "DEPOSIT_ERROR_GET_MYSTIKO_GUARD_ERROR",
             Self::DeserializeMessageError => "DEPOSIT_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            Self::ProtocolKeyError => "DEPOSIT_ERROR_PROTOCOL_KEY_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -368,6 +372,7 @@ impl<'de> serde::Deserialize<'de> for DepositError {
             "DEPOSIT_ERROR_ACCOUNTS_ERROR",
             "DEPOSIT_ERROR_GET_MYSTIKO_GUARD_ERROR",
             "DEPOSIT_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            "DEPOSIT_ERROR_PROTOCOL_KEY_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -438,6 +443,7 @@ impl<'de> serde::Deserialize<'de> for DepositError {
                     "DEPOSIT_ERROR_ACCOUNTS_ERROR" => Ok(DepositError::AccountsError),
                     "DEPOSIT_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(DepositError::GetMystikoGuardError),
                     "DEPOSIT_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(DepositError::DeserializeMessageError),
+                    "DEPOSIT_ERROR_PROTOCOL_KEY_ERROR" => Ok(DepositError::ProtocolKeyError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
@@ -460,6 +466,7 @@ impl serde::Serialize for MystikoError {
             Self::DatabaseMigrationError => "MYSTIKO_ERROR_DATABASE_MIGRATION_ERROR",
             Self::InvalidProviderUrlError => "MYSTIKO_ERROR_INVALID_PROVIDER_URL_ERROR",
             Self::StorageError => "MYSTIKO_ERROR_STORAGE_ERROR",
+            Self::RelayerClientError => "MYSTIKO_ERROR_RELAYER_CLIENT_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -479,6 +486,7 @@ impl<'de> serde::Deserialize<'de> for MystikoError {
             "MYSTIKO_ERROR_DATABASE_MIGRATION_ERROR",
             "MYSTIKO_ERROR_INVALID_PROVIDER_URL_ERROR",
             "MYSTIKO_ERROR_STORAGE_ERROR",
+            "MYSTIKO_ERROR_RELAYER_CLIENT_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -529,6 +537,89 @@ impl<'de> serde::Deserialize<'de> for MystikoError {
                     "MYSTIKO_ERROR_DATABASE_MIGRATION_ERROR" => Ok(MystikoError::DatabaseMigrationError),
                     "MYSTIKO_ERROR_INVALID_PROVIDER_URL_ERROR" => Ok(MystikoError::InvalidProviderUrlError),
                     "MYSTIKO_ERROR_STORAGE_ERROR" => Ok(MystikoError::StorageError),
+                    "MYSTIKO_ERROR_RELAYER_CLIENT_ERROR" => Ok(MystikoError::RelayerClientError),
+                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
+                }
+            }
+        }
+        deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
+impl serde::Serialize for MystikoLibError {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let variant = match self {
+            Self::Unspecified => "MYSTIKO_LIB_ERROR_UNSPECIFIED",
+            Self::GetMystikoGuardError => "MYSTIKO_LIB_ERROR_GET_MYSTIKO_GUARD_ERROR",
+            Self::DeserializeMessageError => "MYSTIKO_LIB_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            Self::StorageError => "MYSTIKO_LIB_ERROR_STORAGE_ERROR",
+            Self::FileStaticCacheError => "MYSTIKO_LIB_ERROR_FILE_STATIC_CACHE_ERROR",
+        };
+        serializer.serialize_str(variant)
+    }
+}
+impl<'de> serde::Deserialize<'de> for MystikoLibError {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "MYSTIKO_LIB_ERROR_UNSPECIFIED",
+            "MYSTIKO_LIB_ERROR_GET_MYSTIKO_GUARD_ERROR",
+            "MYSTIKO_LIB_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            "MYSTIKO_LIB_ERROR_STORAGE_ERROR",
+            "MYSTIKO_LIB_ERROR_FILE_STATIC_CACHE_ERROR",
+        ];
+
+        struct GeneratedVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = MystikoLibError;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(formatter, "expected one of: {:?}", &FIELDS)
+            }
+
+            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(MystikoLibError::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
+            }
+
+            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(MystikoLibError::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
+            }
+
+            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                match value {
+                    "MYSTIKO_LIB_ERROR_UNSPECIFIED" => Ok(MystikoLibError::Unspecified),
+                    "MYSTIKO_LIB_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(MystikoLibError::GetMystikoGuardError),
+                    "MYSTIKO_LIB_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(MystikoLibError::DeserializeMessageError),
+                    "MYSTIKO_LIB_ERROR_STORAGE_ERROR" => Ok(MystikoLibError::StorageError),
+                    "MYSTIKO_LIB_ERROR_FILE_STATIC_CACHE_ERROR" => Ok(MystikoLibError::FileStaticCacheError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
@@ -557,6 +648,7 @@ impl serde::Serialize for ScannerError {
             Self::WalletHandlerError => "SCANNER_ERROR_WALLET_HANDLER_ERROR",
             Self::GetMystikoGuardError => "SCANNER_ERROR_GET_MYSTIKO_GUARD_ERROR",
             Self::DeserializeMessageError => "SCANNER_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            Self::ProtocolKeyError => "SCANNER_ERROR_PROTOCOL_KEY_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -582,6 +674,7 @@ impl<'de> serde::Deserialize<'de> for ScannerError {
             "SCANNER_ERROR_WALLET_HANDLER_ERROR",
             "SCANNER_ERROR_GET_MYSTIKO_GUARD_ERROR",
             "SCANNER_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            "SCANNER_ERROR_PROTOCOL_KEY_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -638,6 +731,7 @@ impl<'de> serde::Deserialize<'de> for ScannerError {
                     "SCANNER_ERROR_WALLET_HANDLER_ERROR" => Ok(ScannerError::WalletHandlerError),
                     "SCANNER_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(ScannerError::GetMystikoGuardError),
                     "SCANNER_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(ScannerError::DeserializeMessageError),
+                    "SCANNER_ERROR_PROTOCOL_KEY_ERROR" => Ok(ScannerError::ProtocolKeyError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }

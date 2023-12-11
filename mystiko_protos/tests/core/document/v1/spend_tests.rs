@@ -1,9 +1,10 @@
 use mystiko_protos::core::document::v1::Spend;
+use mystiko_protos::core::handler::v1::GasRelayer;
 use num_bigint::BigUint;
 use prost::Message;
 
 #[test]
-fn test_wrappers() {
+fn test_spend_wrappers() {
     let spend = Spend::builder().build();
     assert!(spend.rollup_fee_decimal_amount_as_biguint().unwrap().is_none());
     assert!(spend.gas_relayer_fee_decimal_amount_as_biguint().unwrap().is_none());
@@ -15,6 +16,7 @@ fn test_wrappers() {
     let spend = Spend::builder()
         .decimal_amount("10000".to_string())
         .rollup_fee_decimal_amount("20000".to_string())
+        .rollup_fee_total_decimal_amount("40000".to_string())
         .gas_relayer_fee_decimal_amount("30000".to_string())
         .root_hash("1234".to_string())
         .input_commitments(vec!["5678".to_string(), "7890".to_string()])
@@ -34,10 +36,14 @@ fn test_wrappers() {
         Some(BigUint::from(20000_u64))
     );
     assert_eq!(
+        spend.rollup_fee_total_decimal_amount_as_biguint().unwrap(),
+        Some(BigUint::from(40000_u64))
+    );
+    assert_eq!(
         spend.gas_relayer_fee_decimal_amount_as_biguint().unwrap(),
         Some(BigUint::from(30000_u64))
     );
-    assert_eq!(spend.root_hash_as_biguint().unwrap(), BigUint::from(1234_u32));
+    assert_eq!(spend.root_hash_as_biguint().unwrap().unwrap(), BigUint::from(1234_u32));
     assert_eq!(
         spend.input_commitments_as_biguint().unwrap(),
         vec![BigUint::from(5678_u32), BigUint::from(7890_u32)]
@@ -62,4 +68,13 @@ fn test_wrappers() {
     let transaction_json = serde_json::to_string(&spend).unwrap();
     assert_eq!(spend, Spend::try_from(&transaction_bytes).unwrap());
     assert_eq!(spend, serde_json::from_str(&transaction_json).unwrap());
+}
+
+#[test]
+fn test_gas_relayer_wrappers() {
+    let gas_relayer = GasRelayer::builder().min_gas_fee_decimal("10001".to_string()).build();
+    assert_eq!(
+        gas_relayer.minimum_gas_fee_as_biguint().unwrap(),
+        BigUint::from(10001_u64)
+    );
 }

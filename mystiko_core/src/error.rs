@@ -9,6 +9,8 @@ pub enum MystikoError {
     #[error(transparent)]
     ScannerError(#[from] ScannerError),
     #[error(transparent)]
+    RelayerClientError(#[from] mystiko_relayer_client::error::RelayerClientError),
+    #[error(transparent)]
     DataLoaderError(#[from] DataLoaderError),
     #[error("config raised error: {0:?}")]
     ConfigError(#[source] anyhow::Error),
