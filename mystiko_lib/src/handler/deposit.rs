@@ -1,5 +1,5 @@
 use crate::runtime;
-use mystiko_protos::api::handler::v1::{CreateDepositRequest, QuoteRequest, SendRequest, SummaryRequest};
+use mystiko_protos::api::handler::v1::{CreateDepositRequest, QuoteRequest, SummaryRequest};
 use mystiko_protos::api::v1::{ApiResponse, DepositError};
 
 pub fn quote<M>(message: M) -> ApiResponse
@@ -54,9 +54,9 @@ mod internal {
     use crate::error::parse_deposit_error;
     use crate::instance;
     use mystiko_core::DepositHandler;
-    use mystiko_protos::api::handler::v1::{CreateDepositResponse, QuoteResponse, SendResponse, SummaryResponse};
+    use mystiko_protos::api::handler::v1::{CreateDepositResponse, QuoteResponse, SummaryResponse};
     use mystiko_protos::api::v1::{ApiResponse, DepositError};
-    use mystiko_protos::core::handler::v1::{CreateDepositOptions, QuoteDepositOptions, SendDepositOptions};
+    use mystiko_protos::core::handler::v1::{CreateDepositOptions, QuoteDepositOptions};
 
     pub(crate) async fn quote(options: QuoteDepositOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;

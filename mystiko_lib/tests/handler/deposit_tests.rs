@@ -3,13 +3,12 @@ use mystiko_lib::deposit::{create, quote, summary};
 use mystiko_lib::{account, wallet};
 use mystiko_protos::api::handler::v1::{
     CreateAccountRequest, CreateAccountResponse, CreateDepositRequest, CreateDepositResponse, CreateWalletRequest,
-    CreateWalletResponse, QuoteRequest, QuoteResponse, SendRequest, SummaryRequest, SummaryResponse,
+    CreateWalletResponse, QuoteRequest, QuoteResponse, SummaryRequest, SummaryResponse,
 };
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::{Account, Wallet};
 use mystiko_protos::core::handler::v1::{
     CreateAccountOptions, CreateDepositOptions, CreateWalletOptions, DepositQuote, QuoteDepositOptions,
-    SendDepositOptions,
 };
 use mystiko_protos::core::v1::DepositStatus;
 use serial_test::serial;
