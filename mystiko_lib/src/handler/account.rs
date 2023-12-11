@@ -3,7 +3,7 @@ use mystiko_protos::api::handler::v1::{
     CountAccountRequest, CreateAccountRequest, ExportSecretKeyRequest, FindAccountByIdentifierRequest,
     FindAccountRequest, UpdateAccountRequest, UpdateEncryptionRequest,
 };
-use mystiko_protos::api::v1::{ApiResponse, MystikoLibError};
+use mystiko_protos::api::v1::{AccountError, ApiResponse};
 
 pub fn create<M>(message: M) -> ApiResponse
 where
@@ -17,7 +17,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
 }
 
@@ -33,8 +33,12 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
+}
+
+pub fn count_all() -> ApiResponse {
+    runtime().block_on(internal::count_all())
 }
 
 pub fn find<M>(message: M) -> ApiResponse
@@ -49,7 +53,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
 }
 
@@ -65,7 +69,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
 }
 
@@ -84,7 +88,7 @@ where
                 return ApiResponse::unknown_error("unexpected message");
             }
         }
-        Err(err) => return ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => return ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
 
     ApiResponse::unknown_error("unexpected message")
@@ -100,7 +104,7 @@ where
             message.old_wallet_password,
             message.new_wallet_password,
         )),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
 }
 
@@ -116,7 +120,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
 }
 
@@ -131,7 +135,7 @@ mod internal {
         ExportSecretKeyResponse, FindAccountByIdentifierResponse, FindAccountResponse, UpdateAccountResponse,
         UpdateEncryptionResponse,
     };
-    use mystiko_protos::api::v1::{ApiResponse, MystikoLibError};
+    use mystiko_protos::api::v1::{AccountError, ApiResponse};
     use mystiko_protos::core::handler::v1::{CreateAccountOptions, UpdateAccountOptions};
     use mystiko_protos::storage::v1::QueryFilter;
 
@@ -145,7 +149,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(AccountError::GetMystikoGuardError, err),
         }
     }
 
@@ -159,7 +163,21 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(AccountError::GetMystikoGuardError, err),
+        }
+    }
+
+    pub(crate) async fn count_all() -> ApiResponse {
+        let mystiko_guard = instance().read().await;
+        match mystiko_guard.get() {
+            Ok(mystiko) => {
+                let result = mystiko.accounts.count_all().await;
+                match result {
+                    Ok(count) => ApiResponse::success(CountAccountResponse::builder().count(count).build()),
+                    Err(err) => ApiResponse::error(parse_account_error(&err), err),
+                }
+            }
+            Err(err) => ApiResponse::error(AccountError::GetMystikoGuardError, err),
         }
     }
 
@@ -178,7 +196,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(AccountError::GetMystikoGuardError, err),
         }
     }
 
@@ -200,7 +218,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(AccountError::GetMystikoGuardError, err),
         }
     }
 
@@ -225,7 +243,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(AccountError::GetMystikoGuardError, err),
         }
     }
 
@@ -242,7 +260,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(AccountError::GetMystikoGuardError, err),
         }
     }
 
@@ -275,7 +293,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_account_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(AccountError::GetMystikoGuardError, err),
         }
     }
 }

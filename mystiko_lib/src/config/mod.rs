@@ -10,7 +10,7 @@ use mystiko_protos::api::config::v1::{
     FindPoolContractsResponse, GetConfigRequest, GetConfigResponse, GetTransactionUrlRequest,
     GetTransactionUrlResponse,
 };
-use mystiko_protos::api::v1::{ApiResponse, MystikoLibError};
+use mystiko_protos::api::v1::{ApiResponse, ConfigError};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::config::contract::v1::PoolContractConfig;
 use mystiko_protos::config::v1::ChainConfig;
@@ -30,7 +30,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_default_circuit(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -41,7 +41,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_circuit(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -52,7 +52,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_chain(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -63,7 +63,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_peer_chains(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -74,7 +74,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_asset_symbols(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -85,7 +85,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_bridges(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -96,7 +96,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_bridge(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -107,7 +107,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_deposit_contract(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -118,7 +118,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_deposit_contract_by_address(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -129,7 +129,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_pool_contract(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -140,7 +140,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_pool_contracts(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -151,7 +151,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_pool_contract_by_address(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -162,7 +162,7 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_contract_by_address(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
@@ -173,14 +173,13 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::get_transaction_url(request)),
-        Err(err) => ApiResponse::error(MystikoLibError::DeserializeMessageError.into(), err),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
 
 mod internal {
     use super::*;
     use crate::instance;
-    use mystiko_protos::api::v1::MystikoLibError;
 
     pub(crate) async fn get() -> ApiResponse {
         let mystiko_guard = instance().read().await;
@@ -194,7 +193,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -208,7 +207,7 @@ mod internal {
                     .map(|c| c.to_proto());
                 ApiResponse::success(FindDefaultCircuitResponse::builder().config(config).build())
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -219,7 +218,7 @@ mod internal {
                 let config = mystiko.config.find_circuit(&request.circuit_name).map(|c| c.to_proto());
                 ApiResponse::success(FindDefaultCircuitResponse::builder().config(config).build())
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -237,7 +236,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -256,7 +255,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -272,7 +271,7 @@ mod internal {
                     .collect::<Vec<String>>();
                 ApiResponse::success(FindAssetSymbolsResponse::builder().asset_symbol(symbols).build())
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -288,7 +287,7 @@ mod internal {
                     .collect::<Vec<i32>>();
                 ApiResponse::success(FindBridgesResponse::builder().bridge_type(bridges).build())
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -302,7 +301,7 @@ mod internal {
                     .map(|c| c.to_proto());
                 ApiResponse::success(FindBridgeResponse::builder().config(config).build())
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -325,7 +324,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -345,7 +344,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -368,7 +367,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -387,7 +386,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -407,7 +406,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -425,7 +424,7 @@ mod internal {
                     Err(err) => ApiResponse::unknown_error(err),
                 }
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 
@@ -436,7 +435,7 @@ mod internal {
                 let url = mystiko.config.transaction_url(request.chain_id, &request.tx_hash);
                 ApiResponse::success(GetTransactionUrlResponse::builder().url(url).build())
             }
-            Err(err) => ApiResponse::error(MystikoLibError::GetMystikoGuardError.into(), err),
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
     }
 }

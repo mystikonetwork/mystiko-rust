@@ -18,12 +18,13 @@ impl ApiResponse {
             .build()
     }
 
-    pub fn error<T>(code: StatusCode, error_message: T) -> Self
+    pub fn error<T, E>(code: E, error_message: T) -> Self
     where
+        E: Into<StatusCode>,
         T: ToString,
     {
         ApiResponse::builder()
-            .code(code)
+            .code(code.into())
             .result(api_response::Result::ErrorMessage(error_message.to_string()))
             .build()
     }
@@ -39,15 +40,15 @@ impl ApiResponse {
     }
 }
 
-impl From<MystikoLibError> for StatusCode {
-    fn from(value: MystikoLibError) -> Self {
-        StatusCode::builder().error(Error::Lib(value as i32)).build()
-    }
-}
-
 impl From<MystikoError> for StatusCode {
     fn from(value: MystikoError) -> Self {
         StatusCode::builder().error(Error::Mystiko(value as i32)).build()
+    }
+}
+
+impl From<ConfigError> for StatusCode {
+    fn from(value: ConfigError) -> Self {
+        StatusCode::builder().error(Error::Config(value as i32)).build()
     }
 }
 
