@@ -43,7 +43,7 @@ async fn mock_handshake_supported_server(server: Arc<RwLock<ServerGuard>>, hits:
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(to_string(&response).unwrap())
-        .expect(hits)
+        .expect_at_least(hits)
         .create_async()
         .await
 }

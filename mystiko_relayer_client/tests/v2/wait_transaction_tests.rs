@@ -8,6 +8,7 @@ use mystiko_relayer_types::response::success;
 use mystiko_relayer_types::{RelayTransactStatusResponse, TransactStatus, WaitingTransactionRequest};
 use serde_json::to_string;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::RwLock;
 
 #[tokio::test]
@@ -191,17 +192,18 @@ async fn wait_transaction_until_confirmed_timeout() {
             .unwrap(),
         )
         .with_header("content-type", "application/json")
+        .expect_at_least(1)
         .create_async()
         .await;
 
     let result = client
-        .wait_transaction(WaitingTransactionRequest {
-            relayer_url: mock_url,
-            uuid: "78d08829".to_string(),
-            waiting_status: TransactStatus::Succeeded,
-            timeout: Default::default(),
-            interval: None,
-        })
+        .wait_transaction(
+            WaitingTransactionRequest::builder()
+                .relayer_url(mock_url)
+                .uuid("78d08829".to_string())
+                .timeout(Duration::from_secs(5))
+                .build(),
+        )
         .await;
     assert!(result.is_err());
     assert_eq!(
