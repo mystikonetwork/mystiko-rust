@@ -15,14 +15,14 @@ use ethers_core::types::{
 };
 use ethers_signers::LocalWallet;
 use mystiko_config::{MystikoConfig, PoolContractConfig};
-use mystiko_core::{Commitment, PrivateKeySigner, SpendColumn, SpendHandler};
+use mystiko_core::{Commitment, CommitmentColumn, PrivateKeySigner, SpendColumn, SpendHandler};
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_protos::common::v1::BridgeType;
-use mystiko_protos::core::document::v1::Account;
+use mystiko_protos::core::document::v1::{Account, Spend};
 use mystiko_protos::core::handler::v1::{CreateSpendOptions, SendSpendOptions};
 use mystiko_protos::core::v1::{SpendStatus, SpendType};
 use mystiko_protos::data::v1::CommitmentStatus;
-use mystiko_protos::storage::v1::SubFilter;
+use mystiko_protos::storage::v1::{Condition, SubFilter};
 use mystiko_relayer_client::types::register::RegisterInfo;
 use mystiko_relayer_types::{ContractInfo, RelayTransactResponse, RelayTransactStatusResponse, TransactStatus};
 use mystiko_storage::{ColumnValues, Document, DocumentColumn};
@@ -148,6 +148,7 @@ async fn test_send_withdraw1x0() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[]).await;
 }
 
 #[tokio::test]
@@ -244,6 +245,7 @@ async fn test_send_withdraw2x0() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[]).await;
 }
 
 #[tokio::test]
@@ -258,7 +260,7 @@ async fn test_send_withdraw1x1() {
         .num_inputs(1_usize)
         .num_outputs(1_usize)
         .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("80000000000000000").unwrap())
+        .public_amount(U256::from_dec_str("40000000000000000").unwrap())
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .out_rollup_fees(vec![U256::from_dec_str("40000000000000000").unwrap()])
@@ -344,6 +346,7 @@ async fn test_send_withdraw1x1() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[2.0]).await;
 }
 
 #[tokio::test]
@@ -358,7 +361,7 @@ async fn test_send_withdraw2x1() {
         .num_inputs(2_usize)
         .num_outputs(1_usize)
         .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("120000000000000000").unwrap())
+        .public_amount(U256::from_dec_str("80000000000000000").unwrap())
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .out_rollup_fees(vec![U256::from_dec_str("40000000000000000").unwrap()])
@@ -445,6 +448,7 @@ async fn test_send_withdraw2x1() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[2.0]).await;
 }
 
 #[tokio::test]
@@ -543,6 +547,7 @@ async fn test_send_transfer1x1() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Transfer as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[6.0]).await;
 }
 
 #[tokio::test]
@@ -642,6 +647,7 @@ async fn test_send_transfer2x1() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Transfer as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[10.0]).await;
 }
 
 #[tokio::test]
@@ -743,6 +749,7 @@ async fn test_send_transfer1x2() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Transfer as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[1.0, 1.0]).await;
 }
 
 #[tokio::test]
@@ -845,10 +852,11 @@ async fn test_send_transfer2x2() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Transfer as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[2.0, 4.0]).await;
 }
 
 #[tokio::test]
-async fn test_send_with_gas_relayer() {
+async fn test_send_withdraw_with_gas_relayer() {
     let chain_id = 5_u64;
     let (config, contract_config) = setup_config(chain_id, "0x223903804Ee95e264F74C88B4F8583429524593c").await;
     let (_, private_key) = generate_private_key();
@@ -857,15 +865,15 @@ async fn test_send_with_gas_relayer() {
     let tx_hash = TxHash::from_str("0xa35c998eaf5df995dba638efc114a8f58353784d08a60467fba6ed1e8f0e64a8").unwrap();
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
-        .num_outputs(0_usize)
+        .num_outputs(1_usize)
         .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("30000000000000000").unwrap())
+        .public_amount(U256::from_dec_str("39870000000000000").unwrap())
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
     let commitment_pool_contracts_options = CommitmentPoolTestOptions::builder()
         .chain_id(chain_id)
-        .spent_nullifiers(HashMap::from([(U256::from(0_u64), false)]))
+        .spent_nullifiers(HashMap::from([(U256::from(4_u64), false)]))
         .known_root(HashMap::from([(tree_root, true)]))
         .transact_options(transact_options)
         .build();
@@ -893,7 +901,7 @@ async fn test_send_with_gas_relayer() {
             options.chain_id == chain_id
                 && options.name.is_none()
                 && more_options.asset_symbol == "MTT"
-                && more_options.circuit_type == mystiko_types::CircuitType::Transaction1x0
+                && more_options.circuit_type == mystiko_types::CircuitType::Transaction1x1
                 && !more_options.show_unavailable
         })
         .returning(move |_| Ok(gas_relayers.clone()));
@@ -907,8 +915,9 @@ async fn test_send_with_gas_relayer() {
                 && request.data.asset_decimals == 16
                 && request.data.spend_type == SpendType::Withdraw
                 && request.data.bridge_type == mystiko_types::BridgeType::Loop
-                && request.data.circuit_type == mystiko_types::CircuitType::Transaction1x0
+                && request.data.circuit_type == mystiko_types::CircuitType::Transaction1x1
                 && request.data.contract_param.root_hash == tree_root
+                && request.data.contract_param.public_amount == U256::from_dec_str("39870000000000000").unwrap()
         })
         .returning(|_| Ok(RelayTransactResponse::builder().uuid("job_1".to_string()).build()));
     relayer_client
@@ -956,7 +965,7 @@ async fn test_send_with_gas_relayer() {
         .asset_symbol("MTT".to_string())
         .bridge_type(BridgeType::Loop as i32)
         .spend_type(SpendType::Withdraw as i32)
-        .amount(3.0)
+        .amount(8.0)
         .recipient("0x87813A8E81729C0100ce2568b6283772cb31bdb8".to_string())
         .wallet_password("P@ssw0rd".to_string())
         .gas_relayer("test_relayer_1".to_string())
@@ -1008,6 +1017,7 @@ async fn test_send_with_gas_relayer() {
     assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[2.0]).await;
 }
 
 #[tokio::test]
@@ -1113,6 +1123,7 @@ async fn test_send_withdraw_bridge_assets() {
     assert_eq!(spend.bridge_type, BridgeType::Tbridge as i32);
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[]).await;
 }
 
 #[tokio::test]
@@ -1538,6 +1549,80 @@ impl SendTestContext {
             .collect::<Vec<_>>();
         options1.extend(options2);
         generate_commitments(self.db.clone(), self.chain_id, &self.contract_config, &options1).await
+    }
+
+    async fn check_commitments(&self, spend: &Spend, expected_block_number: u64, expected_out_amounts: &[f64]) {
+        let input_commitment_hashes = spend
+            .input_commitments
+            .iter()
+            .map(|c| BigUint::from_str(c).unwrap())
+            .collect::<Vec<_>>();
+        let output_commitment_hashes = spend
+            .output_commitments
+            .iter()
+            .map(|c| BigUint::from_str(c).unwrap())
+            .collect::<Vec<_>>();
+        let expected_out_amounts = expected_out_amounts
+            .iter()
+            .map(|out_amount| {
+                number_to_biguint_decimal(*out_amount, Some(self.contract_config.asset_decimals())).unwrap()
+            })
+            .collect::<Vec<_>>();
+        let input_commitments_filter = Condition::and(vec![
+            SubFilter::equal(CommitmentColumn::ChainId, self.chain_id),
+            SubFilter::equal(
+                CommitmentColumn::ContractAddress,
+                self.contract_config.address().to_string(),
+            ),
+            SubFilter::in_list(CommitmentColumn::CommitmentHash, input_commitment_hashes.clone()),
+        ]);
+        let input_commitments = self.db.commitments.find(input_commitments_filter).await.unwrap();
+        let mut output_commitments = if !output_commitment_hashes.is_empty() {
+            let output_commitments_filter = Condition::and(vec![
+                SubFilter::equal(CommitmentColumn::ChainId, self.chain_id),
+                SubFilter::equal(
+                    CommitmentColumn::ContractAddress,
+                    self.contract_config.address().to_string(),
+                ),
+                SubFilter::in_list(CommitmentColumn::CommitmentHash, output_commitment_hashes.clone()),
+            ]);
+            self.db.commitments.find(output_commitments_filter).await.unwrap()
+        } else {
+            vec![]
+        };
+        output_commitments.sort_by_key(|c| c.data.amount);
+        assert_eq!(input_commitments.len(), input_commitment_hashes.len());
+        for input_commitment in input_commitments.into_iter() {
+            assert!(input_commitment.data.spent);
+        }
+        assert_eq!(output_commitments.len(), output_commitment_hashes.len());
+        for (index, output_commitment) in output_commitments.into_iter().enumerate() {
+            assert_eq!(output_commitment.data.chain_id, self.chain_id);
+            assert_eq!(output_commitment.data.contract_address, self.contract_config.address());
+            assert_eq!(output_commitment.data.bridge_type, spend.bridge_type);
+            assert_eq!(output_commitment.data.asset_symbol, self.contract_config.asset_symbol());
+            assert_eq!(
+                output_commitment.data.asset_decimals,
+                self.contract_config.asset_decimals()
+            );
+            assert_eq!(
+                output_commitment.data.asset_address,
+                self.contract_config.asset_address().map(|s| s.to_string())
+            );
+            assert_eq!(output_commitment.data.status, CommitmentStatus::Queued as i32);
+            assert!(!output_commitment.data.spent);
+            assert_eq!(output_commitment.data.block_number, expected_block_number);
+            assert!(output_commitment.data.src_chain_block_number.is_none());
+            assert!(output_commitment.data.included_block_number.is_none());
+            assert_eq!(output_commitment.data.amount.unwrap(), expected_out_amounts[index]);
+            assert_eq!(
+                output_commitment.data.rollup_fee_amount,
+                spend.rollup_fee_decimal_amount_as_biguint().unwrap()
+            );
+            assert_eq!(output_commitment.data.queued_transaction_hash, spend.transaction_hash);
+            assert!(output_commitment.data.included_transaction_hash.is_none());
+            assert!(output_commitment.data.src_chain_transaction_hash.is_none());
+        }
     }
 }
 

@@ -88,6 +88,7 @@ where
             })
             .collect::<Result<HashMap<_, _>, SpendsError>>()?;
         let rollup_fee_amount = spend.data.rollup_fee_decimal_amount.clone().unwrap_or_default();
+        let rollup_fee_total_amount = spend.data.rollup_fee_total_decimal_amount.clone().unwrap_or_default();
         let proof_inputs = input_commitments
             .iter()
             .map(|commitment| create_zk_commitment_input(commitment, &accounts, &merkle_tree))
@@ -98,8 +99,14 @@ where
             .collect::<Result<Vec<_>, SpendsError>>()?;
         let sig_wallet = LocalWallet::new(&mut rand::thread_rng());
         let sig_pk: SigPk = sig_wallet.address().to_fixed_bytes();
+        let gas_relayer_fee_amount = spend.data.gas_relayer_fee_decimal_amount.clone().unwrap_or_default();
         let public_amount = if spend.data.spend_type == SpendType::Withdraw as i32 {
-            spend.data.decimal_amount.clone()
+            spend
+                .data
+                .decimal_amount
+                .clone()
+                .sub(&gas_relayer_fee_amount)
+                .sub(rollup_fee_total_amount)
         } else {
             BigUint::zero()
         };
@@ -129,7 +136,7 @@ where
             .sig_pk(sig_pk)
             .tree_root(merkle_tree.root())
             .public_amount(public_amount)
-            .relayer_fee_amount(spend.data.gas_relayer_fee_decimal_amount.clone().unwrap_or_default())
+            .relayer_fee_amount(gas_relayer_fee_amount)
             .auditor_public_keys(auditor_keys)
             .program(program)
             .abi(abi)
@@ -433,7 +440,10 @@ async fn build_output_commitments(
             output_commitments.push(build_output_commitment(&shielded_address, remaining)?);
         }
         if spend.data.spend_type == SpendType::Transfer as i32 {
-            let output_commitment = build_output_commitment(&spend.data.recipient, amount)?;
+            let transfer_amount = amount
+                .sub(&spend.data.gas_relayer_fee_decimal_amount.clone().unwrap_or_default())
+                .sub(&spend.data.rollup_fee_total_decimal_amount.clone().unwrap_or_default());
+            let output_commitment = build_output_commitment(&spend.data.recipient, transfer_amount)?;
             output_commitments.push(output_commitment);
         }
     }

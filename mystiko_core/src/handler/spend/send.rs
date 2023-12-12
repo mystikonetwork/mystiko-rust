@@ -1,7 +1,7 @@
 use crate::handler::{format_spend_log, format_tx_hash, spend_circuit_type};
 use crate::{
-    Commitment, CommitmentPoolContractHandler, PublicAssetHandler, Spend, SpendColumn, SpendContext, Spends,
-    SpendsError, TransactOptions, TransactionHandler, TransactionSigner, WaitOptions,
+    Commitment, CommitmentColumn, CommitmentPoolContractHandler, PublicAssetHandler, Spend, SpendColumn, SpendContext,
+    Spends, SpendsError, TransactOptions, TransactionHandler, TransactionSigner, WaitOptions,
 };
 use ethers_core::abi::AbiEncode;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -13,7 +13,7 @@ use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::handler::v1::SendSpendOptions;
 use mystiko_protos::core::v1::{SpendStatus, SpendType, Transaction};
 use mystiko_protos::data::v1::CommitmentStatus;
-use mystiko_protos::storage::v1::SubFilter;
+use mystiko_protos::storage::v1::{Condition, SubFilter};
 use mystiko_relayer_client::RelayerClient;
 use mystiko_storage::{ColumnValues, Document, DocumentColumn, StatementFormatter, Storage};
 use mystiko_utils::address::ethers_address_from_string;
@@ -251,6 +251,7 @@ where
             .timeout_ms(options.tx_wait_timeout_ms)
             .build();
         let tx_receipt = self.transactions.wait(wait_options).await?;
+        self.update_input_commitments(context, &spend).await?;
         if let Some(tx_receipt) = tx_receipt {
             if let Some(block_number) = tx_receipt.block_number {
                 self.create_out_commitments(context, block_number.as_u64(), out_commitments, &spend)
@@ -259,6 +260,21 @@ where
         }
         spend = self.update_status(spend, SpendStatus::Succeeded).await?;
         Ok(spend)
+    }
+
+    async fn update_input_commitments(
+        &self,
+        context: &SpendContext,
+        spend: &Document<Spend>,
+    ) -> Result<(), SpendsError> {
+        let filters = Condition::and(vec![
+            SubFilter::equal(CommitmentColumn::ChainId, context.chain_id),
+            SubFilter::equal(CommitmentColumn::ContractAddress, spend.data.contract_address.clone()),
+            SubFilter::in_list(CommitmentColumn::CommitmentHash, spend.data.input_commitments.clone()),
+        ]);
+        let column_values = ColumnValues::new().set_value(CommitmentColumn::Spent, true);
+        self.db.commitments.update_by_filter(column_values, filters).await?;
+        Ok(())
     }
 
     async fn create_out_commitments(
