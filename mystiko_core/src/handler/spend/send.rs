@@ -120,7 +120,8 @@ where
             .data(transact_data)
             .build();
         log::info!(
-            "submitting relay_transact to relayer(url={:?}) for {}",
+            "submitting relay_transact={} to relayer(url={:?}) for {}",
+            serde_json::to_string(&relay_transact_request)?,
             relayer_url,
             format_spend_log(&spend)
         );
