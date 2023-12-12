@@ -11,8 +11,7 @@ use mystiko_protos::api::config::v1::{
     FindDepositContractByAddressRequest, FindDepositContractByAddressResponse, FindDepositContractRequest,
     FindDepositContractResponse, FindPeerChainsRequest, FindPeerChainsResponse, FindPoolContractByAddressRequest,
     FindPoolContractByAddressResponse, FindPoolContractRequest, FindPoolContractResponse, FindPoolContractsRequest,
-    FindPoolContractsResponse, GetConfigRequest, GetConfigResponse, GetTransactionUrlRequest,
-    GetTransactionUrlResponse,
+    FindPoolContractsResponse, GetConfigResponse, GetTransactionUrlRequest, GetTransactionUrlResponse,
 };
 use mystiko_protos::api::v1::api_response;
 use mystiko_protos::common::v1::{BridgeType, CircuitType};
@@ -22,7 +21,7 @@ use serial_test::serial;
 #[serial]
 fn test_with_valid_config() {
     setup(None);
-    let response = get(GetConfigRequest::builder().build());
+    let response = get();
     assert!(response.code.unwrap().success);
     let result = response.result.unwrap();
     match result {
