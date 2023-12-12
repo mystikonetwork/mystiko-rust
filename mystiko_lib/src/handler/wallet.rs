@@ -1,6 +1,6 @@
 use crate::runtime;
 use mystiko_protos::api::handler::v1::{
-    CheckCurrentRequest, CheckPasswordRequest, CreateWalletRequest, ExportMnemonicPhraseRequest, UpdatePasswordRequest,
+    CheckPasswordRequest, CreateWalletRequest, ExportMnemonicPhraseRequest, UpdatePasswordRequest,
 };
 use mystiko_protos::api::v1::{ApiResponse, WalletError};
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
@@ -21,11 +21,7 @@ where
     }
 }
 
-pub fn check_current<M>(_message: M) -> ApiResponse
-where
-    M: TryInto<CheckCurrentRequest>,
-    <M as TryInto<CheckCurrentRequest>>::Error: std::error::Error + Send + Sync + 'static,
-{
+pub fn check_current() -> ApiResponse {
     runtime().block_on(internal::check_current())
 }
 

@@ -3,8 +3,8 @@ use bip32::secp256k1::elliptic_curve::rand_core::OsRng;
 use bip32::{Language, Mnemonic};
 use mystiko_lib::wallet::{check_current, check_password, create, export_mnemonic_phrase, update_password};
 use mystiko_protos::api::handler::v1::{
-    CheckCurrentRequest, CheckCurrentResponse, CheckPasswordRequest, CreateWalletRequest, CreateWalletResponse,
-    ExportMnemonicPhraseRequest, ExportMnemonicPhraseResponse, UpdatePasswordRequest,
+    CheckCurrentResponse, CheckPasswordRequest, CreateWalletRequest, CreateWalletResponse, ExportMnemonicPhraseRequest,
+    ExportMnemonicPhraseResponse, UpdatePasswordRequest,
 };
 use mystiko_protos::api::v1::WalletError;
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
@@ -21,12 +21,10 @@ fn test_create() {
         .unwrap()
         .wallet
         .unwrap();
-    let current = CheckCurrentResponse::try_from(extract_data(
-        check_current(CheckCurrentRequest::builder().build()).result.unwrap(),
-    ))
-    .unwrap()
-    .wallet
-    .unwrap();
+    let current = CheckCurrentResponse::try_from(extract_data(check_current().result.unwrap()))
+        .unwrap()
+        .wallet
+        .unwrap();
     assert_eq!(wallet, current);
 }
 

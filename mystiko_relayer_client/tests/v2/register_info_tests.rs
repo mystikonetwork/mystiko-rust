@@ -55,8 +55,19 @@ async fn test_register_info_successful() {
     assert_eq!(response.len(), 1);
 
     let register_info = &response[0];
+    assert!(register_info.support);
+    assert!(register_info.available);
     assert_eq!(register_info.chain_id, CHAIN_ID);
     assert_eq!(register_info.url, mock_url);
+    assert_eq!(register_info.name, format!("test_{}", mock_url));
+    assert_eq!(
+        register_info.relayer_address,
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    );
+    assert_eq!(
+        register_info.relayer_contract_address,
+        "0x45B22A8CefDfF00989882CAE48Ad06D57938Efcc"
+    );
 
     mock_0.assert_async().await;
     mock_1.assert_async().await;

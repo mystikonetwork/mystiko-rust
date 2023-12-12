@@ -16,7 +16,7 @@ use mystiko_relayer_types::{
     RelayTransactStatusRequest, RelayTransactStatusResponse, TransactStatus, WaitingTransactionRequest,
 };
 use mystiko_types::NetworkType;
-use mystiko_utils::address::ethers_address_from_string;
+use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use reqwest::Client;
 use std::sync::Arc;
 use std::time::Duration;
@@ -288,7 +288,7 @@ async fn get_register_info(
         chain_id: 0,
         url: url.to_string(),
         name: name.to_string(),
-        relayer_address: relayer.to_string(),
+        relayer_address: ethers_address_to_string(relayer),
         relayer_contract_address: "".to_string(),
         contracts: vec![],
     };
