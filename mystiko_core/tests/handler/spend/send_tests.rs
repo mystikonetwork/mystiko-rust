@@ -867,7 +867,7 @@ async fn test_send_withdraw_with_gas_relayer() {
         .num_inputs(1_usize)
         .num_outputs(1_usize)
         .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("39870000000000000").unwrap())
+        .public_amount(U256::from_dec_str("39820000000000000").unwrap())
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -917,7 +917,7 @@ async fn test_send_withdraw_with_gas_relayer() {
                 && request.data.bridge_type == mystiko_types::BridgeType::Loop
                 && request.data.circuit_type == mystiko_types::CircuitType::Transaction1x1
                 && request.data.contract_param.root_hash == tree_root
-                && request.data.contract_param.public_amount == U256::from_dec_str("39870000000000000").unwrap()
+                && request.data.contract_param.public_amount == U256::from_dec_str("39820000000000000").unwrap()
         })
         .returning(|_| Ok(RelayTransactResponse::builder().uuid("job_1".to_string()).build()));
     relayer_client
@@ -946,7 +946,7 @@ async fn test_send_withdraw_with_gas_relayer() {
         .block_number(200010000_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
-    let static_cache = setup_static_cache(&contract_config, &mystiko_types::CircuitType::Transaction1x0);
+    let static_cache = setup_static_cache(&contract_config, &mystiko_types::CircuitType::Transaction1x1);
     let prover = setup_prover(true);
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
@@ -966,6 +966,7 @@ async fn test_send_withdraw_with_gas_relayer() {
         .bridge_type(BridgeType::Loop as i32)
         .spend_type(SpendType::Withdraw as i32)
         .amount(8.0)
+        .rollup_fee_amount(4.0)
         .recipient("0x87813A8E81729C0100ce2568b6283772cb31bdb8".to_string())
         .wallet_password("P@ssw0rd".to_string())
         .gas_relayer("test_relayer_1".to_string())
@@ -983,21 +984,24 @@ async fn test_send_withdraw_with_gas_relayer() {
     assert_eq!(spend.contract_address, contract_config.address());
     assert_eq!(spend.asset_symbol, contract_config.asset_symbol());
     assert_eq!(spend.asset_decimals, contract_config.asset_decimals());
-    assert_eq!(spend.amount, 3.0);
-    assert_eq!(spend.decimal_amount, "30000000000000000");
+    assert_eq!(spend.amount, 8.0);
+    assert_eq!(spend.decimal_amount, "80000000000000000");
     assert_eq!(spend.recipient, "0x87813A8E81729C0100ce2568b6283772cb31bdb8");
     assert_eq!(spend.wallet_id, context.account.wallet_id);
-    assert_eq!(spend.input_commitments, vec!["0".to_string()]);
-    assert!(spend.output_commitments.is_empty());
+    assert_eq!(spend.input_commitments, vec!["4".to_string()]);
+    assert_eq!(spend.output_commitments.len(), 1);
     assert_eq!(spend.nullifiers.len(), spend.input_commitments.len());
     assert_eq!(spend.signature_public_key_hashes.len(), spend.input_commitments.len());
     assert_eq!(spend.encrypted_auditor_notes.len(), spend.input_commitments.len() * 5);
-    assert!(spend.rollup_fee_amount.is_none());
-    assert!(spend.rollup_fee_decimal_amount.is_none());
-    assert!(spend.rollup_fee_total_amount.is_none());
-    assert!(spend.rollup_fee_total_decimal_amount.is_none());
-    assert_eq!(spend.gas_relayer_fee_amount.unwrap(), 0.013);
-    assert_eq!(spend.gas_relayer_fee_decimal_amount.clone().unwrap(), "130000000000000");
+    assert_eq!(spend.rollup_fee_amount.unwrap(), 4.0);
+    assert_eq!(spend.rollup_fee_decimal_amount.clone().unwrap(), "40000000000000000");
+    assert_eq!(spend.rollup_fee_total_amount.unwrap(), 4.0);
+    assert_eq!(
+        spend.rollup_fee_total_decimal_amount.clone().unwrap(),
+        "40000000000000000"
+    );
+    assert_eq!(spend.gas_relayer_fee_amount.unwrap(), 0.018);
+    assert_eq!(spend.gas_relayer_fee_decimal_amount.clone().unwrap(), "180000000000000");
     assert_eq!(
         spend.gas_relayer_address.clone().unwrap(),
         "0x357c6Fd2cEE77bA5de49e0bB9d49444781A8f0cc"
@@ -1018,6 +1022,174 @@ async fn test_send_withdraw_with_gas_relayer() {
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
     context.check_commitments(&spend, 200010000_u64, &[2.0]).await;
+}
+
+#[tokio::test]
+async fn test_send_transfer_with_gas_relayer() {
+    let chain_id = 5_u64;
+    let (config, contract_config) = setup_config(chain_id, "0x223903804Ee95e264F74C88B4F8583429524593c").await;
+    let (_, private_key) = generate_private_key();
+    let merkle_tree = generate_merkle_tree(6_usize);
+    let tree_root = biguint_to_u256(&merkle_tree.root());
+    let tx_hash = TxHash::from_str("0xa35c998eaf5df995dba638efc114a8f58353784d08a60467fba6ed1e8f0e64a8").unwrap();
+    let transact_options = TransactTestOptions::builder()
+        .num_inputs(2_usize)
+        .num_outputs(2_usize)
+        .root_hash(tree_root)
+        .tx_hash(tx_hash)
+        .build();
+    let commitment_pool_contracts_options = CommitmentPoolTestOptions::builder()
+        .chain_id(chain_id)
+        .spent_nullifiers(HashMap::from([(U256::from(2_u64), false), (U256::from(4_u64), false)]))
+        .known_root(HashMap::from([(tree_root, true)]))
+        .transact_options(transact_options)
+        .build();
+    let commitment_pool_contracts =
+        setup_commitment_pool_contracts(commitment_pool_contracts_options, &contract_config);
+    let mut relayer_client = MockRelayerClient::new();
+    let gas_relayers = vec![RegisterInfo::builder()
+        .chain_id(5_u64)
+        .name("test_relayer_1".to_string())
+        .url("https://test_relayer1.mystiko.network".to_string())
+        .relayer_address("0x357c6Fd2cEE77bA5de49e0bB9d49444781A8f0cc".to_string())
+        .relayer_contract_address("0x3f4a3378852887b81dFE593Ee1A68Be4adcd888d".to_string())
+        .available(true)
+        .support(true)
+        .contracts(vec![ContractInfo::builder()
+            .asset_symbol("MTT".to_string())
+            .relayer_fee_of_ten_thousandth(10_u32)
+            .minimum_gas_fee("100000000000000".to_string())
+            .build()])
+        .build()];
+    relayer_client
+        .expect_register_info()
+        .withf(move |options| {
+            let more_options = options.options.as_ref().unwrap();
+            options.chain_id == chain_id
+                && options.name.is_none()
+                && more_options.asset_symbol == "MTT"
+                && more_options.circuit_type == mystiko_types::CircuitType::Transaction2x2
+                && !more_options.show_unavailable
+        })
+        .returning(move |_| Ok(gas_relayers.clone()));
+    relayer_client
+        .expect_relay_transact()
+        .withf(move |request| {
+            request.relayer_url == "https://test_relayer1.mystiko.network"
+                && request.data.chain_id == chain_id
+                && request.data.pool_address == "0x223903804Ee95e264F74C88B4F8583429524593c"
+                && request.data.asset_symbol == "MTT"
+                && request.data.asset_decimals == 16
+                && request.data.spend_type == SpendType::Transfer
+                && request.data.bridge_type == mystiko_types::BridgeType::Loop
+                && request.data.circuit_type == mystiko_types::CircuitType::Transaction2x2
+                && request.data.contract_param.root_hash == tree_root
+                && request.data.contract_param.public_amount == U256::from_dec_str("0").unwrap()
+        })
+        .returning(|_| Ok(RelayTransactResponse::builder().uuid("job_1".to_string()).build()));
+    relayer_client
+        .expect_wait_transaction()
+        .withf(|request| {
+            request.relayer_url == "https://test_relayer1.mystiko.network"
+                && request.uuid == "job_1"
+                && request.interval == Some(Duration::from_millis(10_u64))
+                && request.timeout == Some(Duration::from_millis(100_u64))
+                && request.waiting_status == TransactStatus::Succeeded
+        })
+        .returning(move |_| {
+            Ok(RelayTransactStatusResponse::builder()
+                .uuid("job_1".to_string())
+                .chain_id(chain_id)
+                .spend_type(SpendType::Transfer)
+                .transaction_hash(tx_hash.encode_hex())
+                .status(TransactStatus::Succeeded)
+                .error_msg(None)
+                .build())
+        });
+    let transactions_options = TransactionsTestOptions::builder()
+        .chain_id(chain_id)
+        .config(&config)
+        .tx_hash(tx_hash)
+        .block_number(200010000_u64)
+        .build();
+    let transactions = setup_transactions(transactions_options);
+    let static_cache = setup_static_cache(&contract_config, &mystiko_types::CircuitType::Transaction2x2);
+    let prover = setup_prover(true);
+    let test_options: SendTestOptions = SendTestOptions::builder()
+        .chain_id(chain_id)
+        .config(config)
+        .contract_config(contract_config.clone())
+        .relayer_client(relayer_client)
+        .commitment_pool_contracts(commitment_pool_contracts)
+        .prover(prover)
+        .static_cache(static_cache)
+        .transactions(transactions)
+        .build();
+    let context = SendTestContext::new(test_options).await;
+    context.generate_commitments(&[3.0, 4.0, 10.0]).await;
+    let create_options = CreateSpendOptions::builder()
+        .chain_id(chain_id)
+        .asset_symbol("MTT".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .spend_type(SpendType::Transfer as i32)
+        .amount(12.0)
+        .rollup_fee_amount(4.0)
+        .recipient(context.account.shielded_address.clone())
+        .wallet_password("P@ssw0rd".to_string())
+        .gas_relayer("test_relayer_1".to_string())
+        .build();
+    let spend = context.handler.create(create_options).await.unwrap();
+    let send_options = SendSpendOptions::builder()
+        .spend_id(spend.id)
+        .wallet_password("P@ssw0rd".to_string())
+        .private_key(private_key)
+        .relayer_wait_interval_ms(10_u64)
+        .relayer_wait_timeout_ms(100_u64)
+        .build();
+    let mut spend = context.handler.send(send_options).await.unwrap();
+    assert_eq!(spend.chain_id, chain_id);
+    assert_eq!(spend.contract_address, contract_config.address());
+    assert_eq!(spend.asset_symbol, contract_config.asset_symbol());
+    assert_eq!(spend.asset_decimals, contract_config.asset_decimals());
+    assert_eq!(spend.amount, 12.0);
+    assert_eq!(spend.decimal_amount, "120000000000000000");
+    assert_eq!(spend.recipient, context.account.shielded_address);
+    assert_eq!(spend.wallet_id, context.account.wallet_id);
+    spend.input_commitments.sort();
+    assert_eq!(spend.input_commitments, vec!["2".to_string(), "4".to_string()]);
+    assert_eq!(spend.output_commitments.len(), 2);
+    assert_eq!(spend.nullifiers.len(), spend.input_commitments.len());
+    assert_eq!(spend.signature_public_key_hashes.len(), spend.input_commitments.len());
+    assert_eq!(spend.encrypted_auditor_notes.len(), spend.input_commitments.len() * 5);
+    assert_eq!(spend.rollup_fee_amount.unwrap(), 4.0);
+    assert_eq!(spend.rollup_fee_decimal_amount.clone().unwrap(), "40000000000000000");
+    assert_eq!(spend.rollup_fee_total_amount.unwrap(), 8.0);
+    assert_eq!(
+        spend.rollup_fee_total_decimal_amount.clone().unwrap(),
+        "80000000000000000"
+    );
+    assert_eq!(spend.gas_relayer_fee_amount.unwrap(), 0.022);
+    assert_eq!(spend.gas_relayer_fee_decimal_amount.clone().unwrap(), "220000000000000");
+    assert_eq!(
+        spend.gas_relayer_address.clone().unwrap(),
+        "0x357c6Fd2cEE77bA5de49e0bB9d49444781A8f0cc"
+    );
+    assert_eq!(
+        spend.gas_relayer_url.clone().unwrap(),
+        "https://test_relayer1.mystiko.network"
+    );
+    assert!(spend.signature_public_key.is_some());
+    assert_eq!(spend.asset_address(), contract_config.asset_address().unwrap());
+    assert!(spend.proof.is_some());
+    assert_eq!(spend.root_hash(), tree_root.to_string());
+    assert!(spend.signature.is_some());
+    assert!(spend.random_auditing_public_key.is_some());
+    assert!(spend.error_message.is_none());
+    assert_eq!(spend.transaction_hash(), tx_hash.encode_hex());
+    assert_eq!(spend.bridge_type, BridgeType::Loop as i32);
+    assert_eq!(spend.spend_type, SpendType::Transfer as i32);
+    assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    context.check_commitments(&spend, 200010000_u64, &[2.0, 3.978]).await;
 }
 
 #[tokio::test]
@@ -1590,7 +1762,7 @@ impl SendTestContext {
         } else {
             vec![]
         };
-        output_commitments.sort_by_key(|c| c.data.amount);
+        output_commitments.sort_by_key(|c| c.data.amount.clone().unwrap_or_default());
         assert_eq!(input_commitments.len(), input_commitment_hashes.len());
         for input_commitment in input_commitments.into_iter() {
             assert!(input_commitment.data.spent);
