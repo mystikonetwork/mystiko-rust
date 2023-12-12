@@ -49,7 +49,8 @@ where
             .gas_relayers
             .iter()
             .find(|gas_relayer| options.gas_relayer == Some(gas_relayer.name.clone()));
-        let (amount, rollup_fee_amount, gas_relayer_fee) = validate_create_options(options, &quote, gas_relayer)?;
+        let (amount, rollup_fee_amount, rollup_fee_decimal_amount, gas_relayer_fee) =
+            validate_create_options(options, &quote, gas_relayer)?;
         let gas_relayer_fee_amount = decimal_to_number::<f64, _>(&gas_relayer_fee, Some(quote.asset_decimals))?;
         let new_decimal_balance = quote.current_decimal_balance_as_biguint()?.sub(&amount);
         let new_balance = decimal_to_number::<f64, _>(&new_decimal_balance, Some(quote.asset_decimals))?;
@@ -63,10 +64,10 @@ where
             .amount(options.amount)
             .decimal_amount(amount.to_string())
             .recipient(options.recipient.clone())
-            .rollup_fee_amount(options.rollup_fee_amount())
-            .rollup_fee_decimal_amount(rollup_fee_amount.to_string())
-            .rollup_fee_total_amount(options.rollup_fee_amount() * (quote.num_of_outputs as f64))
-            .rollup_fee_total_decimal_amount(rollup_fee_amount.mul(quote.num_of_outputs).to_string())
+            .rollup_fee_amount(rollup_fee_amount)
+            .rollup_fee_decimal_amount(rollup_fee_decimal_amount.to_string())
+            .rollup_fee_total_amount(rollup_fee_amount * (quote.num_of_outputs as f64))
+            .rollup_fee_total_decimal_amount(rollup_fee_decimal_amount.mul(quote.num_of_outputs).to_string())
             .rollup_fee_asset_symbol(quote.rollup_fee_asset_symbol.clone())
             .rollup_fee_asset_decimals(quote.rollup_fee_asset_decimals)
             .gas_relayer_fee_amount(gas_relayer.is_some().then_some(gas_relayer_fee_amount))
@@ -85,7 +86,7 @@ fn validate_create_options(
     options: &CreateSpendOptions,
     quote: &SpendQuote,
     gas_relayer: Option<&GasRelayer>,
-) -> Result<(BigUint, BigUint, BigUint), SpendsError> {
+) -> Result<(BigUint, f64, BigUint, BigUint), SpendsError> {
     if !quote.valid {
         return Err(SpendsError::InvalidCreateOptionsError(quote.invalid_code()));
     }
@@ -97,21 +98,25 @@ fn validate_create_options(
         return Err(SpendsError::InvalidPublicAddressError(options.recipient.clone()));
     }
     let amount = number_to_biguint_decimal(options.amount, Some(quote.asset_decimals))?;
-    let rollup_fee_amount = number_to_biguint_decimal(options.rollup_fee_amount(), Some(quote.asset_decimals))?;
+    let min_rollup_fee_amount = (quote.num_of_outputs > 0)
+        .then_some(quote.min_rollup_fee)
+        .unwrap_or_default();
+    let rollup_fee_amount = options.rollup_fee_amount.unwrap_or(min_rollup_fee_amount);
+    let rollup_fee_decimal_amount = number_to_biguint_decimal(rollup_fee_amount, Some(quote.asset_decimals))?;
     let gas_relayer_fee = gas_relayer
         .map(|gas_relayer| calc_min_gas_relayer_fee(&amount, gas_relayer))
         .transpose()?
         .unwrap_or_default();
     if amount.le(&gas_relayer_fee
         .clone()
-        .add(&rollup_fee_amount.clone().mul(quote.num_of_outputs)))
+        .add(&rollup_fee_decimal_amount.clone().mul(quote.num_of_outputs)))
     {
         return Err(SpendsError::InvalidAmountError(options.amount));
     }
-    if (quote.num_of_outputs > 0 && rollup_fee_amount.lt(&quote.min_rollup_fee_decimal_as_biguint()?))
-        || (quote.num_of_outputs == 0 && rollup_fee_amount.ne(&BigUint::zero()))
+    if (quote.num_of_outputs > 0 && rollup_fee_decimal_amount.lt(&quote.min_rollup_fee_decimal_as_biguint()?))
+        || (quote.num_of_outputs == 0 && rollup_fee_decimal_amount.ne(&BigUint::zero()))
     {
-        return Err(SpendsError::InvalidRollupFeeAmountError(options.rollup_fee_amount()));
+        return Err(SpendsError::InvalidRollupFeeAmountError(rollup_fee_amount));
     }
-    Ok((amount, rollup_fee_amount, gas_relayer_fee))
+    Ok((amount, rollup_fee_amount, rollup_fee_decimal_amount, gas_relayer_fee))
 }

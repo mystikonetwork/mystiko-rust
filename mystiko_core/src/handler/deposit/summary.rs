@@ -22,9 +22,12 @@ where
             .then_some(context.contract_config.bridge_fee_asset().asset_symbol().to_string());
         let executor_fee_asset_symbol = (context.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
             .then_some(context.contract_config.executor_fee_asset().asset_symbol().to_string());
+        let rollup_fee_amount = options.rollup_fee_amount.unwrap_or(quote.min_rollup_fee_amount);
+        let rollup_fee_decimal_amount =
+            number_to_biguint_decimal(rollup_fee_amount, Some(quote.rollup_fee_asset_decimals))?.to_string();
         let asset_amounts = AssetAmounts::builder()
             .amount(options.amount)
-            .rollup_fee_amount(options.rollup_fee_amount)
+            .rollup_fee_amount(rollup_fee_amount)
             .bridge_fee_amount(options.bridge_fee_amount)
             .executor_fee_amount(options.executor_fee_amount)
             .build();
@@ -48,8 +51,6 @@ where
             })
             .collect::<HashMap<_, _>>();
         let decimal_amount = number_to_biguint_decimal(options.amount, Some(quote.asset_decimals))?.to_string();
-        let rollup_fee_decimal_amount =
-            number_to_biguint_decimal(options.rollup_fee_amount, Some(quote.rollup_fee_asset_decimals))?.to_string();
         let bridge_fee_decimal_amount = options
             .bridge_fee_amount
             .map(|v| number_to_biguint_decimal(v, quote.bridge_fee_asset_decimals))
@@ -67,7 +68,7 @@ where
             .amount(options.amount)
             .decimal_amount(decimal_amount)
             .shielded_address(options.shielded_address.clone())
-            .rollup_fee_amount(options.rollup_fee_amount)
+            .rollup_fee_amount(rollup_fee_amount)
             .rollup_fee_decimal_amount(rollup_fee_decimal_amount)
             .rollup_fee_asset_symbol(context.contract_config.asset_symbol().to_string())
             .rollup_fee_asset_decimals(quote.rollup_fee_asset_decimals)
@@ -104,7 +105,8 @@ where
             self.execute_quote(&quote_options).await?
         };
         let amount = number_to_biguint_decimal(options.amount, Some(quote.asset_decimals))?;
-        let rollup_fee_amount = number_to_biguint_decimal(options.rollup_fee_amount, Some(quote.asset_decimals))?;
+        let rollup_fee_amount = options.rollup_fee_amount.unwrap_or(quote.min_rollup_fee_amount);
+        let rollup_fee_decimal_amount = number_to_biguint_decimal(rollup_fee_amount, Some(quote.asset_decimals))?;
         if amount.lt(&quote.min_decimal_amount_as_biguint()?) || amount.gt(&quote.max_decimal_amount_as_biguint()?) {
             return Err(DepositsError::InvalidDepositAmountError(
                 options.amount,
@@ -112,9 +114,9 @@ where
                 quote.max_amount,
             ));
         }
-        if rollup_fee_amount.lt(&quote.min_rollup_fee_decimal_amount_as_biguint()?) {
+        if rollup_fee_decimal_amount.lt(&quote.min_rollup_fee_decimal_amount_as_biguint()?) {
             return Err(DepositsError::InvalidRollupFeeAmountError(
-                options.rollup_fee_amount,
+                rollup_fee_amount,
                 quote.min_rollup_fee_amount,
             ));
         }

@@ -207,7 +207,6 @@ async fn test_cross_chain_deposit_summary() {
         .bridge_type(BridgeType::Tbridge as i32)
         .shielded_address("secret address".to_string())
         .amount(10_f64)
-        .rollup_fee_amount(0.01_f64)
         .bridge_fee_amount(0.00001_f64)
         .executor_fee_amount(0.0001_f64)
         .deposit_quote(quote)
@@ -351,7 +350,7 @@ async fn test_deposit_summary_with_errors() {
 
     //min rollup fee
     options.amount = 10_f64;
-    options.rollup_fee_amount = 0.001_f64;
+    options.rollup_fee_amount = Some(0.001_f64);
     let err = handler.summary(options.clone()).await.unwrap_err();
     assert_eq!(
         err.to_string(),
@@ -359,7 +358,7 @@ async fn test_deposit_summary_with_errors() {
     );
 
     //min bridge fee
-    options.rollup_fee_amount = 0.01_f64;
+    options.rollup_fee_amount = Some(0.01_f64);
     options.bridge_fee_amount = Some(0.000001_f64);
     let err = handler.summary(options.clone()).await.unwrap_err();
     assert_eq!(
@@ -459,7 +458,6 @@ async fn test_loop_deposit_erc20_token_create() {
         .bridge_type(BridgeType::Loop as i32)
         .shielded_address(account.shielded_address.clone())
         .amount(10_f64)
-        .rollup_fee_amount(0.01_f64)
         .deposit_quote(quote)
         .build();
     let deposit = handler.create(options).await.unwrap();

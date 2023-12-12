@@ -57,7 +57,7 @@ where
             bridge_type: bridge_type as i32,
             amount: options.amount,
             decimal_amount: summary.decimal_amount_as_biguint()?,
-            rollup_fee_amount: options.rollup_fee_amount,
+            rollup_fee_amount: summary.rollup_fee_amount,
             rollup_fee_decimal_amount: summary.rollup_fee_decimal_amount_as_biguint()?,
             bridge_fee_amount: options.bridge_fee_amount,
             bridge_fee_decimal_amount: summary.bridge_fee_decimal_amount_as_biguint()?,

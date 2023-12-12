@@ -33,7 +33,6 @@ async fn test_withdraw_summary() {
         .bridge_type(BridgeType::Loop as i32)
         .spend_type(SpendType::Withdraw as i32)
         .amount(12)
-        .rollup_fee_amount(4.0)
         .recipient("0xFE500c274F72f1d1a9978c903d97E6d45CD9121B".to_string())
         .build();
     let mut expected_summary = SpendSummary {

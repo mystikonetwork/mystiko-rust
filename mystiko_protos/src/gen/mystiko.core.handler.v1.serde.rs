@@ -294,10 +294,10 @@ impl serde::Serialize for CreateDepositOptions {
         if !self.shielded_address.is_empty() {
             len += 1;
         }
-        if self.rollup_fee_amount != 0. {
+        if self.dst_chain_id.is_some() {
             len += 1;
         }
-        if self.dst_chain_id.is_some() {
+        if self.rollup_fee_amount.is_some() {
             len += 1;
         }
         if self.bridge_fee_amount.is_some() {
@@ -328,11 +328,11 @@ impl serde::Serialize for CreateDepositOptions {
         if !self.shielded_address.is_empty() {
             struct_ser.serialize_field("shieldedAddress", &self.shielded_address)?;
         }
-        if self.rollup_fee_amount != 0. {
-            struct_ser.serialize_field("rollupFeeAmount", &self.rollup_fee_amount)?;
-        }
         if let Some(v) = self.dst_chain_id.as_ref() {
             struct_ser.serialize_field("dstChainId", ToString::to_string(&v).as_str())?;
+        }
+        if let Some(v) = self.rollup_fee_amount.as_ref() {
+            struct_ser.serialize_field("rollupFeeAmount", v)?;
         }
         if let Some(v) = self.bridge_fee_amount.as_ref() {
             struct_ser.serialize_field("bridgeFeeAmount", v)?;
@@ -368,10 +368,10 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
             "amount",
             "shielded_address",
             "shieldedAddress",
-            "rollup_fee_amount",
-            "rollupFeeAmount",
             "dst_chain_id",
             "dstChainId",
+            "rollup_fee_amount",
+            "rollupFeeAmount",
             "bridge_fee_amount",
             "bridgeFeeAmount",
             "executor_fee_amount",
@@ -390,8 +390,8 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
             AssetSymbol,
             Amount,
             ShieldedAddress,
-            RollupFeeAmount,
             DstChainId,
+            RollupFeeAmount,
             BridgeFeeAmount,
             ExecutorFeeAmount,
             QueryTimeoutMs,
@@ -422,8 +422,8 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
                             "assetSymbol" | "asset_symbol" => Ok(GeneratedField::AssetSymbol),
                             "amount" => Ok(GeneratedField::Amount),
                             "shieldedAddress" | "shielded_address" => Ok(GeneratedField::ShieldedAddress),
-                            "rollupFeeAmount" | "rollup_fee_amount" => Ok(GeneratedField::RollupFeeAmount),
                             "dstChainId" | "dst_chain_id" => Ok(GeneratedField::DstChainId),
+                            "rollupFeeAmount" | "rollup_fee_amount" => Ok(GeneratedField::RollupFeeAmount),
                             "bridgeFeeAmount" | "bridge_fee_amount" => Ok(GeneratedField::BridgeFeeAmount),
                             "executorFeeAmount" | "executor_fee_amount" => Ok(GeneratedField::ExecutorFeeAmount),
                             "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
@@ -452,8 +452,8 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
                 let mut asset_symbol__ = None;
                 let mut amount__ = None;
                 let mut shielded_address__ = None;
-                let mut rollup_fee_amount__ = None;
                 let mut dst_chain_id__ = None;
+                let mut rollup_fee_amount__ = None;
                 let mut bridge_fee_amount__ = None;
                 let mut executor_fee_amount__ = None;
                 let mut query_timeout_ms__ = None;
@@ -489,19 +489,19 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
                             }
                             shielded_address__ = Some(map.next_value()?);
                         }
-                        GeneratedField::RollupFeeAmount => {
-                            if rollup_fee_amount__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("rollupFeeAmount"));
-                            }
-                            rollup_fee_amount__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
                         GeneratedField::DstChainId => {
                             if dst_chain_id__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("dstChainId"));
                             }
                             dst_chain_id__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::RollupFeeAmount => {
+                            if rollup_fee_amount__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rollupFeeAmount"));
+                            }
+                            rollup_fee_amount__ = 
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
@@ -548,8 +548,8 @@ impl<'de> serde::Deserialize<'de> for CreateDepositOptions {
                     asset_symbol: asset_symbol__.unwrap_or_default(),
                     amount: amount__.unwrap_or_default(),
                     shielded_address: shielded_address__.unwrap_or_default(),
-                    rollup_fee_amount: rollup_fee_amount__.unwrap_or_default(),
                     dst_chain_id: dst_chain_id__,
+                    rollup_fee_amount: rollup_fee_amount__,
                     bridge_fee_amount: bridge_fee_amount__,
                     executor_fee_amount: executor_fee_amount__,
                     query_timeout_ms: query_timeout_ms__,
