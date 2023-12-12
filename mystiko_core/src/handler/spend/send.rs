@@ -110,7 +110,7 @@ where
             .asset_symbol(spend.data.asset_symbol.clone())
             .asset_decimals(spend.data.asset_decimals)
             .contract_param(request)
-            .signature(encode_hex_with_prefix(signature.to_vec()))
+            .signature(encode_hex_with_prefix(&signature))
             .spend_type(SpendType::from_i32(spend.data.spend_type).unwrap_or_default())
             .bridge_type(context.contract_config.bridge_type().clone())
             .circuit_type(circuit_type)
@@ -120,8 +120,7 @@ where
             .data(transact_data)
             .build();
         log::info!(
-            "submitting relay_transact={} to relayer(url={:?}) for {}",
-            serde_json::to_string(&relay_transact_request)?,
+            "submitting relay_transact to relayer(url={:?}) for {}",
             relayer_url,
             format_spend_log(&spend)
         );
