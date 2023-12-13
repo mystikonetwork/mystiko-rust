@@ -25,11 +25,23 @@ where
         let rollup_fee_amount = options.rollup_fee_amount.unwrap_or(quote.min_rollup_fee_amount);
         let rollup_fee_decimal_amount =
             number_to_biguint_decimal(rollup_fee_amount, Some(quote.rollup_fee_asset_decimals))?.to_string();
+        let bridge_fee_amount = (context.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
+            .then_some(options.bridge_fee_amount.unwrap_or(quote.min_bridge_fee_amount()));
+        let bridge_fee_decimal_amount = bridge_fee_amount
+            .map(|v| number_to_biguint_decimal(v, quote.bridge_fee_asset_decimals))
+            .transpose()?
+            .map(|v| v.to_string());
+        let executor_fee_amount = (context.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop)
+            .then_some(options.executor_fee_amount.unwrap_or(quote.min_executor_fee_amount()));
+        let executor_fee_decimal_amount = executor_fee_amount
+            .map(|v| number_to_biguint_decimal(v, quote.executor_fee_asset_decimals))
+            .transpose()?
+            .map(|v| v.to_string());
         let asset_amounts = AssetAmounts::builder()
             .amount(options.amount)
             .rollup_fee_amount(rollup_fee_amount)
-            .bridge_fee_amount(options.bridge_fee_amount)
-            .executor_fee_amount(options.executor_fee_amount)
+            .bridge_fee_amount(bridge_fee_amount)
+            .executor_fee_amount(executor_fee_amount)
             .build();
         let assets_context = asset_amounts.to_contexts(&context, options.query_timeout_ms)?;
         let total_amounts = assets_context
@@ -51,16 +63,6 @@ where
             })
             .collect::<HashMap<_, _>>();
         let decimal_amount = number_to_biguint_decimal(options.amount, Some(quote.asset_decimals))?.to_string();
-        let bridge_fee_decimal_amount = options
-            .bridge_fee_amount
-            .map(|v| number_to_biguint_decimal(v, quote.bridge_fee_asset_decimals))
-            .transpose()?
-            .map(|v| v.to_string());
-        let executor_fee_decimal_amount = options
-            .executor_fee_amount
-            .map(|v| number_to_biguint_decimal(v, quote.executor_fee_asset_decimals))
-            .transpose()?
-            .map(|v| v.to_string());
         Ok(DepositSummary::builder()
             .chain_id(options.chain_id)
             .asset_symbol(options.asset_symbol.clone())
@@ -73,11 +75,11 @@ where
             .rollup_fee_asset_symbol(context.contract_config.asset_symbol().to_string())
             .rollup_fee_asset_decimals(quote.rollup_fee_asset_decimals)
             .dst_chain_id(options.dst_chain_id)
-            .bridge_fee_amount(options.bridge_fee_amount)
+            .bridge_fee_amount(bridge_fee_amount)
             .bridge_fee_decimal_amount(bridge_fee_decimal_amount)
             .bridge_fee_asset_symbol(bridge_fee_asset_symbol)
             .bridge_fee_asset_decimals(quote.bridge_fee_asset_decimals)
-            .executor_fee_amount(options.executor_fee_amount)
+            .executor_fee_amount(executor_fee_amount)
             .executor_fee_decimal_amount(executor_fee_decimal_amount)
             .executor_fee_asset_symbol(executor_fee_asset_symbol)
             .executor_fee_asset_decimals(quote.executor_fee_asset_decimals)
@@ -122,7 +124,7 @@ where
         }
         if let Some(min_bridge_fee_amount) = quote.min_bridge_fee_decimal_amount_as_biguint()? {
             let bridge_fee_amount = number_to_biguint_decimal(
-                options.bridge_fee_amount.unwrap_or_default(),
+                options.bridge_fee_amount.unwrap_or(quote.min_bridge_fee_amount()),
                 Some(quote.bridge_fee_asset_decimals()),
             )?;
             if bridge_fee_amount.lt(&min_bridge_fee_amount) {
@@ -134,7 +136,7 @@ where
         }
         if let Some(min_executor_fee_amount) = quote.min_executor_fee_decimal_amount_as_biguint()? {
             let executor_fee_amount = number_to_biguint_decimal(
-                options.executor_fee_amount.unwrap_or_default(),
+                options.executor_fee_amount.unwrap_or(quote.min_executor_fee_amount()),
                 Some(quote.executor_fee_asset_decimals()),
             )?;
             if executor_fee_amount.lt(&min_executor_fee_amount) {

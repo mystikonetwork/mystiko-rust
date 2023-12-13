@@ -217,7 +217,7 @@ where
         proof_context.spend.data.signature_public_key = Some(encode_fixed_len_hex_with_prefix(request.sig_pk, 20));
         proof_context.spend.data.signature_public_key_hashes =
             Some(request.sig_hashes.iter().map(u256_to_biguint).collect());
-        proof_context.spend.data.signature = Some(signature.clone().encode_hex());
+        proof_context.spend.data.signature = Some(encode_hex_with_prefix(&signature));
         proof_context.spend.data.random_auditing_public_key =
             Some(u256_to_biguint(&request.random_auditing_public_key));
         proof_context.spend.data.encrypted_auditor_notes =
