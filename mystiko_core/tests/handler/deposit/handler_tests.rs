@@ -1,11 +1,10 @@
 use crate::common::{create_database, MockProvider, MockProviders};
-use crate::handler::{MockCommitmentPoolContracts, MockDepositContracts, MockPublicAssets, MockTransactions};
+use crate::handler::{
+    generate_private_key, MockCommitmentPoolContracts, MockDepositContracts, MockPublicAssets, MockTransactions,
+};
 use ethers_core::abi::{AbiDecode, AbiEncode};
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{
-    Address, Eip1559TransactionRequest, TransactionReceipt, TransactionRequest, TxHash, U256, U64,
-};
-use ethers_signers::{LocalWallet, Signer};
+use ethers_core::types::{Eip1559TransactionRequest, TransactionReceipt, TransactionRequest, TxHash, U256, U64};
 use mystiko_config::MystikoConfig;
 use mystiko_core::{
     AccountHandler, Accounts, CommitmentColumn, Database, DepositColumn, DepositHandler, DepositQuote, Deposits,
@@ -24,7 +23,6 @@ use mystiko_storage::{ColumnValues, DocumentColumn, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use mystiko_utils::convert::number_to_u256_decimal;
-use mystiko_utils::hex::encode_hex;
 use num_bigint::BigUint;
 use std::collections::HashMap;
 use std::ops::Add;
@@ -209,7 +207,6 @@ async fn test_cross_chain_deposit_summary() {
         .bridge_type(BridgeType::Tbridge as i32)
         .shielded_address("secret address".to_string())
         .amount(10_f64)
-        .rollup_fee_amount(0.01_f64)
         .bridge_fee_amount(0.00001_f64)
         .executor_fee_amount(0.0001_f64)
         .deposit_quote(quote)
@@ -353,7 +350,7 @@ async fn test_deposit_summary_with_errors() {
 
     //min rollup fee
     options.amount = 10_f64;
-    options.rollup_fee_amount = 0.001_f64;
+    options.rollup_fee_amount = Some(0.001_f64);
     let err = handler.summary(options.clone()).await.unwrap_err();
     assert_eq!(
         err.to_string(),
@@ -361,7 +358,7 @@ async fn test_deposit_summary_with_errors() {
     );
 
     //min bridge fee
-    options.rollup_fee_amount = 0.01_f64;
+    options.rollup_fee_amount = Some(0.01_f64);
     options.bridge_fee_amount = Some(0.000001_f64);
     let err = handler.summary(options.clone()).await.unwrap_err();
     assert_eq!(
@@ -461,7 +458,6 @@ async fn test_loop_deposit_erc20_token_create() {
         .bridge_type(BridgeType::Loop as i32)
         .shielded_address(account.shielded_address.clone())
         .amount(10_f64)
-        .rollup_fee_amount(0.01_f64)
         .deposit_quote(quote)
         .build();
     let deposit = handler.create(options).await.unwrap();
@@ -680,8 +676,8 @@ async fn test_loop_deposit_main_token_send() {
             options.chain_id == 97_u64
                 && options.contract_address == contract_address
                 && options.timeout_ms == Some(1000_u64)
-                && options.amount == amount
-                && options.rollup_fee == rollup_fee_amount
+                && options.request.amount == amount
+                && options.request.rollup_fee == rollup_fee_amount
         })
         .returning(move |_| Ok(deposit_tx_hash));
     let mut transactions = MockTransactions::new();
@@ -794,8 +790,8 @@ async fn test_loop_deposit_erc20_token_send() {
             options.chain_id == 5_u64
                 && options.contract_address == contract_address
                 && options.timeout_ms == Some(1000_u64)
-                && options.amount == amount
-                && options.rollup_fee == rollup_fee_amount
+                && options.request.amount == amount
+                && options.request.rollup_fee == rollup_fee_amount
         })
         .returning(move |_| Ok(deposit_tx_hash));
     let mut transactions = MockTransactions::new();
@@ -891,10 +887,10 @@ async fn test_cross_chain_deposit_main_token_send() {
             options.chain_id == 97_u64
                 && options.contract_address == contract_address
                 && options.timeout_ms == Some(1000_u64)
-                && options.amount == amount
-                && options.rollup_fee == rollup_fee_amount
-                && options.bridge_fee == bridge_fee_amount
-                && options.executor_fee == executor_fee_amount
+                && options.request.amount == amount
+                && options.request.rollup_fee == rollup_fee_amount
+                && options.request.bridge_fee == bridge_fee_amount
+                && options.request.executor_fee == executor_fee_amount
         })
         .returning(move |_| Ok(deposit_tx_hash));
     let mut transactions = MockTransactions::new();
@@ -1018,10 +1014,10 @@ async fn test_cross_chain_deposit_erc20_token_send() {
             options.chain_id == 5_u64
                 && options.contract_address == contract_address
                 && options.timeout_ms == Some(1000_u64)
-                && options.amount == amount
-                && options.rollup_fee == rollup_fee_amount
-                && options.bridge_fee == bridge_fee_amount
-                && options.executor_fee == executor_fee_amount
+                && options.request.amount == amount
+                && options.request.rollup_fee == rollup_fee_amount
+                && options.request.bridge_fee == bridge_fee_amount
+                && options.request.executor_fee == executor_fee_amount
         })
         .returning(move |_| Ok(deposit_tx_hash));
     let mut transactions = MockTransactions::new();
@@ -1691,13 +1687,6 @@ async fn generate_deposits(shielded_address: String, handler: &DepositsType) -> 
     deposits.push(handler.create(options).await.unwrap());
 
     deposits
-}
-
-fn generate_private_key() -> (Address, String) {
-    let local_wallet = LocalWallet::new(&mut rand::thread_rng());
-    let address = local_wallet.address();
-    let key = local_wallet.signer().to_bytes();
-    (address, encode_hex(key))
 }
 
 async fn check_commitment(

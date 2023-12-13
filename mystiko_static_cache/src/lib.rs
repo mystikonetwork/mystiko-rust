@@ -2,11 +2,14 @@
 mod file;
 #[cfg(feature = "gzip")]
 mod gzip;
+mod skip;
 
 #[cfg(feature = "fs")]
 pub use file::*;
 #[cfg(feature = "gzip")]
 pub use gzip::*;
+pub use skip::*;
+use std::fmt::Debug;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -19,7 +22,7 @@ pub struct GetOptions {
 }
 
 #[async_trait]
-pub trait StaticCache: Send + Sync {
+pub trait StaticCache: Debug + Send + Sync {
     async fn get(&self, url: &str, options: Option<GetOptions>) -> Result<Vec<u8>>;
 
     async fn get_failover(&self, urls: &[String], options: Option<GetOptions>) -> Result<Vec<u8>>;

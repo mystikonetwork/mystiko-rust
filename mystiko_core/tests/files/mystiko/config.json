@@ -80,6 +80,18 @@
           "minRollupFee": "40000000000000000"
         },
         {
+          "version": 1,
+          "name": "CommitmentPool",
+          "poolName": "A Pool(since 07/20/2022)",
+          "bridgeType": "loop",
+          "address": "0x00b73dbC8C370CA7e5F00b778280596383b62929",
+          "type": "pool",
+          "startBlock": 1000000,
+          "disabledAt": 1000001,
+          "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+          "minRollupFee": "40000000000000000"
+        },
+        {
           "version": 2,
           "name": "CommitmentPool",
           "poolName": "A Pool(since 07/20/2022)",

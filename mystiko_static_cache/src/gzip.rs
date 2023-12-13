@@ -2,6 +2,7 @@ use crate::{GetOptions, StaticCache};
 use anyhow::Result;
 use async_compression::tokio::write::GzipDecoder;
 use async_trait::async_trait;
+use std::sync::Arc;
 use tokio::io::AsyncWriteExt;
 use typed_builder::TypedBuilder;
 
@@ -10,14 +11,14 @@ const GZIP_MAGIC: &[u8] = &[0x1f, 0x8b];
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct GzipStaticCache<C: StaticCache = Box<dyn StaticCache>> {
-    inner: C,
+    inner: Arc<C>,
 }
 
 impl<C> GzipStaticCache<C>
 where
     C: StaticCache,
 {
-    pub fn new(inner: C) -> Self {
+    pub fn new(inner: Arc<C>) -> Self {
         Self::builder().inner(inner).build()
     }
 }

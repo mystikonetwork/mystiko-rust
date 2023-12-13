@@ -6,8 +6,8 @@ use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Bytes, TxHash, U256};
 use ethers_providers::ProviderError;
 use mystiko_abi::commitment_pool::CommitmentPoolCalls;
-use mystiko_abi::mystiko_v2_bridge::MystikoV2BridgeCalls;
-use mystiko_abi::mystiko_v2_loop::MystikoV2LoopCalls;
+use mystiko_abi::mystiko_v2_bridge::{DepositRequest as CrossChainDepositRequest, MystikoV2BridgeCalls};
+use mystiko_abi::mystiko_v2_loop::{DepositRequest, MystikoV2LoopCalls};
 use mystiko_config::MystikoConfig;
 use mystiko_core::{
     CrossChainDepositOptions, DepositContractHandler, DepositContracts, DepositOptions, DepositQuoteOptions,
@@ -219,15 +219,18 @@ async fn test_main_token_loop_deposit() {
             }
         })
         .returning(move |_, _| Ok(expected_tx_hash));
+    let request = DepositRequest {
+        commitment,
+        random_s,
+        hash_k,
+        encrypted_note: encrypted_notes,
+        rollup_fee,
+        amount,
+    };
     let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
         .chain_id(97_u64)
         .contract_address(contract_address)
-        .amount(amount)
-        .rollup_fee(rollup_fee)
-        .commitment(commitment)
-        .random_s(random_s)
-        .hash_k(hash_k)
-        .encrypted_notes(encrypted_notes)
+        .request(request)
         .signer(signer)
         .build();
     let config = create_config().await;
@@ -269,15 +272,18 @@ async fn test_erc20_token_loop_deposit() {
             }
         })
         .returning(move |_, _| Ok(expected_tx_hash));
+    let request = DepositRequest {
+        commitment,
+        random_s,
+        hash_k,
+        encrypted_note: encrypted_notes,
+        rollup_fee,
+        amount,
+    };
     let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
         .chain_id(5_u64)
         .contract_address(contract_address)
-        .amount(amount)
-        .rollup_fee(rollup_fee)
-        .commitment(commitment)
-        .random_s(random_s)
-        .hash_k(hash_k)
-        .encrypted_notes(encrypted_notes)
+        .request(request)
         .signer(signer)
         .build();
     let config = create_config().await;
@@ -296,15 +302,18 @@ async fn test_loop_deposit_timeout_error() {
     let hash_k = U256::from_dec_str("3456").unwrap();
     let encrypted_notes = Bytes::from_str("0x1234").unwrap();
     let signer = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let request = DepositRequest {
+        commitment,
+        random_s,
+        hash_k,
+        encrypted_note: encrypted_notes,
+        rollup_fee,
+        amount,
+    };
     let deposit_options = DepositOptions::<TypedTransaction, TimeoutProvider>::builder()
         .chain_id(97_u64)
         .contract_address(contract_address)
-        .amount(amount)
-        .rollup_fee(rollup_fee)
-        .commitment(commitment)
-        .random_s(random_s)
-        .hash_k(hash_k)
-        .encrypted_notes(encrypted_notes)
+        .request(request)
         .signer(signer)
         .timeout_ms(1_u64)
         .build();
@@ -354,17 +363,20 @@ async fn test_main_token_cross_chain_deposit() {
             }
         })
         .returning(move |_, _| Ok(expected_tx_hash));
+    let request = CrossChainDepositRequest {
+        commitment,
+        random_s,
+        hash_k,
+        encrypted_note: encrypted_notes,
+        amount,
+        rollup_fee,
+        bridge_fee,
+        executor_fee,
+    };
     let deposit_options = CrossChainDepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
         .chain_id(97_u64)
         .contract_address(contract_address)
-        .amount(amount)
-        .rollup_fee(rollup_fee)
-        .bridge_fee(bridge_fee)
-        .executor_fee(executor_fee)
-        .commitment(commitment)
-        .random_s(random_s)
-        .hash_k(hash_k)
-        .encrypted_notes(encrypted_notes)
+        .request(request)
         .signer(signer)
         .build();
     let config = create_config().await;
@@ -410,17 +422,20 @@ async fn test_erc20_token_cross_chain_deposit() {
             }
         })
         .returning(move |_, _| Ok(expected_tx_hash));
+    let request = CrossChainDepositRequest {
+        commitment,
+        random_s,
+        hash_k,
+        encrypted_note: encrypted_notes,
+        amount,
+        rollup_fee,
+        bridge_fee,
+        executor_fee,
+    };
     let deposit_options = CrossChainDepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
         .chain_id(5_u64)
         .contract_address(contract_address)
-        .amount(amount)
-        .rollup_fee(rollup_fee)
-        .bridge_fee(bridge_fee)
-        .executor_fee(executor_fee)
-        .commitment(commitment)
-        .random_s(random_s)
-        .hash_k(hash_k)
-        .encrypted_notes(encrypted_notes)
+        .request(request)
         .signer(signer)
         .build();
     let config = create_config().await;
@@ -441,17 +456,20 @@ async fn test_cross_chain_deposit_timeout_error() {
     let hash_k = U256::from_dec_str("3456").unwrap();
     let encrypted_notes = Bytes::from_str("0x1234").unwrap();
     let signer = TimeoutProvider::builder().timeout_ms(1000_u64).build();
+    let request = CrossChainDepositRequest {
+        commitment,
+        random_s,
+        hash_k,
+        encrypted_note: encrypted_notes,
+        amount,
+        rollup_fee,
+        bridge_fee,
+        executor_fee,
+    };
     let deposit_options = CrossChainDepositOptions::<TypedTransaction, TimeoutProvider>::builder()
         .chain_id(97_u64)
         .contract_address(contract_address)
-        .amount(amount)
-        .rollup_fee(rollup_fee)
-        .bridge_fee(bridge_fee)
-        .executor_fee(executor_fee)
-        .commitment(commitment)
-        .random_s(random_s)
-        .hash_k(hash_k)
-        .encrypted_notes(encrypted_notes)
+        .request(request)
         .signer(signer)
         .timeout_ms(1_u64)
         .build();
@@ -468,15 +486,18 @@ async fn test_cross_chain_deposit_timeout_error() {
 async fn test_deposit_unsupported_chain() {
     let config = create_config().await;
     let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
+    let request = DepositRequest {
+        commitment: U256::from_dec_str("1234").unwrap(),
+        random_s: 2345_u128,
+        hash_k: U256::from_dec_str("3456").unwrap(),
+        encrypted_note: Bytes::from_str("0x1234").unwrap(),
+        rollup_fee: U256::from_dec_str("100000000000000000").unwrap(),
+        amount: U256::from_dec_str("1000000000000000000").unwrap(),
+    };
     let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
         .chain_id(10001_u64)
         .contract_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
-        .amount(U256::from_dec_str("1000000000000000000").unwrap())
-        .rollup_fee(U256::from_dec_str("100000000000000000").unwrap())
-        .commitment(U256::from_dec_str("1234").unwrap())
-        .random_s(2345_u128)
-        .hash_k(U256::from_dec_str("3456").unwrap())
-        .encrypted_notes(Bytes::from_str("0x1234").unwrap())
+        .request(request)
         .signer(MockTransactionSigner::new())
         .build();
     let tx_hash = deposits.deposit(deposit_options).await;
@@ -488,15 +509,18 @@ async fn test_deposit_unsupported_chain() {
 async fn test_deposit_unsupported_contract() {
     let config = create_config().await;
     let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
+    let request = DepositRequest {
+        commitment: U256::from_dec_str("1234").unwrap(),
+        random_s: 2345_u128,
+        hash_k: U256::from_dec_str("3456").unwrap(),
+        encrypted_note: Bytes::from_str("0x1234").unwrap(),
+        rollup_fee: U256::from_dec_str("100000000000000000").unwrap(),
+        amount: U256::from_dec_str("1000000000000000000").unwrap(),
+    };
     let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
         .chain_id(5_u64)
         .contract_address(ethers_address_from_string("0x125E577F580857D7AF995D20104C6c7B96a3274d").unwrap())
-        .amount(U256::from_dec_str("1000000000000000000").unwrap())
-        .rollup_fee(U256::from_dec_str("100000000000000000").unwrap())
-        .commitment(U256::from_dec_str("1234").unwrap())
-        .random_s(2345_u128)
-        .hash_k(U256::from_dec_str("3456").unwrap())
-        .encrypted_notes(Bytes::from_str("0x1234").unwrap())
+        .request(request)
         .signer(MockTransactionSigner::new())
         .build();
     let tx_hash = deposits.deposit(deposit_options).await;

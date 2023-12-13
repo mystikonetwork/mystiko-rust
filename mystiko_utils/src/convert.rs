@@ -62,6 +62,12 @@ pub fn u256_to_bytes(u: &U256) -> Vec<u8> {
     arr.to_vec()
 }
 
+pub fn u256_to_fixed_bytes<const N: usize>(u: &U256) -> [u8; N] {
+    let mut arr = [0u8; N];
+    u.to_little_endian(&mut arr[..]);
+    arr
+}
+
 pub fn u256_to_hex_string(u: &U256) -> String {
     format!("0x{:x}", u)
 }

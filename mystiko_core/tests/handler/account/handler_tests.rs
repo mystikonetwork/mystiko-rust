@@ -49,7 +49,7 @@ async fn test_create_default() {
     );
     let full_sk_str = decrypt_symmetric(DEFAULT_WALLET_PASSWORD, &account.encrypted_secret_key).unwrap();
     let full_sk: FullSk = decode_hex_with_length(full_sk_str).unwrap();
-    assert_eq!(full_pk, full_public_key(&full_sk));
+    assert_eq!(full_pk, full_public_key(&full_sk).unwrap());
 }
 
 #[tokio::test]
@@ -327,7 +327,7 @@ async fn test_export_secret_key() {
         .await
         .unwrap();
     let full_sk: FullSk = decode_hex_with_length(secret_key_str).unwrap();
-    let full_pk = full_public_key(&full_sk);
+    let full_pk = full_public_key(&full_sk).unwrap();
     assert_eq!(account.public_key, encode_hex(full_pk));
     assert_eq!(
         account.shielded_address,

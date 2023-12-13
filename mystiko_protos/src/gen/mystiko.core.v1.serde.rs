@@ -954,6 +954,9 @@ impl serde::Serialize for MystikoOptions {
         if self.db_path.is_some() {
             len += 1;
         }
+        if self.static_cache_path.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.MystikoOptions", len)?;
         if let Some(v) = self.config_options.as_ref() {
             struct_ser.serialize_field("configOptions", v)?;
@@ -966,6 +969,9 @@ impl serde::Serialize for MystikoOptions {
         }
         if let Some(v) = self.db_path.as_ref() {
             struct_ser.serialize_field("dbPath", v)?;
+        }
+        if let Some(v) = self.static_cache_path.as_ref() {
+            struct_ser.serialize_field("staticCachePath", v)?;
         }
         struct_ser.end()
     }
@@ -985,6 +991,8 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
             "loaderConfig",
             "db_path",
             "dbPath",
+            "static_cache_path",
+            "staticCachePath",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -993,6 +1001,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
             RelayerClientOptions,
             LoaderConfig,
             DbPath,
+            StaticCachePath,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1018,6 +1027,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                             "relayerClientOptions" | "relayer_client_options" => Ok(GeneratedField::RelayerClientOptions),
                             "loaderConfig" | "loader_config" => Ok(GeneratedField::LoaderConfig),
                             "dbPath" | "db_path" => Ok(GeneratedField::DbPath),
+                            "staticCachePath" | "static_cache_path" => Ok(GeneratedField::StaticCachePath),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1041,6 +1051,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                 let mut relayer_client_options__ = None;
                 let mut loader_config__ = None;
                 let mut db_path__ = None;
+                let mut static_cache_path__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::ConfigOptions => {
@@ -1067,6 +1078,12 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                             }
                             db_path__ = map.next_value()?;
                         }
+                        GeneratedField::StaticCachePath => {
+                            if static_cache_path__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("staticCachePath"));
+                            }
+                            static_cache_path__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(MystikoOptions {
@@ -1074,6 +1091,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                     relayer_client_options: relayer_client_options__,
                     loader_config: loader_config__,
                     db_path: db_path__,
+                    static_cache_path: static_cache_path__,
                 })
             }
         }
@@ -1533,6 +1551,8 @@ impl serde::Serialize for SpendStatus {
     {
         let variant = match self {
             Self::Unspecified => "SPEND_STATUS_UNSPECIFIED",
+            Self::ProofGenerating => "SPEND_STATUS_PROOF_GENERATING",
+            Self::ProofGenerated => "SPEND_STATUS_PROOF_GENERATED",
             Self::Pending => "SPEND_STATUS_PENDING",
             Self::Succeeded => "SPEND_STATUS_SUCCEEDED",
             Self::Failed => "SPEND_STATUS_FAILED",
@@ -1548,6 +1568,8 @@ impl<'de> serde::Deserialize<'de> for SpendStatus {
     {
         const FIELDS: &[&str] = &[
             "SPEND_STATUS_UNSPECIFIED",
+            "SPEND_STATUS_PROOF_GENERATING",
+            "SPEND_STATUS_PROOF_GENERATED",
             "SPEND_STATUS_PENDING",
             "SPEND_STATUS_SUCCEEDED",
             "SPEND_STATUS_FAILED",
@@ -1594,6 +1616,8 @@ impl<'de> serde::Deserialize<'de> for SpendStatus {
             {
                 match value {
                     "SPEND_STATUS_UNSPECIFIED" => Ok(SpendStatus::Unspecified),
+                    "SPEND_STATUS_PROOF_GENERATING" => Ok(SpendStatus::ProofGenerating),
+                    "SPEND_STATUS_PROOF_GENERATED" => Ok(SpendStatus::ProofGenerated),
                     "SPEND_STATUS_PENDING" => Ok(SpendStatus::Pending),
                     "SPEND_STATUS_SUCCEEDED" => Ok(SpendStatus::Succeeded),
                     "SPEND_STATUS_FAILED" => Ok(SpendStatus::Failed),
