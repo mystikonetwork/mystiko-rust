@@ -59,14 +59,14 @@ where
             decimal_amount: summary.decimal_amount_as_biguint()?,
             rollup_fee_amount: summary.rollup_fee_amount,
             rollup_fee_decimal_amount: summary.rollup_fee_decimal_amount_as_biguint()?,
-            bridge_fee_amount: options.bridge_fee_amount,
+            bridge_fee_amount: summary.bridge_fee_amount,
             bridge_fee_decimal_amount: summary.bridge_fee_decimal_amount_as_biguint()?,
             bridge_fee_asset_address: (context.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop
                 && context.contract_config.bridge_fee_asset_address().is_some())
             .then_some(context.contract_config.bridge_fee_asset().asset_address().to_string()),
             bridge_fee_asset_symbol: summary.bridge_fee_asset_symbol.clone(),
             bridge_fee_asset_decimals: summary.bridge_fee_asset_decimals,
-            executor_fee_amount: options.executor_fee_amount,
+            executor_fee_amount: summary.executor_fee_amount,
             executor_fee_decimal_amount: summary.executor_fee_decimal_amount_as_biguint()?,
             executor_fee_asset_address: (context.contract_config.bridge_type() != &mystiko_types::BridgeType::Loop
                 && context.contract_config.executor_fee_asset_address().is_some())

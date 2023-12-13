@@ -531,8 +531,6 @@ async fn test_cross_chain_deposit_main_token_create() {
         .shielded_address(account.shielded_address.clone())
         .amount(10_f64)
         .rollup_fee_amount(0.01_f64)
-        .bridge_fee_amount(0.00001_f64)
-        .executor_fee_amount(0.0001_f64)
         .deposit_quote(quote)
         .build();
     let deposit = handler.create(options).await.unwrap();
