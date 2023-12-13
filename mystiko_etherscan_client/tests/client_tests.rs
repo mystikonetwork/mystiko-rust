@@ -207,7 +207,10 @@ async fn test_get_block_by_number() {
             "timestamp":"0x6110bab2",
             "totalDifficulty":"0x612789b0aba90e580f8",
             "sealFields":[],
-            "transactions":[],
+            "transactions":[
+                "0x40330c87750aa1ba1908a787b9a42d0828e53d73100ef61ae8a4d925329587b5",
+                "0x6fa2208790f1154b81fc805dd7565679d8a8cc26112812ba1767e1af44c35dd4"
+            ],
             "transactionsRoot":"0xaceb14fcf363e67d6cdcec0d7808091b764b4428f5fd7e25fb18d222898ef779",
             "uncles":[]
         }
@@ -231,6 +234,10 @@ async fn test_get_block_by_number() {
     let result = ether_scan_client.get_block_by_number(block_number).await;
     assert!(result.is_ok());
     let result = result.unwrap();
+    assert_eq!(
+        result.as_ref().unwrap().transactions[0],
+        H256::from_str("0x40330c87750aa1ba1908a787b9a42d0828e53d73100ef61ae8a4d925329587b5").unwrap()
+    );
     assert_eq!(result.unwrap().number.unwrap().as_u64(), 0xc63251);
     m.assert_async().await;
 }

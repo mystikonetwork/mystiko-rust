@@ -11,7 +11,7 @@ use serde_json::Value;
 
 use ethers::types::U64;
 use ethers_contract::EthEvent;
-use ethers_core::types::{Block, Transaction, TransactionReceipt};
+use ethers_core::types::{Block, Transaction, TransactionReceipt, H256};
 use tokio::sync::Mutex;
 use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
@@ -157,7 +157,7 @@ impl EtherScanClient {
         }
     }
 
-    pub async fn get_block_by_number(&self, block_number: u64) -> Result<Option<Block<Transaction>>> {
+    pub async fn get_block_by_number(&self, block_number: u64) -> Result<Option<Block<H256>>> {
         let mut params: Vec<String> = vec![];
         params.push("action=eth_getBlockByNumber".to_string());
         params.push("module=proxy".to_string());
@@ -169,7 +169,7 @@ impl EtherScanClient {
             .url(url)
             .module(EtherScanModule::JsonRpcProxy)
             .build();
-        self.get::<Block<Transaction>, _>(options).await
+        self.get::<Block<H256>, _>(options).await
     }
 
     pub async fn get_transaction_by_hash(&self, transaction_hash: &str) -> Result<Option<Transaction>> {
@@ -271,7 +271,7 @@ impl EtherScanClient {
         let mut current_retry_time = 1;
         loop {
             self.throttle().await;
-            match self.handle_response(options.clone()).await {
+            match self.handle_response::<R, U>(options.clone()).await {
                 Ok(resp) => return Ok(resp),
                 Err(err) => {
                     if self.retry_policy.is_retryable(&err, current_retry_time) {
