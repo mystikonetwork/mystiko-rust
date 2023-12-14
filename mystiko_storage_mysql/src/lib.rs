@@ -127,7 +127,6 @@ impl MySqlStorage {
 #[async_trait]
 impl Storage for MySqlStorage {
     async fn execute(&self, statement: Statement) -> Result<(), StorageError> {
-        println!("Executing statement: {:?}", statement.statement);
         statement_to_query(&statement)?
             .execute(&self.pool)
             .await

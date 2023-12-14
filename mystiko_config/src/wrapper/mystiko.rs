@@ -66,22 +66,7 @@ impl MystikoConfig {
     }
 
     pub async fn from_remote(options: &ConfigOptions) -> Result<Self> {
-        let base_url = options
-            .remote_base_url
-            .clone()
-            .unwrap_or_else(|| DEFAULT_REMOTE_BASE_URL.to_string());
-        let environment = options
-            .is_staging
-            .map_or("production", |s| if s { "staging" } else { "production" });
-        let network = options
-            .is_testnet
-            .map_or("mainnet", |s| if s { "testnet" } else { "mainnet" });
-
-        let url = if let Some(git_revision) = &options.git_revision {
-            format!("{}/{}/{}/{}/config.json", base_url, environment, network, git_revision)
-        } else {
-            format!("{}/{}/{}/latest.json", base_url, environment, network)
-        };
+        let url = Self::remote_url(options);
         let response = reqwest::get(&url).await?;
         if response.status().is_success() {
             let content = response.text().await?;
@@ -115,6 +100,25 @@ impl MystikoConfig {
         }
         #[cfg(not(feature = "fs"))]
         MystikoConfig::from_remote(&options).await
+    }
+
+    pub fn remote_url(options: &ConfigOptions) -> String {
+        let base_url = options
+            .remote_base_url
+            .clone()
+            .unwrap_or_else(|| DEFAULT_REMOTE_BASE_URL.to_string());
+        let environment = options
+            .is_staging
+            .map_or("production", |s| if s { "staging" } else { "production" });
+        let network = options
+            .is_testnet
+            .map_or("mainnet", |s| if s { "testnet" } else { "mainnet" });
+
+        if let Some(git_revision) = &options.git_revision {
+            format!("{}/{}/{}/{}/config.json", base_url, environment, network, git_revision)
+        } else {
+            format!("{}/{}/{}/latest.json", base_url, environment, network)
+        }
     }
 
     pub fn version(&self) -> &str {

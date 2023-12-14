@@ -604,7 +604,6 @@ where
     ) -> Result<Vec<AssetsByChain>, ScannerError> {
         let condition = self.build_assets_filter(options, chain_id).await?;
         let commitments = self.db.commitments.find(condition).await?;
-        println!("commitments: {:?}", commitments);
         self.commitments_group_by_chain(commitments)
     }
 
