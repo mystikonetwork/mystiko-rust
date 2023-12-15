@@ -333,6 +333,7 @@ impl serde::Serialize for DepositError {
             Self::GetMystikoGuardError => "DEPOSIT_ERROR_GET_MYSTIKO_GUARD_ERROR",
             Self::DeserializeMessageError => "DEPOSIT_ERROR_DESERIALIZE_MESSAGE_ERROR",
             Self::ProtocolKeyError => "DEPOSIT_ERROR_PROTOCOL_KEY_ERROR",
+            Self::GrpcConnectError => "DEPOSIT_ERROR_GRPC_CONNECT_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -373,6 +374,7 @@ impl<'de> serde::Deserialize<'de> for DepositError {
             "DEPOSIT_ERROR_GET_MYSTIKO_GUARD_ERROR",
             "DEPOSIT_ERROR_DESERIALIZE_MESSAGE_ERROR",
             "DEPOSIT_ERROR_PROTOCOL_KEY_ERROR",
+            "DEPOSIT_ERROR_GRPC_CONNECT_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -444,6 +446,7 @@ impl<'de> serde::Deserialize<'de> for DepositError {
                     "DEPOSIT_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(DepositError::GetMystikoGuardError),
                     "DEPOSIT_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(DepositError::DeserializeMessageError),
                     "DEPOSIT_ERROR_PROTOCOL_KEY_ERROR" => Ok(DepositError::ProtocolKeyError),
+                    "DEPOSIT_ERROR_GRPC_CONNECT_ERROR" => Ok(DepositError::GrpcConnectError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }

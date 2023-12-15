@@ -272,6 +272,114 @@ impl<'de> serde::Deserialize<'de> for CheckPasswordResponse {
         deserializer.deserialize_struct("mystiko.api.handler.v1.CheckPasswordResponse", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for ColumnValuePair {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.column.is_empty() {
+            len += 1;
+        }
+        if self.value.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.ColumnValuePair", len)?;
+        if !self.column.is_empty() {
+            struct_ser.serialize_field("column", &self.column)?;
+        }
+        if let Some(v) = self.value.as_ref() {
+            struct_ser.serialize_field("value", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ColumnValuePair {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "column",
+            "value",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Column,
+            Value,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "column" => Ok(GeneratedField::Column),
+                            "value" => Ok(GeneratedField::Value),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ColumnValuePair;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.ColumnValuePair")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ColumnValuePair, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut column__ = None;
+                let mut value__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Column => {
+                            if column__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("column"));
+                            }
+                            column__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::Value => {
+                            if value__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("value"));
+                            }
+                            value__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(ColumnValuePair {
+                    column: column__.unwrap_or_default(),
+                    value: value__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.ColumnValuePair", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for CountAccountRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -454,6 +562,190 @@ impl<'de> serde::Deserialize<'de> for CountAccountResponse {
             }
         }
         deserializer.deserialize_struct("mystiko.api.handler.v1.CountAccountResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for CountDepositRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.filter.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.CountDepositRequest", len)?;
+        if let Some(v) = self.filter.as_ref() {
+            struct_ser.serialize_field("filter", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for CountDepositRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "filter",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Filter,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "filter" => Ok(GeneratedField::Filter),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = CountDepositRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.CountDepositRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<CountDepositRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut filter__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Filter => {
+                            if filter__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("filter"));
+                            }
+                            filter__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(CountDepositRequest {
+                    filter: filter__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.CountDepositRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for CountDepositResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.count != 0 {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.CountDepositResponse", len)?;
+        if self.count != 0 {
+            struct_ser.serialize_field("count", ToString::to_string(&self.count).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for CountDepositResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "count",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Count,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "count" => Ok(GeneratedField::Count),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = CountDepositResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.CountDepositResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<CountDepositResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut count__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Count => {
+                            if count__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("count"));
+                            }
+                            count__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(CountDepositResponse {
+                    count: count__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.CountDepositResponse", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for CreateAccountRequest {
@@ -1000,6 +1292,279 @@ impl<'de> serde::Deserialize<'de> for CreateWalletResponse {
             }
         }
         deserializer.deserialize_struct("mystiko.api.handler.v1.CreateWalletResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for DeleteDepositBatchRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.deposits.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.DeleteDepositBatchRequest", len)?;
+        if !self.deposits.is_empty() {
+            struct_ser.serialize_field("deposits", &self.deposits)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for DeleteDepositBatchRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposits",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Deposits,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "deposits" => Ok(GeneratedField::Deposits),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = DeleteDepositBatchRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.DeleteDepositBatchRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<DeleteDepositBatchRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposits__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Deposits => {
+                            if deposits__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("deposits"));
+                            }
+                            deposits__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(DeleteDepositBatchRequest {
+                    deposits: deposits__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.DeleteDepositBatchRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for DeleteDepositByFilterRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.filter.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.DeleteDepositByFilterRequest", len)?;
+        if let Some(v) = self.filter.as_ref() {
+            struct_ser.serialize_field("filter", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for DeleteDepositByFilterRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "filter",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Filter,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "filter" => Ok(GeneratedField::Filter),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = DeleteDepositByFilterRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.DeleteDepositByFilterRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<DeleteDepositByFilterRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut filter__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Filter => {
+                            if filter__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("filter"));
+                            }
+                            filter__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(DeleteDepositByFilterRequest {
+                    filter: filter__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.DeleteDepositByFilterRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for DeleteDepositRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.deposit.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.DeleteDepositRequest", len)?;
+        if let Some(v) = self.deposit.as_ref() {
+            struct_ser.serialize_field("deposit", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for DeleteDepositRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposit",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Deposit,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "deposit" => Ok(GeneratedField::Deposit),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = DeleteDepositRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.DeleteDepositRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<DeleteDepositRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposit__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Deposit => {
+                            if deposit__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("deposit"));
+                            }
+                            deposit__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(DeleteDepositRequest {
+                    deposit: deposit__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.DeleteDepositRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for ExportMnemonicPhraseRequest {
@@ -1828,6 +2393,370 @@ impl<'de> serde::Deserialize<'de> for FindAccountResponse {
         deserializer.deserialize_struct("mystiko.api.handler.v1.FindAccountResponse", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for FindDepositByIdRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.id.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindDepositByIdRequest", len)?;
+        if !self.id.is_empty() {
+            struct_ser.serialize_field("id", &self.id)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for FindDepositByIdRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "id",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Id,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "id" => Ok(GeneratedField::Id),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = FindDepositByIdRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.FindDepositByIdRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<FindDepositByIdRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut id__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Id => {
+                            if id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("id"));
+                            }
+                            id__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(FindDepositByIdRequest {
+                    id: id__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.FindDepositByIdRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for FindDepositRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.filter.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindDepositRequest", len)?;
+        if let Some(v) = self.filter.as_ref() {
+            struct_ser.serialize_field("filter", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for FindDepositRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "filter",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Filter,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "filter" => Ok(GeneratedField::Filter),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = FindDepositRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.FindDepositRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<FindDepositRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut filter__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Filter => {
+                            if filter__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("filter"));
+                            }
+                            filter__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(FindDepositRequest {
+                    filter: filter__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.FindDepositRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for FindDepositResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.deposits.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindDepositResponse", len)?;
+        if !self.deposits.is_empty() {
+            struct_ser.serialize_field("deposits", &self.deposits)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for FindDepositResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposits",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Deposits,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "deposits" => Ok(GeneratedField::Deposits),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = FindDepositResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.FindDepositResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<FindDepositResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposits__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Deposits => {
+                            if deposits__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("deposits"));
+                            }
+                            deposits__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(FindDepositResponse {
+                    deposits: deposits__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.FindDepositResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for FindOneDepositResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.deposit.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindOneDepositResponse", len)?;
+        if let Some(v) = self.deposit.as_ref() {
+            struct_ser.serialize_field("deposit", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for FindOneDepositResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposit",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Deposit,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "deposit" => Ok(GeneratedField::Deposit),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = FindOneDepositResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.FindOneDepositResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<FindOneDepositResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposit__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Deposit => {
+                            if deposit__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("deposit"));
+                            }
+                            deposit__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(FindOneDepositResponse {
+                    deposit: deposit__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.FindOneDepositResponse", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for QuoteRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -2190,6 +3119,116 @@ impl<'de> serde::Deserialize<'de> for SendResponse {
             }
         }
         deserializer.deserialize_struct("mystiko.api.handler.v1.SendResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for SendWithGrpcRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.send_options.is_some() {
+            len += 1;
+        }
+        if self.client_options.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.SendWithGrpcRequest", len)?;
+        if let Some(v) = self.send_options.as_ref() {
+            struct_ser.serialize_field("sendOptions", v)?;
+        }
+        if let Some(v) = self.client_options.as_ref() {
+            struct_ser.serialize_field("clientOptions", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for SendWithGrpcRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "send_options",
+            "sendOptions",
+            "client_options",
+            "clientOptions",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            SendOptions,
+            ClientOptions,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "sendOptions" | "send_options" => Ok(GeneratedField::SendOptions),
+                            "clientOptions" | "client_options" => Ok(GeneratedField::ClientOptions),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = SendWithGrpcRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.SendWithGrpcRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<SendWithGrpcRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut send_options__ = None;
+                let mut client_options__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::SendOptions => {
+                            if send_options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("sendOptions"));
+                            }
+                            send_options__ = map.next_value()?;
+                        }
+                        GeneratedField::ClientOptions => {
+                            if client_options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("clientOptions"));
+                            }
+                            client_options__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(SendWithGrpcRequest {
+                    send_options: send_options__,
+                    client_options: client_options__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.SendWithGrpcRequest", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for SummaryRequest {
@@ -2601,6 +3640,571 @@ impl<'de> serde::Deserialize<'de> for UpdateAccountResponse {
             }
         }
         deserializer.deserialize_struct("mystiko.api.handler.v1.UpdateAccountResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for UpdateAllDepositRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.column_values.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.UpdateAllDepositRequest", len)?;
+        if !self.column_values.is_empty() {
+            struct_ser.serialize_field("columnValues", &self.column_values)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for UpdateAllDepositRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "column_values",
+            "columnValues",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ColumnValues,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "columnValues" | "column_values" => Ok(GeneratedField::ColumnValues),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = UpdateAllDepositRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.UpdateAllDepositRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<UpdateAllDepositRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut column_values__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ColumnValues => {
+                            if column_values__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("columnValues"));
+                            }
+                            column_values__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(UpdateAllDepositRequest {
+                    column_values: column_values__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.UpdateAllDepositRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for UpdateDepositBatchRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.deposits.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.UpdateDepositBatchRequest", len)?;
+        if !self.deposits.is_empty() {
+            struct_ser.serialize_field("deposits", &self.deposits)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for UpdateDepositBatchRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposits",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Deposits,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "deposits" => Ok(GeneratedField::Deposits),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = UpdateDepositBatchRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.UpdateDepositBatchRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<UpdateDepositBatchRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposits__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Deposits => {
+                            if deposits__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("deposits"));
+                            }
+                            deposits__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(UpdateDepositBatchRequest {
+                    deposits: deposits__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.UpdateDepositBatchRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for UpdateDepositBatchResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.deposits.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.UpdateDepositBatchResponse", len)?;
+        if !self.deposits.is_empty() {
+            struct_ser.serialize_field("deposits", &self.deposits)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for UpdateDepositBatchResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposits",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Deposits,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "deposits" => Ok(GeneratedField::Deposits),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = UpdateDepositBatchResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.UpdateDepositBatchResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<UpdateDepositBatchResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposits__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Deposits => {
+                            if deposits__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("deposits"));
+                            }
+                            deposits__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(UpdateDepositBatchResponse {
+                    deposits: deposits__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.UpdateDepositBatchResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for UpdateDepositByFilterRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.column_values.is_empty() {
+            len += 1;
+        }
+        if self.filter.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.UpdateDepositByFilterRequest", len)?;
+        if !self.column_values.is_empty() {
+            struct_ser.serialize_field("columnValues", &self.column_values)?;
+        }
+        if let Some(v) = self.filter.as_ref() {
+            struct_ser.serialize_field("filter", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for UpdateDepositByFilterRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "column_values",
+            "columnValues",
+            "filter",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ColumnValues,
+            Filter,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "columnValues" | "column_values" => Ok(GeneratedField::ColumnValues),
+                            "filter" => Ok(GeneratedField::Filter),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = UpdateDepositByFilterRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.UpdateDepositByFilterRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<UpdateDepositByFilterRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut column_values__ = None;
+                let mut filter__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ColumnValues => {
+                            if column_values__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("columnValues"));
+                            }
+                            column_values__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::Filter => {
+                            if filter__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("filter"));
+                            }
+                            filter__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(UpdateDepositByFilterRequest {
+                    column_values: column_values__.unwrap_or_default(),
+                    filter: filter__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.UpdateDepositByFilterRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for UpdateDepositRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.deposit.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.UpdateDepositRequest", len)?;
+        if let Some(v) = self.deposit.as_ref() {
+            struct_ser.serialize_field("deposit", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for UpdateDepositRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposit",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Deposit,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "deposit" => Ok(GeneratedField::Deposit),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = UpdateDepositRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.UpdateDepositRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<UpdateDepositRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposit__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Deposit => {
+                            if deposit__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("deposit"));
+                            }
+                            deposit__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(UpdateDepositRequest {
+                    deposit: deposit__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.UpdateDepositRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for UpdateDepositResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.deposit.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.UpdateDepositResponse", len)?;
+        if let Some(v) = self.deposit.as_ref() {
+            struct_ser.serialize_field("deposit", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for UpdateDepositResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposit",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Deposit,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "deposit" => Ok(GeneratedField::Deposit),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = UpdateDepositResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.handler.v1.UpdateDepositResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<UpdateDepositResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposit__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Deposit => {
+                            if deposit__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("deposit"));
+                            }
+                            deposit__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(UpdateDepositResponse {
+                    deposit: deposit__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.handler.v1.UpdateDepositResponse", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for UpdateEncryptionRequest {
