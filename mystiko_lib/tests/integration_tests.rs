@@ -6,6 +6,8 @@ use serial_test::serial;
 
 mod config;
 mod handler;
+mod scanner;
+mod synchronizer;
 
 const VALID_CONFIG_FILE: &str = "tests/files/valid.json";
 const FULL_CONFIG_FILE: &str = "tests/files/full.json";
