@@ -12,6 +12,7 @@ log = { version = "0.4.19" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["proto"] }
 mystiko_core = { version = "0.1.0", path = "../mystiko_core" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-core-document-v1", "mystiko-core-v1", "mystiko-api-config-v1", "mystiko-api-handler-v1", "mystiko-api-v1"] }
+mystiko_relayer_client = { version = "0.1.0", path = "../mystiko_relayer_client", features = ["fs"] }
 mystiko_static_cache = { version = "0.1.0", path = "../mystiko_static_cache", features = ["fs"] }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
