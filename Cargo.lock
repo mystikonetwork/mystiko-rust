@@ -3577,6 +3577,7 @@ dependencies = [
  "mystiko_ethers",
  "mystiko_protocol",
  "mystiko_protos",
+ "mystiko_relayer_client",
  "mystiko_static_cache",
  "mystiko_storage",
  "mystiko_storage_sqlite",
