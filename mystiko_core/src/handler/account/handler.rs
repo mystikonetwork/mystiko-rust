@@ -147,7 +147,7 @@ where
         old_wallet_password: &str,
         new_wallet_password: &str,
     ) -> Result<Vec<ProtoAccount>> {
-        let wallet = self.wallets.check_password(old_wallet_password).await?;
+        let wallet = self.wallets.check_password(new_wallet_password).await?;
         let mut accounts = self.find_all_documents().await?;
         for account in accounts.iter_mut() {
             let secret_key = decrypt_symmetric(old_wallet_password, &account.data.encrypted_secret_key)?;
