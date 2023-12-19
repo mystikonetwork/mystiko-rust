@@ -400,17 +400,17 @@ fn test_update_encryption() {
         .unwrap()
         .secret_key;
     let new_wallet_password: &str = "newP@ssw0rd";
-    let response = update_password(
-        UpdatePasswordRequest::builder()
-            .old_password(DEFAULT_WALLET_PASSWORD)
-            .new_password(new_wallet_password)
-            .build(),
-    );
-    assert!(response.code.unwrap().success);
     let response = update_encryption(
         UpdateEncryptionRequest::builder()
             .old_wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
             .new_wallet_password(new_wallet_password.to_string())
+            .build(),
+    );
+    assert!(response.code.unwrap().success);
+    let response = update_password(
+        UpdatePasswordRequest::builder()
+            .old_password(DEFAULT_WALLET_PASSWORD)
+            .new_password(new_wallet_password)
             .build(),
     );
     assert!(response.code.unwrap().success);

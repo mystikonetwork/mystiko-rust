@@ -17,6 +17,22 @@ pub mod mystiko {
                 // @@protoc_insertion_point(mystiko.api.handler.v1)
             }
         }
+        pub mod scanner {
+            #[cfg(feature = "mystiko-api-scanner-v1")]
+            // @@protoc_insertion_point(attribute:mystiko.api.scanner.v1)
+            pub mod v1 {
+                include!("mystiko.api.scanner.v1.rs");
+                // @@protoc_insertion_point(mystiko.api.scanner.v1)
+            }
+        }
+        pub mod synchronizer {
+            #[cfg(feature = "mystiko-api-synchronizer-v1")]
+            // @@protoc_insertion_point(attribute:mystiko.api.synchronizer.v1)
+            pub mod v1 {
+                include!("mystiko.api.synchronizer.v1.rs");
+                // @@protoc_insertion_point(mystiko.api.synchronizer.v1)
+            }
+        }
         #[cfg(feature = "mystiko-api-v1")]
         // @@protoc_insertion_point(attribute:mystiko.api.v1)
         pub mod v1 {
