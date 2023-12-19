@@ -7,6 +7,8 @@ extern crate log;
 pub mod config;
 pub mod error;
 pub mod handler;
+pub mod scanner;
+pub mod synchronizer;
 
 pub use handler::*;
 
