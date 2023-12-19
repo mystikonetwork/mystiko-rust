@@ -374,12 +374,16 @@ async fn test_update_encryption() {
         .export_secret_key_by_id(DEFAULT_WALLET_PASSWORD, &account2.id)
         .await
         .unwrap();
-    account_handler
+    let result = account_handler
         .update_encryption(DEFAULT_WALLET_PASSWORD, new_wallet_password)
-        .await
-        .unwrap();
+        .await;
+    assert!(result.is_err());
     wallet_handler
         .update_password(DEFAULT_WALLET_PASSWORD, new_wallet_password)
+        .await
+        .unwrap();
+    account_handler
+        .update_encryption(DEFAULT_WALLET_PASSWORD, new_wallet_password)
         .await
         .unwrap();
     let sk3 = account_handler
