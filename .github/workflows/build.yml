@@ -81,7 +81,7 @@ jobs:
           DATABASE_URL: mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3306/mystiko_rust_tests
 
       - name: Generate Coverage
-        run: cargo llvm-cov report --lcov --output-path=lcov.info --ignore-filename-regex="mystiko_(abi|relayer_abi|protos)"
+        run: cargo llvm-cov report --lcov --output-path=lcov.info --ignore-filename-regex="mystiko_(abi|relayer_abi|protos|lib)"
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v3

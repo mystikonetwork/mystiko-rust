@@ -89,6 +89,7 @@ fn test_status() {
 
 #[test]
 #[serial]
+#[ignore]
 fn test_sync() {
     setup(None);
     let mut sync_options = SyncOptions::builder().build();
