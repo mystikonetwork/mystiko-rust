@@ -708,10 +708,10 @@ impl serde::Serialize for StatusCode {
                         .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
                     struct_ser.serialize_field("scanner", &v)?;
                 }
-                status_code::Error::Synchronize(v) => {
-                    let v = SynchronizeError::from_i32(*v)
+                status_code::Error::Synchronizer(v) => {
+                    let v = SynchronizerError::from_i32(*v)
                         .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
-                    struct_ser.serialize_field("synchronize", &v)?;
+                    struct_ser.serialize_field("synchronizer", &v)?;
                 }
                 status_code::Error::Config(v) => {
                     let v = ConfigError::from_i32(*v)
@@ -736,7 +736,7 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
             "account",
             "deposit",
             "scanner",
-            "synchronize",
+            "synchronizer",
             "config",
         ];
 
@@ -748,7 +748,7 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
             Account,
             Deposit,
             Scanner,
-            Synchronize,
+            Synchronizer,
             Config,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -777,7 +777,7 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
                             "account" => Ok(GeneratedField::Account),
                             "deposit" => Ok(GeneratedField::Deposit),
                             "scanner" => Ok(GeneratedField::Scanner),
-                            "synchronize" => Ok(GeneratedField::Synchronize),
+                            "synchronizer" => Ok(GeneratedField::Synchronizer),
                             "config" => Ok(GeneratedField::Config),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -838,11 +838,11 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
                             }
                             error__ = map.next_value::<::std::option::Option<ScannerError>>()?.map(|x| status_code::Error::Scanner(x as i32));
                         }
-                        GeneratedField::Synchronize => {
+                        GeneratedField::Synchronizer => {
                             if error__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("synchronize"));
+                                return Err(serde::de::Error::duplicate_field("synchronizer"));
                             }
-                            error__ = map.next_value::<::std::option::Option<SynchronizeError>>()?.map(|x| status_code::Error::Synchronize(x as i32));
+                            error__ = map.next_value::<::std::option::Option<SynchronizerError>>()?.map(|x| status_code::Error::Synchronizer(x as i32));
                         }
                         GeneratedField::Config => {
                             if error__.is_some() {
@@ -861,44 +861,44 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
         deserializer.deserialize_struct("mystiko.api.v1.StatusCode", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for SynchronizeError {
+impl serde::Serialize for SynchronizerError {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
         let variant = match self {
-            Self::Unspecified => "SYNCHRONIZE_ERROR_UNSPECIFIED",
-            Self::UnsupportedChainError => "SYNCHRONIZE_ERROR_UNSUPPORTED_CHAIN_ERROR",
-            Self::DataloaderError => "SYNCHRONIZE_ERROR_DATALOADER_ERROR",
-            Self::DataloaderConfigError => "SYNCHRONIZE_ERROR_DATALOADER_CONFIG_ERROR",
-            Self::AnyhowError => "SYNCHRONIZE_ERROR_ANYHOW_ERROR",
-            Self::GetMystikoGuardError => "SYNCHRONIZE_ERROR_GET_MYSTIKO_GUARD_ERROR",
-            Self::DeserializeMessageError => "SYNCHRONIZE_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            Self::Unspecified => "SYNCHRONIZER_ERROR_UNSPECIFIED",
+            Self::UnsupportedChainError => "SYNCHRONIZER_ERROR_UNSUPPORTED_CHAIN_ERROR",
+            Self::DataloaderError => "SYNCHRONIZER_ERROR_DATALOADER_ERROR",
+            Self::DataloaderConfigError => "SYNCHRONIZER_ERROR_DATALOADER_CONFIG_ERROR",
+            Self::AnyhowError => "SYNCHRONIZER_ERROR_ANYHOW_ERROR",
+            Self::GetMystikoGuardError => "SYNCHRONIZER_ERROR_GET_MYSTIKO_GUARD_ERROR",
+            Self::DeserializeMessageError => "SYNCHRONIZER_ERROR_DESERIALIZE_MESSAGE_ERROR",
         };
         serializer.serialize_str(variant)
     }
 }
-impl<'de> serde::Deserialize<'de> for SynchronizeError {
+impl<'de> serde::Deserialize<'de> for SynchronizerError {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "SYNCHRONIZE_ERROR_UNSPECIFIED",
-            "SYNCHRONIZE_ERROR_UNSUPPORTED_CHAIN_ERROR",
-            "SYNCHRONIZE_ERROR_DATALOADER_ERROR",
-            "SYNCHRONIZE_ERROR_DATALOADER_CONFIG_ERROR",
-            "SYNCHRONIZE_ERROR_ANYHOW_ERROR",
-            "SYNCHRONIZE_ERROR_GET_MYSTIKO_GUARD_ERROR",
-            "SYNCHRONIZE_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            "SYNCHRONIZER_ERROR_UNSPECIFIED",
+            "SYNCHRONIZER_ERROR_UNSUPPORTED_CHAIN_ERROR",
+            "SYNCHRONIZER_ERROR_DATALOADER_ERROR",
+            "SYNCHRONIZER_ERROR_DATALOADER_CONFIG_ERROR",
+            "SYNCHRONIZER_ERROR_ANYHOW_ERROR",
+            "SYNCHRONIZER_ERROR_GET_MYSTIKO_GUARD_ERROR",
+            "SYNCHRONIZER_ERROR_DESERIALIZE_MESSAGE_ERROR",
         ];
 
         struct GeneratedVisitor;
 
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = SynchronizeError;
+            type Value = SynchronizerError;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 write!(formatter, "expected one of: {:?}", &FIELDS)
@@ -911,7 +911,7 @@ impl<'de> serde::Deserialize<'de> for SynchronizeError {
                 use std::convert::TryFrom;
                 i32::try_from(v)
                     .ok()
-                    .and_then(SynchronizeError::from_i32)
+                    .and_then(SynchronizerError::from_i32)
                     .ok_or_else(|| {
                         serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
                     })
@@ -924,7 +924,7 @@ impl<'de> serde::Deserialize<'de> for SynchronizeError {
                 use std::convert::TryFrom;
                 i32::try_from(v)
                     .ok()
-                    .and_then(SynchronizeError::from_i32)
+                    .and_then(SynchronizerError::from_i32)
                     .ok_or_else(|| {
                         serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
                     })
@@ -935,13 +935,13 @@ impl<'de> serde::Deserialize<'de> for SynchronizeError {
                 E: serde::de::Error,
             {
                 match value {
-                    "SYNCHRONIZE_ERROR_UNSPECIFIED" => Ok(SynchronizeError::Unspecified),
-                    "SYNCHRONIZE_ERROR_UNSUPPORTED_CHAIN_ERROR" => Ok(SynchronizeError::UnsupportedChainError),
-                    "SYNCHRONIZE_ERROR_DATALOADER_ERROR" => Ok(SynchronizeError::DataloaderError),
-                    "SYNCHRONIZE_ERROR_DATALOADER_CONFIG_ERROR" => Ok(SynchronizeError::DataloaderConfigError),
-                    "SYNCHRONIZE_ERROR_ANYHOW_ERROR" => Ok(SynchronizeError::AnyhowError),
-                    "SYNCHRONIZE_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(SynchronizeError::GetMystikoGuardError),
-                    "SYNCHRONIZE_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(SynchronizeError::DeserializeMessageError),
+                    "SYNCHRONIZER_ERROR_UNSPECIFIED" => Ok(SynchronizerError::Unspecified),
+                    "SYNCHRONIZER_ERROR_UNSUPPORTED_CHAIN_ERROR" => Ok(SynchronizerError::UnsupportedChainError),
+                    "SYNCHRONIZER_ERROR_DATALOADER_ERROR" => Ok(SynchronizerError::DataloaderError),
+                    "SYNCHRONIZER_ERROR_DATALOADER_CONFIG_ERROR" => Ok(SynchronizerError::DataloaderConfigError),
+                    "SYNCHRONIZER_ERROR_ANYHOW_ERROR" => Ok(SynchronizerError::AnyhowError),
+                    "SYNCHRONIZER_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(SynchronizerError::GetMystikoGuardError),
+                    "SYNCHRONIZER_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(SynchronizerError::DeserializeMessageError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }

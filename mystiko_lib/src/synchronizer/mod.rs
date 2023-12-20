@@ -2,7 +2,7 @@ use crate::runtime;
 use mystiko_protos::api::synchronizer::v1::{
     ChainSyncedBlockRequest, ContractSyncedBlockRequest, ResetRequest, StatusRequest, SyncRequest,
 };
-use mystiko_protos::api::v1::{ApiResponse, SynchronizeError};
+use mystiko_protos::api::v1::{ApiResponse, SynchronizerError};
 
 pub fn chain_synced_block<M>(message: M) -> ApiResponse
 where
@@ -11,7 +11,7 @@ where
 {
     match message.try_into() {
         Ok(message) => runtime().block_on(internal::chain_synced_block(message.chain_id)),
-        Err(err) => ApiResponse::error(SynchronizeError::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(SynchronizerError::DeserializeMessageError, err),
     }
 }
 
@@ -25,7 +25,7 @@ where
             message.chain_id,
             message.contract_address.as_str(),
         )),
-        Err(err) => ApiResponse::error(SynchronizeError::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(SynchronizerError::DeserializeMessageError, err),
     }
 }
 
@@ -36,7 +36,7 @@ where
 {
     match message.try_into() {
         Ok(message) => runtime().block_on(internal::status(message.with_contracts)),
-        Err(err) => ApiResponse::error(SynchronizeError::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(SynchronizerError::DeserializeMessageError, err),
     }
 }
 
@@ -52,7 +52,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(SynchronizeError::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(SynchronizerError::DeserializeMessageError, err),
     }
 }
 
@@ -68,7 +68,7 @@ where
             }
             ApiResponse::unknown_error("unexpected message")
         }
-        Err(err) => ApiResponse::error(SynchronizeError::DeserializeMessageError, err),
+        Err(err) => ApiResponse::error(SynchronizerError::DeserializeMessageError, err),
     }
 }
 
@@ -79,7 +79,7 @@ mod internal {
     use mystiko_protos::api::synchronizer::v1::{
         ChainSyncedBlockResponse, ContractSyncedBlockResponse, StatusResponse,
     };
-    use mystiko_protos::api::v1::{ApiResponse, SynchronizeError};
+    use mystiko_protos::api::v1::{ApiResponse, SynchronizerError};
     use mystiko_protos::core::synchronizer::v1::{ResetOptions, SyncOptions};
 
     pub(crate) async fn chain_synced_block(chain_id: u64) -> ApiResponse {
@@ -92,7 +92,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_synchronizer_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(SynchronizeError::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(SynchronizerError::GetMystikoGuardError, err),
         }
     }
 
@@ -109,7 +109,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_synchronizer_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(SynchronizeError::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(SynchronizerError::GetMystikoGuardError, err),
         }
     }
 
@@ -123,7 +123,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_synchronizer_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(SynchronizeError::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(SynchronizerError::GetMystikoGuardError, err),
         }
     }
 
@@ -137,7 +137,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_synchronizer_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(SynchronizeError::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(SynchronizerError::GetMystikoGuardError, err),
         }
     }
 
@@ -151,7 +151,7 @@ mod internal {
                     Err(err) => ApiResponse::error(parse_synchronizer_error(&err), err),
                 }
             }
-            Err(err) => ApiResponse::error(SynchronizeError::GetMystikoGuardError, err),
+            Err(err) => ApiResponse::error(SynchronizerError::GetMystikoGuardError, err),
         }
     }
 }

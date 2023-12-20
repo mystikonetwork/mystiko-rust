@@ -15,7 +15,7 @@ use mystiko_lib::error::{
 use mystiko_protocol::error::ProtocolError;
 use mystiko_protos::api::v1::{
     AccountError as ProtoAccountError, DepositError as ProtoDepositError, MystikoError as ProtoMystikoError,
-    ScannerError as ProtoScannerError, SynchronizeError as ProtoSynchronizeError, WalletError as ProtoWalletError,
+    ScannerError as ProtoScannerError, SynchronizerError as ProtoSynchronizerError, WalletError as ProtoWalletError,
 };
 use mystiko_storage::StorageError;
 use mystiko_types::BridgeType;
@@ -176,17 +176,20 @@ fn test_parse_synchronizer_error() {
     let e4: SynchronizerError = SynchronizerError::AnyhowError(anyhow!("error"));
     assert_eq!(
         parse_synchronizer_error(&e1),
-        ProtoSynchronizeError::UnsupportedChainError.into()
+        ProtoSynchronizerError::UnsupportedChainError.into()
     );
     assert_eq!(
         parse_synchronizer_error(&e2),
-        ProtoSynchronizeError::DataloaderError.into()
+        ProtoSynchronizerError::DataloaderError.into()
     );
     assert_eq!(
         parse_synchronizer_error(&e3),
-        ProtoSynchronizeError::DataloaderConfigError.into()
+        ProtoSynchronizerError::DataloaderConfigError.into()
     );
-    assert_eq!(parse_synchronizer_error(&e4), ProtoSynchronizeError::AnyhowError.into());
+    assert_eq!(
+        parse_synchronizer_error(&e4),
+        ProtoSynchronizerError::AnyhowError.into()
+    );
 }
 
 #[test]
