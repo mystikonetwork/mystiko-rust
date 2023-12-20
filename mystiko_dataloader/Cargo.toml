@@ -13,7 +13,7 @@ futures = { version = "0.3.28" }
 log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
-mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "221c32a" }
+mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "72c319d" }
 mystiko_datapacker_client = { version = "0.1.0", path = "../mystiko_datapacker_client" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
 mystiko_etherscan_client = { version = "0.1.0", path = "../mystiko_etherscan_client" }

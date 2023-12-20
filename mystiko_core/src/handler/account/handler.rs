@@ -8,9 +8,7 @@ use futures::TryFutureExt;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_crypto::error::CryptoError;
 use mystiko_protocol::address::ShieldedAddress;
-use mystiko_protocol::key::{
-    combined_public_key, combined_secret_key, encryption_public_key, separate_secret_keys, verification_public_key,
-};
+use mystiko_protocol::key::{combined_secret_key, full_public_key, separate_secret_keys};
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, UpdateAccountOptions};
@@ -151,6 +149,12 @@ where
         let mut accounts = self.find_all_documents().await?;
         for account in accounts.iter_mut() {
             let secret_key = decrypt_symmetric(old_wallet_password, &account.data.encrypted_secret_key)?;
+            let full_sk: FullSk = decode_hex_with_length(secret_key.clone())?;
+            let full_pk = full_public_key(&full_sk)?;
+            let full_pk_str = encode_hex(full_pk);
+            if account.data.public_key != full_pk_str {
+                return Err(WalletsError::MismatchedPasswordError.into());
+            }
             account.data.encrypted_secret_key = encrypt_symmetric(new_wallet_password, &secret_key)?;
         }
         let accounts = self
@@ -357,13 +361,11 @@ where
         } else {
             self.generate_secret_key(wallet, &options.wallet_password).await?
         };
-        let pk_verify = verification_public_key(&sk_verify)?;
-        let pk_enc = encryption_public_key(&sk_enc)?;
-        let full_pk = combined_public_key(&pk_verify, &pk_enc);
         let full_sk = combined_secret_key(&sk_verify, &sk_enc);
+        let full_pk = full_public_key(&full_sk)?;
         let full_sk_str = encode_hex(full_sk);
         let encrypted_sk = encrypt_symmetric(&options.wallet_password, &full_sk_str)?;
-        let shielded_address = ShieldedAddress::from_public_key(&pk_verify, &pk_enc);
+        let shielded_address = ShieldedAddress::from_full_public_key(&full_pk);
         let account_name: String = if let Some(given_name) = &options.name {
             if given_name.is_empty() {
                 self.default_account_name().await?
