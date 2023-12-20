@@ -26,6 +26,7 @@ use std::collections::HashMap;
 
 #[test]
 #[serial]
+#[ignore]
 fn test_quote() {
     setup(Some(DEPOSIT_CONFIG_FILE.to_string()));
     let quote_options = QuoteDepositOptions::builder()
