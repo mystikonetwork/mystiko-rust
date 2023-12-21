@@ -4,6 +4,7 @@ use crate::fetcher::{
     ProviderFetcher, SequencerFetcher,
 };
 use crate::handler::DataHandler;
+use crate::loader::FetcherWrapper;
 use crate::validator::rule::create_rule_validator_by_types;
 use crate::validator::DataValidator;
 use anyhow::Error as AnyhowError;
@@ -13,14 +14,19 @@ use mystiko_protos::loader::v1::{
     FetcherConfig, FetcherType, LoaderConfig, RuleValidatorCheckerType, RuleValidatorConfig, ValidatorConfig,
     ValidatorType,
 };
-use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
 pub type DataLoaderConfigResult<T> = anyhow::Result<T, DataLoaderConfigError>;
 
-type FetcherBuildData<R> = (Vec<Arc<Box<dyn DataFetcher<R>>>>, HashMap<String, FetcherOptions>);
+enum DefaultTargetBlockPriority {
+    Packer = 0,
+    Provider = 10,
+    Etherscan = 20,
+    Sequencer = 30,
+}
+
 #[derive(Error, Debug)]
 pub enum DataLoaderConfigError {
     #[error("not supported fetcher type {0}")]
@@ -129,9 +135,8 @@ where
         chain_id: u64,
         mystiko_config: Arc<MystikoConfig>,
         providers: Arc<Box<dyn Providers>>,
-    ) -> DataLoaderConfigResult<FetcherBuildData<R>> {
-        let mut fetchers: Vec<Arc<Box<dyn DataFetcher<R>>>> = vec![];
-        let mut fetcher_options = HashMap::new();
+    ) -> DataLoaderConfigResult<Vec<FetcherWrapper<R>>> {
+        let mut fetchers: Vec<FetcherWrapper<R>> = vec![];
         let fetcher_config: FetcherConfig = self.config.fetcher_config.clone().into();
         for fetcher_type in self.fetcher_types()?.iter() {
             match fetcher_type {
@@ -140,15 +145,26 @@ where
                 }
                 FetcherType::Packer => {
                     let packer = DataPackerFetcherV1::from(mystiko_config.clone());
-                    if let Some(c) = &fetcher_config.packer {
-                        if let Some(s) = c.skip_validation {
-                            fetcher_options.insert(
-                                packer.name().to_string(),
-                                FetcherOptions::builder().skip_validation(s).build(),
-                            );
-                        }
-                    }
-                    fetchers.push(Arc::new(Box::new(packer) as Box<dyn DataFetcher<R>>))
+                    let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.packer {
+                        (
+                            c.skip_validation.unwrap_or(false),
+                            c.target_block_priority
+                                .unwrap_or(DefaultTargetBlockPriority::Packer as u32),
+                        )
+                    } else {
+                        (false, DefaultTargetBlockPriority::Packer as u32)
+                    };
+                    fetchers.push(
+                        FetcherWrapper::builder()
+                            .fetcher(Arc::new(Box::new(packer) as Box<dyn DataFetcher<R>>))
+                            .options(
+                                FetcherOptions::builder()
+                                    .skip_validation(skip_validation)
+                                    .target_block_priority(target_block_priority)
+                                    .build(),
+                            )
+                            .build(),
+                    );
                 }
                 FetcherType::Sequencer => {
                     let sequencer = SequencerFetcher::<R, mystiko_sequencer_client::v1::SequencerClient>::from_config(
@@ -156,15 +172,26 @@ where
                         fetcher_config.sequencer.clone(),
                     )
                     .await?;
-                    if let Some(c) = &fetcher_config.sequencer {
-                        if let Some(s) = c.skip_validation {
-                            fetcher_options.insert(
-                                sequencer.name().to_string(),
-                                FetcherOptions::builder().skip_validation(s).build(),
-                            );
-                        }
-                    }
-                    fetchers.push(Arc::new(Box::new(sequencer) as Box<dyn DataFetcher<R>>));
+                    let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.sequencer {
+                        (
+                            c.skip_validation.unwrap_or(false),
+                            c.target_block_priority
+                                .unwrap_or(DefaultTargetBlockPriority::Sequencer as u32),
+                        )
+                    } else {
+                        (false, DefaultTargetBlockPriority::Sequencer as u32)
+                    };
+                    fetchers.push(
+                        FetcherWrapper::builder()
+                            .fetcher(Arc::new(Box::new(sequencer) as Box<dyn DataFetcher<R>>))
+                            .options(
+                                FetcherOptions::builder()
+                                    .skip_validation(skip_validation)
+                                    .target_block_priority(target_block_priority)
+                                    .build(),
+                            )
+                            .build(),
+                    );
                 }
                 FetcherType::Etherscan => {
                     let etherscan = EtherscanFetcher::from_config(
@@ -172,33 +199,55 @@ where
                         mystiko_config.clone(),
                         fetcher_config.etherscan.clone(),
                     )?;
-                    if let Some(c) = &fetcher_config.etherscan {
-                        if let Some(s) = c.skip_validation {
-                            fetcher_options.insert(
-                                etherscan.name().to_string(),
-                                FetcherOptions::builder().skip_validation(s).build(),
-                            );
-                        }
-                    }
-                    fetchers.push(Arc::new(Box::new(etherscan) as Box<dyn DataFetcher<R>>));
+                    let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.etherscan {
+                        (
+                            c.skip_validation.unwrap_or(false),
+                            c.target_block_priority
+                                .unwrap_or(DefaultTargetBlockPriority::Etherscan as u32),
+                        )
+                    } else {
+                        (false, DefaultTargetBlockPriority::Etherscan as u32)
+                    };
+                    fetchers.push(
+                        FetcherWrapper::builder()
+                            .fetcher(Arc::new(Box::new(etherscan) as Box<dyn DataFetcher<R>>))
+                            .options(
+                                FetcherOptions::builder()
+                                    .skip_validation(skip_validation)
+                                    .target_block_priority(target_block_priority)
+                                    .build(),
+                            )
+                            .build(),
+                    );
                 }
                 FetcherType::Provider => {
                     let provider_fetcher =
                         ProviderFetcher::from_config(fetcher_config.provider.clone(), providers.clone());
-                    if let Some(c) = &fetcher_config.provider {
-                        if let Some(s) = c.skip_validation {
-                            fetcher_options.insert(
-                                provider_fetcher.name().to_string(),
-                                FetcherOptions::builder().skip_validation(s).build(),
-                            );
-                        }
-                    }
-                    fetchers.push(Arc::new(Box::new(provider_fetcher) as Box<dyn DataFetcher<R>>));
+                    let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.provider {
+                        (
+                            c.skip_validation.unwrap_or(false),
+                            c.target_block_priority
+                                .unwrap_or(DefaultTargetBlockPriority::Provider as u32),
+                        )
+                    } else {
+                        (false, DefaultTargetBlockPriority::Provider as u32)
+                    };
+                    fetchers.push(
+                        FetcherWrapper::builder()
+                            .fetcher(Arc::new(Box::new(provider_fetcher) as Box<dyn DataFetcher<R>>))
+                            .options(
+                                FetcherOptions::builder()
+                                    .skip_validation(skip_validation)
+                                    .target_block_priority(target_block_priority)
+                                    .build(),
+                            )
+                            .build(),
+                    );
                 }
             }
         }
 
-        Ok((fetchers, fetcher_options))
+        Ok(fetchers)
     }
 
     pub(crate) fn build_validators(

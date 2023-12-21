@@ -1,4 +1,5 @@
 mod chain_fetcher_fetch_tests;
 mod chain_fetcher_fetch_validate_skip_tests;
 mod chain_fetcher_loaded_block_tests;
+mod chain_fetcher_target_block_tests;
 mod chain_fetcher_with_handler_tests;

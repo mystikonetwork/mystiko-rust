@@ -1,7 +1,7 @@
 use crate::loader::{contract_data_partial_eq, create_loader};
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
-use mystiko_dataloader::loader::{DataLoader, LoadFetcherOption, LoadOption};
+use mystiko_dataloader::loader::{DataLoader, LoadFetcherOption, LoadOption, LoadStatus};
 use mystiko_dataloader::DataLoaderError;
 use std::collections::HashSet;
 
@@ -65,9 +65,16 @@ async fn test_loader_start_one_fetcher_one_contract() {
             .build();
         fetchers[0].set_loaded_block(Some(target_block)).await;
         fetchers[0].set_fetch_result(fetcher_result.clone()).await;
-        let result = loader.load(None).await;
+        let result = loader.load(None).await.unwrap();
         assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-        assert!(result.is_ok());
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block - 1)
+                .target_block(target_block)
+                .build()
+        );
 
         // fetch one contract success, contract loaded block == target_block
         let contract_data = vec![ContractData::builder()
@@ -80,9 +87,16 @@ async fn test_loader_start_one_fetcher_one_contract() {
             .contracts_data(contract_data.clone())
             .build();
         fetchers[0].set_fetch_result(fetcher_result.clone()).await;
-        let result = loader.load(None).await;
+        let result = loader.load(None).await.unwrap();
         assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-        assert!(result.is_ok());
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block)
+                .target_block(target_block)
+                .build()
+        );
 
         // fetch one contract success, contract loaded block > target_block
         let contract_data = vec![ContractData::builder()
@@ -94,10 +108,18 @@ async fn test_loader_start_one_fetcher_one_contract() {
             .chain_id(chain_id)
             .contracts_data(contract_data.clone())
             .build();
+        fetchers[0].set_loaded_block(Some(target_block + 1)).await;
         fetchers[0].set_fetch_result(fetcher_result.clone()).await;
-        let result = loader.load(None).await;
+        let result = loader.load(None).await.unwrap();
         assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-        assert!(result.is_ok());
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block + 1)
+                .target_block(target_block + 1)
+                .build()
+        );
     }
 }
 
@@ -134,9 +156,16 @@ async fn test_loader_start_one_fetcher_two_contract() {
             .build();
         fetchers[0].set_loaded_block(Some(target_block)).await;
         fetchers[0].set_fetch_result(fetcher_result.clone()).await;
-        let result = loader.load(None).await;
+        let result = loader.load(None).await.unwrap();
         assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-        assert!(result.is_ok());
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block)
+                .target_block(target_block)
+                .build()
+        );
 
         // fetch two contract success, one contract loaded block < target_block - delay_block
         let contract_data = vec![
@@ -156,9 +185,16 @@ async fn test_loader_start_one_fetcher_two_contract() {
             .contracts_data(contract_data.clone())
             .build();
         fetchers[0].set_fetch_result(fetcher_result.clone()).await;
-        let result = loader.load(None).await;
+        let result = loader.load(None).await.unwrap();
         assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-        assert!(result.is_ok());
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block - 1)
+                .target_block(target_block)
+                .build()
+        );
     }
 }
 
@@ -195,24 +231,38 @@ async fn test_loader_start_two_fetcher() {
     fetchers[1].set_loaded_block(Some(target_block)).await;
     fetchers[1].set_fetch_result(fetcher2_result.clone()).await;
     handler.set_contracts(chain_id, HashSet::new(), cfg.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone(), contract_data2.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 
     // fetch all contract success, contract loaded block == target_block
     let mut contracts = HashSet::new();
     contracts.insert(contract_address1);
     contracts.insert(contract_address2);
     handler.set_contracts(chain_id, contracts, cfg.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone(), contract_data2.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 
     // fetch all contract success, contract1 loaded block < target_block - delay_block
     let contract_data1 = vec![ContractData::builder()
@@ -226,12 +276,19 @@ async fn test_loader_start_two_fetcher() {
         .build();
     fetchers[0].set_loaded_block(Some(target_block - 1)).await;
     fetchers[0].set_fetch_result(fetcher1_result.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone(), contract_data2.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block - 1)
+            .target_block(target_block)
+            .build()
+    );
 
     // fetch all contract success,  fetcher 2 return two contract data loaded block == target_block
     let contract_data2 = vec![
@@ -251,9 +308,16 @@ async fn test_loader_start_two_fetcher() {
         .contracts_data(contract_data2.clone())
         .build();
     fetchers[1].set_fetch_result(fetcher2_result.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data2));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 }
 
 #[tokio::test]
@@ -290,12 +354,19 @@ async fn test_loader_start_two_fetcher_with_error() {
         .contracts_data(contract_data2.clone())
         .build();
     fetchers[1].set_fetch_result(fetcher2_result.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &contract_data2.clone()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 
     // fetcher 2 return error
     let contract_data1 = vec![ContractData::builder()
@@ -309,12 +380,19 @@ async fn test_loader_start_two_fetcher_with_error() {
         .build();
     fetchers[0].set_fetch_result(fetcher1_result.clone()).await;
     fetchers[1].set_fetch_error_result().await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &contract_data1.clone()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 }
 
 #[tokio::test]
@@ -354,42 +432,81 @@ async fn test_loader_start_two_fetcher_with_timeout() {
         .build();
     fetchers[1].set_loaded_block(Some(target_block)).await;
     fetchers[1].set_fetch_result(fetcher2_result.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone(), contract_data2.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 
     let options = LoadOption::builder()
         .fetcher(LoadFetcherOption::builder().fetch_timeout_ms(20_u64).build())
         .build();
     fetchers[0].set_fetch_sleep(true).await;
-    let result = loader.load(options.clone()).await;
+    let result = loader.load(options.clone()).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data2.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 
     fetchers[0].set_fetch_sleep(false).await;
     fetchers[1].set_fetch_sleep(true).await;
-    let result = loader.load(options.clone()).await;
+    let result = loader.load(options.clone()).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
+
+    let options = LoadOption::builder()
+        .fetcher(LoadFetcherOption::builder().fetch_timeout_ms(20_u64).build())
+        .build();
+    fetchers[0].set_fetch_sleep(true).await;
+    fetchers[1].set_fetch_sleep(true).await;
+    let result = loader.load(options).await;
+    assert!(matches!(
+        result.err().unwrap(),
+        DataLoaderError::LoaderFetchersExhaustedError
+    ));
 
     let options = LoadOption::builder()
         .fetcher(LoadFetcherOption::builder().fetch_timeout_ms(200_u64).build())
         .build();
     fetchers[0].set_fetch_sleep(true).await;
     fetchers[1].set_fetch_sleep(true).await;
-    let result = loader.load(options).await;
+    let result = loader.load(options).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone(), contract_data2.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 }

@@ -1,7 +1,7 @@
 use crate::loader::{contract_data_partial_eq, create_loader};
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
-use mystiko_dataloader::loader::{DataLoader, LoadFetcherOption, LoadOption};
+use mystiko_dataloader::loader::{DataLoader, LoadFetcherOption, LoadOption, LoadStatus};
 use mystiko_dataloader::DataLoaderError;
 use std::collections::HashSet;
 
@@ -55,9 +55,16 @@ async fn test_loader_many_fetcher_loaded_block_all_success() {
     for i in 0..3 {
         fetchers[i].set_fetch_error_result().await;
         fetchers[i + 1].set_fetch_result(fetcher_result.clone()).await;
-        let result = loader.load(None).await;
+        let result = loader.load(None).await.unwrap();
         assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-        assert!(result.is_ok());
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block)
+                .target_block(target_block)
+                .build()
+        );
     }
 
     fetchers[3].set_fetch_error_result().await;
@@ -107,12 +114,19 @@ async fn test_loader_many_fetcher_loaded_block_some_error() {
     for i in 1..4 {
         fetchers[i - 1].set_fetch_error_result().await;
         fetchers[i].set_fetch_result(fetcher_result.clone()).await;
-        let result = loader.load(None).await;
-        assert!(result.is_ok());
+        let result = loader.load(None).await.unwrap();
         assert!(contract_data_partial_eq(
             &handler.drain_data().await,
             &[contract_data.clone()].concat()
         ));
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block)
+                .target_block(target_block)
+                .build()
+        );
     }
 }
 
@@ -144,12 +158,19 @@ async fn test_loader_many_fetcher_loaded_block_different() {
     fetchers[3].set_loaded_block(Some(target_block)).await;
 
     fetchers[0].set_fetch_result(fetcher_result1.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block - 3)
+            .target_block(target_block)
+            .build()
+    );
 
     let contract_data2 = vec![ContractData::builder()
         .address(contract_address1)
@@ -161,12 +182,19 @@ async fn test_loader_many_fetcher_loaded_block_different() {
         .contracts_data(contract_data2.clone())
         .build();
     fetchers[1].set_fetch_result(fetcher_result2.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data2.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 
     let contract_data2 = vec![ContractData::builder()
         .address(contract_address1)
@@ -188,12 +216,19 @@ async fn test_loader_many_fetcher_loaded_block_different() {
         .build();
     fetchers[1].set_fetch_result(fetcher_result2.clone()).await;
     fetchers[2].set_fetch_result(fetcher_result3.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data3.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 }
 
 #[tokio::test]
@@ -222,20 +257,34 @@ async fn test_loader_many_fetcher_loaded_block_smaller_than_start_block() {
     fetchers[1].set_loaded_block(Some(target_block)).await;
 
     fetchers[0].set_fetch_result(fetcher_result1.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 
     fetchers[0].set_loaded_block(Some(start_block)).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 
     fetchers[0].set_loaded_block(Some(start_block - 1)).await;
     let result = loader.load(None).await;
@@ -263,16 +312,23 @@ async fn test_loader_many_fetcher_loaded_block_smaller_than_start_block() {
         .contracts_data(contract_data2.clone())
         .build();
     fetchers[1].set_fetch_result(fetcher_result2).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data2.clone()].concat()
     ));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block + 1)
+            .target_block(target_block + 1)
+            .build()
+    );
 }
 
 #[tokio::test]
-async fn test_loader_many_fetcher_loaded_block_timeout() {
+async fn test_loader_one_fetcher_loaded_block_timeout() {
     let chain_id = 1_u64;
     let (cfg, loader, fetchers, _, handler) = create_loader(chain_id, 1, 1, false).await;
     let contract_address1 = "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411";
@@ -316,10 +372,17 @@ async fn test_loader_many_fetcher_loaded_block_timeout() {
                 .build(),
         )
         .build();
-    let result = loader.load(Some(options)).await;
-    assert!(result.is_ok());
+    let result = loader.load(Some(options)).await.unwrap();
     assert!(contract_data_partial_eq(
         &handler.drain_data().await,
         &[contract_data1.clone()].concat()
     ));
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(u64::MAX)
+            .build()
+    );
 }

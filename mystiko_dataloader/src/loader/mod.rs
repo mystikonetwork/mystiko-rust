@@ -21,6 +21,14 @@ pub struct LoadOption {
     pub validator: LoadValidatorOption,
 }
 
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Eq, PartialEq, TypedBuilder)]
+#[builder(field_defaults(default, setter(into)))]
+pub struct LoadStatus {
+    pub chain_id: u64,
+    pub loaded_block: u64,
+    pub target_block: u64,
+}
+
 impl From<Option<LoadOption>> for LoadOption {
     fn from(opt: Option<LoadOption>) -> LoadOption {
         opt.unwrap_or_default()
@@ -102,7 +110,9 @@ pub trait DataLoader: Send + Sync {
 
     async fn contract_loaded_block(&self, chain_id: u64, contract_address: &str) -> DataLoaderResult<Option<u64>>;
 
-    async fn load<O>(&self, options: O) -> DataLoaderResult<()>
+    async fn chain_target_block(&self, chain_id: u64) -> DataLoaderResult<Option<u64>>;
+
+    async fn load<O>(&self, options: O) -> DataLoaderResult<LoadStatus>
     where
         O: Into<LoadOption> + Send + Sync + 'static;
 

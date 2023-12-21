@@ -2,10 +2,10 @@ use crate::loader::{contract_data_partial_eq, create_loader};
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::fetcher::DataFetcher;
-use mystiko_dataloader::loader::LoadFetcherSkipOption;
 use mystiko_dataloader::loader::LoadValidatorOption;
 use mystiko_dataloader::loader::LoadValidatorSkipOption;
 use mystiko_dataloader::loader::{DataLoader, LoadFetcherOption, LoadOption};
+use mystiko_dataloader::loader::{LoadFetcherSkipOption, LoadStatus};
 use mystiko_dataloader::validator::DataValidator;
 use mystiko_dataloader::DataLoaderError;
 use std::collections::HashMap;
@@ -33,9 +33,16 @@ async fn test_loader_start_one_fetcher_skip_fetch() {
         .build();
     fetchers[0].set_loaded_block(Some(target_block)).await;
     fetchers[0].set_fetch_result(fetcher_result.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block - 1)
+            .target_block(target_block)
+            .build()
+    );
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
@@ -45,9 +52,16 @@ async fn test_loader_start_one_fetcher_skip_fetch() {
     let option = LoadOption::builder()
         .fetcher(LoadFetcherOption::builder().skips(skip_fetcher).build())
         .build();
-    let result = loader.load(option).await;
+    let result = loader.load(option).await.unwrap();
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block - 1)
+            .target_block(target_block)
+            .build()
+    );
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
@@ -76,7 +90,7 @@ async fn test_loader_start_one_fetcher_only_skip_data_validation() {
     let contract_data = vec![ContractData::builder()
         .address(contract_address1)
         .start_block(start_block)
-        .end_block(target_block - 1)
+        .end_block(target_block)
         .build()];
     let fetcher_result = ChainData::builder()
         .chain_id(chain_id)
@@ -123,9 +137,16 @@ async fn test_loader_start_one_fetcher_only_skip_data_validation() {
     validators[0]
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
-    let result = loader.load(option).await;
+    let result = loader.load(option).await.unwrap();
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block)
+            .target_block(target_block)
+            .build()
+    );
 }
 
 #[tokio::test]
@@ -153,9 +174,16 @@ async fn test_loader_start_one_fetcher_skip_validation_priority() {
     validators[0]
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block - 1)
+            .target_block(target_block)
+            .build()
+    );
 
     let mut skip_fetcher = HashMap::new();
     skip_fetcher.insert(
@@ -186,9 +214,16 @@ async fn test_loader_start_one_fetcher_skip_validation_priority() {
     validators[0]
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
-    let result = loader.load(option).await;
+    let result = loader.load(option).await.unwrap();
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block - 1)
+            .target_block(target_block)
+            .build()
+    );
 }
 
 #[tokio::test]
@@ -213,9 +248,16 @@ async fn test_loader_start_one_fetcher_skip_validator() {
         .build();
     fetchers[0].set_loaded_block(Some(target_block)).await;
     fetchers[0].set_fetch_result(fetcher_result.clone()).await;
-    let result = loader.load(None).await;
+    let result = loader.load(None).await.unwrap();
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block - 1)
+            .target_block(target_block)
+            .build()
+    );
 
     validators[0]
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
@@ -250,7 +292,14 @@ async fn test_loader_start_one_fetcher_skip_validator() {
     let option = LoadOption::builder()
         .validator(LoadValidatorOption::builder().skips(skip_validator).build())
         .build();
-    let result = loader.load(option).await;
+    let result = loader.load(option).await.unwrap();
     assert!(contract_data_partial_eq(&handler.drain_data().await, &contract_data));
-    assert!(result.is_ok());
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(target_block - 1)
+            .target_block(target_block)
+            .build()
+    );
 }

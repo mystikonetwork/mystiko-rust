@@ -5,8 +5,8 @@ use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::fetcher::DataFetcher;
 use mystiko_dataloader::handler::DataHandler;
-use mystiko_dataloader::loader::LoadOption;
 use mystiko_dataloader::loader::{ChainDataLoader, DataLoader, FromConfig, LoaderConfigOptions};
+use mystiko_dataloader::loader::{LoadOption, LoadStatus};
 use mystiko_dataloader::validator::DataValidator;
 use mystiko_dataloader::DataLoaderError;
 use mystiko_ethers::Providers;
@@ -62,8 +62,15 @@ async fn test_create_chain_data_loader_rule_validator() {
     mock.push(block_number).unwrap();
     mock.push(block_number).unwrap();
     let loader = loader.unwrap();
-    let result = loader.load(Some(LoadOption::default())).await;
-    assert!(result.is_ok());
+    let result = loader.load(Some(LoadOption::default())).await.unwrap();
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(16691439_u64)
+            .target_block(16691439_u64)
+            .build()
+    );
 
     let cfg = LoaderConfig::builder()
         .mystiko_config_options(cfg_option.clone())
@@ -129,8 +136,15 @@ async fn test_create_chain_data_loader_rule_validator() {
     mock.push(block_number).unwrap();
     mock.push(block_number).unwrap();
     let loader = loader.unwrap();
-    let result = loader.load(Some(LoadOption::default())).await;
-    assert!(result.is_ok());
+    let result = loader.load(Some(LoadOption::default())).await.unwrap();
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(block_number.as_u64())
+            .target_block(block_number.as_u64())
+            .build()
+    );
 }
 
 #[tokio::test]

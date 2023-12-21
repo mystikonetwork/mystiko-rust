@@ -3,6 +3,7 @@ use crate::{
     SynchronizerHandler,
 };
 use async_trait::async_trait;
+use log::warn;
 use mystiko_config::{ChainConfig, MystikoConfig};
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::fetcher::{PACKER_FETCHER_NAME, PROVIDER_FETCHER_NAME, SEQUENCER_FETCHER_NAME};
@@ -93,11 +94,21 @@ where
             .iter()
             .map(|(chain_id, loader)| self.chain_status(chain_id, loader, with_contracts))
             .collect::<Vec<_>>();
-        let chains = futures::future::try_join_all(tasks).await?;
+        let results = futures::future::join_all(tasks).await;
+        let chains = results
+            .into_iter()
+            .filter_map(|result| match result {
+                Ok(r) => Some(r),
+                Err(err) => {
+                    warn!("chain status error: {:?}", err);
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
         Ok(SynchronizerStatus::builder().chains(chains).build())
     }
 
-    async fn sync(&self, sync_option: SyncOptions) -> Result<(), Self::Error> {
+    async fn sync(&self, sync_option: SyncOptions) -> Result<SynchronizerStatus, Self::Error> {
         let chains = if sync_option.chain_ids.is_empty() {
             self.loaders.keys().copied().collect::<Vec<_>>()
         } else {
@@ -115,8 +126,10 @@ where
                 }
             })
             .collect();
-        let _ = futures::future::join_all(loader_tasks).await;
-        Ok(())
+        let result = futures::future::join_all(loader_tasks).await;
+        Ok(SynchronizerStatus::builder()
+            .chains(result.into_iter().filter_map(|status| status).collect::<Vec<_>>())
+            .build())
     }
 
     async fn reset(&self, reset_options: ResetOptions) -> Result<(), Self::Error> {
@@ -218,9 +231,11 @@ where
         with_contracts: bool,
     ) -> Result<ChainStatus, SynchronizerError> {
         let chain_sync_block = loader.chain_loaded_block(*chain_id).await?.unwrap_or_default();
+        let chain_target_block = loader.chain_target_block(*chain_id).await?.unwrap_or_default();
         let mut chain_status = ChainStatus::builder()
             .chain_id(*chain_id)
             .synced_block(chain_sync_block)
+            .target_block(chain_target_block)
             .build();
         if with_contracts {
             let chain_cfg = self
@@ -255,11 +270,21 @@ where
         Ok(contract_status)
     }
 
-    async fn chain_sync(&self, chain_id: &u64, loader: &L, sync_option: &SyncOptions) {
+    async fn chain_sync(&self, chain_id: &u64, loader: &L, sync_option: &SyncOptions) -> Option<ChainStatus> {
         let load_option = self.build_load_option(sync_option);
         let result = loader.load(load_option).await;
-        if let Err(err) = result {
-            log::error!("chain(id={:?}) load error: {:?}", chain_id, err);
+        match result {
+            Ok(status) => Some(
+                ChainStatus::builder()
+                    .chain_id(status.chain_id)
+                    .synced_block(status.loaded_block)
+                    .target_block(status.target_block)
+                    .build(),
+            ),
+            Err(err) => {
+                log::error!("chain(id={:?}) load error: {:?}", chain_id, err);
+                None
+            }
         }
     }
 

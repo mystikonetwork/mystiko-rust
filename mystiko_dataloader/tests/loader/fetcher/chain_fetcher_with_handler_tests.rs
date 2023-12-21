@@ -1,7 +1,7 @@
 use crate::loader::{contract_data_partial_eq, create_loader};
 use mystiko_dataloader::data::ChainData;
 use mystiko_dataloader::data::ContractData;
-use mystiko_dataloader::loader::DataLoader;
+use mystiko_dataloader::loader::{DataLoader, LoadStatus};
 use rand::seq::SliceRandom;
 use std::collections::HashSet;
 
@@ -37,13 +37,20 @@ async fn test_loader_many_fetcher_all_success() {
             fetchers[i].set_fetch_result(fetcher_result.clone()).await;
         }
 
-        let result = loader.load(None).await;
+        let result = loader.load(None).await.unwrap();
         contract_data[0].end_block = target_block;
         assert!(contract_data_partial_eq(
             &handler.drain_data().await,
             &[contract_data.clone()].concat()
         ));
-        assert!(result.is_ok());
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block)
+                .target_block(target_block)
+                .build()
+        );
     }
 }
 
@@ -83,13 +90,20 @@ async fn test_loader_many_fetcher_some_fetcher_error() {
             }
         }
 
-        let result = loader.load(None).await;
+        let result = loader.load(None).await.unwrap();
         contract_data[0].end_block = target_block - skip as u64 - 1;
         assert!(contract_data_partial_eq(
             &handler.drain_data().await,
             &[contract_data.clone()].concat()
         ));
-        assert!(result.is_ok());
+        assert_eq!(
+            result,
+            LoadStatus::builder()
+                .chain_id(chain_id)
+                .loaded_block(target_block - skip as u64 - 1)
+                .target_block(target_block)
+                .build()
+        );
     }
 }
 

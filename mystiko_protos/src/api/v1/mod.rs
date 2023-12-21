@@ -70,9 +70,9 @@ impl From<ScannerError> for StatusCode {
     }
 }
 
-impl From<SynchronizeError> for StatusCode {
-    fn from(value: SynchronizeError) -> Self {
-        StatusCode::builder().error(Error::Synchronize(value as i32)).build()
+impl From<SynchronizerError> for StatusCode {
+    fn from(value: SynchronizerError) -> Self {
+        StatusCode::builder().error(Error::Synchronizer(value as i32)).build()
     }
 }
 

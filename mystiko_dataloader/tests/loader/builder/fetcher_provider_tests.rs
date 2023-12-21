@@ -5,8 +5,8 @@ use log::LevelFilter;
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::handler::DataHandler;
-use mystiko_dataloader::loader::LoadOption;
 use mystiko_dataloader::loader::{ChainDataLoader, DataLoader, FromConfig, LoaderConfigOptions};
+use mystiko_dataloader::loader::{LoadOption, LoadStatus};
 use mystiko_ethers::Providers;
 use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_protos::common::v1::ProviderType;
@@ -53,8 +53,15 @@ async fn test_create_chain_data_loader_default_provider_fetcher() {
     mock.push(block_number).unwrap();
     mock.push(block_number).unwrap();
     let loader = loader.unwrap();
-    let result = loader.load(LoadOption::default()).await;
-    assert!(result.is_ok());
+    let result = loader.load(LoadOption::default()).await.unwrap();
+    assert_eq!(
+        result,
+        LoadStatus::builder()
+            .chain_id(chain_id)
+            .loaded_block(block_number.as_u64())
+            .target_block(block_number.as_u64())
+            .build()
+    );
 }
 
 #[tokio::test]
