@@ -1,7 +1,7 @@
 use mystiko_core::{AccountsError, DepositsError, MystikoError, ScannerError, SynchronizerError, WalletsError};
 use mystiko_protos::api::v1::{
     AccountError as ProtoAccountError, DepositError as ProtoDepositError, MystikoError as ProtoMystikoError,
-    ScannerError as ProtoScannerError, StatusCode, SynchronizeError as ProtoSynchronizeError,
+    ScannerError as ProtoScannerError, StatusCode, SynchronizerError as ProtoSynchronizerError,
     WalletError as ProtoWalletError,
 };
 
@@ -74,10 +74,10 @@ pub fn parse_deposit_error(err: &DepositsError) -> StatusCode {
 
 pub fn parse_synchronizer_error(err: &SynchronizerError) -> StatusCode {
     match err {
-        SynchronizerError::UnsupportedChainError(_) => ProtoSynchronizeError::UnsupportedChainError.into(),
-        SynchronizerError::DataLoaderError(_) => ProtoSynchronizeError::DataloaderError.into(),
-        SynchronizerError::DataLoaderConfigError(_) => ProtoSynchronizeError::DataloaderConfigError.into(),
-        SynchronizerError::AnyhowError(_) => ProtoSynchronizeError::AnyhowError.into(),
+        SynchronizerError::UnsupportedChainError(_) => ProtoSynchronizerError::UnsupportedChainError.into(),
+        SynchronizerError::DataLoaderError(_) => ProtoSynchronizerError::DataloaderError.into(),
+        SynchronizerError::DataLoaderConfigError(_) => ProtoSynchronizerError::DataloaderConfigError.into(),
+        SynchronizerError::AnyhowError(_) => ProtoSynchronizerError::AnyhowError.into(),
     }
 }
 

@@ -5,7 +5,7 @@ use mystiko_protos::api::synchronizer::v1::{
     ResetRequest, StatusRequest, StatusResponse, SyncRequest,
 };
 use mystiko_protos::api::v1::status_code::Error;
-use mystiko_protos::api::v1::SynchronizeError;
+use mystiko_protos::api::v1::SynchronizerError;
 use mystiko_protos::core::synchronizer::v1::{ResetOptions, SyncOptions};
 use serial_test::serial;
 
@@ -42,7 +42,7 @@ fn test_contract_synced_block() {
     );
     assert_eq!(
         response.code.unwrap().error.unwrap(),
-        Error::Synchronize(SynchronizeError::UnsupportedChainError as i32)
+        Error::Synchronizer(SynchronizerError::UnsupportedChainError as i32)
     );
 }
 

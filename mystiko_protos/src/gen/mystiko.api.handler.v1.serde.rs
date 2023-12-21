@@ -1761,25 +1761,15 @@ impl serde::Serialize for ExportSecretKeyRequest {
         if !self.wallet_password.is_empty() {
             len += 1;
         }
-        if self.identifier.is_some() {
+        if !self.identifier.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.ExportSecretKeyRequest", len)?;
         if !self.wallet_password.is_empty() {
             struct_ser.serialize_field("walletPassword", &self.wallet_password)?;
         }
-        if let Some(v) = self.identifier.as_ref() {
-            match v {
-                export_secret_key_request::Identifier::Id(v) => {
-                    struct_ser.serialize_field("id", v)?;
-                }
-                export_secret_key_request::Identifier::PublicKey(v) => {
-                    struct_ser.serialize_field("publicKey", v)?;
-                }
-                export_secret_key_request::Identifier::ShieldedAddress(v) => {
-                    struct_ser.serialize_field("shieldedAddress", v)?;
-                }
-            }
+        if !self.identifier.is_empty() {
+            struct_ser.serialize_field("identifier", &self.identifier)?;
         }
         struct_ser.end()
     }
@@ -1793,19 +1783,13 @@ impl<'de> serde::Deserialize<'de> for ExportSecretKeyRequest {
         const FIELDS: &[&str] = &[
             "wallet_password",
             "walletPassword",
-            "id",
-            "public_key",
-            "publicKey",
-            "shielded_address",
-            "shieldedAddress",
+            "identifier",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             WalletPassword,
-            Id,
-            PublicKey,
-            ShieldedAddress,
+            Identifier,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1828,9 +1812,7 @@ impl<'de> serde::Deserialize<'de> for ExportSecretKeyRequest {
                     {
                         match value {
                             "walletPassword" | "wallet_password" => Ok(GeneratedField::WalletPassword),
-                            "id" => Ok(GeneratedField::Id),
-                            "publicKey" | "public_key" => Ok(GeneratedField::PublicKey),
-                            "shieldedAddress" | "shielded_address" => Ok(GeneratedField::ShieldedAddress),
+                            "identifier" => Ok(GeneratedField::Identifier),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1860,29 +1842,17 @@ impl<'de> serde::Deserialize<'de> for ExportSecretKeyRequest {
                             }
                             wallet_password__ = Some(map.next_value()?);
                         }
-                        GeneratedField::Id => {
+                        GeneratedField::Identifier => {
                             if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("id"));
+                                return Err(serde::de::Error::duplicate_field("identifier"));
                             }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(export_secret_key_request::Identifier::Id);
-                        }
-                        GeneratedField::PublicKey => {
-                            if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("publicKey"));
-                            }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(export_secret_key_request::Identifier::PublicKey);
-                        }
-                        GeneratedField::ShieldedAddress => {
-                            if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("shieldedAddress"));
-                            }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(export_secret_key_request::Identifier::ShieldedAddress);
+                            identifier__ = Some(map.next_value()?);
                         }
                     }
                 }
                 Ok(ExportSecretKeyRequest {
                     wallet_password: wallet_password__.unwrap_or_default(),
-                    identifier: identifier__,
+                    identifier: identifier__.unwrap_or_default(),
                 })
             }
         }
@@ -1989,22 +1959,12 @@ impl serde::Serialize for FindAccountByIdentifierRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.identifier.is_some() {
+        if !self.identifier.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindAccountByIdentifierRequest", len)?;
-        if let Some(v) = self.identifier.as_ref() {
-            match v {
-                find_account_by_identifier_request::Identifier::Id(v) => {
-                    struct_ser.serialize_field("id", v)?;
-                }
-                find_account_by_identifier_request::Identifier::ShieldedAddress(v) => {
-                    struct_ser.serialize_field("shieldedAddress", v)?;
-                }
-                find_account_by_identifier_request::Identifier::PublicKey(v) => {
-                    struct_ser.serialize_field("publicKey", v)?;
-                }
-            }
+        if !self.identifier.is_empty() {
+            struct_ser.serialize_field("identifier", &self.identifier)?;
         }
         struct_ser.end()
     }
@@ -2016,18 +1976,12 @@ impl<'de> serde::Deserialize<'de> for FindAccountByIdentifierRequest {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "id",
-            "shielded_address",
-            "shieldedAddress",
-            "public_key",
-            "publicKey",
+            "identifier",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            Id,
-            ShieldedAddress,
-            PublicKey,
+            Identifier,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -2049,9 +2003,7 @@ impl<'de> serde::Deserialize<'de> for FindAccountByIdentifierRequest {
                         E: serde::de::Error,
                     {
                         match value {
-                            "id" => Ok(GeneratedField::Id),
-                            "shieldedAddress" | "shielded_address" => Ok(GeneratedField::ShieldedAddress),
-                            "publicKey" | "public_key" => Ok(GeneratedField::PublicKey),
+                            "identifier" => Ok(GeneratedField::Identifier),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -2074,28 +2026,16 @@ impl<'de> serde::Deserialize<'de> for FindAccountByIdentifierRequest {
                 let mut identifier__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
-                        GeneratedField::Id => {
+                        GeneratedField::Identifier => {
                             if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("id"));
+                                return Err(serde::de::Error::duplicate_field("identifier"));
                             }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_by_identifier_request::Identifier::Id);
-                        }
-                        GeneratedField::ShieldedAddress => {
-                            if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("shieldedAddress"));
-                            }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_by_identifier_request::Identifier::ShieldedAddress);
-                        }
-                        GeneratedField::PublicKey => {
-                            if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("publicKey"));
-                            }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_by_identifier_request::Identifier::PublicKey);
+                            identifier__ = Some(map.next_value()?);
                         }
                     }
                 }
                 Ok(FindAccountByIdentifierRequest {
-                    identifier: identifier__,
+                    identifier: identifier__.unwrap_or_default(),
                 })
             }
         }
@@ -2201,19 +2141,12 @@ impl serde::Serialize for FindAccountRequest {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.condition.is_some() {
+        if self.filter.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.FindAccountRequest", len)?;
-        if let Some(v) = self.condition.as_ref() {
-            match v {
-                find_account_request::Condition::Filter(v) => {
-                    struct_ser.serialize_field("filter", v)?;
-                }
-                find_account_request::Condition::FindAll(v) => {
-                    struct_ser.serialize_field("findAll", v)?;
-                }
-            }
+        if let Some(v) = self.filter.as_ref() {
+            struct_ser.serialize_field("filter", v)?;
         }
         struct_ser.end()
     }
@@ -2226,14 +2159,11 @@ impl<'de> serde::Deserialize<'de> for FindAccountRequest {
     {
         const FIELDS: &[&str] = &[
             "filter",
-            "find_all",
-            "findAll",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Filter,
-            FindAll,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -2256,7 +2186,6 @@ impl<'de> serde::Deserialize<'de> for FindAccountRequest {
                     {
                         match value {
                             "filter" => Ok(GeneratedField::Filter),
-                            "findAll" | "find_all" => Ok(GeneratedField::FindAll),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -2276,26 +2205,19 @@ impl<'de> serde::Deserialize<'de> for FindAccountRequest {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut condition__ = None;
+                let mut filter__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Filter => {
-                            if condition__.is_some() {
+                            if filter__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("filter"));
                             }
-                            condition__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_request::Condition::Filter)
-;
-                        }
-                        GeneratedField::FindAll => {
-                            if condition__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("findAll"));
-                            }
-                            condition__ = map.next_value::<::std::option::Option<_>>()?.map(find_account_request::Condition::FindAll);
+                            filter__ = map.next_value()?;
                         }
                     }
                 }
                 Ok(FindAccountRequest {
-                    condition: condition__,
+                    filter: filter__,
                 })
             }
         }
@@ -3424,25 +3346,15 @@ impl serde::Serialize for UpdateAccountRequest {
         if self.options.is_some() {
             len += 1;
         }
-        if self.identifier.is_some() {
+        if !self.identifier.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.api.handler.v1.UpdateAccountRequest", len)?;
         if let Some(v) = self.options.as_ref() {
             struct_ser.serialize_field("options", v)?;
         }
-        if let Some(v) = self.identifier.as_ref() {
-            match v {
-                update_account_request::Identifier::Id(v) => {
-                    struct_ser.serialize_field("id", v)?;
-                }
-                update_account_request::Identifier::ShieldedAddress(v) => {
-                    struct_ser.serialize_field("shieldedAddress", v)?;
-                }
-                update_account_request::Identifier::PublicKey(v) => {
-                    struct_ser.serialize_field("publicKey", v)?;
-                }
-            }
+        if !self.identifier.is_empty() {
+            struct_ser.serialize_field("identifier", &self.identifier)?;
         }
         struct_ser.end()
     }
@@ -3455,19 +3367,13 @@ impl<'de> serde::Deserialize<'de> for UpdateAccountRequest {
     {
         const FIELDS: &[&str] = &[
             "options",
-            "id",
-            "shielded_address",
-            "shieldedAddress",
-            "public_key",
-            "publicKey",
+            "identifier",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Options,
-            Id,
-            ShieldedAddress,
-            PublicKey,
+            Identifier,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -3490,9 +3396,7 @@ impl<'de> serde::Deserialize<'de> for UpdateAccountRequest {
                     {
                         match value {
                             "options" => Ok(GeneratedField::Options),
-                            "id" => Ok(GeneratedField::Id),
-                            "shieldedAddress" | "shielded_address" => Ok(GeneratedField::ShieldedAddress),
-                            "publicKey" | "public_key" => Ok(GeneratedField::PublicKey),
+                            "identifier" => Ok(GeneratedField::Identifier),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -3522,29 +3426,17 @@ impl<'de> serde::Deserialize<'de> for UpdateAccountRequest {
                             }
                             options__ = map.next_value()?;
                         }
-                        GeneratedField::Id => {
+                        GeneratedField::Identifier => {
                             if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("id"));
+                                return Err(serde::de::Error::duplicate_field("identifier"));
                             }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(update_account_request::Identifier::Id);
-                        }
-                        GeneratedField::ShieldedAddress => {
-                            if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("shieldedAddress"));
-                            }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(update_account_request::Identifier::ShieldedAddress);
-                        }
-                        GeneratedField::PublicKey => {
-                            if identifier__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("publicKey"));
-                            }
-                            identifier__ = map.next_value::<::std::option::Option<_>>()?.map(update_account_request::Identifier::PublicKey);
+                            identifier__ = Some(map.next_value()?);
                         }
                     }
                 }
                 Ok(UpdateAccountRequest {
                     options: options__,
-                    identifier: identifier__,
+                    identifier: identifier__.unwrap_or_default(),
                 })
             }
         }

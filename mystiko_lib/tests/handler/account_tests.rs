@@ -1,19 +1,19 @@
 use crate::{extract_data, setup};
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_lib::account::{
-    count, count_all, create, export_secret_key, find, find_by_identifier, update, update_encryption,
+    count, count_all, create, export_secret_key_by_id, export_secret_key_by_public_key,
+    export_secret_key_by_shielded_address, find, find_all, find_by_id, find_by_public_key, find_by_shielded_address,
+    update_by_public_key, update_by_shielded_address, update_encryption,
 };
 use mystiko_lib::wallet;
 use mystiko_lib::wallet::update_password;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::full_public_key;
 use mystiko_protocol::types::{FullPk, FullSk};
-use mystiko_protos::api::handler::v1::find_account_request::Condition;
 use mystiko_protos::api::handler::v1::{
-    export_secret_key_request, find_account_by_identifier_request, update_account_request, CountAccountRequest,
-    CountAccountResponse, CreateAccountRequest, CreateAccountResponse, CreateWalletRequest, ExportSecretKeyRequest,
-    ExportSecretKeyResponse, FindAccountByIdentifierRequest, FindAccountRequest, FindAccountResponse,
-    UpdateAccountRequest, UpdateAccountResponse, UpdateEncryptionRequest, UpdatePasswordRequest,
+    CountAccountRequest, CountAccountResponse, CreateAccountRequest, CreateAccountResponse, CreateWalletRequest,
+    ExportSecretKeyRequest, ExportSecretKeyResponse, FindAccountByIdentifierRequest, FindAccountRequest,
+    FindAccountResponse, UpdateAccountRequest, UpdateAccountResponse, UpdateEncryptionRequest, UpdatePasswordRequest,
 };
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions, UpdateAccountOptions};
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter};
@@ -119,11 +119,11 @@ fn test_find() {
     account_setup();
     let response = find(
         FindAccountRequest::builder()
-            .condition(Condition::Filter(
+            .filter(
                 QueryFilter::builder()
                     .conditions_operator(ConditionOperator::And)
                     .build(),
-            ))
+            )
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -147,11 +147,11 @@ fn test_find() {
         .unwrap();
     let response = find(
         FindAccountRequest::builder()
-            .condition(Condition::Filter(
+            .filter(
                 QueryFilter::builder()
                     .conditions_operator(ConditionOperator::And)
                     .build(),
-            ))
+            )
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -159,11 +159,7 @@ fn test_find() {
         .unwrap()
         .account;
     assert_eq!(accounts, vec![account]);
-    let response = find(
-        FindAccountRequest::builder()
-            .condition(Condition::FindAll(true))
-            .build(),
-    );
+    let response = find_all();
     assert!(response.code.unwrap().success);
     let accounts = FindAccountResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
@@ -190,9 +186,9 @@ fn test_find_by_id() {
         .unwrap()
         .account
         .unwrap();
-    let response = find_by_identifier(
+    let response = find_by_id(
         FindAccountByIdentifierRequest::builder()
-            .identifier(find_account_by_identifier_request::Identifier::Id(account1.id.clone()))
+            .identifier(account1.id.clone())
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -201,9 +197,9 @@ fn test_find_by_id() {
         .account
         .unwrap();
     assert_eq!(account1, account3);
-    let response = find_by_identifier(
+    let response = find_by_id(
         FindAccountByIdentifierRequest::builder()
-            .identifier(find_account_by_identifier_request::Identifier::Id(account2.id.clone()))
+            .identifier(account2.id.clone())
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -233,11 +229,9 @@ fn test_find_by_public_key() {
         .unwrap()
         .account
         .unwrap();
-    let response = find_by_identifier(
+    let response = find_by_public_key(
         FindAccountByIdentifierRequest::builder()
-            .identifier(find_account_by_identifier_request::Identifier::PublicKey(
-                account1.public_key.clone(),
-            ))
+            .identifier(account1.public_key.clone())
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -246,11 +240,9 @@ fn test_find_by_public_key() {
         .account
         .unwrap();
     assert_eq!(account1, account3);
-    let response = find_by_identifier(
+    let response = find_by_public_key(
         FindAccountByIdentifierRequest::builder()
-            .identifier(find_account_by_identifier_request::Identifier::PublicKey(
-                account2.public_key.clone(),
-            ))
+            .identifier(account2.public_key.clone())
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -280,11 +272,9 @@ fn test_find_by_shielded_address() {
         .unwrap()
         .account
         .unwrap();
-    let response = find_by_identifier(
+    let response = find_by_shielded_address(
         FindAccountByIdentifierRequest::builder()
-            .identifier(find_account_by_identifier_request::Identifier::ShieldedAddress(
-                account1.shielded_address.clone(),
-            ))
+            .identifier(account1.shielded_address.clone())
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -293,11 +283,9 @@ fn test_find_by_shielded_address() {
         .account
         .unwrap();
     assert_eq!(account1, account3);
-    let response = find_by_identifier(
+    let response = find_by_shielded_address(
         FindAccountByIdentifierRequest::builder()
-            .identifier(find_account_by_identifier_request::Identifier::ShieldedAddress(
-                account2.shielded_address.clone(),
-            ))
+            .identifier(account2.shielded_address.clone())
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -330,10 +318,10 @@ fn test_update() {
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .name(String::new())
         .build();
-    let response = update(
+    let response = update_by_public_key(
         UpdateAccountRequest::builder()
             .options(update_options.clone())
-            .identifier(update_account_request::Identifier::PublicKey(account.public_key))
+            .identifier(account.public_key)
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -344,12 +332,10 @@ fn test_update() {
     assert_eq!(updated_account.name, account.name);
     assert_eq!(updated_account.updated_at, account.updated_at);
     update_options.name = Some(String::from("Awesome Account Name"));
-    let response = update(
+    let response = update_by_shielded_address(
         UpdateAccountRequest::builder()
             .options(update_options)
-            .identifier(update_account_request::Identifier::ShieldedAddress(
-                account.shielded_address,
-            ))
+            .identifier(account.shielded_address)
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -379,20 +365,20 @@ fn test_update_encryption() {
         .unwrap()
         .account
         .unwrap();
-    let sk1_response = export_secret_key(
+    let sk1_response = export_secret_key_by_id(
         ExportSecretKeyRequest::builder()
             .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-            .identifier(export_secret_key_request::Identifier::Id(account1.id.clone()))
+            .identifier(account1.id.clone())
             .build(),
     );
     assert!(sk1_response.code.unwrap().success);
     let sk1 = ExportSecretKeyResponse::try_from(extract_data(sk1_response.result.unwrap()))
         .unwrap()
         .secret_key;
-    let sk2_response = export_secret_key(
+    let sk2_response = export_secret_key_by_id(
         ExportSecretKeyRequest::builder()
             .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-            .identifier(export_secret_key_request::Identifier::Id(account2.id.clone()))
+            .identifier(account2.id.clone())
             .build(),
     );
     assert!(sk2_response.code.unwrap().success);
@@ -414,20 +400,20 @@ fn test_update_encryption() {
             .build(),
     );
     assert!(response.code.unwrap().success);
-    let sk3_response = export_secret_key(
+    let sk3_response = export_secret_key_by_id(
         ExportSecretKeyRequest::builder()
             .wallet_password(new_wallet_password)
-            .identifier(export_secret_key_request::Identifier::Id(account1.id))
+            .identifier(account1.id)
             .build(),
     );
     assert!(sk3_response.code.unwrap().success);
     let sk3 = ExportSecretKeyResponse::try_from(extract_data(sk3_response.result.unwrap()))
         .unwrap()
         .secret_key;
-    let sk4_response = export_secret_key(
+    let sk4_response = export_secret_key_by_id(
         ExportSecretKeyRequest::builder()
             .wallet_password(new_wallet_password)
-            .identifier(export_secret_key_request::Identifier::Id(account2.id))
+            .identifier(account2.id)
             .build(),
     );
     assert!(sk4_response.code.unwrap().success);
@@ -457,10 +443,10 @@ fn test_export_secret_key_by_id() {
         .account
         .unwrap();
     // export secret key by id
-    let response = export_secret_key(
+    let response = export_secret_key_by_id(
         ExportSecretKeyRequest::builder()
             .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-            .identifier(export_secret_key_request::Identifier::Id(account.id))
+            .identifier(account.id)
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -495,12 +481,10 @@ fn test_export_secret_key_by_public_key() {
         .account
         .unwrap();
     // export secret key by id
-    let response = export_secret_key(
+    let response = export_secret_key_by_public_key(
         ExportSecretKeyRequest::builder()
             .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-            .identifier(export_secret_key_request::Identifier::PublicKey(
-                account.public_key.clone(),
-            ))
+            .identifier(account.public_key.clone())
             .build(),
     );
     assert!(response.code.unwrap().success);
@@ -535,12 +519,10 @@ fn test_export_secret_key_by_shielded_address() {
         .account
         .unwrap();
     // export secret key by id
-    let response = export_secret_key(
+    let response = export_secret_key_by_shielded_address(
         ExportSecretKeyRequest::builder()
             .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
-            .identifier(export_secret_key_request::Identifier::ShieldedAddress(
-                account.shielded_address.clone(),
-            ))
+            .identifier(account.shielded_address.clone())
             .build(),
     );
     assert!(response.code.unwrap().success);
