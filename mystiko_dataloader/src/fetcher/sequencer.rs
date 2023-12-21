@@ -4,7 +4,6 @@ use std::sync::Arc;
 use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
-use log::info;
 use mystiko_config::MystikoConfig;
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use mystiko_protos::loader::v1::SequencerFetcherConfig;
@@ -261,7 +260,7 @@ fn build_contract_result<R: LoadedData>(
                 .commitments(commitments)
                 .nullifiers(nullifiers)
                 .build();
-            info!(
+            log::info!(
                 "{} fetch {} commitments and {} nullifiers",
                 FetcherLogOptions::builder()
                     .address(address.to_string())
@@ -278,7 +277,7 @@ fn build_contract_result<R: LoadedData>(
         }
         DataType::Lite => {
             let litedata = LiteData::builder().commitments(commitments).build();
-            info!(
+            log::info!(
                 "{} fetch {} commitments",
                 FetcherLogOptions::builder()
                     .address(address.to_string())

@@ -10,7 +10,6 @@ use crate::loader::{
 };
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
-use log::{error, warn};
 use mystiko_config::{ChainConfig, ContractConfig, MystikoConfig};
 use std::cmp::max;
 use std::collections::HashMap;
@@ -89,9 +88,9 @@ where
 
     async fn chain_target_block(&self, _chain_id: u64) -> DataLoaderResult<Option<u64>> {
         let mut fetchers = self.fetchers.iter().collect::<Vec<_>>();
-        fetchers.sort_by(|a, b| b.options.target_block_priority.cmp(&a.options.target_block_priority));
+        fetchers.sort_by_key(|f| f.options.target_block_priority);
         let load_options = LoadFetcherOption::builder().build();
-        for fetcher in fetchers {
+        for fetcher in fetchers.iter().rev() {
             if let Ok(target_block) = self.query_loaded_blocks(fetcher, &load_options).await {
                 return Ok(Some(target_block.loaded_block));
             }
@@ -176,14 +175,14 @@ where
             .collect::<Vec<_>>();
 
         if tasks.is_empty() {
-            warn!("no fetcher to load data");
+            log::warn!("no fetcher to load data");
             return Err(DataLoaderError::LoaderNoFetchersError);
         }
 
         let results = futures::future::join_all(tasks).await;
         let fetchers: Vec<_> = results.into_iter().filter_map(|r| r.ok()).collect();
         if fetchers.is_empty() {
-            error!("failed to query loaded blocks from all fetchers");
+            log::error!("failed to query loaded blocks from all fetchers");
             return Err(DataLoaderError::QueryLoadedBlocksError);
         }
 
@@ -220,7 +219,7 @@ where
                     .await
                 {
                     Err(e) => {
-                        warn!("fetch fetcher(name={:?}) failed: {:?}", name, e);
+                        log::warn!("fetch fetcher(name={:?}) failed: {:?}", name, e);
                         None
                     }
                     Ok(d) => Some(d),
@@ -231,13 +230,13 @@ where
                     let mut invalid = false;
                     if !skip_validation {
                         if let Err(e) = self.validate(run_params, chain_data).await {
-                            warn!("validate fetcher(name={:?}) data failed: {:?}", name, e);
+                            log::warn!("validate fetcher(name={:?}) data failed: {:?}", name, e);
                             invalid = true;
                         };
                     }
                     if !invalid {
                         if let Err(e) = self.handle(chain_data).await {
-                            warn!("handle fetcher(name={:?}) data failed: {:?}", name, e);
+                            log::warn!("handle fetcher(name={:?}) data failed: {:?}", name, e);
                         } else {
                             loaded = Some(true);
                         }
@@ -247,7 +246,7 @@ where
         }
 
         if let Some(false) = loaded {
-            error!("failed to load data from all fetchers");
+            log::error!("failed to load data from all fetchers");
             return Err(DataLoaderError::LoaderFetchersExhaustedError);
         }
 
@@ -278,13 +277,14 @@ where
                 .loaded_block(block)
                 .build()),
             Ok(Err(e)) => {
-                warn!("query_loaded_blocks of fetcher(name={:?}) failed: {:?}", name, e);
+                log::warn!("query_loaded_blocks of fetcher(name={:?}) failed: {:?}", name, e);
                 Err(e.into())
             }
             Err(_) => {
-                warn!(
+                log::warn!(
                     "query_loaded_blocks of fetcher(name={:?}) timed out after {:?} ms",
-                    name, options.query_loaded_block_timeout_ms
+                    name,
+                    options.query_loaded_block_timeout_ms
                 );
                 Err(DataLoaderError::QueryLoadedBlocksTimeoutError(
                     name.to_string(),
@@ -307,7 +307,7 @@ where
             Ok(Ok(result)) => {
                 let unwrapped = UnwrappedChainResult::from(result);
                 unwrapped.contract_errors.iter().for_each(|error| {
-                    warn!("fetch contract {:?} failed: {:?}", error.address, error.source);
+                    log::warn!("fetch contract {:?} failed: {:?}", error.address, error.source);
                 });
                 Ok(unwrapped.result)
             }
@@ -337,7 +337,7 @@ where
                 let validate_result = validator_params.validator.validate(data, &validator_option).await?;
                 let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
                 unwrapped.contract_errors.iter().for_each(|c| {
-                    warn!(
+                    log::warn!(
                         "validator(name={:?}) contract {:?} failed: {:?}",
                         validator_params.validator.name(),
                         c.address,
@@ -351,7 +351,7 @@ where
             }
             Ok(())
         } else {
-            warn!("fetcher contract data is empty");
+            log::warn!("fetcher contract data is empty");
             Err(DataLoaderError::LoaderEmptyValidateDataError)
         }
     }
@@ -362,11 +362,11 @@ where
             let handle_result = self.handler.handle(data, &handler_option).await?;
             let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(handle_result);
             unwrapped.contract_errors.iter().for_each(|c| {
-                warn!("handle contract {:?} failed: {:?}", c.address, c.source);
+                log::warn!("handle contract {:?} failed: {:?}", c.address, c.source);
             });
             Ok(())
         } else {
-            warn!("fetcher contract data all invalid");
+            log::warn!("fetcher contract data all invalid");
             Err(DataLoaderError::LoaderEmptyHandleDataError)
         }
     }

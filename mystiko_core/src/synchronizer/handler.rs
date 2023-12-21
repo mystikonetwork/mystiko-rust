@@ -3,7 +3,6 @@ use crate::{
     SynchronizerHandler,
 };
 use async_trait::async_trait;
-use log::warn;
 use mystiko_config::{ChainConfig, MystikoConfig};
 use mystiko_dataloader::data::FullData;
 use mystiko_dataloader::fetcher::{PACKER_FETCHER_NAME, PROVIDER_FETCHER_NAME, SEQUENCER_FETCHER_NAME};
@@ -94,17 +93,7 @@ where
             .iter()
             .map(|(chain_id, loader)| self.chain_status(chain_id, loader, with_contracts))
             .collect::<Vec<_>>();
-        let results = futures::future::join_all(tasks).await;
-        let chains = results
-            .into_iter()
-            .filter_map(|result| match result {
-                Ok(r) => Some(r),
-                Err(err) => {
-                    warn!("chain status error: {:?}", err);
-                    None
-                }
-            })
-            .collect::<Vec<_>>();
+        let chains = futures::future::try_join_all(tasks).await?;
         Ok(SynchronizerStatus::builder().chains(chains).build())
     }
 
@@ -115,21 +104,24 @@ where
             sync_option.chain_ids.clone()
         };
 
-        let loader_tasks: Vec<_> = chains
-            .iter()
-            .filter_map(|chain_id| {
-                if let Some(loader) = self.loaders.get(chain_id) {
-                    Some(self.chain_sync(chain_id, loader, &sync_option))
-                } else {
-                    log::warn!("chain(id={:?}) not supported", chain_id);
-                    None
-                }
-            })
-            .collect();
-        let result = futures::future::join_all(loader_tasks).await;
-        Ok(SynchronizerStatus::builder()
-            .chains(result.into_iter().flatten().collect::<Vec<_>>())
-            .build())
+        let mut loader_tasks = Vec::new();
+        for chain_id in chains {
+            let loader = self
+                .loaders
+                .get(&chain_id)
+                .ok_or_else(|| Self::Error::UnsupportedChainError(chain_id))?;
+            loader_tasks.push(self.chain_sync(loader, &sync_option));
+        }
+
+        let results = futures::future::join_all(loader_tasks).await;
+        let mut chains_status = vec![];
+        for result in results {
+            match result {
+                Ok(status) => chains_status.push(status),
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(SynchronizerStatus::builder().chains(chains_status).build())
     }
 
     async fn reset(&self, reset_options: ResetOptions) -> Result<(), Self::Error> {
@@ -270,21 +262,16 @@ where
         Ok(contract_status)
     }
 
-    async fn chain_sync(&self, chain_id: &u64, loader: &L, sync_option: &SyncOptions) -> Option<ChainStatus> {
+    async fn chain_sync(&self, loader: &L, sync_option: &SyncOptions) -> Result<ChainStatus, SynchronizerError> {
         let load_option = self.build_load_option(sync_option);
         let result = loader.load(load_option).await;
         match result {
-            Ok(status) => Some(
-                ChainStatus::builder()
-                    .chain_id(status.chain_id)
-                    .synced_block(status.loaded_block)
-                    .target_block(status.target_block)
-                    .build(),
-            ),
-            Err(err) => {
-                log::error!("chain(id={:?}) load error: {:?}", chain_id, err);
-                None
-            }
+            Ok(status) => Ok(ChainStatus::builder()
+                .chain_id(status.chain_id)
+                .synced_block(status.loaded_block)
+                .target_block(status.target_block)
+                .build()),
+            Err(err) => Err(err.into()),
         }
     }
 

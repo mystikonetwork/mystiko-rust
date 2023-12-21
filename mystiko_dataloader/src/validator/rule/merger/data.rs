@@ -4,7 +4,6 @@ use crate::validator::rule::merger::error::DataMergeError;
 use crate::validator::rule::merger::DataMergeResult;
 use crate::validator::rule::types::{ValidateCommitment, ValidateMergedData, ValidateNullifier};
 use crate::validator::rule::ValidateOriginalData;
-use log::error;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_utils::convert::bytes_to_biguint;
 use num_bigint::BigUint;
@@ -180,7 +179,7 @@ where
                     Entry::Occupied(mut entry) => {
                         let elem: &mut ValidateCommitment = entry.get_mut();
                         if elem.commitment_hash != validate_commitment.commitment_hash {
-                            error!("commitment hash collision");
+                            log::error!("commitment hash collision");
                             return Err(DataMergeError::CommitmentHashCollisionError);
                         }
 

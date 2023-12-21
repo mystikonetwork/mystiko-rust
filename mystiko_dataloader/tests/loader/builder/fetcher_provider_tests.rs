@@ -52,8 +52,7 @@ async fn test_create_chain_data_loader_default_provider_fetcher() {
     mock.push::<Vec<Log>, _>(vec![]).unwrap();
     mock.push(block_number).unwrap();
     mock.push(block_number).unwrap();
-    let loader = loader.unwrap();
-    let result = loader.load(LoadOption::default()).await.unwrap();
+    let result = loader.unwrap().load(LoadOption::default()).await.unwrap();
     assert_eq!(
         result,
         LoadStatus::builder()
@@ -81,6 +80,7 @@ async fn test_create_chain_data_loader_default_provider_fetcher_skip_validation(
                         .concurrency(2)
                         .timeout_ms(10)
                         .skip_validation(true)
+                        .target_block_priority(12)
                         .build(),
                 )
                 .build(),

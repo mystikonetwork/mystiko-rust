@@ -1,4 +1,5 @@
 use crate::synchronizer::mock::{create_synchronizer, MockSyncDataLoader};
+use mystiko_core::SynchronizerError;
 use mystiko_core::SynchronizerHandler;
 use mystiko_dataloader::fetcher::{PACKER_FETCHER_NAME, PROVIDER_FETCHER_NAME, SEQUENCER_FETCHER_NAME};
 use mystiko_dataloader::loader::{
@@ -8,6 +9,7 @@ use mystiko_dataloader::validator::rule::{
     RULE_COUNTER_CHECKER_NAME, RULE_INTEGRITY_CHECKER_NAME, RULE_MERKLE_TREE_CHECKER_NAME, RULE_SEQUENCE_CHECKER_NAME,
     RULE_VALIDATOR_NAME,
 };
+use mystiko_dataloader::DataLoaderError;
 use mystiko_protos::core::synchronizer::v1::{ChainStatus, SyncOptions};
 use std::collections::HashMap;
 
@@ -74,41 +76,93 @@ async fn test_chain_synced_with_changed_options() {
 }
 
 #[tokio::test]
-async fn test_chain_synced_with_chain_ids() {
-    let chain_id = 2_u64;
-    let mut load_status = LoadStatus::builder()
-        .chain_id(chain_id)
+async fn test_chain_synced_with_two_loader() {
+    let loader1 = MockSyncDataLoader::new();
+    let loader2 = MockSyncDataLoader::new();
+    let synchronizer = create_synchronizer(1, vec![loader1, loader2]).await;
+    let mut sync_options = SyncOptions::builder().build();
+    sync_options.chain_ids = vec![1, 999999];
+    let result = synchronizer.sync(sync_options).await;
+    assert!(matches!(
+        result.err().unwrap(),
+        SynchronizerError::UnsupportedChainError(_)
+    ));
+
+    let mut loader1 = MockSyncDataLoader::new();
+    let mut loader2 = MockSyncDataLoader::new();
+    let load_status1 = LoadStatus::builder()
+        .chain_id(1_u64)
         .loaded_block(100_u64)
         .target_block(200_u64)
         .build();
-    let loader = MockSyncDataLoader::new();
-    let synchronizer = create_synchronizer(1, vec![loader]).await;
-    let mut sync_options = SyncOptions::builder().build();
-    sync_options.chain_ids = vec![chain_id];
-    let result = synchronizer.sync(sync_options).await.unwrap();
-    assert_eq!(result.chains.len(), 0);
-
-    let chain_id = 1_u64;
-    let mut loader = MockSyncDataLoader::new();
-    let expected_load_options = build_default_expect_load_option();
-    load_status.chain_id = chain_id;
-    loader
+    let load_status2 = LoadStatus::builder()
+        .chain_id(2_u64)
+        .loaded_block(300_u64)
+        .target_block(400_u64)
+        .build();
+    let expected_load_options1 = build_default_expect_load_option();
+    let expected_load_options2 = build_default_expect_load_option();
+    loader1
         .expect_load::<LoadOption>()
-        .withf(move |options| load_options_compare(options, &expected_load_options))
-        .returning(move |_| Ok(load_status));
-    let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
+        .withf(move |options| load_options_compare(options, &expected_load_options1))
+        .returning(move |_| Ok(load_status1));
+    loader2
+        .expect_load::<LoadOption>()
+        .withf(move |options| load_options_compare(options, &expected_load_options2))
+        .returning(move |_| Ok(load_status2));
+    let synchronizer = create_synchronizer(1, vec![loader1, loader2]).await;
     let mut sync_options = SyncOptions::builder().build();
-    sync_options.chain_ids = vec![chain_id];
+    sync_options.chain_ids = vec![1_u64, 2_u64];
     let result = synchronizer.sync(sync_options).await.unwrap();
-    assert_eq!(result.chains.len(), 1);
-    assert_eq!(
-        result.chains[0],
-        ChainStatus::builder()
-            .chain_id(chain_id)
-            .synced_block(100_u64)
-            .target_block(200_u64)
-            .build()
-    );
+    assert_eq!(result.chains.len(), 2);
+    for chain in result.chains {
+        match chain.chain_id {
+            1 => {
+                assert_eq!(
+                    chain,
+                    ChainStatus::builder()
+                        .chain_id(1_u64)
+                        .synced_block(100_u64)
+                        .target_block(200_u64)
+                        .build()
+                );
+            }
+            2 => {
+                assert_eq!(
+                    chain,
+                    ChainStatus::builder()
+                        .chain_id(2_u64)
+                        .synced_block(300_u64)
+                        .target_block(400_u64)
+                        .build()
+                );
+            }
+            _ => {
+                panic!("unexpected chain id");
+            }
+        }
+    }
+
+    let mut loader1 = MockSyncDataLoader::new();
+    let mut loader2 = MockSyncDataLoader::new();
+    let load_status1 = LoadStatus::builder()
+        .chain_id(1_u64)
+        .loaded_block(100_u64)
+        .target_block(200_u64)
+        .build();
+    let expected_load_options1 = build_default_expect_load_option();
+    loader1
+        .expect_load::<LoadOption>()
+        .withf(move |options| load_options_compare(options, &expected_load_options1))
+        .returning(move |_| Ok(load_status1));
+    loader2
+        .expect_load::<LoadOption>()
+        .returning(move |_| Err(DataLoaderError::LoaderNoContractsError));
+    let synchronizer = create_synchronizer(1, vec![loader1, loader2]).await;
+    let mut sync_options = SyncOptions::builder().build();
+    sync_options.chain_ids = vec![1_u64, 2_u64];
+    let result = synchronizer.sync(sync_options).await;
+    assert!(matches!(result.err().unwrap(), SynchronizerError::DataLoaderError(_)));
 }
 
 #[tokio::test]

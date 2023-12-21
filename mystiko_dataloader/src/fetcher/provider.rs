@@ -15,7 +15,6 @@ use ethers_core::types::{BlockNumber, Filter, U64};
 use ethers_providers::Middleware;
 use ethers_providers::ProviderError;
 use ethers_providers::Quorum;
-use log::{error, info};
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_config::MystikoConfig;
@@ -382,7 +381,7 @@ async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOpti
                 .commitments(commitments)
                 .nullifiers(fetch_nullifiers(option).await?)
                 .build();
-            info!(
+            log::info!(
                 "{} fetch {} commitments and {} nullifiers",
                 FetcherLogOptions::builder()
                     .address(option.contract_address.to_string())
@@ -399,7 +398,7 @@ async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOpti
         }
         DataType::Lite => {
             let litedata = LiteData::builder().commitments(commitments).build();
-            info!(
+            log::info!(
                 "{} fetch {} commitments",
                 FetcherLogOptions::builder()
                     .address(option.contract_address.to_string())

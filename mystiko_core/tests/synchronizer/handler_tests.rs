@@ -94,8 +94,8 @@ async fn test_status_without_contract() {
         .expect_chain_target_block()
         .returning(|_| Err(DataLoaderError::LoaderNoContractsError));
     let synchronizer = create_synchronizer(1, vec![loader1, loader2]).await;
-    let result = synchronizer.status(false).await.unwrap();
-    assert!(result.chains.is_empty());
+    let result = synchronizer.status(false).await;
+    assert!(matches!(result.err().unwrap(), SynchronizerError::DataLoaderError(_)));
 
     let mut loader1 = MockSyncDataLoader::new();
     loader1
@@ -106,12 +106,8 @@ async fn test_status_without_contract() {
     loader2.expect_chain_loaded_block().returning(|_| Ok(Some(200)));
     loader2.expect_chain_target_block().returning(|_| Ok(Some(300)));
     let synchronizer = create_synchronizer(1, vec![loader1, loader2]).await;
-    let result = synchronizer.status(false).await.unwrap();
-    assert_eq!(result.chains.len(), 1);
-    assert_eq!(result.chains[0].chain_id, 2);
-    assert_eq!(result.chains[0].synced_block, 200);
-    assert_eq!(result.chains[0].target_block, 300);
-    assert_eq!(result.chains[0].contracts.len(), 0);
+    let result = synchronizer.status(false).await;
+    assert!(matches!(result.err().unwrap(), SynchronizerError::DataLoaderError(_)));
 
     let mut loader1 = MockSyncDataLoader::new();
     loader1.expect_chain_loaded_block().returning(|_| Ok(Some(100)));
@@ -143,8 +139,11 @@ async fn test_status_with_contract() {
     loader.expect_chain_loaded_block().returning(|_| Ok(None));
     loader.expect_chain_target_block().returning(|_| Ok(None));
     let synchronizer = create_synchronizer(1, vec![loader]).await;
-    let result = synchronizer.status(true).await.unwrap();
-    assert!(result.chains.is_empty());
+    let result = synchronizer.status(true).await;
+    assert!(matches!(
+        result.err().unwrap(),
+        SynchronizerError::UnsupportedChainError(_)
+    ));
 
     let mut loader = MockSyncDataLoader::new();
     loader.expect_chain_loaded_block().returning(|_| Ok(None));
@@ -183,8 +182,8 @@ async fn test_status_with_contract() {
     loader.expect_chain_target_block().returning(|_| Ok(Some(300)));
     loader.expect_contract_loaded_block().returning(|_, _| Ok(Some(300)));
     let synchronizer = create_synchronizer(5, vec![loader]).await;
-    let result = synchronizer.status(true).await.unwrap();
-    assert!(result.chains.is_empty());
+    let result = synchronizer.status(true).await;
+    assert!(matches!(result.err().unwrap(), SynchronizerError::DataLoaderError(_)));
 
     let mut loader = MockSyncDataLoader::new();
     loader.expect_chain_loaded_block().returning(|_| Ok(Some(200)));
@@ -193,8 +192,8 @@ async fn test_status_with_contract() {
         .returning(|_| Err(DataLoaderError::LoaderNoContractsError));
     loader.expect_contract_loaded_block().returning(|_, _| Ok(Some(200)));
     let synchronizer = create_synchronizer(5, vec![loader]).await;
-    let result = synchronizer.status(true).await.unwrap();
-    assert!(result.chains.is_empty());
+    let result = synchronizer.status(true).await;
+    assert!(matches!(result.err().unwrap(), SynchronizerError::DataLoaderError(_)));
 
     let mut loader = MockSyncDataLoader::new();
     loader.expect_chain_loaded_block().returning(|_| Ok(Some(200)));
@@ -203,6 +202,6 @@ async fn test_status_with_contract() {
         .expect_contract_loaded_block()
         .returning(|_, _| Err(DataLoaderError::LoaderNoContractsError));
     let synchronizer = create_synchronizer(5, vec![loader]).await;
-    let result = synchronizer.status(true).await.unwrap();
-    assert!(result.chains.is_empty());
+    let result = synchronizer.status(true).await;
+    assert!(matches!(result.err().unwrap(), SynchronizerError::DataLoaderError(_)));
 }

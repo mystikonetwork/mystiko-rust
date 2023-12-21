@@ -20,13 +20,6 @@ use typed_builder::TypedBuilder;
 
 pub type DataLoaderConfigResult<T> = anyhow::Result<T, DataLoaderConfigError>;
 
-enum DefaultTargetBlockPriority {
-    Packer = 0,
-    Provider = 10,
-    Etherscan = 20,
-    Sequencer = 30,
-}
-
 #[derive(Error, Debug)]
 pub enum DataLoaderConfigError {
     #[error("not supported fetcher type {0}")]
@@ -146,13 +139,9 @@ where
                 FetcherType::Packer => {
                     let packer = DataPackerFetcherV1::from(mystiko_config.clone());
                     let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.packer {
-                        (
-                            c.skip_validation.unwrap_or(false),
-                            c.target_block_priority
-                                .unwrap_or(DefaultTargetBlockPriority::Packer as u32),
-                        )
+                        (c.skip_validation.unwrap_or(false), c.target_block_priority.unwrap_or(0))
                     } else {
-                        (false, DefaultTargetBlockPriority::Packer as u32)
+                        (false, 0)
                     };
                     fetchers.push(
                         FetcherWrapper::builder()
@@ -173,13 +162,9 @@ where
                     )
                     .await?;
                     let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.sequencer {
-                        (
-                            c.skip_validation.unwrap_or(false),
-                            c.target_block_priority
-                                .unwrap_or(DefaultTargetBlockPriority::Sequencer as u32),
-                        )
+                        (c.skip_validation.unwrap_or(false), c.target_block_priority.unwrap_or(0))
                     } else {
-                        (false, DefaultTargetBlockPriority::Sequencer as u32)
+                        (false, 0)
                     };
                     fetchers.push(
                         FetcherWrapper::builder()
@@ -200,13 +185,9 @@ where
                         fetcher_config.etherscan.clone(),
                     )?;
                     let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.etherscan {
-                        (
-                            c.skip_validation.unwrap_or(false),
-                            c.target_block_priority
-                                .unwrap_or(DefaultTargetBlockPriority::Etherscan as u32),
-                        )
+                        (c.skip_validation.unwrap_or(false), c.target_block_priority.unwrap_or(0))
                     } else {
-                        (false, DefaultTargetBlockPriority::Etherscan as u32)
+                        (false, 0)
                     };
                     fetchers.push(
                         FetcherWrapper::builder()
@@ -224,13 +205,9 @@ where
                     let provider_fetcher =
                         ProviderFetcher::from_config(fetcher_config.provider.clone(), providers.clone());
                     let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.provider {
-                        (
-                            c.skip_validation.unwrap_or(false),
-                            c.target_block_priority
-                                .unwrap_or(DefaultTargetBlockPriority::Provider as u32),
-                        )
+                        (c.skip_validation.unwrap_or(false), c.target_block_priority.unwrap_or(0))
                     } else {
-                        (false, DefaultTargetBlockPriority::Provider as u32)
+                        (false, 0)
                     };
                     fetchers.push(
                         FetcherWrapper::builder()

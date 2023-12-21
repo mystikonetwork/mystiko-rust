@@ -23,36 +23,9 @@ async fn test_loader_many_fetcher_same_target_block_priority() {
     fetchers[2].set_loaded_block(Some(start_block + 200)).await;
     fetchers[3].set_loaded_block(Some(start_block + 300)).await;
     let result = loader.chain_target_block(chain_id).await.unwrap();
-    assert_eq!(result.unwrap(), start_block);
-
-    fetchers[0].set_loaded_block(None).await;
-    fetchers[1].set_loaded_block(Some(start_block + 100)).await;
-    fetchers[2].set_loaded_block(Some(start_block + 200)).await;
-    fetchers[3].set_loaded_block(Some(start_block + 300)).await;
-    let result = loader.chain_target_block(chain_id).await.unwrap();
-    assert_eq!(result.unwrap(), start_block + 100);
-
-    fetchers[0].set_loaded_block(None).await;
-    fetchers[1].set_loaded_block(Some(start_block + 100)).await;
-    fetchers[2].set_loaded_block(None).await;
-    fetchers[3].set_loaded_block(Some(start_block + 300)).await;
-    let result = loader.chain_target_block(chain_id).await.unwrap();
-    assert_eq!(result.unwrap(), start_block + 100);
-
-    fetchers[0].set_loaded_block(None).await;
-    fetchers[1].set_loaded_block(None).await;
-    fetchers[2].set_loaded_block(None).await;
-    fetchers[3].set_loaded_block(Some(start_block + 300)).await;
-    let result = loader.chain_target_block(chain_id).await.unwrap();
     assert_eq!(result.unwrap(), start_block + 300);
-}
 
-#[tokio::test]
-async fn test_loader_many_fetcher_diff_target_block_priority() {
-    let chain_id = 1_u64;
-    let (cfg, loader, fetchers, _, _) = create_loader_with_priority(chain_id, 4, 1, false, vec![1, 1, 2, 3]).await;
-    let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
-    fetchers[0].set_loaded_block(Some(start_block)).await;
+    fetchers[0].set_loaded_block(None).await;
     fetchers[1].set_loaded_block(Some(start_block + 100)).await;
     fetchers[2].set_loaded_block(Some(start_block + 200)).await;
     fetchers[3].set_loaded_block(Some(start_block + 300)).await;
@@ -71,12 +44,46 @@ async fn test_loader_many_fetcher_diff_target_block_priority() {
     fetchers[2].set_loaded_block(None).await;
     fetchers[3].set_loaded_block(None).await;
     let result = loader.chain_target_block(chain_id).await.unwrap();
-    assert_eq!(result.unwrap(), start_block);
+    assert_eq!(result.unwrap(), start_block + 100);
 
-    fetchers[0].set_loaded_block(None).await;
+    fetchers[0].set_loaded_block(Some(start_block)).await;
+    fetchers[1].set_loaded_block(None).await;
+    fetchers[2].set_loaded_block(None).await;
+    fetchers[3].set_loaded_block(None).await;
+    let result = loader.chain_target_block(chain_id).await.unwrap();
+    assert_eq!(result.unwrap(), start_block);
+}
+
+#[tokio::test]
+async fn test_loader_many_fetcher_diff_target_block_priority() {
+    let chain_id = 1_u64;
+    let (cfg, loader, fetchers, _, _) = create_loader_with_priority(chain_id, 4, 1, false, vec![1, 1, 3, 2]).await;
+    let start_block = cfg.find_chain(chain_id).unwrap().start_block() + 1;
+    fetchers[0].set_loaded_block(Some(start_block)).await;
+    fetchers[1].set_loaded_block(Some(start_block + 100)).await;
+    fetchers[2].set_loaded_block(Some(start_block + 300)).await;
+    fetchers[3].set_loaded_block(Some(start_block + 200)).await;
+    let result = loader.chain_target_block(chain_id).await.unwrap();
+    assert_eq!(result.unwrap(), start_block + 300);
+
+    fetchers[0].set_loaded_block(Some(start_block)).await;
+    fetchers[1].set_loaded_block(Some(start_block + 100)).await;
+    fetchers[2].set_loaded_block(None).await;
+    fetchers[3].set_loaded_block(Some(start_block + 200)).await;
+    let result = loader.chain_target_block(chain_id).await.unwrap();
+    assert_eq!(result.unwrap(), start_block + 200);
+
+    fetchers[0].set_loaded_block(Some(start_block)).await;
     fetchers[1].set_loaded_block(Some(start_block + 100)).await;
     fetchers[2].set_loaded_block(None).await;
     fetchers[3].set_loaded_block(None).await;
     let result = loader.chain_target_block(chain_id).await.unwrap();
     assert_eq!(result.unwrap(), start_block + 100);
+
+    fetchers[0].set_loaded_block(Some(start_block)).await;
+    fetchers[1].set_loaded_block(None).await;
+    fetchers[2].set_loaded_block(None).await;
+    fetchers[3].set_loaded_block(None).await;
+    let result = loader.chain_target_block(chain_id).await.unwrap();
+    assert_eq!(result.unwrap(), start_block);
 }

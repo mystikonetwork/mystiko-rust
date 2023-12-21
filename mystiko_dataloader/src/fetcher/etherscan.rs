@@ -2,7 +2,6 @@ use crate::data::{ChainResult, ContractData, ContractResult, Data, DataType, Ful
 use crate::fetcher::{ChainLoadedBlockOptions, DataFetcher, FetchOptions, FetchResult, FetcherError};
 use anyhow::Result;
 use async_trait::async_trait;
-use log::info;
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_config::MystikoConfig;
@@ -57,9 +56,11 @@ where
     }
 
     async fn fetch(&self, option: &FetchOptions) -> FetchResult<R> {
-        info!(
+        log::info!(
             "chain={} start fetch data, start_block={}, target_block={}",
-            option.chain_id, option.start_block, option.target_block
+            option.chain_id,
+            option.start_block,
+            option.target_block
         );
         let (current_block_num, client) = self
             .chain_safe_current_block(option.chain_id, option.config.clone())
@@ -273,7 +274,7 @@ async fn fetch_contract_data<R: LoadedData>(
     };
     let contracts_response = match R::data_type() {
         DataType::Lite => {
-            info!(
+            log::info!(
                 "contract={} fetch {} commitments from {} to {}",
                 option.address,
                 &commitments.len(),
@@ -290,7 +291,7 @@ async fn fetch_contract_data<R: LoadedData>(
         }
         DataType::Full => {
             let nullifiers = fetch_nullifiers(client, &option).await?;
-            info!(
+            log::info!(
                 "contract={} fetch {} commitments and {} nullifiers from {} to {}",
                 option.address,
                 &commitments.len(),
