@@ -51,7 +51,7 @@ where
             if let Some(filter) = message.filter {
                 return runtime().block_on(internal::find(filter));
             }
-            return ApiResponse::unknown_error("unexpected message");
+            ApiResponse::unknown_error("unexpected message")
         }
         Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
@@ -104,7 +104,7 @@ where
             if let Some(options) = message.options {
                 return runtime().block_on(internal::update_by_id(options, message.identifier));
             }
-            return ApiResponse::unknown_error("unexpected message");
+            ApiResponse::unknown_error("unexpected message")
         }
         Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
@@ -120,7 +120,7 @@ where
             if let Some(options) = message.options {
                 return runtime().block_on(internal::update_by_shielded_address(options, message.identifier));
             }
-            return ApiResponse::unknown_error("unexpected message");
+            ApiResponse::unknown_error("unexpected message")
         }
         Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
@@ -136,7 +136,7 @@ where
             if let Some(options) = message.options {
                 return runtime().block_on(internal::update_by_public_key(options, message.identifier));
             }
-            return ApiResponse::unknown_error("unexpected message");
+            ApiResponse::unknown_error("unexpected message")
         }
         Err(err) => ApiResponse::error(AccountError::DeserializeMessageError, err),
     }
