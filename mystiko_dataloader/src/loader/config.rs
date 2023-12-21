@@ -11,8 +11,8 @@ use anyhow::Error as AnyhowError;
 use mystiko_config::MystikoConfig;
 use mystiko_ethers::Providers;
 use mystiko_protos::loader::v1::{
-    FetcherConfig, FetcherType, LoaderConfig, RuleValidatorCheckerType, RuleValidatorConfig, ValidatorConfig,
-    ValidatorType,
+    EtherscanFetcherConfig, FetcherConfig, FetcherType, LoaderConfig, PackerFetcherConfig, ProviderFetcherConfig,
+    RuleValidatorCheckerType, RuleValidatorConfig, SequencerFetcherConfig, ValidatorConfig, ValidatorType,
 };
 use std::sync::Arc;
 use thiserror::Error;
@@ -138,18 +138,17 @@ where
                 }
                 FetcherType::Packer => {
                     let packer = DataPackerFetcherV1::from(mystiko_config.clone());
-                    let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.packer {
-                        (c.skip_validation.unwrap_or(false), c.target_block_priority.unwrap_or(0))
-                    } else {
-                        (false, 0)
-                    };
+                    let PackerFetcherConfig {
+                        skip_validation,
+                        target_block_priority,
+                    } = fetcher_config.packer.clone().unwrap_or_default();
                     fetchers.push(
                         FetcherWrapper::builder()
                             .fetcher(Arc::new(Box::new(packer) as Box<dyn DataFetcher<R>>))
                             .options(
                                 FetcherOptions::builder()
-                                    .skip_validation(skip_validation)
-                                    .target_block_priority(target_block_priority)
+                                    .skip_validation(skip_validation.unwrap_or_default())
+                                    .target_block_priority(target_block_priority.unwrap_or_default())
                                     .build(),
                             )
                             .build(),
@@ -161,18 +160,18 @@ where
                         fetcher_config.sequencer.clone(),
                     )
                     .await?;
-                    let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.sequencer {
-                        (c.skip_validation.unwrap_or(false), c.target_block_priority.unwrap_or(0))
-                    } else {
-                        (false, 0)
-                    };
+                    let SequencerFetcherConfig {
+                        skip_validation,
+                        target_block_priority,
+                        ..
+                    } = fetcher_config.sequencer.clone().unwrap_or_default();
                     fetchers.push(
                         FetcherWrapper::builder()
                             .fetcher(Arc::new(Box::new(sequencer) as Box<dyn DataFetcher<R>>))
                             .options(
                                 FetcherOptions::builder()
-                                    .skip_validation(skip_validation)
-                                    .target_block_priority(target_block_priority)
+                                    .skip_validation(skip_validation.unwrap_or_default())
+                                    .target_block_priority(target_block_priority.unwrap_or_default())
                                     .build(),
                             )
                             .build(),
@@ -184,18 +183,18 @@ where
                         mystiko_config.clone(),
                         fetcher_config.etherscan.clone(),
                     )?;
-                    let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.etherscan {
-                        (c.skip_validation.unwrap_or(false), c.target_block_priority.unwrap_or(0))
-                    } else {
-                        (false, 0)
-                    };
+                    let EtherscanFetcherConfig {
+                        skip_validation,
+                        target_block_priority,
+                        ..
+                    } = fetcher_config.etherscan.clone().unwrap_or_default();
                     fetchers.push(
                         FetcherWrapper::builder()
                             .fetcher(Arc::new(Box::new(etherscan) as Box<dyn DataFetcher<R>>))
                             .options(
                                 FetcherOptions::builder()
-                                    .skip_validation(skip_validation)
-                                    .target_block_priority(target_block_priority)
+                                    .skip_validation(skip_validation.unwrap_or_default())
+                                    .target_block_priority(target_block_priority.unwrap_or_default())
                                     .build(),
                             )
                             .build(),
@@ -204,18 +203,18 @@ where
                 FetcherType::Provider => {
                     let provider_fetcher =
                         ProviderFetcher::from_config(fetcher_config.provider.clone(), providers.clone());
-                    let (skip_validation, target_block_priority) = if let Some(c) = &fetcher_config.provider {
-                        (c.skip_validation.unwrap_or(false), c.target_block_priority.unwrap_or(0))
-                    } else {
-                        (false, 0)
-                    };
+                    let ProviderFetcherConfig {
+                        skip_validation,
+                        target_block_priority,
+                        ..
+                    } = fetcher_config.provider.clone().unwrap_or_default();
                     fetchers.push(
                         FetcherWrapper::builder()
                             .fetcher(Arc::new(Box::new(provider_fetcher) as Box<dyn DataFetcher<R>>))
                             .options(
                                 FetcherOptions::builder()
-                                    .skip_validation(skip_validation)
-                                    .target_block_priority(target_block_priority)
+                                    .skip_validation(skip_validation.unwrap_or_default())
+                                    .target_block_priority(target_block_priority.unwrap_or_default())
                                     .build(),
                             )
                             .build(),

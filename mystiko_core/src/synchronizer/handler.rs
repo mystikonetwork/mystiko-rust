@@ -103,24 +103,18 @@ where
         } else {
             sync_option.chain_ids.clone()
         };
-
-        let mut loader_tasks = Vec::new();
-        for chain_id in chains {
-            let loader = self
-                .loaders
-                .get(&chain_id)
-                .ok_or_else(|| Self::Error::UnsupportedChainError(chain_id))?;
-            loader_tasks.push(self.chain_sync(loader, &sync_option));
-        }
-
+        let loaders = chains
+            .iter()
+            .filter_map(|chain_id| {
+                self.loaders
+                    .get(chain_id)
+                    .map(Ok)
+                    .or_else(|| Some(Err(SynchronizerError::UnsupportedChainError(*chain_id))))
+            })
+            .collect::<Result<Vec<_>, SynchronizerError>>()?;
+        let loader_tasks = loaders.iter().map(|loader| self.chain_sync(loader, &sync_option));
         let results = futures::future::join_all(loader_tasks).await;
-        let mut chains_status = vec![];
-        for result in results {
-            match result {
-                Ok(status) => chains_status.push(status),
-                Err(e) => return Err(e),
-            }
-        }
+        let chains_status = results.into_iter().collect::<Result<Vec<_>, SynchronizerError>>()?;
         Ok(SynchronizerStatus::builder().chains(chains_status).build())
     }
 
@@ -264,15 +258,12 @@ where
 
     async fn chain_sync(&self, loader: &L, sync_option: &SyncOptions) -> Result<ChainStatus, SynchronizerError> {
         let load_option = self.build_load_option(sync_option);
-        let result = loader.load(load_option).await;
-        match result {
-            Ok(status) => Ok(ChainStatus::builder()
-                .chain_id(status.chain_id)
-                .synced_block(status.loaded_block)
-                .target_block(status.target_block)
-                .build()),
-            Err(err) => Err(err.into()),
-        }
+        let result = loader.load(load_option).await?;
+        Ok(ChainStatus::builder()
+            .chain_id(result.chain_id)
+            .synced_block(result.loaded_block)
+            .target_block(result.target_block)
+            .build())
     }
 
     fn build_load_option(&self, sync_option: &SyncOptions) -> LoadOption {
