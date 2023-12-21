@@ -42,7 +42,7 @@ pub(crate) async fn create_loader_with_priority(
     fetcher_count: usize,
     validator_count: usize,
     skip_validation: bool,
-    priority: Vec<u32>,
+    prioritys: Vec<u32>,
 ) -> (
     Arc<MystikoConfig>,
     Arc<ChainDataLoaderFullDataType>,
@@ -58,7 +58,7 @@ pub(crate) async fn create_loader_with_priority(
 
     let mut fetchers = vec![];
     let mut wrappers = vec![];
-    for index in 0..fetcher_count {
+    for priority in prioritys.iter().take(fetcher_count) {
         let fetcher = Arc::new(MockFetcher::new(chain_id));
         fetchers.push(fetcher.clone());
         wrappers.push(
@@ -67,7 +67,7 @@ pub(crate) async fn create_loader_with_priority(
                 .options(
                     FetcherOptions::builder()
                         .skip_validation(skip_validation)
-                        .target_block_priority(priority[index])
+                        .target_block_priority(*priority)
                         .build(),
                 )
                 .build(),

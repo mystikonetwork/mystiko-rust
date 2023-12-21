@@ -128,7 +128,7 @@ where
             .collect();
         let result = futures::future::join_all(loader_tasks).await;
         Ok(SynchronizerStatus::builder()
-            .chains(result.into_iter().filter_map(|status| status).collect::<Vec<_>>())
+            .chains(result.into_iter().flatten().collect::<Vec<_>>())
             .build())
     }
 

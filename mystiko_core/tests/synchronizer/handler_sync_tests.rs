@@ -24,7 +24,7 @@ async fn test_chain_synced_with_default_options() {
     loader
         .expect_load::<LoadOption>()
         .withf(move |options| load_options_compare(options, &expected_load_options))
-        .returning(move |_| Ok(load_status.clone()));
+        .returning(move |_| Ok(load_status));
     let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
     let sync_options = SyncOptions::builder().build();
     let result = synchronizer.sync(sync_options).await.unwrap();
@@ -55,7 +55,7 @@ async fn test_chain_synced_with_changed_options() {
     loader
         .expect_load::<LoadOption>()
         .withf(move |options| load_options_compare(options, &expected_load_options))
-        .returning(move |_| Ok(load_status.clone()));
+        .returning(move |_| Ok(load_status));
     let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
     let mut sync_options = SyncOptions::builder().build();
     sync_options.fetcher_query_loaded_block_timeout_ms = Some(1000);
@@ -95,7 +95,7 @@ async fn test_chain_synced_with_chain_ids() {
     loader
         .expect_load::<LoadOption>()
         .withf(move |options| load_options_compare(options, &expected_load_options))
-        .returning(move |_| Ok(load_status.clone()));
+        .returning(move |_| Ok(load_status));
     let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
     let mut sync_options = SyncOptions::builder().build();
     sync_options.chain_ids = vec![chain_id];
@@ -133,7 +133,7 @@ async fn test_chain_synced_with_packer_disabled_options() {
         loader
             .expect_load::<LoadOption>()
             .withf(move |options| load_options_compare(options, &expected_load_options))
-            .returning(move |_| Ok(load_status.clone()));
+            .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
         let mut sync_options = SyncOptions::builder().build();
         sync_options.disable_datapacker_fetcher = Some(status);
@@ -173,7 +173,7 @@ async fn test_chain_synced_with_sequencer_disabled_options() {
         loader
             .expect_load::<LoadOption>()
             .withf(move |options| load_options_compare(options, &expected_load_options))
-            .returning(move |_| Ok(load_status.clone()));
+            .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
         let mut sync_options = SyncOptions::builder().build();
         sync_options.disable_sequencer_fetcher = Some(status);
@@ -213,7 +213,7 @@ async fn test_chain_synced_with_provider_disabled_options() {
         loader
             .expect_load::<LoadOption>()
             .withf(move |options| load_options_compare(options, &expected_load_options))
-            .returning(move |_| Ok(load_status.clone()));
+            .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
         let mut sync_options = SyncOptions::builder().build();
         sync_options.disable_provider_fetcher = Some(status);
@@ -252,7 +252,7 @@ async fn test_chain_synced_with_rule_validator_disabled_options() {
         loader
             .expect_load::<LoadOption>()
             .withf(move |options| load_options_compare(options, &expected_load_options))
-            .returning(move |_| Ok(load_status.clone()));
+            .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
         let mut sync_options = SyncOptions::builder().build();
         sync_options.disable_rule_validator = Some(status);
@@ -301,7 +301,7 @@ async fn test_chain_synced_with_checker_disabled_options() {
         loader
             .expect_load::<LoadOption>()
             .withf(move |options| load_options_compare(options, &expected_load_options))
-            .returning(move |_| Ok(load_status.clone()));
+            .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
         let mut sync_options = SyncOptions::builder().build();
         sync_options.disable_rule_validator_counter_check = Some(status);
