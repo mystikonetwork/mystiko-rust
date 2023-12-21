@@ -2,14 +2,18 @@ use mystiko_lib::{destroy, initialize, is_initialized};
 use mystiko_protos::api::v1::api_response;
 use mystiko_protos::common::v1::ConfigOptions;
 use mystiko_protos::core::v1::MystikoOptions;
+use mystiko_protos::relayer::v1::RelayerClientOptions;
 use serial_test::serial;
 
 mod config;
 mod handler;
+mod scanner;
+mod synchronizer;
 
 const VALID_CONFIG_FILE: &str = "tests/files/valid.json";
 const FULL_CONFIG_FILE: &str = "tests/files/full.json";
 const DEPOSIT_CONFIG_FILE: &str = "tests/files/deposit.json";
+const RELAYER_CONFIG_FILE: &str = "tests/files/relayer.json";
 
 pub fn setup(config_path: Option<String>) {
     destroy();
@@ -19,6 +23,12 @@ pub fn setup(config_path: Option<String>) {
     };
     let options = MystikoOptions::builder()
         .config_options(ConfigOptions::builder().file_path(config_path).is_testnet(true).build())
+        .relayer_client_options(
+            RelayerClientOptions::builder()
+                .is_testnet(true)
+                .relayer_config_file_path(RELAYER_CONFIG_FILE.to_string())
+                .build(),
+        )
         .build();
     let response = initialize(options);
     assert!(response.code.unwrap().success);
