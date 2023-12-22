@@ -133,7 +133,7 @@ mod internal {
             Ok(mystiko) => {
                 let result = mystiko.synchronizer.sync(sync_option).await;
                 match result {
-                    Ok(_) => ApiResponse::success_with_empty(),
+                    Ok(status) => ApiResponse::success(StatusResponse::builder().status(status).build()),
                     Err(err) => ApiResponse::error(parse_synchronizer_error(&err), err),
                 }
             }
