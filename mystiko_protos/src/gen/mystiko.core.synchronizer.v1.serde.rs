@@ -13,6 +13,9 @@ impl serde::Serialize for ChainStatus {
         if self.synced_block != 0 {
             len += 1;
         }
+        if self.target_block != 0 {
+            len += 1;
+        }
         if !self.contracts.is_empty() {
             len += 1;
         }
@@ -22,6 +25,9 @@ impl serde::Serialize for ChainStatus {
         }
         if self.synced_block != 0 {
             struct_ser.serialize_field("syncedBlock", ToString::to_string(&self.synced_block).as_str())?;
+        }
+        if self.target_block != 0 {
+            struct_ser.serialize_field("targetBlock", ToString::to_string(&self.target_block).as_str())?;
         }
         if !self.contracts.is_empty() {
             struct_ser.serialize_field("contracts", &self.contracts)?;
@@ -40,6 +46,8 @@ impl<'de> serde::Deserialize<'de> for ChainStatus {
             "chainId",
             "synced_block",
             "syncedBlock",
+            "target_block",
+            "targetBlock",
             "contracts",
         ];
 
@@ -47,6 +55,7 @@ impl<'de> serde::Deserialize<'de> for ChainStatus {
         enum GeneratedField {
             ChainId,
             SyncedBlock,
+            TargetBlock,
             Contracts,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -71,6 +80,7 @@ impl<'de> serde::Deserialize<'de> for ChainStatus {
                         match value {
                             "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
                             "syncedBlock" | "synced_block" => Ok(GeneratedField::SyncedBlock),
+                            "targetBlock" | "target_block" => Ok(GeneratedField::TargetBlock),
                             "contracts" => Ok(GeneratedField::Contracts),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -93,6 +103,7 @@ impl<'de> serde::Deserialize<'de> for ChainStatus {
             {
                 let mut chain_id__ = None;
                 let mut synced_block__ = None;
+                let mut target_block__ = None;
                 let mut contracts__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -112,6 +123,14 @@ impl<'de> serde::Deserialize<'de> for ChainStatus {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
+                        GeneratedField::TargetBlock => {
+                            if target_block__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("targetBlock"));
+                            }
+                            target_block__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                         GeneratedField::Contracts => {
                             if contracts__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("contracts"));
@@ -123,6 +142,7 @@ impl<'de> serde::Deserialize<'de> for ChainStatus {
                 Ok(ChainStatus {
                     chain_id: chain_id__.unwrap_or_default(),
                     synced_block: synced_block__.unwrap_or_default(),
+                    target_block: target_block__.unwrap_or_default(),
                     contracts: contracts__.unwrap_or_default(),
                 })
             }

@@ -203,6 +203,9 @@ impl serde::Serialize for EtherscanFetcherConfig {
         if self.skip_validation.is_some() {
             len += 1;
         }
+        if self.target_block_priority.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.EtherscanFetcherConfig", len)?;
         if let Some(v) = self.concurrency.as_ref() {
             struct_ser.serialize_field("concurrency", v)?;
@@ -212,6 +215,9 @@ impl serde::Serialize for EtherscanFetcherConfig {
         }
         if let Some(v) = self.skip_validation.as_ref() {
             struct_ser.serialize_field("skipValidation", v)?;
+        }
+        if let Some(v) = self.target_block_priority.as_ref() {
+            struct_ser.serialize_field("targetBlockPriority", v)?;
         }
         struct_ser.end()
     }
@@ -227,6 +233,8 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
             "chains",
             "skip_validation",
             "skipValidation",
+            "target_block_priority",
+            "targetBlockPriority",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -234,6 +242,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
             Concurrency,
             Chains,
             SkipValidation,
+            TargetBlockPriority,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -258,6 +267,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
                             "concurrency" => Ok(GeneratedField::Concurrency),
                             "chains" => Ok(GeneratedField::Chains),
                             "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
+                            "targetBlockPriority" | "target_block_priority" => Ok(GeneratedField::TargetBlockPriority),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -280,6 +290,7 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
                 let mut concurrency__ = None;
                 let mut chains__ = None;
                 let mut skip_validation__ = None;
+                let mut target_block_priority__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Concurrency => {
@@ -305,12 +316,21 @@ impl<'de> serde::Deserialize<'de> for EtherscanFetcherConfig {
                             }
                             skip_validation__ = map.next_value()?;
                         }
+                        GeneratedField::TargetBlockPriority => {
+                            if target_block_priority__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("targetBlockPriority"));
+                            }
+                            target_block_priority__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(EtherscanFetcherConfig {
                     concurrency: concurrency__,
                     chains: chains__.unwrap_or_default(),
                     skip_validation: skip_validation__,
+                    target_block_priority: target_block_priority__,
                 })
             }
         }
@@ -732,9 +752,15 @@ impl serde::Serialize for PackerFetcherConfig {
         if self.skip_validation.is_some() {
             len += 1;
         }
+        if self.target_block_priority.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.PackerFetcherConfig", len)?;
         if let Some(v) = self.skip_validation.as_ref() {
             struct_ser.serialize_field("skipValidation", v)?;
+        }
+        if let Some(v) = self.target_block_priority.as_ref() {
+            struct_ser.serialize_field("targetBlockPriority", v)?;
         }
         struct_ser.end()
     }
@@ -748,11 +774,14 @@ impl<'de> serde::Deserialize<'de> for PackerFetcherConfig {
         const FIELDS: &[&str] = &[
             "skip_validation",
             "skipValidation",
+            "target_block_priority",
+            "targetBlockPriority",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             SkipValidation,
+            TargetBlockPriority,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -775,6 +804,7 @@ impl<'de> serde::Deserialize<'de> for PackerFetcherConfig {
                     {
                         match value {
                             "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
+                            "targetBlockPriority" | "target_block_priority" => Ok(GeneratedField::TargetBlockPriority),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -795,6 +825,7 @@ impl<'de> serde::Deserialize<'de> for PackerFetcherConfig {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut skip_validation__ = None;
+                let mut target_block_priority__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::SkipValidation => {
@@ -803,10 +834,19 @@ impl<'de> serde::Deserialize<'de> for PackerFetcherConfig {
                             }
                             skip_validation__ = map.next_value()?;
                         }
+                        GeneratedField::TargetBlockPriority => {
+                            if target_block_priority__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("targetBlockPriority"));
+                            }
+                            target_block_priority__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(PackerFetcherConfig {
                     skip_validation: skip_validation__,
+                    target_block_priority: target_block_priority__,
                 })
             }
         }
@@ -967,6 +1007,9 @@ impl serde::Serialize for ProviderFetcherConfig {
         if self.skip_validation.is_some() {
             len += 1;
         }
+        if self.target_block_priority.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.ProviderFetcherConfig", len)?;
         if let Some(v) = self.concurrency.as_ref() {
             struct_ser.serialize_field("concurrency", v)?;
@@ -979,6 +1022,9 @@ impl serde::Serialize for ProviderFetcherConfig {
         }
         if let Some(v) = self.skip_validation.as_ref() {
             struct_ser.serialize_field("skipValidation", v)?;
+        }
+        if let Some(v) = self.target_block_priority.as_ref() {
+            struct_ser.serialize_field("targetBlockPriority", v)?;
         }
         struct_ser.end()
     }
@@ -996,6 +1042,8 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
             "chains",
             "skip_validation",
             "skipValidation",
+            "target_block_priority",
+            "targetBlockPriority",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -1004,6 +1052,7 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
             TimeoutMs,
             Chains,
             SkipValidation,
+            TargetBlockPriority,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1029,6 +1078,7 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                             "timeoutMs" | "timeout_ms" => Ok(GeneratedField::TimeoutMs),
                             "chains" => Ok(GeneratedField::Chains),
                             "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
+                            "targetBlockPriority" | "target_block_priority" => Ok(GeneratedField::TargetBlockPriority),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1052,6 +1102,7 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                 let mut timeout_ms__ = None;
                 let mut chains__ = None;
                 let mut skip_validation__ = None;
+                let mut target_block_priority__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Concurrency => {
@@ -1085,6 +1136,14 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                             }
                             skip_validation__ = map.next_value()?;
                         }
+                        GeneratedField::TargetBlockPriority => {
+                            if target_block_priority__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("targetBlockPriority"));
+                            }
+                            target_block_priority__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(ProviderFetcherConfig {
@@ -1092,6 +1151,7 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                     timeout_ms: timeout_ms__,
                     chains: chains__.unwrap_or_default(),
                     skip_validation: skip_validation__,
+                    target_block_priority: target_block_priority__,
                 })
             }
         }
@@ -1291,12 +1351,18 @@ impl serde::Serialize for SequencerFetcherConfig {
         if self.skip_validation.is_some() {
             len += 1;
         }
+        if self.target_block_priority.is_some() {
+            len += 1;
+        }
         if self.options.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.SequencerFetcherConfig", len)?;
         if let Some(v) = self.skip_validation.as_ref() {
             struct_ser.serialize_field("skipValidation", v)?;
+        }
+        if let Some(v) = self.target_block_priority.as_ref() {
+            struct_ser.serialize_field("targetBlockPriority", v)?;
         }
         if let Some(v) = self.options.as_ref() {
             struct_ser.serialize_field("options", v)?;
@@ -1313,12 +1379,15 @@ impl<'de> serde::Deserialize<'de> for SequencerFetcherConfig {
         const FIELDS: &[&str] = &[
             "skip_validation",
             "skipValidation",
+            "target_block_priority",
+            "targetBlockPriority",
             "options",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             SkipValidation,
+            TargetBlockPriority,
             Options,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -1342,6 +1411,7 @@ impl<'de> serde::Deserialize<'de> for SequencerFetcherConfig {
                     {
                         match value {
                             "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
+                            "targetBlockPriority" | "target_block_priority" => Ok(GeneratedField::TargetBlockPriority),
                             "options" => Ok(GeneratedField::Options),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -1363,6 +1433,7 @@ impl<'de> serde::Deserialize<'de> for SequencerFetcherConfig {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut skip_validation__ = None;
+                let mut target_block_priority__ = None;
                 let mut options__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
@@ -1371,6 +1442,14 @@ impl<'de> serde::Deserialize<'de> for SequencerFetcherConfig {
                                 return Err(serde::de::Error::duplicate_field("skipValidation"));
                             }
                             skip_validation__ = map.next_value()?;
+                        }
+                        GeneratedField::TargetBlockPriority => {
+                            if target_block_priority__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("targetBlockPriority"));
+                            }
+                            target_block_priority__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
                         }
                         GeneratedField::Options => {
                             if options__.is_some() {
@@ -1382,6 +1461,7 @@ impl<'de> serde::Deserialize<'de> for SequencerFetcherConfig {
                 }
                 Ok(SequencerFetcherConfig {
                     skip_validation: skip_validation__,
+                    target_block_priority: target_block_priority__,
                     options: options__,
                 })
             }

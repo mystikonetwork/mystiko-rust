@@ -4,9 +4,8 @@ use ethers_providers::{MockError, MockProvider, RetryClientBuilder, RetryPolicy}
 use mystiko_config::MystikoConfig;
 use mystiko_dataloader::data::ContractData;
 use mystiko_dataloader::data::FullData;
-use mystiko_dataloader::fetcher::DataFetcher;
 use mystiko_dataloader::fetcher::FetcherOptions;
-use mystiko_dataloader::loader::ChainDataLoader;
+use mystiko_dataloader::loader::{ChainDataLoader, FetcherWrapper};
 use mystiko_ethers::{FailoverProvider, Provider, ProviderWrapper, Providers};
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
@@ -28,6 +27,29 @@ pub(crate) async fn create_loader(
     Vec<Arc<MockValidator<FullData>>>,
     Arc<MockHandler<FullData>>,
 ) {
+    create_loader_with_priority(
+        chain_id,
+        fetcher_count,
+        validator_count,
+        skip_validation,
+        vec![0; fetcher_count],
+    )
+    .await
+}
+
+pub(crate) async fn create_loader_with_priority(
+    chain_id: u64,
+    fetcher_count: usize,
+    validator_count: usize,
+    skip_validation: bool,
+    prioritys: Vec<u32>,
+) -> (
+    Arc<MystikoConfig>,
+    Arc<ChainDataLoaderFullDataType>,
+    Vec<Arc<MockFetcher<FullData>>>,
+    Vec<Arc<MockValidator<FullData>>>,
+    Arc<MockHandler<FullData>>,
+) {
     let core_cfg = Arc::new(
         MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
             .await
@@ -35,15 +57,21 @@ pub(crate) async fn create_loader(
     );
 
     let mut fetchers = vec![];
-    let mut fetcher_options = HashMap::new();
-
-    for _ in 0..fetcher_count {
+    let mut wrappers = vec![];
+    for priority in prioritys.iter().take(fetcher_count) {
         let fetcher = Arc::new(MockFetcher::new(chain_id));
-        fetcher_options.insert(
-            fetcher.name().to_string(),
-            FetcherOptions::builder().skip_validation(skip_validation).build(),
+        fetchers.push(fetcher.clone());
+        wrappers.push(
+            FetcherWrapper::builder()
+                .fetcher(fetcher)
+                .options(
+                    FetcherOptions::builder()
+                        .skip_validation(skip_validation)
+                        .target_block_priority(*priority)
+                        .build(),
+                )
+                .build(),
         );
-        fetchers.push(fetcher);
     }
 
     let validators = (0..validator_count)
@@ -54,8 +82,7 @@ pub(crate) async fn create_loader(
     let loader = ChainDataLoaderFullDataType::builder()
         .chain_id(chain_id)
         .config(core_cfg.clone())
-        .fetchers(fetchers.clone())
-        .fetcher_options(fetcher_options)
+        .fetchers(wrappers)
         .validators(validators.clone())
         .handler(handler.clone())
         .build();

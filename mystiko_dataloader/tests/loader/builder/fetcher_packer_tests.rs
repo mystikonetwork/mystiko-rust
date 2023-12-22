@@ -59,7 +59,12 @@ async fn test_create_chain_data_loader_fetcher_packer_skip_validation() {
         .fetchers(fetchers.clone())
         .fetcher_config(
             FetcherConfig::builder()
-                .packer(PackerFetcherConfig::builder().skip_validation(true).build())
+                .packer(
+                    PackerFetcherConfig::builder()
+                        .skip_validation(true)
+                        .target_block_priority(10)
+                        .build(),
+                )
                 .build(),
         )
         .build();

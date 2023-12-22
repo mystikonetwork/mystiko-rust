@@ -6,7 +6,6 @@ use crate::RelayerClient;
 use async_trait::async_trait;
 use ethers_core::types::Address;
 use futures::future::try_join_all;
-use log::debug;
 use mystiko_ethers::Providers;
 use mystiko_protos::relayer::v1::RelayerClientOptions;
 use mystiko_relayer_abi::mystiko_gas_relayer::MystikoGasRelayer;
@@ -245,9 +244,10 @@ where
                 }
             }
 
-            debug!(
+            log::debug!(
                 "uuid {:?} transaction status {:?}, keep waiting...",
-                response.uuid, response.status
+                response.uuid,
+                response.status
             );
 
             let timeout = request.timeout.unwrap_or(Duration::from_secs(120));

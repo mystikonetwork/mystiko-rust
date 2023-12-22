@@ -97,26 +97,25 @@ where
         Ok(SynchronizerStatus::builder().chains(chains).build())
     }
 
-    async fn sync(&self, sync_option: SyncOptions) -> Result<(), Self::Error> {
+    async fn sync(&self, sync_option: SyncOptions) -> Result<SynchronizerStatus, Self::Error> {
         let chains = if sync_option.chain_ids.is_empty() {
             self.loaders.keys().copied().collect::<Vec<_>>()
         } else {
             sync_option.chain_ids.clone()
         };
-
-        let loader_tasks: Vec<_> = chains
+        let loaders = chains
             .iter()
             .filter_map(|chain_id| {
-                if let Some(loader) = self.loaders.get(chain_id) {
-                    Some(self.chain_sync(chain_id, loader, &sync_option))
-                } else {
-                    log::warn!("chain(id={:?}) not supported", chain_id);
-                    None
-                }
+                self.loaders
+                    .get(chain_id)
+                    .map(Ok)
+                    .or_else(|| Some(Err(SynchronizerError::UnsupportedChainError(*chain_id))))
             })
-            .collect();
-        let _ = futures::future::join_all(loader_tasks).await;
-        Ok(())
+            .collect::<Result<Vec<_>, SynchronizerError>>()?;
+        let loader_tasks = loaders.iter().map(|loader| self.chain_sync(loader, &sync_option));
+        let results = futures::future::join_all(loader_tasks).await;
+        let chains_status = results.into_iter().collect::<Result<Vec<_>, SynchronizerError>>()?;
+        Ok(SynchronizerStatus::builder().chains(chains_status).build())
     }
 
     async fn reset(&self, reset_options: ResetOptions) -> Result<(), Self::Error> {
@@ -218,9 +217,11 @@ where
         with_contracts: bool,
     ) -> Result<ChainStatus, SynchronizerError> {
         let chain_sync_block = loader.chain_loaded_block(*chain_id).await?.unwrap_or_default();
+        let chain_target_block = loader.chain_target_block(*chain_id).await?.unwrap_or_default();
         let mut chain_status = ChainStatus::builder()
             .chain_id(*chain_id)
             .synced_block(chain_sync_block)
+            .target_block(chain_target_block)
             .build();
         if with_contracts {
             let chain_cfg = self
@@ -255,12 +256,14 @@ where
         Ok(contract_status)
     }
 
-    async fn chain_sync(&self, chain_id: &u64, loader: &L, sync_option: &SyncOptions) {
+    async fn chain_sync(&self, loader: &L, sync_option: &SyncOptions) -> Result<ChainStatus, SynchronizerError> {
         let load_option = self.build_load_option(sync_option);
-        let result = loader.load(load_option).await;
-        if let Err(err) = result {
-            log::error!("chain(id={:?}) load error: {:?}", chain_id, err);
-        }
+        let result = loader.load(load_option).await?;
+        Ok(ChainStatus::builder()
+            .chain_id(result.chain_id)
+            .synced_block(result.loaded_block)
+            .target_block(result.target_block)
+            .build())
     }
 
     fn build_load_option(&self, sync_option: &SyncOptions) -> LoadOption {

@@ -49,7 +49,8 @@ async fn test_create_chain_data_loader_fetcher_sequencer() {
             FetcherConfig::builder()
                 .sequencer(
                     SequencerFetcherConfig::builder()
-                        .skip_validation(false)
+                        .skip_validation(true)
+                        .target_block_priority(22)
                         .options(
                             ClientOptions::builder()
                                 .host("localhost".to_string())

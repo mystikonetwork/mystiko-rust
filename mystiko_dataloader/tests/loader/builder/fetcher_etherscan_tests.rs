@@ -161,6 +161,7 @@ async fn test_create_chain_data_loader_fetcher_etherscan_skip_validation() {
                             chains
                         })
                         .skip_validation(true)
+                        .target_block_priority(20)
                         .build(),
                 )
                 .build(),

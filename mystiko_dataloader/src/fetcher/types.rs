@@ -11,11 +11,13 @@ use typed_builder::TypedBuilder;
 
 pub type Result<T> = anyhow::Result<T, FetcherError>;
 
-#[derive(Debug, TypedBuilder)]
+#[derive(Debug, Clone, TypedBuilder, Default)]
 #[builder(field_defaults(setter(into)))]
 pub struct FetcherOptions {
     #[builder(default = false)]
     pub skip_validation: bool,
+    #[builder(default = 0)]
+    pub target_block_priority: u32,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]

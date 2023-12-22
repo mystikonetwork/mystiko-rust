@@ -5,13 +5,13 @@ use crate::error::DataLoaderError;
 use crate::fetcher::{ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher, FetchOptions, FetcherOptions};
 use crate::handler::{DataHandler, HandleOption};
 use crate::loader::{
-    DataLoader, DataLoaderConfigResult, DataLoaderResult, FromConfig, LoadFetcherOption, LoadOption,
+    DataLoader, DataLoaderConfigResult, DataLoaderResult, FromConfig, LoadFetcherOption, LoadOption, LoadStatus,
     LoadValidatorOption, LoaderConfigOptions, ResetOptions,
 };
 use crate::validator::{DataValidator, ValidateOption};
 use async_trait::async_trait;
-use log::{error, warn};
 use mystiko_config::{ChainConfig, ContractConfig, MystikoConfig};
+use std::cmp::max;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -24,12 +24,20 @@ pub struct ChainDataLoader<R, H = Box<dyn DataHandler<R>>, F = Box<dyn DataFetch
     config: Arc<MystikoConfig>,
     chain_id: u64,
     #[builder(default)]
-    fetchers: Vec<Arc<F>>,
-    #[builder(default)]
-    fetcher_options: HashMap<String, FetcherOptions>,
+    fetchers: Vec<FetcherWrapper<R, F>>,
     #[builder(default)]
     validators: Vec<Arc<V>>,
     handler: Arc<H>,
+    #[builder(default)]
+    _phantom: std::marker::PhantomData<R>,
+}
+
+#[derive(Debug, Clone, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct FetcherWrapper<R, F = Box<dyn DataFetcher<R>>> {
+    pub(crate) fetcher: Arc<F>,
+    #[builder(default)]
+    pub(crate) options: FetcherOptions,
     #[builder(default)]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -43,6 +51,7 @@ struct ChainLoadParams<'a> {
 #[derive(Debug, Clone, TypedBuilder)]
 struct FetcherRunParams<F> {
     pub(crate) fetcher: Arc<F>,
+    pub(crate) options: FetcherOptions,
     pub(crate) loaded_block: u64,
 }
 
@@ -77,7 +86,19 @@ where
             .await?)
     }
 
-    async fn load<O>(&self, options: O) -> DataLoaderResult<()>
+    async fn chain_target_block(&self, _chain_id: u64) -> DataLoaderResult<Option<u64>> {
+        let mut fetchers = self.fetchers.iter().collect::<Vec<_>>();
+        fetchers.sort_by_key(|f| f.options.target_block_priority);
+        let load_options = LoadFetcherOption::builder().build();
+        for fetcher in fetchers.iter().rev() {
+            if let Ok(target_block) = self.query_loaded_blocks(fetcher, &load_options).await {
+                return Ok(Some(target_block.loaded_block));
+            }
+        }
+        Ok(None)
+    }
+
+    async fn load<O>(&self, options: O) -> DataLoaderResult<LoadStatus>
     where
         O: Into<LoadOption> + Send + Sync,
     {
@@ -109,12 +130,16 @@ where
             Some(p) => p.clone(),
         };
 
-        let (fetchers, fetcher_options) = if options.fetchers.is_empty() {
+        let fetchers = if options.fetchers.is_empty() {
             options
                 .build_fetchers(options.chain_id, mystiko_config.clone(), providers.clone())
                 .await?
         } else {
-            (options.fetchers.clone(), HashMap::new())
+            options
+                .fetchers
+                .iter()
+                .map(|f| FetcherWrapper::builder().fetcher(f.clone()).build())
+                .collect()
         };
 
         let validators = if options.validators.is_empty() {
@@ -127,7 +152,6 @@ where
             .config(mystiko_config)
             .chain_id(options.chain_id)
             .fetchers(fetchers)
-            .fetcher_options(fetcher_options)
             .validators(validators)
             .handler(options.handler.clone())
             .build();
@@ -142,23 +166,23 @@ where
     F: DataFetcher<R>,
     V: DataValidator<R>,
 {
-    async fn try_load(&self, params: &ChainLoadParams<'_>) -> DataLoaderResult<()> {
+    async fn try_load(&self, params: &ChainLoadParams<'_>) -> DataLoaderResult<LoadStatus> {
         let tasks = self
             .fetchers
             .iter()
-            .filter(|f| !self.skip_fetcher(f.name(), &params.option.fetcher))
+            .filter(|f| !self.skip_fetcher(f.fetcher.name(), &params.option.fetcher))
             .map(|f| self.query_loaded_blocks(f, &params.option.fetcher))
             .collect::<Vec<_>>();
 
         if tasks.is_empty() {
-            warn!("no fetcher to load data");
+            log::warn!("no fetcher to load data");
             return Err(DataLoaderError::LoaderNoFetchersError);
         }
 
         let results = futures::future::join_all(tasks).await;
         let fetchers: Vec<_> = results.into_iter().filter_map(|r| r.ok()).collect();
         if fetchers.is_empty() {
-            error!("failed to query loaded blocks from all fetchers");
+            log::error!("failed to query loaded blocks from all fetchers");
             return Err(DataLoaderError::QueryLoadedBlocksError);
         }
 
@@ -177,11 +201,13 @@ where
         self.run_load(&run_params).await
     }
 
-    async fn run_load(&self, run_params: &LoaderRunParams<'_, F, V>) -> DataLoaderResult<()> {
+    async fn run_load(&self, run_params: &LoaderRunParams<'_, F, V>) -> DataLoaderResult<LoadStatus> {
         let contracts = self.build_loading_contracts(run_params.params.cfg).await?;
         let mut loaded = None;
+        let mut target_block = 0;
         for fetcher_params in run_params.fetchers.iter() {
             let name = fetcher_params.fetcher.name();
+            target_block = max(target_block, fetcher_params.loaded_block);
             let fetch_option = self.build_fetch_options(&contracts, fetcher_params).await?;
             if let Some(fetch_option) = &fetch_option {
                 if loaded.is_none() {
@@ -193,25 +219,24 @@ where
                     .await
                 {
                     Err(e) => {
-                        warn!("fetch fetcher(name={:?}) failed: {:?}", name, e);
+                        log::warn!("fetch fetcher(name={:?}) failed: {:?}", name, e);
                         None
                     }
                     Ok(d) => Some(d),
                 };
 
                 if let Some(chain_data) = chain_data.as_mut() {
-                    let skip_validation =
-                        self.skip_validation(fetcher_params.fetcher.name(), &run_params.params.option.fetcher);
+                    let skip_validation = self.skip_validation(fetcher_params, &run_params.params.option.fetcher);
                     let mut invalid = false;
                     if !skip_validation {
                         if let Err(e) = self.validate(run_params, chain_data).await {
-                            warn!("validate fetcher(name={:?}) data failed: {:?}", name, e);
+                            log::warn!("validate fetcher(name={:?}) data failed: {:?}", name, e);
                             invalid = true;
                         };
                     }
                     if !invalid {
                         if let Err(e) = self.handle(chain_data).await {
-                            warn!("handle fetcher(name={:?}) data failed: {:?}", name, e);
+                            log::warn!("handle fetcher(name={:?}) data failed: {:?}", name, e);
                         } else {
                             loaded = Some(true);
                         }
@@ -221,15 +246,21 @@ where
         }
 
         if let Some(false) = loaded {
-            error!("failed to load data from all fetchers");
+            log::error!("failed to load data from all fetchers");
             return Err(DataLoaderError::LoaderFetchersExhaustedError);
         }
-        Ok(())
+
+        let loaded_block = self.chain_loaded_block(self.chain_id).await?;
+        Ok(LoadStatus::builder()
+            .chain_id(self.chain_id)
+            .loaded_block(loaded_block.unwrap_or(0))
+            .target_block(target_block)
+            .build())
     }
 
     async fn query_loaded_blocks(
         &self,
-        fetcher: &Arc<F>,
+        fetcher_wrapper: &FetcherWrapper<R, F>,
         options: &LoadFetcherOption,
     ) -> DataLoaderResult<FetcherRunParams<F>> {
         let option = ChainLoadedBlockOptions::builder()
@@ -237,21 +268,23 @@ where
             .config(self.config.clone())
             .build();
         let timeout_duration = Duration::from_millis(options.query_loaded_block_timeout_ms);
-        let result = timeout(timeout_duration, fetcher.chain_loaded_block(&option)).await;
-        let name = fetcher.name();
+        let result = timeout(timeout_duration, fetcher_wrapper.fetcher.chain_loaded_block(&option)).await;
+        let name = fetcher_wrapper.fetcher.name();
         match result {
             Ok(Ok(block)) => Ok(FetcherRunParams::builder()
-                .fetcher(fetcher.clone())
+                .fetcher(fetcher_wrapper.fetcher.clone())
+                .options(fetcher_wrapper.options.clone())
                 .loaded_block(block)
                 .build()),
             Ok(Err(e)) => {
-                warn!("query_loaded_blocks of fetcher(name={:?}) failed: {:?}", name, e);
+                log::warn!("query_loaded_blocks of fetcher(name={:?}) failed: {:?}", name, e);
                 Err(e.into())
             }
             Err(_) => {
-                warn!(
+                log::warn!(
                     "query_loaded_blocks of fetcher(name={:?}) timed out after {:?} ms",
-                    name, options.query_loaded_block_timeout_ms
+                    name,
+                    options.query_loaded_block_timeout_ms
                 );
                 Err(DataLoaderError::QueryLoadedBlocksTimeoutError(
                     name.to_string(),
@@ -274,7 +307,7 @@ where
             Ok(Ok(result)) => {
                 let unwrapped = UnwrappedChainResult::from(result);
                 unwrapped.contract_errors.iter().for_each(|error| {
-                    warn!("fetch contract {:?} failed: {:?}", error.address, error.source);
+                    log::warn!("fetch contract {:?} failed: {:?}", error.address, error.source);
                 });
                 Ok(unwrapped.result)
             }
@@ -304,7 +337,7 @@ where
                 let validate_result = validator_params.validator.validate(data, &validator_option).await?;
                 let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(validate_result);
                 unwrapped.contract_errors.iter().for_each(|c| {
-                    warn!(
+                    log::warn!(
                         "validator(name={:?}) contract {:?} failed: {:?}",
                         validator_params.validator.name(),
                         c.address,
@@ -318,7 +351,7 @@ where
             }
             Ok(())
         } else {
-            warn!("fetcher contract data is empty");
+            log::warn!("fetcher contract data is empty");
             Err(DataLoaderError::LoaderEmptyValidateDataError)
         }
     }
@@ -329,11 +362,11 @@ where
             let handle_result = self.handler.handle(data, &handler_option).await?;
             let unwrapped: UnwrappedChainResult<Vec<String>> = UnwrappedChainResult::from(handle_result);
             unwrapped.contract_errors.iter().for_each(|c| {
-                warn!("handle contract {:?} failed: {:?}", c.address, c.source);
+                log::warn!("handle contract {:?} failed: {:?}", c.address, c.source);
             });
             Ok(())
         } else {
-            warn!("fetcher contract data all invalid");
+            log::warn!("fetcher contract data all invalid");
             Err(DataLoaderError::LoaderEmptyHandleDataError)
         }
     }
@@ -419,12 +452,11 @@ where
             .unwrap_or_default()
     }
 
-    fn skip_validation(&self, fetcher_name: &str, load_fetcher_option: &LoadFetcherOption) -> bool {
+    fn skip_validation(&self, run_param: &FetcherRunParams<F>, load_fetcher_option: &LoadFetcherOption) -> bool {
         load_fetcher_option
             .skips
-            .get(fetcher_name)
+            .get(run_param.fetcher.name())
             .and_then(|option| option.skip_validation)
-            .or(self.fetcher_options.get(fetcher_name).map(|o| o.skip_validation))
-            .unwrap_or_default()
+            .unwrap_or(run_param.options.skip_validation)
     }
 }
