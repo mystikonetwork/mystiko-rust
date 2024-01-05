@@ -87,7 +87,7 @@ fn test_chain_data_into_proto() {
     assert_eq!(proto_chain_data.start_block, 1000000);
     assert_eq!(proto_chain_data.end_block, 1000001);
     assert_eq!(proto_chain_data.contract_data.len(), 2);
-    let proto_contract_data1 = proto_chain_data.contract_data.get(0).unwrap();
+    let proto_contract_data1 = proto_chain_data.contract_data.first().unwrap();
     assert_eq!(
         proto_contract_data1.contract_address,
         decode_hex("0x1f9090aaE28b8a3dCeaDf281B0F12828e676c326").unwrap()

@@ -281,6 +281,7 @@ pub fn delete_all() -> ApiResponse {
 }
 
 mod internal {
+    use super::*;
     use crate::error::parse_deposit_error;
     use crate::instance;
     use mystiko_core::{DepositHandler, GrpcSigner};
@@ -288,7 +289,6 @@ mod internal {
         CountDepositResponse, CreateDepositResponse, FindDepositResponse, FindOneDepositResponse, QuoteResponse,
         SendResponse, SummaryResponse, UpdateDepositBatchResponse, UpdateDepositResponse,
     };
-    use mystiko_protos::api::v1::{ApiResponse, DepositError};
     use mystiko_protos::core::document::v1::Deposit;
     use mystiko_protos::core::handler::v1::{CreateDepositOptions, QuoteDepositOptions, SendDepositOptions};
     use mystiko_protos::service::v1::ClientOptions;

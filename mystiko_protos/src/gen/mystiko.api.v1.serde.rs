@@ -663,6 +663,205 @@ impl<'de> serde::Deserialize<'de> for ScannerError {
         deserializer.deserialize_any(GeneratedVisitor)
     }
 }
+impl serde::Serialize for SpendError {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let variant = match self {
+            Self::Unspecified => "SPEND_ERROR_UNSPECIFIED",
+            Self::AnyhowError => "SPEND_ERROR_ANYHOW_ERROR",
+            Self::PublicAssetsError => "SPEND_ERROR_PUBLIC_ASSETS_ERROR",
+            Self::CommitmentPoolContractsError => "SPEND_ERROR_COMMITMENT_POOL_CONTRACTS_ERROR",
+            Self::TransactionsError => "SPEND_ERROR_TRANSACTIONS_ERROR",
+            Self::StorageError => "SPEND_ERROR_STORAGE_ERROR",
+            Self::WalletsError => "SPEND_ERROR_WALLETS_ERROR",
+            Self::AccountsError => "SPEND_ERROR_ACCOUNTS_ERROR",
+            Self::RelayerClientError => "SPEND_ERROR_RELAYER_CLIENT_ERROR",
+            Self::HexStringError => "SPEND_ERROR_HEX_STRING_ERROR",
+            Self::ParseBigIntError => "SPEND_ERROR_PARSE_BIG_INT_ERROR",
+            Self::ProtocolError => "SPEND_ERROR_PROTOCOL_ERROR",
+            Self::ProtocolKeyError => "SPEND_ERROR_PROTOCOL_KEY_ERROR",
+            Self::CryptoError => "SPEND_ERROR_CRYPTO_ERROR",
+            Self::MerkleTreeError => "SPEND_ERROR_MERKLE_TREE_ERROR",
+            Self::G16ProverError => "SPEND_ERROR_G16_PROVER_ERROR",
+            Self::LocalWalletError => "SPEND_ERROR_LOCAL_WALLET_ERROR",
+            Self::SerdeJsonError => "SPEND_ERROR_SERDE_JSON_ERROR",
+            Self::NoPoolContractFoundError => "SPEND_ERROR_NO_POOL_CONTRACT_FOUND_ERROR",
+            Self::NoPoolContractAddressFoundError => "SPEND_ERROR_NO_POOL_CONTRACT_ADDRESS_FOUND_ERROR",
+            Self::MissingPrivateKeyError => "SPEND_ERROR_MISSING_PRIVATE_KEY_ERROR",
+            Self::UnsupportedChainIdError => "SPEND_ERROR_UNSUPPORTED_CHAIN_ID_ERROR",
+            Self::UnsupportedSpendJoinSplitTypeError => "SPEND_ERROR_UNSUPPORTED_SPEND_JOIN_SPLIT_TYPE_ERROR",
+            Self::InvalidCreateOptionsError => "SPEND_ERROR_INVALID_CREATE_OPTIONS_ERROR",
+            Self::InvalidPublicAddressError => "SPEND_ERROR_INVALID_PUBLIC_ADDRESS_ERROR",
+            Self::InvalidMystikoAddressError => "SPEND_ERROR_INVALID_MYSTIKO_ADDRESS_ERROR",
+            Self::InvalidAmountError => "SPEND_ERROR_INVALID_AMOUNT_ERROR",
+            Self::InvalidRollupFeeAmountError => "SPEND_ERROR_INVALID_ROLLUP_FEE_AMOUNT_ERROR",
+            Self::InsufficientPoolBalanceError => "SPEND_ERROR_INSUFFICIENT_POOL_BALANCE_ERROR",
+            Self::UnknownMerkleRootError => "SPEND_ERROR_UNKNOWN_MERKLE_ROOT_ERROR",
+            Self::AlreadySpentCommitmentError => "SPEND_ERROR_ALREADY_SPENT_COMMITMENT_ERROR",
+            Self::MissingShieldedAddressInCommitmentError => "SPEND_ERROR_MISSING_SHIELDED_ADDRESS_IN_COMMITMENT_ERROR",
+            Self::MissingEncryptedNoteInCommitmentError => "SPEND_ERROR_MISSING_ENCRYPTED_NOTE_IN_COMMITMENT_ERROR",
+            Self::MissingCommitmentInMerkleTree => "SPEND_ERROR_MISSING_COMMITMENT_IN_MERKLE_TREE",
+            Self::NonOwnedShieldedAddressError => "SPEND_ERROR_NON_OWNED_SHIELDED_ADDRESS_ERROR",
+            Self::MissingCircuitTypeInConfigError => "SPEND_ERROR_MISSING_CIRCUIT_TYPE_IN_CONFIG_ERROR",
+            Self::InvalidZkProofError => "SPEND_ERROR_INVALID_ZK_PROOF_ERROR",
+            Self::SpendNotFoundError => "SPEND_ERROR_SPEND_NOT_FOUND_ERROR",
+            Self::SpendStatusError => "SPEND_ERROR_SPEND_STATUS_ERROR",
+            Self::MissingGivenRelayerError => "SPEND_ERROR_MISSING_GIVEN_RELAYER_ERROR",
+            Self::MissingTransactionHashFromRelayerJobError => "SPEND_ERROR_MISSING_TRANSACTION_HASH_FROM_RELAYER_JOB_ERROR",
+            Self::GetMystikoGuardError => "SPEND_ERROR_GET_MYSTIKO_GUARD_ERROR",
+            Self::DeserializeMessageError => "SPEND_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            Self::GrpcConnectError => "SPEND_ERROR_GRPC_CONNECT_ERROR",
+        };
+        serializer.serialize_str(variant)
+    }
+}
+impl<'de> serde::Deserialize<'de> for SpendError {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "SPEND_ERROR_UNSPECIFIED",
+            "SPEND_ERROR_ANYHOW_ERROR",
+            "SPEND_ERROR_PUBLIC_ASSETS_ERROR",
+            "SPEND_ERROR_COMMITMENT_POOL_CONTRACTS_ERROR",
+            "SPEND_ERROR_TRANSACTIONS_ERROR",
+            "SPEND_ERROR_STORAGE_ERROR",
+            "SPEND_ERROR_WALLETS_ERROR",
+            "SPEND_ERROR_ACCOUNTS_ERROR",
+            "SPEND_ERROR_RELAYER_CLIENT_ERROR",
+            "SPEND_ERROR_HEX_STRING_ERROR",
+            "SPEND_ERROR_PARSE_BIG_INT_ERROR",
+            "SPEND_ERROR_PROTOCOL_ERROR",
+            "SPEND_ERROR_PROTOCOL_KEY_ERROR",
+            "SPEND_ERROR_CRYPTO_ERROR",
+            "SPEND_ERROR_MERKLE_TREE_ERROR",
+            "SPEND_ERROR_G16_PROVER_ERROR",
+            "SPEND_ERROR_LOCAL_WALLET_ERROR",
+            "SPEND_ERROR_SERDE_JSON_ERROR",
+            "SPEND_ERROR_NO_POOL_CONTRACT_FOUND_ERROR",
+            "SPEND_ERROR_NO_POOL_CONTRACT_ADDRESS_FOUND_ERROR",
+            "SPEND_ERROR_MISSING_PRIVATE_KEY_ERROR",
+            "SPEND_ERROR_UNSUPPORTED_CHAIN_ID_ERROR",
+            "SPEND_ERROR_UNSUPPORTED_SPEND_JOIN_SPLIT_TYPE_ERROR",
+            "SPEND_ERROR_INVALID_CREATE_OPTIONS_ERROR",
+            "SPEND_ERROR_INVALID_PUBLIC_ADDRESS_ERROR",
+            "SPEND_ERROR_INVALID_MYSTIKO_ADDRESS_ERROR",
+            "SPEND_ERROR_INVALID_AMOUNT_ERROR",
+            "SPEND_ERROR_INVALID_ROLLUP_FEE_AMOUNT_ERROR",
+            "SPEND_ERROR_INSUFFICIENT_POOL_BALANCE_ERROR",
+            "SPEND_ERROR_UNKNOWN_MERKLE_ROOT_ERROR",
+            "SPEND_ERROR_ALREADY_SPENT_COMMITMENT_ERROR",
+            "SPEND_ERROR_MISSING_SHIELDED_ADDRESS_IN_COMMITMENT_ERROR",
+            "SPEND_ERROR_MISSING_ENCRYPTED_NOTE_IN_COMMITMENT_ERROR",
+            "SPEND_ERROR_MISSING_COMMITMENT_IN_MERKLE_TREE",
+            "SPEND_ERROR_NON_OWNED_SHIELDED_ADDRESS_ERROR",
+            "SPEND_ERROR_MISSING_CIRCUIT_TYPE_IN_CONFIG_ERROR",
+            "SPEND_ERROR_INVALID_ZK_PROOF_ERROR",
+            "SPEND_ERROR_SPEND_NOT_FOUND_ERROR",
+            "SPEND_ERROR_SPEND_STATUS_ERROR",
+            "SPEND_ERROR_MISSING_GIVEN_RELAYER_ERROR",
+            "SPEND_ERROR_MISSING_TRANSACTION_HASH_FROM_RELAYER_JOB_ERROR",
+            "SPEND_ERROR_GET_MYSTIKO_GUARD_ERROR",
+            "SPEND_ERROR_DESERIALIZE_MESSAGE_ERROR",
+            "SPEND_ERROR_GRPC_CONNECT_ERROR",
+        ];
+
+        struct GeneratedVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = SpendError;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(formatter, "expected one of: {:?}", &FIELDS)
+            }
+
+            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(SpendError::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
+            }
+
+            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(SpendError::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
+            }
+
+            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                match value {
+                    "SPEND_ERROR_UNSPECIFIED" => Ok(SpendError::Unspecified),
+                    "SPEND_ERROR_ANYHOW_ERROR" => Ok(SpendError::AnyhowError),
+                    "SPEND_ERROR_PUBLIC_ASSETS_ERROR" => Ok(SpendError::PublicAssetsError),
+                    "SPEND_ERROR_COMMITMENT_POOL_CONTRACTS_ERROR" => Ok(SpendError::CommitmentPoolContractsError),
+                    "SPEND_ERROR_TRANSACTIONS_ERROR" => Ok(SpendError::TransactionsError),
+                    "SPEND_ERROR_STORAGE_ERROR" => Ok(SpendError::StorageError),
+                    "SPEND_ERROR_WALLETS_ERROR" => Ok(SpendError::WalletsError),
+                    "SPEND_ERROR_ACCOUNTS_ERROR" => Ok(SpendError::AccountsError),
+                    "SPEND_ERROR_RELAYER_CLIENT_ERROR" => Ok(SpendError::RelayerClientError),
+                    "SPEND_ERROR_HEX_STRING_ERROR" => Ok(SpendError::HexStringError),
+                    "SPEND_ERROR_PARSE_BIG_INT_ERROR" => Ok(SpendError::ParseBigIntError),
+                    "SPEND_ERROR_PROTOCOL_ERROR" => Ok(SpendError::ProtocolError),
+                    "SPEND_ERROR_PROTOCOL_KEY_ERROR" => Ok(SpendError::ProtocolKeyError),
+                    "SPEND_ERROR_CRYPTO_ERROR" => Ok(SpendError::CryptoError),
+                    "SPEND_ERROR_MERKLE_TREE_ERROR" => Ok(SpendError::MerkleTreeError),
+                    "SPEND_ERROR_G16_PROVER_ERROR" => Ok(SpendError::G16ProverError),
+                    "SPEND_ERROR_LOCAL_WALLET_ERROR" => Ok(SpendError::LocalWalletError),
+                    "SPEND_ERROR_SERDE_JSON_ERROR" => Ok(SpendError::SerdeJsonError),
+                    "SPEND_ERROR_NO_POOL_CONTRACT_FOUND_ERROR" => Ok(SpendError::NoPoolContractFoundError),
+                    "SPEND_ERROR_NO_POOL_CONTRACT_ADDRESS_FOUND_ERROR" => Ok(SpendError::NoPoolContractAddressFoundError),
+                    "SPEND_ERROR_MISSING_PRIVATE_KEY_ERROR" => Ok(SpendError::MissingPrivateKeyError),
+                    "SPEND_ERROR_UNSUPPORTED_CHAIN_ID_ERROR" => Ok(SpendError::UnsupportedChainIdError),
+                    "SPEND_ERROR_UNSUPPORTED_SPEND_JOIN_SPLIT_TYPE_ERROR" => Ok(SpendError::UnsupportedSpendJoinSplitTypeError),
+                    "SPEND_ERROR_INVALID_CREATE_OPTIONS_ERROR" => Ok(SpendError::InvalidCreateOptionsError),
+                    "SPEND_ERROR_INVALID_PUBLIC_ADDRESS_ERROR" => Ok(SpendError::InvalidPublicAddressError),
+                    "SPEND_ERROR_INVALID_MYSTIKO_ADDRESS_ERROR" => Ok(SpendError::InvalidMystikoAddressError),
+                    "SPEND_ERROR_INVALID_AMOUNT_ERROR" => Ok(SpendError::InvalidAmountError),
+                    "SPEND_ERROR_INVALID_ROLLUP_FEE_AMOUNT_ERROR" => Ok(SpendError::InvalidRollupFeeAmountError),
+                    "SPEND_ERROR_INSUFFICIENT_POOL_BALANCE_ERROR" => Ok(SpendError::InsufficientPoolBalanceError),
+                    "SPEND_ERROR_UNKNOWN_MERKLE_ROOT_ERROR" => Ok(SpendError::UnknownMerkleRootError),
+                    "SPEND_ERROR_ALREADY_SPENT_COMMITMENT_ERROR" => Ok(SpendError::AlreadySpentCommitmentError),
+                    "SPEND_ERROR_MISSING_SHIELDED_ADDRESS_IN_COMMITMENT_ERROR" => Ok(SpendError::MissingShieldedAddressInCommitmentError),
+                    "SPEND_ERROR_MISSING_ENCRYPTED_NOTE_IN_COMMITMENT_ERROR" => Ok(SpendError::MissingEncryptedNoteInCommitmentError),
+                    "SPEND_ERROR_MISSING_COMMITMENT_IN_MERKLE_TREE" => Ok(SpendError::MissingCommitmentInMerkleTree),
+                    "SPEND_ERROR_NON_OWNED_SHIELDED_ADDRESS_ERROR" => Ok(SpendError::NonOwnedShieldedAddressError),
+                    "SPEND_ERROR_MISSING_CIRCUIT_TYPE_IN_CONFIG_ERROR" => Ok(SpendError::MissingCircuitTypeInConfigError),
+                    "SPEND_ERROR_INVALID_ZK_PROOF_ERROR" => Ok(SpendError::InvalidZkProofError),
+                    "SPEND_ERROR_SPEND_NOT_FOUND_ERROR" => Ok(SpendError::SpendNotFoundError),
+                    "SPEND_ERROR_SPEND_STATUS_ERROR" => Ok(SpendError::SpendStatusError),
+                    "SPEND_ERROR_MISSING_GIVEN_RELAYER_ERROR" => Ok(SpendError::MissingGivenRelayerError),
+                    "SPEND_ERROR_MISSING_TRANSACTION_HASH_FROM_RELAYER_JOB_ERROR" => Ok(SpendError::MissingTransactionHashFromRelayerJobError),
+                    "SPEND_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(SpendError::GetMystikoGuardError),
+                    "SPEND_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(SpendError::DeserializeMessageError),
+                    "SPEND_ERROR_GRPC_CONNECT_ERROR" => Ok(SpendError::GrpcConnectError),
+                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
+                }
+            }
+        }
+        deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
 impl serde::Serialize for StatusCode {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -718,6 +917,11 @@ impl serde::Serialize for StatusCode {
                         .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
                     struct_ser.serialize_field("config", &v)?;
                 }
+                status_code::Error::Spend(v) => {
+                    let v = SpendError::from_i32(*v)
+                        .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", *v)))?;
+                    struct_ser.serialize_field("spend", &v)?;
+                }
             }
         }
         struct_ser.end()
@@ -738,6 +942,7 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
             "scanner",
             "synchronizer",
             "config",
+            "spend",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -750,6 +955,7 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
             Scanner,
             Synchronizer,
             Config,
+            Spend,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -779,6 +985,7 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
                             "scanner" => Ok(GeneratedField::Scanner),
                             "synchronizer" => Ok(GeneratedField::Synchronizer),
                             "config" => Ok(GeneratedField::Config),
+                            "spend" => Ok(GeneratedField::Spend),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -849,6 +1056,12 @@ impl<'de> serde::Deserialize<'de> for StatusCode {
                                 return Err(serde::de::Error::duplicate_field("config"));
                             }
                             error__ = map.next_value::<::std::option::Option<ConfigError>>()?.map(|x| status_code::Error::Config(x as i32));
+                        }
+                        GeneratedField::Spend => {
+                            if error__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("spend"));
+                            }
+                            error__ = map.next_value::<::std::option::Option<SpendError>>()?.map(|x| status_code::Error::Spend(x as i32));
                         }
                     }
                 }

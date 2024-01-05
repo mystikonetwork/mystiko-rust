@@ -417,7 +417,7 @@ async fn test_create_from_remote_error() {
 #[tokio::test]
 async fn test_duplicate_default_circuit_type() {
     let mut raw_config = create_raw_config(false).await;
-    let mut circuit_config = raw_config.circuits.get(0).unwrap().as_ref().clone();
+    let mut circuit_config = raw_config.circuits.first().unwrap().as_ref().clone();
     circuit_config.is_default = true;
     circuit_config.name = String::from("duplicate default circuit type");
     raw_config.circuits.push(Arc::new(circuit_config));
@@ -430,7 +430,7 @@ async fn test_duplicate_default_circuit_type() {
 #[tokio::test]
 async fn test_duplicate_circuit_name() {
     let mut raw_config = create_raw_config(false).await;
-    let mut circuit_config = raw_config.circuits.get(0).unwrap().as_ref().clone();
+    let mut circuit_config = raw_config.circuits.first().unwrap().as_ref().clone();
     circuit_config.is_default = false;
     raw_config.circuits.push(Arc::new(circuit_config));
     assert_eq!(

@@ -81,3 +81,9 @@ impl From<DepositError> for StatusCode {
         StatusCode::builder().error(Error::Deposit(value as i32)).build()
     }
 }
+
+impl From<SpendError> for StatusCode {
+    fn from(value: SpendError) -> Self {
+        StatusCode::builder().error(Error::Spend(value as i32)).build()
+    }
+}

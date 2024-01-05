@@ -1,8 +1,10 @@
-use mystiko_core::{AccountsError, DepositsError, MystikoError, ScannerError, SynchronizerError, WalletsError};
+use mystiko_core::{
+    AccountsError, DepositsError, MystikoError, ScannerError, SpendsError, SynchronizerError, WalletsError,
+};
 use mystiko_protos::api::v1::{
     AccountError as ProtoAccountError, DepositError as ProtoDepositError, MystikoError as ProtoMystikoError,
-    ScannerError as ProtoScannerError, StatusCode, SynchronizerError as ProtoSynchronizerError,
-    WalletError as ProtoWalletError,
+    ScannerError as ProtoScannerError, SpendError as ProtoSpendError, StatusCode,
+    SynchronizerError as ProtoSynchronizerError, WalletError as ProtoWalletError,
 };
 
 pub fn parse_mystiko_error(err: &MystikoError) -> StatusCode {
@@ -69,6 +71,59 @@ pub fn parse_deposit_error(err: &DepositsError) -> StatusCode {
         DepositsError::DepositStatusError(_) => ProtoDepositError::DepositStatusError.into(),
         DepositsError::DuplicateCommitmentError(_, _, _) => ProtoDepositError::DuplicateCommitmentError.into(),
         DepositsError::ProtocolKeyError(_) => ProtoDepositError::ProtocolKeyError.into(),
+    }
+}
+
+pub fn parse_spends_error(err: &SpendsError) -> StatusCode {
+    match err {
+        SpendsError::AnyhowError(_) => ProtoSpendError::AnyhowError.into(),
+        SpendsError::PublicAssetsError(_) => ProtoSpendError::PublicAssetsError.into(),
+        SpendsError::CommitmentPoolContractsError(_) => ProtoSpendError::CommitmentPoolContractsError.into(),
+        SpendsError::TransactionsError(_) => ProtoSpendError::TransactionsError.into(),
+        SpendsError::StorageError(_) => ProtoSpendError::StorageError.into(),
+        SpendsError::WalletsError(_) => ProtoSpendError::WalletsError.into(),
+        SpendsError::AccountsError(_) => ProtoSpendError::AccountsError.into(),
+        SpendsError::RelayerClientError(_) => ProtoSpendError::RelayerClientError.into(),
+        SpendsError::HexStringError(_) => ProtoSpendError::HexStringError.into(),
+        SpendsError::ParseBigIntError(_) => ProtoSpendError::ParseBigIntError.into(),
+        SpendsError::ProtocolError(_) => ProtoSpendError::ProtocolError.into(),
+        SpendsError::ProtocolKeyError(_) => ProtoSpendError::ProtocolKeyError.into(),
+        SpendsError::CryptoError(_) => ProtoSpendError::CryptoError.into(),
+        SpendsError::MerkleTreeError(_) => ProtoSpendError::MerkleTreeError.into(),
+        SpendsError::G16ProverError(_) => ProtoSpendError::G16ProverError.into(),
+        SpendsError::LocalWalletError(_) => ProtoSpendError::LocalWalletError.into(),
+        SpendsError::SerdeJsonError(_) => ProtoSpendError::SerdeJsonError.into(),
+        SpendsError::NoPoolContractFoundError(_, _, _, _) => ProtoSpendError::NoPoolContractFoundError.into(),
+        SpendsError::NoPoolContractAddressFoundError(_, _) => ProtoSpendError::NoPoolContractAddressFoundError.into(),
+        SpendsError::MissingPrivateKeyError => ProtoSpendError::MissingPrivateKeyError.into(),
+        SpendsError::UnsupportedChainIdError(_) => ProtoSpendError::UnsupportedChainIdError.into(),
+        SpendsError::UnsupportedSpendJoinSplitTypeError(_, _) => {
+            ProtoSpendError::UnsupportedSpendJoinSplitTypeError.into()
+        }
+        SpendsError::InvalidCreateOptionsError(_) => ProtoSpendError::InvalidCreateOptionsError.into(),
+        SpendsError::InvalidPublicAddressError(_) => ProtoSpendError::InvalidPublicAddressError.into(),
+        SpendsError::InvalidMystikoAddressError(_) => ProtoSpendError::InvalidMystikoAddressError.into(),
+        SpendsError::InvalidAmountError(_) => ProtoSpendError::InvalidAmountError.into(),
+        SpendsError::InvalidRollupFeeAmountError(_) => ProtoSpendError::InvalidRollupFeeAmountError.into(),
+        SpendsError::InsufficientPoolBalanceError(_) => ProtoSpendError::InsufficientPoolBalanceError.into(),
+        SpendsError::UnknownMerkleRootError(_) => ProtoSpendError::UnknownMerkleRootError.into(),
+        SpendsError::AlreadySpentCommitmentError(_) => ProtoSpendError::AlreadySpentCommitmentError.into(),
+        SpendsError::MissingShieldedAddressInCommitmentError(_) => {
+            ProtoSpendError::MissingShieldedAddressInCommitmentError.into()
+        }
+        SpendsError::MissingEncryptedNoteInCommitmentError(_) => {
+            ProtoSpendError::MissingEncryptedNoteInCommitmentError.into()
+        }
+        SpendsError::MissingCommitmentInMerkleTree(_) => ProtoSpendError::MissingCommitmentInMerkleTree.into(),
+        SpendsError::NonOwnedShieldedAddressError(_) => ProtoSpendError::NonOwnedShieldedAddressError.into(),
+        SpendsError::MissingCircuitTypeInConfigError(_) => ProtoSpendError::MissingCircuitTypeInConfigError.into(),
+        SpendsError::InvalidZKProofError => ProtoSpendError::InvalidZkProofError.into(),
+        SpendsError::SpendNotFoundError(_) => ProtoSpendError::SpendNotFoundError.into(),
+        SpendsError::SpendStatusError(_) => ProtoSpendError::SpendStatusError.into(),
+        SpendsError::MissingGivenRelayerError(_) => ProtoSpendError::MissingGivenRelayerError.into(),
+        SpendsError::MissingTransactionHashFromRelayerJobError(_) => {
+            ProtoSpendError::MissingTransactionHashFromRelayerJobError.into()
+        }
     }
 }
 

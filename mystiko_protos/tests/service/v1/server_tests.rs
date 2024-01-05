@@ -6,10 +6,10 @@ use tonic::transport::Server;
 
 #[test]
 fn test_from_option() {
-    let options: ServerOptions = None.try_into().unwrap();
+    let options: ServerOptions = None.into();
     assert_eq!(options, ServerOptions::default());
     let options = ServerOptions::builder().port(50051u32).build();
-    let another: ServerOptions = Some(options.clone()).try_into().unwrap();
+    let another: ServerOptions = Some(options.clone()).into();
     assert_eq!(another, options);
 }
 
