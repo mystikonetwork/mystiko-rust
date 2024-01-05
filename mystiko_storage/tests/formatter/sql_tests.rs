@@ -555,7 +555,7 @@ fn test_format_create_collection_migration() {
         .format_migration_batch::<TestDocument>(&Document::<TestDocument>::migrations())
         .unwrap();
     assert_eq!(statements.len(), 3);
-    let statement1 = statements.get(0).unwrap();
+    let statement1 = statements.first().unwrap();
     assert_eq!(
         statement1.statement,
         "CREATE TABLE IF NOT EXISTS `test_documents` (\
@@ -688,7 +688,7 @@ fn test_format_add_index_migration() {
         .into();
     let statements = formatter.format_migration::<TestDocument>(&migration).unwrap();
     assert_eq!(statements.len(), 1);
-    let statement = statements.get(0).unwrap();
+    let statement = statements.first().unwrap();
     assert_eq!(
         statement.statement,
         "CREATE INDEX `my_index_1` ON `test_documents` (`field7`, `field9`)"
@@ -712,7 +712,7 @@ fn test_format_add_column_migration() {
         .into();
     let statements = formatter.format_migration::<TestDocument>(&migration).unwrap();
     assert_eq!(statements.len(), 1);
-    let statement = statements.get(0).unwrap();
+    let statement = statements.first().unwrap();
     assert_eq!(
         statement.statement,
         "ALTER TABLE `test_documents` ADD COLUMN `field41` VARCHAR(128) NOT NULL"
@@ -726,7 +726,7 @@ fn test_format_drop_column_migration() {
     let migration: Migration = DropColumnMigration::builder().column_name("field1").build().into();
     let statements = formatter.format_migration::<TestDocument>(&migration).unwrap();
     assert_eq!(statements.len(), 1);
-    let statement = statements.get(0).unwrap();
+    let statement = statements.first().unwrap();
     assert_eq!(statement.statement, "ALTER TABLE `test_documents` DROP COLUMN `field1`");
     assert!(statement.column_values.is_empty());
 }
@@ -741,7 +741,7 @@ fn test_format_rename_column_migration() {
         .into();
     let statements = formatter.format_migration::<TestDocument>(&migration).unwrap();
     assert_eq!(statements.len(), 1);
-    let statement = statements.get(0).unwrap();
+    let statement = statements.first().unwrap();
     assert_eq!(
         statement.statement,
         "ALTER TABLE `test_documents` RENAME COLUMN `field1` TO `field41`"

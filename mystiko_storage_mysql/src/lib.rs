@@ -454,7 +454,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::mysql::MySqlRow) -> Result<Docum
     Document::<T>::create(&columns_with_value)
 }
 fn rows_to_count(rows: &[sqlx::mysql::MySqlRow], count_column: &str) -> Result<u64, StorageError> {
-    if let Some(row) = rows.get(0) {
+    if let Some(row) = rows.first() {
         let value = get_column_value::<i64>(row, count_column)?;
         if let Some(value) = value {
             return Ok(value as u64);

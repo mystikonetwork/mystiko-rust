@@ -73,10 +73,10 @@ async fn test_create() {
     assert_eq!(config.deposit_contracts_without_disabled().len(), 0);
     assert_eq!(config.deposit_contracts().len(), 1);
     assert_eq!(config.contracts().len(), 2);
-    let asset = *config.assets().get(0).unwrap();
-    let provider = *config.providers().get(0).unwrap();
-    let pool_contract = *config.pool_contracts().get(0).unwrap();
-    let deposit_contract = *config.deposit_contracts().get(0).unwrap();
+    let asset = *config.assets().first().unwrap();
+    let provider = *config.providers().first().unwrap();
+    let pool_contract = *config.pool_contracts().first().unwrap();
+    let deposit_contract = *config.deposit_contracts().first().unwrap();
     assert_eq!(asset.asset_address(), "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a");
     assert_eq!(
         provider.url(),
@@ -141,7 +141,7 @@ async fn test_selectors() {
     let mut pool_contracts = config.find_pool_contracts("MTT", &BridgeType::Tbridge);
     pool_contracts.sort_by_key(|c| c.version());
     assert_eq!(pool_contracts.len(), 2);
-    let pool_contract1 = *pool_contracts.get(0).unwrap();
+    let pool_contract1 = *pool_contracts.first().unwrap();
     let pool_contract2 = *pool_contracts.get(1).unwrap();
     assert_eq!(pool_contract1.address(), "0x9b42ec45f6fb6c7d252c66741e960585888de7b6");
     assert_eq!(pool_contract2.address(), "0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d");
@@ -344,7 +344,7 @@ async fn test_to_proto() {
         .deposit_contract_configs
         .get("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67")
         .is_some());
-    let provider = config.provider_configs.get(0).unwrap();
+    let provider = config.provider_configs.first().unwrap();
     assert_eq!(
         &provider.url,
         "wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161"
@@ -372,7 +372,7 @@ async fn setup(
         create_raw_from_file::<RawChainConfig>(VALID_CONFIG_FILE).await.unwrap()
     };
     if options.duplicate_pool_contract_version {
-        let mut raw_pool_contract = raw_config.pool_contracts.get(0).unwrap().as_ref().clone();
+        let mut raw_pool_contract = raw_config.pool_contracts.first().unwrap().as_ref().clone();
         raw_pool_contract.address = String::from("0x7b5753f81f73d160583083c33b0f863837197fb3");
         raw_config.pool_contracts.push(Arc::new(raw_pool_contract));
     }

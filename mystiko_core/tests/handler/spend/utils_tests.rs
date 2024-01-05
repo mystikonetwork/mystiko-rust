@@ -15,10 +15,13 @@ fn test_select_commitments() {
     assert!(select_commitments(&commitments, Some(BigUint::from(0_u64)), 1).is_empty());
 
     let selected = select_commitments(&commitments, None, 2);
-    assert_eq!(selected, vec![commitments.get(3).unwrap(), commitments.get(0).unwrap()]);
+    assert_eq!(
+        selected,
+        vec![commitments.get(3).unwrap(), commitments.first().unwrap()]
+    );
 
     let selected = select_commitments(&commitments, Some(BigUint::from(4_u64)), 2);
-    assert_eq!(selected, vec![commitments.get(0).unwrap()]);
+    assert_eq!(selected, vec![commitments.first().unwrap()]);
 
     let selected = select_commitments(&commitments, Some(BigUint::from(5_u64)), 2);
     assert_eq!(selected, vec![commitments.get(3).unwrap()]);

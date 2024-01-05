@@ -488,7 +488,7 @@ fn row_to_document<T: DocumentData>(row: &sqlx::sqlite::SqliteRow) -> Result<Doc
 }
 
 fn rows_to_count(rows: &[sqlx::sqlite::SqliteRow], count_column: &str) -> Result<u64, StorageError> {
-    if let Some(row) = rows.get(0) {
+    if let Some(row) = rows.first() {
         let value = get_column_value::<u32>(row, count_column)?;
         if let Some(value) = value {
             return Ok(value as u64);
