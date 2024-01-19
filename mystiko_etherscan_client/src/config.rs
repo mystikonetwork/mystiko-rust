@@ -17,7 +17,8 @@ const DEFAULT_MAINNET_OPTIMISM_API_BASE_URL: &str = "https://api-optimistic.ethe
 const DEFAULT_TESTNET_GOERLI_API_BASE_URL: &str = "https://api-goerli.etherscan.io";
 const DEFAULT_TESTNET_BSC_API_BASE_URL: &str = "https://api-testnet.bscscan.com";
 const DEFAULT_TESTNET_POLYGAN_MUMBAI_API_BASE_URL: &str = "https://api-testnet.polygonscan.com";
-const DEFAULT_TESTNET_AVALANCHE_FUJI_API_BASE_URL: &str = "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan";
+const DEFAULT_TESTNET_AVALANCHE_FUJI_API_BASE_URL: &str =
+    "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan";
 const DEFAULT_TESTNET_FANTOM_API_BASE_URL: &str = "https://api-testnet.ftmscan.com";
 const DEFAULT_TESTNET_MOONBASE_ALPHA_API_BASE_URL: &str = "https://api-moonbase.moonscan.io";
 const DEFAULT_TESTNET_BASE_GOERLI_API_BASE_URL: &str = "https://api-goerli.basescan.org";
