@@ -1,6 +1,10 @@
-use std::collections::HashSet;
-use std::time::Duration;
-
+use crate::errors::EtherScanError;
+use crate::log::{Log, LogMeta};
+use crate::response::{EtherScanResponse, JsonRpcResponse, Result};
+use crate::retry::{DefaultRetryPolicy, RetryPolicy};
+use ethers::types::U64;
+use ethers_contract::EthEvent;
+use ethers_core::types::{Block, Transaction, TransactionReceipt, H256};
 use reqwest::{
     header::{HeaderValue, ACCEPT},
     {Client, IntoUrl},
@@ -8,21 +12,16 @@ use reqwest::{
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
-use ethers::types::U64;
-use ethers_contract::EthEvent;
-use ethers_core::types::{Block, Transaction, TransactionReceipt, H256};
+use std::collections::HashSet;
+use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
 
-use crate::config::{
-    get_default_base_url, DEFAULT_MAX_REQUESTS_PER_SECOND, DEFAULT_PAGE_OFFSET, DEFAULT_URL_PREFIX, MAX_OFFSET,
-};
-use crate::errors::EtherScanError;
-use crate::log::{Log, LogMeta};
-use crate::response::{EtherScanResponse, JsonRpcResponse, Result};
-use crate::retry::{DefaultRetryPolicy, RetryPolicy};
+pub const DEFAULT_MAX_REQUESTS_PER_SECOND: u64 = 5;
+pub const DEFAULT_PAGE_OFFSET: u64 = 1000;
+pub const MAX_OFFSET: u64 = 10000;
+pub const DEFAULT_URL_PREFIX: &str = "/api";
 
 #[derive(Debug, Clone, Default, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
@@ -57,8 +56,7 @@ pub struct Event<R> {
 pub struct EtherScanClientOptions {
     pub chain_id: u64,
     pub api_key: String,
-    #[builder(default = None)]
-    pub base_url: Option<String>,
+    pub base_url: String,
     #[builder(default = None)]
     pub client: Option<Client>,
     #[builder(default = None)]
@@ -95,7 +93,7 @@ impl EtherScanClient {
             )));
         }
         let api_key = options.api_key;
-        let base_url = options.base_url.unwrap_or(get_default_base_url(chain_id)?);
+        let base_url = options.base_url;
         let client = match options.client {
             Some(client) => client,
             None => Client::new(),

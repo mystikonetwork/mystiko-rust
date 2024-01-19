@@ -40,6 +40,7 @@ async fn test_create_ether_scan_client_error() {
     let options = EtherScanClientOptions::builder()
         .chain_id(56u64)
         .api_key("test_api_key".to_owned())
+        .base_url("base_url".to_string())
         .offset(offset)
         .build();
     let result = EtherScanClient::new(options);
