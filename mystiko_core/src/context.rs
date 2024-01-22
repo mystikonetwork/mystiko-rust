@@ -60,6 +60,7 @@ where
         let config_options = mystiko_options.config_options.unwrap_or_default();
         let mut relayer_client_options = mystiko_options.relayer_client_options.unwrap_or_default();
         relayer_client_options.is_testnet = config_options.is_testnet;
+        relayer_client_options.is_staging = config_options.is_staging;
         let config = create_mystiko_config(config_options.clone()).await?;
         let providers: ProviderPool<ChainConfigProvidersOptions> =
             if let Some(provider_factory) = mystiko_options.provider_factory {
