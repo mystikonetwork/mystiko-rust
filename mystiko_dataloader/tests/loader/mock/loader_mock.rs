@@ -158,7 +158,7 @@ pub fn create_mock_providers(provider: Option<&MockProvider>) -> MockProviders {
     }
 }
 
-pub fn contract_data_partial_eq(a: &HashMap<String, ContractData<FullData>>, b: &Vec<ContractData<FullData>>) -> bool {
+pub fn contract_data_partial_eq(a: &HashMap<String, ContractData<FullData>>, b: &[ContractData<FullData>]) -> bool {
     if a.len() != b.len() {
         println!("a.len() != b.len() {:?} {:?}", a.len(), b.len());
         return false;
