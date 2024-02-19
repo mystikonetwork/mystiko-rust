@@ -72,7 +72,7 @@ async fn test_loader_start_one_fetcher_skip_fetch() {
         .fetcher(LoadFetcherOption::builder().skips(skip_fetcher).build())
         .build();
     let result = loader.load(option).await;
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &vec![]));
+    assert!(contract_data_partial_eq(&handler.drain_data().await, &[]));
     assert!(matches!(result.err().unwrap(), DataLoaderError::LoaderNoFetchersError));
 }
 
@@ -102,7 +102,7 @@ async fn test_loader_start_one_fetcher_only_skip_data_validation() {
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
     let result = loader.load(None).await;
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &vec![]));
+    assert!(contract_data_partial_eq(&handler.drain_data().await, &[]));
     assert!(matches!(
         result.err().unwrap(),
         DataLoaderError::LoaderFetchersExhaustedError
@@ -120,7 +120,7 @@ async fn test_loader_start_one_fetcher_only_skip_data_validation() {
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
     let result = loader.load(option).await;
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &vec![]));
+    assert!(contract_data_partial_eq(&handler.drain_data().await, &[]));
     assert!(matches!(
         result.err().unwrap(),
         DataLoaderError::LoaderFetchersExhaustedError
@@ -197,7 +197,7 @@ async fn test_loader_start_one_fetcher_skip_validation_priority() {
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
     let result = loader.load(option).await;
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &vec![]));
+    assert!(contract_data_partial_eq(&handler.drain_data().await, &[]));
     assert!(matches!(
         result.err().unwrap(),
         DataLoaderError::LoaderFetchersExhaustedError
@@ -263,7 +263,7 @@ async fn test_loader_start_one_fetcher_skip_validator() {
         .set_result(Err(anyhow::Error::msg("error".to_string()).into()))
         .await;
     let result = loader.load(None).await;
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &vec![]));
+    assert!(contract_data_partial_eq(&handler.drain_data().await, &[]));
     assert!(matches!(
         result.err().unwrap(),
         DataLoaderError::LoaderFetchersExhaustedError
@@ -278,7 +278,7 @@ async fn test_loader_start_one_fetcher_skip_validator() {
         .validator(LoadValidatorOption::builder().skips(skip_validator).build())
         .build();
     let result = loader.load(option).await;
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &vec![]));
+    assert!(contract_data_partial_eq(&handler.drain_data().await, &[]));
     assert!(matches!(
         result.err().unwrap(),
         DataLoaderError::LoaderFetchersExhaustedError

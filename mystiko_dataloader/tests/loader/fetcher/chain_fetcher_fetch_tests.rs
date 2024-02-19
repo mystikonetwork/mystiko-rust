@@ -336,7 +336,7 @@ async fn test_loader_start_two_fetcher_with_error() {
     fetchers[1].set_loaded_block(Some(target_block)).await;
     fetchers[1].set_fetch_error_result().await;
     let result = loader.load(None).await;
-    assert!(contract_data_partial_eq(&handler.drain_data().await, &vec![]));
+    assert!(contract_data_partial_eq(&handler.drain_data().await, &[]));
     assert!(result
         .err()
         .unwrap()

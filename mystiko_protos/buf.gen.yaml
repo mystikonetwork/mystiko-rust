@@ -2,7 +2,7 @@ version: v1
 managed:
   enabled: true
 plugins:
-  - plugin: buf.build/community/neoeinstein-prost
+  - plugin: buf.build/community/neoeinstein-prost:v0.2.3
     out: src/gen
     opt:
       - compile_well_known_types
@@ -11,13 +11,13 @@ plugins:
       - message_attribute=.=#[derive(typed_builder::TypedBuilder)]
       - message_attribute=.=#[builder(field_defaults(default\, setter(into)))]
       - message_attribute=.=#[derive(mystiko_protos_macros::ProtoBuilder)]
-  - plugin: buf.build/community/neoeinstein-tonic
+  - plugin: buf.build/community/neoeinstein-tonic:v0.3.0
     opt:
       - compile_well_known_types
       - server_mod_attribute=.=#[cfg(feature = "grpc-server")]
       - client_mod_attribute=.=#[cfg(feature = "grpc-client")]
     out: src/gen
-  - plugin: buf.build/community/neoeinstein-prost-serde
+  - plugin: buf.build/community/neoeinstein-prost-serde:v0.2.3
     out: src/gen
   - plugin: prost-crate
     out: .
