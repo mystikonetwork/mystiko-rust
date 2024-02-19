@@ -112,7 +112,7 @@ pub async fn insert_commitments(
                 cm.commitment_hash = pcm.commitment_hash.clone();
                 cm.encrypted_note = Some(encode_hex(pcm.encrypted_note));
 
-                let nullifier = compute_nullifier(&account.v_sk, &pcm.note.random_p);
+                let nullifier = compute_nullifier(&account.v_sk, &pcm.note.random_p).unwrap();
                 nullifiers.push(nullifier);
             }
             None => {

@@ -726,7 +726,7 @@ fn scan_commitment_by_accounts(
                 }),
             ) {
                 if pcm.commitment_hash == commitment.data.commitment_hash {
-                    let nullifier = compute_nullifier(&account.sk_verify, &pcm.note.random_p);
+                    let nullifier = compute_nullifier(&account.sk_verify, &pcm.note.random_p)?;
                     commitment.data.amount = Some(pcm.note.amount);
                     commitment.data.nullifier = Some(nullifier);
                     commitment.data.shielded_address = Some(account.shielded_address.address());

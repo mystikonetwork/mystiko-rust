@@ -148,7 +148,7 @@ pub(crate) async fn generate_commitments(
                 let shielded_address = ShieldedAddress::from_string(shielded_address).unwrap();
                 let (_, pk_enc) = shielded_address.public_key().unwrap();
                 let note = mystiko_protocol::commitment::Note::new(option.amount.clone(), None).unwrap();
-                let encrypted_note = encrypt_asymmetric(&pk_enc, &note.to_vec()).unwrap();
+                let encrypted_note = encrypt_asymmetric(&pk_enc, &note.to_vec().unwrap()).unwrap();
                 encode_hex_with_prefix(encrypted_note)
             });
             Commitment {
