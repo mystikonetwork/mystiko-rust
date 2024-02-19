@@ -81,7 +81,7 @@ where
             Mnemonic::random(OsRng, Language::English)
         };
         let encrypted_entropy = encrypt_symmetric(&options.password, &encode_hex(mnemonic.entropy()))?;
-        let hashed_password = checksum(&options.password, None);
+        let hashed_password = checksum(&options.password, None)?;
         let wallet = Wallet {
             hashed_password,
             encrypted_entropy,
@@ -108,7 +108,7 @@ where
         validate_password(new_password)?;
         let entropy_string = decrypt_symmetric(old_password, &wallet.data.encrypted_entropy)?;
         wallet.data.encrypted_entropy = encrypt_symmetric(new_password, &entropy_string)?;
-        wallet.data.hashed_password = checksum(new_password, None);
+        wallet.data.hashed_password = checksum(new_password, None)?;
         wallet = self
             .db
             .wallets
@@ -180,7 +180,7 @@ where
 
     pub(crate) async fn check_document_password(&self, password: &str) -> Result<Document<Wallet>> {
         let wallet = self.check_document_current().await?;
-        let hashed_password = checksum(password, None);
+        let hashed_password = checksum(password, None)?;
         if wallet.data.hashed_password == hashed_password {
             Ok(wallet)
         } else {

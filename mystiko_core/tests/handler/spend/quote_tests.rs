@@ -625,8 +625,8 @@ where
 }
 
 fn generate_shielded_address() -> String {
-    let sk_verify = generate_secret_key();
-    let sk_enc = generate_secret_key();
+    let sk_verify = generate_secret_key().unwrap();
+    let sk_enc = generate_secret_key().unwrap();
     let pk_verify = verification_public_key(&sk_verify).unwrap();
     let pk_enc = encryption_public_key(&sk_enc).unwrap();
     let shielded_address = ShieldedAddress::from_public_key(&pk_verify, &pk_enc);

@@ -3372,7 +3372,7 @@ dependencies = [
 [[package]]
 name = "mystiko_crypto"
 version = "0.1.0"
-source = "git+ssh://git@github.com/mystikonetwork/mystiko-protocol.git?rev=1afe17a#75dec6d4ccfd1838df11d6b08e671a863004f65d"
+source = "git+ssh://git@github.com/mystikonetwork/mystiko-protocol.git?rev=1afe17a#1afe17a04a83bef549bea935b02800b4bb841f1c"
 dependencies = [
  "aes",
  "anyhow",
@@ -3595,7 +3595,7 @@ dependencies = [
 [[package]]
 name = "mystiko_protocol"
 version = "0.1.0"
-source = "git+ssh://git@github.com/mystikonetwork/mystiko-protocol.git?rev=1afe17a#75dec6d4ccfd1838df11d6b08e671a863004f65d"
+source = "git+ssh://git@github.com/mystikonetwork/mystiko-protocol.git?rev=1afe17a#1afe17a04a83bef549bea935b02800b4bb841f1c"
 dependencies = [
  "anyhow",
  "babyjubjub-rs",
