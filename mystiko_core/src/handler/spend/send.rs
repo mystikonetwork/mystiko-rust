@@ -252,11 +252,9 @@ where
             .build();
         let tx_receipt = self.transactions.wait(wait_options).await?;
         self.update_input_commitments(context, &spend).await?;
-        if let Some(tx_receipt) = tx_receipt {
-            if let Some(block_number) = tx_receipt.block_number {
-                self.create_out_commitments(context, block_number.as_u64(), out_commitments, &spend)
-                    .await?;
-            }
+        if let Some(block_number) = tx_receipt.block_number {
+            self.create_out_commitments(context, block_number.as_u64(), out_commitments, &spend)
+                .await?;
         }
         spend = self.update_status(spend, SpendStatus::Succeeded).await?;
         Ok(spend)

@@ -1,5 +1,6 @@
 use crate::{FromContext, MystikoContext, MystikoError, TransactionHandler, WaitOptions};
 use async_trait::async_trait;
+use ethers_core::abi::AbiEncode;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::transaction::eip2930::AccessList;
 use ethers_core::types::{
@@ -29,6 +30,8 @@ pub enum TransactionsError {
     ProviderError(#[from] ethers_providers::ProviderError),
     #[error("wait transaction for confirmations timed out after {0} ms")]
     WaitTimeoutError(u64),
+    #[error("transaction(chain_id={0}, hash={1}) is dropped from mempool")]
+    TransactionDroppedError(u64, String),
 }
 
 #[async_trait]
@@ -74,7 +77,7 @@ where
         Ok(tx.unwrap_or(default_tx))
     }
 
-    async fn wait(&self, options: WaitOptions) -> Result<Option<TransactionReceipt>, Self::Error> {
+    async fn wait(&self, options: WaitOptions) -> Result<TransactionReceipt, Self::Error> {
         let provider = self.providers.get_provider(options.chain_id).await?;
         let mut pending_tx = PendingTransaction::new(options.tx_hash, &provider);
         if let Some(confirmations) = options.confirmations {
@@ -88,10 +91,16 @@ where
         if let Some(timeout_ms) = options.timeout_ms {
             match tokio::time::timeout(Duration::from_millis(timeout_ms), pending_tx).await {
                 Err(_) => Err(TransactionsError::WaitTimeoutError(timeout_ms)),
-                Ok(result) => Ok(result?),
+                Ok(result) => Ok(result?.ok_or(TransactionsError::TransactionDroppedError(
+                    options.chain_id,
+                    options.tx_hash.encode_hex(),
+                ))?),
             }
         } else {
-            Ok(pending_tx.await?)
+            Ok(pending_tx.await?.ok_or(TransactionsError::TransactionDroppedError(
+                options.chain_id,
+                options.tx_hash.encode_hex(),
+            ))?)
         }
     }
 }

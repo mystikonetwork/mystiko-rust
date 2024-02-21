@@ -27,5 +27,5 @@ pub trait TransactionHandler<T>: Send + Sync {
 
     fn create(&self, tx: Option<T>, tx_type: &TransactionType) -> Result<TypedTransaction, Self::Error>;
 
-    async fn wait(&self, options: WaitOptions) -> Result<Option<TransactionReceipt>, Self::Error>;
+    async fn wait(&self, options: WaitOptions) -> Result<TransactionReceipt, Self::Error>;
 }
