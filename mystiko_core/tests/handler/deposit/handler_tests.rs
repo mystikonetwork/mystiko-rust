@@ -693,11 +693,11 @@ async fn test_loop_deposit_main_token_send() {
                 && options.timeout_ms == Some(2000_u64)
         })
         .returning(move |_| {
-            Ok(Some(TransactionReceipt {
+            Ok(TransactionReceipt {
                 transaction_hash: deposit_tx_hash,
                 block_number: Some(U64::from(200010000_u64)),
                 ..Default::default()
-            }))
+            })
         });
     let options = MockOptions::builder()
         .assets(assets)
@@ -806,11 +806,11 @@ async fn test_loop_deposit_erc20_token_send() {
                 && options.timeout_ms == Some(2000_u64)
         })
         .returning(move |options| {
-            Ok(Some(TransactionReceipt {
+            Ok(TransactionReceipt {
                 transaction_hash: options.tx_hash,
                 block_number: Some(U64::from(200010000_u64)),
                 ..Default::default()
-            }))
+            })
         });
     let options = MockOptions::builder()
         .assets(assets)
@@ -906,11 +906,11 @@ async fn test_cross_chain_deposit_main_token_send() {
                 && options.timeout_ms == Some(2000_u64)
         })
         .returning(move |_| {
-            Ok(Some(TransactionReceipt {
+            Ok(TransactionReceipt {
                 transaction_hash: deposit_tx_hash,
                 block_number: Some(U64::from(200010000_u64)),
                 ..Default::default()
-            }))
+            })
         });
     let options = MockOptions::builder()
         .assets(assets)
@@ -1032,11 +1032,11 @@ async fn test_cross_chain_deposit_erc20_token_send() {
                 && options.timeout_ms == Some(2000_u64)
         })
         .returning(move |options| {
-            Ok(Some(TransactionReceipt {
+            Ok(TransactionReceipt {
                 transaction_hash: options.tx_hash,
                 block_number: Some(U64::from(200010000_u64)),
                 ..Default::default()
-            }))
+            })
         });
     let options = MockOptions::builder()
         .assets(assets)

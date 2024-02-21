@@ -2019,11 +2019,11 @@ fn setup_transactions(options: TransactionsTestOptions) -> MockTransactions {
                 && options.interval_ms == tx_wait_interval_ms
         })
         .returning(move |_| {
-            Ok(Some(TransactionReceipt {
+            Ok(TransactionReceipt {
                 transaction_hash: tx_hash,
                 block_number: Some(U64::from(block_number)),
                 ..Default::default()
-            }))
+            })
         });
     transactions
 }

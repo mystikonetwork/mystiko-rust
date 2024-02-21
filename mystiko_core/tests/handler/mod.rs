@@ -102,7 +102,7 @@ mock! {
     impl TransactionHandler<Transaction> for Transactions {
         type Error = anyhow::Error;
         fn create(&self, tx: Option<Transaction>, tx_type: &TransactionType) -> Result<TypedTransaction>;
-        async fn wait(&self, options: WaitOptions) -> Result<Option<TransactionReceipt>>;
+        async fn wait(&self, options: WaitOptions) -> Result<TransactionReceipt>;
     }
 }
 

@@ -151,12 +151,17 @@ fn test_create_transaction_with_wrong_type() {
 
 #[tokio::test]
 async fn test_wait_transaction() {
-    test_wait_transaction_inner(None).await
+    test_wait_transaction_inner(None, false).await
 }
 
 #[tokio::test]
 async fn test_wait_transaction_with_confirmations() {
-    test_wait_transaction_inner(Some(10)).await
+    test_wait_transaction_inner(Some(10), false).await
+}
+
+#[tokio::test]
+async fn test_wait_transaction_dropped() {
+    test_wait_transaction_inner(None, true).await
 }
 
 #[tokio::test]
@@ -182,7 +187,7 @@ async fn test_wait_transaction_timeout_error() {
     );
 }
 
-async fn test_wait_transaction_inner(confirmations: Option<u64>) {
+async fn test_wait_transaction_inner(confirmations: Option<u64>, tx_dropped: bool) {
     let tx_hash = TxHash::decode_hex("0x0fe452459a23f379e4d40f154e1d8d58ab9b92d72b02939830dbfe3ecacc529d").unwrap();
     let block_hash = H256::decode_hex("0xa5b3c0f4869f2c725ec5f6a8facb225cd359fbcd02c77a7abec03565c14280f0").unwrap();
     let provider = MockProvider::builder()
@@ -190,6 +195,7 @@ async fn test_wait_transaction_inner(confirmations: Option<u64>) {
         .expected_block_hash(block_hash)
         .confirmed_block(100010)
         .current_block(Mutex::new(100000))
+        .tx_dropped(tx_dropped)
         .build();
     let provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
     let provider_clone = provider.clone();
@@ -205,12 +211,21 @@ async fn test_wait_transaction_inner(confirmations: Option<u64>) {
         .interval_ms(1)
         .confirmations(confirmations)
         .build();
-    let receipt = transactions.wait(wait_options).await.unwrap().unwrap();
-    assert_eq!(receipt.transaction_hash, tx_hash);
-    assert_eq!(receipt.block_number.unwrap(), U64::from(100010));
-    if let Some(confirmations) = confirmations {
-        let current_block = provider_clone.get_block_number().await.unwrap().as_u64();
-        assert!(current_block >= 100010 + confirmations);
+    if tx_dropped {
+        let result = transactions.wait(wait_options).await;
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "transaction(chain_id=97, hash=0x0fe452459a23f379e4d40f154e1d8d58ab9b92d72b02939830dbfe3ecacc529d) \
+            is dropped from mempool"
+        );
+    } else {
+        let receipt = transactions.wait(wait_options).await.unwrap();
+        assert_eq!(receipt.transaction_hash, tx_hash);
+        assert_eq!(receipt.block_number.unwrap(), U64::from(100010));
+        if let Some(confirmations) = confirmations {
+            let current_block = provider_clone.get_block_number().await.unwrap().as_u64();
+            assert!(current_block >= 100010 + confirmations);
+        }
     }
 }
 
@@ -221,6 +236,8 @@ struct MockProvider {
     confirmed_block: u64,
     #[builder(default)]
     current_block: Mutex<u64>,
+    #[builder(default)]
+    tx_dropped: bool,
 }
 
 #[async_trait]
@@ -232,6 +249,9 @@ impl JsonRpcClientWrapper for MockProvider {
         if method == "eth_blockNumber" {
             Ok(serde_json::json!(U64::from(current_block)))
         } else if method == "eth_getTransactionByHash" {
+            if self.tx_dropped {
+                return Ok(Value::Null);
+            }
             let tx = if current_block >= self.confirmed_block {
                 ethers_core::types::Transaction {
                     hash: self.expected_tx_hash,

@@ -86,10 +86,8 @@ where
             send_tx_url,
             format_deposit_log(&deposit),
         );
-        if let Some(tx_receipt) = tx_receipt {
-            if let Some(block_number) = tx_receipt.block_number {
-                self.create_commitment(block_number.as_u64(), &deposit).await?;
-            }
+        if let Some(block_number) = tx_receipt.block_number {
+            self.create_commitment(block_number.as_u64(), &deposit).await?;
         }
         Ok(deposit)
     }
