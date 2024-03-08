@@ -3,6 +3,7 @@ use mystiko_lib::config::{
     find_asset_symbols, find_bridge, find_bridges, find_chain, find_circuit, find_contract_by_address,
     find_default_circuit, find_deposit_contract, find_deposit_contract_by_address, find_peer_chains,
     find_pool_contract, find_pool_contract_by_address, find_pool_contracts, get, get_transaction_url,
+    supported_asset_symbols,
 };
 use mystiko_protos::api::config::v1::{
     FindAssetSymbolsRequest, FindAssetSymbolsResponse, FindBridgeRequest, FindBridgeResponse, FindBridgesRequest,
@@ -12,6 +13,7 @@ use mystiko_protos::api::config::v1::{
     FindDepositContractResponse, FindPeerChainsRequest, FindPeerChainsResponse, FindPoolContractByAddressRequest,
     FindPoolContractByAddressResponse, FindPoolContractRequest, FindPoolContractResponse, FindPoolContractsRequest,
     FindPoolContractsResponse, GetConfigResponse, GetTransactionUrlRequest, GetTransactionUrlResponse,
+    SupportedAssetSymbolsRequest, SupportedAssetSymbolsResponse,
 };
 use mystiko_protos::api::v1::api_response;
 use mystiko_protos::common::v1::{BridgeType, CircuitType};
@@ -652,6 +654,19 @@ fn test_with_full_config() {
         api_response::Result::Data(data) => {
             let response = FindContractByAddressResponse::try_from(data).unwrap();
             assert!(response.config.is_some());
+        }
+        api_response::Result::ErrorMessage(error) => {
+            panic!("{}", error);
+        }
+    }
+
+    let response = supported_asset_symbols(SupportedAssetSymbolsRequest::builder().chain_id(97u64).build());
+    assert!(response.code.unwrap().success);
+    let result = response.result.unwrap();
+    match result {
+        api_response::Result::Data(data) => {
+            let response = SupportedAssetSymbolsResponse::try_from(data).unwrap();
+            assert_eq!(response.symbols, vec!["MTT"]);
         }
         api_response::Result::ErrorMessage(error) => {
             panic!("{}", error);

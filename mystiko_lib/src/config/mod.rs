@@ -9,6 +9,7 @@ use mystiko_protos::api::config::v1::{
     FindPoolContractByAddressResponse, FindPoolContractRequest, FindPoolContractResponse, FindPoolContractsRequest,
     FindPoolContractsResponse, GetConfigResponse, GetTransactionUrlRequest, GetTransactionUrlResponse,
 };
+use mystiko_protos::api::config::v1::{SupportedAssetSymbolsRequest, SupportedAssetSymbolsResponse};
 use mystiko_protos::api::v1::{ApiResponse, ConfigError};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::config::contract::v1::PoolContractConfig;
@@ -58,6 +59,17 @@ where
 {
     match message.try_into() {
         Ok(request) => runtime().block_on(internal::find_peer_chains(request)),
+        Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
+    }
+}
+
+pub fn supported_asset_symbols<M>(message: M) -> ApiResponse
+where
+    M: TryInto<SupportedAssetSymbolsRequest>,
+    <M as TryInto<SupportedAssetSymbolsRequest>>::Error: std::error::Error + Send + Sync + 'static,
+{
+    match message.try_into() {
+        Ok(request) => runtime().block_on(internal::supported_asset_symbols(request)),
         Err(err) => ApiResponse::error(ConfigError::DeserializeMessageError, err),
     }
 }
@@ -248,6 +260,24 @@ mod internal {
                 match result {
                     Ok(configs) => ApiResponse::success(FindPeerChainsResponse::builder().configs(configs).build()),
                     Err(err) => ApiResponse::unknown_error(err),
+                }
+            }
+            Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
+        }
+    }
+
+    pub(crate) async fn supported_asset_symbols(request: SupportedAssetSymbolsRequest) -> ApiResponse {
+        let mystiko_guard = instance().read().await;
+        match mystiko_guard.get() {
+            Ok(mystiko) => {
+                let result = mystiko.config.find_chain(request.chain_id);
+                match result {
+                    None => ApiResponse::success_with_empty(),
+                    Some(config) => ApiResponse::success(
+                        SupportedAssetSymbolsResponse::builder()
+                            .symbols(config.supported_asset_symbols())
+                            .build(),
+                    ),
                 }
             }
             Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
