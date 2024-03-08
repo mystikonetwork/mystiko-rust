@@ -62,6 +62,7 @@ async fn test_create() {
         0xc478553f5920534885934acd4c24890470f22469f79b0c34abc8a258af4dcd77"
     );
     assert_eq!(config.assets().len(), 1);
+    assert_eq!(config.supported_asset_symbols(), vec!["MTT"]);
     assert_eq!(config.granularities(), &vec![2000, 4000, 8000, 16000]);
     assert_eq!(config.min_granularity().unwrap(), 2000);
     assert_eq!(config.start_block(), 1000000);

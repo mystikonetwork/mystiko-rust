@@ -188,6 +188,15 @@ impl ChainConfig {
         self.asset_configs.iter().map(|c| c.as_ref()).collect()
     }
 
+    pub fn supported_asset_symbols(&self) -> Vec<String> {
+        let symbols = self
+            .pool_contract_configs
+            .iter()
+            .map(|contract_config| contract_config.asset_symbol().to_string())
+            .collect::<HashSet<_>>();
+        symbols.into_iter().collect()
+    }
+
     pub fn find_peer_chain_ids(&self) -> Vec<u64> {
         let mut ids: HashSet<u64> = HashSet::new();
         for deposit_contract_config in self.deposit_contracts_without_disabled() {
