@@ -931,7 +931,7 @@ async fn test_full_data_handle() {
     assert_eq!(result.contract_results[2].address, "address3");
     assert!(result.contract_results[2].result.is_ok());
     assert_eq!(result.contract_results[3].address, "address4");
-    assert!(result.contract_results[3].result.is_err());
+    assert!(result.contract_results[3].result.is_ok());
     let address1_commitments: Vec<Document<Commitment>> = collection
         .find(Some(QueryFilter::from(vec![
             SubFilter::equal(Commitment::column_chain_id(), 1_u64),
@@ -1309,7 +1309,7 @@ async fn test_initialize() {
         .unwrap();
     assert_eq!(
         contract_137.len(),
-        config.find_chain(137_u64).unwrap().contracts().len() + 1
+        config.find_chain(137_u64).unwrap().contracts().len()
     );
 }
 

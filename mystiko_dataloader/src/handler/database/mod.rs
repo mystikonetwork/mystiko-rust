@@ -27,8 +27,6 @@ pub const DEFAULT_HANDLE_CONCURRENCY: usize = 1;
 pub enum DatabaseHandlerError {
     #[error("unsupported chain id: {0}")]
     UnsupportedChainError(u64),
-    #[error("unsupported contract with chain id: {0}, address: {1}")]
-    UnsupportedContractError(u64, String),
     #[error("unexpected database contract error: {0}")]
     UnexpectedDatabaseContractError(String),
     #[error("unsupported handler data type")]
@@ -224,12 +222,10 @@ where
     N: DocumentData + DatabaseNullifier,
 {
     pub async fn initialize(&self) -> Result<()> {
-        let existing_contracts = self
-            .collection
-            .find::<X, QueryFilter>(None)
-            .await?
-            .into_iter()
-            .map(|contract: Document<X>| {
+        let existing_contracts: Vec<Document<X>> = self.collection.find::<X, QueryFilter>(None).await?;
+        let existing_contracts_set = existing_contracts
+            .iter()
+            .map(|contract| {
                 format!(
                     "{}/{}",
                     contract.data.get_chain_id(),
@@ -242,15 +238,37 @@ where
             for contract_config in chain_config.contracts().into_iter() {
                 let insert_contract =
                     X::from_config(self.config.clone(), chain_config.chain_id(), contract_config.address())?;
-                if !existing_contracts.contains(&format!("{}/{}", chain_config.chain_id(), contract_config.address())) {
+                if !existing_contracts_set.contains(&format!(
+                    "{}/{}",
+                    chain_config.chain_id(),
+                    contract_config.address()
+                )) {
                     insert_contracts.push(insert_contract);
                 }
             }
         }
         self.collection.insert_batch::<X>(&insert_contracts).await?;
+        let mut delete_contracts: Vec<Document<X>> = Vec::new();
+        for existing_contract in existing_contracts.into_iter() {
+            if self
+                .config
+                .find_contract_by_address(
+                    existing_contract.data.get_chain_id(),
+                    existing_contract.data.get_contract_address(),
+                )
+                .is_none()
+            {
+                delete_contracts.push(existing_contract);
+            }
+        }
+        self.collection.delete_batch(&delete_contracts).await?;
         log::info!(
-            "database is successfully initialized, inserted {} new contracts from mystiko config",
-            insert_contracts.len()
+            "database is successfully initialized, \
+            inserted {} new contracts, \
+            deleted {} deprecated contracts \
+            from mystiko config",
+            insert_contracts.len(),
+            delete_contracts.len(),
         );
         Ok(())
     }
@@ -352,10 +370,7 @@ where
         let result = if let Some(contract) = contract {
             self.handle_contract_data(chain_id, contract_data, contract).await
         } else {
-            Err(anyhow::anyhow!(DatabaseHandlerError::UnsupportedContractError(
-                chain_id,
-                contract_data.address.to_string()
-            )))
+            Ok(())
         };
         Ok(ContractResult::builder()
             .address(contract_data.address.to_string())
