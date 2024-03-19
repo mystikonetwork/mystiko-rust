@@ -22,7 +22,7 @@ pub fn setup(config_path: Option<String>) {
         Some(s) => s,
     };
     let options = MystikoOptions::builder()
-        .config_options(ConfigOptions::builder().file_path(config_path).is_testnet(true).build())
+        .config_options(ConfigOptions::builder().is_testnet(true).build())
         .relayer_client_options(
             RelayerClientOptions::builder()
                 .is_testnet(true)

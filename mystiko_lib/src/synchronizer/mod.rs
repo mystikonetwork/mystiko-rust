@@ -1,6 +1,6 @@
 use crate::runtime;
 use mystiko_protos::api::synchronizer::v1::{
-    ChainSyncedBlockRequest, ContractSyncedBlockRequest, ResetRequest, StatusRequest, SyncRequest,
+    ChainSyncedBlockRequest, ContractSyncedBlockRequest, StatusRequest, SyncRequest, SynchronizerResetRequest,
 };
 use mystiko_protos::api::v1::{ApiResponse, SynchronizerError};
 
@@ -58,8 +58,8 @@ where
 
 pub fn reset<M>(message: M) -> ApiResponse
 where
-    M: TryInto<ResetRequest>,
-    <M as TryInto<ResetRequest>>::Error: std::error::Error + Send + Sync + 'static,
+    M: TryInto<SynchronizerResetRequest>,
+    <M as TryInto<SynchronizerResetRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
     match message.try_into() {
         Ok(message) => {
@@ -80,7 +80,7 @@ mod internal {
         ChainSyncedBlockResponse, ContractSyncedBlockResponse, StatusResponse,
     };
     use mystiko_protos::api::v1::{ApiResponse, SynchronizerError};
-    use mystiko_protos::core::synchronizer::v1::{ResetOptions, SyncOptions};
+    use mystiko_protos::core::synchronizer::v1::{SyncOptions, SynchronizerResetOptions};
 
     pub(crate) async fn chain_synced_block(chain_id: u64) -> ApiResponse {
         let mystiko_guard = instance().read().await;
@@ -141,7 +141,7 @@ mod internal {
         }
     }
 
-    pub(crate) async fn reset(reset_options: ResetOptions) -> ApiResponse {
+    pub(crate) async fn reset(reset_options: SynchronizerResetOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {

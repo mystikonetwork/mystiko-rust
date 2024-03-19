@@ -1,5 +1,7 @@
 use crate::runtime;
-use mystiko_protos::api::scanner::v1::{AssetsRequest, BalanceRequest, ChainAssetsRequest, ResetRequest, ScanRequest};
+use mystiko_protos::api::scanner::v1::{
+    AssetsRequest, BalanceRequest, ChainAssetsRequest, ScanRequest, ScannerResetRequest,
+};
 use mystiko_protos::api::v1::{ApiResponse, ScannerError};
 
 pub fn scan<M>(message: M) -> ApiResponse
@@ -20,8 +22,8 @@ where
 
 pub fn reset<M>(message: M) -> ApiResponse
 where
-    M: TryInto<ResetRequest>,
-    <M as TryInto<ResetRequest>>::Error: std::error::Error + Send + Sync + 'static,
+    M: TryInto<ScannerResetRequest>,
+    <M as TryInto<ScannerResetRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
     match message.try_into() {
         Ok(message) => {
@@ -90,7 +92,7 @@ mod internal {
         AssetsResponse, BalanceResponse, ChainAssetsResponse, ResetResponse, ScanResponse,
     };
     use mystiko_protos::api::v1::{ApiResponse, ScannerError};
-    use mystiko_protos::core::scanner::v1::{AssetsOptions, BalanceOptions, ResetOptions, ScanOptions};
+    use mystiko_protos::core::scanner::v1::{AssetsOptions, BalanceOptions, ScanOptions, ScannerResetOptions};
 
     pub(crate) async fn scan(options: ScanOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;
@@ -106,7 +108,7 @@ mod internal {
         }
     }
 
-    pub(crate) async fn reset(options: ResetOptions) -> ApiResponse {
+    pub(crate) async fn reset(options: ScannerResetOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {

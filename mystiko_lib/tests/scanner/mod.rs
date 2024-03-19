@@ -5,13 +5,13 @@ use mystiko_protos::api::handler::v1::{
 };
 use mystiko_protos::api::scanner::v1::{
     AssetsRequest, AssetsResponse, BalanceRequest, BalanceResponse, ChainAssetsRequest, ChainAssetsResponse,
-    ResetRequest, ResetResponse, ScanRequest, ScanResponse,
+    ResetResponse, ScanRequest, ScanResponse, ScannerResetRequest,
 };
 use mystiko_protos::api::v1::status_code::Error;
 use mystiko_protos::api::v1::ScannerError;
 use mystiko_protos::core::document::v1::{Account, Wallet};
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions};
-use mystiko_protos::core::scanner::v1::{AssetsOptions, BalanceOptions, ResetOptions, ScanOptions};
+use mystiko_protos::core::scanner::v1::{AssetsOptions, BalanceOptions, ScanOptions, ScannerResetOptions};
 use serial_test::serial;
 
 const DEFAULT_WALLET_PASSWORD: &str = "P@ssw0rd";
@@ -83,7 +83,11 @@ fn test_scan() {
 #[serial]
 fn test_reset() {
     scanner_setup();
-    let response = scanner::reset(ResetRequest::builder().options(ResetOptions::builder().build()).build());
+    let response = scanner::reset(
+        ScannerResetRequest::builder()
+            .options(ScannerResetOptions::builder().build())
+            .build(),
+    );
     assert!(response.code.unwrap().success);
     let result = ResetResponse::try_from(extract_data(response.result.unwrap()));
     assert!(result.is_ok());

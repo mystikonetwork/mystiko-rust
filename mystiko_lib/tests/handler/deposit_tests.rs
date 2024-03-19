@@ -28,9 +28,9 @@ use std::collections::HashMap;
 #[serial]
 #[ignore]
 fn test_quote() {
-    setup(Some(DEPOSIT_CONFIG_FILE.to_string()));
+    setup(None);
     let quote_options = QuoteDepositOptions::builder()
-        .chain_id(5_u64)
+        .chain_id(97_u64)
         .asset_symbol("MTT".to_string())
         .bridge_type(BridgeType::Loop as i32)
         .build();
