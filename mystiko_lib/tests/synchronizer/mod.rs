@@ -2,11 +2,11 @@ use crate::{extract_data, setup};
 use mystiko_lib::synchronizer;
 use mystiko_protos::api::synchronizer::v1::{
     ChainSyncedBlockRequest, ChainSyncedBlockResponse, ContractSyncedBlockRequest, ContractSyncedBlockResponse,
-    ResetRequest, StatusRequest, StatusResponse, SyncRequest,
+    StatusRequest, StatusResponse, SyncRequest, SynchronizerResetRequest,
 };
 use mystiko_protos::api::v1::status_code::Error;
 use mystiko_protos::api::v1::SynchronizerError;
-use mystiko_protos::core::synchronizer::v1::{ResetOptions, SyncOptions};
+use mystiko_protos::core::synchronizer::v1::{SyncOptions, SynchronizerResetOptions};
 use serial_test::serial;
 
 #[test]
@@ -104,6 +104,10 @@ fn test_sync() {
 #[serial]
 fn test_reset() {
     setup(None);
-    let response = synchronizer::reset(ResetRequest::builder().options(ResetOptions::default()).build());
+    let response = synchronizer::reset(
+        SynchronizerResetRequest::builder()
+            .options(SynchronizerResetOptions::default())
+            .build(),
+    );
     assert!(response.code.unwrap().success);
 }

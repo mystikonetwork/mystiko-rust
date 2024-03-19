@@ -394,97 +394,6 @@ impl<'de> serde::Deserialize<'de> for ResetChainOptions {
         deserializer.deserialize_struct("mystiko.core.synchronizer.v1.ResetChainOptions", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for ResetOptions {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if !self.chains.is_empty() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.core.synchronizer.v1.ResetOptions", len)?;
-        if !self.chains.is_empty() {
-            struct_ser.serialize_field("chains", &self.chains)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for ResetOptions {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "chains",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Chains,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "chains" => Ok(GeneratedField::Chains),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ResetOptions;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.core.synchronizer.v1.ResetOptions")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ResetOptions, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut chains__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::Chains => {
-                            if chains__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("chains"));
-                            }
-                            chains__ = Some(map.next_value()?);
-                        }
-                    }
-                }
-                Ok(ResetOptions {
-                    chains: chains__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.core.synchronizer.v1.ResetOptions", FIELDS, GeneratedVisitor)
-    }
-}
 impl serde::Serialize for SyncOptions {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -836,6 +745,97 @@ impl<'de> serde::Deserialize<'de> for SyncOptions {
             }
         }
         deserializer.deserialize_struct("mystiko.core.synchronizer.v1.SyncOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for SynchronizerResetOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.chains.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.synchronizer.v1.SynchronizerResetOptions", len)?;
+        if !self.chains.is_empty() {
+            struct_ser.serialize_field("chains", &self.chains)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for SynchronizerResetOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chains",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Chains,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chains" => Ok(GeneratedField::Chains),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = SynchronizerResetOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.synchronizer.v1.SynchronizerResetOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<SynchronizerResetOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chains__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Chains => {
+                            if chains__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chains"));
+                            }
+                            chains__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(SynchronizerResetOptions {
+                    chains: chains__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.synchronizer.v1.SynchronizerResetOptions", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for SynchronizerStatus {

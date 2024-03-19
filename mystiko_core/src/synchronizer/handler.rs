@@ -18,7 +18,7 @@ use mystiko_dataloader::validator::rule::{
 use mystiko_dataloader::{loader::ResetOptions as DataLoaderResetOptions, DataLoaderError};
 use mystiko_ethers::Providers;
 use mystiko_protos::core::synchronizer::v1::{
-    ChainStatus, ContractStatus, ResetOptions, SyncOptions, SynchronizerStatus,
+    ChainStatus, ContractStatus, SyncOptions, SynchronizerResetOptions, SynchronizerStatus,
 };
 use mystiko_protos::loader::v1::{
     FetcherConfig, LoaderConfig, PackerFetcherConfig, ProviderFetcherChainConfig, ProviderFetcherConfig,
@@ -63,7 +63,7 @@ pub enum SynchronizerError {
 }
 
 #[async_trait]
-impl<L> SynchronizerHandler<SyncOptions, SynchronizerStatus, ResetOptions> for Synchronizer<L>
+impl<L> SynchronizerHandler<SyncOptions, SynchronizerStatus, SynchronizerResetOptions> for Synchronizer<L>
 where
     L: DataLoader,
 {
@@ -118,7 +118,7 @@ where
         Ok(SynchronizerStatus::builder().chains(chains_status).build())
     }
 
-    async fn reset(&self, reset_options: ResetOptions) -> Result<(), Self::Error> {
+    async fn reset(&self, reset_options: SynchronizerResetOptions) -> Result<(), Self::Error> {
         let loaders = self
             .loaders
             .iter()

@@ -14,7 +14,7 @@ use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::scanner::v1::{
     AssetsByBridge, AssetsByChain, AssetsBySymbol, AssetsByVersion, AssetsOptions, Balance, BalanceOptions,
-    BalanceResult, ResetOptions, ResetResult, ScanOptions, ScanResult,
+    BalanceResult, ResetResult, ScanOptions, ScanResult, ScannerResetOptions,
 };
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
@@ -65,7 +65,7 @@ impl<F, S>
     ScannerHandler<
         ScanOptions,
         ScanResult,
-        ResetOptions,
+        ScannerResetOptions,
         ResetResult,
         BalanceOptions,
         BalanceResult,
@@ -122,7 +122,7 @@ where
             .build())
     }
 
-    async fn reset(&self, options: ResetOptions) -> Result<ResetResult, Self::Error> {
+    async fn reset(&self, options: ScannerResetOptions) -> Result<ResetResult, Self::Error> {
         let mut accounts = self.build_filter_accounts(&options.shielded_addresses).await?;
         if accounts.is_empty() {
             return Ok(ResetResult::default());
