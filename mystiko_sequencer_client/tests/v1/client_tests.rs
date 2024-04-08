@@ -1,5 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use ethers_core::types::TxHash;
 use mockall::mock;
 use mystiko_grpc::GrpcServer;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
@@ -7,8 +8,10 @@ use mystiko_protos::sequencer::v1::sequencer_service_client::SequencerServiceCli
 use mystiko_protos::sequencer::v1::sequencer_service_server::SequencerServiceServer;
 use mystiko_protos::sequencer::v1::{
     ChainLoadedBlockRequest, ChainLoadedBlockResponse, ContractLoadedBlockRequest, ContractLoadedBlockResponse,
-    FetchChainRequest, FetchChainResponse, FetchContractRequest, FetchContractResponse, GetCommitmentsRequest,
-    GetCommitmentsResponse, GetNullifiersRequest, GetNullifiersResponse, HealthCheckRequest, HealthCheckResponse,
+    FetchChainRequest, FetchChainResponse, FetchContractRequest, FetchContractResponse, GetCommitmentsByTxHashRequest,
+    GetCommitmentsByTxHashResponse, GetCommitmentsRequest, GetCommitmentsResponse, GetNullifiersByTxHashRequest,
+    GetNullifiersByTxHashResponse, GetNullifiersRequest, GetNullifiersResponse, HealthCheckRequest,
+    HealthCheckResponse,
 };
 use mystiko_protos::service::v1::ClientOptions;
 use mystiko_protos::service::v1::ServerOptions;
@@ -19,6 +22,7 @@ use mystiko_utils::address::{
 };
 use mystiko_utils::convert::{biguint_to_bytes, bytes_to_biguint};
 use num_bigint::BigUint;
+use std::str::FromStr;
 use tonic::{Code, Request, Response, Status};
 
 mock! {
@@ -30,8 +34,10 @@ mock! {
         async fn fetch_chain(&self,request: Request<FetchChainRequest>,) -> Result<Response<FetchChainResponse>,Status>;
         async fn chain_loaded_block(&self, chain_id: Request<ChainLoadedBlockRequest>) -> Result<Response<ChainLoadedBlockResponse>,Status>;
         async fn contract_loaded_block(&self,request: Request<ContractLoadedBlockRequest>,) -> Result<Response<ContractLoadedBlockResponse>,Status>;
-        async fn get_commitments(&self, request: tonic::Request<GetCommitmentsRequest>) -> Result<Response<GetCommitmentsResponse>, Status>;
-        async fn get_nullifiers(&self, request: tonic::Request<GetNullifiersRequest>) -> Result<Response<GetNullifiersResponse>, Status>;
+        async fn get_commitments(&self, request: Request<GetCommitmentsRequest>) -> Result<Response<GetCommitmentsResponse>, Status>;
+        async fn get_commitments_by_tx_hash(&self, request: Request<GetCommitmentsByTxHashRequest>) -> Result<Response<GetCommitmentsByTxHashResponse>, Status>;
+        async fn get_nullifiers(&self, request: Request<GetNullifiersRequest>) -> Result<Response<GetNullifiersResponse>, Status>;
+        async fn get_nullifiers_by_tx_hash(&self, request: Request<GetNullifiersByTxHashRequest>) -> Result<Response<GetNullifiersByTxHashResponse>, Status>;
         async fn health_check(&self,request: Request<HealthCheckRequest>,) -> Result<Response<HealthCheckResponse>,Status>;
     }
 }
@@ -313,6 +319,50 @@ async fn test_get_commitments() {
 }
 
 #[tokio::test]
+async fn test_get_commitments_by_tx_hash() {
+    let tx_hash = TxHash::from_str("0x69e3246100f3affcb4fefafa2d3a5859864a7f3f6da169f71c02dc955379e79f").unwrap();
+    let commitments = vec![Commitment::builder()
+        .commitment_hash(biguint_to_bytes(&BigUint::from(0xdeadbeef_u32)))
+        .status(CommitmentStatus::Queued as i32)
+        .block_number(46015154u64)
+        .leaf_index(Some(10u64))
+        .encrypted_note(Some(vec![1u8, 2u8, 3u8]))
+        .queued_transaction_hash(Some(vec![4u8, 5u8, 6u8]))
+        .build()];
+    let mut service = MockSequencerService::new();
+    service
+        .expect_get_commitments_by_tx_hash()
+        .withf(move |req| req.get_ref().chain_id == 1 && TxHash::from_slice(&req.get_ref().tx_hash) == tx_hash)
+        .returning(move |_| {
+            Ok(Response::new(
+                GetCommitmentsByTxHashResponse::builder()
+                    .chain_id(1_u64)
+                    .contract_address(string_address_to_bytes("0xCB255075f38C75EAf2DE8A72897649dba9B90299").unwrap())
+                    .commitments(commitments.clone())
+                    .build(),
+            ))
+        });
+    let options = ServerOptions::builder()
+        .port(50156u32)
+        .accept_http1(true)
+        .enable_web(true)
+        .build();
+    let mut server = setup(service, options.clone()).await;
+
+    let client_options = ClientOptions::builder().port(50156u32).build();
+    let client = SequencerClientV1::connect(&client_options).await.unwrap();
+    let result = client.get_commitments_by_tx_hash(1_u64, &tx_hash).await.unwrap();
+    assert_eq!(
+        result
+            .into_iter()
+            .map(|c| bytes_to_biguint(c.commitment_hash))
+            .collect::<Vec<_>>(),
+        vec![BigUint::from(0xdeadbeef_u32)]
+    );
+    server.stop().await.unwrap();
+}
+
+#[tokio::test]
 async fn test_get_nullifiers() {
     let nullifier_hashes = vec![BigUint::from(0xdeadbeef_u32)];
     let nullifiers = vec![Nullifier::builder()
@@ -340,13 +390,13 @@ async fn test_get_nullifiers() {
         });
 
     let options = ServerOptions::builder()
-        .port(50156u32)
+        .port(50157u32)
         .accept_http1(true)
         .enable_web(true)
         .build();
     let mut server = setup(service, options.clone()).await;
 
-    let client_options = ClientOptions::builder().port(50156u32).build();
+    let client_options = ClientOptions::builder().port(50157u32).build();
     let client = SequencerClientV1::connect(&client_options).await.unwrap();
     let result = client
         .get_nullifiers(
@@ -367,19 +417,61 @@ async fn test_get_nullifiers() {
 }
 
 #[tokio::test]
+async fn test_get_nullifier_by_tx_hash() {
+    let tx_hash = TxHash::from_str("0x69e3246100f3affcb4fefafa2d3a5859864a7f3f6da169f71c02dc955379e79f").unwrap();
+    let nullifiers = vec![Nullifier::builder()
+        .nullifier(biguint_to_bytes(&BigUint::from(0xdeadbeef_u32)))
+        .block_number(46015154u64)
+        .transaction_hash(vec![1u8, 2u8, 3u8])
+        .build()];
+    let mut service = MockSequencerService::new();
+    service
+        .expect_get_nullifiers_by_tx_hash()
+        .withf(move |req| req.get_ref().chain_id == 1 && TxHash::from_slice(&req.get_ref().tx_hash) == tx_hash)
+        .returning(move |_| {
+            Ok(Response::new(
+                GetNullifiersByTxHashResponse::builder()
+                    .chain_id(1_u64)
+                    .contract_address(string_address_to_bytes("0xCB255075f38C75EAf2DE8A72897649dba9B90299").unwrap())
+                    .nullifiers(nullifiers.clone())
+                    .build(),
+            ))
+        });
+
+    let options = ServerOptions::builder()
+        .port(50158u32)
+        .accept_http1(true)
+        .enable_web(true)
+        .build();
+    let mut server = setup(service, options.clone()).await;
+
+    let client_options = ClientOptions::builder().port(50158u32).build();
+    let client = SequencerClientV1::connect(&client_options).await.unwrap();
+    let result = client.get_nullifiers_by_tx_hash(1_u64, &tx_hash).await.unwrap();
+    assert_eq!(
+        result
+            .into_iter()
+            .map(|c| bytes_to_biguint(c.nullifier))
+            .collect::<Vec<_>>(),
+        vec![BigUint::from(0xdeadbeef_u32)]
+    );
+    server.stop().await.unwrap();
+}
+
+#[tokio::test]
 async fn test_health_check() {
     let mut service = MockSequencerService::new();
     service
         .expect_health_check()
         .returning(move |_| Ok(Response::new(HealthCheckResponse::builder().build())));
     let options = ServerOptions::builder()
-        .port(50157u32)
+        .port(50159u32)
         .accept_http1(true)
         .enable_web(true)
         .build();
     let mut server = setup(service, options.clone()).await;
 
-    let client_options = ClientOptions::builder().port(50157u32).build();
+    let client_options = ClientOptions::builder().port(50159u32).build();
     let channel = mystiko_grpc::connect(&client_options).await.unwrap();
     let client: SequencerClientV1 = SequencerServiceClient::new(channel).into();
     let result = client.health_check().await;

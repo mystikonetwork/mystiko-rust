@@ -1,6 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use ethers_core::types::Address;
+use ethers_core::types::{Address, TxHash};
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
@@ -37,12 +37,16 @@ pub trait SequencerClient<D, R, C, N>: Send + Sync {
         commitment_hashes: &[BigUint],
     ) -> Result<Vec<C>, Self::Error>;
 
+    async fn get_commitments_by_tx_hash(&self, chain_id: u64, tx_hash: &TxHash) -> Result<Vec<C>, Self::Error>;
+
     async fn get_nullifiers(
         &self,
         chain_id: u64,
         contract_address: &Address,
         nullifier_hashes: &[BigUint],
     ) -> Result<Vec<N>, Self::Error>;
+
+    async fn get_nullifiers_by_tx_hash(&self, chain_id: u64, tx_hash: &TxHash) -> Result<Vec<N>, Self::Error>;
 
     async fn health_check(&self) -> Result<(), Self::Error>;
 }
