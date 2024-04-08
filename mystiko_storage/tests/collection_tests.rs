@@ -46,7 +46,7 @@ async fn test_insert() {
     let collection = create_collection().await;
     collection.migrate::<TestDocument>().await.unwrap();
     assert!(collection.insert_batch::<TestDocument>(&[]).await.unwrap().is_empty());
-    let documents = vec![
+    let documents = [
         TestDocument {
             field1: 1,
             field2: 2,
