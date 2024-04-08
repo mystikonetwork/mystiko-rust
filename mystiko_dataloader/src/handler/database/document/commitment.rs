@@ -3,7 +3,7 @@ use crate::handler::merge_commitments;
 use anyhow::Result;
 use mystiko_config::MystikoConfig;
 use mystiko_protos::data::v1::Commitment as ProtoCommitment;
-use mystiko_storage::{DocumentData, IndexColumns, UniqueColumns};
+use mystiko_storage::{AddIndexMigration, DocumentData, IndexColumns, Migration, UniqueColumns};
 use mystiko_storage_macros::CollectionBuilder;
 use mystiko_utils::convert::{biguint_to_bytes, bytes_to_biguint};
 use mystiko_utils::hex::{decode_hex, encode_hex_with_prefix};
@@ -13,7 +13,7 @@ use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize, TypedBuilder)]
-#[collection(uniques = uniques(), indexes = indexes())]
+#[collection(uniques = uniques(), indexes = indexes(), migrations = migrations())]
 #[builder(field_defaults(setter(into)))]
 pub struct Commitment {
     pub chain_id: u64,
@@ -72,6 +72,23 @@ fn indexes() -> Vec<IndexColumns> {
         vec![CommitmentColumn::IncludedBlockNumber].into(),
         vec![CommitmentColumn::LeafIndex].into(),
         vec![CommitmentColumn::Status].into(),
+    ]
+}
+
+fn migrations() -> Vec<Migration> {
+    vec![
+        AddIndexMigration::builder()
+            .column_names(vec![CommitmentColumn::QueuedTransactionHash.to_string()])
+            .build()
+            .into(),
+        AddIndexMigration::builder()
+            .column_names(vec![CommitmentColumn::IncludedTransactionHash.to_string()])
+            .build()
+            .into(),
+        AddIndexMigration::builder()
+            .column_names(vec![CommitmentColumn::SrcChainTransactionHash.to_string()])
+            .build()
+            .into(),
     ]
 }
 

@@ -336,8 +336,6 @@ async fn test_get_commitments_by_tx_hash() {
         .returning(move |_| {
             Ok(Response::new(
                 GetCommitmentsByTxHashResponse::builder()
-                    .chain_id(1_u64)
-                    .contract_address(string_address_to_bytes("0xCB255075f38C75EAf2DE8A72897649dba9B90299").unwrap())
                     .commitments(commitments.clone())
                     .build(),
             ))
@@ -431,8 +429,6 @@ async fn test_get_nullifier_by_tx_hash() {
         .returning(move |_| {
             Ok(Response::new(
                 GetNullifiersByTxHashResponse::builder()
-                    .chain_id(1_u64)
-                    .contract_address(string_address_to_bytes("0xCB255075f38C75EAf2DE8A72897649dba9B90299").unwrap())
                     .nullifiers(nullifiers.clone())
                     .build(),
             ))
