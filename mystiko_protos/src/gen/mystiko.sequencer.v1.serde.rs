@@ -1072,6 +1072,251 @@ impl<'de> serde::Deserialize<'de> for FetchContractResponse {
         deserializer.deserialize_struct("mystiko.sequencer.v1.FetchContractResponse", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for GetCommitmentsByTxHashRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.chain_id != 0 {
+            len += 1;
+        }
+        if !self.tx_hash.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.GetCommitmentsByTxHashRequest", len)?;
+        if self.chain_id != 0 {
+            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
+        }
+        if !self.tx_hash.is_empty() {
+            struct_ser.serialize_field("txHash", pbjson::private::base64::encode(&self.tx_hash).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for GetCommitmentsByTxHashRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chain_id",
+            "chainId",
+            "tx_hash",
+            "txHash",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ChainId,
+            TxHash,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "txHash" | "tx_hash" => Ok(GeneratedField::TxHash),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = GetCommitmentsByTxHashRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.sequencer.v1.GetCommitmentsByTxHashRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetCommitmentsByTxHashRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chain_id__ = None;
+                let mut tx_hash__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::TxHash => {
+                            if tx_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("txHash"));
+                            }
+                            tx_hash__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(GetCommitmentsByTxHashRequest {
+                    chain_id: chain_id__.unwrap_or_default(),
+                    tx_hash: tx_hash__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.sequencer.v1.GetCommitmentsByTxHashRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for GetCommitmentsByTxHashResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.chain_id != 0 {
+            len += 1;
+        }
+        if !self.contract_address.is_empty() {
+            len += 1;
+        }
+        if !self.commitments.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.GetCommitmentsByTxHashResponse", len)?;
+        if self.chain_id != 0 {
+            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
+        }
+        if !self.contract_address.is_empty() {
+            struct_ser.serialize_field("contractAddress", pbjson::private::base64::encode(&self.contract_address).as_str())?;
+        }
+        if !self.commitments.is_empty() {
+            struct_ser.serialize_field("commitments", &self.commitments)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for GetCommitmentsByTxHashResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chain_id",
+            "chainId",
+            "contract_address",
+            "contractAddress",
+            "commitments",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ChainId,
+            ContractAddress,
+            Commitments,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "contractAddress" | "contract_address" => Ok(GeneratedField::ContractAddress),
+                            "commitments" => Ok(GeneratedField::Commitments),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = GetCommitmentsByTxHashResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.sequencer.v1.GetCommitmentsByTxHashResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetCommitmentsByTxHashResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chain_id__ = None;
+                let mut contract_address__ = None;
+                let mut commitments__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::ContractAddress => {
+                            if contract_address__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("contractAddress"));
+                            }
+                            contract_address__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::Commitments => {
+                            if commitments__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("commitments"));
+                            }
+                            commitments__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(GetCommitmentsByTxHashResponse {
+                    chain_id: chain_id__.unwrap_or_default(),
+                    contract_address: contract_address__.unwrap_or_default(),
+                    commitments: commitments__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.sequencer.v1.GetCommitmentsByTxHashResponse", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for GetCommitmentsRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -1336,6 +1581,251 @@ impl<'de> serde::Deserialize<'de> for GetCommitmentsResponse {
             }
         }
         deserializer.deserialize_struct("mystiko.sequencer.v1.GetCommitmentsResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for GetNullifiersByTxHashRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.chain_id != 0 {
+            len += 1;
+        }
+        if !self.tx_hash.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.GetNullifiersByTxHashRequest", len)?;
+        if self.chain_id != 0 {
+            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
+        }
+        if !self.tx_hash.is_empty() {
+            struct_ser.serialize_field("txHash", pbjson::private::base64::encode(&self.tx_hash).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for GetNullifiersByTxHashRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chain_id",
+            "chainId",
+            "tx_hash",
+            "txHash",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ChainId,
+            TxHash,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "txHash" | "tx_hash" => Ok(GeneratedField::TxHash),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = GetNullifiersByTxHashRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.sequencer.v1.GetNullifiersByTxHashRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetNullifiersByTxHashRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chain_id__ = None;
+                let mut tx_hash__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::TxHash => {
+                            if tx_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("txHash"));
+                            }
+                            tx_hash__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(GetNullifiersByTxHashRequest {
+                    chain_id: chain_id__.unwrap_or_default(),
+                    tx_hash: tx_hash__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.sequencer.v1.GetNullifiersByTxHashRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for GetNullifiersByTxHashResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.chain_id != 0 {
+            len += 1;
+        }
+        if !self.contract_address.is_empty() {
+            len += 1;
+        }
+        if !self.nullifiers.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.GetNullifiersByTxHashResponse", len)?;
+        if self.chain_id != 0 {
+            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
+        }
+        if !self.contract_address.is_empty() {
+            struct_ser.serialize_field("contractAddress", pbjson::private::base64::encode(&self.contract_address).as_str())?;
+        }
+        if !self.nullifiers.is_empty() {
+            struct_ser.serialize_field("nullifiers", &self.nullifiers)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for GetNullifiersByTxHashResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chain_id",
+            "chainId",
+            "contract_address",
+            "contractAddress",
+            "nullifiers",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ChainId,
+            ContractAddress,
+            Nullifiers,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "contractAddress" | "contract_address" => Ok(GeneratedField::ContractAddress),
+                            "nullifiers" => Ok(GeneratedField::Nullifiers),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = GetNullifiersByTxHashResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.sequencer.v1.GetNullifiersByTxHashResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<GetNullifiersByTxHashResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chain_id__ = None;
+                let mut contract_address__ = None;
+                let mut nullifiers__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::ContractAddress => {
+                            if contract_address__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("contractAddress"));
+                            }
+                            contract_address__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::Nullifiers => {
+                            if nullifiers__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("nullifiers"));
+                            }
+                            nullifiers__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(GetNullifiersByTxHashResponse {
+                    chain_id: chain_id__.unwrap_or_default(),
+                    contract_address: contract_address__.unwrap_or_default(),
+                    nullifiers: nullifiers__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.sequencer.v1.GetNullifiersByTxHashResponse", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for GetNullifiersRequest {

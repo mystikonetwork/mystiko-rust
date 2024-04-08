@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use ethers_core::types::Address;
+use ethers_core::types::{Address, TxHash};
 use log::LevelFilter;
 use mockall::mock;
 use mystiko_config::MystikoConfig;
@@ -32,12 +32,20 @@ mock! {
             contract_address: &Address,
             commitment_hashes: &[BigUint],
         ) -> Result<Vec<Commitment>, SequencerClientError>;
+        async fn get_commitments_by_tx_hash(
+            &self,
+            chain_id: u64,
+            tx_hash: &TxHash) -> Result<Vec<Commitment>, SequencerClientError>;
         async fn get_nullifiers(
             &self,
             chain_id: u64,
             contract_address: &Address,
             nullifier_hashes: &[BigUint],
         ) -> Result<Vec<Nullifier>, SequencerClientError>;
+        async fn get_nullifiers_by_tx_hash(
+            &self,
+            chain_id: u64,
+            tx_hash: &TxHash) -> Result<Vec<Nullifier>, SequencerClientError>;
         async fn health_check(&self) -> Result<(), SequencerClientError>;
     }
 }

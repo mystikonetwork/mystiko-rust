@@ -289,7 +289,7 @@ where
             "fetching resources for circuit_type={:?}",
             circuit_config.circuit_type()
         );
-        let resource_urls = vec![
+        let resource_urls = [
             circuit_config.program_file().clone(),
             circuit_config.abi_file().clone(),
             circuit_config.proving_key_file().clone(),

@@ -211,6 +211,37 @@ pub mod sequencer_service_client {
             self.inner.unary(req, path, codec).await
         }
         ///
+        pub async fn get_commitments_by_tx_hash(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetCommitmentsByTxHashRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetCommitmentsByTxHashResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/mystiko.sequencer.v1.SequencerService/GetCommitmentsByTxHash",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "mystiko.sequencer.v1.SequencerService",
+                        "GetCommitmentsByTxHash",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        ///
         pub async fn get_nullifiers(
             &mut self,
             request: impl tonic::IntoRequest<super::GetNullifiersRequest>,
@@ -237,6 +268,37 @@ pub mod sequencer_service_client {
                     GrpcMethod::new(
                         "mystiko.sequencer.v1.SequencerService",
                         "GetNullifiers",
+                    ),
+                );
+            self.inner.unary(req, path, codec).await
+        }
+        ///
+        pub async fn get_nullifiers_by_tx_hash(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetNullifiersByTxHashRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetNullifiersByTxHashResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/mystiko.sequencer.v1.SequencerService/GetNullifiersByTxHash",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new(
+                        "mystiko.sequencer.v1.SequencerService",
+                        "GetNullifiersByTxHash",
                     ),
                 );
             self.inner.unary(req, path, codec).await
@@ -315,11 +377,27 @@ pub mod sequencer_service_server {
             tonic::Status,
         >;
         ///
+        async fn get_commitments_by_tx_hash(
+            &self,
+            request: tonic::Request<super::GetCommitmentsByTxHashRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetCommitmentsByTxHashResponse>,
+            tonic::Status,
+        >;
+        ///
         async fn get_nullifiers(
             &self,
             request: tonic::Request<super::GetNullifiersRequest>,
         ) -> std::result::Result<
             tonic::Response<super::GetNullifiersResponse>,
+            tonic::Status,
+        >;
+        ///
+        async fn get_nullifiers_by_tx_hash(
+            &self,
+            request: tonic::Request<super::GetNullifiersByTxHashRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetNullifiersByTxHashResponse>,
             tonic::Status,
         >;
         ///
@@ -593,6 +671,52 @@ pub mod sequencer_service_server {
                     };
                     Box::pin(fut)
                 }
+                "/mystiko.sequencer.v1.SequencerService/GetCommitmentsByTxHash" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetCommitmentsByTxHashSvc<T: SequencerService>(pub Arc<T>);
+                    impl<
+                        T: SequencerService,
+                    > tonic::server::UnaryService<super::GetCommitmentsByTxHashRequest>
+                    for GetCommitmentsByTxHashSvc<T> {
+                        type Response = super::GetCommitmentsByTxHashResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetCommitmentsByTxHashRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                (*inner).get_commitments_by_tx_hash(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = GetCommitmentsByTxHashSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/mystiko.sequencer.v1.SequencerService/GetNullifiers" => {
                     #[allow(non_camel_case_types)]
                     struct GetNullifiersSvc<T: SequencerService>(pub Arc<T>);
@@ -624,6 +748,52 @@ pub mod sequencer_service_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = GetNullifiersSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/mystiko.sequencer.v1.SequencerService/GetNullifiersByTxHash" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetNullifiersByTxHashSvc<T: SequencerService>(pub Arc<T>);
+                    impl<
+                        T: SequencerService,
+                    > tonic::server::UnaryService<super::GetNullifiersByTxHashRequest>
+                    for GetNullifiersByTxHashSvc<T> {
+                        type Response = super::GetNullifiersByTxHashResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetNullifiersByTxHashRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                (*inner).get_nullifiers_by_tx_hash(request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = GetNullifiersByTxHashSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
