@@ -1194,22 +1194,10 @@ impl serde::Serialize for GetCommitmentsByTxHashResponse {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.chain_id != 0 {
-            len += 1;
-        }
-        if !self.contract_address.is_empty() {
-            len += 1;
-        }
         if !self.commitments.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.GetCommitmentsByTxHashResponse", len)?;
-        if self.chain_id != 0 {
-            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
-        }
-        if !self.contract_address.is_empty() {
-            struct_ser.serialize_field("contractAddress", pbjson::private::base64::encode(&self.contract_address).as_str())?;
-        }
         if !self.commitments.is_empty() {
             struct_ser.serialize_field("commitments", &self.commitments)?;
         }
@@ -1223,17 +1211,11 @@ impl<'de> serde::Deserialize<'de> for GetCommitmentsByTxHashResponse {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "chain_id",
-            "chainId",
-            "contract_address",
-            "contractAddress",
             "commitments",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            ChainId,
-            ContractAddress,
             Commitments,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -1256,8 +1238,6 @@ impl<'de> serde::Deserialize<'de> for GetCommitmentsByTxHashResponse {
                         E: serde::de::Error,
                     {
                         match value {
-                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
-                            "contractAddress" | "contract_address" => Ok(GeneratedField::ContractAddress),
                             "commitments" => Ok(GeneratedField::Commitments),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -1278,27 +1258,9 @@ impl<'de> serde::Deserialize<'de> for GetCommitmentsByTxHashResponse {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut chain_id__ = None;
-                let mut contract_address__ = None;
                 let mut commitments__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
-                        GeneratedField::ChainId => {
-                            if chain_id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("chainId"));
-                            }
-                            chain_id__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
-                        GeneratedField::ContractAddress => {
-                            if contract_address__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("contractAddress"));
-                            }
-                            contract_address__ = 
-                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
-                            ;
-                        }
                         GeneratedField::Commitments => {
                             if commitments__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("commitments"));
@@ -1308,8 +1270,6 @@ impl<'de> serde::Deserialize<'de> for GetCommitmentsByTxHashResponse {
                     }
                 }
                 Ok(GetCommitmentsByTxHashResponse {
-                    chain_id: chain_id__.unwrap_or_default(),
-                    contract_address: contract_address__.unwrap_or_default(),
                     commitments: commitments__.unwrap_or_default(),
                 })
             }
@@ -1705,22 +1665,10 @@ impl serde::Serialize for GetNullifiersByTxHashResponse {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
-        if self.chain_id != 0 {
-            len += 1;
-        }
-        if !self.contract_address.is_empty() {
-            len += 1;
-        }
         if !self.nullifiers.is_empty() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.sequencer.v1.GetNullifiersByTxHashResponse", len)?;
-        if self.chain_id != 0 {
-            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
-        }
-        if !self.contract_address.is_empty() {
-            struct_ser.serialize_field("contractAddress", pbjson::private::base64::encode(&self.contract_address).as_str())?;
-        }
         if !self.nullifiers.is_empty() {
             struct_ser.serialize_field("nullifiers", &self.nullifiers)?;
         }
@@ -1734,17 +1682,11 @@ impl<'de> serde::Deserialize<'de> for GetNullifiersByTxHashResponse {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
-            "chain_id",
-            "chainId",
-            "contract_address",
-            "contractAddress",
             "nullifiers",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
-            ChainId,
-            ContractAddress,
             Nullifiers,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -1767,8 +1709,6 @@ impl<'de> serde::Deserialize<'de> for GetNullifiersByTxHashResponse {
                         E: serde::de::Error,
                     {
                         match value {
-                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
-                            "contractAddress" | "contract_address" => Ok(GeneratedField::ContractAddress),
                             "nullifiers" => Ok(GeneratedField::Nullifiers),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
@@ -1789,27 +1729,9 @@ impl<'de> serde::Deserialize<'de> for GetNullifiersByTxHashResponse {
                 where
                     V: serde::de::MapAccess<'de>,
             {
-                let mut chain_id__ = None;
-                let mut contract_address__ = None;
                 let mut nullifiers__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
-                        GeneratedField::ChainId => {
-                            if chain_id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("chainId"));
-                            }
-                            chain_id__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
-                        GeneratedField::ContractAddress => {
-                            if contract_address__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("contractAddress"));
-                            }
-                            contract_address__ = 
-                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
-                            ;
-                        }
                         GeneratedField::Nullifiers => {
                             if nullifiers__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("nullifiers"));
@@ -1819,8 +1741,6 @@ impl<'de> serde::Deserialize<'de> for GetNullifiersByTxHashResponse {
                     }
                 }
                 Ok(GetNullifiersByTxHashResponse {
-                    chain_id: chain_id__.unwrap_or_default(),
-                    contract_address: contract_address__.unwrap_or_default(),
                     nullifiers: nullifiers__.unwrap_or_default(),
                 })
             }
