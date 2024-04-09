@@ -1,4 +1,4 @@
-use crate::{ChainLoadedBlock, ContractLoadedBlock};
+use crate::{ChainLoadedBlock, CommitmentsWithContract, ContractLoadedBlock, NullifiersWithContract};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::abi::AbiEncode;
@@ -10,7 +10,9 @@ use mystiko_protos::sequencer::v1::{ContractLoadedBlockRequest, GetNullifiersReq
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
 use mystiko_protos::sequencer::v1::{GetCommitmentsByTxHashRequest, HealthCheckRequest};
 use mystiko_protos::service::v1::ClientOptions;
-use mystiko_utils::address::{ethers_address_to_bytes, ethers_address_to_string, string_address_from_bytes};
+use mystiko_utils::address::{
+    ethers_address_from_bytes, ethers_address_to_bytes, ethers_address_to_string, string_address_from_bytes,
+};
 use mystiko_utils::convert::biguint_to_bytes;
 use num_bigint::BigUint;
 use thiserror::Error;
@@ -133,7 +135,7 @@ impl crate::SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, N
         &self,
         chain_id: u64,
         tx_hash: &TxHash,
-    ) -> Result<Vec<Commitment>, Self::Error> {
+    ) -> Result<CommitmentsWithContract<Commitment>, Self::Error> {
         log::debug!(
             "sequencer_client received request of get_commitments_by_tx_hash \
             with chain_id={}, tx_hash={}",
@@ -144,8 +146,18 @@ impl crate::SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, N
             .chain_id(chain_id)
             .tx_hash(tx_hash.to_fixed_bytes())
             .build();
-        let response = self.client.lock().await.get_commitments_by_tx_hash(request).await?;
-        Ok(response.into_inner().commitments)
+        let response = self
+            .client
+            .lock()
+            .await
+            .get_commitments_by_tx_hash(request)
+            .await?
+            .into_inner();
+        Ok(CommitmentsWithContract::<Commitment>::builder()
+            .chain_id(response.chain_id)
+            .contract_address(ethers_address_from_bytes(&response.contract_address))
+            .commitments(response.commitments)
+            .build())
     }
 
     async fn get_nullifiers(
@@ -170,7 +182,11 @@ impl crate::SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, N
         Ok(response.into_inner().nullifiers)
     }
 
-    async fn get_nullifiers_by_tx_hash(&self, chain_id: u64, tx_hash: &TxHash) -> Result<Vec<Nullifier>, Self::Error> {
+    async fn get_nullifiers_by_tx_hash(
+        &self,
+        chain_id: u64,
+        tx_hash: &TxHash,
+    ) -> Result<NullifiersWithContract<Nullifier>, Self::Error> {
         log::debug!(
             "sequencer_client received request of get_nullifiers_by_tx_hash \
             with chain_id={}, tx_hash={}",
@@ -181,8 +197,18 @@ impl crate::SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, N
             .chain_id(chain_id)
             .tx_hash(tx_hash.to_fixed_bytes())
             .build();
-        let response = self.client.lock().await.get_nullifiers_by_tx_hash(request).await?;
-        Ok(response.into_inner().nullifiers)
+        let response = self
+            .client
+            .lock()
+            .await
+            .get_nullifiers_by_tx_hash(request)
+            .await?
+            .into_inner();
+        Ok(NullifiersWithContract::<Nullifier>::builder()
+            .chain_id(response.chain_id)
+            .contract_address(ethers_address_from_bytes(&response.contract_address))
+            .nullifiers(response.nullifiers)
+            .build())
     }
 
     async fn health_check(&self) -> Result<(), Self::Error> {

@@ -320,6 +320,7 @@ async fn test_get_commitments() {
 
 #[tokio::test]
 async fn test_get_commitments_by_tx_hash() {
+    let expected_address = ethers_address_from_string("0xCB255075f38C75EAf2DE8A72897649dba9B90299").unwrap();
     let tx_hash = TxHash::from_str("0x69e3246100f3affcb4fefafa2d3a5859864a7f3f6da169f71c02dc955379e79f").unwrap();
     let commitments = vec![Commitment::builder()
         .commitment_hash(biguint_to_bytes(&BigUint::from(0xdeadbeef_u32)))
@@ -336,6 +337,8 @@ async fn test_get_commitments_by_tx_hash() {
         .returning(move |_| {
             Ok(Response::new(
                 GetCommitmentsByTxHashResponse::builder()
+                    .chain_id(1_u64)
+                    .contract_address(expected_address.to_fixed_bytes().to_vec())
                     .commitments(commitments.clone())
                     .build(),
             ))
@@ -350,8 +353,11 @@ async fn test_get_commitments_by_tx_hash() {
     let client_options = ClientOptions::builder().port(50156u32).build();
     let client = SequencerClientV1::connect(&client_options).await.unwrap();
     let result = client.get_commitments_by_tx_hash(1_u64, &tx_hash).await.unwrap();
+    assert_eq!(result.chain_id, 1);
+    assert_eq!(result.contract_address, expected_address);
     assert_eq!(
         result
+            .commitments
             .into_iter()
             .map(|c| bytes_to_biguint(c.commitment_hash))
             .collect::<Vec<_>>(),
@@ -416,6 +422,7 @@ async fn test_get_nullifiers() {
 
 #[tokio::test]
 async fn test_get_nullifier_by_tx_hash() {
+    let expected_address = ethers_address_from_string("0xCB255075f38C75EAf2DE8A72897649dba9B90299").unwrap();
     let tx_hash = TxHash::from_str("0x69e3246100f3affcb4fefafa2d3a5859864a7f3f6da169f71c02dc955379e79f").unwrap();
     let nullifiers = vec![Nullifier::builder()
         .nullifier(biguint_to_bytes(&BigUint::from(0xdeadbeef_u32)))
@@ -429,6 +436,8 @@ async fn test_get_nullifier_by_tx_hash() {
         .returning(move |_| {
             Ok(Response::new(
                 GetNullifiersByTxHashResponse::builder()
+                    .chain_id(1_u64)
+                    .contract_address(expected_address.to_fixed_bytes().to_vec())
                     .nullifiers(nullifiers.clone())
                     .build(),
             ))
@@ -444,8 +453,11 @@ async fn test_get_nullifier_by_tx_hash() {
     let client_options = ClientOptions::builder().port(50158u32).build();
     let client = SequencerClientV1::connect(&client_options).await.unwrap();
     let result = client.get_nullifiers_by_tx_hash(1_u64, &tx_hash).await.unwrap();
+    assert_eq!(result.chain_id, 1);
+    assert_eq!(result.contract_address, expected_address);
     assert_eq!(
         result
+            .nullifiers
             .into_iter()
             .map(|c| bytes_to_biguint(c.nullifier))
             .collect::<Vec<_>>(),
