@@ -13,7 +13,7 @@ use mystiko_dataloader::fetcher::{
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse, FetchContractResponse};
 use mystiko_sequencer_client::v1::SequencerClientError;
-use mystiko_sequencer_client::ChainLoadedBlock;
+use mystiko_sequencer_client::{ChainLoadedBlock, CommitmentsWithContract, NullifiersWithContract};
 use mystiko_utils::{address::string_address_to_bytes, convert::biguint_str_to_bytes, hex::decode_hex};
 use num_bigint::BigUint;
 
@@ -35,7 +35,7 @@ mock! {
         async fn get_commitments_by_tx_hash(
             &self,
             chain_id: u64,
-            tx_hash: &TxHash) -> Result<Vec<Commitment>, SequencerClientError>;
+            tx_hash: &TxHash) -> Result<CommitmentsWithContract<Commitment>, SequencerClientError>;
         async fn get_nullifiers(
             &self,
             chain_id: u64,
@@ -45,7 +45,7 @@ mock! {
         async fn get_nullifiers_by_tx_hash(
             &self,
             chain_id: u64,
-            tx_hash: &TxHash) -> Result<Vec<Nullifier>, SequencerClientError>;
+            tx_hash: &TxHash) -> Result<NullifiersWithContract<Nullifier>, SequencerClientError>;
         async fn health_check(&self) -> Result<(), SequencerClientError>;
     }
 }
