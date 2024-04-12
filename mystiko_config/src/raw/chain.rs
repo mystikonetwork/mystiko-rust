@@ -54,7 +54,7 @@ pub struct RawChainConfig {
     #[builder(default = default_provider_type())]
     pub provider_type: ProviderType,
 
-    #[validate(range(min = 50, max = 100))]
+    #[validate(range(min = 30, max = 100))]
     #[serde(default = "default_quorum_percentage")]
     #[builder(default = default_quorum_percentage())]
     pub provider_quorum_percentage: u8,
