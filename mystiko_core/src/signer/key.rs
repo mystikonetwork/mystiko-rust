@@ -6,7 +6,7 @@ use ethers_core::types::{Address, TxHash};
 use ethers_middleware::MiddlewareBuilder;
 use ethers_providers::Middleware;
 use ethers_signers::{LocalWallet, Signer};
-use mystiko_ethers::Providers;
+use mystiko_ethers::{DefaultProviderFactory, ProviderFactory, ProviderOptions, Providers, ProvidersOptions};
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -15,6 +15,8 @@ use typed_builder::TypedBuilder;
 pub struct PrivateKeySigner<P: Providers> {
     wallet: LocalWallet,
     providers: Arc<P>,
+    #[builder(default)]
+    signer_provider: Option<String>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -22,6 +24,8 @@ pub struct PrivateKeySigner<P: Providers> {
 pub struct PrivateKeySignerOptions<P: Providers> {
     private_key: String,
     providers: Arc<P>,
+    #[builder(default)]
+    signer_provider: Option<String>,
 }
 
 impl<P> PrivateKeySigner<P>
@@ -33,9 +37,11 @@ where
         O: Into<PrivateKeySignerOptions<P>>,
     {
         let options = options.into();
+
         Ok(PrivateKeySigner::<P>::builder()
             .wallet(options.private_key.parse::<LocalWallet>()?)
             .providers(options.providers)
+            .signer_provider(options.signer_provider)
             .build())
     }
 }
@@ -51,7 +57,13 @@ where
 
     async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> Result<TxHash> {
         let wallet = self.wallet.clone().with_chain_id(chain_id);
-        let provider = self.providers.get_provider(chain_id).await?;
+        let provider = if let Some(signer_provider) = &self.signer_provider {
+            let options =
+                ProvidersOptions::Failover(vec![ProviderOptions::builder().url(signer_provider.clone()).build()]);
+            Arc::new(DefaultProviderFactory::new().create_provider(options).await?)
+        } else {
+            self.providers.get_provider(chain_id).await?
+        };
         let client = provider.with_signer(wallet);
         let resp = client.send_transaction(tx, None).await?;
         Ok(resp.tx_hash())

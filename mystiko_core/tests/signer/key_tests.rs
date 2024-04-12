@@ -35,6 +35,34 @@ async fn test_send_transaction() {
     mock_path.assert_async().await;
 }
 
+#[tokio::test]
+async fn test_send_transaction_with_custom_signer_provider() {
+    let (private_key, address) = generate_private_key();
+    let (server, mock_path) = mock_provider_server().await;
+    let providers = create_provider_pool("http://not-a-server.com".to_string());
+    let signer = PrivateKeySigner::new(
+        PrivateKeySignerOptions::<ProviderPool<MockChainConfig>>::builder()
+            .providers(providers)
+            .private_key(private_key)
+            .signer_provider(server.url())
+            .build(),
+    )
+    .unwrap();
+    assert_eq!(signer.address().await.unwrap(), address);
+    let tx_hash = signer
+        .send_transaction(
+            56_u64,
+            TransactionRequest::pay("0x70f657164e5b75689b64b7fd1fa275f334f28e18", 100).into(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        format!("0x{:x}", tx_hash),
+        "0x8d874bd339d08093701771307ea134f2534610d1425bee4b3ed8e30854ac68b6"
+    );
+    mock_path.assert_async().await;
+}
+
 mock! {
     #[derive(Debug)]
     ChainConfig {}
