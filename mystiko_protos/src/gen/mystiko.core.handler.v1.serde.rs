@@ -2539,6 +2539,9 @@ impl serde::Serialize for SendDepositOptions {
         if self.private_key.is_some() {
             len += 1;
         }
+        if self.signer_provider.is_some() {
+            len += 1;
+        }
         if self.query_timeout_ms.is_some() {
             len += 1;
         }
@@ -2569,6 +2572,9 @@ impl serde::Serialize for SendDepositOptions {
         }
         if let Some(v) = self.private_key.as_ref() {
             struct_ser.serialize_field("privateKey", v)?;
+        }
+        if let Some(v) = self.signer_provider.as_ref() {
+            struct_ser.serialize_field("signerProvider", v)?;
         }
         if let Some(v) = self.query_timeout_ms.as_ref() {
             struct_ser.serialize_field("queryTimeoutMs", ToString::to_string(&v).as_str())?;
@@ -2608,6 +2614,8 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
             "depositId",
             "private_key",
             "privateKey",
+            "signer_provider",
+            "signerProvider",
             "query_timeout_ms",
             "queryTimeoutMs",
             "asset_approve_confirmations",
@@ -2630,6 +2638,7 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
         enum GeneratedField {
             DepositId,
             PrivateKey,
+            SignerProvider,
             QueryTimeoutMs,
             AssetApproveConfirmations,
             DepositConfirmations,
@@ -2661,6 +2670,7 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                         match value {
                             "depositId" | "deposit_id" => Ok(GeneratedField::DepositId),
                             "privateKey" | "private_key" => Ok(GeneratedField::PrivateKey),
+                            "signerProvider" | "signer_provider" => Ok(GeneratedField::SignerProvider),
                             "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
                             "assetApproveConfirmations" | "asset_approve_confirmations" => Ok(GeneratedField::AssetApproveConfirmations),
                             "depositConfirmations" | "deposit_confirmations" => Ok(GeneratedField::DepositConfirmations),
@@ -2690,6 +2700,7 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
             {
                 let mut deposit_id__ = None;
                 let mut private_key__ = None;
+                let mut signer_provider__ = None;
                 let mut query_timeout_ms__ = None;
                 let mut asset_approve_confirmations__ = None;
                 let mut deposit_confirmations__ = None;
@@ -2711,6 +2722,12 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                                 return Err(serde::de::Error::duplicate_field("privateKey"));
                             }
                             private_key__ = map.next_value()?;
+                        }
+                        GeneratedField::SignerProvider => {
+                            if signer_provider__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("signerProvider"));
+                            }
+                            signer_provider__ = map.next_value()?;
                         }
                         GeneratedField::QueryTimeoutMs => {
                             if query_timeout_ms__.is_some() {
@@ -2777,6 +2794,7 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                 Ok(SendDepositOptions {
                     deposit_id: deposit_id__.unwrap_or_default(),
                     private_key: private_key__,
+                    signer_provider: signer_provider__,
                     query_timeout_ms: query_timeout_ms__,
                     asset_approve_confirmations: asset_approve_confirmations__,
                     deposit_confirmations: deposit_confirmations__,
@@ -2806,6 +2824,9 @@ impl serde::Serialize for SendSpendOptions {
             len += 1;
         }
         if self.private_key.is_some() {
+            len += 1;
+        }
+        if self.signer_provider.is_some() {
             len += 1;
         }
         if self.query_timeout_ms.is_some() {
@@ -2841,6 +2862,9 @@ impl serde::Serialize for SendSpendOptions {
         }
         if let Some(v) = self.private_key.as_ref() {
             struct_ser.serialize_field("privateKey", v)?;
+        }
+        if let Some(v) = self.signer_provider.as_ref() {
+            struct_ser.serialize_field("signerProvider", v)?;
         }
         if let Some(v) = self.query_timeout_ms.as_ref() {
             struct_ser.serialize_field("queryTimeoutMs", ToString::to_string(&v).as_str())?;
@@ -2882,6 +2906,8 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
             "walletPassword",
             "private_key",
             "privateKey",
+            "signer_provider",
+            "signerProvider",
             "query_timeout_ms",
             "queryTimeoutMs",
             "spend_confirmations",
@@ -2904,6 +2930,7 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
             SpendId,
             WalletPassword,
             PrivateKey,
+            SignerProvider,
             QueryTimeoutMs,
             SpendConfirmations,
             TxSendTimeoutMs,
@@ -2936,6 +2963,7 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
                             "spendId" | "spend_id" => Ok(GeneratedField::SpendId),
                             "walletPassword" | "wallet_password" => Ok(GeneratedField::WalletPassword),
                             "privateKey" | "private_key" => Ok(GeneratedField::PrivateKey),
+                            "signerProvider" | "signer_provider" => Ok(GeneratedField::SignerProvider),
                             "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
                             "spendConfirmations" | "spend_confirmations" => Ok(GeneratedField::SpendConfirmations),
                             "txSendTimeoutMs" | "tx_send_timeout_ms" => Ok(GeneratedField::TxSendTimeoutMs),
@@ -2966,6 +2994,7 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
                 let mut spend_id__ = None;
                 let mut wallet_password__ = None;
                 let mut private_key__ = None;
+                let mut signer_provider__ = None;
                 let mut query_timeout_ms__ = None;
                 let mut spend_confirmations__ = None;
                 let mut tx_send_timeout_ms__ = None;
@@ -2993,6 +3022,12 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
                                 return Err(serde::de::Error::duplicate_field("privateKey"));
                             }
                             private_key__ = map.next_value()?;
+                        }
+                        GeneratedField::SignerProvider => {
+                            if signer_provider__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("signerProvider"));
+                            }
+                            signer_provider__ = map.next_value()?;
                         }
                         GeneratedField::QueryTimeoutMs => {
                             if query_timeout_ms__.is_some() {
@@ -3062,6 +3097,7 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
                     spend_id: spend_id__.unwrap_or_default(),
                     wallet_password: wallet_password__.unwrap_or_default(),
                     private_key: private_key__,
+                    signer_provider: signer_provider__,
                     query_timeout_ms: query_timeout_ms__,
                     spend_confirmations: spend_confirmations__,
                     tx_send_timeout_ms: tx_send_timeout_ms__,

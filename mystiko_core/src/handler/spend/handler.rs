@@ -122,6 +122,7 @@ where
                 PrivateKeySignerOptions::builder()
                     .private_key(private_key)
                     .providers(self.signer_providers.clone())
+                    .signer_provider(options.signer_provider.clone())
                     .build(),
             )?;
             self.execute_send_with_signer(&options, spend.clone(), Arc::new(signer))
