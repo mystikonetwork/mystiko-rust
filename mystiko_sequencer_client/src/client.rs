@@ -1,6 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::{Address, TxHash};
+use mystiko_protos::data::v1::CommitmentStatus;
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
@@ -18,6 +19,29 @@ pub struct ChainLoadedBlock {
     pub loaded_block: u64,
     #[builder(default)]
     pub contracts: Vec<ContractLoadedBlock>,
+}
+
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
+#[builder(field_defaults(setter(into)))]
+pub struct GetCommitmentHashesOptions {
+    pub chain_id: u64,
+    pub contract_address: Address,
+    #[builder(default)]
+    pub from_leaf_index: Option<u64>,
+    #[builder(default)]
+    pub to_leaf_index: Option<u64>,
+    #[builder(default)]
+    pub status: Option<CommitmentStatus>,
+}
+
+#[derive(Debug, Clone, TypedBuilder, Deserialize, Serialize)]
+#[builder(field_defaults(setter(into)))]
+pub struct CommitmentHashes {
+    pub chain_id: u64,
+    pub contract_address: Address,
+    pub commitment_hashes: Vec<BigUint>,
+    pub from_leaf_index: u64,
+    pub to_leaf_index: u64,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -58,6 +82,11 @@ pub trait SequencerClient<D, R, C, N>: Send + Sync {
         chain_id: u64,
         tx_hash: &TxHash,
     ) -> Result<CommitmentsWithContract<C>, Self::Error>;
+
+    async fn get_commitment_hashes(
+        &self,
+        options: &GetCommitmentHashesOptions,
+    ) -> Result<CommitmentHashes, Self::Error>;
 
     async fn get_nullifiers(
         &self,

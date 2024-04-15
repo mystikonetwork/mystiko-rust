@@ -631,6 +631,308 @@ impl<'de> serde::Deserialize<'de> for ContractData {
         deserializer.deserialize_struct("mystiko.data.v1.ContractData", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for MerkleCommitments {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.commitment_hashes.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.data.v1.MerkleCommitments", len)?;
+        if !self.commitment_hashes.is_empty() {
+            struct_ser.serialize_field("commitmentHashes", &self.commitment_hashes.iter().map(pbjson::private::base64::encode).collect::<Vec<_>>())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for MerkleCommitments {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "commitment_hashes",
+            "commitmentHashes",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            CommitmentHashes,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "commitmentHashes" | "commitment_hashes" => Ok(GeneratedField::CommitmentHashes),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = MerkleCommitments;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.data.v1.MerkleCommitments")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<MerkleCommitments, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut commitment_hashes__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::CommitmentHashes => {
+                            if commitment_hashes__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("commitmentHashes"));
+                            }
+                            commitment_hashes__ = 
+                                Some(map.next_value::<Vec<::pbjson::private::BytesDeserialize<_>>>()?
+                                    .into_iter().map(|x| x.0).collect())
+                            ;
+                        }
+                    }
+                }
+                Ok(MerkleCommitments {
+                    commitment_hashes: commitment_hashes__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.data.v1.MerkleCommitments", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for MerkleCompressionType {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let variant = match self {
+            Self::Unspecified => "MERKLE_COMPRESSION_TYPE_UNSPECIFIED",
+            Self::Zstd => "MERKLE_COMPRESSION_TYPE_ZSTD",
+        };
+        serializer.serialize_str(variant)
+    }
+}
+impl<'de> serde::Deserialize<'de> for MerkleCompressionType {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "MERKLE_COMPRESSION_TYPE_UNSPECIFIED",
+            "MERKLE_COMPRESSION_TYPE_ZSTD",
+        ];
+
+        struct GeneratedVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = MerkleCompressionType;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(formatter, "expected one of: {:?}", &FIELDS)
+            }
+
+            fn visit_i64<E>(self, v: i64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(MerkleCompressionType::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Signed(v), &self)
+                    })
+            }
+
+            fn visit_u64<E>(self, v: u64) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                use std::convert::TryFrom;
+                i32::try_from(v)
+                    .ok()
+                    .and_then(MerkleCompressionType::from_i32)
+                    .ok_or_else(|| {
+                        serde::de::Error::invalid_value(serde::de::Unexpected::Unsigned(v), &self)
+                    })
+            }
+
+            fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                match value {
+                    "MERKLE_COMPRESSION_TYPE_UNSPECIFIED" => Ok(MerkleCompressionType::Unspecified),
+                    "MERKLE_COMPRESSION_TYPE_ZSTD" => Ok(MerkleCompressionType::Zstd),
+                    _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
+                }
+            }
+        }
+        deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
+impl serde::Serialize for MerkleTree {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.root_hash.is_empty() {
+            len += 1;
+        }
+        if !self.compressed_commitment_hashes.is_empty() {
+            len += 1;
+        }
+        if self.compression_type != 0 {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.data.v1.MerkleTree", len)?;
+        if !self.root_hash.is_empty() {
+            struct_ser.serialize_field("rootHash", pbjson::private::base64::encode(&self.root_hash).as_str())?;
+        }
+        if !self.compressed_commitment_hashes.is_empty() {
+            struct_ser.serialize_field("compressedCommitmentHashes", pbjson::private::base64::encode(&self.compressed_commitment_hashes).as_str())?;
+        }
+        if self.compression_type != 0 {
+            let v = MerkleCompressionType::from_i32(self.compression_type)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.compression_type)))?;
+            struct_ser.serialize_field("compressionType", &v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for MerkleTree {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "root_hash",
+            "rootHash",
+            "compressed_commitment_hashes",
+            "compressedCommitmentHashes",
+            "compression_type",
+            "compressionType",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            RootHash,
+            CompressedCommitmentHashes,
+            CompressionType,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "rootHash" | "root_hash" => Ok(GeneratedField::RootHash),
+                            "compressedCommitmentHashes" | "compressed_commitment_hashes" => Ok(GeneratedField::CompressedCommitmentHashes),
+                            "compressionType" | "compression_type" => Ok(GeneratedField::CompressionType),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = MerkleTree;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.data.v1.MerkleTree")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<MerkleTree, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut root_hash__ = None;
+                let mut compressed_commitment_hashes__ = None;
+                let mut compression_type__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::RootHash => {
+                            if root_hash__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rootHash"));
+                            }
+                            root_hash__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::CompressedCommitmentHashes => {
+                            if compressed_commitment_hashes__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("compressedCommitmentHashes"));
+                            }
+                            compressed_commitment_hashes__ = 
+                                Some(map.next_value::<::pbjson::private::BytesDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::CompressionType => {
+                            if compression_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("compressionType"));
+                            }
+                            compression_type__ = Some(map.next_value::<MerkleCompressionType>()? as i32);
+                        }
+                    }
+                }
+                Ok(MerkleTree {
+                    root_hash: root_hash__.unwrap_or_default(),
+                    compressed_commitment_hashes: compressed_commitment_hashes__.unwrap_or_default(),
+                    compression_type: compression_type__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.data.v1.MerkleTree", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for Nullifier {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>

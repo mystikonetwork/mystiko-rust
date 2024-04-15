@@ -1,11 +1,16 @@
-use crate::{ChainLoadedBlock, CommitmentsWithContract, ContractLoadedBlock, NullifiersWithContract};
+use crate::{
+    ChainLoadedBlock, CommitmentHashes, CommitmentsWithContract, ContractLoadedBlock, GetCommitmentHashesOptions,
+    NullifiersWithContract,
+};
 use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::abi::AbiEncode;
 use ethers_core::types::{Address, TxHash};
 use mystiko_protos::data::v1::{Commitment, Nullifier};
 use mystiko_protos::sequencer::v1::sequencer_service_client::SequencerServiceClient;
-use mystiko_protos::sequencer::v1::{ChainLoadedBlockRequest, GetCommitmentsRequest, GetNullifiersByTxHashRequest};
+use mystiko_protos::sequencer::v1::{
+    ChainLoadedBlockRequest, GetCommitmentHashesRequest, GetCommitmentsRequest, GetNullifiersByTxHashRequest,
+};
 use mystiko_protos::sequencer::v1::{ContractLoadedBlockRequest, GetNullifiersRequest};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
 use mystiko_protos::sequencer::v1::{GetCommitmentsByTxHashRequest, HealthCheckRequest};
@@ -13,7 +18,7 @@ use mystiko_protos::service::v1::ClientOptions;
 use mystiko_utils::address::{
     ethers_address_from_bytes, ethers_address_to_bytes, ethers_address_to_string, string_address_from_bytes,
 };
-use mystiko_utils::convert::biguint_to_bytes;
+use mystiko_utils::convert::{biguint_to_bytes, bytes_to_biguint};
 use num_bigint::BigUint;
 use thiserror::Error;
 use tokio::sync::Mutex;
@@ -157,6 +162,43 @@ impl crate::SequencerClient<FetchChainRequest, FetchChainResponse, Commitment, N
             .chain_id(response.chain_id)
             .contract_address(ethers_address_from_bytes(&response.contract_address))
             .commitments(response.commitments)
+            .build())
+    }
+
+    async fn get_commitment_hashes(
+        &self,
+        options: &GetCommitmentHashesOptions,
+    ) -> Result<CommitmentHashes, Self::Error> {
+        log::debug!(
+            "sequencer_client received request of get_commitment_hashes with options={:?}",
+            options,
+        );
+        let request = GetCommitmentHashesRequest::builder()
+            .chain_id(options.chain_id)
+            .contract_address(ethers_address_to_bytes(&options.contract_address))
+            .from_leaf_index(options.from_leaf_index)
+            .to_leaf_index(options.to_leaf_index)
+            .status(options.status.map(|status| status.into()))
+            .build();
+        let response = self
+            .client
+            .lock()
+            .await
+            .get_commitment_hashes(request)
+            .await?
+            .into_inner();
+        Ok(CommitmentHashes::builder()
+            .chain_id(response.chain_id)
+            .contract_address(ethers_address_from_bytes(&response.contract_address))
+            .commitment_hashes(
+                response
+                    .commitment_hashes
+                    .into_iter()
+                    .map(bytes_to_biguint)
+                    .collect::<Vec<_>>(),
+            )
+            .from_leaf_index(response.from_leaf_index)
+            .to_leaf_index(response.to_leaf_index)
             .build())
     }
 
