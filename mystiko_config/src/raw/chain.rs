@@ -103,6 +103,11 @@ pub struct RawChainConfig {
     #[serde(default)]
     #[builder(default)]
     pub packer_granularities: Vec<u64>,
+
+    #[validate(range(min = 1))]
+    #[serde(default)]
+    #[builder(default)]
+    pub safe_confirmations: Option<u64>,
 }
 
 impl Hash for RawChainConfig {

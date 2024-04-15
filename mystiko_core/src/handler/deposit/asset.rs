@@ -66,7 +66,11 @@ where
             let wait_options = WaitOptions::builder()
                 .chain_id(deposit.data.chain_id)
                 .tx_hash(*tx_hash)
-                .confirmations(options.asset_approve_confirmations)
+                .confirmations(
+                    options
+                        .asset_approve_confirmations
+                        .or(context.chain_config.safe_confirmations()),
+                )
                 .interval_ms(options.tx_wait_interval_ms)
                 .timeout_ms(options.tx_wait_timeout_ms)
                 .build();
