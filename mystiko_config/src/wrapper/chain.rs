@@ -146,6 +146,10 @@ impl ChainConfig {
         self.raw.sequencer_fetch_size
     }
 
+    pub fn safe_confirmations(&self) -> Option<u64> {
+        self.raw.safe_confirmations
+    }
+
     pub fn granularities(&self) -> &[u64] {
         &self.packer_sorted_granularities
     }

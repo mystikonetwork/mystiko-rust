@@ -74,6 +74,7 @@ async fn test_create() {
     assert_eq!(config.deposit_contracts_without_disabled().len(), 0);
     assert_eq!(config.deposit_contracts().len(), 1);
     assert_eq!(config.contracts().len(), 2);
+    assert_eq!(config.safe_confirmations().unwrap(), 10);
     let asset = *config.assets().first().unwrap();
     let provider = *config.providers().first().unwrap();
     let pool_contract = *config.pool_contracts().first().unwrap();

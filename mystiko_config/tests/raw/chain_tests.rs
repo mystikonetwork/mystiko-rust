@@ -99,6 +99,7 @@ fn default_config() -> RawChainConfig {
         .pool_contracts(vec![Arc::new(pool_contract_config)])
         .assets(vec![Arc::new(asset_config)])
         .packer_granularities(vec![2000, 4000, 8000, 16000])
+        .safe_confirmations(Some(10_u64))
         .build();
     create_raw::<RawChainConfig>(raw_chain_config).unwrap()
 }

@@ -243,10 +243,14 @@ where
         tx_hash: TxHash,
         out_commitments: &[mystiko_protocol::commitment::Commitment],
     ) -> Result<Document<Spend>, SpendsError> {
+        let chain_config = self
+            .config
+            .find_chain(context.chain_id)
+            .ok_or(SpendsError::UnsupportedChainIdError(context.chain_id))?;
         let wait_options = WaitOptions::builder()
             .chain_id(spend.data.chain_id)
             .tx_hash(tx_hash)
-            .confirmations(options.spend_confirmations)
+            .confirmations(options.spend_confirmations.or(chain_config.safe_confirmations()))
             .interval_ms(options.tx_wait_interval_ms)
             .timeout_ms(options.tx_wait_timeout_ms)
             .build();

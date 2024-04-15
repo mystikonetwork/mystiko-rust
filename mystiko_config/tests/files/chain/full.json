@@ -8,6 +8,7 @@
   "explorerPrefix": "/tx/%tx%",
   "eventFilterSize": 1000,
   "sequencerFetchSize": 20000,
+  "safeConfirmations": 10,
   "providers": [
     {
       "url": "wss://goerli.infura.io/ws/v3/9aa3d95b3bc440fa88ea12eaa4456161",
@@ -123,7 +124,9 @@
       "startBlock": 1000000,
       "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
       "minRollupFee": "40000000000000000",
-      "circuits": ["zokrates-2.0-rollup1"],
+      "circuits": [
+        "zokrates-2.0-rollup1"
+      ],
       "eventFilterSize": 3000
     },
     {
@@ -136,7 +139,9 @@
       "startBlock": 1000000,
       "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
       "minRollupFee": "40000000000000000",
-      "circuits": ["zokrates-2.0-rollup1"]
+      "circuits": [
+        "zokrates-2.0-rollup1"
+      ]
     },
     {
       "version": 2,
@@ -148,7 +153,9 @@
       "startBlock": 1000000,
       "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
       "minRollupFee": "40000000000000000",
-      "circuits": ["zokrates-2.0-rollup1"]
+      "circuits": [
+        "zokrates-2.0-rollup1"
+      ]
     },
     {
       "version": 2,
@@ -160,7 +167,9 @@
       "startBlock": 1000000,
       "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
       "minRollupFee": "40000000000000000",
-      "circuits": ["zokrates-2.0-rollup1"]
+      "circuits": [
+        "zokrates-2.0-rollup1"
+      ]
     },
     {
       "version": 2,
@@ -182,15 +191,27 @@
       "startBlock": 1000000,
       "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
       "minRollupFee": "40000000000000000",
-      "circuits": ["zokrates-2.0-rollup1"]
+      "circuits": [
+        "zokrates-2.0-rollup1"
+      ]
     }
   ],
-  "assets": [{
-    "assetType": "erc20",
-    "assetSymbol": "MTT",
-    "assetDecimals": 16,
-    "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
-    "recommendedAmounts": ["1000000000000000000", "10000000000000000000"]
-  }],
-  "packerGranularities": [2000, 4000, 8000, 16000]
+  "assets": [
+    {
+      "assetType": "erc20",
+      "assetSymbol": "MTT",
+      "assetDecimals": 16,
+      "assetAddress": "0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a",
+      "recommendedAmounts": [
+        "1000000000000000000",
+        "10000000000000000000"
+      ]
+    }
+  ],
+  "packerGranularities": [
+    2000,
+    4000,
+    8000,
+    16000
+  ]
 }
