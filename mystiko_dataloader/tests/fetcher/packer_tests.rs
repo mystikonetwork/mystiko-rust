@@ -1,5 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use ethers_core::types::Address;
 use mockall::mock;
 use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
 use mystiko_dataloader::data::{FullData, LiteData, LoadedData};
@@ -7,7 +8,7 @@ use mystiko_dataloader::fetcher::{
     ChainLoadedBlockOptions, ContractFetchOptions, DataFetcher, DataPackerFetcher, DataPackerFetcherV1, FetchOptions,
 };
 use mystiko_datapacker_client::{ChainQuery, ChainResponse};
-use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, Nullifier};
+use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, MerkleTree, Nullifier};
 use mystiko_utils::address::string_address_to_bytes;
 use mystiko_utils::convert::biguint_to_bytes;
 use num_bigint::BigUint;
@@ -19,9 +20,10 @@ mock! {
     DataPackerClient {}
 
     #[async_trait]
-    impl mystiko_datapacker_client::DataPackerClient<ChainData> for DataPackerClient {
+    impl mystiko_datapacker_client::DataPackerClient<ChainData, MerkleTree> for DataPackerClient {
         async fn query_chain(&self, query: &ChainQuery) -> Result<ChainResponse<ChainData>>;
         async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<u64>;
+        async fn query_merkle_tree(&self, chain_id: u64, address: &Address) -> Result<Option<MerkleTree>>;
     }
 }
 

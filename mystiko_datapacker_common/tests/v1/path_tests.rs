@@ -5,6 +5,27 @@ use mystiko_datapacker_common::PathSchema;
 fn test_default() {
     let path_schema = PathSchemaV1::default();
     assert_eq!(path_schema.chain_path(1).to_str().unwrap(), "/chains/1");
+    assert_eq!(path_schema.contracts_path(1).to_str().unwrap(), "/chains/1/contracts");
+    assert_eq!(
+        path_schema.contract_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_index_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/index.json"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_data_path(1, "0x1234", 1000).to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/1000.zst"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_latest_data_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/latest.zst"
+    );
     assert_eq!(
         path_schema.granularities_path(1).to_str().unwrap(),
         "/chains/1/granularities"
@@ -40,6 +61,30 @@ fn test_different_settings() {
         .build();
     assert_eq!(path_schema.chain_path(1).to_str().unwrap(), "packer/v1/chains/1");
     assert_eq!(
+        path_schema.contracts_path(1).to_str().unwrap(),
+        "packer/v1/chains/1/contracts"
+    );
+    assert_eq!(
+        path_schema.contract_path(1, "0x1234").to_str().unwrap(),
+        "packer/v1/chains/1/contracts/0x1234"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_path(1, "0x1234").to_str().unwrap(),
+        "packer/v1/chains/1/contracts/0x1234/merkle_tree"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_index_path(1, "0x1234").to_str().unwrap(),
+        "packer/v1/chains/1/contracts/0x1234/merkle_tree/index.json"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_data_path(1, "0x1234", 1000).to_str().unwrap(),
+        "packer/v1/chains/1/contracts/0x1234/merkle_tree/1000.zstd"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_latest_data_path(1, "0x1234").to_str().unwrap(),
+        "packer/v1/chains/1/contracts/0x1234/merkle_tree/latest.zstd"
+    );
+    assert_eq!(
         path_schema.granularities_path(1).to_str().unwrap(),
         "packer/v1/chains/1/granularities"
     );
@@ -69,6 +114,27 @@ fn test_different_settings() {
 fn test_box() {
     let path_schema: Box<dyn PathSchema> = Box::<PathSchemaV1>::default();
     assert_eq!(path_schema.chain_path(1).to_str().unwrap(), "/chains/1");
+    assert_eq!(path_schema.contracts_path(1).to_str().unwrap(), "/chains/1/contracts");
+    assert_eq!(
+        path_schema.contract_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_index_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/index.json"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_data_path(1, "0x1234", 1000).to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/1000.zst"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_latest_data_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/latest.zst"
+    );
     assert_eq!(
         path_schema.granularities_path(1).to_str().unwrap(),
         "/chains/1/granularities"

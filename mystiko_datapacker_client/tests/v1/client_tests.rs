@@ -2,10 +2,10 @@ use anyhow::Result;
 use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
 use mystiko_datapacker_client::v1::DataPackerClient as DataPackerClientV1;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
-use mystiko_datapacker_common::v1::{GranularityIndex, PathSchema as PathSchemaV1};
+use mystiko_datapacker_common::v1::{GranularityIndex, MerkleTreeIndex, PathSchema as PathSchemaV1};
 use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSum, ZstdCompression};
-use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, Nullifier};
-use mystiko_utils::address::string_address_to_bytes;
+use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, MerkleTree, Nullifier};
+use mystiko_utils::address::{ethers_address_from_string, string_address_to_bytes};
 use mystiko_utils::convert::biguint_to_bytes;
 use num_bigint::BigUint;
 use prost::Message;
@@ -489,6 +489,75 @@ async fn test_query_empty_chain_loaded_block() {
 async fn test_query_unsupported_chain_loaded_block() {
     let (_, client) = setup().await.unwrap();
     assert!(client.query_chain_loaded_block(123343u64).await.is_err());
+}
+
+#[tokio::test]
+async fn test_query_merkle_tree() {
+    let merkle_tree = MerkleTree::builder()
+        .root_hash(biguint_to_bytes(&BigUint::from(0xdeadbeef_u64)))
+        .commitment_hashes(vec![biguint_to_bytes(&BigUint::from(10000000_u64))])
+        .build();
+    let uncompressed_bytes = merkle_tree.encode_to_vec();
+    let compressed_bytes = ZstdCompression.compress(&uncompressed_bytes).await.unwrap();
+    let merkle_tree_index = MerkleTreeIndex::builder().last_leaf_index(1234_u64).build();
+    let (mut server, client) = setup().await.unwrap();
+    let schema = PathSchemaV1::default();
+    let index_url = schema
+        .merkle_tree_index_path(1u64, "0xDede369C8444324cFd75038F1F2A39C4E44F6035")
+        .to_string_lossy()
+        .to_string();
+    let data_url = schema
+        .merkle_tree_data_path(1u64, "0xDede369C8444324cFd75038F1F2A39C4E44F6035", 1234_u64)
+        .to_string_lossy()
+        .to_string();
+    let index_mock = server
+        .mock("GET", index_url.as_str())
+        .with_status(200)
+        .with_body(&serde_json::to_vec(&merkle_tree_index).unwrap())
+        .create_async()
+        .await;
+    let data_mock = server
+        .mock("GET", data_url.as_str())
+        .with_status(200)
+        .with_body(compressed_bytes)
+        .create_async()
+        .await;
+    let queried_merkle_tree = client
+        .query_merkle_tree(
+            1u64,
+            &ethers_address_from_string("0xDede369C8444324cFd75038F1F2A39C4E44F6035").unwrap(),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(queried_merkle_tree, merkle_tree);
+    index_mock.assert_async().await;
+    data_mock.assert_async().await;
+}
+
+#[tokio::test]
+async fn test_query_merkle_tree_returns_none() {
+    let (mut server, client) = setup().await.unwrap();
+    let schema = PathSchemaV1::default();
+    let index_url = schema
+        .merkle_tree_index_path(1u64, "0xDede369C8444324cFd75038F1F2A39C4E44F6035")
+        .to_string_lossy()
+        .to_string();
+    let index_mock = server
+        .mock("GET", index_url.as_str())
+        .with_status(200)
+        .with_body(&vec![])
+        .create_async()
+        .await;
+    let queried_merkle_tree = client
+        .query_merkle_tree(
+            1u64,
+            &ethers_address_from_string("0xDede369C8444324cFd75038F1F2A39C4E44F6035").unwrap(),
+        )
+        .await
+        .unwrap();
+    assert!(queried_merkle_tree.is_none());
+    index_mock.assert_async().await;
 }
 
 #[derive(Debug, TypedBuilder)]
