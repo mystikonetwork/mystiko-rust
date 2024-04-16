@@ -3,11 +3,11 @@ use anyhow::Result;
 use async_trait::async_trait;
 use ethers_core::types::Address;
 use mystiko_config::MystikoConfig;
-use mystiko_datapacker_common::v1::{GranularityIndex, PathSchema as PathSchemaV1};
+use mystiko_datapacker_common::v1::{GranularityIndex, MerkleTreeIndex, PathSchema as PathSchemaV1};
 use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSum, ZstdCompression};
-use mystiko_protos::data::v1::{ChainData, ContractData};
+use mystiko_protos::data::v1::{ChainData, ContractData, MerkleTree};
 use mystiko_types::{PackerChecksum, PackerCompression};
-use mystiko_utils::address::ethers_address_from_bytes;
+use mystiko_utils::address::{ethers_address_from_bytes, ethers_address_to_string};
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -106,7 +106,7 @@ impl From<Arc<MystikoConfig>> for DataPackerClientOptions {
 }
 
 #[async_trait]
-impl<P, X, C> crate::DataPackerClient<ChainData> for DataPackerClient<P, X, C>
+impl<P, X, C> crate::DataPackerClient<ChainData, MerkleTree> for DataPackerClient<P, X, C>
 where
     P: PathSchema,
     X: Compression,
@@ -174,6 +174,38 @@ where
         } else {
             Err(anyhow::anyhow!(DataPackerClientError::UnsupportedChainError(chain_id)))
         }
+    }
+
+    async fn query_merkle_tree(&self, chain_id: u64, address: &Address) -> Result<Option<MerkleTree>> {
+        let str_address = ethers_address_to_string(address);
+        let index_url = format!(
+            "{}{}",
+            self.url,
+            self.path_schema
+                .merkle_tree_index_path(chain_id, &str_address)
+                .to_string_lossy()
+        );
+        if let Some(index_bytes) = self.http_get(&index_url).await? {
+            if !index_bytes.is_empty() {
+                let index = serde_json::from_slice::<MerkleTreeIndex>(&index_bytes)?;
+                let data_url = format!(
+                    "{}{}",
+                    self.url,
+                    self.path_schema
+                        .merkle_tree_data_path(chain_id, &str_address, index.last_leaf_index)
+                        .to_string_lossy()
+                );
+                if let Some(data_bytes) = self.http_get(&data_url).await? {
+                    let decompressed_data = self
+                        .compression
+                        .decompress(&data_bytes)
+                        .await
+                        .map_err(DataPackerClientError::DecompressionError)?;
+                    return Ok(Some(MerkleTree::try_from(&decompressed_data)?));
+                }
+            }
+        }
+        Ok(None)
     }
 }
 

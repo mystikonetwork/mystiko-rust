@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use ethers_core::types::Address;
 use mystiko_config::MystikoConfig;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
-use mystiko_protos::data::v1::ChainData;
+use mystiko_protos::data::v1::{ChainData, MerkleTree};
 use mystiko_utils::address::{ethers_address_from_bytes, ethers_address_from_string, ethers_address_to_string};
 use std::cmp::min;
 use std::collections::HashMap;
@@ -19,7 +19,7 @@ pub const PACKER_FETCHER_NAME: &str = "packer";
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct DataPackerFetcher<R: LoadedData, C: DataPackerClient<ChainData>> {
+pub struct DataPackerFetcher<R: LoadedData, C: DataPackerClient<ChainData, MerkleTree>> {
     client: Arc<C>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
@@ -43,7 +43,7 @@ pub type DataPackerFetcherV1<R> = DataPackerFetcher<R, mystiko_datapacker_client
 impl<R, C> DataFetcher<R> for DataPackerFetcher<R, C>
 where
     R: LoadedData,
-    C: DataPackerClient<ChainData>,
+    C: DataPackerClient<ChainData, MerkleTree>,
 {
     fn name(&self) -> &'static str {
         PACKER_FETCHER_NAME
@@ -67,7 +67,7 @@ where
 impl<R, C> DataPackerFetcher<R, C>
 where
     R: LoadedData,
-    C: DataPackerClient<ChainData>,
+    C: DataPackerClient<ChainData, MerkleTree>,
 {
     pub fn new(client: Arc<C>) -> Self {
         Self::builder().client(client).build()
@@ -97,7 +97,7 @@ where
 impl<R, C> From<Arc<C>> for DataPackerFetcher<R, C>
 where
     R: LoadedData,
-    C: DataPackerClient<ChainData>,
+    C: DataPackerClient<ChainData, MerkleTree>,
 {
     fn from(client: Arc<C>) -> Self {
         Self::new(client)
