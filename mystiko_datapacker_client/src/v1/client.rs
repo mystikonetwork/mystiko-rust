@@ -192,7 +192,7 @@ where
                     "{}{}",
                     self.url,
                     self.path_schema
-                        .merkle_tree_data_path(chain_id, &str_address, index.last_leaf_index)
+                        .merkle_tree_snapshot_data_path(chain_id, &str_address, index.last_leaf_index)
                         .to_string_lossy()
                 );
                 if let Some(data_bytes) = self.http_get(&data_url).await? {
