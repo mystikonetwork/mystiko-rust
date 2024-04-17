@@ -639,6 +639,9 @@ impl serde::Serialize for MerkleTree {
     {
         use serde::ser::SerializeStruct;
         let mut len = 0;
+        if self.loaded_block_number != 0 {
+            len += 1;
+        }
         if !self.root_hash.is_empty() {
             len += 1;
         }
@@ -646,6 +649,9 @@ impl serde::Serialize for MerkleTree {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.data.v1.MerkleTree", len)?;
+        if self.loaded_block_number != 0 {
+            struct_ser.serialize_field("loadedBlockNumber", ToString::to_string(&self.loaded_block_number).as_str())?;
+        }
         if !self.root_hash.is_empty() {
             struct_ser.serialize_field("rootHash", pbjson::private::base64::encode(&self.root_hash).as_str())?;
         }
@@ -662,6 +668,8 @@ impl<'de> serde::Deserialize<'de> for MerkleTree {
         D: serde::Deserializer<'de>,
     {
         const FIELDS: &[&str] = &[
+            "loaded_block_number",
+            "loadedBlockNumber",
             "root_hash",
             "rootHash",
             "commitment_hashes",
@@ -670,6 +678,7 @@ impl<'de> serde::Deserialize<'de> for MerkleTree {
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
+            LoadedBlockNumber,
             RootHash,
             CommitmentHashes,
         }
@@ -693,6 +702,7 @@ impl<'de> serde::Deserialize<'de> for MerkleTree {
                         E: serde::de::Error,
                     {
                         match value {
+                            "loadedBlockNumber" | "loaded_block_number" => Ok(GeneratedField::LoadedBlockNumber),
                             "rootHash" | "root_hash" => Ok(GeneratedField::RootHash),
                             "commitmentHashes" | "commitment_hashes" => Ok(GeneratedField::CommitmentHashes),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
@@ -714,10 +724,19 @@ impl<'de> serde::Deserialize<'de> for MerkleTree {
                 where
                     V: serde::de::MapAccess<'de>,
             {
+                let mut loaded_block_number__ = None;
                 let mut root_hash__ = None;
                 let mut commitment_hashes__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
+                        GeneratedField::LoadedBlockNumber => {
+                            if loaded_block_number__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("loadedBlockNumber"));
+                            }
+                            loaded_block_number__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
                         GeneratedField::RootHash => {
                             if root_hash__.is_some() {
                                 return Err(serde::de::Error::duplicate_field("rootHash"));
@@ -738,6 +757,7 @@ impl<'de> serde::Deserialize<'de> for MerkleTree {
                     }
                 }
                 Ok(MerkleTree {
+                    loaded_block_number: loaded_block_number__.unwrap_or_default(),
                     root_hash: root_hash__.unwrap_or_default(),
                     commitment_hashes: commitment_hashes__.unwrap_or_default(),
                 })
