@@ -39,14 +39,18 @@ impl crate::PathSchema for PathSchema {
         self.merkle_tree_path(chain_id, contract_address).join("index.json")
     }
 
-    fn merkle_tree_data_path(&self, chain_id: u64, contract_address: &str, last_leaf_index: u64) -> PathBuf {
-        self.merkle_tree_path(chain_id, contract_address)
-            .join(format!("{}.{}", last_leaf_index, self.data_suffix))
-    }
-
-    fn merkle_tree_latest_data_path(&self, chain_id: u64, contract_address: &str) -> PathBuf {
+    fn merkle_tree_latest_path(&self, chain_id: u64, contract_address: &str) -> PathBuf {
         self.merkle_tree_path(chain_id, contract_address)
             .join(format!("latest.{}", self.data_suffix))
+    }
+
+    fn merkle_tree_snapshots_path(&self, chain_id: u64, contract_address: &str) -> PathBuf {
+        self.merkle_tree_path(chain_id, contract_address).join("snapshots")
+    }
+
+    fn merkle_tree_snapshot_data_path(&self, chain_id: u64, contract_address: &str, last_leaf_index: u64) -> PathBuf {
+        self.merkle_tree_snapshots_path(chain_id, contract_address)
+            .join(format!("{:0>8}.{}", last_leaf_index, self.data_suffix))
     }
 
     fn granularities_path(&self, chain_id: u64) -> PathBuf {
