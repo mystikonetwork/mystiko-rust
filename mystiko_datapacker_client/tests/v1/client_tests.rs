@@ -494,6 +494,7 @@ async fn test_query_unsupported_chain_loaded_block() {
 #[tokio::test]
 async fn test_query_merkle_tree() {
     let merkle_tree = MerkleTree::builder()
+        .loaded_block_number(1000_u64)
         .root_hash(biguint_to_bytes(&BigUint::from(0xdeadbeef_u64)))
         .commitment_hashes(vec![biguint_to_bytes(&BigUint::from(10000000_u64))])
         .build();
