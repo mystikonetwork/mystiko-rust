@@ -508,7 +508,7 @@ async fn test_query_merkle_tree() {
         .to_string_lossy()
         .to_string();
     let data_url = schema
-        .merkle_tree_data_path(1u64, "0xDede369C8444324cFd75038F1F2A39C4E44F6035", 1234_u64)
+        .merkle_tree_snapshot_data_path(1u64, "0xDede369C8444324cFd75038F1F2A39C4E44F6035", 1234_u64)
         .to_string_lossy()
         .to_string();
     let index_mock = server

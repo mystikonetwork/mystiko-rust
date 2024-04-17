@@ -19,16 +19,23 @@ fn test_default() {
         "/chains/1/contracts/0x1234/merkle_tree/index.json"
     );
     assert_eq!(
-        path_schema.merkle_tree_data_path(1, "0x1234", 1000).to_str().unwrap(),
-        "/chains/1/contracts/0x1234/merkle_tree/1000.zst"
-    );
-    assert_eq!(
-        path_schema.merkle_tree_latest_data_path(1, "0x1234").to_str().unwrap(),
+        path_schema.merkle_tree_latest_path(1, "0x1234").to_str().unwrap(),
         "/chains/1/contracts/0x1234/merkle_tree/latest.zst"
     );
     assert_eq!(
         path_schema.granularities_path(1).to_str().unwrap(),
         "/chains/1/granularities"
+    );
+    assert_eq!(
+        path_schema.merkle_tree_snapshots_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/snapshots"
+    );
+    assert_eq!(
+        path_schema
+            .merkle_tree_snapshot_data_path(1, "0x1234", 1000)
+            .to_str()
+            .unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/snapshots/00001000.zst"
     );
     assert_eq!(
         path_schema.granularity_path(1, 1000).to_str().unwrap(),
@@ -77,12 +84,19 @@ fn test_different_settings() {
         "packer/v1/chains/1/contracts/0x1234/merkle_tree/index.json"
     );
     assert_eq!(
-        path_schema.merkle_tree_data_path(1, "0x1234", 1000).to_str().unwrap(),
-        "packer/v1/chains/1/contracts/0x1234/merkle_tree/1000.zstd"
+        path_schema.merkle_tree_latest_path(1, "0x1234").to_str().unwrap(),
+        "packer/v1/chains/1/contracts/0x1234/merkle_tree/latest.zstd"
     );
     assert_eq!(
-        path_schema.merkle_tree_latest_data_path(1, "0x1234").to_str().unwrap(),
-        "packer/v1/chains/1/contracts/0x1234/merkle_tree/latest.zstd"
+        path_schema.merkle_tree_snapshots_path(1, "0x1234").to_str().unwrap(),
+        "packer/v1/chains/1/contracts/0x1234/merkle_tree/snapshots"
+    );
+    assert_eq!(
+        path_schema
+            .merkle_tree_snapshot_data_path(1, "0x1234", 1000)
+            .to_str()
+            .unwrap(),
+        "packer/v1/chains/1/contracts/0x1234/merkle_tree/snapshots/00001000.zstd"
     );
     assert_eq!(
         path_schema.granularities_path(1).to_str().unwrap(),
@@ -128,12 +142,19 @@ fn test_box() {
         "/chains/1/contracts/0x1234/merkle_tree/index.json"
     );
     assert_eq!(
-        path_schema.merkle_tree_data_path(1, "0x1234", 1000).to_str().unwrap(),
-        "/chains/1/contracts/0x1234/merkle_tree/1000.zst"
+        path_schema.merkle_tree_latest_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/latest.zst"
     );
     assert_eq!(
-        path_schema.merkle_tree_latest_data_path(1, "0x1234").to_str().unwrap(),
-        "/chains/1/contracts/0x1234/merkle_tree/latest.zst"
+        path_schema.merkle_tree_snapshots_path(1, "0x1234").to_str().unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/snapshots"
+    );
+    assert_eq!(
+        path_schema
+            .merkle_tree_snapshot_data_path(1, "0x1234", 1000)
+            .to_str()
+            .unwrap(),
+        "/chains/1/contracts/0x1234/merkle_tree/snapshots/00001000.zst"
     );
     assert_eq!(
         path_schema.granularities_path(1).to_str().unwrap(),

@@ -6,8 +6,9 @@ pub trait PathSchema: Send + Sync {
     fn contract_path(&self, chain_id: u64, contract_address: &str) -> PathBuf;
     fn merkle_tree_path(&self, chain_id: u64, contract_address: &str) -> PathBuf;
     fn merkle_tree_index_path(&self, chain_id: u64, contract_address: &str) -> PathBuf;
-    fn merkle_tree_data_path(&self, chain_id: u64, contract_address: &str, last_leaf_index: u64) -> PathBuf;
-    fn merkle_tree_latest_data_path(&self, chain_id: u64, contract_address: &str) -> PathBuf;
+    fn merkle_tree_latest_path(&self, chain_id: u64, contract_address: &str) -> PathBuf;
+    fn merkle_tree_snapshots_path(&self, chain_id: u64, contract_address: &str) -> PathBuf;
+    fn merkle_tree_snapshot_data_path(&self, chain_id: u64, contract_address: &str, last_leaf_index: u64) -> PathBuf;
     fn granularities_path(&self, chain_id: u64) -> PathBuf;
     fn granularity_path(&self, chain_id: u64, granularity: u64) -> PathBuf;
     fn granularity_index(&self, chain_id: u64, granularity: u64) -> PathBuf;
@@ -37,13 +38,17 @@ impl PathSchema for Box<dyn PathSchema> {
         self.as_ref().merkle_tree_index_path(chain_id, contract_address)
     }
 
-    fn merkle_tree_data_path(&self, chain_id: u64, contract_address: &str, last_leaf_index: u64) -> PathBuf {
-        self.as_ref()
-            .merkle_tree_data_path(chain_id, contract_address, last_leaf_index)
+    fn merkle_tree_latest_path(&self, chain_id: u64, contract_address: &str) -> PathBuf {
+        self.as_ref().merkle_tree_latest_path(chain_id, contract_address)
     }
 
-    fn merkle_tree_latest_data_path(&self, chain_id: u64, contract_address: &str) -> PathBuf {
-        self.as_ref().merkle_tree_latest_data_path(chain_id, contract_address)
+    fn merkle_tree_snapshots_path(&self, chain_id: u64, contract_address: &str) -> PathBuf {
+        self.as_ref().merkle_tree_snapshots_path(chain_id, contract_address)
+    }
+
+    fn merkle_tree_snapshot_data_path(&self, chain_id: u64, contract_address: &str, last_leaf_index: u64) -> PathBuf {
+        self.as_ref()
+            .merkle_tree_snapshot_data_path(chain_id, contract_address, last_leaf_index)
     }
 
     fn granularities_path(&self, chain_id: u64) -> PathBuf {
