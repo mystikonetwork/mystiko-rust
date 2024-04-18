@@ -35,6 +35,8 @@ pub enum CircuitType {
     Rollup4,
     Rollup8,
     Rollup16,
+    Rollup32,
+    Rollup64,
     Transaction1x0,
     Transaction1x1,
     Transaction1x2,
