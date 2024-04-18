@@ -201,7 +201,13 @@ where
                         .decompress(&data_bytes)
                         .await
                         .map_err(DataPackerClientError::DecompressionError)?;
-                    return Ok(Some(MerkleTree::try_from(&decompressed_data)?));
+                    let mut merkle_tree = MerkleTree::try_from(&decompressed_data)?;
+                    if let Some(loaded_block_number) = index.loaded_block_number {
+                        if loaded_block_number > merkle_tree.loaded_block_number {
+                            merkle_tree.loaded_block_number = loaded_block_number;
+                        }
+                    }
+                    return Ok(Some(merkle_tree));
                 }
             }
         }

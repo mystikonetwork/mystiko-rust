@@ -500,7 +500,10 @@ async fn test_query_merkle_tree() {
         .build();
     let uncompressed_bytes = merkle_tree.encode_to_vec();
     let compressed_bytes = ZstdCompression.compress(&uncompressed_bytes).await.unwrap();
-    let merkle_tree_index = MerkleTreeIndex::builder().last_leaf_index(1234_u64).build();
+    let merkle_tree_index = MerkleTreeIndex::builder()
+        .loaded_block_number(1001_u64)
+        .last_leaf_index(1234_u64)
+        .build();
     let (mut server, client) = setup().await.unwrap();
     let schema = PathSchemaV1::default();
     let index_url = schema
@@ -531,7 +534,9 @@ async fn test_query_merkle_tree() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(queried_merkle_tree, merkle_tree);
+    assert_eq!(queried_merkle_tree.loaded_block_number, 1001_u64);
+    assert_eq!(queried_merkle_tree.root_hash, merkle_tree.root_hash);
+    assert_eq!(queried_merkle_tree.commitment_hashes, merkle_tree.commitment_hashes);
     index_mock.assert_async().await;
     data_mock.assert_async().await;
 }
