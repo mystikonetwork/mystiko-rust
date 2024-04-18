@@ -188,20 +188,28 @@ where
         if let Some(index_bytes) = self.http_get(&index_url).await? {
             if !index_bytes.is_empty() {
                 let index = serde_json::from_slice::<MerkleTreeIndex>(&index_bytes)?;
-                let data_url = format!(
-                    "{}{}",
-                    self.url,
-                    self.path_schema
-                        .merkle_tree_snapshot_data_path(chain_id, &str_address, index.last_leaf_index)
-                        .to_string_lossy()
-                );
-                if let Some(data_bytes) = self.http_get(&data_url).await? {
-                    let decompressed_data = self
-                        .compression
-                        .decompress(&data_bytes)
-                        .await
-                        .map_err(DataPackerClientError::DecompressionError)?;
-                    return Ok(Some(MerkleTree::try_from(&decompressed_data)?));
+                if let Some(last_leaf_index) = index.last_leaf_index {
+                    let data_url = format!(
+                        "{}{}",
+                        self.url,
+                        self.path_schema
+                            .merkle_tree_snapshot_data_path(chain_id, &str_address, last_leaf_index)
+                            .to_string_lossy()
+                    );
+                    if let Some(data_bytes) = self.http_get(&data_url).await? {
+                        let decompressed_data = self
+                            .compression
+                            .decompress(&data_bytes)
+                            .await
+                            .map_err(DataPackerClientError::DecompressionError)?;
+                        let mut merkle_tree = MerkleTree::try_from(&decompressed_data)?;
+                        if let Some(loaded_block_number) = index.loaded_block_number {
+                            if loaded_block_number > merkle_tree.loaded_block_number {
+                                merkle_tree.loaded_block_number = loaded_block_number;
+                            }
+                        }
+                        return Ok(Some(merkle_tree));
+                    }
                 }
             }
         }
