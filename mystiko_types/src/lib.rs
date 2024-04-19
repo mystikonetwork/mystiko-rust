@@ -91,6 +91,8 @@ impl CircuitType {
             CircuitType::Rollup4,
             CircuitType::Rollup8,
             CircuitType::Rollup16,
+            CircuitType::Rollup32,
+            CircuitType::Rollup64,
             CircuitType::Transaction1x0,
             CircuitType::Transaction1x1,
             CircuitType::Transaction1x2,

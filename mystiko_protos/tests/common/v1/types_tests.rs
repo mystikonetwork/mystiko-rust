@@ -37,6 +37,8 @@ fn test_circuit_type_to_proto() {
     let type9: CircuitType = Into::into(&mystiko_types::CircuitType::Transaction2x0);
     let type10: CircuitType = Into::into(&mystiko_types::CircuitType::Transaction2x1);
     let type11: CircuitType = Into::into(&mystiko_types::CircuitType::Transaction2x2);
+    let type12: CircuitType = Into::into(&mystiko_types::CircuitType::Rollup32);
+    let type13: CircuitType = Into::into(&mystiko_types::CircuitType::Rollup64);
     assert_eq!(type1, CircuitType::Rollup1);
     assert_eq!(type2, CircuitType::Rollup2);
     assert_eq!(type3, CircuitType::Rollup4);
@@ -48,6 +50,8 @@ fn test_circuit_type_to_proto() {
     assert_eq!(type9, CircuitType::Transaction2x0);
     assert_eq!(type10, CircuitType::Transaction2x1);
     assert_eq!(type11, CircuitType::Transaction2x2);
+    assert_eq!(type12, CircuitType::Rollup32);
+    assert_eq!(type13, CircuitType::Rollup64);
 }
 
 #[test]
@@ -103,6 +107,8 @@ fn test_proto_to_circuit_type() {
     let type9: mystiko_types::CircuitType = Into::into(CircuitType::Transaction2x0);
     let type10: mystiko_types::CircuitType = Into::into(CircuitType::Transaction2x1);
     let type11: mystiko_types::CircuitType = Into::into(CircuitType::Transaction2x2);
+    let type12: mystiko_types::CircuitType = Into::into(CircuitType::Rollup32);
+    let type13: mystiko_types::CircuitType = Into::into(CircuitType::Rollup64);
     assert_eq!(type1, mystiko_types::CircuitType::Rollup1);
     assert_eq!(type2, mystiko_types::CircuitType::Rollup2);
     assert_eq!(type3, mystiko_types::CircuitType::Rollup4);
@@ -114,6 +120,8 @@ fn test_proto_to_circuit_type() {
     assert_eq!(type9, mystiko_types::CircuitType::Transaction2x0);
     assert_eq!(type10, mystiko_types::CircuitType::Transaction2x1);
     assert_eq!(type11, mystiko_types::CircuitType::Transaction2x2);
+    assert_eq!(type12, mystiko_types::CircuitType::Rollup32);
+    assert_eq!(type13, mystiko_types::CircuitType::Rollup64);
 }
 
 #[test]
