@@ -53,7 +53,15 @@
           "assetAddress": "0x2f1306362422e341e08e656d656719d5e8facdc7"
         }
       ],
-      "packerGranularities": [2000, 4000, 8000, 16000, 32000, 64000, 256000]
+      "packerGranularities": [
+        2000,
+        4000,
+        8000,
+        16000,
+        32000,
+        64000,
+        256000
+      ]
     }
   ],
   "circuits": [
@@ -243,10 +251,47 @@
       "verifyingKeyFile": [
         "circuits/dist/zokrates/dev/Rollup16.vkey.gz"
       ]
+    },
+    {
+      "name": "zokrates-1.0-rollup32",
+      "type": "rollup32",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Rollup32.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Rollup32.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup32.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup32.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup64",
+      "type": "rollup64",
+      "isDefault": true,
+      "programFile": [
+        "circuits/dist/zokrates/dev/Rollup64.program.gz"
+      ],
+      "abiFile": [
+        "circuits/dist/zokrates/dev/Rollup64.abi.json"
+      ],
+      "provingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup64.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "circuits/dist/zokrates/dev/Rollup64.vkey.gz"
+      ]
     }
   ],
   "packer": {
     "url": "https://example.com"
   },
-  "countryBlacklist": ["CN", "US"]
+  "countryBlacklist": [
+    "CN",
+    "US"
+  ]
 }
