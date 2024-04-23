@@ -34,7 +34,20 @@
         }
       ],
       "assets": [],
-      "packerGranularities": [7500, 15000, 30000, 60000, 120000, 240000, 480000, 960000, 1920000, 3840000, 7680000, 15360000]
+      "packerGranularities": [
+        7500,
+        15000,
+        30000,
+        60000,
+        120000,
+        240000,
+        480000,
+        960000,
+        1920000,
+        3840000,
+        7680000,
+        15360000
+      ]
     }
   ],
   "bridges": [],
@@ -249,6 +262,40 @@
       "verifyingKeyFile": [
         "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup16.vkey.gz"
       ]
+    },
+    {
+      "name": "zokrates-1.0-rollup32",
+      "type": "rollup32",
+      "isDefault": true,
+      "programFile": [
+        "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup32.program.gz"
+      ],
+      "abiFile": [
+        "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup32.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup32.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup32.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup64",
+      "type": "rollup64",
+      "isDefault": true,
+      "programFile": [
+        "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup64.program.gz"
+      ],
+      "abiFile": [
+        "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup64.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup64.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://mystiko-static.s3.ap-southeast-1.amazonaws.com/circuits/zokrates/production/016c948/Rollup64.vkey.gz"
+      ]
     }
   ],
   "packer": {
@@ -256,5 +303,7 @@
     "version": 1,
     "clientTimeoutMs": 30000
   },
-  "countryBlacklist": ["AF"]
+  "countryBlacklist": [
+    "AF"
+  ]
 }
