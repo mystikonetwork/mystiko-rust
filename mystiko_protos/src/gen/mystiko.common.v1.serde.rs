@@ -184,6 +184,10 @@ impl serde::Serialize for CircuitType {
             Self::Transaction2x2 => "CIRCUIT_TYPE_TRANSACTION2X2",
             Self::Rollup32 => "CIRCUIT_TYPE_ROLLUP_32",
             Self::Rollup64 => "CIRCUIT_TYPE_ROLLUP_64",
+            Self::Rollup128 => "CIRCUIT_TYPE_ROLLUP_128",
+            Self::Rollup256 => "CIRCUIT_TYPE_ROLLUP_256",
+            Self::Rollup512 => "CIRCUIT_TYPE_ROLLUP_512",
+            Self::Rollup1024 => "CIRCUIT_TYPE_ROLLUP_1024",
         };
         serializer.serialize_str(variant)
     }
@@ -209,6 +213,10 @@ impl<'de> serde::Deserialize<'de> for CircuitType {
             "CIRCUIT_TYPE_TRANSACTION2X2",
             "CIRCUIT_TYPE_ROLLUP_32",
             "CIRCUIT_TYPE_ROLLUP_64",
+            "CIRCUIT_TYPE_ROLLUP_128",
+            "CIRCUIT_TYPE_ROLLUP_256",
+            "CIRCUIT_TYPE_ROLLUP_512",
+            "CIRCUIT_TYPE_ROLLUP_1024",
         ];
 
         struct GeneratedVisitor;
@@ -265,6 +273,10 @@ impl<'de> serde::Deserialize<'de> for CircuitType {
                     "CIRCUIT_TYPE_TRANSACTION2X2" => Ok(CircuitType::Transaction2x2),
                     "CIRCUIT_TYPE_ROLLUP_32" => Ok(CircuitType::Rollup32),
                     "CIRCUIT_TYPE_ROLLUP_64" => Ok(CircuitType::Rollup64),
+                    "CIRCUIT_TYPE_ROLLUP_128" => Ok(CircuitType::Rollup128),
+                    "CIRCUIT_TYPE_ROLLUP_256" => Ok(CircuitType::Rollup256),
+                    "CIRCUIT_TYPE_ROLLUP_512" => Ok(CircuitType::Rollup512),
+                    "CIRCUIT_TYPE_ROLLUP_1024" => Ok(CircuitType::Rollup1024),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
