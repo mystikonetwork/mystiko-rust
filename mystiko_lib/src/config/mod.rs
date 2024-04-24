@@ -187,12 +187,14 @@ where
 mod internal {
     use super::*;
     use crate::instance;
+    use mystiko_protos::config::bridge::v1::BridgeConfig;
+    use mystiko_protos::config::v1::{CircuitConfig, MystikoConfig};
 
     pub(crate) async fn get() -> ApiResponse {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {
-                let result = mystiko.config.to_proto();
+                let result: Result<MystikoConfig> = mystiko.config.as_ref().try_into();
                 match result {
                     Ok(mystiko_config) => {
                         ApiResponse::success(GetConfigResponse::builder().config(mystiko_config).build())
@@ -208,11 +210,15 @@ mod internal {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {
-                let config = mystiko
+                let result: Result<Option<CircuitConfig>> = mystiko
                     .config
                     .find_default_circuit(&request.circuit_type().into())
-                    .map(|c| c.to_proto());
-                ApiResponse::success(FindDefaultCircuitResponse::builder().config(config).build())
+                    .map(|c| c.try_into())
+                    .transpose();
+                match result {
+                    Ok(config) => ApiResponse::success(FindDefaultCircuitResponse::builder().config(config).build()),
+                    Err(err) => ApiResponse::unknown_error(err),
+                }
             }
             Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
@@ -222,8 +228,15 @@ mod internal {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {
-                let config = mystiko.config.find_circuit(&request.circuit_name).map(|c| c.to_proto());
-                ApiResponse::success(FindDefaultCircuitResponse::builder().config(config).build())
+                let result: Result<Option<CircuitConfig>> = mystiko
+                    .config
+                    .find_circuit(&request.circuit_name)
+                    .map(|c| c.try_into())
+                    .transpose();
+                match result {
+                    Ok(config) => ApiResponse::success(FindDefaultCircuitResponse::builder().config(config).build()),
+                    Err(err) => ApiResponse::unknown_error(err),
+                }
             }
             Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
@@ -236,7 +249,7 @@ mod internal {
                 let result = mystiko
                     .config
                     .find_chain(request.chain_id)
-                    .map(|c| c.to_proto())
+                    .map(|c| c.try_into())
                     .transpose();
                 match result {
                     Ok(config) => ApiResponse::success(FindChainResponse::builder().config(config).build()),
@@ -255,7 +268,7 @@ mod internal {
                     .config
                     .find_peer_chains(request.chain_id)
                     .into_iter()
-                    .map(|c| c.to_proto())
+                    .map(|c| c.try_into())
                     .collect::<Result<Vec<ChainConfig>>>();
                 match result {
                     Ok(configs) => ApiResponse::success(FindPeerChainsResponse::builder().configs(configs).build()),
@@ -320,11 +333,15 @@ mod internal {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {
-                let config = mystiko
+                let result: Result<Option<BridgeConfig>> = mystiko
                     .config
                     .find_bridge(&request.bridge_type().into())
-                    .map(|c| c.to_proto());
-                ApiResponse::success(FindBridgeResponse::builder().config(config).build())
+                    .map(|c| c.try_into())
+                    .transpose();
+                match result {
+                    Ok(config) => ApiResponse::success(FindBridgeResponse::builder().config(config).build()),
+                    Err(err) => ApiResponse::unknown_error(err),
+                }
             }
             Err(err) => ApiResponse::error(ConfigError::GetMystikoGuardError, err),
         }
@@ -342,7 +359,7 @@ mod internal {
                         &request.asset_symbol,
                         &request.bridge_type().into(),
                     )
-                    .map(|c| c.to_proto())
+                    .map(|c| c.try_into())
                     .transpose();
                 match result {
                     Ok(config) => ApiResponse::success(FindDepositContractResponse::builder().config(config).build()),
@@ -360,7 +377,7 @@ mod internal {
                 let result = mystiko
                     .config
                     .find_deposit_contract_by_address(request.chain_id, &request.address)
-                    .map(|c| c.to_proto())
+                    .map(|c| c.try_into())
                     .transpose();
                 match result {
                     Ok(config) => {
@@ -385,7 +402,7 @@ mod internal {
                         &request.bridge_type().into(),
                         request.version,
                     )
-                    .map(|c| c.to_proto())
+                    .map(|c| c.try_into())
                     .transpose();
                 match result {
                     Ok(config) => ApiResponse::success(FindPoolContractResponse::builder().config(config).build()),
@@ -404,7 +421,7 @@ mod internal {
                     .config
                     .find_pool_contracts(request.chain_id, &request.asset_symbol, &request.bridge_type().into())
                     .into_iter()
-                    .map(|c| c.to_proto())
+                    .map(|c| c.try_into())
                     .collect::<Result<Vec<PoolContractConfig>>>();
                 match result {
                     Ok(config) => ApiResponse::success(FindPoolContractsResponse::builder().config(config).build()),
@@ -422,7 +439,7 @@ mod internal {
                 let result = mystiko
                     .config
                     .find_pool_contract_by_address(request.chain_id, &request.address)
-                    .map(|c| c.to_proto())
+                    .map(|c| c.try_into())
                     .transpose();
                 match result {
                     Ok(config) => {
@@ -442,7 +459,7 @@ mod internal {
                 let result = mystiko
                     .config
                     .find_contract_by_address(request.chain_id, &request.address)
-                    .map(|c| c.to_proto())
+                    .map(|c| (&c).try_into())
                     .transpose();
                 match result {
                     Ok(config) => ApiResponse::success(FindContractByAddressResponse::builder().config(config).build()),

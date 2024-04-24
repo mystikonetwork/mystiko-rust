@@ -1,4 +1,5 @@
 use crate::common::v1::ConfigOptions;
+use mystiko_config::MystikoConfigOptions;
 
 pub trait ConfigOptionsOption {
     fn get_environment(&self) -> String;
@@ -9,6 +10,18 @@ pub trait ConfigOptionsOption {
 impl From<Option<ConfigOptions>> for ConfigOptions {
     fn from(options: Option<ConfigOptions>) -> Self {
         options.unwrap_or_default()
+    }
+}
+
+impl From<ConfigOptions> for MystikoConfigOptions {
+    fn from(value: ConfigOptions) -> Self {
+        MystikoConfigOptions::builder()
+            .is_testnet(value.is_testnet())
+            .is_staging(value.is_staging())
+            .file_path(value.file_path)
+            .git_revision(value.git_revision)
+            .remote_base_url(value.remote_base_url)
+            .build()
     }
 }
 
