@@ -119,7 +119,7 @@ where
         let client_options = sequencer_config
             .options
             .map(Arc::new)
-            .or(mystiko_config.sequencer())
+            .or(mystiko_config.sequencer().map(|c| Arc::new(c.into())))
             .ok_or(SequencerFetcherError::MissingSequencerConfigError)?;
         let client = mystiko_sequencer_client::v1::SequencerClient::connect(client_options.as_ref()).await?;
         Ok(Arc::new(client).into())

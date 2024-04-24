@@ -105,7 +105,8 @@ where
         if let Some(mystiko_config) = &self.mystiko_config {
             Ok(mystiko_config.clone())
         } else {
-            let mystiko_config = MystikoConfig::from_options(self.config.mystiko_config_options.clone()).await?;
+            let mystiko_config =
+                MystikoConfig::from_options(self.config.mystiko_config_options.clone().unwrap_or_default()).await?;
             Ok(Arc::new(mystiko_config))
         }
     }
