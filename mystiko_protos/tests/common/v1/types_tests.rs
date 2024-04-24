@@ -1,4 +1,7 @@
-use mystiko_protos::common::v1::{AssetType, BridgeType, CircuitType, ContractType, ProviderType, TransactionType};
+use mystiko_config::MystikoConfigOptions;
+use mystiko_protos::common::v1::{
+    AssetType, BridgeType, CircuitType, ConfigOptions, ContractType, ProviderType, TransactionType,
+};
 
 #[test]
 fn test_bridge_type_to_proto() {
@@ -132,4 +135,21 @@ fn test_transaction_type_to_proto() {
     assert_eq!(type1, TransactionType::Legacy);
     assert_eq!(type2, TransactionType::Eip1559);
     assert_eq!(type3, TransactionType::Eip2930);
+}
+
+#[test]
+fn test_config_options_to_mystiko_config_options() {
+    let config_options = ConfigOptions::builder()
+        .file_path("file_path".to_string())
+        .is_staging(true)
+        .is_testnet(true)
+        .git_revision("git_revision".to_string())
+        .remote_base_url("remote_base_url".to_string())
+        .build();
+    let mystiko_config_options: MystikoConfigOptions = config_options.into();
+    assert_eq!(mystiko_config_options.file_path.unwrap(), "file_path");
+    assert!(mystiko_config_options.is_staging);
+    assert!(mystiko_config_options.is_testnet);
+    assert_eq!(mystiko_config_options.git_revision.unwrap(), "git_revision");
+    assert_eq!(mystiko_config_options.remote_base_url.unwrap(), "remote_base_url");
 }
