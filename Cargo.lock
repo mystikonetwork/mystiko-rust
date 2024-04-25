@@ -3299,7 +3299,7 @@ dependencies = [
 [[package]]
 name = "mystiko_config"
 version = "0.1.0"
-source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=b0340d7#b0340d747c92fe141d18a3e3664ec48896487761"
+source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=2b27cc#2b27cc4f438844e7b1460e68ae25d5b146399d39"
 dependencies = [
  "anyhow",
  "lazy_static",
@@ -3654,7 +3654,7 @@ dependencies = [
 [[package]]
 name = "mystiko_relayer_abi"
 version = "0.1.0"
-source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=b0340d7#b0340d747c92fe141d18a3e3664ec48896487761"
+source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=2b27cc#2b27cc4f438844e7b1460e68ae25d5b146399d39"
 dependencies = [
  "ethers",
  "ethers-contract",
@@ -3701,7 +3701,7 @@ dependencies = [
 [[package]]
 name = "mystiko_relayer_config"
 version = "0.1.0"
-source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=b0340d7#b0340d747c92fe141d18a3e3664ec48896487761"
+source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=2b27cc#2b27cc4f438844e7b1460e68ae25d5b146399d39"
 dependencies = [
  "anyhow",
  "log",
@@ -3877,7 +3877,7 @@ dependencies = [
 [[package]]
 name = "mystiko_types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=b0340d7#b0340d747c92fe141d18a3e3664ec48896487761"
+source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=2b27cc#2b27cc4f438844e7b1460e68ae25d5b146399d39"
 dependencies = [
  "serde",
 ]
@@ -3902,7 +3902,7 @@ dependencies = [
 [[package]]
 name = "mystiko_validator"
 version = "0.1.0"
-source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=b0340d7#b0340d747c92fe141d18a3e3664ec48896487761"
+source = "git+ssh://git@github.com/mystikonetwork/mystiko-static-config.git?rev=2b27cc#2b27cc4f438844e7b1460e68ae25d5b146399d39"
 dependencies = [
  "lazy_static",
  "regex 1.9.3",
