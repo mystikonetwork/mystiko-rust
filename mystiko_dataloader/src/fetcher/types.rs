@@ -84,9 +84,10 @@ pub(crate) struct FetcherLogOptions {
     pub(crate) data_type: DataType,
 }
 
-impl ToString for FetcherLogOptions {
-    fn to_string(&self) -> String {
-        format!(
+impl std::fmt::Display for FetcherLogOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
             "Fetcher[type={:?}, chain_id={}, address={}, from_block={}, to_block={}]",
             self.data_type, self.chain_id, self.address, self.start_block, self.end_block
         )

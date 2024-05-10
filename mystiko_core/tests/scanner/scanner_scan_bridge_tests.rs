@@ -57,7 +57,10 @@ async fn test_scan_batch_with_owned() {
     for (deposit_cm, pool_cm) in deposit_cms.iter_mut().zip(pool_cms.iter()) {
         deposit_cm.data.chain_id = 97;
         deposit_cm.data.contract_address = String::from("0xd791049D0a154bC7860804e1A18ACD148Eb0afD9");
-        deposit_cm.data.commitment_hash = pool_cm.data.commitment_hash.clone();
+        deposit_cm
+            .data
+            .commitment_hash
+            .clone_from(&pool_cm.data.commitment_hash);
         deposit_cm.data.shielded_address = Some(accounts[0].shielded_address.address().clone());
         deposit_cm.data.status = CommitmentStatus::SrcSucceeded as i32;
         deposit_cm.data.bridge_type = BridgeType::Tbridge as i32;
@@ -142,7 +145,10 @@ async fn test_scan_batch_with_owned_without_nullifier() {
     for (deposit_cm, pool_cm) in deposit_cms.iter_mut().zip(pool_cms.iter()) {
         deposit_cm.data.chain_id = 97;
         deposit_cm.data.contract_address = String::from("0xd791049D0a154bC7860804e1A18ACD148Eb0afD9");
-        deposit_cm.data.commitment_hash = pool_cm.data.commitment_hash.clone();
+        deposit_cm
+            .data
+            .commitment_hash
+            .clone_from(&pool_cm.data.commitment_hash);
         deposit_cm.data.shielded_address = Some(accounts[0].shielded_address.address().clone());
         deposit_cm.data.status = CommitmentStatus::SrcSucceeded as i32;
         deposit_cm.data.bridge_type = BridgeType::Tbridge as i32;

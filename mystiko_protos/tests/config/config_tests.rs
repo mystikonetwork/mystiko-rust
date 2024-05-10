@@ -141,16 +141,13 @@ async fn test_chain_config_to_proto() {
     assert_eq!(main_asset.recommended_amounts, chain_config.recommended_amounts);
     assert!(chain_config
         .asset_configs
-        .get("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a")
-        .is_some());
+        .contains_key("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a"));
     assert!(chain_config
         .pool_contract_configs
-        .get("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d")
-        .is_some());
+        .contains_key("0xF55Dbe8D71Df9Bbf5841052C75c6Ea9eA717fc6d"));
     assert!(chain_config
         .deposit_contract_configs
-        .get("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67")
-        .is_some());
+        .contains_key("0x961f315a836542e603a3df2e0dd9d4ecd06ebc67"));
     let provider = chain_config.provider_configs.first().unwrap();
     assert_eq!(
         &provider.url,
