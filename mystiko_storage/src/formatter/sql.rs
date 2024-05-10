@@ -74,7 +74,7 @@ impl StatementFormatter for SqlStatementFormatter {
                 "UPDATE `{}` SET {} WHERE `{}` = {}",
                 T::collection_name(),
                 column_updates.join(", "),
-                DocumentColumn::Id.to_string(),
+                DocumentColumn::Id,
                 self.value_mark()
             ),
             column_values,
@@ -152,7 +152,7 @@ impl StatementFormatter for SqlStatementFormatter {
             format!(
                 "DELETE FROM `{}` WHERE `{}` = {}",
                 T::collection_name(),
-                DocumentColumn::Id.to_string(),
+                DocumentColumn::Id,
                 self.value_mark()
             ),
             vec![doc.id.clone().into()],

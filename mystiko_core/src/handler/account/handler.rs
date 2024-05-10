@@ -284,7 +284,7 @@ where
             let mut has_update = false;
             if let Some(new_name) = &options.name {
                 if !new_name.is_empty() && new_name != &account.data.name {
-                    account.data.name = new_name.clone();
+                    account.data.name.clone_from(new_name);
                     has_update = true;
                 }
             }

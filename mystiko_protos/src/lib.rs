@@ -1,5 +1,6 @@
 #[allow(dead_code)]
 #[allow(clippy::needless_borrows_for_generic_args)]
+#[allow(clippy::empty_docs)]
 mod gen;
 
 pub mod api;
