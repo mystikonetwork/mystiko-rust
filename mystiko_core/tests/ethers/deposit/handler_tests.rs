@@ -203,7 +203,7 @@ async fn test_main_token_loop_deposit() {
         .expect_send_transaction()
         .withf(move |chain_id, tx| {
             let calls = parse_loop_deposit_call(tx);
-            if let MystikoV2LoopCalls::Deposit(deposit) = calls {
+            if let MystikoV2LoopCalls::CertDeposit(deposit) = calls {
                 let request = deposit.request;
                 request.commitment == commitment
                     && request.random_s == random_s
@@ -345,7 +345,7 @@ async fn test_main_token_cross_chain_deposit() {
         .expect_send_transaction()
         .withf(move |chain_id, tx| {
             let calls = parse_cross_chain_deposit_call(tx);
-            if let MystikoV2BridgeCalls::Deposit(deposit) = calls {
+            if let MystikoV2BridgeCalls::CertDeposit(deposit) = calls {
                 let request = deposit.request;
                 request.commitment == commitment
                     && request.random_s == random_s

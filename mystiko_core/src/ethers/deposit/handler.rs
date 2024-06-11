@@ -5,7 +5,7 @@ use crate::{
 use async_trait::async_trait;
 use ethers_contract::ContractCall;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
-use ethers_core::types::{Address, TxHash, U256};
+use ethers_core::types::{Address, Bytes, TxHash, U256};
 use mystiko_config::{DepositContractConfig, MystikoConfig, PoolContractConfig};
 use mystiko_ethers::{Provider, Providers};
 use mystiko_storage::{StatementFormatter, Storage};
@@ -99,7 +99,14 @@ where
         if contract_config.asset_type() == &AssetType::Main {
             tx.set_value(options.request.amount.add(options.request.rollup_fee));
         }
-        if let Some(data) = contract.deposit(options.request).calldata() {
+        let data = if contract_config.version() <= 6_u32 {
+            contract.deposit(options.request).calldata()
+        } else {
+            contract
+                .cert_deposit(options.request, U256::zero(), Bytes::new())
+                .calldata()
+        };
+        if let Some(data) = data {
             tx.set_data(data);
         }
         let tx_hash = if let Some(timeout_ms) = options.timeout_ms {
@@ -149,7 +156,14 @@ where
         if value.gt(&U256::zero()) {
             tx.set_value(value);
         }
-        if let Some(data) = contract.deposit(options.request).calldata() {
+        let data = if contract_config.version() <= 6_u32 {
+            contract.deposit(options.request).calldata()
+        } else {
+            contract
+                .cert_deposit(options.request, U256::zero(), Bytes::new())
+                .calldata()
+        };
+        if let Some(data) = data {
             tx.set_data(data);
         }
         let tx_hash = if let Some(timeout_ms) = options.timeout_ms {
