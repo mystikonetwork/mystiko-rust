@@ -7,11 +7,13 @@ pub use message_sender_lib::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types
+    non_camel_case_types,
 )]
 pub mod message_sender_lib {
     const _: () = {
-        ::core::include_bytes!("../json/MessageSenderLib.json",);
+        ::core::include_bytes!(
+"../json/MessageSenderLib.json",
+        );
     };
     #[allow(deprecated)]
     fn __abi() -> ::ethers_core::abi::Abi {
@@ -25,18 +27,21 @@ pub mod message_sender_lib {
         }
     }
     ///The parsed JSON ABI of the contract.
-    pub static MESSAGESENDERLIB_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
-        ::ethers_contract::Lazy::new(__abi);
+    pub static MESSAGESENDERLIB_ABI: ::ethers_contract::Lazy<
+        ::ethers_core::abi::Abi,
+    > = ::ethers_contract::Lazy::new(__abi);
     #[rustfmt::skip]
-    const __BYTECODE: &[u8] = b"`V`7`\x0B\x82\x82\x829\x80Q`\0\x1A`s\x14`*WcNH{q`\xE0\x1B`\0R`\0`\x04R`$`\0\xFD[0`\0R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\0\x80\xFD\xFE\xA2dipfsX\"\x12 \xF7\xDF\x04\x8F\xE3\x0B\x06\xF5\xD7\xBA\x87Q\xC4\xB8D\x97~\xCF!\xBE\xED\xBF\xA0,\xE0\xBAi\x83-sL\xDAdsolcC\0\x08\x07\x003";
+    const __BYTECODE: &[u8] = b"`V`7`\x0B\x82\x82\x829\x80Q`\0\x1A`s\x14`*WcNH{q`\xE0\x1B`\0R`\0`\x04R`$`\0\xFD[0`\0R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\0\x80\xFD\xFE\xA2dipfsX\"\x12 V\xD0\xE2+\xF7q\xA0\xFC\\\x98\x17\xEB\xDF\xFC\x94\xF9*\xDC2v:\xCA\xCA\xE3\xD4\x9A\xED\x99\xA3\x7FO]dsolcC\0\x08\x1A\x003";
     /// The bytecode of the contract.
-    pub static MESSAGESENDERLIB_BYTECODE: ::ethers_core::types::Bytes =
-        ::ethers_core::types::Bytes::from_static(__BYTECODE);
+    pub static MESSAGESENDERLIB_BYTECODE: ::ethers_core::types::Bytes = ::ethers_core::types::Bytes::from_static(
+        __BYTECODE,
+    );
     #[rustfmt::skip]
-    const __DEPLOYED_BYTECODE: &[u8] = b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\0\x80\xFD\xFE\xA2dipfsX\"\x12 \xF7\xDF\x04\x8F\xE3\x0B\x06\xF5\xD7\xBA\x87Q\xC4\xB8D\x97~\xCF!\xBE\xED\xBF\xA0,\xE0\xBAi\x83-sL\xDAdsolcC\0\x08\x07\x003";
+    const __DEPLOYED_BYTECODE: &[u8] = b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R`\0\x80\xFD\xFE\xA2dipfsX\"\x12 V\xD0\xE2+\xF7q\xA0\xFC\\\x98\x17\xEB\xDF\xFC\x94\xF9*\xDC2v:\xCA\xCA\xE3\xD4\x9A\xED\x99\xA3\x7FO]dsolcC\0\x08\x1A\x003";
     /// The deployed bytecode of the contract.
-    pub static MESSAGESENDERLIB_DEPLOYED_BYTECODE: ::ethers_core::types::Bytes =
-        ::ethers_core::types::Bytes::from_static(__DEPLOYED_BYTECODE);
+    pub static MESSAGESENDERLIB_DEPLOYED_BYTECODE: ::ethers_core::types::Bytes = ::ethers_core::types::Bytes::from_static(
+        __DEPLOYED_BYTECODE,
+    );
     pub struct MessageSenderLib<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for MessageSenderLib<M> {
         fn clone(&self) -> Self {
@@ -64,12 +69,17 @@ pub mod message_sender_lib {
     impl<M: ::ethers_providers::Middleware> MessageSenderLib<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
-            Self(::ethers_contract::Contract::new(
-                address.into(),
-                MESSAGESENDERLIB_ABI.clone(),
-                client,
-            ))
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
+            Self(
+                ::ethers_contract::Contract::new(
+                    address.into(),
+                    MESSAGESENDERLIB_ABI.clone(),
+                    client,
+                ),
+            )
         }
         /// Constructs the general purpose `Deployer` instance based on the provided constructor arguments and sends it.
         /// Returns a new instance of a deployer that returns an instance of this contract after sending the transaction
@@ -111,7 +121,8 @@ pub mod message_sender_lib {
             Ok(deployer)
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for MessageSenderLib<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+    for MessageSenderLib<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }

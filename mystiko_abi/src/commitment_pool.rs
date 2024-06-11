@@ -7,11 +7,13 @@ pub use commitment_pool::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types
+    non_camel_case_types,
 )]
 pub mod commitment_pool {
     const _: () = {
-        ::core::include_bytes!("../json/CommitmentPool.json",);
+        ::core::include_bytes!(
+"../json/CommitmentPool.json",
+        );
     };
     #[allow(deprecated)]
     fn __abi() -> ::ethers_core::abi::Abi {
@@ -19,1061 +21,1122 @@ pub mod commitment_pool {
             constructor: ::core::option::Option::None,
             functions: ::core::convert::From::from([
                 (
+                    ::std::borrow::ToOwned::to_owned("AUDITOR_COUNT"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("AUDITOR_COUNT"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
+                ),
+                (
                     ::std::borrow::ToOwned::to_owned("_pathIndices"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("_pathIndices"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_fullPath"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "uint256"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_rollupSize"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint32"),),
-                            },
-                        ],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::Pure,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("_pathIndices"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_fullPath"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_rollupSize"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint32"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::Pure,
+                        },
+                    ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("addEnqueueWhitelist"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("addEnqueueWhitelist",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_actor"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("addRollupWhitelist"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("addRollupWhitelist"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_roller"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::borrow::ToOwned::to_owned("assetAddress"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("assetAddress"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("assetType"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("assetType"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(8usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                "enum AssetPool.AssetType"
-                            ),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("assetType"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(8usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("enum AssetPool.AssetType"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("auditorCount"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("auditorCount"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("changeOperator"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("changeOperator"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_newOperator"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("disableRollupVerifier"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("disableRollupVerifier",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_rollupSize"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint32"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("disableSanctionsCheck"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("disableSanctionsCheck",),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("disableTransactVerifier"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("disableTransactVerifier",),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_numInputs"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint32"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_numOutputs"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint32"),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("enableRollupVerifier"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("enableRollupVerifier",),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_rollupSize"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint32"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_rollupVerifier"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "contract IVerifier"
-                                ),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("enableSanctionsCheck"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("enableSanctionsCheck",),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("enableTransactVerifier"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("enableTransactVerifier",),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_numInputs"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint32"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_numOutputs"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint32"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_transactVerifier"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "contract IVerifier"
-                                ),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::borrow::ToOwned::to_owned("defaultMinRollupFee"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "defaultMinRollupFee",
+                            ),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("enqueue"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("enqueue"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_request"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                ],),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "struct ICommitmentPool.CommitmentRequest",
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_executor"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "address"
-                                ),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("enqueue"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_request"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                        ::std::vec![
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                            ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                        ],
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned(
+                                            "struct ICommitmentPool.CommitmentRequest",
+                                        ),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_executor"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getAllAuditorPublicKeys"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getAllAuditorPublicKeys",),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                            ),),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256[]"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "getAllAuditorPublicKeys",
+                            ),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Array(
+                                        ::std::boxed::Box::new(
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                        ),
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256[]"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getAuditorPublicKey"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getAuditorPublicKey",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_index"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "getAuditorPublicKey",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_index"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getCommitmentCount"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getCommitmentCount"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getCommitmentCount"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getCommitmentIncludedCount"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getCommitmentIncludedCount",),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "getCommitmentIncludedCount",
+                            ),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getCommitmentQueuedCount"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getCommitmentQueuedCount",),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "getCommitmentQueuedCount",
+                            ),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getMinRollupFee"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getMinRollupFee"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getMinRollupFee"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getNullifierCount"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getNullifierCount"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getNullifierCount"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getQueuedCommitments"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getQueuedCommitments",),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                            ),),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256[]"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "getQueuedCommitments",
+                            ),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Array(
+                                        ::std::boxed::Box::new(
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                        ),
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256[]"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getTreeCapacity"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getTreeCapacity"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getTreeCapacity"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isHistoricCommitment"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("isHistoricCommitment",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_commitment"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "isHistoricCommitment",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_commitment"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bool"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isKnownRoot"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("isKnownRoot"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("root"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("isRollupWhitelistDisabled"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("isRollupWhitelistDisabled",),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("isKnownRoot"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("root"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bool"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isSpentSerialNumber"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("isSpentSerialNumber",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_serialNumber"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("isVerifierUpdateDisabled"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("isVerifierUpdateDisabled",),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("removeEnqueueWhitelist"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("removeEnqueueWhitelist",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_actor"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("removeRollupWhitelist"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("removeRollupWhitelist",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_roller"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "isSpentSerialNumber",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_serialNumber"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bool"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("rollup"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("rollup"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_request"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                    ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ],),
-                                    ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                        ::ethers_core::abi::ethabi::ParamType::FixedArray(
-                                            ::std::boxed::Box::new(::ethers_core::abi::ethabi::ParamType::Uint(
-                                                256usize
-                                            ),),
-                                            2usize,
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("rollup"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_request"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                        ::std::vec![
+                                            ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                ::std::vec![
+                                                    ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                        ::std::vec![
+                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                        ],
+                                                    ),
+                                                    ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                        ::std::vec![
+                                                            ::ethers_core::abi::ethabi::ParamType::FixedArray(
+                                                                ::std::boxed::Box::new(
+                                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                                ),
+                                                                2usize,
+                                                            ),
+                                                            ::ethers_core::abi::ethabi::ParamType::FixedArray(
+                                                                ::std::boxed::Box::new(
+                                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                                ),
+                                                                2usize,
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                        ::std::vec![
+                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                        ],
+                                                    ),
+                                                ],
+                                            ),
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                        ],
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned(
+                                            "struct ICommitmentPool.RollupRequest",
                                         ),
-                                        ::ethers_core::abi::ethabi::ParamType::FixedArray(
-                                            ::std::boxed::Box::new(::ethers_core::abi::ethabi::ParamType::Uint(
-                                                256usize
-                                            ),),
-                                            2usize,
-                                        ),
-                                    ],),
-                                    ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ],),
-                                ],),
-                                ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
-                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                            ],),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                "struct ICommitmentPool.RollupRequest",
-                            ),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("sanctionsCheck"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("sanctionsCheck"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("sanctionsList"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("sanctionsList"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                "contract ISanctionsList"
-                            ),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("setMinRollupFee"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("setMinRollupFee"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_minRollupFee"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("setRollupWhitelistDisabled"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("setRollupWhitelistDisabled",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_state"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("setVerifierUpdateDisabled"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("setVerifierUpdateDisabled",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_state"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::borrow::ToOwned::to_owned("settings"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("settings"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("contract MystikoSettings"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("transact"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("transact"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_request"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                    ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                        ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                        ],),
-                                        ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                            ::ethers_core::abi::ethabi::ParamType::FixedArray(
-                                                ::std::boxed::Box::new(::ethers_core::abi::ethabi::ParamType::Uint(
-                                                    256usize
-                                                ),),
-                                                2usize,
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("transact"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_request"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                        ::std::vec![
+                                            ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                ::std::vec![
+                                                    ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                        ::std::vec![
+                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                        ],
+                                                    ),
+                                                    ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                        ::std::vec![
+                                                            ::ethers_core::abi::ethabi::ParamType::FixedArray(
+                                                                ::std::boxed::Box::new(
+                                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                                ),
+                                                                2usize,
+                                                            ),
+                                                            ::ethers_core::abi::ethabi::ParamType::FixedArray(
+                                                                ::std::boxed::Box::new(
+                                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                                ),
+                                                                2usize,
+                                                            ),
+                                                        ],
+                                                    ),
+                                                    ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                        ::std::vec![
+                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                        ],
+                                                    ),
+                                                ],
                                             ),
-                                            ::ethers_core::abi::ethabi::ParamType::FixedArray(
-                                                ::std::boxed::Box::new(::ethers_core::abi::ethabi::ParamType::Uint(
-                                                    256usize
-                                                ),),
-                                                2usize,
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                            ::ethers_core::abi::ethabi::ParamType::Array(
+                                                ::std::boxed::Box::new(
+                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                ),
                                             ),
-                                        ],),
-                                        ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
+                                            ::ethers_core::abi::ethabi::ParamType::Array(
+                                                ::std::boxed::Box::new(
+                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                ),
+                                            ),
+                                            ::ethers_core::abi::ethabi::ParamType::FixedBytes(32usize),
                                             ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
                                             ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                        ],),
-                                    ],),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ),),
-                                    ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ),),
-                                    ::ethers_core::abi::ethabi::ParamType::FixedBytes(32usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ),),
-                                    ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ),),
-                                    ::ethers_core::abi::ethabi::ParamType::Address,
-                                    ::ethers_core::abi::ethabi::ParamType::Address,
-                                    ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                        ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                    ),),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                        ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ),),
-                                ],),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "struct ICommitmentPool.TransactRequest",
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_signature"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("updateAuditorPublicKey"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("updateAuditorPublicKey",),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_index"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "uint256"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_publicKey"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "uint256"
-                                ),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("updateSanctionsListAddress"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("updateSanctionsListAddress",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_sanction"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                "contract ISanctionsList"
-                            ),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                                            ::ethers_core::abi::ethabi::ParamType::Array(
+                                                ::std::boxed::Box::new(
+                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                ),
+                                            ),
+                                            ::ethers_core::abi::ethabi::ParamType::Array(
+                                                ::std::boxed::Box::new(
+                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                ),
+                                            ),
+                                            ::ethers_core::abi::ethabi::ParamType::Address,
+                                            ::ethers_core::abi::ethabi::ParamType::Address,
+                                            ::ethers_core::abi::ethabi::ParamType::Array(
+                                                ::std::boxed::Box::new(
+                                                    ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                                ),
+                                            ),
+                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                            ::ethers_core::abi::ethabi::ParamType::Array(
+                                                ::std::boxed::Box::new(
+                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned(
+                                            "struct ICommitmentPool.TransactRequest",
+                                        ),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_signature"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
             ]),
             events: ::core::convert::From::from([
                 (
-                    ::std::borrow::ToOwned::to_owned("AuditorPublicKey"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("AuditorPublicKey"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("index"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: true,
-                            },
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("publicKey"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: false,
-                            },
-                        ],
-                        anonymous: false,
-                    },],
-                ),
-                (
                     ::std::borrow::ToOwned::to_owned("CommitmentIncluded"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("CommitmentIncluded"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
-                            name: ::std::borrow::ToOwned::to_owned("commitment"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                            indexed: true,
-                        },],
-                        anonymous: false,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Event {
+                            name: ::std::borrow::ToOwned::to_owned("CommitmentIncluded"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("commitment"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    indexed: true,
+                                },
+                            ],
+                            anonymous: false,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("CommitmentQueued"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("CommitmentQueued"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("commitment"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: true,
-                            },
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("rollupFee"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: false,
-                            },
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("leafIndex"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: false,
-                            },
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("encryptedNote"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                indexed: false,
-                            },
-                        ],
-                        anonymous: false,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Event {
+                            name: ::std::borrow::ToOwned::to_owned("CommitmentQueued"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("commitment"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    indexed: true,
+                                },
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("rollupFee"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    indexed: false,
+                                },
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("leafIndex"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    indexed: false,
+                                },
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("encryptedNote"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    indexed: false,
+                                },
+                            ],
+                            anonymous: false,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("CommitmentSpent"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("CommitmentSpent"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("rootHash"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: true,
-                            },
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("serialNumber"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: true,
-                            },
-                        ],
-                        anonymous: false,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Event {
+                            name: ::std::borrow::ToOwned::to_owned("CommitmentSpent"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("rootHash"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    indexed: true,
+                                },
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("serialNumber"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    indexed: true,
+                                },
+                            ],
+                            anonymous: false,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("EncryptedAuditorNote"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("EncryptedAuditorNote",),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("id"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
-                                indexed: false,
-                            },
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("auditorPublicKey"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: false,
-                            },
-                            ::ethers_core::abi::ethabi::EventParam {
-                                name: ::std::borrow::ToOwned::to_owned("encryptedAuditorNote",),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                indexed: false,
-                            },
-                        ],
-                        anonymous: false,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Event {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "EncryptedAuditorNote",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("id"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                                    indexed: false,
+                                },
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("auditorPublicKey"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    indexed: false,
+                                },
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned(
+                                        "encryptedAuditorNote",
+                                    ),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    indexed: false,
+                                },
+                            ],
+                            anonymous: false,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("EncryptedAuditorNotes"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("EncryptedAuditorNotes",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
-                            name: ::std::borrow::ToOwned::to_owned("notes"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
-                                ::ethers_core::abi::ethabi::ParamType::Tuple(::std::vec![
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                ],),
-                            ),),
-                            indexed: false,
-                        },],
-                        anonymous: false,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("OperatorChanged"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("OperatorChanged"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
-                            name: ::std::borrow::ToOwned::to_owned("operator"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            indexed: true,
-                        },],
-                        anonymous: false,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("RollupWhitelistDisabled"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("RollupWhitelistDisabled",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
-                            name: ::std::borrow::ToOwned::to_owned("state"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            indexed: false,
-                        },],
-                        anonymous: false,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("SanctionsCheck"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("SanctionsCheck"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
-                            name: ::std::borrow::ToOwned::to_owned("state"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            indexed: false,
-                        },],
-                        anonymous: false,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("SanctionsList"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("SanctionsList"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
-                            name: ::std::borrow::ToOwned::to_owned("sanctions"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            indexed: false,
-                        },],
-                        anonymous: false,
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("VerifierUpdateDisabled"),
-                    ::std::vec![::ethers_core::abi::ethabi::Event {
-                        name: ::std::borrow::ToOwned::to_owned("VerifierUpdateDisabled",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::EventParam {
-                            name: ::std::borrow::ToOwned::to_owned("state"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            indexed: false,
-                        },],
-                        anonymous: false,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Event {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "EncryptedAuditorNotes",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::EventParam {
+                                    name: ::std::borrow::ToOwned::to_owned("notes"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Array(
+                                        ::std::boxed::Box::new(
+                                            ::ethers_core::abi::ethabi::ParamType::Tuple(
+                                                ::std::vec![
+                                                    ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
+                                                ],
+                                            ),
+                                        ),
+                                    ),
+                                    indexed: false,
+                                },
+                            ],
+                            anonymous: false,
+                        },
+                    ],
                 ),
             ]),
             errors: ::core::convert::From::from([
                 (
-                    ::std::borrow::ToOwned::to_owned("AuditorIndexError"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("AuditorIndexError"),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::borrow::ToOwned::to_owned("AssociatedPoolNotMatched"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "AssociatedPoolNotMatched",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("AuditorNotesLengthError"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("AuditorNotesLengthError",),
-                        inputs: ::std::vec![],
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("AuditorPublicKeyNotChanged"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("AuditorPublicKeyNotChanged",),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "AuditorNotesLengthError",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("CommitmentHasBeenSubmitted"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("CommitmentHasBeenSubmitted",),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "CommitmentHasBeenSubmitted",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("Duplicated"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("Duplicated"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("param"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::String,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
-                        },],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("Duplicated"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("param"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("string"),
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("ECDSAInvalidSignature"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "ECDSAInvalidSignature",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("ECDSAInvalidSignatureLength"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "ECDSAInvalidSignatureLength",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("length"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("ECDSAInvalidSignatureS"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "ECDSAInvalidSignatureS",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("s"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
+                                        32usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes32"),
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("IndexOutOfBound"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("IndexOutOfBound"),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("IndexOutOfBound"),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("Invalid"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("Invalid"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("param"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::String,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
-                        },],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("Invalid"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("param"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("string"),
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("NewRootIsDuplicated"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("NewRootIsDuplicated",),
-                        inputs: ::std::vec![],
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("NotChanged"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("NotChanged"),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "NewRootIsDuplicated",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("NoteHasBeenSpent"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("NoteHasBeenSpent"),
-                        inputs: ::std::vec![],
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("NumInputsGreaterThanZero"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("NumInputsGreaterThanZero",),
-                        inputs: ::std::vec![],
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("OnlyOperator"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("OnlyOperator"),
-                        inputs: ::std::vec![],
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("OnlyWhitelistedRoller"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("OnlyWhitelistedRoller",),
-                        inputs: ::std::vec![],
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("OnlyWhitelistedSender"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("OnlyWhitelistedSender",),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("NoteHasBeenSpent"),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("OutputNotesLessThanThree"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("OutputNotesLessThanThree",),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "OutputNotesLessThanThree",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("ReentrancyGuardReentrantCall"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "ReentrancyGuardReentrantCall",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("RejectRelay"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("RejectRelay"),
+                            inputs: ::std::vec![],
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("RejectRollup"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("RejectRollup"),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("RollupFeeToFew"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("RollupFeeToFew"),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("RollupFeeToFew"),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("RollupSizeNotPowerOfTwo"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("RollupSizeNotPowerOfTwo",),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::borrow::ToOwned::to_owned("RollupVerifierDisabled"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "RollupVerifierDisabled",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("rollupSize"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("SafeCastOverflowedUintDowncast"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "SafeCastOverflowedUintDowncast",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("bits"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(8usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint8"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("value"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("SanctionedAddress"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("SanctionedAddress"),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("SanctionedAddress"),
+                            inputs: ::std::vec![],
+                        },
+                    ],
+                ),
+                (
+                    ::std::borrow::ToOwned::to_owned("TransactVerifierDisabled"),
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "TransactVerifierDisabled",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("inputNumber"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint32"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("outputNumber"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(32usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint32"),
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("TreeHeightLessThanZero"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("TreeHeightLessThanZero",),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "TreeHeightLessThanZero",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("TreeHeightOutOfBounds"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("TreeHeightOutOfBounds",),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "TreeHeightOutOfBounds",
+                            ),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("TreeIsFull"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("TreeIsFull"),
-                        inputs: ::std::vec![],
-                    },],
-                ),
-                (
-                    ::std::borrow::ToOwned::to_owned("VerifierUpdatesHasBeenDisabled"),
-                    ::std::vec![::ethers_core::abi::ethabi::AbiError {
-                        name: ::std::borrow::ToOwned::to_owned("VerifierUpdatesHasBeenDisabled",),
-                        inputs: ::std::vec![],
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::AbiError {
+                            name: ::std::borrow::ToOwned::to_owned("TreeIsFull"),
+                            inputs: ::std::vec![],
+                        },
+                    ],
                 ),
             ]),
             receive: false,
@@ -1081,8 +1144,9 @@ pub mod commitment_pool {
         }
     }
     ///The parsed JSON ABI of the contract.
-    pub static COMMITMENTPOOL_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
-        ::ethers_contract::Lazy::new(__abi);
+    pub static COMMITMENTPOOL_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(
+        __abi,
+    );
     pub struct CommitmentPool<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for CommitmentPool<M> {
         fn clone(&self) -> Self {
@@ -1110,12 +1174,25 @@ pub mod commitment_pool {
     impl<M: ::ethers_providers::Middleware> CommitmentPool<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
-            Self(::ethers_contract::Contract::new(
-                address.into(),
-                COMMITMENTPOOL_ABI.clone(),
-                client,
-            ))
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
+            Self(
+                ::ethers_contract::Contract::new(
+                    address.into(),
+                    COMMITMENTPOOL_ABI.clone(),
+                    client,
+                ),
+            )
+        }
+        ///Calls the contract's `AUDITOR_COUNT` (0xa592bd69) function
+        pub fn auditor_count(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+            self.0
+                .method_hash([165, 146, 189, 105], ())
+                .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `_pathIndices` (0xf2da1d41) function
         pub fn path_indices(
@@ -1127,22 +1204,15 @@ pub mod commitment_pool {
                 .method_hash([242, 218, 29, 65], (full_path, rollup_size))
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `addEnqueueWhitelist` (0xa9b1d296) function
-        pub fn add_enqueue_whitelist(
+        ///Calls the contract's `assetAddress` (0x1ba46cfd) function
+        pub fn asset_address(
             &self,
-            actor: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
-                .method_hash([169, 177, 210, 150], actor)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `addRollupWhitelist` (0x02d498f1) function
-        pub fn add_rollup_whitelist(
-            &self,
-            roller: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([2, 212, 152, 241], roller)
+                .method_hash([27, 164, 108, 253], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `assetType` (0x3fe3347a) function
@@ -1151,68 +1221,12 @@ pub mod commitment_pool {
                 .method_hash([63, 227, 52, 122], ())
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `auditorCount` (0x115f574c) function
-        pub fn auditor_count(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
-            self.0
-                .method_hash([17, 95, 87, 76], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `changeOperator` (0x06394c9b) function
-        pub fn change_operator(
+        ///Calls the contract's `defaultMinRollupFee` (0xb2316c33) function
+        pub fn default_min_rollup_fee(
             &self,
-            new_operator: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
-                .method_hash([6, 57, 76, 155], new_operator)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `disableRollupVerifier` (0x9b0a6fea) function
-        pub fn disable_rollup_verifier(&self, rollup_size: u32) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([155, 10, 111, 234], rollup_size)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `disableSanctionsCheck` (0xdd757c34) function
-        pub fn disable_sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([221, 117, 124, 52], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `disableTransactVerifier` (0xc259e2e6) function
-        pub fn disable_transact_verifier(
-            &self,
-            num_inputs: u32,
-            num_outputs: u32,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([194, 89, 226, 230], (num_inputs, num_outputs))
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `enableRollupVerifier` (0xdeeff7cd) function
-        pub fn enable_rollup_verifier(
-            &self,
-            rollup_size: u32,
-            rollup_verifier: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([222, 239, 247, 205], (rollup_size, rollup_verifier))
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `enableSanctionsCheck` (0x01dbf19f) function
-        pub fn enable_sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([1, 219, 241, 159], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `enableTransactVerifier` (0x7fa4b09c) function
-        pub fn enable_transact_verifier(
-            &self,
-            num_inputs: u32,
-            num_outputs: u32,
-            transact_verifier: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([127, 164, 176, 156], (num_inputs, num_outputs, transact_verifier))
+                .method_hash([178, 49, 108, 51], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `enqueue` (0x78d60cd7) function
@@ -1228,7 +1242,10 @@ pub mod commitment_pool {
         ///Calls the contract's `getAllAuditorPublicKeys` (0x63bc7d32) function
         pub fn get_all_auditor_public_keys(
             &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::std::vec::Vec<::ethers_core::types::U256>> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::std::vec::Vec<::ethers_core::types::U256>,
+        > {
             self.0
                 .method_hash([99, 188, 125, 50], ())
                 .expect("method not found (this should never happen)")
@@ -1243,7 +1260,9 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getCommitmentCount` (0x5688881f) function
-        pub fn get_commitment_count(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_commitment_count(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([86, 136, 136, 31], ())
                 .expect("method not found (this should never happen)")
@@ -1265,13 +1284,17 @@ pub mod commitment_pool {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getMinRollupFee` (0xb08892d0) function
-        pub fn get_min_rollup_fee(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_min_rollup_fee(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([176, 136, 146, 208], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getNullifierCount` (0x7a553744) function
-        pub fn get_nullifier_count(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_nullifier_count(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([122, 85, 55, 68], ())
                 .expect("method not found (this should never happen)")
@@ -1279,13 +1302,18 @@ pub mod commitment_pool {
         ///Calls the contract's `getQueuedCommitments` (0x866ac658) function
         pub fn get_queued_commitments(
             &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::std::vec::Vec<::ethers_core::types::U256>> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::std::vec::Vec<::ethers_core::types::U256>,
+        > {
             self.0
                 .method_hash([134, 106, 198, 88], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getTreeCapacity` (0x484eb652) function
-        pub fn get_tree_capacity(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn get_tree_capacity(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
             self.0
                 .method_hash([72, 78, 182, 82], ())
                 .expect("method not found (this should never happen)")
@@ -1308,12 +1336,6 @@ pub mod commitment_pool {
                 .method_hash([166, 35, 42, 147], root)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `isRollupWhitelistDisabled` (0xffa89b88) function
-        pub fn is_rollup_whitelist_disabled(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
-            self.0
-                .method_hash([255, 168, 155, 136], ())
-                .expect("method not found (this should never happen)")
-        }
         ///Calls the contract's `isSpentSerialNumber` (0x3bb8d1b4) function
         pub fn is_spent_serial_number(
             &self,
@@ -1323,67 +1345,24 @@ pub mod commitment_pool {
                 .method_hash([59, 184, 209, 180], serial_number)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `isVerifierUpdateDisabled` (0x4eb069f7) function
-        pub fn is_verifier_update_disabled(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
-            self.0
-                .method_hash([78, 176, 105, 247], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `removeEnqueueWhitelist` (0x03db9874) function
-        pub fn remove_enqueue_whitelist(
-            &self,
-            actor: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([3, 219, 152, 116], actor)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `removeRollupWhitelist` (0x9cc6b354) function
-        pub fn remove_rollup_whitelist(
-            &self,
-            roller: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([156, 198, 179, 84], roller)
-                .expect("method not found (this should never happen)")
-        }
         ///Calls the contract's `rollup` (0x14a7737d) function
-        pub fn rollup(&self, request: RollupRequest) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn rollup(
+            &self,
+            request: RollupRequest,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([20, 167, 115, 125], (request,))
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `sanctionsCheck` (0xb1c39422) function
-        pub fn sanctions_check(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
-            self.0
-                .method_hash([177, 195, 148, 34], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `sanctionsList` (0xec571c6a) function
-        pub fn sanctions_list(&self) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
-            self.0
-                .method_hash([236, 87, 28, 106], ())
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `setMinRollupFee` (0x7cbf0ff6) function
-        pub fn set_min_rollup_fee(
+        ///Calls the contract's `settings` (0xe06174e4) function
+        pub fn settings(
             &self,
-            min_rollup_fee: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
-                .method_hash([124, 191, 15, 246], min_rollup_fee)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `setRollupWhitelistDisabled` (0xf8f05388) function
-        pub fn set_rollup_whitelist_disabled(&self, state: bool) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([248, 240, 83, 136], state)
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `setVerifierUpdateDisabled` (0xb3b75631) function
-        pub fn set_verifier_update_disabled(&self, state: bool) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([179, 183, 86, 49], state)
+                .method_hash([224, 97, 116, 228], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `transact` (0x72082971) function
@@ -1396,102 +1375,74 @@ pub mod commitment_pool {
                 .method_hash([114, 8, 41, 113], (request, signature))
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `updateAuditorPublicKey` (0x0c8867e6) function
-        pub fn update_auditor_public_key(
-            &self,
-            index: ::ethers_core::types::U256,
-            public_key: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([12, 136, 103, 230], (index, public_key))
-                .expect("method not found (this should never happen)")
-        }
-        ///Calls the contract's `updateSanctionsListAddress` (0x30f49cac) function
-        pub fn update_sanctions_list_address(
-            &self,
-            sanction: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
-            self.0
-                .method_hash([48, 244, 156, 172], sanction)
-                .expect("method not found (this should never happen)")
-        }
-        ///Gets the contract's `AuditorPublicKey` event
-        pub fn auditor_public_key_filter(
-            &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, AuditorPublicKeyFilter> {
-            self.0.event()
-        }
         ///Gets the contract's `CommitmentIncluded` event
         pub fn commitment_included_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentIncludedFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            CommitmentIncludedFilter,
+        > {
             self.0.event()
         }
         ///Gets the contract's `CommitmentQueued` event
         pub fn commitment_queued_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentQueuedFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            CommitmentQueuedFilter,
+        > {
             self.0.event()
         }
         ///Gets the contract's `CommitmentSpent` event
         pub fn commitment_spent_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentSpentFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            CommitmentSpentFilter,
+        > {
             self.0.event()
         }
         ///Gets the contract's `EncryptedAuditorNote` event
         pub fn encrypted_auditor_note_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, EncryptedAuditorNoteFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            EncryptedAuditorNoteFilter,
+        > {
             self.0.event()
         }
         ///Gets the contract's `EncryptedAuditorNotes` event
         pub fn encrypted_auditor_notes_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, EncryptedAuditorNotesFilter> {
-            self.0.event()
-        }
-        ///Gets the contract's `OperatorChanged` event
-        pub fn operator_changed_filter(
-            &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, OperatorChangedFilter> {
-            self.0.event()
-        }
-        ///Gets the contract's `RollupWhitelistDisabled` event
-        pub fn rollup_whitelist_disabled_filter(
-            &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, RollupWhitelistDisabledFilter> {
-            self.0.event()
-        }
-        ///Gets the contract's `SanctionsCheck` event
-        pub fn sanctions_check_filter(
-            &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsCheckFilter> {
-            self.0.event()
-        }
-        ///Gets the contract's `SanctionsList` event
-        pub fn sanctions_list_filter(
-            &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, SanctionsListFilter> {
-            self.0.event()
-        }
-        ///Gets the contract's `VerifierUpdateDisabled` event
-        pub fn verifier_update_disabled_filter(
-            &self,
-        ) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, VerifierUpdateDisabledFilter> {
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            EncryptedAuditorNotesFilter,
+        > {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(&self) -> ::ethers_contract::builders::Event<::std::sync::Arc<M>, M, CommitmentPoolEvents> {
+        pub fn events(
+            &self,
+        ) -> ::ethers_contract::builders::Event<
+            ::std::sync::Arc<M>,
+            M,
+            CommitmentPoolEvents,
+        > {
             self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for CommitmentPool<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+    for CommitmentPool<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
     }
-    ///Custom Error type `AuditorIndexError` with signature `AuditorIndexError()` and selector `0xc6310d14`
+    ///Custom Error type `AssociatedPoolNotMatched` with signature `AssociatedPoolNotMatched()` and selector `0x5335a045`
     #[derive(
         Clone,
         ::ethers_contract::EthError,
@@ -1502,10 +1453,10 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[etherror(name = "AuditorIndexError", abi = "AuditorIndexError()")]
-    pub struct AuditorIndexError;
+    #[etherror(name = "AssociatedPoolNotMatched", abi = "AssociatedPoolNotMatched()")]
+    pub struct AssociatedPoolNotMatched;
     ///Custom Error type `AuditorNotesLengthError` with signature `AuditorNotesLengthError()` and selector `0xeb3d22ec`
     #[derive(
         Clone,
@@ -1517,25 +1468,10 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "AuditorNotesLengthError", abi = "AuditorNotesLengthError()")]
     pub struct AuditorNotesLengthError;
-    ///Custom Error type `AuditorPublicKeyNotChanged` with signature `AuditorPublicKeyNotChanged()` and selector `0x02538338`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthError,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[etherror(name = "AuditorPublicKeyNotChanged", abi = "AuditorPublicKeyNotChanged()")]
-    pub struct AuditorPublicKeyNotChanged;
     ///Custom Error type `CommitmentHasBeenSubmitted` with signature `CommitmentHasBeenSubmitted()` and selector `0xe38cd14d`
     #[derive(
         Clone,
@@ -1547,9 +1483,12 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[etherror(name = "CommitmentHasBeenSubmitted", abi = "CommitmentHasBeenSubmitted()")]
+    #[etherror(
+        name = "CommitmentHasBeenSubmitted",
+        abi = "CommitmentHasBeenSubmitted()"
+    )]
     pub struct CommitmentHasBeenSubmitted;
     ///Custom Error type `Duplicated` with signature `Duplicated(string)` and selector `0xbee36111`
     #[derive(
@@ -1562,11 +1501,63 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "Duplicated", abi = "Duplicated(string)")]
     pub struct Duplicated {
         pub param: ::std::string::String,
+    }
+    ///Custom Error type `ECDSAInvalidSignature` with signature `ECDSAInvalidSignature()` and selector `0xf645eedf`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[etherror(name = "ECDSAInvalidSignature", abi = "ECDSAInvalidSignature()")]
+    pub struct ECDSAInvalidSignature;
+    ///Custom Error type `ECDSAInvalidSignatureLength` with signature `ECDSAInvalidSignatureLength(uint256)` and selector `0xfce698f7`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[etherror(
+        name = "ECDSAInvalidSignatureLength",
+        abi = "ECDSAInvalidSignatureLength(uint256)"
+    )]
+    pub struct ECDSAInvalidSignatureLength {
+        pub length: ::ethers_core::types::U256,
+    }
+    ///Custom Error type `ECDSAInvalidSignatureS` with signature `ECDSAInvalidSignatureS(bytes32)` and selector `0xd78bce0c`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[etherror(name = "ECDSAInvalidSignatureS", abi = "ECDSAInvalidSignatureS(bytes32)")]
+    pub struct ECDSAInvalidSignatureS {
+        pub s: [u8; 32],
     }
     ///Custom Error type `IndexOutOfBound` with signature `IndexOutOfBound()` and selector `0xd3482f7b`
     #[derive(
@@ -1579,7 +1570,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "IndexOutOfBound", abi = "IndexOutOfBound()")]
     pub struct IndexOutOfBound;
@@ -1594,7 +1585,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "Invalid", abi = "Invalid(string)")]
     pub struct Invalid {
@@ -1611,25 +1602,10 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "NewRootIsDuplicated", abi = "NewRootIsDuplicated()")]
     pub struct NewRootIsDuplicated;
-    ///Custom Error type `NotChanged` with signature `NotChanged()` and selector `0x36a1c33f`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthError,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[etherror(name = "NotChanged", abi = "NotChanged()")]
-    pub struct NotChanged;
     ///Custom Error type `NoteHasBeenSpent` with signature `NoteHasBeenSpent()` and selector `0xff556e20`
     #[derive(
         Clone,
@@ -1641,70 +1617,10 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "NoteHasBeenSpent", abi = "NoteHasBeenSpent()")]
     pub struct NoteHasBeenSpent;
-    ///Custom Error type `NumInputsGreaterThanZero` with signature `NumInputsGreaterThanZero()` and selector `0x9f7bd94b`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthError,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[etherror(name = "NumInputsGreaterThanZero", abi = "NumInputsGreaterThanZero()")]
-    pub struct NumInputsGreaterThanZero;
-    ///Custom Error type `OnlyOperator` with signature `OnlyOperator()` and selector `0x27e1f1e5`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthError,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[etherror(name = "OnlyOperator", abi = "OnlyOperator()")]
-    pub struct OnlyOperator;
-    ///Custom Error type `OnlyWhitelistedRoller` with signature `OnlyWhitelistedRoller()` and selector `0x21ce01f3`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthError,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[etherror(name = "OnlyWhitelistedRoller", abi = "OnlyWhitelistedRoller()")]
-    pub struct OnlyWhitelistedRoller;
-    ///Custom Error type `OnlyWhitelistedSender` with signature `OnlyWhitelistedSender()` and selector `0xf75e9fc7`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthError,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[etherror(name = "OnlyWhitelistedSender", abi = "OnlyWhitelistedSender()")]
-    pub struct OnlyWhitelistedSender;
     ///Custom Error type `OutputNotesLessThanThree` with signature `OutputNotesLessThanThree()` and selector `0x7f6328ba`
     #[derive(
         Clone,
@@ -1716,10 +1632,58 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "OutputNotesLessThanThree", abi = "OutputNotesLessThanThree()")]
     pub struct OutputNotesLessThanThree;
+    ///Custom Error type `ReentrancyGuardReentrantCall` with signature `ReentrancyGuardReentrantCall()` and selector `0x3ee5aeb5`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[etherror(
+        name = "ReentrancyGuardReentrantCall",
+        abi = "ReentrancyGuardReentrantCall()"
+    )]
+    pub struct ReentrancyGuardReentrantCall;
+    ///Custom Error type `RejectRelay` with signature `RejectRelay()` and selector `0x6495f1b2`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[etherror(name = "RejectRelay", abi = "RejectRelay()")]
+    pub struct RejectRelay;
+    ///Custom Error type `RejectRollup` with signature `RejectRollup()` and selector `0xff4e3423`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[etherror(name = "RejectRollup", abi = "RejectRollup()")]
+    pub struct RejectRollup;
     ///Custom Error type `RollupFeeToFew` with signature `RollupFeeToFew()` and selector `0xf09e057a`
     #[derive(
         Clone,
@@ -1731,11 +1695,11 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "RollupFeeToFew", abi = "RollupFeeToFew()")]
     pub struct RollupFeeToFew;
-    ///Custom Error type `RollupSizeNotPowerOfTwo` with signature `RollupSizeNotPowerOfTwo()` and selector `0x22717ff9`
+    ///Custom Error type `RollupVerifierDisabled` with signature `RollupVerifierDisabled(uint256)` and selector `0xf5735a5f`
     #[derive(
         Clone,
         ::ethers_contract::EthError,
@@ -1746,10 +1710,33 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[etherror(name = "RollupSizeNotPowerOfTwo", abi = "RollupSizeNotPowerOfTwo()")]
-    pub struct RollupSizeNotPowerOfTwo;
+    #[etherror(name = "RollupVerifierDisabled", abi = "RollupVerifierDisabled(uint256)")]
+    pub struct RollupVerifierDisabled {
+        pub rollup_size: ::ethers_core::types::U256,
+    }
+    ///Custom Error type `SafeCastOverflowedUintDowncast` with signature `SafeCastOverflowedUintDowncast(uint8,uint256)` and selector `0x6dfcc650`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[etherror(
+        name = "SafeCastOverflowedUintDowncast",
+        abi = "SafeCastOverflowedUintDowncast(uint8,uint256)"
+    )]
+    pub struct SafeCastOverflowedUintDowncast {
+        pub bits: u8,
+        pub value: ::ethers_core::types::U256,
+    }
     ///Custom Error type `SanctionedAddress` with signature `SanctionedAddress()` and selector `0x2e70c0b1`
     #[derive(
         Clone,
@@ -1761,10 +1748,31 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "SanctionedAddress", abi = "SanctionedAddress()")]
     pub struct SanctionedAddress;
+    ///Custom Error type `TransactVerifierDisabled` with signature `TransactVerifierDisabled(uint32,uint32)` and selector `0x68975a47`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthError,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[etherror(
+        name = "TransactVerifierDisabled",
+        abi = "TransactVerifierDisabled(uint32,uint32)"
+    )]
+    pub struct TransactVerifierDisabled {
+        pub input_number: u32,
+        pub output_number: u32,
+    }
     ///Custom Error type `TreeHeightLessThanZero` with signature `TreeHeightLessThanZero()` and selector `0xb13ca6c4`
     #[derive(
         Clone,
@@ -1776,7 +1784,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "TreeHeightLessThanZero", abi = "TreeHeightLessThanZero()")]
     pub struct TreeHeightLessThanZero;
@@ -1791,7 +1799,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "TreeHeightOutOfBounds", abi = "TreeHeightOutOfBounds()")]
     pub struct TreeHeightOutOfBounds;
@@ -1806,127 +1814,177 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[etherror(name = "TreeIsFull", abi = "TreeIsFull()")]
     pub struct TreeIsFull;
-    ///Custom Error type `VerifierUpdatesHasBeenDisabled` with signature `VerifierUpdatesHasBeenDisabled()` and selector `0x36e3e095`
+    ///Container type for all of the contract's custom errors
     #[derive(
         Clone,
-        ::ethers_contract::EthError,
-        ::ethers_contract::EthDisplay,
+        ::ethers_contract::EthAbiType,
         serde::Serialize,
         serde::Deserialize,
-        Default,
         Debug,
         PartialEq,
         Eq,
-        Hash,
-    )]
-    #[etherror(name = "VerifierUpdatesHasBeenDisabled", abi = "VerifierUpdatesHasBeenDisabled()")]
-    pub struct VerifierUpdatesHasBeenDisabled;
-    ///Container type for all of the contract's custom errors
-    #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Hash
     )]
     pub enum CommitmentPoolErrors {
-        AuditorIndexError(AuditorIndexError),
+        AssociatedPoolNotMatched(AssociatedPoolNotMatched),
         AuditorNotesLengthError(AuditorNotesLengthError),
-        AuditorPublicKeyNotChanged(AuditorPublicKeyNotChanged),
         CommitmentHasBeenSubmitted(CommitmentHasBeenSubmitted),
         Duplicated(Duplicated),
+        ECDSAInvalidSignature(ECDSAInvalidSignature),
+        ECDSAInvalidSignatureLength(ECDSAInvalidSignatureLength),
+        ECDSAInvalidSignatureS(ECDSAInvalidSignatureS),
         IndexOutOfBound(IndexOutOfBound),
         Invalid(Invalid),
         NewRootIsDuplicated(NewRootIsDuplicated),
-        NotChanged(NotChanged),
         NoteHasBeenSpent(NoteHasBeenSpent),
-        NumInputsGreaterThanZero(NumInputsGreaterThanZero),
-        OnlyOperator(OnlyOperator),
-        OnlyWhitelistedRoller(OnlyWhitelistedRoller),
-        OnlyWhitelistedSender(OnlyWhitelistedSender),
         OutputNotesLessThanThree(OutputNotesLessThanThree),
+        ReentrancyGuardReentrantCall(ReentrancyGuardReentrantCall),
+        RejectRelay(RejectRelay),
+        RejectRollup(RejectRollup),
         RollupFeeToFew(RollupFeeToFew),
-        RollupSizeNotPowerOfTwo(RollupSizeNotPowerOfTwo),
+        RollupVerifierDisabled(RollupVerifierDisabled),
+        SafeCastOverflowedUintDowncast(SafeCastOverflowedUintDowncast),
         SanctionedAddress(SanctionedAddress),
+        TransactVerifierDisabled(TransactVerifierDisabled),
         TreeHeightLessThanZero(TreeHeightLessThanZero),
         TreeHeightOutOfBounds(TreeHeightOutOfBounds),
         TreeIsFull(TreeIsFull),
-        VerifierUpdatesHasBeenDisabled(VerifierUpdatesHasBeenDisabled),
         /// The standard solidity revert string, with selector
         /// Error(string) -- 0x08c379a0
         RevertString(::std::string::String),
     }
     impl ::ethers_core::abi::AbiDecode for CommitmentPoolErrors {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded) = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <::std::string::String as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::RevertString(decoded));
             }
-            if let Ok(decoded) = <AuditorIndexError as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::AuditorIndexError(decoded));
+            if let Ok(decoded)
+                = <AssociatedPoolNotMatched as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::AssociatedPoolNotMatched(decoded));
             }
-            if let Ok(decoded) = <AuditorNotesLengthError as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <AuditorNotesLengthError as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::AuditorNotesLengthError(decoded));
             }
-            if let Ok(decoded) = <AuditorPublicKeyNotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::AuditorPublicKeyNotChanged(decoded));
-            }
-            if let Ok(decoded) = <CommitmentHasBeenSubmitted as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <CommitmentHasBeenSubmitted as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::CommitmentHasBeenSubmitted(decoded));
             }
-            if let Ok(decoded) = <Duplicated as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <Duplicated as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Duplicated(decoded));
             }
-            if let Ok(decoded) = <IndexOutOfBound as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <ECDSAInvalidSignature as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ECDSAInvalidSignature(decoded));
+            }
+            if let Ok(decoded)
+                = <ECDSAInvalidSignatureLength as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ECDSAInvalidSignatureLength(decoded));
+            }
+            if let Ok(decoded)
+                = <ECDSAInvalidSignatureS as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ECDSAInvalidSignatureS(decoded));
+            }
+            if let Ok(decoded)
+                = <IndexOutOfBound as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IndexOutOfBound(decoded));
             }
-            if let Ok(decoded) = <Invalid as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <Invalid as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Invalid(decoded));
             }
-            if let Ok(decoded) = <NewRootIsDuplicated as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <NewRootIsDuplicated as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::NewRootIsDuplicated(decoded));
             }
-            if let Ok(decoded) = <NotChanged as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::NotChanged(decoded));
-            }
-            if let Ok(decoded) = <NoteHasBeenSpent as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <NoteHasBeenSpent as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::NoteHasBeenSpent(decoded));
             }
-            if let Ok(decoded) = <NumInputsGreaterThanZero as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::NumInputsGreaterThanZero(decoded));
-            }
-            if let Ok(decoded) = <OnlyOperator as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::OnlyOperator(decoded));
-            }
-            if let Ok(decoded) = <OnlyWhitelistedRoller as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::OnlyWhitelistedRoller(decoded));
-            }
-            if let Ok(decoded) = <OnlyWhitelistedSender as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::OnlyWhitelistedSender(decoded));
-            }
-            if let Ok(decoded) = <OutputNotesLessThanThree as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <OutputNotesLessThanThree as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::OutputNotesLessThanThree(decoded));
             }
-            if let Ok(decoded) = <RollupFeeToFew as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <ReentrancyGuardReentrantCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::ReentrancyGuardReentrantCall(decoded));
+            }
+            if let Ok(decoded)
+                = <RejectRelay as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::RejectRelay(decoded));
+            }
+            if let Ok(decoded)
+                = <RejectRollup as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::RejectRollup(decoded));
+            }
+            if let Ok(decoded)
+                = <RollupFeeToFew as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RollupFeeToFew(decoded));
             }
-            if let Ok(decoded) = <RollupSizeNotPowerOfTwo as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::RollupSizeNotPowerOfTwo(decoded));
+            if let Ok(decoded)
+                = <RollupVerifierDisabled as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::RollupVerifierDisabled(decoded));
             }
-            if let Ok(decoded) = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <SafeCastOverflowedUintDowncast as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::SafeCastOverflowedUintDowncast(decoded));
+            }
+            if let Ok(decoded)
+                = <SanctionedAddress as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SanctionedAddress(decoded));
             }
-            if let Ok(decoded) = <TreeHeightLessThanZero as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <TransactVerifierDisabled as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::TransactVerifierDisabled(decoded));
+            }
+            if let Ok(decoded)
+                = <TreeHeightLessThanZero as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::TreeHeightLessThanZero(decoded));
             }
-            if let Ok(decoded) = <TreeHeightOutOfBounds as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <TreeHeightOutOfBounds as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::TreeHeightOutOfBounds(decoded));
             }
-            if let Ok(decoded) = <TreeIsFull as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <TreeIsFull as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::TreeIsFull(decoded));
-            }
-            if let Ok(decoded) = <VerifierUpdatesHasBeenDisabled as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::VerifierUpdatesHasBeenDisabled(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
         }
@@ -1934,28 +1992,73 @@ pub mod commitment_pool {
     impl ::ethers_core::abi::AbiEncode for CommitmentPoolErrors {
         fn encode(self) -> ::std::vec::Vec<u8> {
             match self {
-                Self::AuditorIndexError(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AuditorNotesLengthError(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AuditorPublicKeyNotChanged(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::CommitmentHasBeenSubmitted(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::Duplicated(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IndexOutOfBound(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AssociatedPoolNotMatched(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AuditorNotesLengthError(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::CommitmentHasBeenSubmitted(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Duplicated(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ECDSAInvalidSignature(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ECDSAInvalidSignatureLength(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ECDSAInvalidSignatureS(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IndexOutOfBound(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::Invalid(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::NewRootIsDuplicated(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::NotChanged(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::NoteHasBeenSpent(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::NumInputsGreaterThanZero(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::OnlyOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::OnlyWhitelistedRoller(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::OnlyWhitelistedSender(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::OutputNotesLessThanThree(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RollupFeeToFew(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RollupSizeNotPowerOfTwo(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SanctionedAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::TreeHeightLessThanZero(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::TreeHeightOutOfBounds(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::TreeIsFull(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::VerifierUpdatesHasBeenDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::NewRootIsDuplicated(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::NoteHasBeenSpent(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::OutputNotesLessThanThree(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ReentrancyGuardReentrantCall(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RejectRelay(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RejectRollup(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RollupFeeToFew(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RollupVerifierDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SafeCastOverflowedUintDowncast(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SanctionedAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TransactVerifierDisabled(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TreeHeightLessThanZero(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TreeHeightOutOfBounds(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::TreeIsFull(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::RevertString(s) => ::ethers_core::abi::AbiEncode::encode(s),
             }
         }
@@ -1964,28 +2067,88 @@ pub mod commitment_pool {
         fn valid_selector(selector: [u8; 4]) -> bool {
             match selector {
                 [0x08, 0xc3, 0x79, 0xa0] => true,
-                _ if selector == <AuditorIndexError as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <AuditorNotesLengthError as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <AuditorPublicKeyNotChanged as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <CommitmentHasBeenSubmitted as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <Duplicated as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <IndexOutOfBound as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <Invalid as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <NewRootIsDuplicated as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <NotChanged as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <NoteHasBeenSpent as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <NumInputsGreaterThanZero as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <OnlyOperator as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <OnlyWhitelistedRoller as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <OnlyWhitelistedSender as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <OutputNotesLessThanThree as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <RollupFeeToFew as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <RollupSizeNotPowerOfTwo as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <SanctionedAddress as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <TreeHeightLessThanZero as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <TreeHeightOutOfBounds as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <TreeIsFull as ::ethers_contract::EthError>::selector() => true,
-                _ if selector == <VerifierUpdatesHasBeenDisabled as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <AssociatedPoolNotMatched as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <AuditorNotesLengthError as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <CommitmentHasBeenSubmitted as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <Duplicated as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <ECDSAInvalidSignature as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <ECDSAInvalidSignatureLength as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <ECDSAInvalidSignatureS as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <IndexOutOfBound as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <Invalid as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <NewRootIsDuplicated as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <NoteHasBeenSpent as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <OutputNotesLessThanThree as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <ReentrancyGuardReentrantCall as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <RejectRelay as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <RejectRollup as ::ethers_contract::EthError>::selector() => true,
+                _ if selector
+                    == <RollupFeeToFew as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <RollupVerifierDisabled as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <SafeCastOverflowedUintDowncast as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <SanctionedAddress as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <TransactVerifierDisabled as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <TreeHeightLessThanZero as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <TreeHeightOutOfBounds as ::ethers_contract::EthError>::selector() => {
+                    true
+                }
+                _ if selector
+                    == <TreeIsFull as ::ethers_contract::EthError>::selector() => true,
                 _ => false,
             }
         }
@@ -1993,28 +2156,57 @@ pub mod commitment_pool {
     impl ::core::fmt::Display for CommitmentPoolErrors {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::AuditorIndexError(element) => ::core::fmt::Display::fmt(element, f),
-                Self::AuditorNotesLengthError(element) => ::core::fmt::Display::fmt(element, f),
-                Self::AuditorPublicKeyNotChanged(element) => ::core::fmt::Display::fmt(element, f),
-                Self::CommitmentHasBeenSubmitted(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AssociatedPoolNotMatched(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::AuditorNotesLengthError(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::CommitmentHasBeenSubmitted(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::Duplicated(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ECDSAInvalidSignature(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ECDSAInvalidSignatureLength(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ECDSAInvalidSignatureS(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::IndexOutOfBound(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Invalid(element) => ::core::fmt::Display::fmt(element, f),
-                Self::NewRootIsDuplicated(element) => ::core::fmt::Display::fmt(element, f),
-                Self::NotChanged(element) => ::core::fmt::Display::fmt(element, f),
+                Self::NewRootIsDuplicated(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::NoteHasBeenSpent(element) => ::core::fmt::Display::fmt(element, f),
-                Self::NumInputsGreaterThanZero(element) => ::core::fmt::Display::fmt(element, f),
-                Self::OnlyOperator(element) => ::core::fmt::Display::fmt(element, f),
-                Self::OnlyWhitelistedRoller(element) => ::core::fmt::Display::fmt(element, f),
-                Self::OnlyWhitelistedSender(element) => ::core::fmt::Display::fmt(element, f),
-                Self::OutputNotesLessThanThree(element) => ::core::fmt::Display::fmt(element, f),
+                Self::OutputNotesLessThanThree(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::ReentrancyGuardReentrantCall(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::RejectRelay(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RejectRollup(element) => ::core::fmt::Display::fmt(element, f),
                 Self::RollupFeeToFew(element) => ::core::fmt::Display::fmt(element, f),
-                Self::RollupSizeNotPowerOfTwo(element) => ::core::fmt::Display::fmt(element, f),
+                Self::RollupVerifierDisabled(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::SafeCastOverflowedUintDowncast(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::SanctionedAddress(element) => ::core::fmt::Display::fmt(element, f),
-                Self::TreeHeightLessThanZero(element) => ::core::fmt::Display::fmt(element, f),
-                Self::TreeHeightOutOfBounds(element) => ::core::fmt::Display::fmt(element, f),
+                Self::TransactVerifierDisabled(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::TreeHeightLessThanZero(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::TreeHeightOutOfBounds(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::TreeIsFull(element) => ::core::fmt::Display::fmt(element, f),
-                Self::VerifierUpdatesHasBeenDisabled(element) => ::core::fmt::Display::fmt(element, f),
                 Self::RevertString(s) => ::core::fmt::Display::fmt(s, f),
             }
         }
@@ -2024,19 +2216,14 @@ pub mod commitment_pool {
             Self::RevertString(value)
         }
     }
-    impl ::core::convert::From<AuditorIndexError> for CommitmentPoolErrors {
-        fn from(value: AuditorIndexError) -> Self {
-            Self::AuditorIndexError(value)
+    impl ::core::convert::From<AssociatedPoolNotMatched> for CommitmentPoolErrors {
+        fn from(value: AssociatedPoolNotMatched) -> Self {
+            Self::AssociatedPoolNotMatched(value)
         }
     }
     impl ::core::convert::From<AuditorNotesLengthError> for CommitmentPoolErrors {
         fn from(value: AuditorNotesLengthError) -> Self {
             Self::AuditorNotesLengthError(value)
-        }
-    }
-    impl ::core::convert::From<AuditorPublicKeyNotChanged> for CommitmentPoolErrors {
-        fn from(value: AuditorPublicKeyNotChanged) -> Self {
-            Self::AuditorPublicKeyNotChanged(value)
         }
     }
     impl ::core::convert::From<CommitmentHasBeenSubmitted> for CommitmentPoolErrors {
@@ -2047,6 +2234,21 @@ pub mod commitment_pool {
     impl ::core::convert::From<Duplicated> for CommitmentPoolErrors {
         fn from(value: Duplicated) -> Self {
             Self::Duplicated(value)
+        }
+    }
+    impl ::core::convert::From<ECDSAInvalidSignature> for CommitmentPoolErrors {
+        fn from(value: ECDSAInvalidSignature) -> Self {
+            Self::ECDSAInvalidSignature(value)
+        }
+    }
+    impl ::core::convert::From<ECDSAInvalidSignatureLength> for CommitmentPoolErrors {
+        fn from(value: ECDSAInvalidSignatureLength) -> Self {
+            Self::ECDSAInvalidSignatureLength(value)
+        }
+    }
+    impl ::core::convert::From<ECDSAInvalidSignatureS> for CommitmentPoolErrors {
+        fn from(value: ECDSAInvalidSignatureS) -> Self {
+            Self::ECDSAInvalidSignatureS(value)
         }
     }
     impl ::core::convert::From<IndexOutOfBound> for CommitmentPoolErrors {
@@ -2064,34 +2266,9 @@ pub mod commitment_pool {
             Self::NewRootIsDuplicated(value)
         }
     }
-    impl ::core::convert::From<NotChanged> for CommitmentPoolErrors {
-        fn from(value: NotChanged) -> Self {
-            Self::NotChanged(value)
-        }
-    }
     impl ::core::convert::From<NoteHasBeenSpent> for CommitmentPoolErrors {
         fn from(value: NoteHasBeenSpent) -> Self {
             Self::NoteHasBeenSpent(value)
-        }
-    }
-    impl ::core::convert::From<NumInputsGreaterThanZero> for CommitmentPoolErrors {
-        fn from(value: NumInputsGreaterThanZero) -> Self {
-            Self::NumInputsGreaterThanZero(value)
-        }
-    }
-    impl ::core::convert::From<OnlyOperator> for CommitmentPoolErrors {
-        fn from(value: OnlyOperator) -> Self {
-            Self::OnlyOperator(value)
-        }
-    }
-    impl ::core::convert::From<OnlyWhitelistedRoller> for CommitmentPoolErrors {
-        fn from(value: OnlyWhitelistedRoller) -> Self {
-            Self::OnlyWhitelistedRoller(value)
-        }
-    }
-    impl ::core::convert::From<OnlyWhitelistedSender> for CommitmentPoolErrors {
-        fn from(value: OnlyWhitelistedSender) -> Self {
-            Self::OnlyWhitelistedSender(value)
         }
     }
     impl ::core::convert::From<OutputNotesLessThanThree> for CommitmentPoolErrors {
@@ -2099,19 +2276,44 @@ pub mod commitment_pool {
             Self::OutputNotesLessThanThree(value)
         }
     }
+    impl ::core::convert::From<ReentrancyGuardReentrantCall> for CommitmentPoolErrors {
+        fn from(value: ReentrancyGuardReentrantCall) -> Self {
+            Self::ReentrancyGuardReentrantCall(value)
+        }
+    }
+    impl ::core::convert::From<RejectRelay> for CommitmentPoolErrors {
+        fn from(value: RejectRelay) -> Self {
+            Self::RejectRelay(value)
+        }
+    }
+    impl ::core::convert::From<RejectRollup> for CommitmentPoolErrors {
+        fn from(value: RejectRollup) -> Self {
+            Self::RejectRollup(value)
+        }
+    }
     impl ::core::convert::From<RollupFeeToFew> for CommitmentPoolErrors {
         fn from(value: RollupFeeToFew) -> Self {
             Self::RollupFeeToFew(value)
         }
     }
-    impl ::core::convert::From<RollupSizeNotPowerOfTwo> for CommitmentPoolErrors {
-        fn from(value: RollupSizeNotPowerOfTwo) -> Self {
-            Self::RollupSizeNotPowerOfTwo(value)
+    impl ::core::convert::From<RollupVerifierDisabled> for CommitmentPoolErrors {
+        fn from(value: RollupVerifierDisabled) -> Self {
+            Self::RollupVerifierDisabled(value)
+        }
+    }
+    impl ::core::convert::From<SafeCastOverflowedUintDowncast> for CommitmentPoolErrors {
+        fn from(value: SafeCastOverflowedUintDowncast) -> Self {
+            Self::SafeCastOverflowedUintDowncast(value)
         }
     }
     impl ::core::convert::From<SanctionedAddress> for CommitmentPoolErrors {
         fn from(value: SanctionedAddress) -> Self {
             Self::SanctionedAddress(value)
+        }
+    }
+    impl ::core::convert::From<TransactVerifierDisabled> for CommitmentPoolErrors {
+        fn from(value: TransactVerifierDisabled) -> Self {
+            Self::TransactVerifierDisabled(value)
         }
     }
     impl ::core::convert::From<TreeHeightLessThanZero> for CommitmentPoolErrors {
@@ -2129,11 +2331,6 @@ pub mod commitment_pool {
             Self::TreeIsFull(value)
         }
     }
-    impl ::core::convert::From<VerifierUpdatesHasBeenDisabled> for CommitmentPoolErrors {
-        fn from(value: VerifierUpdatesHasBeenDisabled) -> Self {
-            Self::VerifierUpdatesHasBeenDisabled(value)
-        }
-    }
     #[derive(
         Clone,
         ::ethers_contract::EthEvent,
@@ -2144,25 +2341,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
-    )]
-    #[ethevent(name = "AuditorPublicKey", abi = "AuditorPublicKey(uint256,uint256)")]
-    pub struct AuditorPublicKeyFilter {
-        #[ethevent(indexed)]
-        pub index: ::ethers_core::types::U256,
-        pub public_key: ::ethers_core::types::U256,
-    }
-    #[derive(
-        Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
+        Hash
     )]
     #[ethevent(name = "CommitmentIncluded", abi = "CommitmentIncluded(uint256)")]
     pub struct CommitmentIncludedFilter {
@@ -2179,9 +2358,12 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[ethevent(name = "CommitmentQueued", abi = "CommitmentQueued(uint256,uint256,uint256,bytes)")]
+    #[ethevent(
+        name = "CommitmentQueued",
+        abi = "CommitmentQueued(uint256,uint256,uint256,bytes)"
+    )]
     pub struct CommitmentQueuedFilter {
         #[ethevent(indexed)]
         pub commitment: ::ethers_core::types::U256,
@@ -2199,7 +2381,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethevent(name = "CommitmentSpent", abi = "CommitmentSpent(uint256,uint256)")]
     pub struct CommitmentSpentFilter {
@@ -2218,9 +2400,12 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[ethevent(name = "EncryptedAuditorNote", abi = "EncryptedAuditorNote(uint64,uint256,uint256)")]
+    #[ethevent(
+        name = "EncryptedAuditorNote",
+        abi = "EncryptedAuditorNote(uint64,uint256,uint256)"
+    )]
     pub struct EncryptedAuditorNoteFilter {
         pub id: u64,
         pub auditor_public_key: ::ethers_core::types::U256,
@@ -2236,7 +2421,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethevent(
         name = "EncryptedAuditorNotes",
@@ -2245,109 +2430,28 @@ pub mod commitment_pool {
     pub struct EncryptedAuditorNotesFilter {
         pub notes: ::std::vec::Vec<AuditorNote>,
     }
-    #[derive(
-        Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethevent(name = "OperatorChanged", abi = "OperatorChanged(address)")]
-    pub struct OperatorChangedFilter {
-        #[ethevent(indexed)]
-        pub operator: ::ethers_core::types::Address,
-    }
-    #[derive(
-        Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethevent(name = "RollupWhitelistDisabled", abi = "RollupWhitelistDisabled(bool)")]
-    pub struct RollupWhitelistDisabledFilter {
-        pub state: bool,
-    }
-    #[derive(
-        Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethevent(name = "SanctionsCheck", abi = "SanctionsCheck(bool)")]
-    pub struct SanctionsCheckFilter {
-        pub state: bool,
-    }
-    #[derive(
-        Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethevent(name = "SanctionsList", abi = "SanctionsList(address)")]
-    pub struct SanctionsListFilter {
-        pub sanctions: ::ethers_core::types::Address,
-    }
-    #[derive(
-        Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethevent(name = "VerifierUpdateDisabled", abi = "VerifierUpdateDisabled(bool)")]
-    pub struct VerifierUpdateDisabledFilter {
-        pub state: bool,
-    }
     ///Container type for all of the contract's events
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub enum CommitmentPoolEvents {
-        AuditorPublicKeyFilter(AuditorPublicKeyFilter),
         CommitmentIncludedFilter(CommitmentIncludedFilter),
         CommitmentQueuedFilter(CommitmentQueuedFilter),
         CommitmentSpentFilter(CommitmentSpentFilter),
         EncryptedAuditorNoteFilter(EncryptedAuditorNoteFilter),
         EncryptedAuditorNotesFilter(EncryptedAuditorNotesFilter),
-        OperatorChangedFilter(OperatorChangedFilter),
-        RollupWhitelistDisabledFilter(RollupWhitelistDisabledFilter),
-        SanctionsCheckFilter(SanctionsCheckFilter),
-        SanctionsListFilter(SanctionsListFilter),
-        VerifierUpdateDisabledFilter(VerifierUpdateDisabledFilter),
     }
     impl ::ethers_contract::EthLogDecode for CommitmentPoolEvents {
-        fn decode_log(log: &::ethers_core::abi::RawLog) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
-            if let Ok(decoded) = AuditorPublicKeyFilter::decode_log(log) {
-                return Ok(CommitmentPoolEvents::AuditorPublicKeyFilter(decoded));
-            }
+        fn decode_log(
+            log: &::ethers_core::abi::RawLog,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
             if let Ok(decoded) = CommitmentIncludedFilter::decode_log(log) {
                 return Ok(CommitmentPoolEvents::CommitmentIncludedFilter(decoded));
             }
@@ -2363,44 +2467,28 @@ pub mod commitment_pool {
             if let Ok(decoded) = EncryptedAuditorNotesFilter::decode_log(log) {
                 return Ok(CommitmentPoolEvents::EncryptedAuditorNotesFilter(decoded));
             }
-            if let Ok(decoded) = OperatorChangedFilter::decode_log(log) {
-                return Ok(CommitmentPoolEvents::OperatorChangedFilter(decoded));
-            }
-            if let Ok(decoded) = RollupWhitelistDisabledFilter::decode_log(log) {
-                return Ok(CommitmentPoolEvents::RollupWhitelistDisabledFilter(decoded));
-            }
-            if let Ok(decoded) = SanctionsCheckFilter::decode_log(log) {
-                return Ok(CommitmentPoolEvents::SanctionsCheckFilter(decoded));
-            }
-            if let Ok(decoded) = SanctionsListFilter::decode_log(log) {
-                return Ok(CommitmentPoolEvents::SanctionsListFilter(decoded));
-            }
-            if let Ok(decoded) = VerifierUpdateDisabledFilter::decode_log(log) {
-                return Ok(CommitmentPoolEvents::VerifierUpdateDisabledFilter(decoded));
-            }
             Err(::ethers_core::abi::Error::InvalidData)
         }
     }
     impl ::core::fmt::Display for CommitmentPoolEvents {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::AuditorPublicKeyFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::CommitmentIncludedFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::CommitmentQueuedFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::CommitmentSpentFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::EncryptedAuditorNoteFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::EncryptedAuditorNotesFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::OperatorChangedFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::RollupWhitelistDisabledFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SanctionsCheckFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SanctionsListFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::VerifierUpdateDisabledFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::CommitmentIncludedFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::CommitmentQueuedFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::CommitmentSpentFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::EncryptedAuditorNoteFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::EncryptedAuditorNotesFilter(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
             }
-        }
-    }
-    impl ::core::convert::From<AuditorPublicKeyFilter> for CommitmentPoolEvents {
-        fn from(value: AuditorPublicKeyFilter) -> Self {
-            Self::AuditorPublicKeyFilter(value)
         }
     }
     impl ::core::convert::From<CommitmentIncludedFilter> for CommitmentPoolEvents {
@@ -2428,31 +2516,21 @@ pub mod commitment_pool {
             Self::EncryptedAuditorNotesFilter(value)
         }
     }
-    impl ::core::convert::From<OperatorChangedFilter> for CommitmentPoolEvents {
-        fn from(value: OperatorChangedFilter) -> Self {
-            Self::OperatorChangedFilter(value)
-        }
-    }
-    impl ::core::convert::From<RollupWhitelistDisabledFilter> for CommitmentPoolEvents {
-        fn from(value: RollupWhitelistDisabledFilter) -> Self {
-            Self::RollupWhitelistDisabledFilter(value)
-        }
-    }
-    impl ::core::convert::From<SanctionsCheckFilter> for CommitmentPoolEvents {
-        fn from(value: SanctionsCheckFilter) -> Self {
-            Self::SanctionsCheckFilter(value)
-        }
-    }
-    impl ::core::convert::From<SanctionsListFilter> for CommitmentPoolEvents {
-        fn from(value: SanctionsListFilter) -> Self {
-            Self::SanctionsListFilter(value)
-        }
-    }
-    impl ::core::convert::From<VerifierUpdateDisabledFilter> for CommitmentPoolEvents {
-        fn from(value: VerifierUpdateDisabledFilter) -> Self {
-            Self::VerifierUpdateDisabledFilter(value)
-        }
-    }
+    ///Container type for all input parameters for the `AUDITOR_COUNT` function with signature `AUDITOR_COUNT()` and selector `0xa592bd69`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    #[ethcall(name = "AUDITOR_COUNT", abi = "AUDITOR_COUNT()")]
+    pub struct AuditorCountCall;
     ///Container type for all input parameters for the `_pathIndices` function with signature `_pathIndices(uint256,uint32)` and selector `0xf2da1d41`
     #[derive(
         Clone,
@@ -2464,14 +2542,14 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "_pathIndices", abi = "_pathIndices(uint256,uint32)")]
     pub struct PathIndicesCall {
         pub full_path: ::ethers_core::types::U256,
         pub rollup_size: u32,
     }
-    ///Container type for all input parameters for the `addEnqueueWhitelist` function with signature `addEnqueueWhitelist(address)` and selector `0xa9b1d296`
+    ///Container type for all input parameters for the `assetAddress` function with signature `assetAddress()` and selector `0x1ba46cfd`
     #[derive(
         Clone,
         ::ethers_contract::EthCall,
@@ -2482,29 +2560,10 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[ethcall(name = "addEnqueueWhitelist", abi = "addEnqueueWhitelist(address)")]
-    pub struct AddEnqueueWhitelistCall {
-        pub actor: ::ethers_core::types::Address,
-    }
-    ///Container type for all input parameters for the `addRollupWhitelist` function with signature `addRollupWhitelist(address)` and selector `0x02d498f1`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "addRollupWhitelist", abi = "addRollupWhitelist(address)")]
-    pub struct AddRollupWhitelistCall {
-        pub roller: ::ethers_core::types::Address,
-    }
+    #[ethcall(name = "assetAddress", abi = "assetAddress()")]
+    pub struct AssetAddressCall;
     ///Container type for all input parameters for the `assetType` function with signature `assetType()` and selector `0x3fe3347a`
     #[derive(
         Clone,
@@ -2516,11 +2575,11 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "assetType", abi = "assetType()")]
     pub struct AssetTypeCall;
-    ///Container type for all input parameters for the `auditorCount` function with signature `auditorCount()` and selector `0x115f574c`
+    ///Container type for all input parameters for the `defaultMinRollupFee` function with signature `defaultMinRollupFee()` and selector `0xb2316c33`
     #[derive(
         Clone,
         ::ethers_contract::EthCall,
@@ -2531,132 +2590,10 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[ethcall(name = "auditorCount", abi = "auditorCount()")]
-    pub struct AuditorCountCall;
-    ///Container type for all input parameters for the `changeOperator` function with signature `changeOperator(address)` and selector `0x06394c9b`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "changeOperator", abi = "changeOperator(address)")]
-    pub struct ChangeOperatorCall {
-        pub new_operator: ::ethers_core::types::Address,
-    }
-    ///Container type for all input parameters for the `disableRollupVerifier` function with signature `disableRollupVerifier(uint32)` and selector `0x9b0a6fea`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "disableRollupVerifier", abi = "disableRollupVerifier(uint32)")]
-    pub struct DisableRollupVerifierCall {
-        pub rollup_size: u32,
-    }
-    ///Container type for all input parameters for the `disableSanctionsCheck` function with signature `disableSanctionsCheck()` and selector `0xdd757c34`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "disableSanctionsCheck", abi = "disableSanctionsCheck()")]
-    pub struct DisableSanctionsCheckCall;
-    ///Container type for all input parameters for the `disableTransactVerifier` function with signature `disableTransactVerifier(uint32,uint32)` and selector `0xc259e2e6`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "disableTransactVerifier", abi = "disableTransactVerifier(uint32,uint32)")]
-    pub struct DisableTransactVerifierCall {
-        pub num_inputs: u32,
-        pub num_outputs: u32,
-    }
-    ///Container type for all input parameters for the `enableRollupVerifier` function with signature `enableRollupVerifier(uint32,address)` and selector `0xdeeff7cd`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "enableRollupVerifier", abi = "enableRollupVerifier(uint32,address)")]
-    pub struct EnableRollupVerifierCall {
-        pub rollup_size: u32,
-        pub rollup_verifier: ::ethers_core::types::Address,
-    }
-    ///Container type for all input parameters for the `enableSanctionsCheck` function with signature `enableSanctionsCheck()` and selector `0x01dbf19f`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "enableSanctionsCheck", abi = "enableSanctionsCheck()")]
-    pub struct EnableSanctionsCheckCall;
-    ///Container type for all input parameters for the `enableTransactVerifier` function with signature `enableTransactVerifier(uint32,uint32,address)` and selector `0x7fa4b09c`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(
-        name = "enableTransactVerifier",
-        abi = "enableTransactVerifier(uint32,uint32,address)"
-    )]
-    pub struct EnableTransactVerifierCall {
-        pub num_inputs: u32,
-        pub num_outputs: u32,
-        pub transact_verifier: ::ethers_core::types::Address,
-    }
+    #[ethcall(name = "defaultMinRollupFee", abi = "defaultMinRollupFee()")]
+    pub struct DefaultMinRollupFeeCall;
     ///Container type for all input parameters for the `enqueue` function with signature `enqueue((uint256,uint256,uint256,uint256,bytes),address)` and selector `0x78d60cd7`
     #[derive(
         Clone,
@@ -2668,9 +2605,12 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[ethcall(name = "enqueue", abi = "enqueue((uint256,uint256,uint256,uint256,bytes),address)")]
+    #[ethcall(
+        name = "enqueue",
+        abi = "enqueue((uint256,uint256,uint256,uint256,bytes),address)"
+    )]
     pub struct EnqueueCall {
         pub request: CommitmentRequest,
         pub executor: ::ethers_core::types::Address,
@@ -2686,7 +2626,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getAllAuditorPublicKeys", abi = "getAllAuditorPublicKeys()")]
     pub struct GetAllAuditorPublicKeysCall;
@@ -2701,7 +2641,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getAuditorPublicKey", abi = "getAuditorPublicKey(uint256)")]
     pub struct GetAuditorPublicKeyCall {
@@ -2718,7 +2658,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getCommitmentCount", abi = "getCommitmentCount()")]
     pub struct GetCommitmentCountCall;
@@ -2733,7 +2673,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getCommitmentIncludedCount", abi = "getCommitmentIncludedCount()")]
     pub struct GetCommitmentIncludedCountCall;
@@ -2748,7 +2688,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getCommitmentQueuedCount", abi = "getCommitmentQueuedCount()")]
     pub struct GetCommitmentQueuedCountCall;
@@ -2763,7 +2703,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getMinRollupFee", abi = "getMinRollupFee()")]
     pub struct GetMinRollupFeeCall;
@@ -2778,7 +2718,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getNullifierCount", abi = "getNullifierCount()")]
     pub struct GetNullifierCountCall;
@@ -2793,7 +2733,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getQueuedCommitments", abi = "getQueuedCommitments()")]
     pub struct GetQueuedCommitmentsCall;
@@ -2808,7 +2748,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getTreeCapacity", abi = "getTreeCapacity()")]
     pub struct GetTreeCapacityCall;
@@ -2823,7 +2763,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "isHistoricCommitment", abi = "isHistoricCommitment(uint256)")]
     pub struct IsHistoricCommitmentCall {
@@ -2840,27 +2780,12 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "isKnownRoot", abi = "isKnownRoot(uint256)")]
     pub struct IsKnownRootCall {
         pub root: ::ethers_core::types::U256,
     }
-    ///Container type for all input parameters for the `isRollupWhitelistDisabled` function with signature `isRollupWhitelistDisabled()` and selector `0xffa89b88`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "isRollupWhitelistDisabled", abi = "isRollupWhitelistDisabled()")]
-    pub struct IsRollupWhitelistDisabledCall;
     ///Container type for all input parameters for the `isSpentSerialNumber` function with signature `isSpentSerialNumber(uint256)` and selector `0x3bb8d1b4`
     #[derive(
         Clone,
@@ -2872,60 +2797,11 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "isSpentSerialNumber", abi = "isSpentSerialNumber(uint256)")]
     pub struct IsSpentSerialNumberCall {
         pub serial_number: ::ethers_core::types::U256,
-    }
-    ///Container type for all input parameters for the `isVerifierUpdateDisabled` function with signature `isVerifierUpdateDisabled()` and selector `0x4eb069f7`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "isVerifierUpdateDisabled", abi = "isVerifierUpdateDisabled()")]
-    pub struct IsVerifierUpdateDisabledCall;
-    ///Container type for all input parameters for the `removeEnqueueWhitelist` function with signature `removeEnqueueWhitelist(address)` and selector `0x03db9874`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "removeEnqueueWhitelist", abi = "removeEnqueueWhitelist(address)")]
-    pub struct RemoveEnqueueWhitelistCall {
-        pub actor: ::ethers_core::types::Address,
-    }
-    ///Container type for all input parameters for the `removeRollupWhitelist` function with signature `removeRollupWhitelist(address)` and selector `0x9cc6b354`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "removeRollupWhitelist", abi = "removeRollupWhitelist(address)")]
-    pub struct RemoveRollupWhitelistCall {
-        pub roller: ::ethers_core::types::Address,
     }
     ///Container type for all input parameters for the `rollup` function with signature `rollup((((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint32,uint256,uint256))` and selector `0x14a7737d`
     #[derive(
@@ -2938,7 +2814,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(
         name = "rollup",
@@ -2947,7 +2823,7 @@ pub mod commitment_pool {
     pub struct RollupCall {
         pub request: RollupRequest,
     }
-    ///Container type for all input parameters for the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `0xb1c39422`
+    ///Container type for all input parameters for the `settings` function with signature `settings()` and selector `0xe06174e4`
     #[derive(
         Clone,
         ::ethers_contract::EthCall,
@@ -2958,79 +2834,17 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[ethcall(name = "sanctionsCheck", abi = "sanctionsCheck()")]
-    pub struct SanctionsCheckCall;
-    ///Container type for all input parameters for the `sanctionsList` function with signature `sanctionsList()` and selector `0xec571c6a`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "sanctionsList", abi = "sanctionsList()")]
-    pub struct SanctionsListCall;
-    ///Container type for all input parameters for the `setMinRollupFee` function with signature `setMinRollupFee(uint256)` and selector `0x7cbf0ff6`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "setMinRollupFee", abi = "setMinRollupFee(uint256)")]
-    pub struct SetMinRollupFeeCall {
-        pub min_rollup_fee: ::ethers_core::types::U256,
-    }
-    ///Container type for all input parameters for the `setRollupWhitelistDisabled` function with signature `setRollupWhitelistDisabled(bool)` and selector `0xf8f05388`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "setRollupWhitelistDisabled", abi = "setRollupWhitelistDisabled(bool)")]
-    pub struct SetRollupWhitelistDisabledCall {
-        pub state: bool,
-    }
-    ///Container type for all input parameters for the `setVerifierUpdateDisabled` function with signature `setVerifierUpdateDisabled(bool)` and selector `0xb3b75631`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "setVerifierUpdateDisabled", abi = "setVerifierUpdateDisabled(bool)")]
-    pub struct SetVerifierUpdateDisabledCall {
-        pub state: bool,
-    }
+    #[ethcall(name = "settings", abi = "settings()")]
+    pub struct SettingsCall;
     ///Container type for all input parameters for the `transact` function with signature `transact((((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256,uint256[],uint256[],bytes32,uint256,uint256,uint256[],uint256[],address,address,bytes[],uint256,uint256[]),bytes)` and selector `0x72082971`
     #[derive(
-        Clone, ::ethers_contract::EthCall, ::ethers_contract::EthDisplay, serde::Serialize, serde::Deserialize,
+        Clone,
+        ::ethers_contract::EthCall,
+        ::ethers_contract::EthDisplay,
+        serde::Serialize,
+        serde::Deserialize,
     )]
     #[ethcall(
         name = "transact",
@@ -3040,56 +2854,19 @@ pub mod commitment_pool {
         pub request: TransactRequest,
         pub signature: ::ethers_core::types::Bytes,
     }
-    ///Container type for all input parameters for the `updateAuditorPublicKey` function with signature `updateAuditorPublicKey(uint256,uint256)` and selector `0x0c8867e6`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "updateAuditorPublicKey", abi = "updateAuditorPublicKey(uint256,uint256)")]
-    pub struct UpdateAuditorPublicKeyCall {
-        pub index: ::ethers_core::types::U256,
-        pub public_key: ::ethers_core::types::U256,
-    }
-    ///Container type for all input parameters for the `updateSanctionsListAddress` function with signature `updateSanctionsListAddress(address)` and selector `0x30f49cac`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    #[ethcall(name = "updateSanctionsListAddress", abi = "updateSanctionsListAddress(address)")]
-    pub struct UpdateSanctionsListAddressCall {
-        pub sanction: ::ethers_core::types::Address,
-    }
     ///Container type for all of the contract's call
-    #[derive(Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize)]
+    #[derive(
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+    )]
     pub enum CommitmentPoolCalls {
-        PathIndices(PathIndicesCall),
-        AddEnqueueWhitelist(AddEnqueueWhitelistCall),
-        AddRollupWhitelist(AddRollupWhitelistCall),
-        AssetType(AssetTypeCall),
         AuditorCount(AuditorCountCall),
-        ChangeOperator(ChangeOperatorCall),
-        DisableRollupVerifier(DisableRollupVerifierCall),
-        DisableSanctionsCheck(DisableSanctionsCheckCall),
-        DisableTransactVerifier(DisableTransactVerifierCall),
-        EnableRollupVerifier(EnableRollupVerifierCall),
-        EnableSanctionsCheck(EnableSanctionsCheckCall),
-        EnableTransactVerifier(EnableTransactVerifierCall),
+        PathIndices(PathIndicesCall),
+        AssetAddress(AssetAddressCall),
+        AssetType(AssetTypeCall),
+        DefaultMinRollupFee(DefaultMinRollupFeeCall),
         Enqueue(EnqueueCall),
         GetAllAuditorPublicKeys(GetAllAuditorPublicKeysCall),
         GetAuditorPublicKey(GetAuditorPublicKeyCall),
@@ -3102,137 +2879,119 @@ pub mod commitment_pool {
         GetTreeCapacity(GetTreeCapacityCall),
         IsHistoricCommitment(IsHistoricCommitmentCall),
         IsKnownRoot(IsKnownRootCall),
-        IsRollupWhitelistDisabled(IsRollupWhitelistDisabledCall),
         IsSpentSerialNumber(IsSpentSerialNumberCall),
-        IsVerifierUpdateDisabled(IsVerifierUpdateDisabledCall),
-        RemoveEnqueueWhitelist(RemoveEnqueueWhitelistCall),
-        RemoveRollupWhitelist(RemoveRollupWhitelistCall),
         Rollup(RollupCall),
-        SanctionsCheck(SanctionsCheckCall),
-        SanctionsList(SanctionsListCall),
-        SetMinRollupFee(SetMinRollupFeeCall),
-        SetRollupWhitelistDisabled(SetRollupWhitelistDisabledCall),
-        SetVerifierUpdateDisabled(SetVerifierUpdateDisabledCall),
+        Settings(SettingsCall),
         Transact(TransactCall),
-        UpdateAuditorPublicKey(UpdateAuditorPublicKeyCall),
-        UpdateSanctionsListAddress(UpdateSanctionsListAddressCall),
     }
     impl ::ethers_core::abi::AbiDecode for CommitmentPoolCalls {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded) = <PathIndicesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::PathIndices(decoded));
-            }
-            if let Ok(decoded) = <AddEnqueueWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::AddEnqueueWhitelist(decoded));
-            }
-            if let Ok(decoded) = <AddRollupWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::AddRollupWhitelist(decoded));
-            }
-            if let Ok(decoded) = <AssetTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::AssetType(decoded));
-            }
-            if let Ok(decoded) = <AuditorCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <AuditorCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AuditorCount(decoded));
             }
-            if let Ok(decoded) = <ChangeOperatorCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::ChangeOperator(decoded));
+            if let Ok(decoded)
+                = <PathIndicesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::PathIndices(decoded));
             }
-            if let Ok(decoded) = <DisableRollupVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::DisableRollupVerifier(decoded));
+            if let Ok(decoded)
+                = <AssetAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AssetAddress(decoded));
             }
-            if let Ok(decoded) = <DisableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::DisableSanctionsCheck(decoded));
+            if let Ok(decoded)
+                = <AssetTypeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::AssetType(decoded));
             }
-            if let Ok(decoded) = <DisableTransactVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::DisableTransactVerifier(decoded));
+            if let Ok(decoded)
+                = <DefaultMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
+                return Ok(Self::DefaultMinRollupFee(decoded));
             }
-            if let Ok(decoded) = <EnableRollupVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::EnableRollupVerifier(decoded));
-            }
-            if let Ok(decoded) = <EnableSanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::EnableSanctionsCheck(decoded));
-            }
-            if let Ok(decoded) = <EnableTransactVerifierCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::EnableTransactVerifier(decoded));
-            }
-            if let Ok(decoded) = <EnqueueCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <EnqueueCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Enqueue(decoded));
             }
-            if let Ok(decoded) = <GetAllAuditorPublicKeysCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetAllAuditorPublicKeysCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetAllAuditorPublicKeys(decoded));
             }
-            if let Ok(decoded) = <GetAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetAuditorPublicKey(decoded));
             }
-            if let Ok(decoded) = <GetCommitmentCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetCommitmentCountCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetCommitmentCount(decoded));
             }
-            if let Ok(decoded) = <GetCommitmentIncludedCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetCommitmentIncludedCountCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetCommitmentIncludedCount(decoded));
             }
-            if let Ok(decoded) = <GetCommitmentQueuedCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetCommitmentQueuedCountCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetCommitmentQueuedCount(decoded));
             }
-            if let Ok(decoded) = <GetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetMinRollupFee(decoded));
             }
-            if let Ok(decoded) = <GetNullifierCountCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetNullifierCountCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetNullifierCount(decoded));
             }
-            if let Ok(decoded) = <GetQueuedCommitmentsCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetQueuedCommitmentsCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetQueuedCommitments(decoded));
             }
-            if let Ok(decoded) = <GetTreeCapacityCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetTreeCapacityCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetTreeCapacity(decoded));
             }
-            if let Ok(decoded) = <IsHistoricCommitmentCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <IsHistoricCommitmentCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::IsHistoricCommitment(decoded));
             }
-            if let Ok(decoded) = <IsKnownRootCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <IsKnownRootCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IsKnownRoot(decoded));
             }
-            if let Ok(decoded) = <IsRollupWhitelistDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::IsRollupWhitelistDisabled(decoded));
-            }
-            if let Ok(decoded) = <IsSpentSerialNumberCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <IsSpentSerialNumberCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::IsSpentSerialNumber(decoded));
             }
-            if let Ok(decoded) = <IsVerifierUpdateDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::IsVerifierUpdateDisabled(decoded));
-            }
-            if let Ok(decoded) = <RemoveEnqueueWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::RemoveEnqueueWhitelist(decoded));
-            }
-            if let Ok(decoded) = <RemoveRollupWhitelistCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::RemoveRollupWhitelist(decoded));
-            }
-            if let Ok(decoded) = <RollupCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <RollupCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Rollup(decoded));
             }
-            if let Ok(decoded) = <SanctionsCheckCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::SanctionsCheck(decoded));
+            if let Ok(decoded)
+                = <SettingsCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+                return Ok(Self::Settings(decoded));
             }
-            if let Ok(decoded) = <SanctionsListCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::SanctionsList(decoded));
-            }
-            if let Ok(decoded) = <SetMinRollupFeeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::SetMinRollupFee(decoded));
-            }
-            if let Ok(decoded) = <SetRollupWhitelistDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::SetRollupWhitelistDisabled(decoded));
-            }
-            if let Ok(decoded) = <SetVerifierUpdateDisabledCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::SetVerifierUpdateDisabled(decoded));
-            }
-            if let Ok(decoded) = <TransactCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <TransactCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Transact(decoded));
-            }
-            if let Ok(decoded) = <UpdateAuditorPublicKeyCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::UpdateAuditorPublicKey(decoded));
-            }
-            if let Ok(decoded) = <UpdateSanctionsListAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
-                return Ok(Self::UpdateSanctionsListAddress(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
         }
@@ -3240,109 +2999,111 @@ pub mod commitment_pool {
     impl ::ethers_core::abi::AbiEncode for CommitmentPoolCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::PathIndices(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AddEnqueueWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AddRollupWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AssetType(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AuditorCount(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::ChangeOperator(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::DisableRollupVerifier(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::DisableSanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::DisableTransactVerifier(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::EnableRollupVerifier(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::EnableSanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::EnableTransactVerifier(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::AuditorCount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::PathIndices(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AssetAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::AssetType(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::DefaultMinRollupFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::Enqueue(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetAllAuditorPublicKeys(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetAuditorPublicKey(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetCommitmentCount(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetCommitmentIncludedCount(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetCommitmentQueuedCount(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetMinRollupFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetNullifierCount(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetQueuedCommitments(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetTreeCapacity(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsHistoricCommitment(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsKnownRoot(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsRollupWhitelistDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsSpentSerialNumber(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsVerifierUpdateDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RemoveEnqueueWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RemoveRollupWhitelist(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::GetAllAuditorPublicKeys(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetAuditorPublicKey(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetCommitmentCount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetCommitmentIncludedCount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetCommitmentQueuedCount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetMinRollupFee(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetNullifierCount(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetQueuedCommitments(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetTreeCapacity(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsHistoricCommitment(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsKnownRoot(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsSpentSerialNumber(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::Rollup(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SanctionsCheck(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SanctionsList(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetMinRollupFee(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetRollupWhitelistDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetVerifierUpdateDisabled(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::Transact(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::UpdateAuditorPublicKey(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::UpdateSanctionsListAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::Settings(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::Transact(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }
     impl ::core::fmt::Display for CommitmentPoolCalls {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::PathIndices(element) => ::core::fmt::Display::fmt(element, f),
-                Self::AddEnqueueWhitelist(element) => ::core::fmt::Display::fmt(element, f),
-                Self::AddRollupWhitelist(element) => ::core::fmt::Display::fmt(element, f),
-                Self::AssetType(element) => ::core::fmt::Display::fmt(element, f),
                 Self::AuditorCount(element) => ::core::fmt::Display::fmt(element, f),
-                Self::ChangeOperator(element) => ::core::fmt::Display::fmt(element, f),
-                Self::DisableRollupVerifier(element) => ::core::fmt::Display::fmt(element, f),
-                Self::DisableSanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
-                Self::DisableTransactVerifier(element) => ::core::fmt::Display::fmt(element, f),
-                Self::EnableRollupVerifier(element) => ::core::fmt::Display::fmt(element, f),
-                Self::EnableSanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
-                Self::EnableTransactVerifier(element) => ::core::fmt::Display::fmt(element, f),
+                Self::PathIndices(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AssetAddress(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AssetType(element) => ::core::fmt::Display::fmt(element, f),
+                Self::DefaultMinRollupFee(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::Enqueue(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetAllAuditorPublicKeys(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetAuditorPublicKey(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetCommitmentCount(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetCommitmentIncludedCount(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetCommitmentQueuedCount(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetAllAuditorPublicKeys(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetAuditorPublicKey(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetCommitmentCount(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetCommitmentIncludedCount(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
+                Self::GetCommitmentQueuedCount(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::GetMinRollupFee(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetNullifierCount(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetQueuedCommitments(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetQueuedCommitments(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::GetTreeCapacity(element) => ::core::fmt::Display::fmt(element, f),
-                Self::IsHistoricCommitment(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsHistoricCommitment(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::IsKnownRoot(element) => ::core::fmt::Display::fmt(element, f),
-                Self::IsRollupWhitelistDisabled(element) => ::core::fmt::Display::fmt(element, f),
-                Self::IsSpentSerialNumber(element) => ::core::fmt::Display::fmt(element, f),
-                Self::IsVerifierUpdateDisabled(element) => ::core::fmt::Display::fmt(element, f),
-                Self::RemoveEnqueueWhitelist(element) => ::core::fmt::Display::fmt(element, f),
-                Self::RemoveRollupWhitelist(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsSpentSerialNumber(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::Rollup(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SanctionsCheck(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SanctionsList(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetMinRollupFee(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetRollupWhitelistDisabled(element) => ::core::fmt::Display::fmt(element, f),
-                Self::SetVerifierUpdateDisabled(element) => ::core::fmt::Display::fmt(element, f),
+                Self::Settings(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Transact(element) => ::core::fmt::Display::fmt(element, f),
-                Self::UpdateAuditorPublicKey(element) => ::core::fmt::Display::fmt(element, f),
-                Self::UpdateSanctionsListAddress(element) => ::core::fmt::Display::fmt(element, f),
             }
-        }
-    }
-    impl ::core::convert::From<PathIndicesCall> for CommitmentPoolCalls {
-        fn from(value: PathIndicesCall) -> Self {
-            Self::PathIndices(value)
-        }
-    }
-    impl ::core::convert::From<AddEnqueueWhitelistCall> for CommitmentPoolCalls {
-        fn from(value: AddEnqueueWhitelistCall) -> Self {
-            Self::AddEnqueueWhitelist(value)
-        }
-    }
-    impl ::core::convert::From<AddRollupWhitelistCall> for CommitmentPoolCalls {
-        fn from(value: AddRollupWhitelistCall) -> Self {
-            Self::AddRollupWhitelist(value)
-        }
-    }
-    impl ::core::convert::From<AssetTypeCall> for CommitmentPoolCalls {
-        fn from(value: AssetTypeCall) -> Self {
-            Self::AssetType(value)
         }
     }
     impl ::core::convert::From<AuditorCountCall> for CommitmentPoolCalls {
@@ -3350,39 +3111,24 @@ pub mod commitment_pool {
             Self::AuditorCount(value)
         }
     }
-    impl ::core::convert::From<ChangeOperatorCall> for CommitmentPoolCalls {
-        fn from(value: ChangeOperatorCall) -> Self {
-            Self::ChangeOperator(value)
+    impl ::core::convert::From<PathIndicesCall> for CommitmentPoolCalls {
+        fn from(value: PathIndicesCall) -> Self {
+            Self::PathIndices(value)
         }
     }
-    impl ::core::convert::From<DisableRollupVerifierCall> for CommitmentPoolCalls {
-        fn from(value: DisableRollupVerifierCall) -> Self {
-            Self::DisableRollupVerifier(value)
+    impl ::core::convert::From<AssetAddressCall> for CommitmentPoolCalls {
+        fn from(value: AssetAddressCall) -> Self {
+            Self::AssetAddress(value)
         }
     }
-    impl ::core::convert::From<DisableSanctionsCheckCall> for CommitmentPoolCalls {
-        fn from(value: DisableSanctionsCheckCall) -> Self {
-            Self::DisableSanctionsCheck(value)
+    impl ::core::convert::From<AssetTypeCall> for CommitmentPoolCalls {
+        fn from(value: AssetTypeCall) -> Self {
+            Self::AssetType(value)
         }
     }
-    impl ::core::convert::From<DisableTransactVerifierCall> for CommitmentPoolCalls {
-        fn from(value: DisableTransactVerifierCall) -> Self {
-            Self::DisableTransactVerifier(value)
-        }
-    }
-    impl ::core::convert::From<EnableRollupVerifierCall> for CommitmentPoolCalls {
-        fn from(value: EnableRollupVerifierCall) -> Self {
-            Self::EnableRollupVerifier(value)
-        }
-    }
-    impl ::core::convert::From<EnableSanctionsCheckCall> for CommitmentPoolCalls {
-        fn from(value: EnableSanctionsCheckCall) -> Self {
-            Self::EnableSanctionsCheck(value)
-        }
-    }
-    impl ::core::convert::From<EnableTransactVerifierCall> for CommitmentPoolCalls {
-        fn from(value: EnableTransactVerifierCall) -> Self {
-            Self::EnableTransactVerifier(value)
+    impl ::core::convert::From<DefaultMinRollupFeeCall> for CommitmentPoolCalls {
+        fn from(value: DefaultMinRollupFeeCall) -> Self {
+            Self::DefaultMinRollupFee(value)
         }
     }
     impl ::core::convert::From<EnqueueCall> for CommitmentPoolCalls {
@@ -3445,29 +3191,9 @@ pub mod commitment_pool {
             Self::IsKnownRoot(value)
         }
     }
-    impl ::core::convert::From<IsRollupWhitelistDisabledCall> for CommitmentPoolCalls {
-        fn from(value: IsRollupWhitelistDisabledCall) -> Self {
-            Self::IsRollupWhitelistDisabled(value)
-        }
-    }
     impl ::core::convert::From<IsSpentSerialNumberCall> for CommitmentPoolCalls {
         fn from(value: IsSpentSerialNumberCall) -> Self {
             Self::IsSpentSerialNumber(value)
-        }
-    }
-    impl ::core::convert::From<IsVerifierUpdateDisabledCall> for CommitmentPoolCalls {
-        fn from(value: IsVerifierUpdateDisabledCall) -> Self {
-            Self::IsVerifierUpdateDisabled(value)
-        }
-    }
-    impl ::core::convert::From<RemoveEnqueueWhitelistCall> for CommitmentPoolCalls {
-        fn from(value: RemoveEnqueueWhitelistCall) -> Self {
-            Self::RemoveEnqueueWhitelist(value)
-        }
-    }
-    impl ::core::convert::From<RemoveRollupWhitelistCall> for CommitmentPoolCalls {
-        fn from(value: RemoveRollupWhitelistCall) -> Self {
-            Self::RemoveRollupWhitelist(value)
         }
     }
     impl ::core::convert::From<RollupCall> for CommitmentPoolCalls {
@@ -3475,29 +3201,9 @@ pub mod commitment_pool {
             Self::Rollup(value)
         }
     }
-    impl ::core::convert::From<SanctionsCheckCall> for CommitmentPoolCalls {
-        fn from(value: SanctionsCheckCall) -> Self {
-            Self::SanctionsCheck(value)
-        }
-    }
-    impl ::core::convert::From<SanctionsListCall> for CommitmentPoolCalls {
-        fn from(value: SanctionsListCall) -> Self {
-            Self::SanctionsList(value)
-        }
-    }
-    impl ::core::convert::From<SetMinRollupFeeCall> for CommitmentPoolCalls {
-        fn from(value: SetMinRollupFeeCall) -> Self {
-            Self::SetMinRollupFee(value)
-        }
-    }
-    impl ::core::convert::From<SetRollupWhitelistDisabledCall> for CommitmentPoolCalls {
-        fn from(value: SetRollupWhitelistDisabledCall) -> Self {
-            Self::SetRollupWhitelistDisabled(value)
-        }
-    }
-    impl ::core::convert::From<SetVerifierUpdateDisabledCall> for CommitmentPoolCalls {
-        fn from(value: SetVerifierUpdateDisabledCall) -> Self {
-            Self::SetVerifierUpdateDisabled(value)
+    impl ::core::convert::From<SettingsCall> for CommitmentPoolCalls {
+        fn from(value: SettingsCall) -> Self {
+            Self::Settings(value)
         }
     }
     impl ::core::convert::From<TransactCall> for CommitmentPoolCalls {
@@ -3505,16 +3211,20 @@ pub mod commitment_pool {
             Self::Transact(value)
         }
     }
-    impl ::core::convert::From<UpdateAuditorPublicKeyCall> for CommitmentPoolCalls {
-        fn from(value: UpdateAuditorPublicKeyCall) -> Self {
-            Self::UpdateAuditorPublicKey(value)
-        }
-    }
-    impl ::core::convert::From<UpdateSanctionsListAddressCall> for CommitmentPoolCalls {
-        fn from(value: UpdateSanctionsListAddressCall) -> Self {
-            Self::UpdateSanctionsListAddress(value)
-        }
-    }
+    ///Container type for all return fields from the `AUDITOR_COUNT` function with signature `AUDITOR_COUNT()` and selector `0xa592bd69`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    pub struct AuditorCountReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `_pathIndices` function with signature `_pathIndices(uint256,uint32)` and selector `0xf2da1d41`
     #[derive(
         Clone,
@@ -3526,9 +3236,23 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct PathIndicesReturn(pub ::ethers_core::types::U256);
+    ///Container type for all return fields from the `assetAddress` function with signature `assetAddress()` and selector `0x1ba46cfd`
+    #[derive(
+        Clone,
+        ::ethers_contract::EthAbiType,
+        ::ethers_contract::EthAbiCodec,
+        serde::Serialize,
+        serde::Deserialize,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    pub struct AssetAddressReturn(pub ::ethers_core::types::Address);
     ///Container type for all return fields from the `assetType` function with signature `assetType()` and selector `0x3fe3347a`
     #[derive(
         Clone,
@@ -3540,10 +3264,10 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct AssetTypeReturn(pub u8);
-    ///Container type for all return fields from the `auditorCount` function with signature `auditorCount()` and selector `0x115f574c`
+    ///Container type for all return fields from the `defaultMinRollupFee` function with signature `defaultMinRollupFee()` and selector `0xb2316c33`
     #[derive(
         Clone,
         ::ethers_contract::EthAbiType,
@@ -3554,9 +3278,9 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    pub struct AuditorCountReturn(pub ::ethers_core::types::U256);
+    pub struct DefaultMinRollupFeeReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getAllAuditorPublicKeys` function with signature `getAllAuditorPublicKeys()` and selector `0x63bc7d32`
     #[derive(
         Clone,
@@ -3568,9 +3292,11 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    pub struct GetAllAuditorPublicKeysReturn(pub ::std::vec::Vec<::ethers_core::types::U256>);
+    pub struct GetAllAuditorPublicKeysReturn(
+        pub ::std::vec::Vec<::ethers_core::types::U256>,
+    );
     ///Container type for all return fields from the `getAuditorPublicKey` function with signature `getAuditorPublicKey(uint256)` and selector `0x87780df9`
     #[derive(
         Clone,
@@ -3582,7 +3308,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetAuditorPublicKeyReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getCommitmentCount` function with signature `getCommitmentCount()` and selector `0x5688881f`
@@ -3596,7 +3322,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetCommitmentCountReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getCommitmentIncludedCount` function with signature `getCommitmentIncludedCount()` and selector `0xe500f504`
@@ -3610,7 +3336,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetCommitmentIncludedCountReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getCommitmentQueuedCount` function with signature `getCommitmentQueuedCount()` and selector `0x555d75f0`
@@ -3624,7 +3350,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetCommitmentQueuedCountReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getMinRollupFee` function with signature `getMinRollupFee()` and selector `0xb08892d0`
@@ -3638,7 +3364,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetMinRollupFeeReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getNullifierCount` function with signature `getNullifierCount()` and selector `0x7a553744`
@@ -3652,7 +3378,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetNullifierCountReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `getQueuedCommitments` function with signature `getQueuedCommitments()` and selector `0x866ac658`
@@ -3666,9 +3392,11 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    pub struct GetQueuedCommitmentsReturn(pub ::std::vec::Vec<::ethers_core::types::U256>);
+    pub struct GetQueuedCommitmentsReturn(
+        pub ::std::vec::Vec<::ethers_core::types::U256>,
+    );
     ///Container type for all return fields from the `getTreeCapacity` function with signature `getTreeCapacity()` and selector `0x484eb652`
     #[derive(
         Clone,
@@ -3680,7 +3408,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetTreeCapacityReturn(pub ::ethers_core::types::U256);
     ///Container type for all return fields from the `isHistoricCommitment` function with signature `isHistoricCommitment(uint256)` and selector `0x57060016`
@@ -3694,7 +3422,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct IsHistoricCommitmentReturn(pub bool);
     ///Container type for all return fields from the `isKnownRoot` function with signature `isKnownRoot(uint256)` and selector `0xa6232a93`
@@ -3708,23 +3436,9 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct IsKnownRootReturn(pub bool);
-    ///Container type for all return fields from the `isRollupWhitelistDisabled` function with signature `isRollupWhitelistDisabled()` and selector `0xffa89b88`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    pub struct IsRollupWhitelistDisabledReturn(pub bool);
     ///Container type for all return fields from the `isSpentSerialNumber` function with signature `isSpentSerialNumber(uint256)` and selector `0x3bb8d1b4`
     #[derive(
         Clone,
@@ -3736,10 +3450,10 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct IsSpentSerialNumberReturn(pub bool);
-    ///Container type for all return fields from the `isVerifierUpdateDisabled` function with signature `isVerifierUpdateDisabled()` and selector `0x4eb069f7`
+    ///Container type for all return fields from the `settings` function with signature `settings()` and selector `0xe06174e4`
     #[derive(
         Clone,
         ::ethers_contract::EthAbiType,
@@ -3750,37 +3464,9 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    pub struct IsVerifierUpdateDisabledReturn(pub bool);
-    ///Container type for all return fields from the `sanctionsCheck` function with signature `sanctionsCheck()` and selector `0xb1c39422`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    pub struct SanctionsCheckReturn(pub bool);
-    ///Container type for all return fields from the `sanctionsList` function with signature `sanctionsList()` and selector `0xec571c6a`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-    )]
-    pub struct SanctionsListReturn(pub ::ethers_core::types::Address);
+    pub struct SettingsReturn(pub ::ethers_core::types::Address);
     ///`AuditorNote(uint64,uint256,uint256)`
     #[derive(
         Clone,
@@ -3792,7 +3478,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct AuditorNote {
         pub id: u64,
@@ -3810,7 +3496,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct CommitmentRequest {
         pub amount: ::ethers_core::types::U256,
@@ -3830,7 +3516,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct RollupRequest {
         pub proof: Proof,
@@ -3849,7 +3535,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct TransactRequest {
         pub proof: Proof,
@@ -3878,7 +3564,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct G1Point {
         pub x: ::ethers_core::types::U256,
@@ -3895,7 +3581,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct G2Point {
         pub x: [::ethers_core::types::U256; 2],
@@ -3912,7 +3598,7 @@ pub mod commitment_pool {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct Proof {
         pub a: G1Point,
