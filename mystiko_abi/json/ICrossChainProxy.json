@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
   "contractName": "ICrossChainProxy",
-  "sourceName": "contracts/core/deposit/tbridge/relay/interface/ICrossChainProxy.sol",
+  "sourceName": "contracts/core/deposit/tbridge/relay/interfaces/ICrossChainProxy.sol",
   "abi": [
     {
       "anonymous": false,
