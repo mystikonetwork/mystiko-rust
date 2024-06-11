@@ -326,7 +326,11 @@ async fn create_relayer_config_from_remote(options: &RelayerClientOptions) -> an
         .is_testnet(is_testnet)
         .is_staging(is_staging)
         .build();
-    remote_options.base_url = options.relayer_config_remote_base_url.clone();
-    remote_options.git_revision = options.relayer_config_git_revision.clone();
-    RelayerConfig::from_remote(&remote_options).await
+    remote_options
+        .base_url
+        .clone_from(&options.relayer_config_remote_base_url);
+    remote_options
+        .git_revision
+        .clone_from(&options.relayer_config_git_revision);
+    RelayerConfig::from_options(remote_options).await
 }

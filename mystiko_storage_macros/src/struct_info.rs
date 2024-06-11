@@ -67,9 +67,9 @@ impl<'a> StructInfo<'a> {
                     }
                 }
             }
-            impl ToString for #enum_name {
-                fn to_string(&self) -> String {
-                    self.as_ref().to_string()
+            impl std::fmt::Display for #enum_name {
+                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    write!(f, "{}", self.as_ref())
                 }
             }
             impl From<#enum_name> for String {

@@ -129,7 +129,7 @@ where
         }
 
         accounts.iter_mut().for_each(|account| {
-            account.data.scanned_to_id = options.reset_to_id.clone();
+            account.data.scanned_to_id.clone_from(&options.reset_to_id);
         });
         self.db.accounts.update_batch(&accounts).await?;
         let shielded_addresses = accounts

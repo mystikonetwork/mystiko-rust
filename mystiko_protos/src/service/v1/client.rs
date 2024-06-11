@@ -1,4 +1,5 @@
 use crate::service::v1::ClientOptions;
+use mystiko_config::SequencerConfig;
 use std::str::FromStr;
 
 pub const DEFAULT_HOST: &str = "127.0.0.1";
@@ -23,6 +24,16 @@ impl ClientOptions {
     fn format_uri(&self, host: String) -> Result<http::Uri, http::uri::InvalidUri> {
         let port = self.port.map(|port| format!(":{}", port)).unwrap_or_default();
         http::Uri::from_str(&format!("{}://{}{}", self.scheme(), host, port))
+    }
+}
+
+impl From<&SequencerConfig> for ClientOptions {
+    fn from(config: &SequencerConfig) -> Self {
+        Self::builder()
+            .host(config.host().to_string())
+            .port(config.port().map(u32::from))
+            .is_ssl(config.is_ssl())
+            .build()
     }
 }
 

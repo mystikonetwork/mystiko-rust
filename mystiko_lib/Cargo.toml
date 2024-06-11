@@ -9,7 +9,7 @@ edition = "2021"
 anyhow = { version = "1.0.69" }
 lazy_static = { version = "1.4.0" }
 log = { version = "0.4.19" }
-mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["proto"] }
+mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "2b27cc4" }
 mystiko_core = { version = "0.1.0", path = "../mystiko_core" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-common-v1", "mystiko-core-document-v1", "mystiko-core-v1", "mystiko-api-config-v1", "mystiko-api-handler-v1", "mystiko-api-v1", "mystiko-api-scanner-v1", "mystiko-api-synchronizer-v1"] }
 mystiko_static_cache = { version = "0.1.0", path = "../mystiko_static_cache", features = ["fs"] }
@@ -27,11 +27,11 @@ bip32 = { version = "0.5.0" }
 ethers-core = { version = "2.0.4" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
 mockall = { version = "0.11.4" }
-mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["proto", "fs"] }
+mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "2b27cc4", features = ["fs"] }
 mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a", features = ["zkp"] }
 mystiko_dataloader = { version = "0.1.0", path = "../mystiko_dataloader" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
-mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
+mystiko_types = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "2b27cc4" }
 mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 mystiko_relayer_client = { version = "0.1.0", path = "../mystiko_relayer_client", features = ["fs"] }

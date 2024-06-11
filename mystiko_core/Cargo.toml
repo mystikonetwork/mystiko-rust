@@ -15,24 +15,24 @@ ethers-middleware = { version = "2.0.4" }
 ethers-providers = { version = "2.0.4", features = ["ws"] }
 ethers-signers = { version = "2.0.4" }
 futures = { version = "0.3.26" }
-itertools =  { version = "0.10.5" }
+itertools = { version = "0.10.5" }
 lazy_static = { version = "1.4.0" }
 log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
-mystiko_config = { version = "0.1.0", path = "../mystiko_config" }
+mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "2b27cc4" }
 mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a", features = ["zkp"] }
 mystiko_dataloader = { version = "0.1.0", path = "../mystiko_dataloader" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers", features = ["config"] }
 mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc" }
 mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a" }
-mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["ethers", "grpc-client", "mystiko-core-v1","mystiko-core-handler-v1","mystiko-core-document-v1","mystiko-core-scanner-v1","mystiko-core-synchronizer-v1","mystiko-storage-v1","mystiko-service-v1"] }
+mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["ethers", "grpc-client", "mystiko-core-v1", "mystiko-core-handler-v1", "mystiko-core-document-v1", "mystiko-core-scanner-v1", "mystiko-core-synchronizer-v1", "mystiko-storage-v1", "mystiko-service-v1"] }
 mystiko_relayer_client = { version = "0.1.0", path = "../mystiko_relayer_client" }
 mystiko_relayer_types = { version = "0.1.0", path = "../mystiko_relayer_types" }
 mystiko_scheduler = { version = "0.1.0", path = "../mystiko_scheduler" }
 mystiko_static_cache = { version = "0.1.0", path = "../mystiko_static_cache", features = ["gzip"] }
 mystiko_storage = { version = "0.1.0", path = "../mystiko_storage" }
 mystiko_storage_macros = { version = "0.1.0", path = "../mystiko_storage_macros" }
-mystiko_types = { version = "0.1.0", path = "../mystiko_types" }
+mystiko_types = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "2b27cc4" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 num-bigint = { version = "0.4", features = ["serde"] }
 num-traits = { version = "0.2.15" }
@@ -51,7 +51,7 @@ typed-builder = { version = "0.15.2" }
 env_logger = { version = "0.10.0" }
 mockall = { version = "0.11.4" }
 mockito = { version = "1.1.0" }
-mystiko_config = { version = "0.1.0", path = "../mystiko_config", features = ["fs"] }
+mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "2b27cc4", features = ["fs"] }
 mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc", features = ["server"] }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
 tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }

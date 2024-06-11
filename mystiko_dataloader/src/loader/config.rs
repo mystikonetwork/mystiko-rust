@@ -105,7 +105,8 @@ where
         if let Some(mystiko_config) = &self.mystiko_config {
             Ok(mystiko_config.clone())
         } else {
-            let mystiko_config = MystikoConfig::from_options(self.config.mystiko_config_options.clone()).await?;
+            let mystiko_config =
+                MystikoConfig::from_options(self.config.mystiko_config_options.clone().unwrap_or_default()).await?;
             Ok(Arc::new(mystiko_config))
         }
     }
@@ -259,7 +260,7 @@ where
         let etherscan_config = self.config.fetcher_config.as_ref().and_then(|c| c.etherscan.as_ref());
 
         if let Some(e) = etherscan_config {
-            if e.chains.get(&self.chain_id).is_none() {
+            if !e.chains.contains_key(&self.chain_id) {
                 return Err(DataLoaderConfigError::FetcherConfigNotExistError(
                     FetcherType::Etherscan as i32,
                 ));

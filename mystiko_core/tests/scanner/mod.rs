@@ -109,7 +109,7 @@ pub async fn insert_commitments(
             Some(account) => {
                 let note = Note::new(Some(amount.clone()), None).unwrap();
                 let pcm = ProtocolCommitment::new(account.shielded_address.clone(), Some(note.clone()), None).unwrap();
-                cm.commitment_hash = pcm.commitment_hash.clone();
+                cm.commitment_hash.clone_from(&pcm.commitment_hash);
                 cm.encrypted_note = Some(encode_hex(pcm.encrypted_note));
 
                 let nullifier = compute_nullifier(&account.v_sk, &pcm.note.random_p).unwrap();

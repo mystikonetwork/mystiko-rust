@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "mystiko_abi",
-    "mystiko_config",
     "mystiko_core",
     "mystiko_dataloader",
     "mystiko_datapacker_client",
@@ -12,9 +11,7 @@ members = [
     "mystiko_lib",
     "mystiko_protos",
     "mystiko_protos_macros",
-    "mystiko_relayer_abi",
     "mystiko_relayer_client",
-    "mystiko_relayer_config",
     "mystiko_relayer_types",
     "mystiko_sequencer_client",
     "mystiko_scheduler",
@@ -23,9 +20,7 @@ members = [
     "mystiko_storage_macros",
     "mystiko_storage_mysql",
     "mystiko_storage_sqlite",
-    "mystiko_types",
-    "mystiko_utils",
-    "mystiko_validator"
+    "mystiko_utils"
 ]
 resolver = "2"
 
