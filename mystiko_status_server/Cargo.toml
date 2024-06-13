@@ -1,29 +1,23 @@
 [package]
-name = "mystiko_scheduler"
+name = "mystiko_status_server"
 version = "0.1.0"
 edition = "2021"
 
-[features]
-signal = ["tokio/signal", "futures"]
-status = ["mystiko_status_server"]
 
 [dependencies]
 anyhow = { version = "1.0.69" }
 async-trait = { version = "0.1.64" }
-futures = { version = "0.3.28", optional = true }
+http = { version = "0.2.9" }
+hyper = { version = "0.14.27", features = ["http1", "server", "tcp"] }
 log = { version = "0.4.17" }
-mystiko_status_server = { version = "0.1.0", path = "../mystiko_status_server", optional = true }
+mime = { version = "0.3.17" }
 thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.27.0", features = ["macros", "rt", "sync", "time"] }
 typed-builder = { version = "0.15.2" }
 
 [dev-dependencies]
 env_logger = { version = "0.10.0" }
-http = { version = "0.2.9" }
 hyper = { version = "0.14.27", features = ["client"] }
-libc = { version = "0.2.148" }
-mime = { version = "0.3.17" }
-mystiko_scheduler = { version = "*", path = ".", features = ["signal", "status"] }
 serde = { version = "1.0.152", features = ["derive", "rc"] }
 serde_json = { version = "1.0.91" }
 tokio = { version = "1.27.0", features = ["test-util"] }

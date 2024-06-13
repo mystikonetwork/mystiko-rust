@@ -22,7 +22,7 @@ pub struct SchedulerOptions<I, T: SchedulerTask<I>> {
     pub status_server_port: u16,
     #[cfg(feature = "status")]
     #[builder(default)]
-    pub status_getter: Option<Arc<Box<dyn crate::SchedulerStatus>>>,
+    pub status_getter: Option<Arc<Box<dyn mystiko_status_server::Status>>>,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<I>,
 }
@@ -36,7 +36,7 @@ pub struct Scheduler<I, T: SchedulerTask<I>> {
     #[cfg(feature = "signal")]
     shutdown_signals: Vec<tokio::signal::unix::SignalKind>,
     #[cfg(feature = "status")]
-    status_server: Arc<crate::StatusServer>,
+    status_server: Arc<mystiko_status_server::StatusServer>,
 }
 
 impl<I, T> Scheduler<I, T>
@@ -64,7 +64,7 @@ where
             ]),
             #[cfg(feature = "status")]
             status_server: Arc::new(
-                crate::StatusServer::builder()
+                mystiko_status_server::StatusServer::builder()
                     .bind_address(options.status_server_bind_address)
                     .port(options.status_server_port)
                     .status(options.status_getter)
@@ -194,7 +194,7 @@ async fn start_executor<I, T, R, A>(
     options: StartOptions<T::Error, R, A>,
     start_sender: Sender<()>,
     executor: Arc<ScheduleExecutor<I, T>>,
-    #[cfg(feature = "status")] status_server: Arc<crate::StatusServer>,
+    #[cfg(feature = "status")] status_server: Arc<mystiko_status_server::StatusServer>,
 ) -> Result<(), SchedulerError>
 where
     T: SchedulerTask<I> + 'static,

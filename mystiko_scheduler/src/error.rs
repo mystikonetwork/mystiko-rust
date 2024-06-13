@@ -8,12 +8,6 @@ pub enum SchedulerError {
     SendStartSignalError,
     #[error("failed to send stop signal")]
     SendStopSignalError,
-    #[cfg(feature = "status")]
-    #[error("failed to send status server's start signal")]
-    SendStatusServerStartSignalError,
-    #[cfg(feature = "status")]
-    #[error("failed to send status server's stop signal")]
-    SendStatusServerStopSignalError,
     #[error(transparent)]
     JoinError(#[from] JoinError),
     #[cfg(feature = "signal")]
@@ -21,11 +15,5 @@ pub enum SchedulerError {
     IoError(#[from] std::io::Error),
     #[cfg(feature = "status")]
     #[error(transparent)]
-    AddrParseError(#[from] std::net::AddrParseError),
-    #[cfg(feature = "status")]
-    #[error(transparent)]
-    HttpError(#[from] http::Error),
-    #[cfg(feature = "status")]
-    #[error(transparent)]
-    HyperError(#[from] hyper::Error),
+    StatusServerError(#[from] mystiko_status_server::StatusServerError),
 }
