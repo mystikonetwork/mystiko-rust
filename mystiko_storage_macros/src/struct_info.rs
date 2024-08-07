@@ -29,8 +29,7 @@ impl<'a> StructInfo<'a> {
             name: &ast.ident,
             column_enum_name: column_enum_name.clone(),
             fields: fields
-                .enumerate()
-                .map(|(_, f)| {
+                .map(|f| {
                     let column_enum_item_name = syn::Ident::new(
                         &f.ident
                             .as_ref()

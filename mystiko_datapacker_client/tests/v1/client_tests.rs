@@ -447,7 +447,7 @@ async fn test_query_chain_loaded_block() {
     let index_mock = server
         .mock("GET", index_url.as_str())
         .with_status(200)
-        .with_body(&serde_json::to_vec(&granularity_index).unwrap())
+        .with_body(serde_json::to_vec(&granularity_index).unwrap())
         .create_async()
         .await;
     assert_eq!(
@@ -517,7 +517,7 @@ async fn test_query_merkle_tree() {
     let index_mock = server
         .mock("GET", index_url.as_str())
         .with_status(200)
-        .with_body(&serde_json::to_vec(&merkle_tree_index).unwrap())
+        .with_body(serde_json::to_vec(&merkle_tree_index).unwrap())
         .create_async()
         .await;
     let data_mock = server
@@ -552,7 +552,7 @@ async fn test_query_merkle_tree_returns_none() {
     let index_mock = server
         .mock("GET", index_url.as_str())
         .with_status(200)
-        .with_body(&vec![])
+        .with_body(vec![])
         .create_async()
         .await;
     let queried_merkle_tree = client
