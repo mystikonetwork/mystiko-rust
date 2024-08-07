@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0" }
 async-trait = { version = "0.1.64" }
-ethers-providers = { version = "2.0.4", features = ["ws"] }
+ethers-providers = { version = "2.0.14", features = ["ws"] }
 futures-core = { version = "0.3.28" }
 lazy_static = { version = "1.4.0" }
 mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "2b27cc4", optional = true }

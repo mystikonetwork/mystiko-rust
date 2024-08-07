@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0.69" }
 async-trait = { version = "0.1.64" }
-ethers-core = { version = "2.0.4" }
+ethers-core = { version = "2.0.14" }
 mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-sequencer-v1", "grpc-client"] }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
