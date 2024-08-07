@@ -15,6 +15,7 @@ members = [
     "mystiko_relayer_types",
     "mystiko_sequencer_client",
     "mystiko_scheduler",
+    "mystiko_screening_client",
     "mystiko_static_cache",
     "mystiko_status_server",
     "mystiko_storage",

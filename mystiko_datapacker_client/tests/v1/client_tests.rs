@@ -1,5 +1,11 @@
+use std::sync::Arc;
+
 use anyhow::Result;
 use mystiko_config::{create_raw_from_file, MystikoConfig, RawMystikoConfig, RawPackerConfig};
+use num_bigint::BigUint;
+use prost::Message;
+use typed_builder::TypedBuilder;
+
 use mystiko_datapacker_client::v1::DataPackerClient as DataPackerClientV1;
 use mystiko_datapacker_client::{ChainQuery, DataPackerClient};
 use mystiko_datapacker_common::v1::{GranularityIndex, MerkleTreeIndex, PathSchema as PathSchemaV1};
@@ -7,10 +13,6 @@ use mystiko_datapacker_common::{CheckSum, Compression, PathSchema, Sha512CheckSu
 use mystiko_protos::data::v1::{ChainData, Commitment, CommitmentStatus, ContractData, MerkleTree, Nullifier};
 use mystiko_utils::address::{ethers_address_from_string, string_address_to_bytes};
 use mystiko_utils::convert::biguint_to_bytes;
-use num_bigint::BigUint;
-use prost::Message;
-use std::sync::Arc;
-use typed_builder::TypedBuilder;
 
 #[tokio::test]
 async fn test_fetch_from_beginning() {
