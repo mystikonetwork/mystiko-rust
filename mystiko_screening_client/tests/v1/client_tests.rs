@@ -18,7 +18,7 @@ async fn test_apply_success() {
         .chain_id(97)
         .asset(None)
         .account("0x123".to_string())
-        .message("test".to_string())
+        .message("".to_string())
         .signature("0x123".to_string())
         .build();
     let response = client.apply_certificate(&request).await.unwrap();
