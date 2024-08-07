@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
   "contractName": "IMessageSenderApp",
-  "sourceName": "contracts/core/deposit/celer/relay/interface/IMessageSenderApp.sol",
+  "sourceName": "contracts/core/deposit/celer/relay/interfaces/IMessageSenderApp.sol",
   "abi": [
     {
       "inputs": [

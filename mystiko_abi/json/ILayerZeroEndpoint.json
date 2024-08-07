@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
   "contractName": "ILayerZeroEndpoint",
-  "sourceName": "contracts/core/deposit/layerzero/relay/interface/ILayerZeroEndpoint.sol",
+  "sourceName": "contracts/core/deposit/layerzero/relay/interfaces/ILayerZeroEndpoint.sol",
   "abi": [
     {
       "inputs": [

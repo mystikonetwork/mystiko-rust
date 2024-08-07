@@ -7,11 +7,13 @@ pub use i_layer_zero_endpoint::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types
+    non_camel_case_types,
 )]
 pub mod i_layer_zero_endpoint {
     const _: () = {
-        ::core::include_bytes!("../json/ILayerZeroEndpoint.json",);
+        ::core::include_bytes!(
+"../json/ILayerZeroEndpoint.json",
+        );
     };
     #[allow(deprecated)]
     fn __abi() -> ::ethers_core::abi::Abi {
@@ -20,484 +22,660 @@ pub mod i_layer_zero_endpoint {
             functions: ::core::convert::From::from([
                 (
                     ::std::borrow::ToOwned::to_owned("estimateFees"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("estimateFees"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_dstChainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_userApplication"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "address"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_payload"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_payInZRO"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_adapterParam"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("nativeFee"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "uint256"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("zroFee"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "uint256"
-                                ),),
-                            },
-                        ],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("estimateFees"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_dstChainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_userApplication"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_payload"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_payInZRO"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bool"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_adapterParam"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("nativeFee"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("zroFee"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("forceResumeReceive"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("forceResumeReceive"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("forceResumeReceive"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getChainId"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getChainId"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getChainId"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getConfig"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getConfig"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_version"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_chainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_userApplication"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "address"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_configType"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "uint256"
-                                ),),
-                            },
-                        ],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getConfig"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_version"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_chainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_userApplication"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_configType"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getInboundNonce"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getInboundNonce"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getInboundNonce"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint64"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getOutboundNonce"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getOutboundNonce"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_dstChainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "address"
-                                ),),
-                            },
-                        ],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getOutboundNonce"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_dstChainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint64"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getReceiveLibraryAddress"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getReceiveLibraryAddress",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_userApplication"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "getReceiveLibraryAddress",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_userApplication"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getReceiveVersion"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getReceiveVersion"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_userApplication"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getReceiveVersion"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_userApplication"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getSendLibraryAddress"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getSendLibraryAddress",),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_userApplication"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned(
+                                "getSendLibraryAddress",
+                            ),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_userApplication"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("getSendVersion"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("getSendVersion"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_userApplication"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
-                        },],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("getSendVersion"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_userApplication"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("hasStoredPayload"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("hasStoredPayload"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("hasStoredPayload"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bool"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isReceivingPayload"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("isReceivingPayload"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("isReceivingPayload"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bool"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isSendingPayload"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("isSendingPayload"),
-                        inputs: ::std::vec![],
-                        outputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::string::String::new(),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
-                        },],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("isSendingPayload"),
+                            inputs: ::std::vec![],
+                            outputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::string::String::new(),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bool"),
+                                    ),
+                                },
+                            ],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("receivePayload"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("receivePayload"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_dstAddress"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "address"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_nonce"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint64"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_gasLimit"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "uint256"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_payload"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("receivePayload"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_dstAddress"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_nonce"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(64usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint64"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_gasLimit"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_payload"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("retryPayload"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("retryPayload"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_payload"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("retryPayload"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcChainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_srcAddress"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_payload"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("send"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("send"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_dstChainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_destination"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_payload"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_refundAddress"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "address payable"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_zroPaymentAddress",),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "address"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_adapterParams"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::Payable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("send"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_dstChainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_destination"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_payload"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_refundAddress"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address payable"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned(
+                                        "_zroPaymentAddress",
+                                    ),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("address"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_adapterParams"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::Payable,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("setConfig"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("setConfig"),
-                        inputs: ::std::vec![
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_version"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_chainId"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_configType"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Uint(256usize,),
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
-                                    "uint256"
-                                ),),
-                            },
-                            ::ethers_core::abi::ethabi::Param {
-                                name: ::std::borrow::ToOwned::to_owned("_config"),
-                                kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
-                            },
-                        ],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("setConfig"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_version"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_chainId"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_configType"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
+                                        256usize,
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint256"),
+                                    ),
+                                },
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_config"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("setReceiveVersion"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("setReceiveVersion"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_version"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("setReceiveVersion"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_version"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("setSendVersion"),
-                    ::std::vec![::ethers_core::abi::ethabi::Function {
-                        name: ::std::borrow::ToOwned::to_owned("setSendVersion"),
-                        inputs: ::std::vec![::ethers_core::abi::ethabi::Param {
-                            name: ::std::borrow::ToOwned::to_owned("_version"),
-                            kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
-                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint16"),),
-                        },],
-                        outputs: ::std::vec![],
-                        constant: ::core::option::Option::None,
-                        state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                    },],
+                    ::std::vec![
+                        ::ethers_core::abi::ethabi::Function {
+                            name: ::std::borrow::ToOwned::to_owned("setSendVersion"),
+                            inputs: ::std::vec![
+                                ::ethers_core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("_version"),
+                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(16usize),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("uint16"),
+                                    ),
+                                },
+                            ],
+                            outputs: ::std::vec![],
+                            constant: ::core::option::Option::None,
+                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                        },
+                    ],
                 ),
             ]),
             events: ::std::collections::BTreeMap::new(),
@@ -507,8 +685,9 @@ pub mod i_layer_zero_endpoint {
         }
     }
     ///The parsed JSON ABI of the contract.
-    pub static ILAYERZEROENDPOINT_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> =
-        ::ethers_contract::Lazy::new(__abi);
+    pub static ILAYERZEROENDPOINT_ABI: ::ethers_contract::Lazy<
+        ::ethers_core::abi::Abi,
+    > = ::ethers_contract::Lazy::new(__abi);
     pub struct ILayerZeroEndpoint<M>(::ethers_contract::Contract<M>);
     impl<M> ::core::clone::Clone for ILayerZeroEndpoint<M> {
         fn clone(&self) -> Self {
@@ -536,12 +715,17 @@ pub mod i_layer_zero_endpoint {
     impl<M: ::ethers_providers::Middleware> ILayerZeroEndpoint<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
-            Self(::ethers_contract::Contract::new(
-                address.into(),
-                ILAYERZEROENDPOINT_ABI.clone(),
-                client,
-            ))
+        pub fn new<T: Into<::ethers_core::types::Address>>(
+            address: T,
+            client: ::std::sync::Arc<M>,
+        ) -> Self {
+            Self(
+                ::ethers_contract::Contract::new(
+                    address.into(),
+                    ILAYERZEROENDPOINT_ABI.clone(),
+                    client,
+                ),
+            )
         }
         ///Calls the contract's `estimateFees` (0x40a7bb10) function
         pub fn estimate_fees(
@@ -551,8 +735,10 @@ pub mod i_layer_zero_endpoint {
             payload: ::ethers_core::types::Bytes,
             pay_in_zro: bool,
             adapter_param: ::ethers_core::types::Bytes,
-        ) -> ::ethers_contract::builders::ContractCall<M, (::ethers_core::types::U256, ::ethers_core::types::U256)>
-        {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            (::ethers_core::types::U256, ::ethers_core::types::U256),
+        > {
             self.0
                 .method_hash(
                     [64, 167, 187, 16],
@@ -571,7 +757,9 @@ pub mod i_layer_zero_endpoint {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getChainId` (0x3408e470) function
-        pub fn get_chain_id(&self) -> ::ethers_contract::builders::ContractCall<M, u16> {
+        pub fn get_chain_id(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, u16> {
             self.0
                 .method_hash([52, 8, 228, 112], ())
                 .expect("method not found (this should never happen)")
@@ -583,9 +771,15 @@ pub mod i_layer_zero_endpoint {
             chain_id: u16,
             user_application: ::ethers_core::types::Address,
             config_type: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Bytes> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Bytes,
+        > {
             self.0
-                .method_hash([245, 236, 189, 188], (version, chain_id, user_application, config_type))
+                .method_hash(
+                    [245, 236, 189, 188],
+                    (version, chain_id, user_application, config_type),
+                )
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `getInboundNonce` (0xfdc07c70) function
@@ -612,7 +806,10 @@ pub mod i_layer_zero_endpoint {
         pub fn get_receive_library_address(
             &self,
             user_application: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([113, 186, 47, 214], user_application)
                 .expect("method not found (this should never happen)")
@@ -630,7 +827,10 @@ pub mod i_layer_zero_endpoint {
         pub fn get_send_library_address(
             &self,
             user_application: ::ethers_core::types::Address,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::Address> {
+        ) -> ::ethers_contract::builders::ContractCall<
+            M,
+            ::ethers_core::types::Address,
+        > {
             self.0
                 .method_hash([156, 114, 157, 161], user_application)
                 .expect("method not found (this should never happen)")
@@ -655,13 +855,17 @@ pub mod i_layer_zero_endpoint {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `isReceivingPayload` (0xca066b35) function
-        pub fn is_receiving_payload(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn is_receiving_payload(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([202, 6, 107, 53], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `isSendingPayload` (0xe97a448a) function
-        pub fn is_sending_payload(&self) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn is_sending_payload(
+            &self,
+        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([233, 122, 68, 138], ())
                 .expect("method not found (this should never happen)")
@@ -727,23 +931,33 @@ pub mod i_layer_zero_endpoint {
             config: ::ethers_core::types::Bytes,
         ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([203, 237, 139, 156], (version, chain_id, config_type, config))
+                .method_hash(
+                    [203, 237, 139, 156],
+                    (version, chain_id, config_type, config),
+                )
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setReceiveVersion` (0x10ddb137) function
-        pub fn set_receive_version(&self, version: u16) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn set_receive_version(
+            &self,
+            version: u16,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([16, 221, 177, 55], version)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setSendVersion` (0x07e0db17) function
-        pub fn set_send_version(&self, version: u16) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn set_send_version(
+            &self,
+            version: u16,
+        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([7, 224, 219, 23], version)
                 .expect("method not found (this should never happen)")
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>> for ILayerZeroEndpoint<M> {
+    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
+    for ILayerZeroEndpoint<M> {
         fn from(contract: ::ethers_contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
@@ -759,9 +973,12 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[ethcall(name = "estimateFees", abi = "estimateFees(uint16,address,bytes,bool,bytes)")]
+    #[ethcall(
+        name = "estimateFees",
+        abi = "estimateFees(uint16,address,bytes,bool,bytes)"
+    )]
     pub struct EstimateFeesCall {
         pub dst_chain_id: u16,
         pub user_application: ::ethers_core::types::Address,
@@ -780,7 +997,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "forceResumeReceive", abi = "forceResumeReceive(uint16,bytes)")]
     pub struct ForceResumeReceiveCall {
@@ -798,7 +1015,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getChainId", abi = "getChainId()")]
     pub struct GetChainIdCall;
@@ -813,7 +1030,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getConfig", abi = "getConfig(uint16,uint16,address,uint256)")]
     pub struct GetConfigCall {
@@ -833,7 +1050,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getInboundNonce", abi = "getInboundNonce(uint16,bytes)")]
     pub struct GetInboundNonceCall {
@@ -851,7 +1068,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getOutboundNonce", abi = "getOutboundNonce(uint16,address)")]
     pub struct GetOutboundNonceCall {
@@ -869,9 +1086,12 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
-    #[ethcall(name = "getReceiveLibraryAddress", abi = "getReceiveLibraryAddress(address)")]
+    #[ethcall(
+        name = "getReceiveLibraryAddress",
+        abi = "getReceiveLibraryAddress(address)"
+    )]
     pub struct GetReceiveLibraryAddressCall {
         pub user_application: ::ethers_core::types::Address,
     }
@@ -886,7 +1106,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getReceiveVersion", abi = "getReceiveVersion(address)")]
     pub struct GetReceiveVersionCall {
@@ -903,7 +1123,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getSendLibraryAddress", abi = "getSendLibraryAddress(address)")]
     pub struct GetSendLibraryAddressCall {
@@ -920,7 +1140,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "getSendVersion", abi = "getSendVersion(address)")]
     pub struct GetSendVersionCall {
@@ -937,7 +1157,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "hasStoredPayload", abi = "hasStoredPayload(uint16,bytes)")]
     pub struct HasStoredPayloadCall {
@@ -955,7 +1175,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "isReceivingPayload", abi = "isReceivingPayload()")]
     pub struct IsReceivingPayloadCall;
@@ -970,7 +1190,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "isSendingPayload", abi = "isSendingPayload()")]
     pub struct IsSendingPayloadCall;
@@ -985,7 +1205,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(
         name = "receivePayload",
@@ -1010,7 +1230,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "retryPayload", abi = "retryPayload(uint16,bytes,bytes)")]
     pub struct RetryPayloadCall {
@@ -1029,7 +1249,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "send", abi = "send(uint16,bytes,bytes,address,address,bytes)")]
     pub struct SendCall {
@@ -1051,7 +1271,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "setConfig", abi = "setConfig(uint16,uint16,uint256,bytes)")]
     pub struct SetConfigCall {
@@ -1071,7 +1291,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "setReceiveVersion", abi = "setReceiveVersion(uint16)")]
     pub struct SetReceiveVersionCall {
@@ -1088,7 +1308,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     #[ethcall(name = "setSendVersion", abi = "setSendVersion(uint16)")]
     pub struct SetSendVersionCall {
@@ -1096,7 +1316,14 @@ pub mod i_layer_zero_endpoint {
     }
     ///Container type for all of the contract's call
     #[derive(
-        Clone, ::ethers_contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
+        Clone,
+        ::ethers_contract::EthAbiType,
+        serde::Serialize,
+        serde::Deserialize,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
     )]
     pub enum ILayerZeroEndpointCalls {
         EstimateFees(EstimateFeesCall),
@@ -1120,63 +1347,102 @@ pub mod i_layer_zero_endpoint {
         SetSendVersion(SetSendVersionCall),
     }
     impl ::ethers_core::abi::AbiDecode for ILayerZeroEndpointCalls {
-        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+        fn decode(
+            data: impl AsRef<[u8]>,
+        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded) = <EstimateFeesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <EstimateFeesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::EstimateFees(decoded));
             }
-            if let Ok(decoded) = <ForceResumeReceiveCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <ForceResumeReceiveCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::ForceResumeReceive(decoded));
             }
-            if let Ok(decoded) = <GetChainIdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetChainIdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetChainId(decoded));
             }
-            if let Ok(decoded) = <GetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetConfig(decoded));
             }
-            if let Ok(decoded) = <GetInboundNonceCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetInboundNonceCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetInboundNonce(decoded));
             }
-            if let Ok(decoded) = <GetOutboundNonceCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetOutboundNonceCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetOutboundNonce(decoded));
             }
-            if let Ok(decoded) = <GetReceiveLibraryAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetReceiveLibraryAddressCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetReceiveLibraryAddress(decoded));
             }
-            if let Ok(decoded) = <GetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetReceiveVersion(decoded));
             }
-            if let Ok(decoded) = <GetSendLibraryAddressCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetSendLibraryAddressCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::GetSendLibraryAddress(decoded));
             }
-            if let Ok(decoded) = <GetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <GetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::GetSendVersion(decoded));
             }
-            if let Ok(decoded) = <HasStoredPayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <HasStoredPayloadCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::HasStoredPayload(decoded));
             }
-            if let Ok(decoded) = <IsReceivingPayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <IsReceivingPayloadCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::IsReceivingPayload(decoded));
             }
-            if let Ok(decoded) = <IsSendingPayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <IsSendingPayloadCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::IsSendingPayload(decoded));
             }
-            if let Ok(decoded) = <ReceivePayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <ReceivePayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ReceivePayload(decoded));
             }
-            if let Ok(decoded) = <RetryPayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <RetryPayloadCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::RetryPayload(decoded));
             }
-            if let Ok(decoded) = <SendCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <SendCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Send(decoded));
             }
-            if let Ok(decoded) = <SetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <SetConfigCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetConfig(decoded));
             }
-            if let Ok(decoded) = <SetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <SetReceiveVersionCall as ::ethers_core::abi::AbiDecode>::decode(
+                    data,
+                ) {
                 return Ok(Self::SetReceiveVersion(decoded));
             }
-            if let Ok(decoded) = <SetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded)
+                = <SetSendVersionCall as ::ethers_core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SetSendVersion(decoded));
             }
             Err(::ethers_core::abi::Error::InvalidData.into())
@@ -1185,25 +1451,61 @@ pub mod i_layer_zero_endpoint {
     impl ::ethers_core::abi::AbiEncode for ILayerZeroEndpointCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::EstimateFees(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::ForceResumeReceive(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetChainId(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetConfig(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetInboundNonce(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetOutboundNonce(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetReceiveLibraryAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetReceiveVersion(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetSendLibraryAddress(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::GetSendVersion(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::HasStoredPayload(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsReceivingPayload(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::IsSendingPayload(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::ReceivePayload(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::RetryPayload(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::EstimateFees(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ForceResumeReceive(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetChainId(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetConfig(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetInboundNonce(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetOutboundNonce(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetReceiveLibraryAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetReceiveVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetSendLibraryAddress(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::GetSendVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::HasStoredPayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsReceivingPayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::IsSendingPayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::ReceivePayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::RetryPayload(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
                 Self::Send(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetConfig(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetReceiveVersion(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::SetSendVersion(element) => ::ethers_core::abi::AbiEncode::encode(element),
+                Self::SetConfig(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetReceiveVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
+                Self::SetSendVersion(element) => {
+                    ::ethers_core::abi::AbiEncode::encode(element)
+                }
             }
         }
     }
@@ -1211,17 +1513,25 @@ pub mod i_layer_zero_endpoint {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
                 Self::EstimateFees(element) => ::core::fmt::Display::fmt(element, f),
-                Self::ForceResumeReceive(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ForceResumeReceive(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::GetChainId(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetConfig(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetInboundNonce(element) => ::core::fmt::Display::fmt(element, f),
                 Self::GetOutboundNonce(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetReceiveLibraryAddress(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetReceiveLibraryAddress(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::GetReceiveVersion(element) => ::core::fmt::Display::fmt(element, f),
-                Self::GetSendLibraryAddress(element) => ::core::fmt::Display::fmt(element, f),
+                Self::GetSendLibraryAddress(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::GetSendVersion(element) => ::core::fmt::Display::fmt(element, f),
                 Self::HasStoredPayload(element) => ::core::fmt::Display::fmt(element, f),
-                Self::IsReceivingPayload(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsReceivingPayload(element) => {
+                    ::core::fmt::Display::fmt(element, f)
+                }
                 Self::IsSendingPayload(element) => ::core::fmt::Display::fmt(element, f),
                 Self::ReceivePayload(element) => ::core::fmt::Display::fmt(element, f),
                 Self::RetryPayload(element) => ::core::fmt::Display::fmt(element, f),
@@ -1262,7 +1572,8 @@ pub mod i_layer_zero_endpoint {
             Self::GetOutboundNonce(value)
         }
     }
-    impl ::core::convert::From<GetReceiveLibraryAddressCall> for ILayerZeroEndpointCalls {
+    impl ::core::convert::From<GetReceiveLibraryAddressCall>
+    for ILayerZeroEndpointCalls {
         fn from(value: GetReceiveLibraryAddressCall) -> Self {
             Self::GetReceiveLibraryAddress(value)
         }
@@ -1338,7 +1649,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct EstimateFeesReturn {
         pub native_fee: ::ethers_core::types::U256,
@@ -1355,7 +1666,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetChainIdReturn(pub u16);
     ///Container type for all return fields from the `getConfig` function with signature `getConfig(uint16,uint16,address,uint256)` and selector `0xf5ecbdbc`
@@ -1369,7 +1680,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetConfigReturn(pub ::ethers_core::types::Bytes);
     ///Container type for all return fields from the `getInboundNonce` function with signature `getInboundNonce(uint16,bytes)` and selector `0xfdc07c70`
@@ -1383,7 +1694,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetInboundNonceReturn(pub u64);
     ///Container type for all return fields from the `getOutboundNonce` function with signature `getOutboundNonce(uint16,address)` and selector `0x7a145748`
@@ -1397,7 +1708,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetOutboundNonceReturn(pub u64);
     ///Container type for all return fields from the `getReceiveLibraryAddress` function with signature `getReceiveLibraryAddress(address)` and selector `0x71ba2fd6`
@@ -1411,7 +1722,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetReceiveLibraryAddressReturn(pub ::ethers_core::types::Address);
     ///Container type for all return fields from the `getReceiveVersion` function with signature `getReceiveVersion(address)` and selector `0xda1a7c9a`
@@ -1425,7 +1736,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetReceiveVersionReturn(pub u16);
     ///Container type for all return fields from the `getSendLibraryAddress` function with signature `getSendLibraryAddress(address)` and selector `0x9c729da1`
@@ -1439,7 +1750,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetSendLibraryAddressReturn(pub ::ethers_core::types::Address);
     ///Container type for all return fields from the `getSendVersion` function with signature `getSendVersion(address)` and selector `0x096568f6`
@@ -1453,7 +1764,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct GetSendVersionReturn(pub u16);
     ///Container type for all return fields from the `hasStoredPayload` function with signature `hasStoredPayload(uint16,bytes)` and selector `0x0eaf6ea6`
@@ -1467,7 +1778,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct HasStoredPayloadReturn(pub bool);
     ///Container type for all return fields from the `isReceivingPayload` function with signature `isReceivingPayload()` and selector `0xca066b35`
@@ -1481,7 +1792,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct IsReceivingPayloadReturn(pub bool);
     ///Container type for all return fields from the `isSendingPayload` function with signature `isSendingPayload()` and selector `0xe97a448a`
@@ -1495,7 +1806,7 @@ pub mod i_layer_zero_endpoint {
         Debug,
         PartialEq,
         Eq,
-        Hash,
+        Hash
     )]
     pub struct IsSendingPayloadReturn(pub bool);
 }

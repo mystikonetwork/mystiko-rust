@@ -180,7 +180,7 @@
           "minExecutorFee": "30000000000000000"
         },
         {
-          "version": 2,
+          "version": 7,
           "name": "MystikoV2Loop",
           "address": "0x390d485F4D43212D4ae8Cdd967a711514ed5a54f",
           "type": "deposit",
@@ -191,7 +191,7 @@
           "maxAmount": "10000000000000000000"
         },
         {
-          "version": 2,
+          "version": 7,
           "name": "MystikoWithTbridgeERC20",
           "address": "0xd99F0C90BFDeDd5Bde0193b887c271C5458355Cf",
           "type": "deposit",

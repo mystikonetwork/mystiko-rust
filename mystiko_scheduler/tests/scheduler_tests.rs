@@ -2,9 +2,8 @@ use async_trait::async_trait;
 use hyper::body::Buf;
 use hyper::Body;
 use mime::Mime;
-use mystiko_scheduler::{
-    AbortPolicy, RetryPolicy, Scheduler, SchedulerOptions, SchedulerStatus, SchedulerTask, StartOptions,
-};
+use mystiko_scheduler::{AbortPolicy, RetryPolicy, Scheduler, SchedulerOptions, SchedulerTask, StartOptions};
+use mystiko_status_server::Status;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Duration;
@@ -226,7 +225,7 @@ async fn test_http_custom_status() {
     let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
         .task(task.clone())
         .status_server_port(23220u16)
-        .status_getter(Arc::new(Box::new(status_getter) as Box<dyn SchedulerStatus>))
+        .status_getter(Arc::new(Box::new(status_getter) as Box<dyn Status>))
         .build();
     let scheduler = Scheduler::new(scheduler_options);
     let options = StartOptions::<anyhow::Error>::builder().interval_ms(1000u64).build();
@@ -248,7 +247,7 @@ async fn test_http_custom_status_with_error() {
     let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
         .task(task.clone())
         .status_server_port(23221u16)
-        .status_getter(Arc::new(Box::new(status_getter) as Box<dyn SchedulerStatus>))
+        .status_getter(Arc::new(Box::new(status_getter) as Box<dyn Status>))
         .build();
     let scheduler = Scheduler::new(scheduler_options);
     let options = StartOptions::<anyhow::Error>::builder().interval_ms(1000u64).build();
@@ -315,7 +314,7 @@ impl SchedulerTask<Option<anyhow::Error>> for CounterTask {
 }
 
 #[async_trait]
-impl SchedulerStatus for CounterStatusGetter {
+impl Status for CounterStatusGetter {
     async fn status(&self) -> anyhow::Result<(Mime, Body)> {
         if self.error_on_status {
             return Err(anyhow::anyhow!("query status error"));

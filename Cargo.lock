@@ -3749,6 +3749,7 @@ dependencies = [
  "log",
  "mime",
  "mystiko_scheduler",
+ "mystiko_status_server",
  "serde",
  "serde_json",
  "thiserror",
@@ -3793,6 +3794,24 @@ dependencies = [
  "mystiko_static_cache",
  "reqwest",
  "tempfile",
+ "thiserror",
+ "tokio",
+ "typed-builder 0.15.2",
+]
+
+[[package]]
+name = "mystiko_status_server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "env_logger",
+ "http",
+ "hyper",
+ "log",
+ "mime",
+ "serde",
+ "serde_json",
  "thiserror",
  "tokio",
  "typed-builder 0.15.2",

@@ -1,4 +1,4 @@
-use crate::SchedulerError;
+use crate::StatusServerError;
 use async_trait::async_trait;
 use http::{Request, Response};
 use hyper::service::{make_service_fn, service_fn};
@@ -11,25 +11,25 @@ use tokio::task::JoinHandle;
 use typed_builder::TypedBuilder;
 
 #[async_trait]
-pub trait SchedulerStatus: Send + Sync + Debug {
+pub trait Status: Send + Sync + Debug {
     async fn status(&self) -> anyhow::Result<(mime::Mime, hyper::Body)>;
 }
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub(crate) struct StatusServer {
+pub struct StatusServer {
     bind_address: String,
     port: u16,
     #[builder(default)]
-    status: Option<Arc<Box<dyn SchedulerStatus>>>,
+    status: Option<Arc<Box<dyn Status>>>,
     #[builder(default, setter(skip))]
-    join_handle: Mutex<Option<JoinHandle<Result<(), SchedulerError>>>>,
+    join_handle: Mutex<Option<JoinHandle<Result<(), StatusServerError>>>>,
     #[builder(default, setter(skip))]
     shutdown_sender: Mutex<Option<Sender<()>>>,
 }
 
 impl StatusServer {
-    pub(crate) async fn start(&self) -> Result<(), SchedulerError> {
+    pub async fn start(&self) -> Result<(), StatusServerError> {
         let mut join_handle = self.join_handle.lock().await;
         if join_handle.is_none() {
             let status = self.status.clone();
@@ -37,7 +37,7 @@ impl StatusServer {
                 let status = status.clone();
                 async move {
                     let handler_fn = service_fn(move |request| handle_request(status.clone(), request));
-                    Ok::<_, SchedulerError>(handler_fn)
+                    Ok::<_, StatusServerError>(handler_fn)
                 }
             });
             let socket_address: SocketAddr = format!("{}:{}", self.bind_address, self.port).parse()?;
@@ -63,11 +63,11 @@ impl StatusServer {
                             }
                             Err(err) => {
                                 log::error!("scheduler_status_server has been stopped with error: {}", err);
-                                Err(SchedulerError::HyperError(err))
+                                Err(StatusServerError::HyperError(err))
                             }
                         }
                     }
-                    Err(_) => Err(SchedulerError::SendStatusServerStartSignalError),
+                    Err(_) => Err(StatusServerError::SendStatusServerStartSignalError),
                 }
             }));
             let _ = start_receiver.await;
@@ -75,19 +75,19 @@ impl StatusServer {
         Ok(())
     }
 
-    pub(crate) async fn join(&self) -> Result<(), SchedulerError> {
+    pub async fn join(&self) -> Result<(), StatusServerError> {
         if let Some(join_handle) = self.join_handle.lock().await.take() {
             return join_handle.await?;
         }
         Ok(())
     }
 
-    pub(crate) async fn stop(&self) -> Result<(), SchedulerError> {
+    pub async fn stop(&self) -> Result<(), StatusServerError> {
         if let Some(shutdown_sender) = self.shutdown_sender.lock().await.take() {
             if !shutdown_sender.is_closed() {
                 shutdown_sender
                     .send(())
-                    .map_err(|_| SchedulerError::SendStatusServerStopSignalError)?;
+                    .map_err(|_| StatusServerError::SendStatusServerStopSignalError)?;
             }
         }
         self.join().await
@@ -95,9 +95,9 @@ impl StatusServer {
 }
 
 async fn handle_request(
-    status: Option<Arc<Box<dyn SchedulerStatus>>>,
+    status: Option<Arc<Box<dyn Status>>>,
     request: Request<hyper::Body>,
-) -> Result<Response<hyper::Body>, SchedulerError> {
+) -> Result<Response<hyper::Body>, StatusServerError> {
     match (request.method(), request.uri().path()) {
         (&http::Method::GET, "/status") => {
             if let Some(status) = status {

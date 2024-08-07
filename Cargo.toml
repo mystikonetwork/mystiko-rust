@@ -16,6 +16,7 @@ members = [
     "mystiko_sequencer_client",
     "mystiko_scheduler",
     "mystiko_static_cache",
+    "mystiko_status_server",
     "mystiko_storage",
     "mystiko_storage_macros",
     "mystiko_storage_mysql",
