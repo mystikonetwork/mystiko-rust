@@ -1,6 +1,6 @@
 use anyhow::Result;
 use mystiko_screening_client::v1::{ApiResponse, ScreeningClientV1, ScreeningClientV1Options};
-use mystiko_screening_client::{CertificateResponse, ScreeningClient};
+use mystiko_screening_client::{ScreeningClient, ScreeningResponse};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use typed_builder::TypedBuilder;
@@ -8,20 +8,20 @@ use typed_builder::TypedBuilder;
 #[tokio::test]
 async fn test_apply_success() {
     let (mut server, client) = setup().await.unwrap();
-    let _ = MockCertificateResponse::builder()
+    let _ = MockScreeningResponse::builder()
         .deadline(1)
         .signature("0x123".to_string())
         .build()
         .into_mock(&mut server)
         .await;
-    let request = mystiko_screening_client::CertificateRequest::builder()
+    let request = mystiko_screening_client::ScreeningRequest::builder()
         .chain_id(97)
         .asset(None)
         .account("0x123".to_string())
         .message("".to_string())
         .signature("0x123".to_string())
         .build();
-    let response = client.apply_certificate(&request).await.unwrap();
+    let response = client.address_screening(&request).await.unwrap();
     assert_eq!(response.deadline, 1);
     assert_eq!(response.signature, "0x123");
 }
@@ -37,14 +37,14 @@ async fn test_apply_meet_error() {
         .build()
         .into_mock(&mut server)
         .await;
-    let request = mystiko_screening_client::CertificateRequest::builder()
+    let request = mystiko_screening_client::ScreeningRequest::builder()
         .chain_id(97)
         .asset(None)
         .account("0x123".to_string())
         .message("test".to_string())
         .signature("0x123".to_string())
         .build();
-    let response = client.apply_certificate(&request).await;
+    let response = client.address_screening(&request).await;
     assert!(response.is_err());
     assert!(response.unwrap_err().to_string().contains("-1 meet_error"));
 
@@ -56,7 +56,7 @@ async fn test_apply_meet_error() {
         .build()
         .into_mock(&mut server)
         .await;
-    let response = client.apply_certificate(&request).await;
+    let response = client.address_screening(&request).await;
     assert!(response.is_err());
     assert!(response.unwrap_err().to_string().contains("empty response error"));
 }
@@ -72,17 +72,17 @@ async fn setup() -> Result<(mockito::ServerGuard, ScreeningClientV1)> {
 }
 
 #[derive(Debug, TypedBuilder)]
-struct MockCertificateResponse {
+struct MockScreeningResponse {
     deadline: u64,
     signature: String,
 }
 
-impl MockCertificateResponse {
+impl MockScreeningResponse {
     async fn into_mock(self, server: &mut mockito::ServerGuard) -> mockito::Mock {
         let api_response = ApiResponse::builder()
             .code(0)
             .data(Some(
-                CertificateResponse::builder()
+                ScreeningResponse::builder()
                     .deadline(self.deadline)
                     .signature(self.signature)
                     .build(),
@@ -92,7 +92,7 @@ impl MockCertificateResponse {
             .build();
 
         server
-            .mock("POST", "/v1/certificate/apply")
+            .mock("POST", "/v1/screening")
             .with_status(200)
             .with_body(json!(api_response).to_string())
             .create_async()
@@ -103,7 +103,7 @@ impl MockCertificateResponse {
 #[derive(Debug, TypedBuilder, Serialize, Deserialize)]
 struct MockApiResponse {
     code: i32,
-    data: Option<CertificateResponse>,
+    data: Option<ScreeningResponse>,
     message: Option<String>,
     version: String,
 }
@@ -111,7 +111,7 @@ struct MockApiResponse {
 impl MockApiResponse {
     async fn into_mock(self, server: &mut mockito::ServerGuard) -> mockito::Mock {
         server
-            .mock("POST", "/v1/certificate/apply")
+            .mock("POST", "/v1/screening")
             .with_status(200)
             .with_body(json!(self).to_string())
             .create_async()

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 #[derive(TypedBuilder, Debug, Serialize, Deserialize)]
-pub struct CertificateRequest {
+pub struct ScreeningRequest {
     #[serde(rename = "chainId")]
     pub chain_id: u64,
     pub account: String,
@@ -15,19 +15,19 @@ pub struct CertificateRequest {
 
 #[derive(TypedBuilder, Debug, Serialize, Deserialize)]
 #[builder(field_defaults(setter(into)))]
-pub struct CertificateResponse {
+pub struct ScreeningResponse {
     pub deadline: u64,
     pub signature: String,
 }
 
 #[async_trait]
 pub trait ScreeningClient: Send + Sync {
-    async fn apply_certificate(&self, request: &CertificateRequest) -> Result<CertificateResponse>;
+    async fn address_screening(&self, request: &ScreeningRequest) -> Result<ScreeningResponse>;
 }
 
 #[async_trait]
 impl ScreeningClient for Box<dyn ScreeningClient> {
-    async fn apply_certificate(&self, request: &CertificateRequest) -> Result<CertificateResponse> {
-        self.as_ref().apply_certificate(request).await
+    async fn address_screening(&self, request: &ScreeningRequest) -> Result<ScreeningResponse> {
+        self.as_ref().address_screening(request).await
     }
 }

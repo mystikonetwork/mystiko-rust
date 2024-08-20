@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use typed_builder::TypedBuilder;
 
-use crate::{CertificateRequest, CertificateResponse, ScreeningClient};
+use crate::{ScreeningClient, ScreeningRequest, ScreeningResponse};
 
 pub const DEFAULT_SCREENING_V1_URL: &str = "https://screening.mystiko.network";
 
@@ -27,8 +27,8 @@ pub struct ScreeningClientV1Options {
 pub enum ScreeningClientV1Error {
     #[error(transparent)]
     ReqwestError(#[from] reqwest::Error),
-    #[error("apply certificate meet error: {0} {1}")]
-    ApplyCertificateError(i32, String),
+    #[error("address screening meet error: {0} {1}")]
+    AddressScreeningError(i32, String),
     #[error("empty response error")]
     EmptyResponseError,
 }
@@ -55,8 +55,8 @@ impl ScreeningClientV1 {
 
 #[async_trait]
 impl ScreeningClient for ScreeningClientV1 {
-    async fn apply_certificate(&self, request: &CertificateRequest) -> Result<CertificateResponse> {
-        let url = format!("{}/v1/certificate/apply", self.url);
+    async fn address_screening(&self, request: &ScreeningRequest) -> Result<ScreeningResponse> {
+        let url = format!("{}/v1/screening", self.url);
         println!("url {:?}", url);
         let response = self
             .http_client
@@ -65,9 +65,9 @@ impl ScreeningClient for ScreeningClientV1 {
             .send()
             .await?
             .error_for_status()?;
-        let api_response: ApiResponse<CertificateResponse> = response.json().await.unwrap();
+        let api_response: ApiResponse<ScreeningResponse> = response.json().await.unwrap();
         if api_response.code != 0 {
-            return Err(anyhow::anyhow!(ScreeningClientV1Error::ApplyCertificateError(
+            return Err(anyhow::anyhow!(ScreeningClientV1Error::AddressScreeningError(
                 api_response.code,
                 api_response.message.unwrap_or_default()
             )));
