@@ -1,5 +1,6 @@
 use anyhow::Result;
-use mystiko_screening_client::v1::{ApiResponse, ScreeningClientV1, ScreeningClientV1Options};
+use mystiko_protos::screening::v1::ScreeningClientOptions;
+use mystiko_screening_client::v1::{ApiResponse, ScreeningClientV1};
 use mystiko_screening_client::{ScreeningClient, ScreeningResponse};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -63,9 +64,9 @@ async fn test_apply_meet_error() {
 
 async fn setup() -> Result<(mockito::ServerGuard, ScreeningClientV1)> {
     let server = mockito::Server::new_async().await;
-    let options = ScreeningClientV1Options::builder()
-        .url(server.url())
-        .http_client(None)
+    let options = ScreeningClientOptions::builder()
+        .screening_config_api_url(server.url())
+        .timeout_ms(10000)
         .build();
     let client = ScreeningClientV1::new(options);
     Ok((server, client))

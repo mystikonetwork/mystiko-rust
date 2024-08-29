@@ -136,6 +136,14 @@ pub mod mystiko {
             // @@protoc_insertion_point(mystiko.relayer.v1)
         }
     }
+    pub mod screening {
+        #[cfg(feature = "mystiko-screening-v1")]
+        // @@protoc_insertion_point(attribute:mystiko.screening.v1)
+        pub mod v1 {
+            include!("mystiko.screening.v1.rs");
+            // @@protoc_insertion_point(mystiko.screening.v1)
+        }
+    }
     pub mod sequencer {
         #[cfg(feature = "mystiko-sequencer-v1")]
         // @@protoc_insertion_point(attribute:mystiko.sequencer.v1)

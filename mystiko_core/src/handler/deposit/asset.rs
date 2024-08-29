@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
-impl<F, S, A, D, C, T, P> Deposits<F, S, A, D, C, T, P>
+impl<F, S, A, D, C, T, P, N> Deposits<F, S, A, D, C, T, P, N>
 where
     F: StatementFormatter,
     S: Storage,

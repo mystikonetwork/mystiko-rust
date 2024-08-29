@@ -40,6 +40,11 @@ impl TransactionSigner for TimeoutProvider {
         tokio::time::sleep(tokio::time::Duration::from_millis(self.timeout_ms)).await;
         Ok(TxHash::zero())
     }
+
+    async fn sign_message(&self, _account: String, _message: String) -> anyhow::Result<String> {
+        tokio::time::sleep(tokio::time::Duration::from_millis(self.timeout_ms)).await;
+        Ok(String::new())
+    }
 }
 
 fn parse_call_args(params: &JsonRpcParams) -> TypedTransaction {

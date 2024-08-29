@@ -14,6 +14,8 @@ pub trait TransactionSigner: Send + Sync {
     async fn address(&self) -> Result<Address>;
 
     async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> Result<TxHash>;
+
+    async fn sign_message(&self, account: String, message: String) -> Result<String>;
 }
 
 #[async_trait]
@@ -24,5 +26,9 @@ impl TransactionSigner for Box<dyn TransactionSigner> {
 
     async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> Result<TxHash> {
         self.as_ref().send_transaction(chain_id, tx).await
+    }
+
+    async fn sign_message(&self, account: String, message: String) -> Result<String> {
+        self.as_ref().sign_message(account, message).await
     }
 }

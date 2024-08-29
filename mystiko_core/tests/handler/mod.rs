@@ -23,6 +23,7 @@ use mystiko_relayer_types::{
     RegisterInfoRequest, RelayTransactRequest, RelayTransactResponse, RelayTransactStatusRequest,
     RelayTransactStatusResponse, WaitingTransactionRequest,
 };
+use mystiko_screening_client::{ScreeningRequest, ScreeningResponse};
 use mystiko_static_cache::GetOptions;
 use mystiko_types::TransactionType;
 use mystiko_utils::hex::encode_hex;
@@ -135,6 +136,16 @@ mock! {
             request: WaitingTransactionRequest,
         ) -> Result<RelayTransactStatusResponse>;
         async fn handshake(&self, url: &str) -> Result<bool>;
+    }
+}
+
+mock! {
+    #[derive(Debug, Default)]
+    ScreeningClient {}
+
+    #[async_trait]
+    impl mystiko_screening_client::ScreeningClient for ScreeningClient {
+        async fn address_screening(&self, request: &ScreeningRequest) -> Result<ScreeningResponse>;
     }
 }
 

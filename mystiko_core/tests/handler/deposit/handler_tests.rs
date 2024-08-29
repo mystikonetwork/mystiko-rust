@@ -1,6 +1,7 @@
 use crate::common::{create_database, MockProvider, MockProviders};
 use crate::handler::{
-    generate_private_key, MockCommitmentPoolContracts, MockDepositContracts, MockPublicAssets, MockTransactions,
+    generate_private_key, MockCommitmentPoolContracts, MockDepositContracts, MockPublicAssets, MockScreeningClient,
+    MockTransactions,
 };
 use ethers_core::abi::{AbiDecode, AbiEncode};
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -19,6 +20,7 @@ use mystiko_protos::core::handler::v1::{
 use mystiko_protos::core::v1::DepositStatus;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::SubFilter;
+use mystiko_screening_client::{ScreeningClient, ScreeningResponse};
 use mystiko_storage::{ColumnValues, DocumentColumn, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
@@ -653,7 +655,7 @@ async fn test_cross_chain_deposit_erc20_token_create() {
 }
 
 #[tokio::test]
-async fn test_loop_deposit_main_token_send() {
+async fn test_loop_deposit_main_token_send_with_screening() {
     let (owner, private_key) = generate_private_key();
     let contract_address = ethers_address_from_string("0x390d485F4D43212D4ae8Cdd967a711514ed5a54f").unwrap();
     let deposit_tx_hash =
@@ -699,10 +701,26 @@ async fn test_loop_deposit_main_token_send() {
                 ..Default::default()
             })
         });
+    let screening_message = "test";
+    let mut screening = MockScreeningClient::new();
+    screening
+        .expect_address_screening()
+        .withf(move |options|
+            options.chain_id == 97_u64 &&
+                options.message==screening_message &&
+                options.asset== Some("0x0000000000000000000000000000000000000000".to_string()) &&
+                options.account== ethers_address_to_string(&owner))
+        .returning(|_| {
+            Ok(ScreeningResponse::builder()
+                .deadline(200010000_u64)
+                .signature("0x0f95f7effb9f3c8c20a6c78b2278a7ed2cee87ee5cf29031729124711623dd3b14e7e6fb419a61d9c262110c4812d2a37f2c137d2559192eee3f477cc08d92f51c".to_string())
+                .build())
+        });
     let options = MockOptions::builder()
         .assets(assets)
         .deposit_contracts(deposit_contracts)
         .transactions(transactions)
+        .screening(screening)
         .build();
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db.clone()).await;
@@ -735,6 +753,7 @@ async fn test_loop_deposit_main_token_send() {
         .tx_wait_interval_ms(10_u64)
         .private_key(private_key)
         .deposit_confirmations(10_u64)
+        .screening_message(Some(screening_message.to_string()))
         .build();
     let deposit = handler.send(options.clone()).await.unwrap();
     assert_eq!(deposit.status, DepositStatus::Queued as i32);
@@ -750,7 +769,7 @@ async fn test_loop_deposit_main_token_send() {
 }
 
 #[tokio::test]
-async fn test_loop_deposit_erc20_token_send() {
+async fn test_loop_deposit_erc20_token_send_without_screening() {
     let (owner, private_key) = generate_private_key();
     let contract_address = ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap();
     let asset_address = ethers_address_from_string("0xEC1d5CfB0bf18925aB722EeeBCB53Dc636834e8a").unwrap();
@@ -862,7 +881,7 @@ async fn test_loop_deposit_erc20_token_send() {
 }
 
 #[tokio::test]
-async fn test_cross_chain_deposit_main_token_send() {
+async fn test_cross_chain_deposit_main_token_send_with_screening() {
     let (owner, private_key) = generate_private_key();
     let contract_address = ethers_address_from_string("0xd99F0C90BFDeDd5Bde0193b887c271C5458355Cf").unwrap();
     let deposit_tx_hash =
@@ -912,10 +931,23 @@ async fn test_cross_chain_deposit_main_token_send() {
                 ..Default::default()
             })
         });
+    let mut screening = MockScreeningClient::new();
+    screening
+        .expect_address_screening()
+        .withf(move |options|{
+            options.chain_id == 97_u64 &&
+            options.asset == Some("0x0000000000000000000000000000000000000000".to_string() ) &&
+            options.account == ethers_address_to_string(&owner)
+        })
+        .returning(|_| Ok(ScreeningResponse::builder()
+            .deadline(0_u64)
+            .signature("0x0f95f7effb9f3c8c20a6c78b2278a7ed2cee87ee5cf29031729124711623dd3b14e7e6fb419a61d9c262110c4812d2a37f2c137d2559192eee3f477cc08d92f51c".to_string())
+            .build()));
     let options = MockOptions::builder()
         .assets(assets)
         .deposit_contracts(deposit_contracts)
         .transactions(transactions)
+        .screening(screening)
         .build();
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db.clone()).await;
@@ -968,7 +1000,7 @@ async fn test_cross_chain_deposit_main_token_send() {
 }
 
 #[tokio::test]
-async fn test_cross_chain_deposit_erc20_token_send() {
+async fn test_cross_chain_deposit_erc20_token_send_without_screening() {
     let (owner, private_key) = generate_private_key();
     let contract_address = ethers_address_from_string("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2").unwrap();
     let asset_address = ethers_address_from_string("0x388C818CA8B9251b393131C08a736A67ccB19297").unwrap();
@@ -1488,6 +1520,7 @@ struct MockOptions {
     assets: MockPublicAssets,
     transactions: MockTransactions,
     providers: HashMap<u64, MockProvider>,
+    screening: MockScreeningClient,
 }
 
 type DepositsOptionsType = DepositsOptions<
@@ -1544,6 +1577,7 @@ async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositsType) {
             .returning(|_| Ok(false));
         commitment_pool_contracts
     };
+    let screening = Arc::new(Box::new(options.screening) as Box<dyn ScreeningClient>);
     let handler = DepositsType::new(
         DepositsOptionsType::builder()
             .config(config)
@@ -1553,6 +1587,7 @@ async fn setup(options: MockOptions) -> (Arc<DatabaseType>, DepositsType) {
             .deposit_contracts(options.deposit_contracts)
             .commitment_pool_contracts(commitment_pool_contracts)
             .transactions(options.transactions)
+            .screening(screening)
             .build(),
     );
     (database, handler)

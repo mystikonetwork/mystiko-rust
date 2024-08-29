@@ -62,6 +62,34 @@ async fn test_send_transaction() {
     server.stop().await.unwrap();
 }
 
+#[tokio::test]
+async fn test_personal_sign() {
+    let signature = "0x8d874bd339d08093701771307ea134f2534610d1425bee4b3ed8e30854ac68b6";
+    let mut service = MockTransactionService::new();
+    service
+        .expect_personal_sign()
+        .withf(|req| req.get_ref().message == "message" && req.get_ref().address == "account")
+        .returning(|_| {
+            Ok(tonic::Response::new(
+                mystiko_protos::core::v1::PersonalSignResponse::builder()
+                    .signature(signature.to_string())
+                    .build(),
+            ))
+        });
+
+    let server_options = ServerOptions::builder().port(42133_u32).build();
+    let mut server = setup(service, server_options).await;
+    let signer = GrpcSigner::connect(&ClientOptions::builder().port(42133_u32).build())
+        .await
+        .unwrap();
+    let response = signer
+        .sign_message("account".to_string(), "message".to_string())
+        .await
+        .unwrap();
+    assert_eq!(response, signature);
+    server.stop().await.unwrap();
+}
+
 async fn setup(service: MockTransactionService, options: ServerOptions) -> GrpcServer {
     let mut server = GrpcServer::default();
     server
@@ -88,6 +116,13 @@ mock! {
             request: tonic::Request<mystiko_protos::core::v1::SendTransactionRequest>,
         ) -> std::result::Result<
             tonic::Response<mystiko_protos::core::v1::SendTransactionResponse>,
+            tonic::Status,
+        >;
+        async fn personal_sign(
+            &self,
+            request: tonic::Request<mystiko_protos::core::v1::PersonalSignRequest>,
+        ) -> std::result::Result<
+            tonic::Response<mystiko_protos::core::v1::PersonalSignResponse>,
             tonic::Status,
         >;
     }

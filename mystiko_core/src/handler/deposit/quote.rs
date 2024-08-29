@@ -5,7 +5,7 @@ use mystiko_storage::{StatementFormatter, Storage};
 use mystiko_utils::address::ethers_address_from_string;
 use mystiko_utils::convert::decimal_to_number;
 
-impl<F, S, A, D, C, T, P> Deposits<F, S, A, D, C, T, P>
+impl<F, S, A, D, C, T, P, N> Deposits<F, S, A, D, C, T, P, N>
 where
     F: StatementFormatter,
     S: Storage,

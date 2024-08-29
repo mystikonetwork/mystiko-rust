@@ -27,6 +27,7 @@ mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc" }
 mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["ethers", "grpc-client", "mystiko-core-v1", "mystiko-core-handler-v1", "mystiko-core-document-v1", "mystiko-core-scanner-v1", "mystiko-core-synchronizer-v1", "mystiko-storage-v1", "mystiko-service-v1"] }
 mystiko_relayer_client = { version = "0.1.0", path = "../mystiko_relayer_client" }
+mystiko_screening_client = { version = "0.1.0", path = "../mystiko_screening_client" }
 mystiko_relayer_types = { version = "0.1.0", path = "../mystiko_relayer_types" }
 mystiko_scheduler = { version = "0.1.0", path = "../mystiko_scheduler" }
 mystiko_static_cache = { version = "0.1.0", path = "../mystiko_static_cache", features = ["gzip"] }

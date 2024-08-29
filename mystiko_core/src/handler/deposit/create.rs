@@ -7,7 +7,7 @@ use mystiko_storage::{StatementFormatter, Storage};
 use mystiko_utils::convert::bytes_to_biguint;
 use mystiko_utils::hex::encode_hex_with_prefix;
 
-impl<F, S, A, D, C, T, P> Deposits<F, S, A, D, C, T, P>
+impl<F, S, A, D, C, T, P, N> Deposits<F, S, A, D, C, T, P, N>
 where
     F: StatementFormatter,
     S: Storage,

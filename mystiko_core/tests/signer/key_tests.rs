@@ -36,6 +36,25 @@ async fn test_send_transaction() {
 }
 
 #[tokio::test]
+async fn test_sign_message() {
+    let (private_key, address) = generate_private_key();
+    let (server, _) = mock_provider_server().await;
+    let providers = create_provider_pool(server.url());
+    let signer = PrivateKeySigner::new(
+        PrivateKeySignerOptions::<ProviderPool<MockChainConfig>>::builder()
+            .providers(providers)
+            .private_key(private_key)
+            .build(),
+    )
+    .unwrap();
+    let signature = signer
+        .sign_message(address.to_string(), "test".to_string())
+        .await
+        .unwrap();
+    assert_eq!(signature.len(), 130);
+}
+
+#[tokio::test]
 async fn test_send_transaction_with_custom_signer_provider() {
     let (private_key, address) = generate_private_key();
     let (server, mock_path) = mock_provider_server().await;

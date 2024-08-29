@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, TxHash};
 use mystiko_protos::core::v1::transaction_service_client::TransactionServiceClient;
-use mystiko_protos::core::v1::{GetAddressRequest, SendTransactionRequest, Transaction};
+use mystiko_protos::core::v1::{GetAddressRequest, PersonalSignRequest, SendTransactionRequest, Transaction};
 use mystiko_protos::service::v1::ClientOptions;
 use mystiko_utils::address::ethers_address_from_string;
 use std::str::FromStr;
@@ -51,5 +51,16 @@ impl TransactionSigner for GrpcSigner {
             .build();
         let response = self.client.lock().await.send_transaction(request).await?.into_inner();
         Ok(TxHash::from_str(&response.tx_hash)?)
+    }
+
+    async fn sign_message(&self, account: String, message: String) -> Result<String> {
+        let response = self
+            .client
+            .lock()
+            .await
+            .personal_sign(PersonalSignRequest::builder().message(message).address(account).build())
+            .await?
+            .into_inner();
+        Ok(response.signature.to_string())
     }
 }

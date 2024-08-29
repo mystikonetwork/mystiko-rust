@@ -6,15 +6,17 @@ use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Bytes, TxHash, U256};
 use ethers_providers::ProviderError;
 use mystiko_abi::commitment_pool::CommitmentPoolCalls;
-use mystiko_abi::mystiko_v2_bridge::{DepositRequest as CrossChainDepositRequest, MystikoV2BridgeCalls};
-use mystiko_abi::mystiko_v2_loop::{DepositRequest, MystikoV2LoopCalls};
+use mystiko_abi::mystiko_v2_bridge::{BridgeDepositRequest as CrossChainDepositRequest, MystikoV2BridgeCalls};
+use mystiko_abi::mystiko_v2_loop::{LoopDepositRequest, MystikoV2LoopCalls};
 use mystiko_config::MystikoConfig;
 use mystiko_core::{
     CrossChainDepositOptions, DepositContractHandler, DepositContracts, DepositOptions, DepositQuoteOptions,
+    ScreeningOptions,
 };
 use mystiko_ethers::JsonRpcClientWrapper;
 use mystiko_types::ContractType;
 use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
+use mystiko_utils::hex::decode_hex;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -187,7 +189,7 @@ async fn test_cross_chain_deposit_quote_remote_timeout() {
 }
 
 #[tokio::test]
-async fn test_main_token_loop_deposit() {
+async fn test_main_token_loop_deposit_without_cert() {
     let contract_address = ethers_address_from_string("0x390d485F4D43212D4ae8Cdd967a711514ed5a54f").unwrap();
     let amount = U256::from_dec_str("1000000000000000000").unwrap();
     let rollup_fee = U256::from_dec_str("100000000000000000").unwrap();
@@ -203,7 +205,7 @@ async fn test_main_token_loop_deposit() {
         .expect_send_transaction()
         .withf(move |chain_id, tx| {
             let calls = parse_loop_deposit_call(tx);
-            if let MystikoV2LoopCalls::CertDeposit(deposit) = calls {
+            if let MystikoV2LoopCalls::Deposit(deposit) = calls {
                 let request = deposit.request;
                 request.commitment == commitment
                     && request.random_s == random_s
@@ -219,7 +221,7 @@ async fn test_main_token_loop_deposit() {
             }
         })
         .returning(move |_, _| Ok(expected_tx_hash));
-    let request = DepositRequest {
+    let request = LoopDepositRequest {
         commitment,
         random_s,
         hash_k,
@@ -232,6 +234,66 @@ async fn test_main_token_loop_deposit() {
         .contract_address(contract_address)
         .request(request)
         .signer(signer)
+        .build();
+    let config = create_config().await;
+    let deposits = setup(config, HashMap::from([(97_u64, MockProvider::new())]));
+    let tx_hash = deposits.deposit(deposit_options).await.unwrap();
+    assert_eq!(tx_hash, expected_tx_hash);
+}
+
+#[tokio::test]
+async fn test_main_token_loop_deposit_with_cert() {
+    let contract_address = ethers_address_from_string("0x390d485F4D43212D4ae8Cdd967a711514ed5a54f").unwrap();
+    let amount = U256::from_dec_str("1000000000000000000").unwrap();
+    let rollup_fee = U256::from_dec_str("100000000000000000").unwrap();
+    let commitment = U256::from_dec_str("1234").unwrap();
+    let random_s = 2345_u128;
+    let hash_k = U256::from_dec_str("3456").unwrap();
+    let encrypted_notes = Bytes::from_str("0x1234").unwrap();
+    let encrypted_notes_clone = encrypted_notes.clone();
+    let expected_tx_hash =
+        TxHash::decode_hex("0x8cbbb491f260cb9a810f81ebf8b51ae1adf322466232181b2eb2bb105b45f0b9").unwrap();
+    let screening_options = ScreeningOptions::builder().deadline(1725256186_u64).signature(
+        decode_hex("0x0f95f7effb9f3c8c20a6c78b2278a7ed2cee87ee5cf29031729124711623dd3b14e7e6fb419a61d9c262110c4812d2a37f2c137d2559192eee3f477cc08d92f51c").unwrap()
+    ).build();
+    let certificate_signature = Bytes::from(screening_options.signature.clone());
+    let mut signer = MockTransactionSigner::new();
+    signer
+        .expect_send_transaction()
+        .withf(move |chain_id, tx| {
+            let calls = parse_loop_deposit_call(tx);
+            if let MystikoV2LoopCalls::CertDeposit(deposit) = calls {
+                let request = deposit.request;
+                request.commitment == commitment
+                    && request.random_s == random_s
+                    && request.hash_k == hash_k
+                    && request.encrypted_note == encrypted_notes_clone
+                    && request.rollup_fee == rollup_fee
+                    && request.amount == amount
+                    && *chain_id == 97_u64
+                    && deposit.certificate_deadline == U256::from(screening_options.deadline)
+                    && deposit.certificate_signature == certificate_signature
+                    && *tx.to().unwrap().as_address().unwrap() == contract_address
+                    && *tx.value().unwrap() == amount + rollup_fee
+            } else {
+                false
+            }
+        })
+        .returning(move |_, _| Ok(expected_tx_hash));
+    let request = LoopDepositRequest {
+        commitment,
+        random_s,
+        hash_k,
+        encrypted_note: encrypted_notes,
+        rollup_fee,
+        amount,
+    };
+    let deposit_options = DepositOptions::<TypedTransaction, MockTransactionSigner>::builder()
+        .chain_id(97_u64)
+        .contract_address(contract_address)
+        .request(request)
+        .signer(signer)
+        .screening(screening_options)
         .build();
     let config = create_config().await;
     let deposits = setup(config, HashMap::from([(97_u64, MockProvider::new())]));
@@ -272,7 +334,7 @@ async fn test_erc20_token_loop_deposit() {
             }
         })
         .returning(move |_, _| Ok(expected_tx_hash));
-    let request = DepositRequest {
+    let request = LoopDepositRequest {
         commitment,
         random_s,
         hash_k,
@@ -302,7 +364,7 @@ async fn test_loop_deposit_timeout_error() {
     let hash_k = U256::from_dec_str("3456").unwrap();
     let encrypted_notes = Bytes::from_str("0x1234").unwrap();
     let signer = TimeoutProvider::builder().timeout_ms(1000_u64).build();
-    let request = DepositRequest {
+    let request = LoopDepositRequest {
         commitment,
         random_s,
         hash_k,
@@ -486,7 +548,7 @@ async fn test_cross_chain_deposit_timeout_error() {
 async fn test_deposit_unsupported_chain() {
     let config = create_config().await;
     let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
-    let request = DepositRequest {
+    let request = LoopDepositRequest {
         commitment: U256::from_dec_str("1234").unwrap(),
         random_s: 2345_u128,
         hash_k: U256::from_dec_str("3456").unwrap(),
@@ -509,7 +571,7 @@ async fn test_deposit_unsupported_chain() {
 async fn test_deposit_unsupported_contract() {
     let config = create_config().await;
     let deposits = setup(config, HashMap::from([(5_u64, MockProvider::new())]));
-    let request = DepositRequest {
+    let request = LoopDepositRequest {
         commitment: U256::from_dec_str("1234").unwrap(),
         random_s: 2345_u128,
         hash_k: U256::from_dec_str("3456").unwrap(),

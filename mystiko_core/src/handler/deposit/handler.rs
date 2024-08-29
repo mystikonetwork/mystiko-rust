@@ -14,6 +14,8 @@ use mystiko_protos::core::handler::v1::{
 };
 use mystiko_protos::core::v1::{DepositStatus, Transaction};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
+use mystiko_screening_client::v1::ScreeningClientV1;
+use mystiko_screening_client::ScreeningClient;
 use mystiko_storage::{ColumnValues, StatementFormatter, Storage};
 use mystiko_utils::address::ethers_address_to_string;
 use std::sync::Arc;
@@ -29,6 +31,7 @@ pub struct Deposits<
     C = CommitmentPoolContracts<Box<dyn Providers>>,
     T = Transactions<Box<dyn Providers>>,
     P = Box<dyn Providers>,
+    N = Box<dyn ScreeningClient>,
 > {
     pub(crate) db: Arc<Database<F, S>>,
     pub(crate) config: Arc<MystikoConfig>,
@@ -39,6 +42,7 @@ pub struct Deposits<
     pub(crate) commitment_pool_contracts: Arc<C>,
     pub(crate) transactions: Arc<T>,
     pub(crate) signer_providers: Arc<P>,
+    pub(crate) screening: Arc<N>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -51,6 +55,7 @@ pub struct DepositsOptions<
     C = CommitmentPoolContracts<Box<dyn Providers>>,
     T = Transactions<Box<dyn Providers>>,
     P = Box<dyn Providers>,
+    N = Box<dyn ScreeningClient>,
 > {
     db: Arc<Database<F, S>>,
     config: Arc<MystikoConfig>,
@@ -59,12 +64,13 @@ pub struct DepositsOptions<
     commitment_pool_contracts: Arc<C>,
     transactions: Arc<T>,
     signer_providers: Arc<P>,
+    screening: Arc<N>,
 }
 
 type Result<T> = std::result::Result<T, DepositsError>;
 
 #[async_trait]
-impl<F, S, A, D, C, T, P>
+impl<F, S, A, D, C, T, P, N>
     DepositHandler<
         ProtoDeposit,
         QuoteDepositOptions,
@@ -72,7 +78,7 @@ impl<F, S, A, D, C, T, P>
         CreateDepositOptions,
         DepositSummary,
         SendDepositOptions,
-    > for Deposits<F, S, A, D, C, T, P>
+    > for Deposits<F, S, A, D, C, T, P, N>
 where
     F: StatementFormatter,
     S: Storage,
@@ -81,6 +87,7 @@ where
     C: CommitmentPoolContractHandler,
     T: TransactionHandler<Transaction>,
     P: Providers + 'static,
+    N: ScreeningClient + 'static,
     DepositsError: From<A::Error> + From<D::Error> + From<C::Error> + From<T::Error>,
 {
     type Error = DepositsError;
@@ -308,7 +315,7 @@ where
     }
 }
 
-impl<F, S, A, D, C, T, P> Deposits<F, S, A, D, C, T, P>
+impl<F, S, A, D, C, T, P, N> Deposits<F, S, A, D, C, T, P, N>
 where
     F: StatementFormatter,
     S: Storage,
@@ -316,10 +323,9 @@ where
     D: DepositContractHandler,
     C: CommitmentPoolContractHandler,
     T: TransactionHandler<Transaction>,
-    P: Providers + 'static,
     DepositsError: From<A::Error> + From<D::Error> + From<C::Error> + From<T::Error>,
 {
-    pub fn new(options: DepositsOptions<F, S, A, D, C, T, P>) -> Self {
+    pub fn new(options: DepositsOptions<F, S, A, D, C, T, P, N>) -> Self {
         let wallets = Wallets::new(options.db.clone());
         let accounts = Accounts::new(options.db.clone());
         Self::builder()
@@ -332,6 +338,7 @@ where
             .deposit_contracts(options.deposit_contracts)
             .commitment_pool_contracts(options.commitment_pool_contracts)
             .transactions(options.transactions)
+            .screening(options.screening)
             .build()
     }
 }
@@ -348,6 +355,8 @@ where
     DepositsError: From<A::Error> + From<D::Error> + From<C::Error> + From<T::Error>,
 {
     async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
+        let screening = ScreeningClientV1::new(context.screening_client_options.clone());
+        let screening = Arc::new(Box::new(screening) as Box<dyn ScreeningClient>);
         let options = DepositsOptions::<F, S, A, D, C, T>::builder()
             .db(context.db.clone())
             .config(context.config.clone())
@@ -356,6 +365,7 @@ where
             .deposit_contracts(D::from_context(context).await?)
             .commitment_pool_contracts(C::from_context(context).await?)
             .transactions(T::from_context(context).await?)
+            .screening(screening)
             .build();
         Ok(Self::new(options))
     }

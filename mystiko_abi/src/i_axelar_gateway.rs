@@ -7,1170 +7,863 @@ pub use i_axelar_gateway::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod i_axelar_gateway {
-    const _: () = {
-        ::core::include_bytes!(
-"../json/IAxelarGateway.json",
-        );
-    };
     #[allow(deprecated)]
-    fn __abi() -> ::ethers_core::abi::Abi {
-        ::ethers_core::abi::ethabi::Contract {
+    fn __abi() -> ::ethers::core::abi::Abi {
+        ::ethers::core::abi::ethabi::Contract {
             constructor: ::core::option::Option::None,
             functions: ::core::convert::From::from([
                 (
                     ::std::borrow::ToOwned::to_owned("adminEpoch"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("adminEpoch"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("adminEpoch"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("adminThreshold"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("adminThreshold"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("epoch"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("adminThreshold"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("epoch"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("admins"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("admins"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("epoch"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Array(
-                                        ::std::boxed::Box::new(
-                                            ::ethers_core::abi::ethabi::ParamType::Address,
-                                        ),
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address[]"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("admins"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("epoch"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256"),),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
+                                ::ethers::core::abi::ethabi::ParamType::Address,
+                            ),),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address[]"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("allTokensFrozen"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("allTokensFrozen"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("allTokensFrozen"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("callContract"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("callContract"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("destinationChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("contractAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("payload"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("callContract"),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("contractAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("callContractWithToken"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "callContractWithToken",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("destinationChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("contractAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("payload"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("amount"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("callContractWithToken",),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("contractAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("execute"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("execute"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("input"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("execute"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("input"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("freezeAllTokens"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("freezeAllTokens"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("freezeAllTokens"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("freezeToken"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("freezeToken"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("freezeToken"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("symbol"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("implementation"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("implementation"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("implementation"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isCommandExecuted"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("isCommandExecuted"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("commandId"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("isCommandExecuted"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("commandId"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes32"),),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isContractCallAndMintApproved"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "isContractCallAndMintApproved",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("commandId"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("contractAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("payloadHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("amount"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("isContractCallAndMintApproved",),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("commandId"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("contractAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("isContractCallApproved"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "isContractCallApproved",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("commandId"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("contractAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("payloadHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("isContractCallApproved",),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("commandId"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("contractAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("sendToken"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("sendToken"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("destinationChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "destinationAddress",
-                                    ),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("amount"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("sendToken"),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("setup"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("setup"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("params"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("setup"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("params"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("tokenAddresses"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("tokenAddresses"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("tokenAddresses"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("symbol"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("address"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("tokenFrozen"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("tokenFrozen"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::View,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("tokenFrozen"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("symbol"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                        },],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::View,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("unfreezeAllTokens"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("unfreezeAllTokens"),
-                            inputs: ::std::vec![],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("unfreezeAllTokens"),
+                        inputs: ::std::vec![],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("unfreezeToken"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("unfreezeToken"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("unfreezeToken"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("symbol"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::String,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                        },],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("upgrade"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("upgrade"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("newImplementation"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("address"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "newImplementationCodeHash",
-                                    ),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("setupParams"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("upgrade"),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("newImplementation"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "address"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("newImplementationCodeHash",),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("setupParams"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bytes"),),
+                            },
+                        ],
+                        outputs: ::std::vec![],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("validateContractCall"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "validateContractCall",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("commandId"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("payloadHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("validateContractCall",),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("commandId"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("validateContractCallAndMint"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "validateContractCallAndMint",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("commandId"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("payloadHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes32"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("string"),
-                                    ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("amount"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Function {
+                        name: ::std::borrow::ToOwned::to_owned("validateContractCallAndMint",),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("commandId"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "bytes32"
+                                ),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("string"),),
+                            },
+                            ::ethers::core::abi::ethabi::Param {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                    "uint256"
+                                ),),
+                            },
+                        ],
+                        outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                            name: ::std::string::String::new(),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                        },],
+                        constant: ::core::option::Option::None,
+                        state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                    },],
                 ),
             ]),
             events: ::core::convert::From::from([
                 (
                     ::std::borrow::ToOwned::to_owned("AccountBlacklisted"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("AccountBlacklisted"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("account"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: true,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("AccountBlacklisted"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("account"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                            indexed: true,
+                        },],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("AccountWhitelisted"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("AccountWhitelisted"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("account"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: true,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("AccountWhitelisted"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("account"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                            indexed: true,
+                        },],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("AllTokensFrozen"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("AllTokensFrozen"),
-                            inputs: ::std::vec![],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("AllTokensFrozen"),
+                        inputs: ::std::vec![],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("AllTokensUnfrozen"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("AllTokensUnfrozen"),
-                            inputs: ::std::vec![],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("AllTokensUnfrozen"),
+                        inputs: ::std::vec![],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("ContractCall"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("ContractCall"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sender"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("destinationChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "destinationContractAddress",
-                                    ),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("payloadHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("payload"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("ContractCall"),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sender"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationContractAddress",),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("ContractCallApproved"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "ContractCallApproved",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("commandId"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("contractAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("payloadHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceTxHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceEventIndex"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("ContractCallApproved",),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("commandId"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("contractAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceTxHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceEventIndex"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("ContractCallApprovedWithMint"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "ContractCallApprovedWithMint",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("commandId"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("contractAddress"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("payloadHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("amount"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceTxHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sourceEventIndex"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("ContractCallApprovedWithMint",),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("commandId"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("contractAddress"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceTxHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sourceEventIndex"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("ContractCallWithToken"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned(
-                                "ContractCallWithToken",
-                            ),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sender"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("destinationChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "destinationContractAddress",
-                                    ),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("payloadHash"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("payload"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bytes,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("amount"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("ContractCallWithToken",),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sender"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationContractAddress",),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payloadHash"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("payload"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("Executed"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("Executed"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("commandId"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::FixedBytes(
-                                        32usize,
-                                    ),
-                                    indexed: true,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("Executed"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("commandId"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::FixedBytes(32usize,),
+                            indexed: true,
+                        },],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("TokenDeployed"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("TokenDeployed"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("tokenAddresses"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("TokenDeployed"),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("tokenAddresses"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("TokenFrozen"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("TokenFrozen"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("TokenFrozen"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("symbol"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::String,
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("TokenSent"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("TokenSent"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("sender"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: true,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("destinationChain"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned(
-                                        "destinationAddress",
-                                    ),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("amount"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Uint(
-                                        256usize,
-                                    ),
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("TokenSent"),
+                        inputs: ::std::vec![
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("sender"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                                indexed: true,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationChain"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("destinationAddress",),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("symbol"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::String,
+                                indexed: false,
+                            },
+                            ::ethers::core::abi::ethabi::EventParam {
+                                name: ::std::borrow::ToOwned::to_owned("amount"),
+                                kind: ::ethers::core::abi::ethabi::ParamType::Uint(256usize,),
+                                indexed: false,
+                            },
+                        ],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("TokenUnfrozen"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("TokenUnfrozen"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("symbol"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::String,
-                                    indexed: false,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("TokenUnfrozen"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("symbol"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::String,
+                            indexed: false,
+                        },],
+                        anonymous: false,
+                    },],
                 ),
                 (
                     ::std::borrow::ToOwned::to_owned("Upgraded"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Event {
-                            name: ::std::borrow::ToOwned::to_owned("Upgraded"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::EventParam {
-                                    name: ::std::borrow::ToOwned::to_owned("implementation"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Address,
-                                    indexed: true,
-                                },
-                            ],
-                            anonymous: false,
-                        },
-                    ],
+                    ::std::vec![::ethers::core::abi::ethabi::Event {
+                        name: ::std::borrow::ToOwned::to_owned("Upgraded"),
+                        inputs: ::std::vec![::ethers::core::abi::ethabi::EventParam {
+                            name: ::std::borrow::ToOwned::to_owned("implementation"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Address,
+                            indexed: true,
+                        },],
+                        anonymous: false,
+                    },],
                 ),
             ]),
             errors: ::std::collections::BTreeMap::new(),
@@ -1179,17 +872,16 @@ pub mod i_axelar_gateway {
         }
     }
     ///The parsed JSON ABI of the contract.
-    pub static IAXELARGATEWAY_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(
-        __abi,
-    );
-    pub struct IAxelarGateway<M>(::ethers_contract::Contract<M>);
+    pub static IAXELARGATEWAY_ABI: ::ethers::contract::Lazy<::ethers::core::abi::Abi> =
+        ::ethers::contract::Lazy::new(__abi);
+    pub struct IAxelarGateway<M>(::ethers::contract::Contract<M>);
     impl<M> ::core::clone::Clone for IAxelarGateway<M> {
         fn clone(&self) -> Self {
             Self(::core::clone::Clone::clone(&self.0))
         }
     }
     impl<M> ::core::ops::Deref for IAxelarGateway<M> {
-        type Target = ::ethers_contract::Contract<M>;
+        type Target = ::ethers::contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
@@ -1206,25 +898,18 @@ pub mod i_axelar_gateway {
                 .finish()
         }
     }
-    impl<M: ::ethers_providers::Middleware> IAxelarGateway<M> {
+    impl<M: ::ethers::providers::Middleware> IAxelarGateway<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    IAXELARGATEWAY_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers::core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers::contract::Contract::new(
+                address.into(),
+                IAXELARGATEWAY_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `adminEpoch` (0x364940d8) function
-        pub fn admin_epoch(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+        pub fn admin_epoch(&self) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
             self.0
                 .method_hash([54, 73, 64, 216], ())
                 .expect("method not found (this should never happen)")
@@ -1232,8 +917,8 @@ pub mod i_axelar_gateway {
         ///Calls the contract's `adminThreshold` (0x88b30587) function
         pub fn admin_threshold(
             &self,
-            epoch: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<M, ::ethers_core::types::U256> {
+            epoch: ::ethers::core::types::U256,
+        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::U256> {
             self.0
                 .method_hash([136, 179, 5, 135], epoch)
                 .expect("method not found (this should never happen)")
@@ -1241,19 +926,14 @@ pub mod i_axelar_gateway {
         ///Calls the contract's `admins` (0x14bfd6d0) function
         pub fn admins(
             &self,
-            epoch: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::std::vec::Vec<::ethers_core::types::Address>,
-        > {
+            epoch: ::ethers::core::types::U256,
+        ) -> ::ethers::contract::builders::ContractCall<M, ::std::vec::Vec<::ethers::core::types::Address>> {
             self.0
                 .method_hash([20, 191, 214, 208], epoch)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `allTokensFrozen` (0xaa1e1f0a) function
-        pub fn all_tokens_frozen(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn all_tokens_frozen(&self) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([170, 30, 31, 10], ())
                 .expect("method not found (this should never happen)")
@@ -1263,13 +943,10 @@ pub mod i_axelar_gateway {
             &self,
             destination_chain: ::std::string::String,
             contract_address: ::std::string::String,
-            payload: ::ethers_core::types::Bytes,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+            payload: ::ethers::core::types::Bytes,
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash(
-                    [28, 146, 17, 95],
-                    (destination_chain, contract_address, payload),
-                )
+                .method_hash([28, 146, 17, 95], (destination_chain, contract_address, payload))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `callContractWithToken` (0xb5417084) function
@@ -1277,10 +954,10 @@ pub mod i_axelar_gateway {
             &self,
             destination_chain: ::std::string::String,
             contract_address: ::std::string::String,
-            payload: ::ethers_core::types::Bytes,
+            payload: ::ethers::core::types::Bytes,
             symbol: ::std::string::String,
-            amount: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+            amount: ::ethers::core::types::U256,
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [181, 65, 112, 132],
@@ -1291,45 +968,32 @@ pub mod i_axelar_gateway {
         ///Calls the contract's `execute` (0x09c5eabe) function
         pub fn execute(
             &self,
-            input: ::ethers_core::types::Bytes,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+            input: ::ethers::core::types::Bytes,
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([9, 197, 234, 190], input)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `freezeAllTokens` (0xd2bc37f8) function
-        pub fn freeze_all_tokens(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn freeze_all_tokens(&self) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([210, 188, 55, 248], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `freezeToken` (0x646c5d34) function
-        pub fn freeze_token(
-            &self,
-            symbol: ::std::string::String,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn freeze_token(&self, symbol: ::std::string::String) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([100, 108, 93, 52], symbol)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `implementation` (0x5c60da1b) function
-        pub fn implementation(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        pub fn implementation(&self) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::Address> {
             self.0
                 .method_hash([92, 96, 218, 27], ())
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `isCommandExecuted` (0xd26ff210) function
-        pub fn is_command_executed(
-            &self,
-            command_id: [u8; 32],
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        pub fn is_command_executed(&self, command_id: [u8; 32]) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([210, 111, 242, 16], command_id)
                 .expect("method not found (this should never happen)")
@@ -1340,11 +1004,11 @@ pub mod i_axelar_gateway {
             command_id: [u8; 32],
             source_chain: ::std::string::String,
             source_address: ::std::string::String,
-            contract_address: ::ethers_core::types::Address,
+            contract_address: ::ethers::core::types::Address,
             payload_hash: [u8; 32],
             symbol: ::std::string::String,
-            amount: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+            amount: ::ethers::core::types::U256,
+        ) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash(
                     [188, 0, 194, 22],
@@ -1366,19 +1030,13 @@ pub mod i_axelar_gateway {
             command_id: [u8; 32],
             source_chain: ::std::string::String,
             source_address: ::std::string::String,
-            contract_address: ::ethers_core::types::Address,
+            contract_address: ::ethers::core::types::Address,
             payload_hash: [u8; 32],
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        ) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash(
                     [246, 165, 249, 245],
-                    (
-                        command_id,
-                        source_chain,
-                        source_address,
-                        contract_address,
-                        payload_hash,
-                    ),
+                    (command_id, source_chain, source_address, contract_address, payload_hash),
                 )
                 .expect("method not found (this should never happen)")
         }
@@ -1388,8 +1046,8 @@ pub mod i_axelar_gateway {
             destination_chain: ::std::string::String,
             destination_address: ::std::string::String,
             symbol: ::std::string::String,
-            amount: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+            amount: ::ethers::core::types::U256,
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [38, 239, 105, 157],
@@ -1398,10 +1056,7 @@ pub mod i_axelar_gateway {
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `setup` (0x9ded06df) function
-        pub fn setup(
-            &self,
-            params: ::ethers_core::types::Bytes,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn setup(&self, params: ::ethers::core::types::Bytes) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([157, 237, 6, 223], params)
                 .expect("method not found (this should never happen)")
@@ -1410,10 +1065,7 @@ pub mod i_axelar_gateway {
         pub fn token_addresses(
             &self,
             symbol: ::std::string::String,
-        ) -> ::ethers_contract::builders::ContractCall<
-            M,
-            ::ethers_core::types::Address,
-        > {
+        ) -> ::ethers::contract::builders::ContractCall<M, ::ethers::core::types::Address> {
             self.0
                 .method_hash([147, 91, 19, 246], symbol)
                 .expect("method not found (this should never happen)")
@@ -1422,15 +1074,13 @@ pub mod i_axelar_gateway {
         pub fn token_frozen(
             &self,
             symbol: ::std::string::String,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        ) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([123, 27, 118, 158], symbol)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `unfreezeAllTokens` (0xe3dfa299) function
-        pub fn unfreeze_all_tokens(
-            &self,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        pub fn unfreeze_all_tokens(&self) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([227, 223, 162, 153], ())
                 .expect("method not found (this should never happen)")
@@ -1439,7 +1089,7 @@ pub mod i_axelar_gateway {
         pub fn unfreeze_token(
             &self,
             symbol: ::std::string::String,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash([52, 255, 105, 131], symbol)
                 .expect("method not found (this should never happen)")
@@ -1447,10 +1097,10 @@ pub mod i_axelar_gateway {
         ///Calls the contract's `upgrade` (0xa3499c73) function
         pub fn upgrade(
             &self,
-            new_implementation: ::ethers_core::types::Address,
+            new_implementation: ::ethers::core::types::Address,
             new_implementation_code_hash: [u8; 32],
-            setup_params: ::ethers_core::types::Bytes,
-        ) -> ::ethers_contract::builders::ContractCall<M, ()> {
+            setup_params: ::ethers::core::types::Bytes,
+        ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
                 .method_hash(
                     [163, 73, 156, 115],
@@ -1465,7 +1115,7 @@ pub mod i_axelar_gateway {
             source_chain: ::std::string::String,
             source_address: ::std::string::String,
             payload_hash: [u8; 32],
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+        ) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash(
                     [95, 105, 112, 195],
@@ -1481,277 +1131,200 @@ pub mod i_axelar_gateway {
             source_address: ::std::string::String,
             payload_hash: [u8; 32],
             symbol: ::std::string::String,
-            amount: ::ethers_core::types::U256,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+            amount: ::ethers::core::types::U256,
+        ) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash(
                     [24, 118, 238, 217],
-                    (
-                        command_id,
-                        source_chain,
-                        source_address,
-                        payload_hash,
-                        symbol,
-                        amount,
-                    ),
+                    (command_id, source_chain, source_address, payload_hash, symbol, amount),
                 )
                 .expect("method not found (this should never happen)")
         }
         ///Gets the contract's `AccountBlacklisted` event
         pub fn account_blacklisted_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            AccountBlacklistedFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, AccountBlacklistedFilter> {
             self.0.event()
         }
         ///Gets the contract's `AccountWhitelisted` event
         pub fn account_whitelisted_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            AccountWhitelistedFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, AccountWhitelistedFilter> {
             self.0.event()
         }
         ///Gets the contract's `AllTokensFrozen` event
         pub fn all_tokens_frozen_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            AllTokensFrozenFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, AllTokensFrozenFilter> {
             self.0.event()
         }
         ///Gets the contract's `AllTokensUnfrozen` event
         pub fn all_tokens_unfrozen_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            AllTokensUnfrozenFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, AllTokensUnfrozenFilter> {
             self.0.event()
         }
         ///Gets the contract's `ContractCall` event
         pub fn contract_call_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            ContractCallFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, ContractCallFilter> {
             self.0.event()
         }
         ///Gets the contract's `ContractCallApproved` event
         pub fn contract_call_approved_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            ContractCallApprovedFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, ContractCallApprovedFilter> {
             self.0.event()
         }
         ///Gets the contract's `ContractCallApprovedWithMint` event
         pub fn contract_call_approved_with_mint_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            ContractCallApprovedWithMintFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, ContractCallApprovedWithMintFilter> {
             self.0.event()
         }
         ///Gets the contract's `ContractCallWithToken` event
         pub fn contract_call_with_token_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            ContractCallWithTokenFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, ContractCallWithTokenFilter> {
             self.0.event()
         }
         ///Gets the contract's `Executed` event
-        pub fn executed_filter(
-            &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            ExecutedFilter,
-        > {
+        pub fn executed_filter(&self) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, ExecutedFilter> {
             self.0.event()
         }
         ///Gets the contract's `TokenDeployed` event
         pub fn token_deployed_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            TokenDeployedFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, TokenDeployedFilter> {
             self.0.event()
         }
         ///Gets the contract's `TokenFrozen` event
         pub fn token_frozen_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            TokenFrozenFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, TokenFrozenFilter> {
             self.0.event()
         }
         ///Gets the contract's `TokenSent` event
         pub fn token_sent_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            TokenSentFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, TokenSentFilter> {
             self.0.event()
         }
         ///Gets the contract's `TokenUnfrozen` event
         pub fn token_unfrozen_filter(
             &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            TokenUnfrozenFilter,
-        > {
+        ) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, TokenUnfrozenFilter> {
             self.0.event()
         }
         ///Gets the contract's `Upgraded` event
-        pub fn upgraded_filter(
-            &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            UpgradedFilter,
-        > {
+        pub fn upgraded_filter(&self) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, UpgradedFilter> {
             self.0.event()
         }
         /// Returns an `Event` builder for all the events of this contract.
-        pub fn events(
-            &self,
-        ) -> ::ethers_contract::builders::Event<
-            ::std::sync::Arc<M>,
-            M,
-            IAxelarGatewayEvents,
-        > {
+        pub fn events(&self) -> ::ethers::contract::builders::Event<::std::sync::Arc<M>, M, IAxelarGatewayEvents> {
             self.0.event_with_filter(::core::default::Default::default())
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for IAxelarGateway<M> {
-        fn from(contract: ::ethers_contract::Contract<M>) -> Self {
+    impl<M: ::ethers::providers::Middleware> From<::ethers::contract::Contract<M>> for IAxelarGateway<M> {
+        fn from(contract: ::ethers::contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "AccountBlacklisted", abi = "AccountBlacklisted(address)")]
     pub struct AccountBlacklistedFilter {
         #[ethevent(indexed)]
-        pub account: ::ethers_core::types::Address,
+        pub account: ::ethers::core::types::Address,
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "AccountWhitelisted", abi = "AccountWhitelisted(address)")]
     pub struct AccountWhitelistedFilter {
         #[ethevent(indexed)]
-        pub account: ::ethers_core::types::Address,
+        pub account: ::ethers::core::types::Address,
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "AllTokensFrozen", abi = "AllTokensFrozen()")]
     pub struct AllTokensFrozenFilter;
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "AllTokensUnfrozen", abi = "AllTokensUnfrozen()")]
     pub struct AllTokensUnfrozenFilter;
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethevent(
-        name = "ContractCall",
-        abi = "ContractCall(address,string,string,bytes32,bytes)"
-    )]
+    #[ethevent(name = "ContractCall", abi = "ContractCall(address,string,string,bytes32,bytes)")]
     pub struct ContractCallFilter {
         #[ethevent(indexed)]
-        pub sender: ::ethers_core::types::Address,
+        pub sender: ::ethers::core::types::Address,
         pub destination_chain: ::std::string::String,
         pub destination_contract_address: ::std::string::String,
         #[ethevent(indexed)]
         pub payload_hash: [u8; 32],
-        pub payload: ::ethers_core::types::Bytes,
+        pub payload: ::ethers::core::types::Bytes,
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(
         name = "ContractCallApproved",
@@ -1763,23 +1336,23 @@ pub mod i_axelar_gateway {
         pub source_chain: ::std::string::String,
         pub source_address: ::std::string::String,
         #[ethevent(indexed)]
-        pub contract_address: ::ethers_core::types::Address,
+        pub contract_address: ::ethers::core::types::Address,
         #[ethevent(indexed)]
         pub payload_hash: [u8; 32],
         pub source_tx_hash: [u8; 32],
-        pub source_event_index: ::ethers_core::types::U256,
+        pub source_event_index: ::ethers::core::types::U256,
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(
         name = "ContractCallApprovedWithMint",
@@ -1791,25 +1364,25 @@ pub mod i_axelar_gateway {
         pub source_chain: ::std::string::String,
         pub source_address: ::std::string::String,
         #[ethevent(indexed)]
-        pub contract_address: ::ethers_core::types::Address,
+        pub contract_address: ::ethers::core::types::Address,
         #[ethevent(indexed)]
         pub payload_hash: [u8; 32],
         pub symbol: ::std::string::String,
-        pub amount: ::ethers_core::types::U256,
+        pub amount: ::ethers::core::types::U256,
         pub source_tx_hash: [u8; 32],
-        pub source_event_index: ::ethers_core::types::U256,
+        pub source_event_index: ::ethers::core::types::U256,
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(
         name = "ContractCallWithToken",
@@ -1817,26 +1390,26 @@ pub mod i_axelar_gateway {
     )]
     pub struct ContractCallWithTokenFilter {
         #[ethevent(indexed)]
-        pub sender: ::ethers_core::types::Address,
+        pub sender: ::ethers::core::types::Address,
         pub destination_chain: ::std::string::String,
         pub destination_contract_address: ::std::string::String,
         #[ethevent(indexed)]
         pub payload_hash: [u8; 32],
-        pub payload: ::ethers_core::types::Bytes,
+        pub payload: ::ethers::core::types::Bytes,
         pub symbol: ::std::string::String,
-        pub amount: ::ethers_core::types::U256,
+        pub amount: ::ethers::core::types::U256,
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "Executed", abi = "Executed(bytes32)")]
     pub struct ExecutedFilter {
@@ -1845,32 +1418,32 @@ pub mod i_axelar_gateway {
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "TokenDeployed", abi = "TokenDeployed(string,address)")]
     pub struct TokenDeployedFilter {
         pub symbol: ::std::string::String,
-        pub token_addresses: ::ethers_core::types::Address,
+        pub token_addresses: ::ethers::core::types::Address,
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "TokenFrozen", abi = "TokenFrozen(string)")]
     pub struct TokenFrozenFilter {
@@ -1878,39 +1451,36 @@ pub mod i_axelar_gateway {
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    #[ethevent(
-        name = "TokenSent",
-        abi = "TokenSent(address,string,string,string,uint256)"
-    )]
+    #[ethevent(name = "TokenSent", abi = "TokenSent(address,string,string,string,uint256)")]
     pub struct TokenSentFilter {
         #[ethevent(indexed)]
-        pub sender: ::ethers_core::types::Address,
+        pub sender: ::ethers::core::types::Address,
         pub destination_chain: ::std::string::String,
         pub destination_address: ::std::string::String,
         pub symbol: ::std::string::String,
-        pub amount: ::ethers_core::types::U256,
+        pub amount: ::ethers::core::types::U256,
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "TokenUnfrozen", abi = "TokenUnfrozen(string)")]
     pub struct TokenUnfrozenFilter {
@@ -1918,31 +1488,24 @@ pub mod i_axelar_gateway {
     }
     #[derive(
         Clone,
-        ::ethers_contract::EthEvent,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthEvent,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethevent(name = "Upgraded", abi = "Upgraded(address)")]
     pub struct UpgradedFilter {
         #[ethevent(indexed)]
-        pub implementation: ::ethers_core::types::Address,
+        pub implementation: ::ethers::core::types::Address,
     }
     ///Container type for all of the contract's events
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers::contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum IAxelarGatewayEvents {
         AccountBlacklistedFilter(AccountBlacklistedFilter),
@@ -1960,10 +1523,8 @@ pub mod i_axelar_gateway {
         TokenUnfrozenFilter(TokenUnfrozenFilter),
         UpgradedFilter(UpgradedFilter),
     }
-    impl ::ethers_contract::EthLogDecode for IAxelarGatewayEvents {
-        fn decode_log(
-            log: &::ethers_core::abi::RawLog,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::Error> {
+    impl ::ethers::contract::EthLogDecode for IAxelarGatewayEvents {
+        fn decode_log(log: &::ethers::core::abi::RawLog) -> ::core::result::Result<Self, ::ethers::core::abi::Error> {
             if let Ok(decoded) = AccountBlacklistedFilter::decode_log(log) {
                 return Ok(IAxelarGatewayEvents::AccountBlacklistedFilter(decoded));
             }
@@ -1983,9 +1544,7 @@ pub mod i_axelar_gateway {
                 return Ok(IAxelarGatewayEvents::ContractCallApprovedFilter(decoded));
             }
             if let Ok(decoded) = ContractCallApprovedWithMintFilter::decode_log(log) {
-                return Ok(
-                    IAxelarGatewayEvents::ContractCallApprovedWithMintFilter(decoded),
-                );
+                return Ok(IAxelarGatewayEvents::ContractCallApprovedWithMintFilter(decoded));
             }
             if let Ok(decoded) = ContractCallWithTokenFilter::decode_log(log) {
                 return Ok(IAxelarGatewayEvents::ContractCallWithTokenFilter(decoded));
@@ -2008,45 +1567,25 @@ pub mod i_axelar_gateway {
             if let Ok(decoded) = UpgradedFilter::decode_log(log) {
                 return Ok(IAxelarGatewayEvents::UpgradedFilter(decoded));
             }
-            Err(::ethers_core::abi::Error::InvalidData)
+            Err(::ethers::core::abi::Error::InvalidData)
         }
     }
     impl ::core::fmt::Display for IAxelarGatewayEvents {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             match self {
-                Self::AccountBlacklistedFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::AccountWhitelistedFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::AllTokensFrozenFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::AllTokensUnfrozenFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::ContractCallFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::ContractCallApprovedFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::ContractCallApprovedWithMintFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::ContractCallWithTokenFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::AccountBlacklistedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AccountWhitelistedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AllTokensFrozenFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::AllTokensUnfrozenFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ContractCallFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ContractCallApprovedFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ContractCallApprovedWithMintFilter(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ContractCallWithTokenFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::ExecutedFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::TokenDeployedFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::TokenDeployedFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::TokenFrozenFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::TokenSentFilter(element) => ::core::fmt::Display::fmt(element, f),
-                Self::TokenUnfrozenFilter(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::TokenUnfrozenFilter(element) => ::core::fmt::Display::fmt(element, f),
                 Self::UpgradedFilter(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
@@ -2081,8 +1620,7 @@ pub mod i_axelar_gateway {
             Self::ContractCallApprovedFilter(value)
         }
     }
-    impl ::core::convert::From<ContractCallApprovedWithMintFilter>
-    for IAxelarGatewayEvents {
+    impl ::core::convert::From<ContractCallApprovedWithMintFilter> for IAxelarGatewayEvents {
         fn from(value: ContractCallApprovedWithMintFilter) -> Self {
             Self::ContractCallApprovedWithMintFilter(value)
         }
@@ -2125,98 +1663,98 @@ pub mod i_axelar_gateway {
     ///Container type for all input parameters for the `adminEpoch` function with signature `adminEpoch()` and selector `0x364940d8`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "adminEpoch", abi = "adminEpoch()")]
     pub struct AdminEpochCall;
     ///Container type for all input parameters for the `adminThreshold` function with signature `adminThreshold(uint256)` and selector `0x88b30587`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "adminThreshold", abi = "adminThreshold(uint256)")]
     pub struct AdminThresholdCall {
-        pub epoch: ::ethers_core::types::U256,
+        pub epoch: ::ethers::core::types::U256,
     }
     ///Container type for all input parameters for the `admins` function with signature `admins(uint256)` and selector `0x14bfd6d0`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "admins", abi = "admins(uint256)")]
     pub struct AdminsCall {
-        pub epoch: ::ethers_core::types::U256,
+        pub epoch: ::ethers::core::types::U256,
     }
     ///Container type for all input parameters for the `allTokensFrozen` function with signature `allTokensFrozen()` and selector `0xaa1e1f0a`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "allTokensFrozen", abi = "allTokensFrozen()")]
     pub struct AllTokensFrozenCall;
     ///Container type for all input parameters for the `callContract` function with signature `callContract(string,string,bytes)` and selector `0x1c92115f`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "callContract", abi = "callContract(string,string,bytes)")]
     pub struct CallContractCall {
         pub destination_chain: ::std::string::String,
         pub contract_address: ::std::string::String,
-        pub payload: ::ethers_core::types::Bytes,
+        pub payload: ::ethers::core::types::Bytes,
     }
     ///Container type for all input parameters for the `callContractWithToken` function with signature `callContractWithToken(string,string,bytes,string,uint256)` and selector `0xb5417084`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "callContractWithToken",
@@ -2225,54 +1763,54 @@ pub mod i_axelar_gateway {
     pub struct CallContractWithTokenCall {
         pub destination_chain: ::std::string::String,
         pub contract_address: ::std::string::String,
-        pub payload: ::ethers_core::types::Bytes,
+        pub payload: ::ethers::core::types::Bytes,
         pub symbol: ::std::string::String,
-        pub amount: ::ethers_core::types::U256,
+        pub amount: ::ethers::core::types::U256,
     }
     ///Container type for all input parameters for the `execute` function with signature `execute(bytes)` and selector `0x09c5eabe`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "execute", abi = "execute(bytes)")]
     pub struct ExecuteCall {
-        pub input: ::ethers_core::types::Bytes,
+        pub input: ::ethers::core::types::Bytes,
     }
     ///Container type for all input parameters for the `freezeAllTokens` function with signature `freezeAllTokens()` and selector `0xd2bc37f8`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "freezeAllTokens", abi = "freezeAllTokens()")]
     pub struct FreezeAllTokensCall;
     ///Container type for all input parameters for the `freezeToken` function with signature `freezeToken(string)` and selector `0x646c5d34`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "freezeToken", abi = "freezeToken(string)")]
     pub struct FreezeTokenCall {
@@ -2281,30 +1819,30 @@ pub mod i_axelar_gateway {
     ///Container type for all input parameters for the `implementation` function with signature `implementation()` and selector `0x5c60da1b`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "implementation", abi = "implementation()")]
     pub struct ImplementationCall;
     ///Container type for all input parameters for the `isCommandExecuted` function with signature `isCommandExecuted(bytes32)` and selector `0xd26ff210`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "isCommandExecuted", abi = "isCommandExecuted(bytes32)")]
     pub struct IsCommandExecutedCall {
@@ -2313,15 +1851,15 @@ pub mod i_axelar_gateway {
     ///Container type for all input parameters for the `isContractCallAndMintApproved` function with signature `isContractCallAndMintApproved(bytes32,string,string,address,bytes32,string,uint256)` and selector `0xbc00c216`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "isContractCallAndMintApproved",
@@ -2331,23 +1869,23 @@ pub mod i_axelar_gateway {
         pub command_id: [u8; 32],
         pub source_chain: ::std::string::String,
         pub source_address: ::std::string::String,
-        pub contract_address: ::ethers_core::types::Address,
+        pub contract_address: ::ethers::core::types::Address,
         pub payload_hash: [u8; 32],
         pub symbol: ::std::string::String,
-        pub amount: ::ethers_core::types::U256,
+        pub amount: ::ethers::core::types::U256,
     }
     ///Container type for all input parameters for the `isContractCallApproved` function with signature `isContractCallApproved(bytes32,string,string,address,bytes32)` and selector `0xf6a5f9f5`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "isContractCallApproved",
@@ -2357,58 +1895,58 @@ pub mod i_axelar_gateway {
         pub command_id: [u8; 32],
         pub source_chain: ::std::string::String,
         pub source_address: ::std::string::String,
-        pub contract_address: ::ethers_core::types::Address,
+        pub contract_address: ::ethers::core::types::Address,
         pub payload_hash: [u8; 32],
     }
     ///Container type for all input parameters for the `sendToken` function with signature `sendToken(string,string,string,uint256)` and selector `0x26ef699d`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "sendToken", abi = "sendToken(string,string,string,uint256)")]
     pub struct SendTokenCall {
         pub destination_chain: ::std::string::String,
         pub destination_address: ::std::string::String,
         pub symbol: ::std::string::String,
-        pub amount: ::ethers_core::types::U256,
+        pub amount: ::ethers::core::types::U256,
     }
     ///Container type for all input parameters for the `setup` function with signature `setup(bytes)` and selector `0x9ded06df`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "setup", abi = "setup(bytes)")]
     pub struct SetupCall {
-        pub params: ::ethers_core::types::Bytes,
+        pub params: ::ethers::core::types::Bytes,
     }
     ///Container type for all input parameters for the `tokenAddresses` function with signature `tokenAddresses(string)` and selector `0x935b13f6`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "tokenAddresses", abi = "tokenAddresses(string)")]
     pub struct TokenAddressesCall {
@@ -2417,15 +1955,15 @@ pub mod i_axelar_gateway {
     ///Container type for all input parameters for the `tokenFrozen` function with signature `tokenFrozen(string)` and selector `0x7b1b769e`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "tokenFrozen", abi = "tokenFrozen(string)")]
     pub struct TokenFrozenCall {
@@ -2434,30 +1972,30 @@ pub mod i_axelar_gateway {
     ///Container type for all input parameters for the `unfreezeAllTokens` function with signature `unfreezeAllTokens()` and selector `0xe3dfa299`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "unfreezeAllTokens", abi = "unfreezeAllTokens()")]
     pub struct UnfreezeAllTokensCall;
     ///Container type for all input parameters for the `unfreezeToken` function with signature `unfreezeToken(string)` and selector `0x34ff6983`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "unfreezeToken", abi = "unfreezeToken(string)")]
     pub struct UnfreezeTokenCall {
@@ -2466,34 +2004,34 @@ pub mod i_axelar_gateway {
     ///Container type for all input parameters for the `upgrade` function with signature `upgrade(address,bytes32,bytes)` and selector `0xa3499c73`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(name = "upgrade", abi = "upgrade(address,bytes32,bytes)")]
     pub struct UpgradeCall {
-        pub new_implementation: ::ethers_core::types::Address,
+        pub new_implementation: ::ethers::core::types::Address,
         pub new_implementation_code_hash: [u8; 32],
-        pub setup_params: ::ethers_core::types::Bytes,
+        pub setup_params: ::ethers::core::types::Bytes,
     }
     ///Container type for all input parameters for the `validateContractCall` function with signature `validateContractCall(bytes32,string,string,bytes32)` and selector `0x5f6970c3`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "validateContractCall",
@@ -2508,15 +2046,15 @@ pub mod i_axelar_gateway {
     ///Container type for all input parameters for the `validateContractCallAndMint` function with signature `validateContractCallAndMint(bytes32,string,string,bytes32,string,uint256)` and selector `0x1876eed9`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "validateContractCallAndMint",
@@ -2528,18 +2066,11 @@ pub mod i_axelar_gateway {
         pub source_address: ::std::string::String,
         pub payload_hash: [u8; 32],
         pub symbol: ::std::string::String,
-        pub amount: ::ethers_core::types::U256,
+        pub amount: ::ethers::core::types::U256,
     }
     ///Container type for all of the contract's call
     #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        serde::Serialize,
-        serde::Deserialize,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
+        Clone, ::ethers::contract::EthAbiType, serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Hash,
     )]
     pub enum IAxelarGatewayCalls {
         AdminEpoch(AdminEpochCall),
@@ -2565,177 +2096,103 @@ pub mod i_axelar_gateway {
         ValidateContractCall(ValidateContractCallCall),
         ValidateContractCallAndMint(ValidateContractCallAndMintCall),
     }
-    impl ::ethers_core::abi::AbiDecode for IAxelarGatewayCalls {
-        fn decode(
-            data: impl AsRef<[u8]>,
-        ) -> ::core::result::Result<Self, ::ethers_core::abi::AbiError> {
+    impl ::ethers::core::abi::AbiDecode for IAxelarGatewayCalls {
+        fn decode(data: impl AsRef<[u8]>) -> ::core::result::Result<Self, ::ethers::core::abi::AbiError> {
             let data = data.as_ref();
-            if let Ok(decoded)
-                = <AdminEpochCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AdminEpochCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AdminEpoch(decoded));
             }
-            if let Ok(decoded)
-                = <AdminThresholdCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AdminThresholdCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AdminThreshold(decoded));
             }
-            if let Ok(decoded)
-                = <AdminsCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AdminsCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Admins(decoded));
             }
-            if let Ok(decoded)
-                = <AllTokensFrozenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <AllTokensFrozenCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::AllTokensFrozen(decoded));
             }
-            if let Ok(decoded)
-                = <CallContractCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <CallContractCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::CallContract(decoded));
             }
-            if let Ok(decoded)
-                = <CallContractWithTokenCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <CallContractWithTokenCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::CallContractWithToken(decoded));
             }
-            if let Ok(decoded)
-                = <ExecuteCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ExecuteCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Execute(decoded));
             }
-            if let Ok(decoded)
-                = <FreezeAllTokensCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <FreezeAllTokensCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::FreezeAllTokens(decoded));
             }
-            if let Ok(decoded)
-                = <FreezeTokenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <FreezeTokenCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::FreezeToken(decoded));
             }
-            if let Ok(decoded)
-                = <ImplementationCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <ImplementationCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Implementation(decoded));
             }
-            if let Ok(decoded)
-                = <IsCommandExecutedCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <IsCommandExecutedCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IsCommandExecuted(decoded));
             }
-            if let Ok(decoded)
-                = <IsContractCallAndMintApprovedCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <IsContractCallAndMintApprovedCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IsContractCallAndMintApproved(decoded));
             }
-            if let Ok(decoded)
-                = <IsContractCallApprovedCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <IsContractCallApprovedCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::IsContractCallApproved(decoded));
             }
-            if let Ok(decoded)
-                = <SendTokenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SendTokenCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::SendToken(decoded));
             }
-            if let Ok(decoded)
-                = <SetupCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <SetupCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Setup(decoded));
             }
-            if let Ok(decoded)
-                = <TokenAddressesCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <TokenAddressesCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::TokenAddresses(decoded));
             }
-            if let Ok(decoded)
-                = <TokenFrozenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <TokenFrozenCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::TokenFrozen(decoded));
             }
-            if let Ok(decoded)
-                = <UnfreezeAllTokensCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <UnfreezeAllTokensCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::UnfreezeAllTokens(decoded));
             }
-            if let Ok(decoded)
-                = <UnfreezeTokenCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <UnfreezeTokenCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::UnfreezeToken(decoded));
             }
-            if let Ok(decoded)
-                = <UpgradeCall as ::ethers_core::abi::AbiDecode>::decode(data) {
+            if let Ok(decoded) = <UpgradeCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::Upgrade(decoded));
             }
-            if let Ok(decoded)
-                = <ValidateContractCallCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <ValidateContractCallCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ValidateContractCall(decoded));
             }
-            if let Ok(decoded)
-                = <ValidateContractCallAndMintCall as ::ethers_core::abi::AbiDecode>::decode(
-                    data,
-                ) {
+            if let Ok(decoded) = <ValidateContractCallAndMintCall as ::ethers::core::abi::AbiDecode>::decode(data) {
                 return Ok(Self::ValidateContractCallAndMint(decoded));
             }
-            Err(::ethers_core::abi::Error::InvalidData.into())
+            Err(::ethers::core::abi::Error::InvalidData.into())
         }
     }
-    impl ::ethers_core::abi::AbiEncode for IAxelarGatewayCalls {
+    impl ::ethers::core::abi::AbiEncode for IAxelarGatewayCalls {
         fn encode(self) -> Vec<u8> {
             match self {
-                Self::AdminEpoch(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::AdminThreshold(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::Admins(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::AllTokensFrozen(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::CallContract(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::CallContractWithToken(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::Execute(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::FreezeAllTokens(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::FreezeToken(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::Implementation(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::IsCommandExecuted(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::IsContractCallAndMintApproved(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::IsContractCallApproved(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::SendToken(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::Setup(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::TokenAddresses(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::TokenFrozen(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::UnfreezeAllTokens(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::UnfreezeToken(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::Upgrade(element) => ::ethers_core::abi::AbiEncode::encode(element),
-                Self::ValidateContractCall(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
-                Self::ValidateContractCallAndMint(element) => {
-                    ::ethers_core::abi::AbiEncode::encode(element)
-                }
+                Self::AdminEpoch(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::AdminThreshold(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::Admins(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::AllTokensFrozen(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::CallContract(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::CallContractWithToken(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::Execute(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::FreezeAllTokens(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::FreezeToken(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::Implementation(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::IsCommandExecuted(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::IsContractCallAndMintApproved(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::IsContractCallApproved(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::SendToken(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::Setup(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::TokenAddresses(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::TokenFrozen(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::UnfreezeAllTokens(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::UnfreezeToken(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::Upgrade(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::ValidateContractCall(element) => ::ethers::core::abi::AbiEncode::encode(element),
+                Self::ValidateContractCallAndMint(element) => ::ethers::core::abi::AbiEncode::encode(element),
             }
         }
     }
@@ -2747,20 +2204,14 @@ pub mod i_axelar_gateway {
                 Self::Admins(element) => ::core::fmt::Display::fmt(element, f),
                 Self::AllTokensFrozen(element) => ::core::fmt::Display::fmt(element, f),
                 Self::CallContract(element) => ::core::fmt::Display::fmt(element, f),
-                Self::CallContractWithToken(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::CallContractWithToken(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Execute(element) => ::core::fmt::Display::fmt(element, f),
                 Self::FreezeAllTokens(element) => ::core::fmt::Display::fmt(element, f),
                 Self::FreezeToken(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Implementation(element) => ::core::fmt::Display::fmt(element, f),
                 Self::IsCommandExecuted(element) => ::core::fmt::Display::fmt(element, f),
-                Self::IsContractCallAndMintApproved(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::IsContractCallApproved(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::IsContractCallAndMintApproved(element) => ::core::fmt::Display::fmt(element, f),
+                Self::IsContractCallApproved(element) => ::core::fmt::Display::fmt(element, f),
                 Self::SendToken(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Setup(element) => ::core::fmt::Display::fmt(element, f),
                 Self::TokenAddresses(element) => ::core::fmt::Display::fmt(element, f),
@@ -2768,12 +2219,8 @@ pub mod i_axelar_gateway {
                 Self::UnfreezeAllTokens(element) => ::core::fmt::Display::fmt(element, f),
                 Self::UnfreezeToken(element) => ::core::fmt::Display::fmt(element, f),
                 Self::Upgrade(element) => ::core::fmt::Display::fmt(element, f),
-                Self::ValidateContractCall(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
-                Self::ValidateContractCallAndMint(element) => {
-                    ::core::fmt::Display::fmt(element, f)
-                }
+                Self::ValidateContractCall(element) => ::core::fmt::Display::fmt(element, f),
+                Self::ValidateContractCallAndMint(element) => ::core::fmt::Display::fmt(element, f),
             }
         }
     }
@@ -2832,8 +2279,7 @@ pub mod i_axelar_gateway {
             Self::IsCommandExecuted(value)
         }
     }
-    impl ::core::convert::From<IsContractCallAndMintApprovedCall>
-    for IAxelarGatewayCalls {
+    impl ::core::convert::From<IsContractCallAndMintApprovedCall> for IAxelarGatewayCalls {
         fn from(value: IsContractCallAndMintApprovedCall) -> Self {
             Self::IsContractCallAndMintApproved(value)
         }
@@ -2891,169 +2337,169 @@ pub mod i_axelar_gateway {
     ///Container type for all return fields from the `adminEpoch` function with signature `adminEpoch()` and selector `0x364940d8`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    pub struct AdminEpochReturn(pub ::ethers_core::types::U256);
+    pub struct AdminEpochReturn(pub ::ethers::core::types::U256);
     ///Container type for all return fields from the `adminThreshold` function with signature `adminThreshold(uint256)` and selector `0x88b30587`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    pub struct AdminThresholdReturn(pub ::ethers_core::types::U256);
+    pub struct AdminThresholdReturn(pub ::ethers::core::types::U256);
     ///Container type for all return fields from the `admins` function with signature `admins(uint256)` and selector `0x14bfd6d0`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    pub struct AdminsReturn(pub ::std::vec::Vec<::ethers_core::types::Address>);
+    pub struct AdminsReturn(pub ::std::vec::Vec<::ethers::core::types::Address>);
     ///Container type for all return fields from the `allTokensFrozen` function with signature `allTokensFrozen()` and selector `0xaa1e1f0a`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct AllTokensFrozenReturn(pub bool);
     ///Container type for all return fields from the `implementation` function with signature `implementation()` and selector `0x5c60da1b`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    pub struct ImplementationReturn(pub ::ethers_core::types::Address);
+    pub struct ImplementationReturn(pub ::ethers::core::types::Address);
     ///Container type for all return fields from the `isCommandExecuted` function with signature `isCommandExecuted(bytes32)` and selector `0xd26ff210`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct IsCommandExecutedReturn(pub bool);
     ///Container type for all return fields from the `isContractCallAndMintApproved` function with signature `isContractCallAndMintApproved(bytes32,string,string,address,bytes32,string,uint256)` and selector `0xbc00c216`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct IsContractCallAndMintApprovedReturn(pub bool);
     ///Container type for all return fields from the `isContractCallApproved` function with signature `isContractCallApproved(bytes32,string,string,address,bytes32)` and selector `0xf6a5f9f5`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct IsContractCallApprovedReturn(pub bool);
     ///Container type for all return fields from the `tokenAddresses` function with signature `tokenAddresses(string)` and selector `0x935b13f6`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
-    pub struct TokenAddressesReturn(pub ::ethers_core::types::Address);
+    pub struct TokenAddressesReturn(pub ::ethers::core::types::Address);
     ///Container type for all return fields from the `tokenFrozen` function with signature `tokenFrozen(string)` and selector `0x7b1b769e`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct TokenFrozenReturn(pub bool);
     ///Container type for all return fields from the `validateContractCall` function with signature `validateContractCall(bytes32,string,string,bytes32)` and selector `0x5f6970c3`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct ValidateContractCallReturn(pub bool);
     ///Container type for all return fields from the `validateContractCallAndMint` function with signature `validateContractCallAndMint(bytes32,string,string,bytes32,string,uint256)` and selector `0x1876eed9`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct ValidateContractCallAndMintReturn(pub bool);
 }

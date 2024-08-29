@@ -99,13 +99,16 @@ where
         if contract_config.asset_type() == &AssetType::Main {
             tx.set_value(options.request.amount.add(options.request.rollup_fee));
         }
-        let data = if contract_config.version() <= 6_u32 {
-            contract.deposit(options.request).calldata()
-        } else {
-            contract
-                .cert_deposit(options.request, U256::zero(), Bytes::new())
-                .calldata()
+
+        let data = match options.screening {
+            Some(screening) => {
+                let deadline = U256::from(screening.deadline);
+                let signature = Bytes::from(screening.signature);
+                contract.cert_deposit(options.request, deadline, signature).calldata()
+            }
+            None => contract.deposit(options.request).calldata(),
         };
+
         if let Some(data) = data {
             tx.set_data(data);
         }
