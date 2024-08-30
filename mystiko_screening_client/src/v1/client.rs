@@ -51,7 +51,6 @@ impl ScreeningClientV1 {
 impl ScreeningClient for ScreeningClientV1 {
     async fn address_screening(&self, request: &ScreeningRequest) -> Result<ScreeningResponse> {
         let url = format!("{}/v1/screening", self.url);
-        println!("url {:?}", url);
         let response = self
             .http_client
             .post(&url)
