@@ -40,5 +40,6 @@ mock! {
     impl mystiko_core::TransactionSigner for TransactionSigner {
         async fn address(&self) -> anyhow::Result<Address>;
         async fn send_transaction(&self, chain_id: u64, tx: TypedTransaction) -> anyhow::Result<TxHash>;
+        async fn sign_message(&self, account: String, message: String) -> anyhow::Result<String>;
     }
 }

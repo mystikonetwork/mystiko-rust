@@ -7,90 +7,62 @@ pub use i_verifier::*;
     clippy::upper_case_acronyms,
     clippy::type_complexity,
     dead_code,
-    non_camel_case_types,
+    non_camel_case_types
 )]
 pub mod i_verifier {
-    const _: () = {
-        ::core::include_bytes!(
-"../json/IVerifier.json",
-        );
-    };
+    pub use super::super::shared_types::*;
     #[allow(deprecated)]
-    fn __abi() -> ::ethers_core::abi::Abi {
-        ::ethers_core::abi::ethabi::Contract {
+    fn __abi() -> ::ethers::core::abi::Abi {
+        ::ethers::core::abi::ethabi::Contract {
             constructor: ::core::option::Option::None,
-            functions: ::core::convert::From::from([
-                (
-                    ::std::borrow::ToOwned::to_owned("verifyTx"),
-                    ::std::vec![
-                        ::ethers_core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("verifyTx"),
-                            inputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("proof"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Tuple(
-                                        ::std::vec![
-                                            ::ethers_core::abi::ethabi::ParamType::Tuple(
-                                                ::std::vec![
-                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                                ],
-                                            ),
-                                            ::ethers_core::abi::ethabi::ParamType::Tuple(
-                                                ::std::vec![
-                                                    ::ethers_core::abi::ethabi::ParamType::FixedArray(
-                                                        ::std::boxed::Box::new(
-                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                                        ),
-                                                        2usize,
-                                                    ),
-                                                    ::ethers_core::abi::ethabi::ParamType::FixedArray(
-                                                        ::std::boxed::Box::new(
-                                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                                        ),
-                                                        2usize,
-                                                    ),
-                                                ],
-                                            ),
-                                            ::ethers_core::abi::ethabi::ParamType::Tuple(
-                                                ::std::vec![
-                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                                    ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                                ],
-                                            ),
-                                        ],
+            functions: ::core::convert::From::from([(
+                ::std::borrow::ToOwned::to_owned("verifyTx"),
+                ::std::vec![::ethers::core::abi::ethabi::Function {
+                    name: ::std::borrow::ToOwned::to_owned("verifyTx"),
+                    inputs: ::std::vec![
+                        ::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("proof"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Tuple(::std::vec![
+                                ::ethers::core::abi::ethabi::ParamType::Tuple(::std::vec![
+                                    ::ethers::core::abi::ethabi::ParamType::Uint(256usize),
+                                    ::ethers::core::abi::ethabi::ParamType::Uint(256usize),
+                                ],),
+                                ::ethers::core::abi::ethabi::ParamType::Tuple(::std::vec![
+                                    ::ethers::core::abi::ethabi::ParamType::FixedArray(
+                                        ::std::boxed::Box::new(::ethers::core::abi::ethabi::ParamType::Uint(256usize),),
+                                        2usize,
                                     ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("struct IVerifier.Proof"),
+                                    ::ethers::core::abi::ethabi::ParamType::FixedArray(
+                                        ::std::boxed::Box::new(::ethers::core::abi::ethabi::ParamType::Uint(256usize),),
+                                        2usize,
                                     ),
-                                },
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("input"),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Array(
-                                        ::std::boxed::Box::new(
-                                            ::ethers_core::abi::ethabi::ParamType::Uint(256usize),
-                                        ),
-                                    ),
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("uint256[]"),
-                                    ),
-                                },
-                            ],
-                            outputs: ::std::vec![
-                                ::ethers_core::abi::ethabi::Param {
-                                    name: ::std::string::String::new(),
-                                    kind: ::ethers_core::abi::ethabi::ParamType::Bool,
-                                    internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bool"),
-                                    ),
-                                },
-                            ],
-                            constant: ::core::option::Option::None,
-                            state_mutability: ::ethers_core::abi::ethabi::StateMutability::NonPayable,
+                                ],),
+                                ::ethers::core::abi::ethabi::ParamType::Tuple(::std::vec![
+                                    ::ethers::core::abi::ethabi::ParamType::Uint(256usize),
+                                    ::ethers::core::abi::ethabi::ParamType::Uint(256usize),
+                                ],),
+                            ],),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned(
+                                "struct IVerifier.Proof"
+                            ),),
+                        },
+                        ::ethers::core::abi::ethabi::Param {
+                            name: ::std::borrow::ToOwned::to_owned("input"),
+                            kind: ::ethers::core::abi::ethabi::ParamType::Array(::std::boxed::Box::new(
+                                ::ethers::core::abi::ethabi::ParamType::Uint(256usize),
+                            ),),
+                            internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("uint256[]"),),
                         },
                     ],
-                ),
-            ]),
+                    outputs: ::std::vec![::ethers::core::abi::ethabi::Param {
+                        name: ::std::string::String::new(),
+                        kind: ::ethers::core::abi::ethabi::ParamType::Bool,
+                        internal_type: ::core::option::Option::Some(::std::borrow::ToOwned::to_owned("bool"),),
+                    },],
+                    constant: ::core::option::Option::None,
+                    state_mutability: ::ethers::core::abi::ethabi::StateMutability::NonPayable,
+                },],
+            )]),
             events: ::std::collections::BTreeMap::new(),
             errors: ::std::collections::BTreeMap::new(),
             receive: false,
@@ -98,17 +70,15 @@ pub mod i_verifier {
         }
     }
     ///The parsed JSON ABI of the contract.
-    pub static IVERIFIER_ABI: ::ethers_contract::Lazy<::ethers_core::abi::Abi> = ::ethers_contract::Lazy::new(
-        __abi,
-    );
-    pub struct IVerifier<M>(::ethers_contract::Contract<M>);
+    pub static IVERIFIER_ABI: ::ethers::contract::Lazy<::ethers::core::abi::Abi> = ::ethers::contract::Lazy::new(__abi);
+    pub struct IVerifier<M>(::ethers::contract::Contract<M>);
     impl<M> ::core::clone::Clone for IVerifier<M> {
         fn clone(&self) -> Self {
             Self(::core::clone::Clone::clone(&self.0))
         }
     }
     impl<M> ::core::ops::Deref for IVerifier<M> {
-        type Target = ::ethers_contract::Contract<M>;
+        type Target = ::ethers::contract::Contract<M>;
         fn deref(&self) -> &Self::Target {
             &self.0
         }
@@ -120,53 +90,49 @@ pub mod i_verifier {
     }
     impl<M> ::core::fmt::Debug for IVerifier<M> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            f.debug_tuple(::core::stringify!(IVerifier)).field(&self.address()).finish()
+            f.debug_tuple(::core::stringify!(IVerifier))
+                .field(&self.address())
+                .finish()
         }
     }
-    impl<M: ::ethers_providers::Middleware> IVerifier<M> {
+    impl<M: ::ethers::providers::Middleware> IVerifier<M> {
         /// Creates a new contract instance with the specified `ethers` client at
         /// `address`. The contract derefs to a `ethers::Contract` object.
-        pub fn new<T: Into<::ethers_core::types::Address>>(
-            address: T,
-            client: ::std::sync::Arc<M>,
-        ) -> Self {
-            Self(
-                ::ethers_contract::Contract::new(
-                    address.into(),
-                    IVERIFIER_ABI.clone(),
-                    client,
-                ),
-            )
+        pub fn new<T: Into<::ethers::core::types::Address>>(address: T, client: ::std::sync::Arc<M>) -> Self {
+            Self(::ethers::contract::Contract::new(
+                address.into(),
+                IVERIFIER_ABI.clone(),
+                client,
+            ))
         }
         ///Calls the contract's `verifyTx` (0xc9417647) function
         pub fn verify_tx(
             &self,
             proof: Proof,
-            input: ::std::vec::Vec<::ethers_core::types::U256>,
-        ) -> ::ethers_contract::builders::ContractCall<M, bool> {
+            input: ::std::vec::Vec<::ethers::core::types::U256>,
+        ) -> ::ethers::contract::builders::ContractCall<M, bool> {
             self.0
                 .method_hash([201, 65, 118, 71], (proof, input))
                 .expect("method not found (this should never happen)")
         }
     }
-    impl<M: ::ethers_providers::Middleware> From<::ethers_contract::Contract<M>>
-    for IVerifier<M> {
-        fn from(contract: ::ethers_contract::Contract<M>) -> Self {
+    impl<M: ::ethers::providers::Middleware> From<::ethers::contract::Contract<M>> for IVerifier<M> {
+        fn from(contract: ::ethers::contract::Contract<M>) -> Self {
             Self::new(contract.address(), contract.client())
         }
     }
     ///Container type for all input parameters for the `verifyTx` function with signature `verifyTx(((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256[])` and selector `0xc9417647`
     #[derive(
         Clone,
-        ::ethers_contract::EthCall,
-        ::ethers_contract::EthDisplay,
+        ::ethers::contract::EthCall,
+        ::ethers::contract::EthDisplay,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     #[ethcall(
         name = "verifyTx",
@@ -174,72 +140,20 @@ pub mod i_verifier {
     )]
     pub struct VerifyTxCall {
         pub proof: Proof,
-        pub input: ::std::vec::Vec<::ethers_core::types::U256>,
+        pub input: ::std::vec::Vec<::ethers::core::types::U256>,
     }
     ///Container type for all return fields from the `verifyTx` function with signature `verifyTx(((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256)),uint256[])` and selector `0xc9417647`
     #[derive(
         Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
         serde::Serialize,
         serde::Deserialize,
         Default,
         Debug,
         PartialEq,
         Eq,
-        Hash
+        Hash,
     )]
     pub struct VerifyTxReturn(pub bool);
-    ///`G1Point(uint256,uint256)`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct G1Point {
-        pub x: ::ethers_core::types::U256,
-        pub y: ::ethers_core::types::U256,
-    }
-    ///`G2Point(uint256[2],uint256[2])`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct G2Point {
-        pub x: [::ethers_core::types::U256; 2],
-        pub y: [::ethers_core::types::U256; 2],
-    }
-    ///`Proof((uint256,uint256),(uint256[2],uint256[2]),(uint256,uint256))`
-    #[derive(
-        Clone,
-        ::ethers_contract::EthAbiType,
-        ::ethers_contract::EthAbiCodec,
-        serde::Serialize,
-        serde::Deserialize,
-        Default,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash
-    )]
-    pub struct Proof {
-        pub a: G1Point,
-        pub b: G2Point,
-        pub c: G1Point,
-    }
 }

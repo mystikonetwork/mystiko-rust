@@ -6,8 +6,8 @@ use crate::TransactionSigner;
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, TxHash, U256};
-use mystiko_abi::mystiko_v2_bridge::DepositRequest as CrossChainDepositRequest;
-use mystiko_abi::mystiko_v2_loop::DepositRequest;
+use mystiko_abi::mystiko_v2_bridge::BridgeDepositRequest as CrossChainDepositRequest;
+use mystiko_abi::mystiko_v2_loop::LoopDepositRequest;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
@@ -32,13 +32,24 @@ pub struct DepositQuote {
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
+pub struct ScreeningOptions {
+    #[builder(default)]
+    pub deadline: u64,
+    #[builder(default)]
+    pub signature: Vec<u8>,
+}
+
+#[derive(Debug, Clone, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct DepositOptions<
     T: Into<TypedTransaction> + Clone + Default,
     S: TransactionSigner = Box<dyn TransactionSigner>,
 > {
     pub chain_id: u64,
     pub contract_address: Address,
-    pub request: DepositRequest,
+    pub request: LoopDepositRequest,
+    #[builder(default)]
+    pub screening: Option<ScreeningOptions>,
     pub signer: Arc<S>,
     #[builder(default)]
     pub timeout_ms: Option<u64>,
@@ -55,6 +66,8 @@ pub struct CrossChainDepositOptions<
     pub chain_id: u64,
     pub contract_address: Address,
     pub request: CrossChainDepositRequest,
+    #[builder(default)]
+    pub screening: Option<ScreeningOptions>,
     pub signer: Arc<S>,
     #[builder(default)]
     pub timeout_ms: Option<u64>,

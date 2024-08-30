@@ -1,4 +1,4 @@
-use crate::{format_deposit_log, format_tx_hash, DepositContext};
+use crate::{format_deposit_log, format_tx_hash, DepositContext, ScreeningOptions};
 use crate::{
     AccountHandler, Commitment, CommitmentPoolContractHandler, Deposit, DepositContractHandler, Deposits,
     DepositsError, IsHistoricCommitmentOptions, PublicAssetHandler, TransactionHandler, TransactionSigner, WaitOptions,
@@ -6,19 +6,20 @@ use crate::{
 use ethers_core::abi::AbiEncode;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Address, Bytes, TxHash};
-use mystiko_abi::mystiko_v2_bridge::DepositRequest as CrossChainDepositRequest;
-use mystiko_abi::mystiko_v2_loop::DepositRequest;
+use mystiko_abi::mystiko_v2_bridge::BridgeDepositRequest as CrossChainDepositRequest;
+use mystiko_abi::mystiko_v2_loop::LoopDepositRequest;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::handler::v1::SendDepositOptions;
 use mystiko_protos::core::v1::{DepositStatus, Transaction};
 use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_screening_client::ScreeningClient;
 use mystiko_storage::{Document, StatementFormatter, Storage};
 use mystiko_utils::address::ethers_address_from_string;
 use mystiko_utils::convert::{biguint_to_u128, biguint_to_u256, number_to_u256_decimal};
 use std::str::FromStr;
 use std::sync::Arc;
 
-impl<F, S, A, D, C, T, P> Deposits<F, S, A, D, C, T, P>
+impl<F, S, A, D, C, T, P, N> Deposits<F, S, A, D, C, T, P, N>
 where
     F: StatementFormatter,
     S: Storage,
@@ -26,6 +27,7 @@ where
     D: DepositContractHandler,
     C: CommitmentPoolContractHandler,
     T: TransactionHandler<Transaction>,
+    N: ScreeningClient + 'static,
     DepositsError: From<A::Error> + From<D::Error> + From<C::Error> + From<T::Error>,
 {
     pub(crate) async fn execute_send<Signer>(
@@ -43,7 +45,10 @@ where
         let deposit = self
             .execute_assets_approve(&context, options, deposit, signer.clone(), owner)
             .await?;
-        let deposit = self.send_deposit(&context, options, deposit, signer.clone()).await?;
+        let screening_options = self.address_screening(&context, options, signer.clone(), owner).await?;
+        let deposit = self
+            .send_deposit(&context, options, screening_options, deposit, signer.clone())
+            .await?;
         Ok(deposit)
     }
 
@@ -51,6 +56,7 @@ where
         &self,
         context: &DepositContext,
         options: &SendDepositOptions,
+        screening_options: Option<ScreeningOptions>,
         mut deposit: Document<Deposit>,
         signer: Arc<Signer>,
     ) -> Result<Document<Deposit>, DepositsError>
@@ -58,7 +64,7 @@ where
         Signer: TransactionSigner + 'static,
     {
         let send_tx_hash = self
-            .send_deposit_transaction(context, &mut deposit, options, signer.clone())
+            .send_deposit_transaction(context, &mut deposit, options, screening_options, signer.clone())
             .await?;
         let send_tx_url = format_tx_hash(self.config.clone(), deposit.data.chain_id, &send_tx_hash).unwrap_or_default();
         deposit = self.db.deposits.update(&deposit).await?;
@@ -101,6 +107,7 @@ where
         context: &DepositContext,
         deposit: &mut Document<Deposit>,
         options: &SendDepositOptions,
+        screening_options: Option<ScreeningOptions>,
         signer: Arc<Signer>,
     ) -> Result<TxHash, DepositsError>
     where
@@ -121,7 +128,7 @@ where
         let random_s = biguint_to_u128(&deposit.data.random_s);
         let encrypted_notes = Bytes::from_str(&deposit.data.encrypted_note)?;
         if context.contract_config.bridge_type() == &mystiko_types::BridgeType::Loop {
-            let request = DepositRequest {
+            let request = LoopDepositRequest {
                 amount,
                 commitment,
                 hash_k,
@@ -133,6 +140,7 @@ where
                 .chain_id(deposit.data.chain_id)
                 .contract_address(contract_address)
                 .request(request)
+                .screening(screening_options)
                 .tx(tx)
                 .signer(signer)
                 .timeout_ms(options.tx_send_timeout_ms)
@@ -164,6 +172,7 @@ where
                 .chain_id(deposit.data.chain_id)
                 .contract_address(contract_address)
                 .request(request)
+                .screening(screening_options)
                 .tx(tx)
                 .signer(signer)
                 .timeout_ms(options.tx_send_timeout_ms)

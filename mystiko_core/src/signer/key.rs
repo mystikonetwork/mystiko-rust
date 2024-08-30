@@ -68,4 +68,9 @@ where
         let resp = client.send_transaction(tx, None).await?;
         Ok(resp.tx_hash())
     }
+
+    async fn sign_message(&self, _account: String, message: String) -> Result<String> {
+        let sign = self.wallet.sign_message(message).await?;
+        Ok(sign.to_string())
+    }
 }

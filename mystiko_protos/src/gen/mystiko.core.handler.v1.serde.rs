@@ -2566,6 +2566,9 @@ impl serde::Serialize for SendDepositOptions {
         if self.deposit_tx.is_some() {
             len += 1;
         }
+        if self.screening_message.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.handler.v1.SendDepositOptions", len)?;
         if !self.deposit_id.is_empty() {
             struct_ser.serialize_field("depositId", &self.deposit_id)?;
@@ -2600,6 +2603,9 @@ impl serde::Serialize for SendDepositOptions {
         if let Some(v) = self.deposit_tx.as_ref() {
             struct_ser.serialize_field("depositTx", v)?;
         }
+        if let Some(v) = self.screening_message.as_ref() {
+            struct_ser.serialize_field("screeningMessage", v)?;
+        }
         struct_ser.end()
     }
 }
@@ -2632,6 +2638,8 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
             "assetApproveTx",
             "deposit_tx",
             "depositTx",
+            "screening_message",
+            "screeningMessage",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -2647,6 +2655,7 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
             TxWaitIntervalMs,
             AssetApproveTx,
             DepositTx,
+            ScreeningMessage,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -2679,6 +2688,7 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                             "txWaitIntervalMs" | "tx_wait_interval_ms" => Ok(GeneratedField::TxWaitIntervalMs),
                             "assetApproveTx" | "asset_approve_tx" => Ok(GeneratedField::AssetApproveTx),
                             "depositTx" | "deposit_tx" => Ok(GeneratedField::DepositTx),
+                            "screeningMessage" | "screening_message" => Ok(GeneratedField::ScreeningMessage),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -2709,6 +2719,7 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                 let mut tx_wait_interval_ms__ = None;
                 let mut asset_approve_tx__ = None;
                 let mut deposit_tx__ = None;
+                let mut screening_message__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::DepositId => {
@@ -2789,6 +2800,12 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                             }
                             deposit_tx__ = map.next_value()?;
                         }
+                        GeneratedField::ScreeningMessage => {
+                            if screening_message__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("screeningMessage"));
+                            }
+                            screening_message__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(SendDepositOptions {
@@ -2803,6 +2820,7 @@ impl<'de> serde::Deserialize<'de> for SendDepositOptions {
                     tx_wait_interval_ms: tx_wait_interval_ms__,
                     asset_approve_tx: asset_approve_tx__,
                     deposit_tx: deposit_tx__,
+                    screening_message: screening_message__,
                 })
             }
         }

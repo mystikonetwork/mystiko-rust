@@ -957,6 +957,9 @@ impl serde::Serialize for MystikoOptions {
         if self.static_cache_path.is_some() {
             len += 1;
         }
+        if self.screening_client_options.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.MystikoOptions", len)?;
         if let Some(v) = self.config_options.as_ref() {
             struct_ser.serialize_field("configOptions", v)?;
@@ -972,6 +975,9 @@ impl serde::Serialize for MystikoOptions {
         }
         if let Some(v) = self.static_cache_path.as_ref() {
             struct_ser.serialize_field("staticCachePath", v)?;
+        }
+        if let Some(v) = self.screening_client_options.as_ref() {
+            struct_ser.serialize_field("screeningClientOptions", v)?;
         }
         struct_ser.end()
     }
@@ -993,6 +999,8 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
             "dbPath",
             "static_cache_path",
             "staticCachePath",
+            "screening_client_options",
+            "screeningClientOptions",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -1002,6 +1010,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
             LoaderConfig,
             DbPath,
             StaticCachePath,
+            ScreeningClientOptions,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1028,6 +1037,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                             "loaderConfig" | "loader_config" => Ok(GeneratedField::LoaderConfig),
                             "dbPath" | "db_path" => Ok(GeneratedField::DbPath),
                             "staticCachePath" | "static_cache_path" => Ok(GeneratedField::StaticCachePath),
+                            "screeningClientOptions" | "screening_client_options" => Ok(GeneratedField::ScreeningClientOptions),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1052,6 +1062,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                 let mut loader_config__ = None;
                 let mut db_path__ = None;
                 let mut static_cache_path__ = None;
+                let mut screening_client_options__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::ConfigOptions => {
@@ -1084,6 +1095,12 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                             }
                             static_cache_path__ = map.next_value()?;
                         }
+                        GeneratedField::ScreeningClientOptions => {
+                            if screening_client_options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("screeningClientOptions"));
+                            }
+                            screening_client_options__ = map.next_value()?;
+                        }
                     }
                 }
                 Ok(MystikoOptions {
@@ -1092,6 +1109,7 @@ impl<'de> serde::Deserialize<'de> for MystikoOptions {
                     loader_config: loader_config__,
                     db_path: db_path__,
                     static_cache_path: static_cache_path__,
+                    screening_client_options: screening_client_options__,
                 })
             }
         }
@@ -1318,6 +1336,205 @@ impl<'de> serde::Deserialize<'de> for PackerCompression {
             }
         }
         deserializer.deserialize_any(GeneratedVisitor)
+    }
+}
+impl serde::Serialize for PersonalSignRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.message.is_empty() {
+            len += 1;
+        }
+        if !self.address.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.PersonalSignRequest", len)?;
+        if !self.message.is_empty() {
+            struct_ser.serialize_field("message", &self.message)?;
+        }
+        if !self.address.is_empty() {
+            struct_ser.serialize_field("address", &self.address)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for PersonalSignRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "message",
+            "address",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Message,
+            Address,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "message" => Ok(GeneratedField::Message),
+                            "address" => Ok(GeneratedField::Address),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = PersonalSignRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.v1.PersonalSignRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<PersonalSignRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut message__ = None;
+                let mut address__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Message => {
+                            if message__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("message"));
+                            }
+                            message__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::Address => {
+                            if address__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("address"));
+                            }
+                            address__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(PersonalSignRequest {
+                    message: message__.unwrap_or_default(),
+                    address: address__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.v1.PersonalSignRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for PersonalSignResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.signature.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.v1.PersonalSignResponse", len)?;
+        if !self.signature.is_empty() {
+            struct_ser.serialize_field("signature", &self.signature)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for PersonalSignResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "signature",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Signature,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "signature" => Ok(GeneratedField::Signature),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = PersonalSignResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.v1.PersonalSignResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<PersonalSignResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut signature__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Signature => {
+                            if signature__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("signature"));
+                            }
+                            signature__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(PersonalSignResponse {
+                    signature: signature__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.v1.PersonalSignResponse", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for SendTransactionRequest {

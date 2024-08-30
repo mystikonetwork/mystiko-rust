@@ -1,10 +1,10 @@
+use crate::{ScreeningClient, ScreeningRequest, ScreeningResponse};
 use anyhow::Result;
 use async_trait::async_trait;
+use mystiko_protos::screening::v1::ScreeningClientOptions;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use typed_builder::TypedBuilder;
-
-use crate::{ScreeningClient, ScreeningRequest, ScreeningResponse};
 
 pub const DEFAULT_SCREENING_V1_URL: &str = "https://screening.mystiko.network";
 
@@ -13,14 +13,6 @@ pub const DEFAULT_SCREENING_V1_URL: &str = "https://screening.mystiko.network";
 pub struct ScreeningClientV1 {
     url: String,
     http_client: reqwest::Client,
-}
-
-#[derive(TypedBuilder)]
-#[builder(field_defaults(setter(into)))]
-pub struct ScreeningClientV1Options {
-    #[builder(default, setter(strip_option))]
-    url: Option<String>,
-    http_client: Option<reqwest::Client>,
 }
 
 #[derive(Debug, Error)]
@@ -44,11 +36,13 @@ pub struct ApiResponse<T> {
 impl ScreeningClientV1 {
     pub fn new<O>(options: O) -> Self
     where
-        O: Into<ScreeningClientV1Options>,
+        O: Into<ScreeningClientOptions>,
     {
-        let options: ScreeningClientV1Options = options.into();
-        let url = options.url.unwrap_or(DEFAULT_SCREENING_V1_URL.to_string());
-        let http_client = options.http_client.unwrap_or_default();
+        let options: ScreeningClientOptions = options.into();
+        let url = options
+            .screening_config_api_url
+            .unwrap_or(DEFAULT_SCREENING_V1_URL.to_string());
+        let http_client = reqwest::Client::new();
         Self { url, http_client }
     }
 }

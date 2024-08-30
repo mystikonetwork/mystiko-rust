@@ -5,6 +5,7 @@ use mystiko_ethers::{ChainConfigProvidersOptions, ProviderFactory, ProviderPool,
 use mystiko_protos::common::v1::{ConfigOptions, ConfigOptionsOption};
 use mystiko_protos::loader::v1::LoaderConfig;
 use mystiko_protos::relayer::v1::RelayerClientOptions;
+use mystiko_protos::screening::v1::ScreeningClientOptions;
 use mystiko_static_cache::{SkipStaticCache, StaticCache};
 use mystiko_storage::{StatementFormatter, Storage};
 use std::sync::Arc;
@@ -15,6 +16,7 @@ use typed_builder::TypedBuilder;
 pub struct MystikoOptions {
     pub config_options: Option<ConfigOptions>,
     pub relayer_client_options: Option<RelayerClientOptions>,
+    pub screening_client_options: Option<ScreeningClientOptions>,
     pub loader_config: Option<LoaderConfig>,
     pub provider_factory: Option<Box<dyn ProviderFactory>>,
     pub signer_provider_factory: Option<Box<dyn ProviderFactory>>,
@@ -32,6 +34,7 @@ pub struct MystikoContext<F: StatementFormatter, S: Storage> {
     pub signer_providers: Arc<Box<dyn Providers>>,
     pub config_options: ConfigOptions,
     pub relayer_client_options: RelayerClientOptions,
+    pub screening_client_options: ScreeningClientOptions,
     pub loader_config: Option<LoaderConfig>,
 }
 
@@ -61,6 +64,7 @@ where
         let mut relayer_client_options = mystiko_options.relayer_client_options.unwrap_or_default();
         relayer_client_options.is_testnet = config_options.is_testnet;
         relayer_client_options.is_staging = config_options.is_staging;
+        let screening_client_options = mystiko_options.screening_client_options.unwrap_or_default();
         let config = create_mystiko_config(config_options.clone()).await?;
         let providers: ProviderPool<ChainConfigProvidersOptions> =
             if let Some(provider_factory) = mystiko_options.provider_factory {
@@ -86,6 +90,7 @@ where
             signer_providers,
             config_options,
             relayer_client_options,
+            screening_client_options,
             loader_config: mystiko_options.loader_config,
         })
     }

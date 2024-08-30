@@ -5,7 +5,7 @@ use mystiko_storage::{StatementFormatter, Storage};
 use mystiko_utils::convert::number_to_biguint_decimal;
 use std::collections::HashMap;
 
-impl<F, S, A, D, C, T, P> Deposits<F, S, A, D, C, T, P>
+impl<F, S, A, D, C, T, P, N> Deposits<F, S, A, D, C, T, P, N>
 where
     F: StatementFormatter,
     S: Storage,
