@@ -9,6 +9,7 @@ impl From<&mystiko_types::BridgeType> for BridgeType {
             mystiko_types::BridgeType::Celer => BridgeType::Celer,
             mystiko_types::BridgeType::LayerZero => BridgeType::LayerZero,
             mystiko_types::BridgeType::Axelar => BridgeType::Axelar,
+            mystiko_types::BridgeType::Wormhole => BridgeType::Wormhole,
         }
     }
 }
@@ -23,6 +24,7 @@ impl From<BridgeType> for mystiko_types::BridgeType {
             BridgeType::Celer => mystiko_types::BridgeType::Celer,
             BridgeType::LayerZero => mystiko_types::BridgeType::LayerZero,
             BridgeType::Axelar => mystiko_types::BridgeType::Axelar,
+            BridgeType::Wormhole => mystiko_types::BridgeType::Wormhole,
         }
     }
 }

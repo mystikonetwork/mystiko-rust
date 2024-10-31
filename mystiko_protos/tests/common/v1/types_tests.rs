@@ -11,12 +11,14 @@ fn test_bridge_type_to_proto() {
     let type4: BridgeType = Into::into(&mystiko_types::BridgeType::Celer);
     let type5: BridgeType = Into::into(&mystiko_types::BridgeType::LayerZero);
     let type6: BridgeType = Into::into(&mystiko_types::BridgeType::Axelar);
+    let type7: BridgeType = Into::into(&mystiko_types::BridgeType::Wormhole);
     assert_eq!(type1, BridgeType::Loop);
     assert_eq!(type2, BridgeType::Poly);
     assert_eq!(type3, BridgeType::Tbridge);
     assert_eq!(type4, BridgeType::Celer);
     assert_eq!(type5, BridgeType::LayerZero);
     assert_eq!(type6, BridgeType::Axelar);
+    assert_eq!(type7, BridgeType::Wormhole);
 }
 
 #[test]
@@ -89,12 +91,14 @@ fn test_proto_to_bridge_type() {
     let type4: mystiko_types::BridgeType = Into::into(BridgeType::Celer);
     let type5: mystiko_types::BridgeType = Into::into(BridgeType::LayerZero);
     let type6: mystiko_types::BridgeType = Into::into(BridgeType::Axelar);
+    let type7: mystiko_types::BridgeType = Into::into(BridgeType::Wormhole);
     assert_eq!(type1, mystiko_types::BridgeType::Loop);
     assert_eq!(type2, mystiko_types::BridgeType::Poly);
     assert_eq!(type3, mystiko_types::BridgeType::Tbridge);
     assert_eq!(type4, mystiko_types::BridgeType::Celer);
     assert_eq!(type5, mystiko_types::BridgeType::LayerZero);
     assert_eq!(type6, mystiko_types::BridgeType::Axelar);
+    assert_eq!(type7, mystiko_types::BridgeType::Wormhole);
 }
 
 #[test]

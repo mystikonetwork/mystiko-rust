@@ -183,7 +183,8 @@ async fn test_mystiko_config_to_proto() {
             "Celer Bridge",
             "LayerZero Bridge",
             "Mystiko Testnet Bridge",
-            "Poly Bridge"
+            "Poly Bridge",
+            "Wormhole Bridge"
         ]
     );
     let mut circuit_names: Vec<String> = mystiko_config.circuit_configs.into_iter().map(|c| c.name).collect();

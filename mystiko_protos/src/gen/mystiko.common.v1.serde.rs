@@ -89,6 +89,7 @@ impl serde::Serialize for BridgeType {
             Self::Celer => "BRIDGE_TYPE_CELER",
             Self::LayerZero => "BRIDGE_TYPE_LAYER_ZERO",
             Self::Axelar => "BRIDGE_TYPE_AXELAR",
+            Self::Wormhole => "BRIDGE_TYPE_WORMHOLE",
         };
         serializer.serialize_str(variant)
     }
@@ -107,6 +108,7 @@ impl<'de> serde::Deserialize<'de> for BridgeType {
             "BRIDGE_TYPE_CELER",
             "BRIDGE_TYPE_LAYER_ZERO",
             "BRIDGE_TYPE_AXELAR",
+            "BRIDGE_TYPE_WORMHOLE",
         ];
 
         struct GeneratedVisitor;
@@ -156,6 +158,7 @@ impl<'de> serde::Deserialize<'de> for BridgeType {
                     "BRIDGE_TYPE_CELER" => Ok(BridgeType::Celer),
                     "BRIDGE_TYPE_LAYER_ZERO" => Ok(BridgeType::LayerZero),
                     "BRIDGE_TYPE_AXELAR" => Ok(BridgeType::Axelar),
+                    "BRIDGE_TYPE_WORMHOLE" => Ok(BridgeType::Wormhole),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }
