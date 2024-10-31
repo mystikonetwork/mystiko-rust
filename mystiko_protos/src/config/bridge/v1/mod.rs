@@ -65,6 +65,18 @@ impl TryFrom<&mystiko_config::TBridgeConfig> for BridgeConfig {
     }
 }
 
+impl TryFrom<&mystiko_config::WormholeBridgeConfig> for BridgeConfig {
+    type Error = anyhow::Error;
+
+    fn try_from(config: &mystiko_config::WormholeBridgeConfig) -> anyhow::Result<Self> {
+        let bridge_type: BridgeType = config.bridge_type().into();
+        Ok(BridgeConfig::builder()
+            .name(config.name().to_string())
+            .bridge_type(bridge_type as i32)
+            .build())
+    }
+}
+
 impl TryFrom<&mystiko_config::BridgeConfig> for BridgeConfig {
     type Error = anyhow::Error;
 
@@ -75,6 +87,7 @@ impl TryFrom<&mystiko_config::BridgeConfig> for BridgeConfig {
             mystiko_config::BridgeConfig::LayerZero(config) => config.try_into(),
             mystiko_config::BridgeConfig::Poly(config) => config.try_into(),
             mystiko_config::BridgeConfig::TBridge(config) => config.try_into(),
+            mystiko_config::BridgeConfig::Wormhole(config) => config.try_into(),
         }
     }
 }

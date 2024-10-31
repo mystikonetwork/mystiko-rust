@@ -409,6 +409,10 @@
     {
       "name": "Axelar Bridge",
       "type": "axelar"
+    },
+    {
+      "name": "Wormhole Bridge",
+      "type": "wormhole"
     }
   ],
   "circuits": [

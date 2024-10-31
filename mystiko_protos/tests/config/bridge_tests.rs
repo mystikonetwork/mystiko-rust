@@ -74,3 +74,17 @@ async fn test_tbridge_config_to_proto() {
     assert_eq!(&proto.name, "Mystiko Testnet Bridge");
     assert_eq!(proto.bridge_type(), BridgeType::Tbridge);
 }
+
+#[tokio::test]
+async fn test_wormhole_bridge_config_to_proto() {
+    let mystiko_config = mystiko_config::MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+        .await
+        .unwrap();
+    let proto: BridgeConfig = mystiko_config
+        .find_bridge(&mystiko_types::BridgeType::Wormhole)
+        .unwrap()
+        .try_into()
+        .unwrap();
+    assert_eq!(&proto.name, "Wormhole Bridge");
+    assert_eq!(proto.bridge_type(), BridgeType::Wormhole);
+}
