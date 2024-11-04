@@ -402,6 +402,10 @@ async fn test_main_token_cross_chain_deposit() {
     let encrypted_notes_clone = encrypted_notes.clone();
     let expected_tx_hash =
         TxHash::decode_hex("0x8cbbb491f260cb9a810f81ebf8b51ae1adf322466232181b2eb2bb105b45f0b9").unwrap();
+    let screening_options = ScreeningOptions::builder().deadline(1725256186_u64).signature(
+        decode_hex("0x0f95f7effb9f3c8c20a6c78b2278a7ed2cee87ee5cf29031729124711623dd3b14e7e6fb419a61d9c262110c4812d2a37f2c137d2559192eee3f477cc08d92f51c").unwrap()
+    ).build();
+    let certificate_signature = Bytes::from(screening_options.signature.clone());
     let mut signer = MockTransactionSigner::new();
     signer
         .expect_send_transaction()
@@ -418,6 +422,8 @@ async fn test_main_token_cross_chain_deposit() {
                     && request.bridge_fee == bridge_fee
                     && request.executor_fee == executor_fee
                     && *chain_id == 97_u64
+                    && deposit.certificate_deadline == U256::from(screening_options.deadline)
+                    && deposit.certificate_signature == certificate_signature
                     && *tx.to().unwrap().as_address().unwrap() == contract_address
                     && *tx.value().unwrap() == amount + rollup_fee + bridge_fee + executor_fee
             } else {
@@ -439,6 +445,7 @@ async fn test_main_token_cross_chain_deposit() {
         .chain_id(97_u64)
         .contract_address(contract_address)
         .request(request)
+        .screening(screening_options)
         .signer(signer)
         .build();
     let config = create_config().await;
