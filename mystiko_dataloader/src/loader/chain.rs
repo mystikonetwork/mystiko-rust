@@ -394,13 +394,13 @@ where
     }
 
     async fn build_contract_start_block(&self, contract: &ContractConfig) -> DataLoaderResult<u64> {
+        let contract_start_block = contract.start_block();
         let start_block = self
             .handler
             .query_contract_loaded_block(self.chain_id, contract.address())
             .await?
-            .unwrap_or(contract.start_block())
-            + 1;
-        Ok(start_block)
+            .unwrap_or(contract_start_block);
+        Ok(max(start_block, contract_start_block) + 1)
     }
 
     async fn build_fetch_options(
