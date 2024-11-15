@@ -30,82 +30,82 @@ pub enum RuleCheckError {
 
 #[derive(Error, Debug)]
 pub enum IntegrityCheckerError {
-    #[error("chain {0} config not found error")]
+    #[error("integrity checker chain {0} config not found error")]
     ChainConfigNotFoundError(u64),
-    #[error("chain {0} contract {1} config not found error")]
+    #[error("integrity checker chain {0} contract {1} config not found error")]
     ContractConfigNotFoundError(u64, String),
-    #[error("commitment status error")]
+    #[error("integrity checker commitment status error")]
     CommitmentStatusError,
-    #[error("commitment src chain block number error")]
+    #[error("integrity checker commitment src chain block number error")]
     CommitmentSrcChainBlockNumberError,
-    #[error("commitment src chain transaction hash error")]
+    #[error("integrity checker commitment src chain transaction hash error")]
     CommitmentSrcChainTransactionHashError,
-    #[error("commitment leaf index error")]
+    #[error("integrity checker commitment leaf index error")]
     CommitmentLeafIndexError,
-    #[error("commitment nullifier error")]
+    #[error("integrity checker commitment nullifier error")]
     CommitmentNullifierError,
-    #[error("commitment rollup fee error")]
+    #[error("integrity checker commitment rollup fee error")]
     CommitmentRollupFeeError,
-    #[error("commitment encrypted note error")]
+    #[error("integrity checker commitment encrypted note error")]
     CommitmentEncryptedNoteError,
-    #[error("commitment queued transaction hash error")]
+    #[error("integrity checker commitment queued transaction hash error")]
     CommitmentQueuedTransactionHashError,
-    #[error("commitment included block number error")]
+    #[error("integrity checker commitment included block number error")]
     CommitmentIncludedBlockNumberError,
-    #[error("commitment included transaction hash error")]
+    #[error("integrity checker commitment included transaction hash error")]
     CommitmentIncludedTransactionHashError,
-    #[error("commitment bigger than field size error")]
+    #[error("integrity checker commitment bigger than field size error")]
     CommitmentBiggerThanFieldSizeError,
-    #[error("nullifier bigger than field size error")]
+    #[error("integrity checker nullifier bigger than field size error")]
     NullifierBiggerThanFieldSizeError,
-    #[error("commitment block number {0} less than contract start block {1} error")]
+    #[error("integrity checker commitment block number {0} less than contract start block {1} error")]
     CommitmentBlockNumberTooSmallError(u64, u64),
-    #[error("commitment src chain block number {0} not equal with block number {1} error")]
+    #[error("integrity checker commitment src chain block number {0} not equal with block number {1} error")]
     CommitmentSrcChainNumberMismatchError(u64, u64),
-    #[error("commitment src chain block number {0} less than contract start block {1} error")]
+    #[error("integrity checker commitment src chain block number {0} less than contract start block {1} error")]
     CommitmentSrcChainNumberTooSmallError(u64, u64),
-    #[error("commitment included block number {0} less than {1} {2} error")]
+    #[error("integrity checker commitment included block number {0} less than {1} {2} error")]
     CommitmentIncludedNumberTooSmallError(u64, String, u64),
-    #[error("nullifier block number {0} less than contract start block {1} error")]
+    #[error("integrity checker nullifier block number {0} less than contract start block {1} error")]
     NullifierBlockNumberTooSmallError(u64, u64),
 }
 
 #[derive(Error, Debug)]
 pub enum SequenceCheckerError {
-    #[error("target block error expected {0} actual {1}")]
+    #[error("sequence checker target block error expected {0} actual {1}")]
     TargetBlockError(u64, u64),
-    #[error("commitment data empty error")]
+    #[error("sequence checker commitment data empty error")]
     CommitmentDataEmptyError,
-    #[error("leaf index not sequenced error previous {0} next {1}")]
+    #[error("sequence checker leaf index not sequenced error previous {0} next {1}")]
     LeafIndexNotSequencedError(u64, u64),
-    #[error("commitment status error")]
+    #[error("sequence checker commitment status error")]
     CommitmentStatusError,
-    #[error("commitment status not sequenced error")]
+    #[error("sequence checker commitment status not sequenced error")]
     CommitmentStatusNotSequencedError,
-    #[error("commitment merged not sequenced error")]
+    #[error("sequence checker commitment merged not sequenced error")]
     CommitmentMergedNotSequencedError,
-    #[error("commitments not sequenced with handler status {0} handler {1} fetcher {2} ")]
+    #[error("sequence checker commitments not sequenced with handler status {0} handler {1} fetcher {2} ")]
     CommitmentNotSequenceWithHandlerError(i32, u64, u64),
 }
 
 #[derive(Error, Debug)]
 pub enum CounterCheckerError {
-    #[error("target block error expected {0} actual {1}")]
+    #[error("counter checker target block error expected {0} actual {1}")]
     TargetBlockError(u64, u64),
-    #[error("fetch commitment after contract disabled error")]
+    #[error("counter checker fetch commitment after contract disabled error")]
     CommitmentAfterContractDisabledError,
-    #[error("commitment included count mismatch error fetcher {0} provider {1}")]
+    #[error("counter checker commitment included count mismatch error fetcher {0} provider {1}")]
     CommitmentIncludedCountMismatchError(u64, u64),
-    #[error("commitment total count mismatch error fetcher {0} provider {1}")]
+    #[error("counter checker commitment total count mismatch error fetcher {0} provider {1}")]
     CommitmentCountMismatchError(u64, u64),
-    #[error("nullifier total count mismatch error fetcher {0} provider {1}")]
+    #[error("counter checker nullifier total count mismatch error fetcher {0} provider {1}")]
     NullifierCountMismatchError(u64, u64),
 }
 
 #[derive(Error, Debug)]
 pub enum MerkleTreeCheckerError {
-    #[error("target block error expected {0} actual {1}")]
+    #[error("merkle tree checker target block error expected {0} actual {1}")]
     TargetBlockError(u64, u64),
-    #[error("merkle tree root not known error")]
+    #[error("merkle tree checker merkle tree root not known error")]
     MerkleTreeRootNotKnownError,
 }
