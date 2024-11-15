@@ -124,6 +124,12 @@ pub fn parse_spends_error(err: &SpendsError) -> StatusCode {
         SpendsError::MissingTransactionHashFromRelayerJobError(_) => {
             ProtoSpendError::MissingTransactionHashFromRelayerJobError.into()
         }
+        SpendsError::StdIoError(_) => ProtoSpendError::StdIoError.into(),
+        SpendsError::ProtosError(_) => ProtoSpendError::ProtosError.into(),
+        SpendsError::FetcherError(_) => ProtoSpendError::FetcherError.into(),
+        SpendsError::MissingResourceError(_) => ProtoSpendError::MissingResourceError.into(),
+        SpendsError::RawResourceError(_) => ProtoSpendError::RawResourceError.into(),
+        SpendsError::FetchFromProviderError(_) => ProtoSpendError::FetchFromProviderError.into(),
     }
 }
 

@@ -40,6 +40,12 @@ pub enum SpendsError {
     LocalWalletError(#[from] ethers_signers::WalletError),
     #[error(transparent)]
     SerdeJsonError(#[from] serde_json::Error),
+    #[error(transparent)]
+    StdIoError(#[from] std::io::Error),
+    #[error(transparent)]
+    ProtosError(#[from] prost::DecodeError),
+    #[error(transparent)]
+    FetcherError(#[from] mystiko_dataloader::fetcher::FetcherError),
     #[error("missing pool contract for chain_id={0}, asset_symbol={1}, bridge_type={2:?}, version={3:?}")]
     NoPoolContractFoundError(u64, String, mystiko_types::BridgeType, Option<u32>),
     #[error("missing pool contract for chain_id={0}, contract_address={1}")]
@@ -86,4 +92,10 @@ pub enum SpendsError {
     MissingGivenRelayerError(String),
     #[error("missing transaction hash from relayer job(uuid={0})")]
     MissingTransactionHashFromRelayerJobError(String),
+    #[error("missing resource: {0}")]
+    MissingResourceError(String),
+    #[error("raw resource: {0}")]
+    RawResourceError(String),
+    #[error("fetch from provider error: {0} ")]
+    FetchFromProviderError(String),
 }

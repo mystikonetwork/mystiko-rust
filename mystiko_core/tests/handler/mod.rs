@@ -17,7 +17,9 @@ use mystiko_core::{
     TransactionSigner, TransferOptions, WaitOptions,
 };
 use mystiko_crypto::zkp::{G16Proof, ZKProveOptions, ZKVerifyOptions};
+use mystiko_datapacker_client::{ChainQuery, ChainResponse};
 use mystiko_protos::core::v1::Transaction;
+use mystiko_protos::data::v1::{ChainData, MerkleTree as ProtoMerkleTree};
 use mystiko_relayer_client::types::register::RegisterInfo;
 use mystiko_relayer_types::{
     RegisterInfoRequest, RelayTransactRequest, RelayTransactResponse, RelayTransactStatusRequest,
@@ -158,6 +160,20 @@ mock! {
         fn prove<'a>(&self, options: ZKProveOptions<'a>) -> Result<G16Proof>;
         fn verify<'a>(&self, options: ZKVerifyOptions<'a, G16Proof>) -> Result<bool>;
     }
+}
+
+// type ConcreteDataPackerClient = dyn DataPackerClient<ChainData, MerkleTree>;
+mock! {
+   #[derive(Debug, Default)]
+    DataPackerClient{}
+
+    #[async_trait]
+    impl mystiko_datapacker_client::DataPackerClient<ChainData, ProtoMerkleTree> for DataPackerClient {
+        async fn query_chain(&self, query: &ChainQuery) -> Result<ChainResponse<ChainData>>;
+        async fn query_chain_loaded_block(&self, chain_id: u64) -> Result<u64>;
+        async fn query_merkle_tree(&self, chain_id: u64, address: &Address) -> Result<Option<ProtoMerkleTree>>;
+    }
+
 }
 
 #[derive(Debug, Clone, Default, TypedBuilder)]

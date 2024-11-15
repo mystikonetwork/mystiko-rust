@@ -2871,6 +2871,21 @@ impl serde::Serialize for SendSpendOptions {
         if self.tx.is_some() {
             len += 1;
         }
+        if self.raw_merkle_tree.is_some() {
+            len += 1;
+        }
+        if self.raw_zk_program.is_some() {
+            len += 1;
+        }
+        if self.raw_zk_proving_key.is_some() {
+            len += 1;
+        }
+        if self.raw_zk_verifying_key.is_some() {
+            len += 1;
+        }
+        if self.raw_zk_abi.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.handler.v1.SendSpendOptions", len)?;
         if !self.spend_id.is_empty() {
             struct_ser.serialize_field("spendId", &self.spend_id)?;
@@ -2908,6 +2923,21 @@ impl serde::Serialize for SendSpendOptions {
         if let Some(v) = self.tx.as_ref() {
             struct_ser.serialize_field("tx", v)?;
         }
+        if let Some(v) = self.raw_merkle_tree.as_ref() {
+            struct_ser.serialize_field("rawMerkleTree", pbjson::private::base64::encode(&v).as_str())?;
+        }
+        if let Some(v) = self.raw_zk_program.as_ref() {
+            struct_ser.serialize_field("rawZkProgram", pbjson::private::base64::encode(&v).as_str())?;
+        }
+        if let Some(v) = self.raw_zk_proving_key.as_ref() {
+            struct_ser.serialize_field("rawZkProvingKey", pbjson::private::base64::encode(&v).as_str())?;
+        }
+        if let Some(v) = self.raw_zk_verifying_key.as_ref() {
+            struct_ser.serialize_field("rawZkVerifyingKey", pbjson::private::base64::encode(&v).as_str())?;
+        }
+        if let Some(v) = self.raw_zk_abi.as_ref() {
+            struct_ser.serialize_field("rawZkAbi", pbjson::private::base64::encode(&v).as_str())?;
+        }
         struct_ser.end()
     }
 }
@@ -2941,6 +2971,16 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
             "relayer_wait_interval_ms",
             "relayerWaitIntervalMs",
             "tx",
+            "raw_merkle_tree",
+            "rawMerkleTree",
+            "raw_zk_program",
+            "rawZkProgram",
+            "raw_zk_proving_key",
+            "rawZkProvingKey",
+            "raw_zk_verifying_key",
+            "rawZkVerifyingKey",
+            "raw_zk_abi",
+            "rawZkAbi",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -2957,6 +2997,11 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
             RelayerWaitTimeoutMs,
             RelayerWaitIntervalMs,
             Tx,
+            RawMerkleTree,
+            RawZkProgram,
+            RawZkProvingKey,
+            RawZkVerifyingKey,
+            RawZkAbi,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -2990,6 +3035,11 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
                             "relayerWaitTimeoutMs" | "relayer_wait_timeout_ms" => Ok(GeneratedField::RelayerWaitTimeoutMs),
                             "relayerWaitIntervalMs" | "relayer_wait_interval_ms" => Ok(GeneratedField::RelayerWaitIntervalMs),
                             "tx" => Ok(GeneratedField::Tx),
+                            "rawMerkleTree" | "raw_merkle_tree" => Ok(GeneratedField::RawMerkleTree),
+                            "rawZkProgram" | "raw_zk_program" => Ok(GeneratedField::RawZkProgram),
+                            "rawZkProvingKey" | "raw_zk_proving_key" => Ok(GeneratedField::RawZkProvingKey),
+                            "rawZkVerifyingKey" | "raw_zk_verifying_key" => Ok(GeneratedField::RawZkVerifyingKey),
+                            "rawZkAbi" | "raw_zk_abi" => Ok(GeneratedField::RawZkAbi),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -3021,6 +3071,11 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
                 let mut relayer_wait_timeout_ms__ = None;
                 let mut relayer_wait_interval_ms__ = None;
                 let mut tx__ = None;
+                let mut raw_merkle_tree__ = None;
+                let mut raw_zk_program__ = None;
+                let mut raw_zk_proving_key__ = None;
+                let mut raw_zk_verifying_key__ = None;
+                let mut raw_zk_abi__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::SpendId => {
@@ -3109,6 +3164,46 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
                             }
                             tx__ = map.next_value()?;
                         }
+                        GeneratedField::RawMerkleTree => {
+                            if raw_merkle_tree__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rawMerkleTree"));
+                            }
+                            raw_merkle_tree__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::RawZkProgram => {
+                            if raw_zk_program__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rawZkProgram"));
+                            }
+                            raw_zk_program__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::RawZkProvingKey => {
+                            if raw_zk_proving_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rawZkProvingKey"));
+                            }
+                            raw_zk_proving_key__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::RawZkVerifyingKey => {
+                            if raw_zk_verifying_key__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rawZkVerifyingKey"));
+                            }
+                            raw_zk_verifying_key__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::RawZkAbi => {
+                            if raw_zk_abi__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("rawZkAbi"));
+                            }
+                            raw_zk_abi__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::BytesDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(SendSpendOptions {
@@ -3124,6 +3219,11 @@ impl<'de> serde::Deserialize<'de> for SendSpendOptions {
                     relayer_wait_timeout_ms: relayer_wait_timeout_ms__,
                     relayer_wait_interval_ms: relayer_wait_interval_ms__,
                     tx: tx__,
+                    raw_merkle_tree: raw_merkle_tree__,
+                    raw_zk_program: raw_zk_program__,
+                    raw_zk_proving_key: raw_zk_proving_key__,
+                    raw_zk_verifying_key: raw_zk_verifying_key__,
+                    raw_zk_abi: raw_zk_abi__,
                 })
             }
         }

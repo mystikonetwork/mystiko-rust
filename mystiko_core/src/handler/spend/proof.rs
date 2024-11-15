@@ -1,8 +1,8 @@
 use crate::handler::spend_circuit_type;
 use crate::{
     Account, AccountColumn, AuditorPublicKeysOptions, BalanceOptions, Commitment, CommitmentColumn,
-    CommitmentPoolContractHandler, Erc20BalanceOptions, IsKnownRootOptions, IsSpentNullifierOptions,
-    PublicAssetHandler, Spend, SpendContext, Spends, SpendsError, EMPTY_ADDRESS,
+    CommitmentPoolContractHandler, Erc20BalanceOptions, IsSpentNullifierOptions, PublicAssetHandler, Spend,
+    SpendContext, Spends, SpendsError, EMPTY_ADDRESS,
 };
 use ethers_core::types::Bytes;
 use ethers_signers::{LocalWallet, Signer};
@@ -11,6 +11,8 @@ use mystiko_config::CircuitConfig;
 use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_crypto::zkp::{G16Proof, ZKProver, ZKVerifyOptions};
+use mystiko_datapacker_client::DataPackerClient;
+use mystiko_ethers::Providers;
 use mystiko_protocol::commitment::EncryptedNote;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_protocol::key::{
@@ -21,8 +23,8 @@ use mystiko_protocol::transact::{TransactionCommitmentInput, TransactionCommitme
 use mystiko_protocol::types::{AuditingPk, EncPk, EncSk, FullSk, SigPk, VerifyPk, VerifySk, SIG_PK_SIZE};
 use mystiko_protos::core::handler::v1::SendSpendOptions;
 use mystiko_protos::core::v1::SpendType;
-use mystiko_protos::data::v1::CommitmentStatus;
-use mystiko_protos::storage::v1::{Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
+use mystiko_protos::data::v1::{ChainData, MerkleTree as ProtoMerkleTree};
+use mystiko_protos::storage::v1::{Condition, SubFilter};
 use mystiko_static_cache::StaticCache;
 use mystiko_storage::{Document, StatementFormatter, Storage};
 use mystiko_utils::address::ethers_address_from_string;
@@ -43,13 +45,15 @@ pub(crate) struct ProofContext {
     pub(crate) sig_wallet: LocalWallet,
 }
 
-impl<F, S, A, C, T, P, R, V> Spends<F, S, A, C, T, P, R, V>
+impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
 where
     F: StatementFormatter,
     S: Storage,
     A: PublicAssetHandler,
     C: CommitmentPoolContractHandler,
     V: ZKProver<G16Proof>,
+    P: Providers + 'static,
+    K: DataPackerClient<ChainData, ProtoMerkleTree>,
     ProtocolError: From<V::Error>,
     SpendsError: From<A::Error> + From<C::Error> + From<V::Error>,
 {
@@ -65,7 +69,12 @@ where
             .validate_input_commitments(context, &spend, options.query_timeout_ms)
             .await?;
         let output_commitments = build_output_commitments(&spend, &input_commitments).await?;
-        let merkle_tree = self.build_merkle_tree(context, options.query_timeout_ms).await?;
+        let expect_leaf_index = input_commitments
+            .iter()
+            .flat_map(|commitment| commitment.data.leaf_index)
+            .max()
+            .unwrap_or(0);
+        let merkle_tree = self.build_merkle_tree(context, options, expect_leaf_index).await?;
         let shielded_addresses = input_commitments
             .iter()
             .filter_map(|commitment| commitment.data.shielded_address.clone())
@@ -117,7 +126,7 @@ where
             .contract_config
             .circuit_by_type(&circuit_type)
             .ok_or(SpendsError::MissingCircuitTypeInConfigError(circuit_type))?;
-        let (program, abi, proving_key, verifying_key) = self.get_circuit_resources(circuit).await?;
+        let (program, abi, proving_key, verifying_key) = self.get_circuit_resources(circuit, options).await?;
         let auditor_keys_options = AuditorPublicKeysOptions::builder()
             .chain_id(spend.data.chain_id)
             .contract_address(ethers_address_from_string(&spend.data.contract_address)?)
@@ -238,72 +247,58 @@ where
         Ok(())
     }
 
-    async fn build_merkle_tree(
-        &self,
-        context: &SpendContext,
-        query_timeout_ms: Option<u64>,
-    ) -> Result<MerkleTree, SpendsError> {
-        let condition = Condition::and(vec![
-            SubFilter::equal(CommitmentColumn::ChainId, context.chain_id),
-            SubFilter::equal(
-                CommitmentColumn::ContractAddress,
-                context.contract_config.address().to_string(),
-            ),
-            SubFilter::equal(CommitmentColumn::Status, CommitmentStatus::Included as i32),
-            SubFilter::is_not_null(CommitmentColumn::LeafIndex),
-        ]);
-        let order_by = OrderBy::builder()
-            .order(Order::Asc)
-            .columns(vec![CommitmentColumn::LeafIndex.to_string()])
-            .build();
-        let filter = QueryFilter::builder()
-            .conditions(vec![condition])
-            .conditions_operator(ConditionOperator::And)
-            .order_by(order_by)
-            .build();
-        let commitments = self.db.commitments.find(filter).await?;
-        let leaves = commitments
-            .into_iter()
-            .map(|commitment| commitment.data.commitment_hash)
-            .collect::<Vec<_>>();
-        let merkle_tree = MerkleTree::new(Some(leaves), None, None)?;
-        let merkle_root = merkle_tree.root();
-        let contract_address = ethers_address_from_string(context.contract_config.address())?;
-        let options = IsKnownRootOptions::builder()
-            .chain_id(context.chain_id)
-            .contract_address(contract_address)
-            .root_hash(biguint_to_u256(&merkle_root))
-            .timeout_ms(query_timeout_ms)
-            .build();
-        if !self.commitment_pool_contracts.is_known_root(options).await? {
-            return Err(SpendsError::UnknownMerkleRootError(merkle_root.to_string()));
-        }
-        Ok(merkle_tree)
-    }
-
     async fn get_circuit_resources(
         &self,
         circuit_config: &CircuitConfig,
+        options: &SendSpendOptions,
     ) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>), SpendsError> {
         log::info!(
             "fetching resources for circuit_type={:?}",
             circuit_config.circuit_type()
         );
-        let resource_urls = [
-            circuit_config.program_file().clone(),
-            circuit_config.abi_file().clone(),
-            circuit_config.proving_key_file().clone(),
-            circuit_config.verifying_key_file().clone(),
-        ];
+        let mut resource_urls = vec![];
+        if options.raw_zk_program.is_none() {
+            resource_urls.push(circuit_config.program_file().clone());
+        }
+        if options.raw_zk_abi.is_none() {
+            resource_urls.push(circuit_config.abi_file().clone());
+        }
+        if options.raw_zk_proving_key.is_none() {
+            resource_urls.push(circuit_config.proving_key_file().clone());
+        }
+        if options.raw_zk_verifying_key.is_none() {
+            resource_urls.push(circuit_config.verifying_key_file().clone());
+        }
         let tasks = resource_urls
             .iter()
             .map(|urls| self.static_cache.get_failover(urls, None))
             .collect::<Vec<_>>();
-        let mut files = futures::future::try_join_all(tasks).await?;
-        let program = files.remove(0);
-        let abi = files.remove(0);
-        let proving_key = files.remove(0);
-        let verifying_key = files.remove(0);
+        let fetched_files = futures::future::try_join_all(tasks).await?;
+        let mut file_iter = fetched_files.into_iter();
+        let program = match &options.raw_zk_program {
+            Some(program) => program.clone(),
+            None => file_iter
+                .next()
+                .ok_or(SpendsError::MissingResourceError("program".to_string()))?,
+        };
+        let abi = match &options.raw_zk_abi {
+            Some(abi) => abi.clone(),
+            None => file_iter
+                .next()
+                .ok_or(SpendsError::MissingResourceError("ABI".to_string()))?,
+        };
+        let proving_key = match &options.raw_zk_proving_key {
+            Some(proving_key) => proving_key.clone(),
+            None => file_iter
+                .next()
+                .ok_or(SpendsError::MissingResourceError("proving key".to_string()))?,
+        };
+        let verifying_key = match &options.raw_zk_verifying_key {
+            Some(verifying_key) => verifying_key.clone(),
+            None => file_iter
+                .next()
+                .ok_or(SpendsError::MissingResourceError("verifying key".to_string()))?,
+        };
         log::info!(
             "successfully fetched resources for circuit_type={:?}",
             circuit_config.circuit_type()

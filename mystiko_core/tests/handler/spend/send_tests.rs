@@ -1,10 +1,10 @@
-use crate::common::MockProviders;
+use crate::common::{MockProvider, MockProviders};
 use crate::handler::spend::setup::{
     create_wallet, generate_commitments, setup, CommitmentOptions, DatabaseType, MockOptions, SpendsType,
 };
 use crate::handler::{
-    generate_private_key, MockCommitmentPoolContracts, MockPublicAssets, MockRelayerClient, MockStaticCache,
-    MockTransactions, MockZKProver,
+    generate_private_key, MockCommitmentPoolContracts, MockDataPackerClient, MockPublicAssets, MockRelayerClient,
+    MockStaticCache, MockTransactions, MockZKProver,
 };
 use ethers_core::abi::AbiEncode;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -22,15 +22,16 @@ use mystiko_protos::core::document::v1::{Account, Spend};
 use mystiko_protos::core::handler::v1::{CreateSpendOptions, SendSpendOptions};
 use mystiko_protos::core::v1::{SpendStatus, SpendType};
 use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_protos::data::v1::MerkleTree as ProtoMerkleTree;
 use mystiko_protos::storage::v1::{Condition, SubFilter};
 use mystiko_relayer_client::types::register::RegisterInfo;
 use mystiko_relayer_types::{ContractInfo, RelayTransactResponse, RelayTransactStatusResponse, TransactStatus};
 use mystiko_storage::{ColumnValues, Document, DocumentColumn};
 use mystiko_types::TransactionType;
 use mystiko_utils::address::ethers_address_from_string;
-use mystiko_utils::convert::{biguint_to_u256, number_to_biguint_decimal};
+use mystiko_utils::convert::{biguint_to_bytes, biguint_to_u256, number_to_biguint_decimal, u256_to_bytes};
 use num_bigint::BigUint;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -47,8 +48,8 @@ async fn test_send_withdraw1x0() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(0_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("30000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("30000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -74,11 +75,24 @@ async fn test_send_withdraw1x0() {
         .tx_wait_timeout_ms(300_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -162,8 +176,8 @@ async fn test_send_withdraw2x0() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(2_usize)
         .num_outputs(0_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("70000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("70000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -184,11 +198,24 @@ async fn test_send_withdraw2x0() {
         .block_number(200010000_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -259,8 +286,8 @@ async fn test_send_withdraw1x1() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(1_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("40000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("40000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .out_rollup_fees(vec![U256::from_dec_str("40000000000000000").unwrap()])
@@ -282,11 +309,24 @@ async fn test_send_withdraw1x1() {
         .block_number(200010000_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -360,8 +400,8 @@ async fn test_send_withdraw2x1() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(2_usize)
         .num_outputs(1_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("80000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("80000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .out_rollup_fees(vec![U256::from_dec_str("40000000000000000").unwrap()])
@@ -383,11 +423,24 @@ async fn test_send_withdraw2x1() {
         .block_number(200010000_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -462,8 +515,9 @@ async fn test_send_transfer1x1() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(1_usize)
-        .root_hash(tree_root)
+        .root_hash(HashSet::from([tree_root]))
         .tx_hash(tx_hash)
+        .public_amount(HashSet::from([(U256::from_dec_str("0").unwrap())]))
         .out_rollup_fees(vec![U256::from_dec_str("40000000000000000").unwrap()])
         .build();
     let commitment_pool_contracts_options = CommitmentPoolTestOptions::builder()
@@ -483,11 +537,24 @@ async fn test_send_transfer1x1() {
         .block_number(200010000_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -561,8 +628,9 @@ async fn test_send_transfer2x1() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(2_usize)
         .num_outputs(1_usize)
-        .root_hash(tree_root)
+        .root_hash(HashSet::from([tree_root]))
         .tx_hash(tx_hash)
+        .public_amount(HashSet::from([(U256::from_dec_str("0").unwrap())]))
         .out_rollup_fees(vec![U256::from_dec_str("40000000000000000").unwrap()])
         .build();
     let commitment_pool_contracts_options = CommitmentPoolTestOptions::builder()
@@ -582,11 +650,24 @@ async fn test_send_transfer2x1() {
         .block_number(200010000_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -661,8 +742,9 @@ async fn test_send_transfer1x2() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(2_usize)
-        .root_hash(tree_root)
+        .root_hash(HashSet::from([tree_root]))
         .tx_hash(tx_hash)
+        .public_amount(HashSet::from([(U256::from_dec_str("0").unwrap())]))
         .out_rollup_fees(vec![
             U256::from_dec_str("40000000000000000").unwrap(),
             U256::from_dec_str("40000000000000000").unwrap(),
@@ -685,11 +767,24 @@ async fn test_send_transfer1x2() {
         .block_number(200010000_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -763,8 +858,9 @@ async fn test_send_transfer2x2() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(2_usize)
         .num_outputs(2_usize)
-        .root_hash(tree_root)
+        .root_hash(HashSet::from([tree_root]))
         .tx_hash(tx_hash)
+        .public_amount(HashSet::from([(U256::from_dec_str("0").unwrap())]))
         .out_rollup_fees(vec![
             U256::from_dec_str("40000000000000000").unwrap(),
             U256::from_dec_str("40000000000000000").unwrap(),
@@ -787,11 +883,24 @@ async fn test_send_transfer2x2() {
         .block_number(200010000_u64)
         .build();
     let transactions = setup_transactions(transactions_options);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -866,8 +975,8 @@ async fn test_send_withdraw_with_gas_relayer() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(1_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("39820000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("39820000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -939,6 +1048,18 @@ async fn test_send_withdraw_with_gas_relayer() {
                 .error_msg(None)
                 .build())
         });
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let transactions_options = TransactionsTestOptions::builder()
         .chain_id(chain_id)
         .config(&config)
@@ -953,6 +1074,7 @@ async fn test_send_withdraw_with_gas_relayer() {
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(relayer_client)
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -1035,7 +1157,7 @@ async fn test_send_transfer_with_gas_relayer() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(2_usize)
         .num_outputs(2_usize)
-        .root_hash(tree_root)
+        .root_hash(HashSet::from([tree_root]))
         .tx_hash(tx_hash)
         .build();
     let commitment_pool_contracts_options = CommitmentPoolTestOptions::builder()
@@ -1106,6 +1228,18 @@ async fn test_send_transfer_with_gas_relayer() {
                 .error_msg(None)
                 .build())
         });
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let transactions_options = TransactionsTestOptions::builder()
         .chain_id(chain_id)
         .config(&config)
@@ -1120,6 +1254,7 @@ async fn test_send_transfer_with_gas_relayer() {
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(relayer_client)
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -1203,8 +1338,8 @@ async fn test_send_withdraw_bridge_assets() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(0_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("3000000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("3000000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -1232,11 +1367,24 @@ async fn test_send_withdraw_bridge_assets() {
         U256::from_dec_str("10000000000000000000").unwrap(),
         Some(100_u64),
     );
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
         .contract_config(contract_config.clone())
         .relayer_client(MockRelayerClient::new())
+        .data_packer_client(mock_data_packer_client)
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
@@ -1356,8 +1504,8 @@ async fn test_send_with_insufficient_pool_balance() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(0_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("30000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("30000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -1416,8 +1564,8 @@ async fn test_send_with_double_spending() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(0_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("30000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("30000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -1474,8 +1622,8 @@ async fn test_send_with_unknown_root() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(0_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("30000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("30000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -1489,6 +1637,18 @@ async fn test_send_with_unknown_root() {
         setup_commitment_pool_contracts(commitment_pool_contracts_options, &contract_config);
     let static_cache = setup_static_cache(&contract_config, &mystiko_types::CircuitType::Transaction1x0);
     let prover = setup_prover(true);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
@@ -1496,6 +1656,7 @@ async fn test_send_with_unknown_root() {
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
+        .data_packer_client(mock_data_packer_client)
         .build();
     let context = SendTestContext::new(test_options).await;
     context.generate_commitments(&[3.0, 4.0, 10.0]).await;
@@ -1538,8 +1699,8 @@ async fn test_send_with_wrong_proof() {
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(0_usize)
-        .root_hash(tree_root)
-        .public_amount(U256::from_dec_str("30000000000000000").unwrap())
+        .root_hash(HashSet::from([tree_root]))
+        .public_amount(HashSet::from([(U256::from_dec_str("30000000000000000").unwrap())]))
         .public_recipient(ethers_address_from_string("0x87813A8E81729C0100ce2568b6283772cb31bdb8").unwrap())
         .tx_hash(tx_hash)
         .build();
@@ -1553,6 +1714,18 @@ async fn test_send_with_wrong_proof() {
         setup_commitment_pool_contracts(commitment_pool_contracts_options, &contract_config);
     let static_cache = setup_static_cache(&contract_config, &mystiko_types::CircuitType::Transaction1x0);
     let prover = setup_prover(false);
+    let mut mock_data_packer_client = MockDataPackerClient::new();
+    mock_data_packer_client
+        .expect_query_merkle_tree()
+        .times(1)
+        .returning(move |_, _| {
+            let proto_merkle_tree = ProtoMerkleTree::builder()
+                .loaded_block_number(200010000_u64)
+                .root_hash(u256_to_bytes(&tree_root))
+                .commitment_hashes(merkle_tree.elements().iter().map(biguint_to_bytes).collect::<Vec<_>>())
+                .build();
+            Ok(Some(proto_merkle_tree))
+        });
     let test_options: SendTestOptions = SendTestOptions::builder()
         .chain_id(chain_id)
         .config(config)
@@ -1560,6 +1733,7 @@ async fn test_send_with_wrong_proof() {
         .commitment_pool_contracts(commitment_pool_contracts)
         .prover(prover)
         .static_cache(static_cache)
+        .data_packer_client(mock_data_packer_client)
         .build();
     let context = SendTestContext::new(test_options).await;
     context.generate_commitments(&[3.0, 4.0, 10.0]).await;
@@ -1590,7 +1764,7 @@ async fn test_send_with_wrong_proof() {
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-struct SendTestOptions {
+pub struct SendTestOptions {
     chain_id: u64,
     config: MystikoConfig,
     contract_config: PoolContractConfig,
@@ -1599,7 +1773,11 @@ struct SendTestOptions {
     #[builder(default)]
     relayer_client: MockRelayerClient,
     #[builder(default)]
+    data_packer_client: MockDataPackerClient,
+    #[builder(default)]
     commitment_pool_contracts: Option<MockCommitmentPoolContracts>,
+    #[builder(default)]
+    providers: HashMap<u64, MockProvider>,
     #[builder(default)]
     prover: Option<MockZKProver>,
     #[builder(default)]
@@ -1610,11 +1788,11 @@ struct SendTestOptions {
 
 #[derive(Debug, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
-struct TransactTestOptions {
+pub struct TransactTestOptions {
     num_inputs: usize,
     num_outputs: usize,
-    root_hash: U256,
-    public_amount: U256,
+    root_hash: HashSet<U256>,
+    public_amount: HashSet<U256>,
     relayer_fee_amount: U256,
     out_rollup_fees: Vec<U256>,
     public_recipient: Address,
@@ -1624,7 +1802,7 @@ struct TransactTestOptions {
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-struct CommitmentPoolTestOptions {
+pub struct CommitmentPoolTestOptions {
     chain_id: u64,
     #[builder(default)]
     spent_nullifiers: HashMap<U256, bool>,
@@ -1640,7 +1818,7 @@ struct CommitmentPoolTestOptions {
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-struct TransactionsTestOptions<'a> {
+pub struct TransactionsTestOptions<'a> {
     chain_id: u64,
     config: &'a MystikoConfig,
     tx_hash: TxHash,
@@ -1653,37 +1831,41 @@ struct TransactionsTestOptions<'a> {
     tx_confirmations: Option<u64>,
 }
 
-struct SendTestContext<R = MockRelayerClient> {
+pub struct SendTestContext<R = MockRelayerClient> {
     db: Arc<DatabaseType>,
-    handler: SpendsType<R>,
-    account: Account,
+    pub handler: SpendsType<R>,
+    pub(crate) account: Account,
     chain_id: u64,
     contract_config: PoolContractConfig,
 }
 
 impl SendTestContext {
-    async fn new(options: SendTestOptions) -> Self {
+    pub(crate) async fn new(options: SendTestOptions) -> Self {
         let SendTestOptions {
             config,
             chain_id,
             contract_config,
             assets,
             relayer_client,
+            data_packer_client,
             commitment_pool_contracts,
             prover,
             static_cache,
             transactions,
+            providers,
         } = options;
-        let mock_options = MockOptions::<MockRelayerClient>::builder()
+        let mock_options = MockOptions::<MockRelayerClient, MockDataPackerClient>::builder()
             .config(config)
             .assets(assets.unwrap_or_default())
             .commitment_pool_contracts(commitment_pool_contracts.unwrap_or_default())
             .relayer_client(relayer_client)
+            .data_packer_client(data_packer_client)
             .prover(prover.unwrap_or_default())
+            .providers(providers)
             .static_cache(static_cache.unwrap_or_default())
             .transactions(transactions.unwrap_or_default())
             .build();
-        let (_, db, handler) = setup::<MockRelayerClient>(mock_options).await;
+        let (_, db, handler) = setup::<MockRelayerClient, MockDataPackerClient>(mock_options).await;
         let (_, account) = create_wallet(db.clone()).await;
         Self {
             db,
@@ -1694,7 +1876,7 @@ impl SendTestContext {
         }
     }
 
-    async fn generate_commitments(&self, amounts: &[f64]) -> Vec<Document<Commitment>> {
+    pub async fn generate_commitments(&self, amounts: &[f64]) -> Vec<Document<Commitment>> {
         let mut options1 = amounts
             .iter()
             .enumerate()
@@ -1723,7 +1905,12 @@ impl SendTestContext {
         generate_commitments(self.db.clone(), self.chain_id, &self.contract_config, &options1).await
     }
 
-    async fn check_commitments(&self, spend: &Spend, expected_block_number: u64, expected_out_amounts: &[f64]) {
+    pub(crate) async fn check_commitments(
+        &self,
+        spend: &Spend,
+        expected_block_number: u64,
+        expected_out_amounts: &[f64],
+    ) {
         let input_commitment_hashes = spend
             .input_commitments
             .iter()
@@ -1798,7 +1985,7 @@ impl SendTestContext {
     }
 }
 
-async fn setup_config(chain_id: u64, contract_address: &str) -> (MystikoConfig, PoolContractConfig) {
+pub async fn setup_config(chain_id: u64, contract_address: &str) -> (MystikoConfig, PoolContractConfig) {
     let config = MystikoConfig::from_json_file("tests/files/mystiko/config.json")
         .await
         .unwrap();
@@ -1809,7 +1996,7 @@ async fn setup_config(chain_id: u64, contract_address: &str) -> (MystikoConfig, 
     (config, contract_config)
 }
 
-fn setup_commitment_pool_contracts(
+pub fn setup_commitment_pool_contracts(
     options: CommitmentPoolTestOptions,
     contract_config: &PoolContractConfig,
 ) -> MockCommitmentPoolContracts {
@@ -1890,8 +2077,8 @@ fn setup_commitment_pool_contracts(
             options.chain_id == chain_id
                 && options.contract_address == contract_address
                 && options.timeout_ms == tx_send_timeout_ms
-                && options.request.root_hash == root_hash
-                && options.request.public_amount == public_amount
+                && root_hash.contains(&options.request.root_hash)
+                && public_amount.contains(&options.request.public_amount)
                 && options.request.relayer_fee_amount == relayer_fee_amount
                 && options.request.out_rollup_fees == out_rollup_fees
                 && options.request.public_recipient == public_recipient
@@ -1906,7 +2093,7 @@ fn setup_commitment_pool_contracts(
     commitment_pool_contracts
 }
 
-fn setup_assets(
+pub fn setup_assets(
     chain_id: u64,
     contract_config: &PoolContractConfig,
     balance: U256,
@@ -1936,7 +2123,7 @@ fn setup_assets(
     assets
 }
 
-fn setup_static_cache(
+pub fn setup_static_cache(
     contract_config: &PoolContractConfig,
     circuit_type: &mystiko_types::CircuitType,
 ) -> MockStaticCache {
@@ -1971,7 +2158,7 @@ fn setup_static_cache(
     static_cache
 }
 
-fn setup_prover(verified: bool) -> MockZKProver {
+pub fn setup_prover(verified: bool) -> MockZKProver {
     let mut prover = MockZKProver::new();
     prover
         .expect_prove()
@@ -1985,7 +2172,7 @@ fn setup_prover(verified: bool) -> MockZKProver {
     prover
 }
 
-fn setup_transactions(options: TransactionsTestOptions) -> MockTransactions {
+pub fn setup_transactions(options: TransactionsTestOptions) -> MockTransactions {
     let TransactionsTestOptions {
         config,
         chain_id,
@@ -2028,7 +2215,7 @@ fn setup_transactions(options: TransactionsTestOptions) -> MockTransactions {
     transactions
 }
 
-fn generate_merkle_tree(num_leaves: usize) -> MerkleTree {
+pub fn generate_merkle_tree(num_leaves: usize) -> MerkleTree {
     let mut leaves = Vec::with_capacity(num_leaves);
     for i in 0..num_leaves {
         leaves.push(BigUint::from(i as u64));

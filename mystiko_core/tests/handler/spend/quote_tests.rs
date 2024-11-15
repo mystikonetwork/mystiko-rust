@@ -1,17 +1,18 @@
 use crate::handler::spend::setup::{
     create_wallet, generate_commitments, setup, CommitmentOptions, DatabaseType, MockOptions, SpendsType,
 };
-use crate::handler::{MockCommitmentPoolContracts, MockRelayerClient, TimeoutRelayerClient};
+use crate::handler::{MockCommitmentPoolContracts, MockDataPackerClient, MockRelayerClient, TimeoutRelayerClient};
 use mystiko_config::{MystikoConfig, PoolContractConfig};
 use mystiko_core::{Commitment, SpendHandler, SpendsError};
 use mystiko_crypto::ecies::generate_secret_key;
+use mystiko_datapacker_client::DataPackerClient;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::key::{encryption_public_key, verification_public_key};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::Account;
 use mystiko_protos::core::handler::v1::{AmountRange, GasRelayer, QuoteSpendOptions, SpendInvalidCode, SpendQuote};
 use mystiko_protos::core::v1::SpendType;
-use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_protos::data::v1::{ChainData, CommitmentStatus, MerkleTree as ProtoMerkleTree};
 use mystiko_relayer_client::types::register::RegisterInfo;
 use mystiko_relayer_client::RelayerClient;
 use mystiko_relayer_types::ContractInfo;
@@ -505,7 +506,7 @@ async fn test_quote_with_disabled_contract() {
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-struct QuoteTestOptions<R: Default = MockRelayerClient> {
+struct QuoteTestOptions<R: Default = MockRelayerClient, K: Default = MockDataPackerClient> {
     chain_id: u64,
     contract_address: String,
     #[builder(default)]
@@ -514,28 +515,32 @@ struct QuoteTestOptions<R: Default = MockRelayerClient> {
     min_rollup_fee_raise_error: bool,
     #[builder(default)]
     relayer_client: R,
+    #[builder(default)]
+    data_packer_client: K,
 }
 
-struct QuoteTestContext<R = MockRelayerClient> {
+struct QuoteTestContext<R = MockRelayerClient, K = MockDataPackerClient> {
     db: Arc<DatabaseType>,
-    handler: SpendsType<R>,
+    handler: SpendsType<R, K>,
     account: Account,
     chain_id: u64,
     contract_config: PoolContractConfig,
 }
 
-impl<R> QuoteTestContext<R>
+impl<R, K> QuoteTestContext<R, K>
 where
     R: RelayerClient + Default,
+    K: DataPackerClient<ChainData, ProtoMerkleTree> + Default,
     SpendsError: From<R::Error>,
 {
-    async fn new(options: QuoteTestOptions<R>) -> Self {
+    async fn new(options: QuoteTestOptions<R, K>) -> Self {
         let QuoteTestOptions {
             chain_id,
             contract_address,
             min_rollup_fee,
             min_rollup_fee_raise_error,
             relayer_client,
+            data_packer_client,
         } = options;
         let config = MystikoConfig::from_json_file("tests/files/mystiko/config.json")
             .await
@@ -571,8 +576,9 @@ where
             .config(config)
             .commitment_pool_contracts(commitment_pool_contracts)
             .relayer_client(relayer_client)
+            .data_packer_client(data_packer_client)
             .build();
-        let (_, db, handler) = setup::<R>(mock_options).await;
+        let (_, db, handler) = setup::<R, K>(mock_options).await;
         let (_, account) = create_wallet(db.clone()).await;
         Self {
             db,

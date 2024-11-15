@@ -8,11 +8,13 @@ use ethers_core::types::transaction::eip2718::TypedTransaction;
 use ethers_core::types::{Bytes, TxHash};
 use mystiko_abi::commitment_pool::TransactRequest;
 use mystiko_crypto::zkp::{G16Proof, ZKProver};
+use mystiko_datapacker_client::DataPackerClient;
+use mystiko_ethers::Providers;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::handler::v1::SendSpendOptions;
 use mystiko_protos::core::v1::{SpendStatus, SpendType, Transaction};
-use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_protos::data::v1::{ChainData, CommitmentStatus, MerkleTree as ProtoMerkleTree};
 use mystiko_protos::storage::v1::{Condition, SubFilter};
 use mystiko_relayer_client::RelayerClient;
 use mystiko_storage::{ColumnValues, Document, DocumentColumn, StatementFormatter, Storage};
@@ -24,15 +26,17 @@ use std::sync::Arc;
 use std::time::Duration;
 use typed_builder::TypedBuilder;
 
-impl<F, S, A, C, T, P, R, V> Spends<F, S, A, C, T, P, R, V>
+impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
 where
     F: StatementFormatter,
     S: Storage,
     A: PublicAssetHandler,
     C: CommitmentPoolContractHandler,
     T: TransactionHandler<Transaction>,
+    P: Providers + 'static,
     R: RelayerClient,
     V: ZKProver<G16Proof>,
+    K: DataPackerClient<ChainData, ProtoMerkleTree>,
     ProtocolError: From<V::Error>,
     SpendsError: From<A::Error> + From<C::Error> + From<T::Error> + From<R::Error> + From<V::Error>,
 {

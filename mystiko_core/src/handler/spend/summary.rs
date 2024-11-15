@@ -9,7 +9,7 @@ use num_bigint::BigUint;
 use num_traits::Zero;
 use std::ops::{Add, Mul, Sub};
 
-impl<F, S, A, C, T, P, R, V> Spends<F, S, A, C, T, P, R, V>
+impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
 where
     F: StatementFormatter,
     S: Storage,

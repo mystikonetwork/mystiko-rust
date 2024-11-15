@@ -3424,6 +3424,7 @@ dependencies = [
  "mystiko_config",
  "mystiko_crypto",
  "mystiko_dataloader",
+ "mystiko_datapacker_client",
  "mystiko_ethers",
  "mystiko_grpc",
  "mystiko_protocol",
@@ -3440,6 +3441,7 @@ dependencies = [
  "mystiko_utils",
  "num-bigint 0.4.6",
  "num-traits 0.2.19",
+ "prost",
  "rand 0.8.5",
  "rand_core 0.6.4",
  "regex 1.10.6",
@@ -3450,6 +3452,7 @@ dependencies = [
  "tokio",
  "tonic",
  "typed-builder 0.15.2",
+ "zstd 0.13.2",
 ]
 
 [[package]]

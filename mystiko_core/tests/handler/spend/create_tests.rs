@@ -1,14 +1,15 @@
 use crate::handler::spend::setup::{
     create_wallet, generate_commitments, setup, CommitmentOptions, DatabaseType, MockOptions, SpendsType,
 };
-use crate::handler::{MockCommitmentPoolContracts, MockRelayerClient};
+use crate::handler::{MockCommitmentPoolContracts, MockDataPackerClient, MockRelayerClient};
 use mystiko_config::{MystikoConfig, PoolContractConfig};
 use mystiko_core::{Commitment, SpendHandler, SpendsError};
+use mystiko_datapacker_client::DataPackerClient;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::Account;
 use mystiko_protos::core::handler::v1::CreateSpendOptions;
 use mystiko_protos::core::v1::{SpendStatus, SpendType};
-use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_protos::data::v1::{ChainData, CommitmentStatus, MerkleTree as ProtoMerkleTree};
 use mystiko_relayer_client::RelayerClient;
 use mystiko_storage::Document;
 use mystiko_utils::address::ethers_address_from_string;
@@ -140,31 +141,35 @@ async fn test_transfer_create() {
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-struct CreateTestOptions<R: Default = MockRelayerClient> {
+struct CreateTestOptions<R: Default = MockRelayerClient, K: Default = MockDataPackerClient> {
     chain_id: u64,
     contract_address: String,
     #[builder(default)]
     relayer_client: R,
+    #[builder(default)]
+    data_packer_client: K,
 }
 
-struct CreateTestContext<R = MockRelayerClient> {
+struct CreateTestContext<R = MockRelayerClient, K = MockDataPackerClient> {
     db: Arc<DatabaseType>,
-    handler: SpendsType<R>,
+    handler: SpendsType<R, K>,
     account: Account,
     chain_id: u64,
     contract_config: PoolContractConfig,
 }
 
-impl<R> CreateTestContext<R>
+impl<R, K> CreateTestContext<R, K>
 where
     R: RelayerClient + Default,
+    K: DataPackerClient<ChainData, ProtoMerkleTree> + Default,
     SpendsError: From<R::Error>,
 {
-    async fn new(options: CreateTestOptions<R>) -> Self {
+    async fn new(options: CreateTestOptions<R, K>) -> Self {
         let CreateTestOptions {
             chain_id,
             contract_address,
             relayer_client,
+            data_packer_client,
         } = options;
         let config = MystikoConfig::from_json_file("tests/files/mystiko/config.json")
             .await
@@ -184,8 +189,9 @@ where
             .config(config)
             .commitment_pool_contracts(commitment_pool_contracts)
             .relayer_client(relayer_client)
+            .data_packer_client(data_packer_client)
             .build();
-        let (_, db, handler) = setup::<R>(mock_options).await;
+        let (_, db, handler) = setup::<R, K>(mock_options).await;
         let (_, account) = create_wallet(db.clone()).await;
         Self {
             db,
