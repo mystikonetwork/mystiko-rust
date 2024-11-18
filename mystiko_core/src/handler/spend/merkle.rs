@@ -52,16 +52,11 @@ where
         raw: &[u8],
         expect_leaf_index: u64,
     ) -> Result<MerkleTree, SpendsError> {
-        let decompress_data = zstd::decode_all(raw)?;
-        let proto_merkle_tree = ProtoMerkleTree::decode(&*decompress_data)?;
-        if (proto_merkle_tree.commitment_hashes.len() as u64) <= expect_leaf_index {
-            return Err(SpendsError::RawResourceError("Invalid raw merkle tree".to_string()));
-        }
-
-        let merkle_tree = self.build_tree_from_protos(&proto_merkle_tree)?;
-        self.verify_merkle_tree(context, &merkle_tree, options.query_timeout_ms)
+        let wrap_tree = self
+            .build_from_raw_and_provider(context, raw, expect_leaf_index)
             .await?;
-        Ok(merkle_tree)
+        self.build_protocol_merkle_tree(context, options, wrap_tree, false)
+            .await
     }
 
     async fn build_from_packer(
@@ -70,56 +65,58 @@ where
         options: &SendSpendOptions,
         expect_leaf_index: u64,
     ) -> Result<MerkleTree, SpendsError> {
-        let (wrap_tree, is_cache) = self.build_from_packer_or_provider(context, expect_leaf_index).await?;
-        let merkle_tree = MerkleTree::new(Some(wrap_tree.leaves.clone()), None, None)?;
-        self.verify_merkle_tree(context, &merkle_tree, options.query_timeout_ms)
-            .await?;
-        if !is_cache {
-            self.cache_tree
-                .update(context.chain_id, context.contract_config.address(), wrap_tree)
-                .await;
-        }
-        Ok(merkle_tree)
+        let (wrap_tree, is_cache) = self.build_from_packer_and_provider(context, expect_leaf_index).await?;
+        self.build_protocol_merkle_tree(context, options, wrap_tree, is_cache)
+            .await
     }
 
-    async fn build_from_packer_or_provider(
+    async fn build_from_raw_and_provider(
+        &self,
+        context: &SpendContext,
+        raw: &[u8],
+        expect_leaf_index: u64,
+    ) -> Result<MerkleTreeWrapper, SpendsError> {
+        let decompress_data = zstd::decode_all(raw)?;
+        let proto_merkle_tree = ProtoMerkleTree::decode(&*decompress_data)?;
+        let wrap_tree = MerkleTreeWrapper::builder()
+            .leaves(
+                proto_merkle_tree
+                    .commitment_hashes
+                    .iter()
+                    .map(bytes_to_biguint)
+                    .collect(),
+            )
+            .loaded_block_number(proto_merkle_tree.loaded_block_number)
+            .build();
+        if (wrap_tree.leaves.len() as u64) > expect_leaf_index {
+            return Ok(wrap_tree);
+        }
+        self.try_filling_from_provider(context, wrap_tree, expect_leaf_index)
+            .await
+    }
+    async fn build_from_packer_and_provider(
         &self,
         context: &SpendContext,
         expect_leaf_index: u64,
     ) -> Result<(MerkleTreeWrapper, bool), SpendsError> {
-        let (mut wrap_tree, is_cache) =
-            if let (Some(wrap_tree), is_cache) = self.build_from_cache_or_packer(context, expect_leaf_index).await? {
-                if wrap_tree.leaves.len() as u64 > expect_leaf_index {
-                    return Ok((wrap_tree, is_cache));
-                }
-                (wrap_tree, is_cache)
-            } else {
-                (
-                    MerkleTreeWrapper::builder()
-                        .leaves(vec![])
-                        .loaded_block_number(context.contract_config.start_block() + 1)
-                        .build(),
-                    false,
-                )
-            };
-
-        info!(
-            "Fetching commitments from provider for chain_id: {}, contract: {} start block: {}",
-            context.chain_id,
-            context.contract_config.address(),
-            wrap_tree.loaded_block_number
-        );
-        let (mut cms, target_block) = self
-            .fetch_from_provider(context, wrap_tree.loaded_block_number + 1)
-            .await?;
-        wrap_tree.leaves.append(&mut cms);
-        wrap_tree.loaded_block_number = target_block;
-        if (wrap_tree.leaves.len() as u64) <= expect_leaf_index {
-            return Err(SpendsError::RawResourceError(
-                "Insufficient commitments in fetched data".to_string(),
-            ));
+        if let (Some(wrap_tree), is_cache) = self.build_from_cache_or_packer(context, expect_leaf_index).await? {
+            if wrap_tree.leaves.len() as u64 > expect_leaf_index {
+                return Ok((wrap_tree, is_cache));
+            }
+            let filling_tree = self
+                .try_filling_from_provider(context, wrap_tree, expect_leaf_index)
+                .await?;
+            Ok((filling_tree, false))
+        } else {
+            let wrap_tree = MerkleTreeWrapper::builder()
+                .leaves(vec![])
+                .loaded_block_number(context.contract_config.start_block())
+                .build();
+            let filling_tree = self
+                .try_filling_from_provider(context, wrap_tree, expect_leaf_index)
+                .await?;
+            Ok((filling_tree, false))
         }
-        Ok((wrap_tree, is_cache))
     }
 
     async fn build_from_cache_or_packer(
@@ -159,6 +156,34 @@ where
         } else {
             Ok(None)
         }
+    }
+
+    async fn try_filling_from_provider(
+        &self,
+        context: &SpendContext,
+        wrap_tree: MerkleTreeWrapper,
+        expect_leaf_index: u64,
+    ) -> Result<MerkleTreeWrapper, SpendsError> {
+        info!(
+            "fetching commitments from provider for chain_id: {}, contract: {} start block: {}",
+            context.chain_id,
+            context.contract_config.address(),
+            wrap_tree.loaded_block_number + 1
+        );
+        let (cms, target_block) = self
+            .fetch_from_provider(context, wrap_tree.loaded_block_number + 1)
+            .await?;
+        let mut tree = wrap_tree;
+        tree.leaves.extend(cms);
+        tree.loaded_block_number = target_block;
+        if (tree.leaves.len() as u64) <= expect_leaf_index {
+            return Err(SpendsError::RawResourceError(format!(
+                "insufficient commitments in fetched tree len: {}, expect: {}",
+                tree.leaves.len(),
+                expect_leaf_index + 1
+            )));
+        }
+        Ok(tree)
     }
 
     async fn fetch_from_provider(
@@ -208,9 +233,21 @@ where
         Ok((leaves, target_block))
     }
 
-    fn build_tree_from_protos(&self, tree: &ProtoMerkleTree) -> Result<MerkleTree, SpendsError> {
-        let leaves = tree.commitment_hashes.iter().map(bytes_to_biguint).collect::<Vec<_>>();
-        let merkle_tree = MerkleTree::new(Some(leaves), None, None)?;
+    async fn build_protocol_merkle_tree(
+        &self,
+        context: &SpendContext,
+        options: &SendSpendOptions,
+        wrap_tree: MerkleTreeWrapper,
+        is_cache: bool,
+    ) -> Result<MerkleTree, SpendsError> {
+        let merkle_tree = MerkleTree::new(Some(wrap_tree.leaves.clone()), None, None)?;
+        self.verify_merkle_tree(context, &merkle_tree, options.query_timeout_ms)
+            .await?;
+        if !is_cache {
+            self.cache_tree
+                .update(context.chain_id, context.contract_config.address(), wrap_tree)
+                .await;
+        }
         Ok(merkle_tree)
     }
 
@@ -233,39 +270,6 @@ where
         }
         Ok(())
     }
-
-    // async fn build_merkle_tree_from_db(
-    //     &self,
-    //     context: &SpendContext,
-    //     query_timeout_ms: Option<u64>,
-    // ) -> Result<MerkleTree, SpendsError> {
-    //     let condition = Condition::and(vec![
-    //         SubFilter::equal(CommitmentColumn::ChainId, context.chain_id),
-    //         SubFilter::equal(
-    //             CommitmentColumn::ContractAddress,
-    //             context.contract_config.address().to_string(),
-    //         ),
-    //         SubFilter::equal(CommitmentColumn::Status, CommitmentStatus::Included as i32),
-    //         SubFilter::is_not_null(CommitmentColumn::LeafIndex),
-    //     ]);
-    //     let order_by = OrderBy::builder()
-    //         .order(Order::Asc)
-    //         .columns(vec![CommitmentColumn::LeafIndex.to_string()])
-    //         .build();
-    //     let filter = QueryFilter::builder()
-    //         .conditions(vec![condition])
-    //         .conditions_operator(ConditionOperator::And)
-    //         .order_by(order_by)
-    //         .build();
-    //     let commitments = self.db.commitments.find(filter).await?;
-    //     let leaves = commitments
-    //         .into_iter()
-    //         .map(|commitment| commitment.data.commitment_hash)
-    //         .collect::<Vec<_>>();
-    //     let merkle_tree = MerkleTree::new(Some(leaves), None, None)?;
-    //     self.verify_merkle_tree(context, &merkle_tree, query_timeout_ms).await?;
-    //     Ok(merkle_tree)
-    // }
 }
 
 #[derive(Debug, Clone, TypedBuilder)]

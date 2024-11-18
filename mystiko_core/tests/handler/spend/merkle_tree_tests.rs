@@ -245,13 +245,15 @@ async fn test_build_from_raw() {
     let (config, contract_config) = setup_config(chain_id, "0x223903804Ee95e264F74C88B4F8583429524593c").await;
     let (_, private_key) = generate_private_key();
     let merkle_tree = generate_merkle_tree(4_usize);
+    let new_merkle_tree = generate_merkle_tree(6_usize);
     let raw_merkle_tree = build_raw_merkle_tree_bytes(&merkle_tree);
     let tree_root = biguint_to_u256(&merkle_tree.root());
+    let new_tree_root = biguint_to_u256(&new_merkle_tree.root());
     let tx_hash = TxHash::from_str("0xa35c998eaf5df995dba638efc114a8f58353784d08a60467fba6ed1e8f0e64a8").unwrap();
     let transact_options = TransactTestOptions::builder()
         .num_inputs(1_usize)
         .num_outputs(0_usize)
-        .root_hash(HashSet::from([tree_root]))
+        .root_hash(HashSet::from([tree_root, new_tree_root]))
         .public_amount(HashSet::from([
             U256::from_dec_str("30000000000000000").unwrap(),
             U256::from_dec_str("40000000000000000").unwrap(),
@@ -267,7 +269,7 @@ async fn test_build_from_raw() {
             (U256::from(2_u64), false),
             (U256::from(4_u64), false),
         ]))
-        .known_root(HashMap::from([(tree_root, true)]))
+        .known_root(HashMap::from([(tree_root, true), (new_tree_root, true)]))
         .transact_options(transact_options)
         .query_timeout_ms(100_u64)
         .tx_send_timeout_ms(200_u64)
@@ -329,9 +331,10 @@ async fn test_build_from_raw() {
         .tx_send_timeout_ms(200_u64)
         .tx_wait_interval_ms(10_u64)
         .tx_wait_timeout_ms(300_u64)
-        .raw_merkle_tree(raw_merkle_tree)
+        .raw_merkle_tree(raw_merkle_tree.clone())
         .build();
-    // test build from packer
+
+    // test build from raw
     let spend = context
         .handler
         .send_with_signer(send_options.clone(), signer.clone())
@@ -370,13 +373,48 @@ async fn test_build_from_raw() {
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
     context.check_commitments(&spend, 200010000_u64, &[]).await;
+
+    // test build from provider
+    let create_options = CreateSpendOptions::builder()
+        .chain_id(chain_id)
+        .asset_symbol("MTT".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .spend_type(SpendType::Withdraw as i32)
+        .amount(10.0)
+        .recipient("0x87813A8E81729C0100ce2568b6283772cb31bdb8".to_string())
+        .wallet_password("P@ssw0rd".to_string())
+        .query_timeout_ms(100_u64)
+        .build();
+    let spend = context.handler.create(create_options).await.unwrap();
+    let send_options = SendSpendOptions::builder()
+        .spend_id(spend.id)
+        .wallet_password("P@ssw0rd".to_string())
+        .private_key(private_key)
+        .query_timeout_ms(100_u64)
+        .spend_confirmations(10_u64)
+        .tx_send_timeout_ms(200_u64)
+        .tx_wait_interval_ms(10_u64)
+        .tx_wait_timeout_ms(300_u64)
+        .raw_merkle_tree(raw_merkle_tree)
+        .build();
+    let spend = context.handler.send_with_signer(send_options, signer).await.unwrap();
+    assert_eq!(spend.chain_id, chain_id);
+    assert_eq!(spend.contract_address, contract_config.address());
+    assert_eq!(spend.asset_symbol, contract_config.asset_symbol());
+    assert_eq!(spend.asset_decimals, contract_config.asset_decimals());
+    assert_eq!(spend.amount, 10.0);
+    assert_eq!(spend.decimal_amount, "100000000000000000");
+    assert_eq!(spend.recipient, "0x87813A8E81729C0100ce2568b6283772cb31bdb8");
+    assert!(spend.proof.is_some());
+    assert_eq!(spend.root_hash(), new_tree_root.to_string());
+    assert!(spend.error_message.is_none());
 }
 
 fn build_mock_provider() -> MockProvider {
     let mut mock_provider = MockProvider::new();
     mock_provider.expect_request().returning(|method, params| {
         match method {
-            "eth_blockNumber" => Ok(serde_json::json!("0xbebe911")), // Example block number
+            "eth_blockNumber" => Ok(serde_json::json!("0xbebe911")),
             "eth_getLogs" => {
                 let value_params = match params {
                     JsonRpcParams::Value(params) => params,

@@ -22,7 +22,7 @@ use mystiko_protocol::key::{
 use mystiko_protocol::transact::{TransactionCommitmentInput, TransactionCommitmentOutput, TransactionProof};
 use mystiko_protocol::types::{AuditingPk, EncPk, EncSk, FullSk, SigPk, VerifyPk, VerifySk, SIG_PK_SIZE};
 use mystiko_protos::core::handler::v1::SendSpendOptions;
-use mystiko_protos::core::v1::SpendType;
+use mystiko_protos::core::v1::{SpendStatus, SpendType};
 use mystiko_protos::data::v1::{ChainData, MerkleTree as ProtoMerkleTree};
 use mystiko_protos::storage::v1::{Condition, SubFilter};
 use mystiko_static_cache::StaticCache;
@@ -74,7 +74,9 @@ where
             .flat_map(|commitment| commitment.data.leaf_index)
             .max()
             .unwrap_or(0);
+        let spend = self.update_status(spend, SpendStatus::MerkleTreeFetching).await?;
         let merkle_tree = self.build_merkle_tree(context, options, expect_leaf_index).await?;
+        let spend = self.update_status(spend, SpendStatus::MerkleTreeFetched).await?;
         let shielded_addresses = input_commitments
             .iter()
             .filter_map(|commitment| commitment.data.shielded_address.clone())
@@ -126,7 +128,9 @@ where
             .contract_config
             .circuit_by_type(&circuit_type)
             .ok_or(SpendsError::MissingCircuitTypeInConfigError(circuit_type))?;
+        let spend = self.update_status(spend, SpendStatus::StaticAssetsFetching).await?;
         let (program, abi, proving_key, verifying_key) = self.get_circuit_resources(circuit, options).await?;
+        let spend = self.update_status(spend, SpendStatus::StaticAssetsFetched).await?;
         let auditor_keys_options = AuditorPublicKeysOptions::builder()
             .chain_id(spend.data.chain_id)
             .contract_address(ethers_address_from_string(&spend.data.contract_address)?)
